@@ -21,7 +21,7 @@
 
                     <br />
                     <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalForm"
-                        method="post">
+                          method="post">
                         <label for="donateAmt">${LabelSupportAmount}</label>
                         <select id="donateAmt" name="amount">
                             <option value="15" selected="selected">$15</option>
@@ -43,10 +43,11 @@
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
                         <a data-role="button" data-icon="arrow-r" data-iconpos="right" onclick="$(this).parents('form')[0].submit();">
-                            <img src="css/images/supporter/donatepaypal.png" /></a>
+                            <img src="css/images/supporter/donatepaypal.png" />
+                        </a>
                     </form>
                     <p>${DonationNextStep}</p>
-                    <p><a href="supporterkey.html">Enter supporter key</a></p>
+                    <p><a href="supporterkey.html">${ButtonEnterSupporterKey}</a></p>
                 </div>
             </div>
         </div>

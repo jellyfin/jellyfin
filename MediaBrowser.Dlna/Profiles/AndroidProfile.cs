@@ -4,11 +4,11 @@ using System.Xml.Serialization;
 namespace MediaBrowser.Dlna.Profiles
 {
     [XmlRoot("Profile")]
-    public class WindowsPhoneProfile : DefaultProfile
+    public class AndroidProfile : DefaultProfile
     {
-        public WindowsPhoneProfile()
+        public AndroidProfile()
         {
-            Name = "Windows Phone";
+            Name = "Android";
 
             TranscodingProfiles = new[]
             {
@@ -35,15 +35,6 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
                     VideoProfile = "Baseline",
-                    Context = EncodingContext.Streaming
-                },
-                new TranscodingProfile
-                {
-                    Container = "mp4",
-                    VideoCodec = "h264",
-                    AudioCodec = "aac",
-                    Type = DlnaProfileType.Video,
-                    VideoProfile = "Baseline",
                     Context = EncodingContext.Static
                 }
             };
@@ -52,33 +43,10 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "mp4,mov",
-                    VideoCodec = "h264",
-                    AudioCodec = "aac,mp3",
+                    Container = "mp4",
+                    VideoCodec = "h264,mpeg4",
+                    AudioCodec = "aac",
                     Type = DlnaProfileType.Video
-                },
-
-                new DirectPlayProfile
-                {
-                    Container = "mp4,avi",
-                    VideoCodec = "mpeg4,msmpeg4",
-                    AudioCodec = "aac,mp3",
-                    Type = DlnaProfileType.Video
-                },
-
-                new DirectPlayProfile
-                {
-                    Container = "asf",
-                    VideoCodec = "wmv2,wmv3,vc1",
-                    AudioCodec = "wmav2,wmapro,wmavoice",
-                    Type = DlnaProfileType.Video
-                },
-
-                new DirectPlayProfile
-                {
-                    Container = "asf",
-                    AudioCodec = "wmav2,wmapro,wmavoice",
-                    Type = DlnaProfileType.Audio
                 },
 
                 new DirectPlayProfile
@@ -92,6 +60,20 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mp3",
                     AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio
+                },
+
+                new DirectPlayProfile
+                {
+                    Container = "flac",
+                    AudioCodec = "flac",
+                    Type = DlnaProfileType.Audio
+                },
+
+                new DirectPlayProfile
+                {
+                    Container = "ogg",
+                    AudioCodec = "vorbis",
                     Type = DlnaProfileType.Audio
                 },
 
@@ -111,100 +93,40 @@ namespace MediaBrowser.Dlna.Profiles
                     {
                         new ProfileCondition
                         {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080"
+                        },
+                        new ProfileCondition
+                        {
                             Condition = ProfileConditionType.NotEquals,
                             Property = ProfileConditionValue.IsAnamorphic,
-                            Value = "true"
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Codec="h264",
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Width,
-                            Value = "800"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Height,
-                            Value = "480"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoBitrate,
-                            Value = "1000000",
+                            Value = "true",
                             IsRequired = false
                         },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoFramerate,
-                            Value = "24",
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
                             IsRequired = false
                         },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoLevel,
-                            Value = "3"
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Width,
-                            Value = "800"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Height,
-                            Value = "480"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoBitrate,
-                            Value = "1000000",
-                            IsRequired = false
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoFramerate,
-                            Value = "24",
-                            IsRequired = false
-                        }
+                        // TODO: Add HasScalingMatrix != true, IsRequired false
                     }
                 },
 
                 new CodecProfile
                 {
                     Type = CodecType.VideoAudio,
+                    Codec = "aac",
                     Conditions = new []
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioBitrate,
-                            Value = "128000"
-                        },
-
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
@@ -217,13 +139,35 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Audio,
+                    Codec = "aac",
                     Conditions = new []
                     {
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2"
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Audio,
+                    Codec = "mp3",
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioBitrate,
-                            Value = "128000"
+                            Value = "320000"
                         }
                     }
                 }

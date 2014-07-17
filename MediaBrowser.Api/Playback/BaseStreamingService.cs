@@ -607,7 +607,7 @@ namespace MediaBrowser.Api.Playback
                     }
                 }
 
-                // TODO: Perhaps also use original_size=1920x800
+                // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
                     subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
@@ -817,7 +817,7 @@ namespace MediaBrowser.Api.Playback
                         state.MediaPath = streamInfo.Path;
                         state.InputProtocol = MediaProtocol.File;
 
-                        await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else if (!string.IsNullOrEmpty(streamInfo.Url))
                     {
@@ -838,7 +838,7 @@ namespace MediaBrowser.Api.Playback
                         state.MediaPath = streamInfo.Path;
                         state.InputProtocol = MediaProtocol.File;
 
-                        await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else if (!string.IsNullOrEmpty(streamInfo.Url))
                     {
@@ -942,19 +942,6 @@ namespace MediaBrowser.Api.Playback
             while (!File.Exists(outputPath))
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-
-            // Allow a small amount of time to buffer a little
-            // But not with HLS because it already has it's own wait
-            if (state.IsInputVideo && TranscodingJobType != TranscodingJobType.Hls)
-            {
-                await Task.Delay(500, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
-
-            // This is arbitrary, but add a little buffer time when internet streaming
-            if (state.InputProtocol != MediaProtocol.File)
-            {
-                await Task.Delay(2500, cancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 
@@ -1457,11 +1444,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 state.RunTimeTicks = recording.RunTimeTicks;
-
-                if (recording.RecordingInfo.Status == RecordingStatus.InProgress)
-                {
-                    await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
-                }
 
                 state.OutputAudioSync = "1000";
                 state.InputVideoSync = "-1";

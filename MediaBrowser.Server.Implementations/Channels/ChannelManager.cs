@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             get
             {
-                return TimeSpan.FromDays(1);
+                return TimeSpan.FromHours(12);
             }
         }
 

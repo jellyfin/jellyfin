@@ -1,5 +1,5 @@
-﻿(function() {
-    
+﻿(function () {
+
     function onAuthFailure(data, textStatus, xhr) {
 
         var url = (this.url || '').toLowerCase();
@@ -169,7 +169,7 @@ var Dashboard = {
             return;
         }
 
-        Dashboard.confirmInternal(options.message, options.title || 'Alert', false, options.callback);
+        Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
     },
 
     updateSystemInfo: function (info) {
@@ -258,10 +258,10 @@ var Dashboard = {
 
     showServerRestartWarning: function (systemInfo) {
 
-        var html = '<span style="margin-right: 1em;">Please restart to finish updating.</span>';
+        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart</button>';
+            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRestart') + '</button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -274,9 +274,9 @@ var Dashboard = {
 
     showDashboardVersionWarning: function () {
 
-        var html = '<span style="margin-right: 1em;">Please refresh this page to receive new updates from the server.</span>';
+        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
-        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">Refresh</button>';
+        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRefresh') + '</button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -318,7 +318,7 @@ var Dashboard = {
         var onclick = removeOnHide ? "$(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "$(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
 
         if (options.allowHide !== false) {
-            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>Hide</button></span>";
+            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>" + Globalize.translate('ButtonHide') + "</button></span>";
         }
 
         if (options.forceShow) {
@@ -387,7 +387,7 @@ var Dashboard = {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert("Settings saved.");
+        Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
     },
 
     confirmInternal: function (message, title, showCancel, callback) {
@@ -406,10 +406,10 @@ var Dashboard = {
         html += message;
         html += '</div>';
 
-        html += '<p><button type="button" data-icon="check" onclick="$(\'.confirmFlyout\')[0].confirm=true;$(\'.confirmFlyout\').popup(\'close\');" data-theme="b">Ok</button></p>';
+        html += '<p><button type="button" data-icon="check" onclick="$(\'.confirmFlyout\')[0].confirm=true;$(\'.confirmFlyout\').popup(\'close\');" data-theme="b">' + Globalize.translate('ButtonOk') + '</button></p>';
 
         if (showCancel) {
-            html += '<p><button type="button" data-icon="delete" onclick="$(\'.confirmFlyout\').popup(\'close\');" data-theme="a">Cancel</button></p>';
+            html += '<p><button type="button" data-icon="delete" onclick="$(\'.confirmFlyout\').popup(\'close\');" data-theme="a">' + Globalize.translate('ButtonCancel') + '</button></p>';
         }
 
         html += '</div>';
@@ -514,9 +514,9 @@ var Dashboard = {
 
             html += '<form>';
 
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">My Preferences</button></a>';
-            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">My Profile</button></a>';
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">' + Globalize.translate('ButtonMyProfile') + '</button></a>';
+            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
             html += '</form>';
             html += '</div>';
@@ -604,7 +604,6 @@ var Dashboard = {
 
             var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
 
-            //html += '<p class="libraryPanelHeader" style="margin: 25px 0 20px 20px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
             html += '<br/>';
 
             html += '<div class="sidebarLinks">';
@@ -680,49 +679,49 @@ var Dashboard = {
         var pageElem = page[0];
 
         return [{
-            name: "Server",
+            name: Globalize.translate('TabServer'),
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
-            name: "Users",
+            name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
         }, {
-            name: "Library",
+            name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
             selected: page.hasClass("mediaLibraryPage")
         }, {
-            name: "Metadata",
+            name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
             selected: page.hasClass('metadataConfigurationPage')
         }, {
-            name: "Auto-Organize",
+            name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
         }, {
-            name: "DLNA",
+            name: Globalize.translate('TabDLNA'),
             href: "dlnasettings.html",
             selected: page.hasClass("dlnaPage")
         }, {
-            name: "Live TV",
+            name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
         }, {
-            name: "Plugins",
+            name: Globalize.translate('TabPlugins'),
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
         }, {
-            name: "Advanced",
+            name: Globalize.translate('TabAdvanced'),
             divider: true,
             href: "advanced.html",
             selected: page.hasClass("advancedConfigurationPage")
         }, {
-            name: "Scheduled Tasks",
+            name: Globalize.translate('TabScheduledTasks'),
             href: "scheduledtasks.html",
             selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
-            name: "Help",
+            name: Globalize.translate('TabHelp'),
             href: "support.html",
             selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage"
         }];
@@ -802,7 +801,7 @@ var Dashboard = {
                         WebNotifications.show(notification);
                     }
                     else {
-                        Dashboard.showFooterNotification({ html: "<b>" + args.Header + ":&nbsp;&nbsp;&nbsp;</b>" + args.Text, timeout: args.TimeoutMs });
+                        Dashboard.showFooterNotification({ html: "<div><b>" + args.Header + "</b></div>" + args.Text, timeout: args.TimeoutMs });
                     }
 
                     break;
@@ -931,7 +930,7 @@ var Dashboard = {
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
 
-            Dashboard.navigate(LibraryBrowser.getHref(item));
+            Dashboard.navigate(LibraryBrowser.getHref(item, null, ''));
 
         });
 
@@ -957,16 +956,16 @@ var Dashboard = {
         html += '<span style="margin-right: 1em;">';
 
         if (status == 'completed') {
-            html += installation.Name + ' ' + installation.Version + ' installation completed';
+            html += Globalize.translate('LabelPackageInstallCompleted').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'cancelled') {
-            html += installation.Name + ' ' + installation.Version + ' installation was cancelled';
+            html += Globalize.translate('LabelPackageInstallCancelled').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'failed') {
-            html += installation.Name + ' ' + installation.Version + ' installation failed';
+            html += Globalize.translate('LabelPackageInstallFailed').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'progress') {
-            html += 'Installing ' + installation.Name + ' ' + installation.Version;
+            html += Globalize.translate('LabelInstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
         }
 
         html += '</span>';
@@ -981,7 +980,7 @@ var Dashboard = {
 
             if (percentComplete < 100) {
                 var btnId = "btnCancel" + installation.Id;
-                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">Cancel</button>';
+                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonCancel') + '</button>';
             }
         }
 
@@ -1111,54 +1110,6 @@ var Dashboard = {
         return parts.join(':');
     },
 
-    ratePackage: function (link) {
-        var id = link.getAttribute('data-id');
-        var name = link.getAttribute('data-name');
-        var rating = link.getAttribute('data-rating');
-
-        var dialog = new RatingDialog($.mobile.activePage);
-        dialog.show({
-            header: "Rate and review " + name,
-            id: id,
-            rating: rating,
-            callback: function (review) {
-                console.log(review);
-                dialog.close();
-
-                ApiClient.createPackageReview(review).done(function () {
-                    Dashboard.alert({
-                        message: "Thank you for your review",
-                        title: "Thank You"
-                    });
-                });
-            }
-        });
-    },
-
-    getStoreRatingHtml: function (rating, id, name, noLinks) {
-
-        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block; vertical-align:middle;'>";
-        if (!rating) rating = 0;
-
-        for (var i = 1; i <= 5; i++) {
-            var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
-
-            html += noLinks ? "" : "<span data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);return false;' >";
-            if (rating <= i - 1) {
-                html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
-            } else if (rating < i) {
-                html += "<div class='storeStarRating halfStarRating' title='" + title + "'></div>";
-            } else {
-                html += "<div class='storeStarRating' title='" + title + "'></div>";
-            }
-            html += noLinks ? "" : "</span>";
-        }
-
-        html += "</div>";
-
-        return html;
-    },
-
     populateLanguages: function (select, languages) {
 
         var html = "";
@@ -1218,7 +1169,7 @@ var Dashboard = {
 
     if (!window.WebSocket) {
 
-        alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
+        alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
     }
 
     window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
@@ -1247,19 +1198,19 @@ $(function () {
     videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
     videoPlayerHtml += '<div class="videoAdvancedControls">';
 
-    videoPlayerHtml += '<button class="imageButton mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
+    videoPlayerHtml += '<button class="imageButton mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
     videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="imageButton mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
+    videoPlayerHtml += '<button class="imageButton mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
     videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
+    videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonScenes') + '</button>';
     videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
+    videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonQuality') + '</button>';
     videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">Stop</button>';
+    videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
 
     videoPlayerHtml += '</div>'; // videoAdvancedControls
     videoPlayerHtml += '</div>'; // videoTopControls
@@ -1267,30 +1218,30 @@ $(function () {
     // Create controls
     videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
 
-    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
-    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
-    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
-    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
+    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
+    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
+    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
+    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
 
     videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div class="currentTime"></div>';
+    videoPlayerHtml += '<div class="currentTime">--:--</div>';
 
     videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
     videoPlayerHtml += '<div class="nowPlayingImage"></div>';
     videoPlayerHtml += '<div class="nowPlayingText"></div>';
     videoPlayerHtml += '</div>'; // nowPlayingInfo
 
-    videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
-    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
+    videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
+    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
 
     videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">Fullscreen</button>';
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
 
     videoPlayerHtml += '</div>'; // videoControls
 

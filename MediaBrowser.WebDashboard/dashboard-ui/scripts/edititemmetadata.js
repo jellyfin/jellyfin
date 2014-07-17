@@ -70,7 +70,7 @@
                 $('#btnEditCollectionTitles', page).hide();
             }
 
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem") {
+            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
                 $('#btnEditSubtitles', page).show();
             } else {
                 $('#btnEditSubtitles', page).hide();
@@ -462,7 +462,7 @@
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
         $('#txtShortOverview', page).val(item.ShortOverview || "");
-        $('#txtTagline', page).val((item.Taglines.length ? item.Taglines[0] : ''));
+        $('#txtTagline', page).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
         $('#txtSortName', page).val(item.ForcedSortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
@@ -536,7 +536,7 @@
         }
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
-        $('#txtAirTime', page).val(convertTo24HourFormat(item.AirTime || ""));
+        $('#txtAirTime', page).val(item.AirTime || "");
 
         var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
         $('#txtPlaceOfBirth', page).val(placeofBirth);
@@ -576,14 +576,14 @@
 
             html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
 
-            html += '<h3>' + (person.Name || 'Unknown name') + '</h3>';
+            html += '<h3>' + (person.Name || '') + '</h3>';
 
             if (person.Role && person.Role != lastType) {
                 html += '<p>' + (person.Role) + '</p>';
             }
             html += '</a>';
 
-            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">Delete</a>';
+            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">' + Globalize.translate('Delete') + '</a>';
 
             html += '</li>';
         }
@@ -652,46 +652,6 @@
         populatePeople(page, currentItem.People);
     }
 
-    function convertTo24HourFormat(time) {
-        if (time == "")
-            return time;
-        var match = time.match(/^(\d+):(\d+)(.*)$/);
-        if (match) {
-            var hours = Number(match[1]);
-            var minutes = Number(match[2]);
-            var ampm = $.trim(match[3]);
-            ampm = ampm.toUpperCase();
-            if (ampm == "PM" && hours < 12) hours = hours + 12;
-            if (ampm == "AM" && hours == 12) hours = 0;
-            var sHours = hours.toString();
-            var sMinutes = minutes.toString();
-            if (hours < 10) sHours = "0" + sHours;
-            if (minutes < 10) sMinutes = "0" + sMinutes;
-            return sHours + ":" + sMinutes;
-        } else {
-            return time;
-        }
-    }
-
-    function convertTo12HourFormat(time) {
-        if (time == "")
-            return time;
-        var hours = Number(time.match(/^(\d+)/)[1]);
-        var minutes = Number(time.match(/:(\d+)/)[1]);
-        var ampm = "AM";
-        if (hours >= 12) {
-            ampm = "PM";
-            hours = hours - 12;
-            hours = hours == 0 ? 12 : hours;
-        }
-        hours = hours == 0 ? 12 : hours;
-        var sHours = hours.toString();
-        var sMinutes = minutes.toString();
-        if (hours < 10) sHours = "0" + sHours;
-        if (minutes < 10) sMinutes = "0" + sMinutes;
-        return sHours + ":" + sMinutes + " " + ampm;
-    }
-
     function populateRatings(allParentalRatings, select) {
 
         var html = "";
@@ -722,8 +682,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>Continuing</option>";
-        html += "<option value='Ended'>Ended</option>";
+        html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
         select.html(html).selectmenu("refresh");
     }
 
@@ -752,12 +712,11 @@
             var field = fields[i];
             var name = field.name;
             var value = field.value || field.name;
-            var fieldTitle = $.trim(name.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + value + '">' + fieldTitle + ':</label>';
+            html += '<label for="lock' + value + '">' + name + '</label>';
             html += '<select class="selectLockedField" id="lock' + value + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + value + '">Off</option>';
-            html += '<option value="" selected="selected">On</option>';
+            html += '<option value="' + value + '">' + Globalize.translate('OptionOff') + '</option>';
+            html += '<option value="" selected="selected">' + Globalize.translate('OptionOn') + '</option>';
             html += '</select>';
             html += '</div>';
         }
@@ -769,37 +728,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: "Name" },
-            { name: "Overview" },
-            { name: "Genres" },
-            { name: "Parental Rating", value: "OfficialRating" },
-            { name: "People", value: "Cast" }
+            { name: Globalize.translate('OptionName'), value: "Name" },
+            { name: Globalize.translate('OptionOverview'), value: "Overview" },
+            { name: Globalize.translate('OptionGenres'), value: "Genres" },
+            { name: Globalize.translate('OptionParentalRating'), value: "OfficialRating" },
+            { name: Globalize.translate('OptionPeople'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: "Birth location", value: "ProductionLocations" });
+            metadatafields.push({ name: Globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: "Production Locations", value: "ProductionLocations" });
+            metadatafields.push({ name: Globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: "Runtime" });
+            metadatafields.push({ name: Globalize.translate('OptionRuntime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: "Studios" });
-        metadatafields.push({ name: "Tags" });
-        metadatafields.push({ name: "Keywords" });
-        metadatafields.push({ name: "Images" });
-        metadatafields.push({ name: "Backdrops" });
+        metadatafields.push({ name: Globalize.translate('OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: Globalize.translate('OptionTags'), value: "Tags" });
+        metadatafields.push({ name: Globalize.translate('OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: Globalize.translate('OptionImages'), value: "Images" });
+        metadatafields.push({ name: Globalize.translate('OptionBackdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: "Screenshots" });
+            metadatafields.push({ name: Globalize.translate('OptionScreenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>Fields</h1>";
-        html += "<p>Slide a field to 'off' to lock it and prevent it's data from being changed.</p>";
+        html += "<h1>" + Globalize.translate('HeaderFields') + "</h1>";
+        html += "<p>" + Globalize.translate('HeaderFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, 'Fields');
         container.html(html).trigger('create');
         for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
@@ -873,7 +832,7 @@
                 ShortOverview: $('#txtShortOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
                 AirDays: getSelectedAirDays(form),
-                AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
+                AirTime: $('#txtAirTime', form).val(),
                 Genres: editableListViewValues($("#listGenres", form)),
                 ProductionLocations: editableListViewValues($("#listCountries", form)),
                 Tags: editableListViewValues($("#listTags", form)),
@@ -928,7 +887,7 @@
 
             ApiClient.updateItem(item).done(function () {
 
-                Dashboard.alert('Item saved.');
+                Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
                     $(form).parents('.page').trigger('itemsaved', [i]);
@@ -969,7 +928,7 @@
             var page = $(this).parents('.page');
 
             if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
-                Dashboard.alert('The value entered is not correct. Please try again.');
+                Dashboard.alert(Globalize.translate('MessageValueNotCorrect'));
             } else {
                 performDelete(page);
             }
@@ -1090,7 +1049,7 @@
         });
 
         if (!hasId && !lookupInfo.Name) {
-            Dashboard.alert('Please enter a name or an external Id.');
+            Dashboard.alert(Globalize.translate('MessagePleaseEnterNameOrId'));
             return;
         }
 
@@ -1296,9 +1255,9 @@
 
             } else {
 
-                var msg = "<p>Are you sure you wish to delete this item from your library?</p>";
+                var msg = "<p>" + Globalize.translate('ConfirmDeleteItem') + "</p>";
 
-                Dashboard.confirm(msg, "Confirm Deletion", function (result) {
+                Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
 
                     if (result) {
 

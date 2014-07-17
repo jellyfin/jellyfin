@@ -10,9 +10,9 @@
 
         return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
     }
-    
+
     function getNodeInnerHtml(item) {
-        
+
         var name = item.Name;
 
         // Channel number
@@ -38,22 +38,22 @@
         htmlName += name;
 
         if (!item.LocalTrailerCount && item.Type == "Movie") {
-            htmlName += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." />';
+            htmlName += '<img src="css/images/editor/missingtrailer.png" title="' + Globalize.translate('MissingLocalTrailer') + '" />';
         }
 
         if (!item.ImageTags || !item.ImageTags.Primary) {
-            htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." />';
+            htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="' + Globalize.translate('MissingPrimaryImage') + '" />';
         }
 
         if (!item.BackdropImageTags || !item.BackdropImageTags.length) {
             if (item.Type !== "Episode" && item.Type !== "Season" && item.MediaType !== "Audio" && item.Type !== "TvChannel" && item.Type !== "MusicAlbum") {
-                htmlName += '<img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." />';
+                htmlName += '<img src="css/images/editor/missingbackdrop.png" title="' + Globalize.translate('MissingBackdropImage') + '" />';
             }
         }
 
         if (!item.ImageTags || !item.ImageTags.Logo) {
             if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "MusicArtist" || item.Type == "BoxSet") {
-                htmlName += '<img src="css/images/editor/missinglogo.png" title="Missing logo image." />';
+                htmlName += '<img src="css/images/editor/missinglogo.png" title="' + Globalize.translate('MissingLogoImage') + '" />';
             }
         }
 
@@ -61,7 +61,7 @@
 
             try {
                 if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
-                    htmlName += '<img src="css/images/editor/missing.png" title="Missing episode." />';
+                    htmlName += '<img src="css/images/editor/missing.png" title="' + Globalize.translate('MissingEpisode') + '" />';
                 }
             } catch (err) {
 
@@ -76,7 +76,7 @@
 
     function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
 
-        var promise2 = ApiClient.getLiveTvChannels({limit: 0});
+        var promise2 = ApiClient.getLiveTvChannels({ limit: 0 });
 
         $.when(promise2).done(function (response2) {
 
@@ -84,10 +84,10 @@
 
             var nodes = [];
 
-            nodes.push({ attr: { id: 'MediaFolders', rel: 'folder', itemtype: 'mediafolders' }, data: 'Media Folders', state: 'open' });
+            nodes.push({ attr: { id: 'MediaFolders', rel: 'folder', itemtype: 'mediafolders' }, data: Globalize.translate('HeaderMediaFolders'), state: 'open' });
 
             if (result.TotalRecordCount) {
-                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: 'Live TV', state: 'closed' });
+                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: Globalize.translate('HeaderLiveTV'), state: 'closed' });
             }
 
             callback(nodes);
@@ -249,7 +249,7 @@
 
         });
     }
-    
+
     function updateEditorNode(page, item) {
 
         var elem = $('#' + item.Id + '>a', page)[0];
@@ -261,7 +261,7 @@
         $('.editorNode', elem).remove();
 
         $(elem).append(getNodeInnerHtml(item));
-        
+
         if (item.IsFolder) {
 
             var tree = jQuery.jstree._reference(".libraryTree");

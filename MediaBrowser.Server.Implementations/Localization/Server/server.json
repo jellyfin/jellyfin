@@ -755,7 +755,6 @@
 	"LabelDisplayPluginsFor": "Display plugins for:",
 	"PluginTabMediaBrowserClassic": "MB Classic",
 	"PluginTabMediaBrowserTheater": "MB Theater",
-	"TabOtherPlugins": "Others",
 	"LabelEpisodeName": "Episode name",
 	"LabelSeriesName": "Series name",
 	"ValueSeriesNamePeriod": "Series.name",
@@ -882,5 +881,6 @@
 	"HeaderNewApiKey": "New Api Key",
 	"LabelAppName": "App name",
 	"LabelAppNameExample": "Example: Sickbeard, NzbDrone",
-	"HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser."
+	"HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser.",
+    "ButtonEnterSupporterKey":  "Enter supporter key"
 }

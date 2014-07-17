@@ -232,6 +232,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
       <Link>Dlna\StreamInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleProfile.cs">
+      <Link>Dlna\SubtitleProfile.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\TranscodeSeekInfo.cs">
       <Link>Dlna\TranscodeSeekInfo.cs</Link>
     </Compile>

@@ -37,27 +37,39 @@
         $('#chkAnyTime', page).checked(item.RecordAnyTime).checkboxradio('refresh');
 
         var channelHtml = '';
-
-        if (item.RecurrenceType == 'NewProgramEventsAllChannels' || item.RecurrenceType == 'AllProgramEventsAllChannels') {
-            channelHtml += 'All Channels';
+        if (item.RecordAnyChannel) {
+            channelHtml += Globalize.translate('LabelAllChannels');
         }
         else if (item.ChannelId) {
             channelHtml += '<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
         }
 
-        $('.channel', page).html('Channel:&nbsp;&nbsp;&nbsp;' + channelHtml).trigger('create');
+        $('.channel', page).html(channelHtml).trigger('create');
 
         selectDays(page, item.Days);
 
-
-        $('.time', page).html('Time:&nbsp;&nbsp;&nbsp;' + LiveTvHelpers.getDisplayTime(item.StartDate));
+        if (item.RecordAnyTime) {
+            $('.time', page).html(Globalize.translate('LabelAnytime')).trigger('create');
+        }
+        else if (item.ChannelId) {
+            $('.time', page).html(LiveTvHelpers.getDisplayTime(item.StartDate)).trigger('create');
+        }
 
         Dashboard.hideLoadingMsg();
     }
 
+    function getDaysOfWeek() {
+
+        // Do not localize. These are used as values, not text.
+        return LiveTvHelpers.getDaysOfWeek().map(function (d) {
+            return d.value;
+        });
+
+    }
+
     function selectDays(page, days) {
 
-        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var daysOfWeek = getDaysOfWeek();
 
         for (var i = 0, length = daysOfWeek.length; i < length; i++) {
 
@@ -71,7 +83,7 @@
 
     function getDays(page) {
 
-        var daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var daysOfWeek = getDaysOfWeek();
 
         var days = [];
 
@@ -82,7 +94,6 @@
             if ($('#chk' + day, page).checked()) {
                 days.push(day);
             }
-
         }
 
         return days;
@@ -180,13 +191,13 @@
             html += '<p>';
 
             if (program.IsLive) {
-                html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
+                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
             }
 
             html += LiveTvHelpers.getDisplayTime(timer.StartDate);

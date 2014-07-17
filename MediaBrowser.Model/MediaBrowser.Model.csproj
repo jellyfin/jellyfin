@@ -89,6 +89,7 @@
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\MetadataPluginSummary.cs" />
     <Compile Include="Configuration\MetadataPluginType.cs" />
+    <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />
     <Compile Include="Notifications\NotificationOptions.cs" />
     <Compile Include="Notifications\NotificationType.cs" />

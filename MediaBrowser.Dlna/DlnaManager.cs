@@ -37,7 +37,7 @@ namespace MediaBrowser.Dlna
             _logger = logger;
             _jsonSerializer = jsonSerializer;
 
-            //DumpProfiles();
+            DumpProfiles();
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()
@@ -75,6 +75,10 @@ namespace MediaBrowser.Dlna
                 new LgTvProfile(),
                 new Foobar2000Profile(),
                 new MediaMonkeyProfile(),
+                new Windows81Profile(),
+                //new WindowsMediaCenterProfile(),
+                new WindowsPhoneProfile(),
+                new AndroidProfile(),
                 new DefaultProfile()
             };
 

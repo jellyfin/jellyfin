@@ -354,13 +354,22 @@
             $('.playFlyout').popup("close").remove();
         },
 
-        getHref: function (item, context) {
+        getHref: function (item, context, topParentId) {
 
             var href = LibraryBrowser.getHrefInternal(item);
 
             if (context) {
                 href += href.indexOf('?') == -1 ? "?context=" : "&context=";
                 href += context;
+            }
+
+            if (topParentId == null) {
+                topParentId = LibraryMenu.getTopParentId();
+            }
+
+            if (topParentId) {
+                href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
+                href += topParentId;
             }
 
             return href;

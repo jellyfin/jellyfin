@@ -6,39 +6,11 @@
         IsAdult: false
     };
 
-    function getApps() {
-
-        var apps = [];
-
-        apps.push({
-            type: "UserInstalled",
-            name: "MBKinect",
-            category: "Voice Control",
-            isApp: true,
-            tileColor: "#050810",
-            thumbImage: "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/images/mbkinect/thumb.png",
-            externalUrl: "http://mediabrowser.tv/community/index.php?/topic/850-media-browser-kinect-sensor-plug-in-support/",
-            isPremium: false,
-            isExternal: true
-        });
-
-        return apps;
-    }
-
-    function getAppsPromise() {
-
-        var deferred = $.Deferred();
-
-        deferred.resolveWith(null, [[getApps()]]);
-
-        return deferred.promise();
-    }
-
     function reloadList(page) {
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = query.TargetSystems == "Apps" ? getAppsPromise() : ApiClient.getAvailablePlugins(query);
+        var promise1 = ApiClient.getAvailablePlugins(query);
 
         var promise2 = ApiClient.getInstalledPlugins();
 
@@ -113,7 +85,7 @@
             if (!plugin.isExternal) {
                 html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
                 html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
-                html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+                html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
                 html += "<span class='storeReviewCount'>";
                 html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);

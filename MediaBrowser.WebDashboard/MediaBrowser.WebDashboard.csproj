@@ -158,6 +158,9 @@
     <Content Include="dashboard-ui\css\images\clients\amazon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\css\images\clients\chrome_companion.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\images\clients\mediaportal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

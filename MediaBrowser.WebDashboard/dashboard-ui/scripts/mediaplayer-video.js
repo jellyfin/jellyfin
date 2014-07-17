@@ -897,7 +897,7 @@
         function bindEventsForPlayback() {
 
             var hideElementsOnIdle = !$.browser.mobile;
-            
+
             if (hideElementsOnIdle) {
                 $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler);
                 $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
@@ -1003,7 +1003,8 @@
 
             self.startTimeTicksOffset = isStatic ? 0 : startPosition || 0;
 
-            var seekParam = startPosition ? '#t=' + (startPosition / 10000000) : '';
+            var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
+            var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                 Static: isStatic,
@@ -1158,7 +1159,14 @@
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.on("volumechange.mediaplayerevent", function (e) {
+            video.one("loadedmetadata.mediaplayerevent", function (e) {
+
+                // Appending #t=xxx to the query string doesn't seem to work with HLS
+                if (startPositionInSeekParam && this.currentSrc && this.currentSrc.toLowerCase().indexOf('.m3u8') != -1) {
+                    this.currentTime = startPositionInSeekParam;
+                }
+
+            }).on("volumechange.mediaplayerevent", function (e) {
 
                 var vol = this.volume;
 
@@ -1234,7 +1242,7 @@
 
             }).on("ended.playbackstopped", function () {
 
-                currentTimeElement.empty();
+                currentTimeElement.html('--:--');
 
                 self.onPlaybackStopped.call(this);
 

@@ -70,7 +70,7 @@
 
         var html = '';
 
-        html += '<a class="searchHint" href="' + LibraryBrowser.getHref(hint) + '">';
+        html += '<a class="searchHint" href="' + LibraryBrowser.getHref(hint, null, '') + '">';
 
         var imgUrl;
 

@@ -164,6 +164,28 @@
 
     window.LiveTvHelpers = {
 
+        getDaysOfWeek: function () {
+
+            var days = [
+                'Sunday',
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                'Saturday'
+            ];
+
+            return days.map(function (d) {
+
+                return {
+                    name: d,
+                    value: d
+                };
+
+            });
+        },
+
         getDisplayTime: function (date) {
 
             if ((typeof date).toString().toLowerCase() === 'string') {

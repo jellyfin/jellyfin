@@ -72,19 +72,13 @@
         }
 
     }
-    
+
     function getDaysOfWeek() {
-        
+
         // Do not localize. These are used as values, not text.
-        return [
-            'Sunday',
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday'
-        ];
+        return LiveTvHelpers.getDaysOfWeek().map(function (d) {
+            return d.value;
+        });
     }
 
     function getDays(page) {
@@ -152,7 +146,7 @@
     }
 
     window.LiveTvNewRecordingPage = {
-        
+
         onSubmit: onSubmit
 
     };

@@ -5,6 +5,8 @@
     var currentSubProfile;
     var isSubProfileNew;
 
+    var allText = Globalize.translate('LabelAll');
+
     function loadProfile(page) {
 
         Dashboard.showLoadingMsg();
@@ -86,7 +88,7 @@
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
         profile.CodecProfiles = (profile.CodecProfiles || []);
         profile.ResponseProfiles = (profile.ResponseProfiles || []);
-        
+
         var usersHtml = '<option></option>' + users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
@@ -144,13 +146,15 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
+
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             html += '</a>';
@@ -198,7 +202,7 @@
         $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
         $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
         $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
-        
+
         popup.popup('open');
     }
 
@@ -224,13 +228,13 @@
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Protocol: ' + (profile.Protocol || 'Http') + '</p>';
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             html += '</a>';
@@ -277,7 +281,7 @@
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -334,14 +338,16 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -377,7 +383,7 @@
         renderContainerProfiles(page, currentProfile.ContainerProfiles);
 
     }
-    
+
     function editContainerProfile(page, containerProfile) {
 
         isSubProfileNew = containerProfile == null;
@@ -390,7 +396,7 @@
         $('#txtContainerProfileContainer', popup).val(containerProfile.Container || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -434,14 +440,16 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Codec: ' + (profile.Codec || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.Codec || allText)) + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -490,7 +498,7 @@
         $('#txtCodecProfileCodec', popup).val(codecProfile.Codec || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -532,21 +540,23 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -570,7 +580,7 @@
         $('.lnkEditSubProfile', elem).on('click', function () {
 
             var index = parseInt(this.getAttribute('data-profileindex'));
-            
+
             editResponseProfile(page, currentProfile.ResponseProfiles[index]);
         });
     }
@@ -787,13 +797,13 @@
             editTranscodingProfile(page);
 
         });
-        
+
         $('.btnAddContainerProfile', page).on('click', function () {
 
             editContainerProfile(page);
 
         });
-        
+
         $('.btnAddCodecProfile', page).on('click', function () {
 
             editCodecProfile(page);
@@ -854,8 +864,8 @@
             return false;
 
         },
-        
-        onContainerProfileFormSubmit: function() {
+
+        onContainerProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
@@ -864,8 +874,8 @@
             return false;
 
         },
-        
-        onCodecProfileFormSubmit: function() {
+
+        onCodecProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
@@ -873,8 +883,8 @@
 
             return false;
         },
-        
-        onResponseProfileFormSubmit: function() {
+
+        onResponseProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
