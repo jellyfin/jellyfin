@@ -343,7 +343,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new SubtitleProfile
                 {
-                    Format = SubtitleFormat.SMI
+                    Format = "smi"
                 }
             };
         }

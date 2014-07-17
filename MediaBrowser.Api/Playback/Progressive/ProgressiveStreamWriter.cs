@@ -12,6 +12,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         private string Path { get; set; }
         private ILogger Logger { get; set; }
         private readonly IFileSystem _fileSystem;
+        private readonly TranscodingJob _job;
 
         /// <summary>
         /// The _options
@@ -32,11 +33,12 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="path">The path.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProgressiveStreamWriter(string path, ILogger logger, IFileSystem fileSystem)
+        public ProgressiveStreamWriter(string path, ILogger logger, IFileSystem fileSystem, TranscodingJob job)
         {
             Path = path;
             Logger = logger;
             _fileSystem = fileSystem;
+            _job = job;
         }
 
         /// <summary>
@@ -59,7 +61,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             try
             {
-                await new ProgressiveFileCopier(_fileSystem).StreamFile(Path, responseStream).ConfigureAwait(false);
+                await new ProgressiveFileCopier(_fileSystem, _job)
+                    .StreamFile(Path, responseStream).ConfigureAwait(false);
             }
             catch
             {
@@ -77,10 +80,12 @@ namespace MediaBrowser.Api.Playback.Progressive
     public class ProgressiveFileCopier
     {
         private readonly IFileSystem _fileSystem;
+        private readonly TranscodingJob _job;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem)
+        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job)
         {
             _fileSystem = fileSystem;
+            _job = job;
         }
 
         public async Task StreamFile(string path, Stream outputStream)
@@ -102,7 +107,10 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                     if (bytesRead == 0)
                     {
-                        eofCount++;
+                        if (_job == null || _job.HasExited)
+                        {
+                            eofCount++;
+                        }
                         await Task.Delay(100).ConfigureAwait(false);
                     }
                     else

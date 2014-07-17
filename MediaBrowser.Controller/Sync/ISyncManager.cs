@@ -34,6 +34,20 @@ namespace MediaBrowser.Controller.Sync
         QueryResult<SyncSchedule> GetSchedules(SyncScheduleQuery query);
 
         /// <summary>
+        /// Gets the job.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>SyncJob.</returns>
+        SyncJob GetJob(string id);
+
+        /// <summary>
+        /// Gets the schedule.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>SyncSchedule.</returns>
+        SyncSchedule GetSchedule(string id);
+        
+        /// <summary>
         /// Cancels the job.
         /// </summary>
         /// <param name="id">The identifier.</param>

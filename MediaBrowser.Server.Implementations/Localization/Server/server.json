@@ -882,5 +882,12 @@
 	"LabelAppName": "App name",
 	"LabelAppNameExample": "Example: Sickbeard, NzbDrone",
 	"HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser.",
-    "ButtonEnterSupporterKey":  "Enter supporter key"
+    "ButtonEnterSupporterKey":  "Enter supporter key",
+    "HeaderHttpHeaders":  "Http Headers",
+    "HeaderIdentificationHeader":  "Identification Header",
+    "LabelValue":  "Value:",
+    "LabelMatchType":  "Match type:",
+    "OptionEquals":  "Equals",
+    "OptionRegex":  "Regex",
+    "OptionSubstring":  "Substring"
 }

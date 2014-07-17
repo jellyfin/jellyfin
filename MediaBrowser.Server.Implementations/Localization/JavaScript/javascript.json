@@ -319,5 +319,6 @@
     "ButtonAudioTracks":  "Audio Tracks",
     "ButtonSubtitles":  "Subtitles",
     "ButtonScenes":  "Scenes",
-    "ButtonQuality":  "Quality"
+    "ButtonQuality":  "Quality",
+    "HeaderNotifications":  "Notifications"
 }

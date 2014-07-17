@@ -85,7 +85,6 @@
     <Compile Include="Images\ImageByNameService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
-    <Compile Include="Images\ImageWriter.cs" />
     <Compile Include="Music\InstantMixService.cs" />
     <Compile Include="ItemLookupService.cs" />
     <Compile Include="ItemRefreshService.cs" />
@@ -102,7 +101,6 @@
     <Compile Include="PackageReviewService.cs" />
     <Compile Include="PackageService.cs" />
     <Compile Include="Playback\BifService.cs" />
-    <Compile Include="Playback\EndlessStreamCopy.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
     <Compile Include="Playback\Hls\DynamicHlsService.cs" />
     <Compile Include="Playback\Hls\HlsSegmentService.cs" />
@@ -123,6 +121,7 @@
     <Compile Include="SearchService.cs" />
     <Compile Include="SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
+    <Compile Include="Sync\SyncService.cs" />
     <Compile Include="SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />

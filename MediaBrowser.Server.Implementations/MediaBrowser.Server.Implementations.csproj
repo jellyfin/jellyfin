@@ -261,6 +261,7 @@
     <Compile Include="Persistence\SqliteUserRepository.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
+    <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />

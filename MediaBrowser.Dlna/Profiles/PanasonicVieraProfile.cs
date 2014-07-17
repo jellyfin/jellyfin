@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
 using System.Xml.Serialization;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -198,7 +197,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new SubtitleProfile
                 {
-                    Format = SubtitleFormat.SRT
+                    Format = "srt"
                 }
             };
         }

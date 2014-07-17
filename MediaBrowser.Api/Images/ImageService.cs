@@ -564,25 +564,59 @@ namespace MediaBrowser.Api.Images
                 cacheDuration = TimeSpan.FromDays(365);
             }
 
-            // Avoid implicitly captured closure
-            var currentItem = item;
-            var currentRequest = request;
-
             var responseHeaders = new Dictionary<string, string>
             {
                 {"transferMode.dlna.org", "Interactive"},
                 {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
             };
 
-            return ToCachedResult(cacheGuid, originalFileImageDateModified, cacheDuration, () => new ImageWriter
-            {
-                Item = currentItem,
-                Request = currentRequest,
-                Enhancers = supportedImageEnhancers,
-                Image = imageInfo,
-                ImageProcessor = _imageProcessor
+            return GetImageResult(item, 
+                request, 
+                imageInfo, 
+                supportedImageEnhancers, 
+                contentType, 
+                cacheDuration,
+                responseHeaders)
+                .Result;
+        }
 
-            }, contentType, responseHeaders);
+        private async Task<object> GetImageResult(IHasImages item, 
+            ImageRequest request,
+            ItemImageInfo image,
+            List<IImageEnhancer> enhancers,
+            string contentType,
+            TimeSpan? cacheDuration,
+            IDictionary<string,string> headers)
+        {
+            var cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
+
+            if (request.CropWhitespace.HasValue)
+            {
+                cropwhitespace = request.CropWhitespace.Value;
+            }
+
+            var options = new ImageProcessingOptions
+            {
+                CropWhiteSpace = cropwhitespace,
+                Enhancers = enhancers,
+                Height = request.Height,
+                ImageIndex = request.Index ?? 0,
+                Image = image,
+                Item = item,
+                MaxHeight = request.MaxHeight,
+                MaxWidth = request.MaxWidth,
+                Quality = request.Quality,
+                Width = request.Width,
+                OutputFormat = request.Format,
+                AddPlayedIndicator = request.AddPlayedIndicator,
+                PercentPlayed = request.PercentPlayed,
+                UnplayedCount = request.UnplayedCount,
+                BackgroundColor = request.BackgroundColor
+            };
+
+            var file = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
+
+            return ResultFactory.GetStaticFileResult(Request, file, contentType, cacheDuration, FileShare.Read, headers);
         }
 
         private string GetMimeType(ImageOutputFormat format, string path)
@@ -602,6 +636,10 @@ namespace MediaBrowser.Api.Images
             if (format == ImageOutputFormat.Png)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.png");
+            }
+            if (format == ImageOutputFormat.Webp)
+            {
+                return Common.Net.MimeTypes.GetMimeType("i.webp");
             }
 
             return Common.Net.MimeTypes.GetMimeType(path);

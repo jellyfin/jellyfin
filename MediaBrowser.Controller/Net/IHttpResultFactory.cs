@@ -80,9 +80,13 @@ namespace MediaBrowser.Controller.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticResult(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified,
-                               TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn,
-                               IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticResult(IRequest requestContext, 
+            Guid cacheKey, 
+            DateTime? lastDateModified,
+            TimeSpan? cacheDuration, 
+            string contentType, Func<Task<Stream>> factoryFn,
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false);
 
         /// <summary>
         /// Gets the static file result.
@@ -101,11 +105,18 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <param name="path">The path.</param>
         /// <param name="contentType">Type of the content.</param>
+        /// <param name="cacheCuration">The cache curation.</param>
         /// <param name="fileShare">The file share.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequest requestContext, string path, string contentType, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticFileResult(IRequest requestContext, 
+            string path, 
+            string contentType,
+            TimeSpan? cacheCuration = null,
+            FileShare fileShare = FileShare.Read, 
+            IDictionary<string, string> responseHeaders = null, 
+            bool isHeadRequest = false);
         
         /// <summary>
         /// Gets the optimized serialized result using cache.
