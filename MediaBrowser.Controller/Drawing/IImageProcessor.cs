@@ -73,6 +73,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="toStream">To stream.</param>
         /// <returns>Task.</returns>
         Task ProcessImage(ImageProcessingOptions options, Stream toStream);
+        
+        /// <summary>
+        /// Processes the image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Task.</returns>
+        Task<string> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the enhanced image.

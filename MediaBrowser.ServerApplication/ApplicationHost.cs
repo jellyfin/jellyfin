@@ -33,6 +33,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
@@ -69,6 +70,7 @@ using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Security;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
+using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.EntryPoints;
@@ -628,6 +630,8 @@ namespace MediaBrowser.ServerApplication
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger,
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
+
+            RegisterSingleInstance<ISyncManager>(new SyncManager());
 
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);

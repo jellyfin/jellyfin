@@ -33,25 +33,20 @@
 
         self.showNotificationsFlyout = function () {
 
-            var context = this;
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" class="notificationsFlyout" data-position-fixed="true" data-theme="a">';
 
-            var html = '<div data-role="popup" class="notificationsFlyout" style="min-width:250px;margin-top:30px;margin-right:20px;" data-theme="a">';
+            html += '<h1 style="margin: .25em 0;">';
+            html += '<span style="vertical-align:middle;">' + Globalize.translate('HeaderNotifications') + '</span>';
+            html += '<a data-role="button" data-inline="true" data-icon="arrow-r" href="notificationlist.html" data-iconpos="notext" style="vertical-align:middle;margin-left:.5em;">' + Globalize.translate('ButtonViewNotifications') + '</a>';
+            html += '</h1>';
 
-            html += '<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">' + Globalize.translate('ButtonClose') + '</a>';
+            html += '<div>';
 
-            html += '<div class="ui-bar-a" style="text-align:center;">';
-            html += '<h3 style="margin: .5em 0;">Notifications</h3>';
+            html += '<div class="notificationsFlyoutlist">Loading...';
+
             html += '</div>';
 
-            html += '<div style="padding: 0;">';
-
-            html += '<p class="notificationsFlyoutlist">Loading...';
-
-            html += '</p>';
-
-            html += '<div class="btnNotificationListContainer"><a data-role="button" href="notificationlist.html" data-icon="action" data-mini="true">' + Globalize.translate('ButtonViewNotifications') + '</a></div>';
             html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true">' + Globalize.translate('ButtonMarkTheseRead') + '</button></div>';
-
 
             html += '</div>';
 
@@ -59,9 +54,9 @@
 
             $(document.body).append(html);
 
-            $('.notificationsFlyout').popup({ positionTo: context }).trigger('create').popup("open").on("popupafterclose", function () {
+            $('.notificationsFlyout').panel({}).panel('option', 'classes.modalOpen', 'notificationsPanelModelOpen ui-panel-dismiss-open').trigger('create').panel("open").on("panelclose", function () {
 
-                $(this).off("popupafterclose").remove();
+                $(this).off("panelclose").remove();
 
             }).on('click', '.btnMarkRead', function () {
 
@@ -73,7 +68,7 @@
 
                 self.markNotificationsRead(ids, function () {
 
-                    $('.notificationsFlyout').popup("close");
+                    $('.notificationsFlyout').panel("close");
 
                 });
 
@@ -175,7 +170,7 @@
 
         html += '<p style="margin: .4em 0 .25em;" class="notificationName">' + notification.Name + '</p>';
 
-        html += '<p style="margin: .25em 0;">' + humane_date(notification.Date) + '</p>';
+        html += '<p class="notificationTime" style="margin: .25em 0;">' + humane_date(notification.Date) + '</p>';
 
         if (notification.Description) {
             html += '<p style="margin: .25em 0;">' + notification.Description + '</p>';

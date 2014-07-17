@@ -1185,11 +1185,6 @@
                     $("#pause", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
-                // Pause stop timer
-                self.pauseStop = setTimeout(function () {
-                    self.stop();
-                }, 5 * 60 * 1000); // 5 minutes
-
             }).on("playing.mediaplayerevent", function (e) {
 
                 $('#video-playButton', videoControls).hide();
@@ -1198,9 +1193,6 @@
                 setTimeout(function () {
                     $("#play", videoElement).hide().removeClass("fadeOut");
                 }, 300);
-
-                // Remove pause setop timer
-                self.clearPauseStop();
 
             }).on("timeupdate.mediaplayerevent", function () {
 
@@ -1248,7 +1240,7 @@
 
                 unbindEventsForPlayback();
 
-            }).on('ended.playnext', self.playNextAfterEnded);
+            }).one('ended.playnext', self.playNextAfterEnded);
 
             bindEventsForPlayback();
 

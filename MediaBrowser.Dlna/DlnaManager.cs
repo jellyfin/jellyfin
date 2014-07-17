@@ -37,7 +37,7 @@ namespace MediaBrowser.Dlna
             _logger = logger;
             _jsonSerializer = jsonSerializer;
 
-            DumpProfiles();
+            //DumpProfiles();
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()

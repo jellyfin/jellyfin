@@ -149,7 +149,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, null, FileShare.Read, responseHeaders, isHeadRequest);
                 }
             }
 
@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 try
                 {
-                    return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                    return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, null, FileShare.Read, responseHeaders, isHeadRequest);
                 }
                 finally
                 {
@@ -285,7 +285,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 state.Dispose();
             }
 
-            var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem);
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
+            var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem, job);
 
             result.Options["Content-Type"] = contentType;
 

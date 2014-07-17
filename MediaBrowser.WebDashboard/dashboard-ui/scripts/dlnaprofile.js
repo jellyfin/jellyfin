@@ -47,6 +47,8 @@
 
         var idInfo = profile.Identification || {};
 
+        renderIdentificationHeaders(page, idInfo.Headers || []);
+
         $('#txtInfoFriendlyName', page).val(profile.FriendlyName || '');
         $('#txtInfoModelName', page).val(profile.ModelName || '');
         $('#txtInfoModelNumber', page).val(profile.ModelNumber || '');
@@ -95,6 +97,76 @@
         $('#selectUser', page).html(usersHtml).val(profile.UserId || '').selectmenu("refresh");
 
         renderSubProfiles(page, profile);
+    }
+
+    function renderIdentificationHeaders(page, headers) {
+
+        var index = 0;
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + headers.map(function (h) {
+
+            var li = '<li>';
+
+            li += '<a href="#">';
+
+            li += '<div style="font-weight:normal;">' + h.Name + ': ' + (h.Value || '') + '</div>';
+            li += '<div style="font-weight:normal;">' + (h.Match || '') + '</div>';
+
+            li += '</a>';
+
+            li += '<a class="btnDeleteIdentificationHeader" href="#" data-index="' + index + '"></a>';
+
+            li += '</li>';
+
+            index++;
+
+            return li;
+
+        }).join('') + '</ul>';
+
+        var elem = $('.httpHeaderIdentificationList', page).html(html).trigger('create');
+
+        $('.btnDeleteIdentificationHeader', elem).on('click', function () {
+
+            var itemIndex = parseInt(this.getAttribute('data-index'));
+
+            currentProfile.Identification.Headers.splice(itemIndex, 1);
+
+            renderIdentificationHeaders(page, currentProfile.Identification.Headers);
+        });
+    }
+
+    function editIdentificationHeader(page, header) {
+
+        isSubProfileNew = header == null;
+        header = header || {};
+        currentSubProfile = header;
+
+        var popup = $('#identificationHeaderPopup', page);
+
+        $('#txtIdentificationHeaderName', popup).val(header.Name || '');
+        $('#txtIdentificationHeaderValue', popup).val(header.Value || '');
+        $('#selectMatchType', popup).val(header.Match || 'Equals').selectmenu('refresh');
+
+        popup.popup('open');
+    }
+
+    function saveIdentificationHeader(page) {
+
+        currentSubProfile.Name = $('#txtIdentificationHeaderName', page).val();
+        currentSubProfile.Value = $('#txtIdentificationHeaderValue', page).val();
+        currentSubProfile.Match = $('#selectMatchType', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.Identification.Headers.push(currentSubProfile);
+        }
+
+        renderIdentificationHeaders(page, currentProfile.Identification.Headers);
+
+        currentSubProfile = null;
+
+        $('#identificationHeaderPopup', page).popup('close');
     }
 
     function renderSubProfiles(page, profile) {
@@ -816,6 +888,11 @@
 
         });
 
+        $('.btnAddIdentificationHttpHeader', page).on('click', function () {
+
+            editIdentificationHeader(page);
+        });
+
     }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
@@ -889,6 +966,16 @@
             var page = $(form).parents('.page');
 
             saveResponseProfile(page);
+
+            return false;
+        },
+
+        onIdentificationHeaderFormSubmit: function() {
+            
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveIdentificationHeader(page);
 
             return false;
         }

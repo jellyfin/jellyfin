@@ -143,6 +143,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "image/png";
             }
+            if (ext.Equals(".webp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "image/webp";
+            }
             if (ext.Equals(".ico", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/vnd.microsoft.icon";

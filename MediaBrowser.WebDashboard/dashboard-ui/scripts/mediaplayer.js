@@ -53,18 +53,7 @@
             return playerTime;
         };
 
-        self.clearPauseStop = function () {
-
-            if (self.pauseStop) {
-                console.log('clearing pause stop timer');
-                window.clearTimeout(self.pauseStop);
-                self.pauseStop = null;
-            }
-        };
-
         self.playNextAfterEnded = function () {
-
-            $(this).off('ended.playnext');
 
             self.nextTrack();
         };
@@ -177,7 +166,7 @@
 
                     self.updateCanClientSeek(this);
 
-                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
+                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
                     self.startProgressInterval();
                     sendProgressUpdate();
@@ -595,6 +584,7 @@
             var newItem = self.playlist[newIndex];
 
             if (newItem) {
+
                 Dashboard.getCurrentUser().done(function (user) {
 
                     self.playInternal(newItem, 0, user);
@@ -899,6 +889,7 @@
                         $(this).remove();
                     }
 
+                    elem.src = null;
                     elem.src = "";
                     self.currentMediaElement = null;
                     self.currentItem = null;
@@ -1077,8 +1068,6 @@
 
             $('body').removeClass('bodyWithPopupOpen');
 
-            self.clearPauseStop();
-
             var playerElement = this;
 
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
@@ -1256,7 +1245,7 @@
 
                 self.setCurrentTime(self.getCurrentTicks(this));
 
-            }).on("ended.playbackstopped", self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded)[0];
+            }).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded)[0];
         };
 
         function canPlayAudioStreamDirect(audioStream) {

@@ -257,6 +257,11 @@
                             </li>
                         </ul>
 
+                        <h2>
+                            <span style="vertical-align:middle;">${HeaderHttpHeaders}</span>
+                            <button class="btnAddIdentificationHttpHeader" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
+                        </h2>
+                        <div class="httpHeaderIdentificationList"></div>
                     </div>
 
                     <div class="tabContent tabDirectPlayProfiles">
@@ -567,6 +572,46 @@
             </div>
 
         </div>
+        <div data-role="popup" id="identificationHeaderPopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>${HeaderIdentificationHeader}</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="identificationHeaderForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtIdentificationHeaderName">${LabelName}</label>
+                        <input type="text" id="txtIdentificationHeaderName" data-mini="true" required="required" />
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtIdentificationHeaderValue">${LabelValue}</label>
+                        <input type="text" id="txtIdentificationHeaderValue" data-mini="true" required="required" />
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectMatchType">${LabelMatchType}</label>
+                        <select id="selectMatchType" data-mini="true">
+                            <option value="Equals">${OptionEquals}</option>
+                            <option value="Regex">${OptionRegex}</option>
+                            <option value="Substring">${OptionSubstring}</option>
+                        </select>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            ${ButtonCancel}
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
@@ -574,7 +619,8 @@
             $('.containerProfileForm').off('submit', DlnaProfilePage.onContainerProfileFormSubmit).on('submit', DlnaProfilePage.onContainerProfileFormSubmit);
             $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
             $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
-        </script>
+            $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
+       </script>
     </div>
 </body>
 </html>
