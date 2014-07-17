@@ -32,10 +32,12 @@
     <DirectPlayProfile container="mp3,flac,m4a,wma" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles />
   <ResponseProfiles />
+  <SoftSubtitleProfiles />
+  <ExternalSubtitleProfiles />
 </Profile>

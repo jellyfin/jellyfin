@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Name>Generic Device</Name>
+  <Name>Windows 8/RT</Name>
+  <Identification>
+    <Manufacturer>Microsoft SDK Customer</Manufacturer>
+    <Headers />
+  </Identification>
   <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>
   <ManufacturerUrl>http://mediabrowser.tv/</ManufacturerUrl>
@@ -24,15 +28,38 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp3,wma" type="Audio" />
-    <DirectPlayProfile container="avi,mp4" type="Video" />
+    <DirectPlayProfile container="mp4,mov" audioCodec="aac,ac3,eac3,mp3,pcm" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="aac,ac3,eac3,mp3,mp2,pcm" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" videoCodec="wmv2,wmv3,vc1" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="mp3,ac3,eac3,mp2,pcm" videoCodec="mpeg4,msmpeg4,mjpeg" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="aac" type="Audio" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac,ac3,eac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Static" />
   </TranscodingProfiles>
   <ContainerProfiles />
-  <CodecProfiles />
+  <CodecProfiles>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="aac,eac3">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="8" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="ac3">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
   <ResponseProfiles />
   <SoftSubtitleProfiles />
   <ExternalSubtitleProfiles />

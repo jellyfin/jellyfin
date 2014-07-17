@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Name>Generic Device</Name>
+  <Name>Windows Phone</Name>
   <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>
   <ManufacturerUrl>http://mediabrowser.tv/</ManufacturerUrl>
@@ -24,15 +24,56 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp3,wma" type="Audio" />
-    <DirectPlayProfile container="avi,mp4" type="Video" />
+    <DirectPlayProfile container="mp4,mov" audioCodec="aac,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4,avi" audioCodec="aac,mp3" videoCodec="mpeg4,msmpeg4" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" videoCodec="wmv2,wmv3,vc1" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
+    <DirectPlayProfile container="mp4,aac" audioCodec="aac" type="Audio" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif,bmp" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Static" />
   </TranscodingProfiles>
   <ContainerProfiles />
-  <CodecProfiles />
+  <CodecProfiles>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="800" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="480" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="1000000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="24" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="800" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="480" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="1000000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="24" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="128000" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Audio">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="128000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+  </CodecProfiles>
   <ResponseProfiles />
   <SoftSubtitleProfiles />
   <ExternalSubtitleProfiles />

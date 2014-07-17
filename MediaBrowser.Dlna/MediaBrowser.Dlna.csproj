@@ -82,6 +82,7 @@
     <Compile Include="Common\ServiceAction.cs" />
     <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
     <Compile Include="PlayTo\uParserObject.cs" />
+    <Compile Include="Profiles\AndroidProfile.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
@@ -173,6 +174,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Android.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Windows 8 RT.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Windows Phone.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -171,7 +171,7 @@ namespace MediaBrowser.Model.Dlna
             TranscodingProfile transcodingProfile = null;
             foreach (TranscodingProfile i in options.Profile.TranscodingProfiles)
             {
-                if (i.Type == playlistItem.MediaType)
+                if (i.Type == playlistItem.MediaType && i.Context == options.Context)
                 {
                     transcodingProfile = i;
                     break;
@@ -262,7 +262,7 @@ namespace MediaBrowser.Model.Dlna
             TranscodingProfile transcodingProfile = null;
             foreach (TranscodingProfile i in options.Profile.TranscodingProfiles)
             {
-                if (i.Type == playlistItem.MediaType)
+                if (i.Type == playlistItem.MediaType && i.Context == options.Context)
                 {
                     transcodingProfile = i;
                     break;

@@ -29,5 +29,11 @@ namespace MediaBrowser.Model.Dlna
         /// The application's configured quality setting
         /// </summary>
         public int? MaxBitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the context.
+        /// </summary>
+        /// <value>The context.</value>
+        public EncodingContext Context { get; set; }
     }
 }

@@ -40,9 +40,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
-    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" context="Streaming" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
@@ -99,4 +99,6 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
+  <SoftSubtitleProfiles />
+  <ExternalSubtitleProfiles />
 </Profile>
