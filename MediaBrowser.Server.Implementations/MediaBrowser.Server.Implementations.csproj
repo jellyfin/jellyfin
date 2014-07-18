@@ -96,6 +96,9 @@
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
+    <Reference Include="websocket-sharp">
+      <HintPath>..\ThirdParty\WebsocketSharp\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -134,6 +137,8 @@
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
+    <Compile Include="HttpServer\NetListener\HttpListenerServer.cs" />
+    <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />

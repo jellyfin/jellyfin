@@ -851,7 +851,7 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefixes, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
+                ServerManager.Start(HttpServerUrlPrefixes);
             }
             catch (Exception ex)
             {
@@ -880,8 +880,6 @@ namespace MediaBrowser.ServerApplication
         protected override void OnConfigurationUpdated(object sender, EventArgs e)
         {
             base.OnConfigurationUpdated(sender, e);
-
-            HttpServer.EnableHttpRequestLogging = ServerConfigurationManager.Configuration.EnableHttpLevelLogging;
 
             if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
             {

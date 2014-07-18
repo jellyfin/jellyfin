@@ -26,8 +26,7 @@ namespace MediaBrowser.Common.Net
         /// Starts this instance.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
-        /// <param name="enableHttpLogging">if set to <c>true</c> [enable HTTP logging].</param>
-        void Start(IEnumerable<string> urlPrefixes, bool enableHttpLogging);
+        void Start(IEnumerable<string> urlPrefixes);
 
         /// <summary>
         /// Starts the web socket server.

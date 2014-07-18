@@ -23,12 +23,6 @@ namespace MediaBrowser.Model.Configuration
         public WeatherUnits WeatherUnit { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP level logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP level logging]; otherwise, <c>false</c>.</value>
-        public bool EnableHttpLevelLogging { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
         /// </summary>
         /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
@@ -223,7 +217,6 @@ namespace MediaBrowser.Model.Configuration
             ImageSavingConvention = ImageSavingConvention.Compatible;
             HttpServerPortNumber = 8096;
             LegacyWebSocketPortNumber = 8945;
-            EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
