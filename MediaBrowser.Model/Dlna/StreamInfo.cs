@@ -58,6 +58,8 @@ namespace MediaBrowser.Model.Dlna
 
         public MediaSourceInfo MediaSource { get; set; }
 
+        public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+
         public string MediaSourceId
         {
             get
@@ -108,7 +110,7 @@ namespace MediaBrowser.Model.Dlna
                 item.VideoCodec ?? string.Empty,
                 item.AudioCodec ?? string.Empty,
                 item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty,
-                item.SubtitleStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
+                item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
                 item.VideoBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoBitrate.Value) : string.Empty,
                 item.AudioBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioBitrate.Value) : string.Empty,
                 item.MaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxAudioChannels.Value) : string.Empty,
@@ -426,5 +428,25 @@ namespace MediaBrowser.Model.Dlna
                 return MaxHeight;
             }
         }
+    }
+
+    public enum SubtitleDeliveryMethod
+    {
+        /// <summary>
+        /// The encode
+        /// </summary>
+        Encode = 0,
+        /// <summary>
+        /// Internal format is supported natively
+        /// </summary>
+        Direct = 1,
+        /// <summary>
+        /// The embed
+        /// </summary>
+        Embed = 2,
+        /// <summary>
+        /// The external
+        /// </summary>
+        External = 3
     }
 }

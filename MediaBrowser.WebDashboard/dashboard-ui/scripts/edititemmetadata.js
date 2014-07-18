@@ -1179,7 +1179,7 @@
             Recursive: true,
             ImageRefreshMode: imageRefreshMode == 'none' ? 'None' : 'FullRefresh',
             MetadataRefreshMode: metadataRefreshMode == 'none' ? 'None' : (metadataRefreshMode == 'local' ? 'ValidationOnly' : 'FullRefresh'),
-            ReplaceAllImages: imageRefreshMode == imageRefreshMode == 'all',
+            ReplaceAllImages: imageRefreshMode == 'all',
             ReplaceAllMetadata: metadataRefreshMode == 'all'
         });
 

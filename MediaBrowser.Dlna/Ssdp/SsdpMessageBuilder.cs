@@ -32,14 +32,19 @@ namespace MediaBrowser.Dlna.Ssdp
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            values["ST"] = deviceSearchType;
-            values["MAN"] = "\"ssdp:discover\"";
-            values["MX"] = mx;
+            values["ST"] = "ssdp:all";
+            values["MAN"] = "ssdp:discover";
+            values["MX"] = "10";
 
             return BuildMessage(header, values);
         }
 
         public string BuildRendererDiscoveryMessage()
+        {
+            return BuildDiscoveryMessage("urn:schemas-upnp-org:device:MediaRenderer:1", "3");
+        }
+
+        public string BuildMediaServerDiscoveryMessage()
         {
             return BuildDiscoveryMessage("urn:schemas-upnp-org:device:MediaRenderer:1", "3");
         }

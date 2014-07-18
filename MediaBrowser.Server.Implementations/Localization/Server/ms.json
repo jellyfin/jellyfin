@@ -630,8 +630,8 @@
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Subtitles",
     "ButtonAudioTracks": "Audio tracks",
-    "ButtonPreviousTrack": "Previous Track",
-    "ButtonNextTrack": "Next Track",
+    "ButtonPreviousTrack": "Previous track",
+    "ButtonNextTrack": "Next track",
     "ButtonStop": "Stop",
     "ButtonPause": "Pause",
     "LabelGroupMoviesIntoCollections": "Group movies into collections",
@@ -867,5 +867,12 @@
     "HeaderNewApiKey": "New Api Key",
     "LabelAppName": "App name",
     "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
-    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser."
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Media Browser.",
+    "HeaderHttpHeaders": "Http Headers",
+    "HeaderIdentificationHeader": "Identification Header",
+    "LabelValue": "Value:",
+    "LabelMatchType": "Match type:",
+    "OptionEquals": "Equals",
+    "OptionRegex": "Regex",
+    "OptionSubstring": "Substring"
 }

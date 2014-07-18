@@ -122,7 +122,7 @@
         }
 
         if (currentUser.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="' + Globalize.translate('ButtonEdit') + '" onclick="Dashboard.navigate(\'edititemmetadata.html?id=' + item.Id + '\');return false;" style="' + buttonMargin + '">' + Globalize.translate('ButtonEdit') + '</button>';
+            html += '<a data-role="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="' + Globalize.translate('ButtonEdit') + '" href="edititemmetadata.html?id=' + item.Id + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonEdit') + '</button>';
             buttonCount++;
         }
 
@@ -351,7 +351,7 @@
             html += '<div>';
             html += '<ul data-role="listview">';
 
-            var href = LibraryBrowser.getHref(item);
+            var href = posterItem.href || LibraryBrowser.getHref(item);
             var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
             html += '<li data-role="list-divider">' + header + '</li>';
 

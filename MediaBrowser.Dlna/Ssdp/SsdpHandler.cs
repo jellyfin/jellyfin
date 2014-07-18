@@ -84,20 +84,15 @@ namespace MediaBrowser.Dlna.Ssdp
             ReloadAliveNotifier();
         }
 
-        public void SendRendererSearchMessage(IPEndPoint localIp)
-        {
-            SendSearchMessage("urn:schemas-upnp-org:device:MediaRenderer:1", "3", localIp);
-        }
-
-        public void SendSearchMessage(string deviceSearchType, string mx, IPEndPoint localIp)
+        public void SendSearchMessage(IPEndPoint localIp)
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            values["ST"] = deviceSearchType;
+            values["ST"] = "ssdp:all";
             values["MAN"] = "\"ssdp:discover\"";
-            values["MX"] = mx;
+            values["MX"] = "10";
 
             SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
         }
@@ -271,7 +266,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                     var headerText = string.Join(",", headerTexts.ToArray());
 
-                    _logger.Debug("{0} message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
+                    _logger.Debug("{0} message received from {1} on {3}. Headers: {2}", args.Method, args.EndPoint, headerText, _socket.LocalEndPoint);
                 }
 
                 OnMessageReceived(args);

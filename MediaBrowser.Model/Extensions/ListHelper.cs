@@ -24,5 +24,22 @@ namespace MediaBrowser.Model.Extensions
 
             return list.Contains(value, StringComparer.OrdinalIgnoreCase);
         }
+
+        public static bool ContainsAnyIgnoreCase(string[] list, string[] values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException("values");
+            }
+
+            foreach (string val in values)
+            {
+                if (ContainsIgnoreCase(list, val))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

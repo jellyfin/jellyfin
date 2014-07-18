@@ -357,6 +357,7 @@
     <EmbeddedResource Include="Localization\Server\pl.json" />
     <EmbeddedResource Include="Localization\JavaScript\es_ES.json" />
     <EmbeddedResource Include="Localization\Server\es_ES.json" />
+    <EmbeddedResource Include="Localization\Server\ko.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
