@@ -867,5 +867,12 @@
     "HeaderNewApiKey": "Nueva llave de API",
     "LabelAppName": "Nombre del App",
     "LabelAppNameExample": "Ejemplo: Sickbeard, NzbDrone",
-    "HeaderNewApiKeyHelp": "Otorgar a la aplicaci\u00f3n persmiso para comunicarse con Media Browser."
+    "HeaderNewApiKeyHelp": "Otorgar a la aplicaci\u00f3n persmiso para comunicarse con Media Browser.",
+    "HeaderHttpHeaders": "Http Headers",
+    "HeaderIdentificationHeader": "Identification Header",
+    "LabelValue": "Value:",
+    "LabelMatchType": "Match type:",
+    "OptionEquals": "Equals",
+    "OptionRegex": "Regex",
+    "OptionSubstring": "Substring"
 }

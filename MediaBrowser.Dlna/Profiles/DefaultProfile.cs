@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.MediaInfo;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
@@ -27,6 +26,8 @@ namespace MediaBrowser.Dlna.Profiles
 
             MaxAlbumArtHeight = 512;
             MaxAlbumArtWidth = 512;
+
+            MaxBitrate = 8000000;
 
             TranscodingProfiles = new[]
             {

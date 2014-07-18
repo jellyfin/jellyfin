@@ -867,5 +867,12 @@
     "HeaderNewApiKey": "Ny API-nyckel",
     "LabelAppName": "Appens namn",
     "LabelAppNameExample": "Exempel: Sickbeard, NzbDrone",
-    "HeaderNewApiKeyHelp": "Till\u00e5t en app att kommunicera med Media Browser"
+    "HeaderNewApiKeyHelp": "Till\u00e5t en app att kommunicera med Media Browser",
+    "HeaderHttpHeaders": "Http Headers",
+    "HeaderIdentificationHeader": "Identification Header",
+    "LabelValue": "Value:",
+    "LabelMatchType": "Match type:",
+    "OptionEquals": "Equals",
+    "OptionRegex": "Regex",
+    "OptionSubstring": "Substring"
 }

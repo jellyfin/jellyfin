@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Dlna.Channels;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
@@ -35,6 +36,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly IImageProcessor _imageProcessor;
         
         private SsdpHandler _ssdpHandler;
+        private DeviceDiscovery _deviceDiscovery;
 
         private readonly List<Guid> _registeredServerIds = new List<Guid>();
         private bool _dlnaServerStarted;
@@ -60,6 +62,8 @@ namespace MediaBrowser.Dlna.Main
             ReloadComponents();
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+
+            DlnaChannelFactory.Instance.Start(_deviceDiscovery);
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -104,15 +108,28 @@ namespace MediaBrowser.Dlna.Main
                 _ssdpHandler = new SsdpHandler(_logger, _config, GenerateServerSignature());
 
                 _ssdpHandler.Start();
+
+                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _httpClient, _ssdpHandler);
+
+                _deviceDiscovery.Start();
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting Dlna server", ex);
+                _logger.ErrorException("Error starting ssdp handlers", ex);
             }
         }
 
         private void DisposeSsdpHandler()
         {
+            try
+            {
+                _deviceDiscovery.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error disposing device discovery", ex);
+            }
+
             try
             {
                 _ssdpHandler.Dispose();
@@ -192,16 +209,15 @@ namespace MediaBrowser.Dlna.Main
                 try
                 {
                     _manager = new PlayToManager(_logger,
-                        _config,
                         _sessionManager,
-                        _httpClient,
                         _itemRepo,
                         _libraryManager,
                         _userManager,
                         _dlnaManager,
                         _appHost,
                         _imageProcessor,
-                        _ssdpHandler);
+                        _ssdpHandler,
+                        _deviceDiscovery);
 
                     _manager.Start();
                 }

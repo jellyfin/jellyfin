@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;

@@ -72,7 +72,8 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
-    <Compile Include="PlayTo\Extensions.cs" />
+    <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
+    <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
     <Compile Include="PlayTo\PlaybackStoppedEventArgs.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">
@@ -99,6 +100,7 @@
     <Compile Include="Service\ServiceXmlBuilder.cs" />
     <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
+    <Compile Include="Ssdp\DeviceDiscovery.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="Common\StateVariable.cs" />

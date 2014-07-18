@@ -3,6 +3,7 @@ using MediaBrowser.Dlna.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using MediaBrowser.Dlna.Ssdp;
 
 namespace MediaBrowser.Dlna.PlayTo
 {

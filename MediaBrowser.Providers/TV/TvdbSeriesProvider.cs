@@ -223,7 +223,7 @@ namespace MediaBrowser.Providers.TV
             var download = false;
             var automaticUpdatesEnabled = _config.Configuration.EnableTvDbUpdates;
 
-            const int cacheDays = 3;
+            const int cacheDays = 2;
 
             var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
             // No need to check age if automatic updates are enabled

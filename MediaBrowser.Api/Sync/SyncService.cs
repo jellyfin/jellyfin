@@ -45,6 +45,16 @@ namespace MediaBrowser.Api.Sync
     {
     }
 
+    [Route("/Sync/Jobs", "POST", Summary = "Gets sync jobs.")]
+    public class CreateSyncJob : SyncJobRequest
+    {
+    }
+
+    [Route("/Sync/Schedules", "POST", Summary = "Gets sync schedules.")]
+    public class CreateSyncSchedule : SyncScheduleRequest
+    {
+    }
+
     [Authenticated]
     public class SyncService : BaseApiService
     {
@@ -99,6 +109,20 @@ namespace MediaBrowser.Api.Sync
         public void Delete(CancelSyncSchedule request)
         {
             var task = _syncManager.CancelSchedule(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(CreateSyncJob request)
+        {
+            var task = _syncManager.CreateJob(request);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(CreateSyncSchedule request)
+        {
+            var task = _syncManager.CreateSchedule(request);
 
             Task.WaitAll(task);
         }
