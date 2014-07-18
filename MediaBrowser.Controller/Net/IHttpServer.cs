@@ -39,12 +39,6 @@ namespace MediaBrowser.Controller.Net
         void Stop();
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP request logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP request logging]; otherwise, <c>false</c>.</value>
-        bool EnableHttpRequestLogging { get; set; }
-
-        /// <summary>
         /// Occurs when [web socket connected].
         /// </summary>
         event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;

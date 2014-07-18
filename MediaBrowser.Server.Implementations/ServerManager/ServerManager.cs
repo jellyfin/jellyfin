@@ -123,9 +123,9 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start(IEnumerable<string> urlPrefixes, bool enableHttpLogging)
+        public void Start(IEnumerable<string> urlPrefixes)
         {
-            ReloadHttpServer(urlPrefixes, enableHttpLogging);
+            ReloadHttpServer(urlPrefixes);
         }
 
         public void StartWebSocketServer()
@@ -152,14 +152,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        private void ReloadHttpServer(IEnumerable<string> urlPrefixes, bool enableHttpLogging)
+        private void ReloadHttpServer(IEnumerable<string> urlPrefixes)
         {
             _logger.Info("Loading Http Server");
 
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.EnableHttpRequestLogging = enableHttpLogging;
                 HttpServer.StartServer(urlPrefixes);
             }
             catch (SocketException ex)
