@@ -94,8 +94,9 @@ namespace MediaBrowser.Server.Implementations.Notifications
             {
                 var config = GetConfiguration();
 
-                return _userManager.Users.Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
-                   .Select(i => i.Id.ToString("N"));
+                return _userManager.Users
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
+                    .Select(i => i.Id.ToString("N"));
             }
 
             return request.UserIds;

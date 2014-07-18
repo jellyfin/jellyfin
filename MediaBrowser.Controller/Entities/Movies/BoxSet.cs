@@ -14,13 +14,12 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
+    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
     {
         public BoxSet()
         {
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
-            Tags = new List<string>();
 
             DisplayOrder = ItemSortBy.PremiereDate;
             Keywords = new List<string>();
@@ -38,7 +37,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
         public List<string> Keywords { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }

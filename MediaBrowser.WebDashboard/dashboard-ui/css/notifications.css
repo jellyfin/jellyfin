@@ -3,7 +3,7 @@
 }
 
 .notificationsPanelModelOpen {
-    right: 250px!important;
+    right: 250px !important;
 }
 
 .btnNotifications {
@@ -79,9 +79,6 @@
     .flyoutNotification:last-child {
         border-bottom: 1px solid #eee;
     }
-
-.notificationName {
-}
 
 .notificationTime {
     color: green;

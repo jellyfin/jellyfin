@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags, IHasLookupInfo<AlbumInfo>
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
@@ -19,7 +19,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             Artists = new List<string>();
             SoundtrackIds = new List<Guid>();
-            Tags = new List<string>();
         }
 
         [IgnoreDataMember]
@@ -64,12 +63,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 AlbumArtist = value.FirstOrDefault();
             }
         }
-
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
 
         /// <summary>
         /// Gets the tracks.

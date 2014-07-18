@@ -51,6 +51,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Channels\DlnaChannelFactory.cs" />
     <Compile Include="ConfigurationExtension.cs" />
     <Compile Include="ConnectionManager\ConnectionManager.cs" />
     <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />

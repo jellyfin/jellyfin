@@ -535,9 +535,6 @@ namespace MediaBrowser.Api.Images
                 throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
-            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var originalFileImageDateModified = imageInfo.DateModified;
-
             var supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.ImageEnhancers.Where(i =>
             {
                 try

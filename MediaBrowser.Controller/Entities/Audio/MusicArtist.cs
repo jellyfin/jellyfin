@@ -13,16 +13,9 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicArtist
     /// </summary>
-    public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasTags, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
+    public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
     {
         public bool IsAccessedByName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
         public List<string> ProductionLocations { get; set; }
         
         public override bool IsFolder
@@ -60,7 +53,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public MusicArtist()
         {
-            Tags = new List<string>();
             ProductionLocations = new List<string>();
         }
 
