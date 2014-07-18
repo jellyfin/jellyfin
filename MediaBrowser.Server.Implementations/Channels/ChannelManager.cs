@@ -542,7 +542,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 throw new ArgumentException("User not found.");
             }
 
-            var channels = _channels;
+            var channels = GetAllChannels();
 
             if (query.ChannelIds.Length > 0)
             {
@@ -696,7 +696,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var channels = _channels;
+            var channels = GetAllChannels();
 
             if (query.ChannelIds.Length > 0)
             {
