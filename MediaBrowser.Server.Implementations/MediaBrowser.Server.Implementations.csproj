@@ -45,9 +45,6 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Alchemy">
-      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Nat, Version=1.2.20.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Nat.1.2.20.0\lib\net40\Mono.Nat.dll</HintPath>
@@ -154,9 +151,15 @@
     <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
+    <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
+    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
@@ -270,8 +273,6 @@
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="WebSocket\AlchemyServer.cs" />
-    <Compile Include="WebSocket\AlchemyWebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">

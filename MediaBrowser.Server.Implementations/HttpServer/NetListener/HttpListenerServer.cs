@@ -1,4 +1,5 @@
-﻿using Amib.Threading;
+﻿using System.Text;
+using Amib.Threading;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
@@ -132,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
             _threadPoolManager.QueueWorkItem(() => InitTask(context));
         }
 
-        public virtual void InitTask(HttpListenerContext context)
+        private void InitTask(HttpListenerContext context)
         {
             try
             {
@@ -150,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
             }
         }
 
-        protected Task ProcessRequestAsync(HttpListenerContext context)
+        private Task ProcessRequestAsync(HttpListenerContext context)
         {
             var request = context.Request;
 
@@ -235,7 +236,25 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
                 _localEndPoints.GetOrAdd(address, address);
             }
 
-            LoggerUtils.LogRequest(_logger, request);
+            LogRequest(_logger, request);
+        }
+
+        /// <summary>
+        /// Logs the request.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="request">The request.</param>
+        private static void LogRequest(ILogger logger, HttpListenerRequest request)
+        {
+            var log = new StringBuilder();
+
+            //var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
+
+            //log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
+
+            var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
+
+            logger.LogMultiline(type + " " + request.Url, LogSeverity.Debug, log);
         }
 
         public void Stop()

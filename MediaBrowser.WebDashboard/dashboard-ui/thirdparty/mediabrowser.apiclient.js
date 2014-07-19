@@ -197,6 +197,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             webSocket = new WebSocket(url);
 
             webSocket.onmessage = function (msg) {
+
                 msg = JSON.parse(msg.data);
                 $(self).trigger("websocketmessage", [msg]);
             };
