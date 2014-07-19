@@ -226,14 +226,9 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
+
             var task = _appHost.Init(initProgress);
-            Task.WaitAll(task);
-
-            task = _appHost.RunStartupTasks();
-            Task.WaitAll(task);
-
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
 
             if (runService)
             {
@@ -241,6 +236,11 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                Task.WaitAll(task);
+
+                SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+   
                 HideSplashScreen();
 
                 ShowTrayIcon();
