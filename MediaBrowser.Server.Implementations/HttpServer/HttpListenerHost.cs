@@ -6,6 +6,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.NetListener;
+using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Host;
@@ -18,7 +19,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +42,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly ContainerAdapter _containerAdapter;
 
-        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
 
         /// <summary>
@@ -157,12 +156,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
-            _listener = new HttpListenerServer(_logger, _threadPoolManager)
-            {
-                WebSocketHandler = WebSocketHandler,
-                ErrorHandler = ErrorHandler,
-                RequestHandler = RequestHandler
-            };
+            _listener = NativeWebSocket.IsSupported
+                ? _listener = new HttpListenerServer(_logger, _threadPoolManager)
+                : _listener = new WebSocketSharpListener(_logger, _threadPoolManager);
+
+            _listener.WebSocketHandler = WebSocketHandler;
+            _listener.ErrorHandler = ErrorHandler;
+            _listener.RequestHandler = RequestHandler;
 
             _listener.Start(UrlPrefixes);
         }
@@ -173,24 +173,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 WebSocketConnected(this, args);
             }
-        }
-
-        /// <summary>
-        /// Logs the HTTP request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        private void LogHttpRequest(HttpListenerRequest request)
-        {
-            var endpoint = request.LocalEndPoint;
-
-            if (endpoint != null)
-            {
-                var address = endpoint.ToString();
-
-                _localEndPoints.GetOrAdd(address, address);
-            }
-
-            LoggerUtils.LogRequest(_logger, request);
         }
 
         private void ErrorHandler(Exception ex, IRequest httpReq)
@@ -261,6 +243,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
+        /// <param name="url">The URL.</param>
         /// <returns>Task.</returns>
         protected Task RequestHandler(IHttpRequest httpReq, Uri url)
         {
@@ -310,17 +293,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
-                var statusCode = httpRes.StatusCode;
                 var urlString = url.ToString();
 
                 task.ContinueWith(x =>
                 {
+                    var statusCode = httpRes.StatusCode;
+
                     var duration = DateTime.Now - date;
 
                     LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
 
                 }, TaskContinuationOptions.None);
-
                 return task;
             }
 
@@ -392,11 +375,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             UrlPrefixes = urlPrefixes.ToList();
             Start(UrlPrefixes.First());
-        }
-
-        public bool SupportsWebSockets
-        {
-            get { return NativeWebSocket.IsSupported; }
         }
     }
 }

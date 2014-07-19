@@ -72,7 +72,6 @@ using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
-using MediaBrowser.Server.Implementations.WebSocket;
 using MediaBrowser.ServerApplication.EntryPoints;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.IO;
@@ -517,8 +516,6 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(LocalizationManager);
 
-            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
-
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             UserDataManager = new UserDataManager(LogManager);
@@ -868,8 +865,6 @@ namespace MediaBrowser.ServerApplication
                     throw;
                 }
             }
-
-            ServerManager.StartWebSocketServer();
         }
 
         /// <summary>
@@ -882,11 +877,6 @@ namespace MediaBrowser.ServerApplication
             base.OnConfigurationUpdated(sender, e);
 
             if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
-            {
-                NotifyPendingRestart();
-            }
-
-            else if (!ServerManager.SupportsNativeWebSocket && ServerManager.WebSocketPortNumber != ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber)
             {
                 NotifyPendingRestart();
             }
@@ -1022,7 +1012,7 @@ namespace MediaBrowser.ServerApplication
                 Version = ApplicationVersion.ToString(),
                 IsNetworkDeployed = CanSelfUpdate,
                 WebSocketPortNumber = ServerManager.WebSocketPortNumber,
-                SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
+                SupportsNativeWebSocket = true,
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),

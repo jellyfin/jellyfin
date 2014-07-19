@@ -22,12 +22,6 @@ namespace MediaBrowser.Controller.Net
         void StartServer(IEnumerable<string> urlPrefixes);
 
         /// <summary>
-        /// Gets a value indicating whether [supports web sockets].
-        /// </summary>
-        /// <value><c>true</c> if [supports web sockets]; otherwise, <c>false</c>.</value>
-        bool SupportsWebSockets { get; }
-
-        /// <summary>
         /// Gets the local end points.
         /// </summary>
         /// <value>The local end points.</value>

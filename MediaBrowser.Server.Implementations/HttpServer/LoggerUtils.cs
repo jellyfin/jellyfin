@@ -8,24 +8,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     public static class LoggerUtils
     {
         /// <summary>
-        /// Logs the request.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="request">The request.</param>
-        public static void LogRequest(ILogger logger, HttpListenerRequest request)
-        {
-            var log = new StringBuilder();
-
-            //var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
-
-            //log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
-
-            var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
-
-            logger.LogMultiline(type + " " + request.Url, LogSeverity.Debug, log);
-        }
-
-        /// <summary>
         /// Logs the response.
         /// </summary>
         /// <param name="logger">The logger.</param>

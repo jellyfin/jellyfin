@@ -11,12 +11,6 @@ namespace MediaBrowser.Common.Net
     public interface IServerManager : IDisposable
     {
         /// <summary>
-        /// Gets a value indicating whether [supports web socket].
-        /// </summary>
-        /// <value><c>true</c> if [supports web socket]; otherwise, <c>false</c>.</value>
-        bool SupportsNativeWebSocket { get; }
-
-        /// <summary>
         /// Gets the web socket port number.
         /// </summary>
         /// <value>The web socket port number.</value>
@@ -27,11 +21,6 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
         void Start(IEnumerable<string> urlPrefixes);
-
-        /// <summary>
-        /// Starts the web socket server.
-        /// </summary>
-        void StartWebSocketServer();
 
         /// <summary>
         /// Sends a message to all clients currently connected via a web socket

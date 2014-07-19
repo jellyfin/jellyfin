@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Web;
 using System;
@@ -66,13 +67,23 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     if (length > 0)
                     {
-                        var response = (HttpListenerResponse)res.OriginalResponse;
+                        res.SetContentLength(length);
+                        
+                        var listenerResponse = res.OriginalResponse as HttpListenerResponse;
 
-                        response.ContentLength64 = length;
-                       
-                        // Disable chunked encoding. Technically this is only needed when using Content-Range, but
-                        // anytime we know the content length there's no need for it
-                        response.SendChunked = false;
+                        if (listenerResponse != null)
+                        {
+                            // Disable chunked encoding. Technically this is only needed when using Content-Range, but
+                            // anytime we know the content length there's no need for it
+                            listenerResponse.SendChunked = false;
+                            return;
+                        }
+
+                        var sharpResponse = res as WebSocketSharpResponse;
+                        if (sharpResponse != null)
+                        {
+                            sharpResponse.SendChunked = false;
+                        }
                     }
                 }
             }
