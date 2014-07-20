@@ -20,7 +20,6 @@
 
                 <form id="advancedMetadataConfigurationForm">
 
-                    <h2>${HeaderAutomaticUpdates}</h2>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
@@ -38,7 +37,17 @@
                             <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
                         </li>
                     </ul>
-                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtMetadataPath">${LabelMetadataPath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtMetadataPath" name="txtMetadataPath" />
+                            </div>
+                            <button id="btnSelectMetadataPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">${LabelMetadataPathHelp}</div>
+                        </li>
+                    </ul>
+
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

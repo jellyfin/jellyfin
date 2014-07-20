@@ -18,15 +18,26 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="txtItemsByNamePath">${LabelImagesByNamePath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
+                            </div>
+                            <button id="btnSelectIBNPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">${LabelImagesByNamePathHelp}</div>
+                        </li>
+                    </ul>
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
+                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
+                        </li>
+                        <li>
                             <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
                             <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
                             <div class="fieldDescription">
                                 ${LabelEnableRealtimeMonitorHelp}
                             </div>
-                        </li>
-                        <li>
-                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

@@ -29,7 +29,15 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -72,14 +80,14 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    showTitle: true,
+                    showTitle: false,
                     centerText: true,
                     lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += pagingHtml;
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
@@ -90,12 +98,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -160,6 +162,7 @@
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#tvShowsPage", function () {
@@ -338,6 +341,12 @@
             query.StartIndex = 0;
             query.IsYearMismatched = this.checked ? true : null;
 
+            reloadItems(page);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

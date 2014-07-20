@@ -200,7 +200,9 @@ namespace MediaBrowser.Controller.Library
         /// Determines whether [is series folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="considerSeasonlessSeries">if set to <c>true</c> [consider seasonless series].</param>
         /// <param name="fileSystemChildren">The file system children.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsSeriesFolder(string path, bool considerSeasonlessSeries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
@@ -227,8 +229,10 @@ namespace MediaBrowser.Controller.Library
                     {
                         return true;
                     }
-
-                    nonSeriesFolders++;
+                    if (!EntityResolutionHelper.IgnoreFolders.Contains(child.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        nonSeriesFolders++;
+                    }
 
                     if (nonSeriesFolders >= 3)
                     {

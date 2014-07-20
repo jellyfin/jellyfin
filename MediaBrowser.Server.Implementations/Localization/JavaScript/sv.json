@@ -313,5 +313,9 @@
     "ButtonAudioTracks": "Audio Tracks",
     "ButtonSubtitles": "Undertexter",
     "ButtonScenes": "Scener",
-    "ButtonQuality": "Quality"
+    "ButtonQuality": "Quality",
+    "HeaderNotifications": "Notifications",
+    "HeaderSelectPlayer": "Select Player:",
+    "ButtonSelect": "V\u00e4lj",
+    "ButtonNew": "Nytillkommet"
 }

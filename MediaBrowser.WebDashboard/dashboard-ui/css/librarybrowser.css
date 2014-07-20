@@ -73,6 +73,18 @@
     top: 8px;
 }
 
+.viewPanel {
+    width: 250px;
+}
+
+.viewPanelModelOpen {
+    right: 250px !important;
+}
+
+.viewPanelTabs {
+    margin-bottom: 2em;
+}
+
 @media all and (max-width: 800px) {
 
     .hiddenSectionOnMobile {
@@ -161,18 +173,6 @@
 
 .pageSizeContainer {
     display: inline-block;
-}
-
-.itemImageContainer {
-    vertical-align: top;
-    padding: 0 .8em 0 0;
-    display: inline-block;
-}
-
-@media all and (min-width: 650px) {
-    .itemImageContainer {
-        float: left;
-    }
 }
 
 @media all and (max-width: 650px) {
@@ -998,11 +998,6 @@ a.itemTag:hover {
         margin-left: auto;
         margin-right: auto;
     }
-
-.selectionCommandsControlGroup {
-    display: inline-block;
-    margin-left: .5em;
-}
 
 @media all and (min-width: 750px) {
 

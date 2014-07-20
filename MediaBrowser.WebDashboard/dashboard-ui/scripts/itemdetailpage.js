@@ -80,6 +80,12 @@
                 $('.btnPlayTrailer', page).addClass('hide');
             }
 
+            if (SyncManager.isAvailable(item, user)) {
+                $('.btnSync', page).removeClass('hide');
+            } else {
+                $('.btnSync', page).addClass('hide');
+            }
+
             if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
 
                 $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
@@ -1480,6 +1486,11 @@
         $('.btnSplitVersions', page).on('click', function () {
 
             splitVersions(page);
+        });
+
+        $('.btnSync', page).on('click', function () {
+
+            SyncManager.showMenu([currentItem]);
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

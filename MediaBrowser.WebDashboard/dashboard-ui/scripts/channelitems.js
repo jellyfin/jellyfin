@@ -46,10 +46,10 @@
 
             if (features.CanFilter) {
 
-                $('.btnFilter', page).show();
+                $('.filterControls', page).show();
 
             } else {
-                $('.btnFilter', page).hide();
+                $('.filterControls', page).hide();
             }
 
             if (features.SupportsSortOrderToggle) {
@@ -128,8 +128,15 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, getPageSizes());
-            
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
+
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
@@ -155,12 +162,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -198,6 +199,7 @@
         }).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#channelItemsPage", function () {
@@ -244,6 +246,12 @@
 
             query.NameStartsWithOrGreater = '';
 
+            reloadItems(page);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

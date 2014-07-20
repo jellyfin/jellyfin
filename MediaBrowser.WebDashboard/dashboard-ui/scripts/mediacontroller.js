@@ -188,19 +188,24 @@
 
         self.canPlay = function (item) {
 
-            if (item.PlayAccess != 'Full') {
+            return self.canPlayByAttributes(item.Type, item.MediaType, item.PlayAccess, item.LocationType, item.IsPlaceHolder);
+        };
+
+        self.canPlayByAttributes = function (itemType, mediaType, playAccess, locationType, isPlaceHolder) {
+
+            if (playAccess != 'Full') {
                 return false;
             }
 
-            if (item.LocationType == "Virtual" || item.IsPlaceHolder) {
+            if (locationType == "Virtual" || isPlaceHolder) {
                 return false;
             }
 
-            if (item.IsFolder || item.Type == "MusicGenre") {
+            if (itemType == "MusicGenre" || itemType == "Season" || itemType == "Series" || itemType == "BoxSet" || itemType == "MusicAlbum" || itemType == "MusicArtist") {
                 return true;
             }
 
-            return self.getPlayerInfo().playableMediaTypes.indexOf(item.MediaType) != -1;
+            return self.getPlayerInfo().playableMediaTypes.indexOf(mediaType) != -1;
         };
 
         self.canQueueMediaType = function (mediaType, itemType) {
@@ -418,7 +423,7 @@
         var html = '';
         html += '<form>';
 
-        html += '<form><h3>Select Player:</h3>';
+        html += '<h3>' + Globalize.translate('HeaderSelectPlayer') + '</h3>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
 
         var checkedHtml;
@@ -438,7 +443,7 @@
             html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
 
             if (target.appName) {
-                html += '<br/><span style="color:#bbb;">' + target.appName + '</span>';
+                html += '<br/><span>' + target.appName + '</span>';
             }
 
             html += '</label>';
@@ -460,12 +465,12 @@
 
         var promise = MediaController.getTargets();
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="b">';
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="a">';
 
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-role="button" data-mini="true" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
+        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
 
         html += '</div>';
 

@@ -22,14 +22,33 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+        var promise2 = Dashboard.getCurrentUser();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var result = response1[0];
+            var user = response2[0];
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var addiontalButtonsHtml = user.Configuration.IsAdministrator ?
+                ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
+                '';
+
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                additionalButtonsHtml: addiontalButtonsHtml
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -48,21 +67,21 @@
                         items: result.Items,
                         shape: "portrait",
                         context: 'movies',
-                        showTitle: true,
+                        showTitle: false,
                         centerText: true,
                         lazy: true
                     });
                 }
 
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
-                
+
             } else {
 
                 $('.noItemsMessage', page).show();
             }
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createPosterItemMenus().trigger('itemsrendered');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -71,12 +90,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -117,6 +130,8 @@
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#boxsetsPage", function () {
@@ -197,10 +212,16 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         var page = this;
-        
+
         var context = getParameterByName('context');
 
         if (context == 'movies') {
@@ -291,9 +312,13 @@
 
         var page = this;
 
-        $('.btnNewCollection', page).on('click', function () {
+        $('.itemsContainer', page).on('itemsrendered', function () {
 
-            showNewCollectionPanel(page, []);
+            $('.btnNewCollection', page).off('click.newcollectionpanel').on('click.newcollectionpanel', function () {
+
+                showNewCollectionPanel(page, []);
+            });
+
         });
 
         $('#selectCollectionToAddTo', page).on('change', function () {
@@ -305,20 +330,6 @@
                 $('.newCollectionInfo', page).show();
                 $('#txtNewCollectionName', page).attr('required', 'required');
             }
-        });
-
-    }).on('pagebeforeshow', ".collectionEditorPage", function () {
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Configuration.IsAdministrator) {
-                $('.btnNewCollection', page).removeClass('hide');
-            } else {
-                $('.btnNewCollection', page).addClass('hide');
-            }
-
         });
     });
 

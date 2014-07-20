@@ -58,14 +58,14 @@
     "ButtonMute": "Mute",
     "ButtonUnmute": "Unmute",
     "ButtonStop": "Stop",
-    "ButtonNextTrack": "Next track",
+    "ButtonNextTrack": "Next Track",
     "ButtonPause": "Pause",
     "ButtonPlay": "\u05e0\u05d2\u05df",
     "ButtonEdit": "\u05e2\u05e8\u05d5\u05da",
     "ButtonQueue": "Queue",
     "ButtonPlayTrailer": "Play trailer",
     "ButtonPlaylist": "Playlist",
-    "ButtonPreviousTrack": "Previous track",
+    "ButtonPreviousTrack": "Previous Track",
     "LabelEnabled": "Enabled",
     "LabelDisabled": "Disabled",
     "ButtonMoreInformation": "More Information",
@@ -313,5 +313,9 @@
     "ButtonAudioTracks": "Audio Tracks",
     "ButtonSubtitles": "Subtitles",
     "ButtonScenes": "Scenes",
-    "ButtonQuality": "Quality"
+    "ButtonQuality": "Quality",
+    "HeaderNotifications": "Notifications",
+    "HeaderSelectPlayer": "Select Player:",
+    "ButtonSelect": "\u05d1\u05d7\u05e8",
+    "ButtonNew": "\u05d7\u05d3\u05e9"
 }

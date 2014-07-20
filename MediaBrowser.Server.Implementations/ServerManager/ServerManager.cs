@@ -249,13 +249,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 _logger.Info("Sending web socket message {0}", messageType);
 
                 var message = new WebSocketMessage<T> { MessageType = messageType, Data = dataFunction() };
-                var bytes = _jsonSerializer.SerializeToBytes(message);
+                var json = _jsonSerializer.SerializeToString(message);
 
                 var tasks = connectionsList.Select(s => Task.Run(() =>
                 {
                     try
                     {
-                        s.SendAsync(bytes, cancellationToken);
+                        s.SendAsync(json, cancellationToken);
                     }
                     catch (OperationCanceledException)
                     {
@@ -265,7 +265,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                     {
                         _logger.ErrorException("Error sending web socket message {0} to {1}", ex, messageType, s.RemoteEndPoint);
                     }
-                }));
+
+                }, cancellationToken));
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }

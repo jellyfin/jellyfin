@@ -222,18 +222,24 @@
 
         $('.tapHoldMenu').popup("close").remove();
 
+        var displayContextItem = posterItem;
+
+        if ($(posterItem).hasClass('listviewMenuButton')) {
+            posterItem = $(posterItem).parents('.listItem')[0];
+        }
+
         var itemId = posterItem.getAttribute('data-itemid');
         var commands = posterItem.getAttribute('data-commands').split(',');
+        var itemType = posterItem.getAttribute('data-itemtype');
+        var mediaType = posterItem.getAttribute('data-mediatype');
+        var playbackPositionTicks = parseInt(posterItem.getAttribute('data-positionticks') || '0');
+        var playAccess = posterItem.getAttribute('data-playaccess');
+        var locationType = posterItem.getAttribute('data-locationtype');
+        var isPlaceHolder = posterItem.getAttribute('data-placeholder') == 'true';
 
         $(posterItem).addClass('hasContextMenu');
 
-        var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), itemId);
-        var promise2 = Dashboard.getCurrentUser();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var item = response1[0];
-            var user = response2[0];
+        Dashboard.getCurrentUser().done(function (user) {
 
             var html = '<div data-role="popup" class="tapHoldMenu" data-theme="a">';
 
@@ -249,27 +255,27 @@
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
-            if (MediaController.canPlay(item)) {
+            if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType, isPlaceHolder)) {
                 html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
             }
 
-            if (item.UserData.PlaybackPositionTicks && item.MediaType != "Audio" && !item.IsFolder) {
-                html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + item.UserData.PlaybackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
+            if (playbackPositionTicks && mediaType != "Audio") {
+                html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
             }
 
             if (commands.indexOf('trailer') != -1) {
                 html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
             }
 
-            if (MediaController.canQueueMediaType(item.MediaType, item.Type)) {
+            if (MediaController.canQueueMediaType(mediaType, itemType)) {
                 html += '<li data-icon="plus"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
             }
 
-            if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+            if (commands.indexOf('instantmix') != -1) {
                 html += '<li data-icon="recycle"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
             }
 
-            if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+            if (commands.indexOf('shuffle') != -1) {
                 html += '<li data-icon="recycle"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
             }
 
@@ -279,11 +285,10 @@
 
             $($.mobile.activePage).append(html);
 
-            var elem = $('.tapHoldMenu').popup({ positionTo: posterItem }).trigger('create').popup("open").on("popupafterclose", function () {
+            var elem = $('.tapHoldMenu').popup({ positionTo: displayContextItem }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
                 $(posterItem).removeClass('hasContextMenu');
-
             });
 
             $('.btnPlay', elem).on('click', onPlayButtonClick);
@@ -309,6 +314,7 @@
 
         var posterItem = this;
         var itemId = posterItem.getAttribute('data-itemid');
+        var context = posterItem.getAttribute('data-context');
 
         $(posterItem).addClass('hasContextMenu');
 
@@ -340,7 +346,7 @@
 
                 if (!target.is('a,button')) {
                     var first = latestItems[0];
-                    Dashboard.navigate(LibraryBrowser.getHref(first));
+                    Dashboard.navigate(LibraryBrowser.getHref(first, context));
                     return;
                 }
             }
@@ -351,7 +357,7 @@
             html += '<div>';
             html += '<ul data-role="listview">';
 
-            var href = posterItem.href || LibraryBrowser.getHref(item);
+            var href = posterItem.href || LibraryBrowser.getHref(item, context);
             var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
             html += '<li data-role="list-divider">' + header + '</li>';
 
@@ -364,7 +370,7 @@
 
                 var itemHtml = '';
 
-                href = LibraryBrowser.getHref(latestItem);
+                href = LibraryBrowser.getHref(latestItem, context);
                 itemHtml += '<li class="ui-li-has-thumb"><a href="' + href + '">';
 
                 var imgUrl;
@@ -609,10 +615,6 @@
 
         var page = this;
 
-        $('.btnToggleSelections', page).on('click', function () {
-            toggleSelections(page);
-        });
-
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);
         });
@@ -621,11 +623,38 @@
             addToCollection(page);
         });
 
+        $('.viewTabButton', page).on('click', function () {
+
+            $('.viewTabButton', page).removeClass('ui-btn-active');
+            $(this).addClass('ui-btn-active');
+
+            $('.viewTab', page).hide();
+            $('.' + this.getAttribute('data-tab'), page).show();
+        });
+
+        var viewPanel = $('.viewPanel', page).panel('option', 'classes.modalOpen', 'viewPanelModelOpen ui-panel-dismiss-open');
+
+        $('#selectPageSize', viewPanel).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
+
+            return '<option value="' + i + '">' + i + '</option>';
+
+        }).join('')).selectmenu('refresh');
+
+        $('.itemsContainer', page).on('itemsrendered', function() {
+
+            $('.btnToggleSelections', page).off('click.toggleselections').on('click.toggleselections', function () {
+                toggleSelections(page);
+            });
+
+        });
+
     }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 
         hideSelections(page);
+
+        $('.viewTabButton:first', page).trigger('click');
     });
 
     function renderUserDataChanges(posterItem, userData) {
@@ -659,8 +688,13 @@
 
     function onUserDataChanged(userData) {
 
-        $('.posterItemUserData' + userData.Key).each(function () {
-            renderUserDataChanges(this, userData);
+        $('.libraryItemUserData' + userData.Key).each(function () {
+
+            this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+
+            if ($(this).hasClass('posterItem')) {
+                renderUserDataChanges(this, userData);
+            }
         });
     }
 

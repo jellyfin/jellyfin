@@ -313,5 +313,9 @@
     "ButtonAudioTracks": "Audio Tracks",
     "ButtonSubtitles": "Sous-titres",
     "ButtonScenes": "Sc\u00e8nes",
-    "ButtonQuality": "Quality"
+    "ButtonQuality": "Quality",
+    "HeaderNotifications": "Notifications",
+    "HeaderSelectPlayer": "Select Player:",
+    "ButtonSelect": "S\u00e9lectionner",
+    "ButtonNew": "Nouveau"
 }

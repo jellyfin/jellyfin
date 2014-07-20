@@ -176,7 +176,7 @@ var Dashboard = {
 
         Dashboard.lastSystemInfo = info;
 
-        Dashboard.ensureWebSocket(info);
+        Dashboard.ensureWebSocket();
 
         if (!Dashboard.initialServerVersion) {
             Dashboard.initialServerVersion = info.Version;
@@ -683,10 +683,6 @@ var Dashboard = {
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
-            name: Globalize.translate('TabUsers'),
-            href: "userprofiles.html",
-            selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
-        }, {
             name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
@@ -728,7 +724,7 @@ var Dashboard = {
 
     },
 
-    ensureWebSocket: function (systemInfo) {
+    ensureWebSocket: function () {
 
         if (!("WebSocket" in window)) {
             // Not supported by the browser
@@ -739,20 +735,12 @@ var Dashboard = {
             return;
         }
 
-        systemInfo = systemInfo || Dashboard.lastSystemInfo;
-
         var location = window.location;
 
         var webSocketUrl = "ws://" + location.hostname;
 
-        if (systemInfo.HttpServerPortNumber == systemInfo.WebSocketPortNumber) {
-
-            if (location.port) {
-                webSocketUrl += ':' + location.port;
-            }
-
-        } else {
-            webSocketUrl += ':' + systemInfo.WebSocketPortNumber;
+        if (location.port) {
+            webSocketUrl += ':' + location.port;
         }
 
         ApiClient.openWebSocket(webSocketUrl);

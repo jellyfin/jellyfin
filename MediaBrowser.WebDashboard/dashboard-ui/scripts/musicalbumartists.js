@@ -28,7 +28,15 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -52,7 +60,7 @@
                 });
             }
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += pagingHtml;
 
             $('#items', page).html(html).trigger('create').createPosterItemMenus();
 
@@ -63,12 +71,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -92,6 +94,7 @@
         $('#selectView', page).val(view).selectmenu('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#musicAlbumArtistsPage", function () {
@@ -136,6 +139,12 @@
             reloadItems(page);
 
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
         });
 
     }).on('pagebeforeshow', "#musicAlbumArtistsPage", function () {

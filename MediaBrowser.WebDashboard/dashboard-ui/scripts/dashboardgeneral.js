@@ -12,6 +12,13 @@
 
         })).val(config.UICulture).selectmenu('refresh');
 
+        $('#txtPortNumber', page).val(config.HttpServerPortNumber);
+
+        $('#txtDdns', page).val(config.WanDdns || '');
+
+        $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
+        $('#txtCachePath', page).val(config.CachePath || '');
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -35,6 +42,30 @@
 
             $('#txtLoginDisclaimer', page).val(config.LoginDisclaimer || '');
         });
+
+    }).on('pageinit', "#dashboardGeneralPage", function () {
+
+        var page = this;
+
+        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtCachePath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: Globalize.translate('HeaderSelectServerCachePath'),
+
+                instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
+            });
+        });
     });
 
     window.DashboardGeneralPage = {
@@ -49,7 +80,13 @@
                 config.ServerName = $('#txtServerName', form).val();
                 config.UICulture = $('#selectLocalizationLanguage', form).val();
 
-                ApiClient.updateServerConfiguration(config).done(function() {
+                config.HttpServerPortNumber = $('#txtPortNumber', form).val();
+                config.EnableUPnP = $('#chkEnableUpnp', form).checked();
+
+                config.WanDdns = $('#txtDdns', form).val();
+                config.CachePath = $('#txtCachePath', form).val();
+
+                ApiClient.updateServerConfiguration(config).done(function () {
                     
                     ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
 

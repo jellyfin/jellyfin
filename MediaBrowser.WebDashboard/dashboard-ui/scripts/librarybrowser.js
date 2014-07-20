@@ -9,7 +9,6 @@
     var defaultBackground = "#333";
 
     return {
-
         getDefaultPageSize: function () {
 
             var saved = store.getItem('pagesize_');
@@ -112,8 +111,7 @@
                     counts.push(childText);
                 }
 
-            }
-            else if (options.context == "tv") {
+            } else if (options.context == "tv") {
 
                 if (item.SeriesCount) {
 
@@ -128,8 +126,7 @@
                     counts.push(childText);
                 }
 
-            }
-            else if (options.context == "games") {
+            } else if (options.context == "games") {
 
                 if (item.GameCount) {
 
@@ -137,8 +134,7 @@
 
                     counts.push(childText);
                 }
-            }
-            else if (options.context == "music") {
+            } else if (options.context == "music") {
 
                 if (item.AlbumCount) {
 
@@ -256,8 +252,7 @@
                         var artistLinksHtml = LibraryBrowser.getArtistLinksHtml(item.Artists);
 
                         html += '<td class="tabletColumn">' + artistLinksHtml + '</td>';
-                    }
-                    else {
+                    } else {
                         html += '<td class="tabletColumn"></td>';
                     }
                 }
@@ -492,14 +487,11 @@
 
             if (type == 'Backdrop') {
                 options.tag = item.BackdropImageTags[index];
-            }
-            else if (type == 'Screenshot') {
+            } else if (type == 'Screenshot') {
                 options.tag = item.ScreenshotImageTags[index];
-            }
-            else if (type == 'Primary') {
+            } else if (type == 'Primary') {
                 options.tag = item.PrimaryImageTag || item.ImageTags[type];
-            }
-            else {
+            } else {
                 options.tag = item.ImageTags[type];
             }
 
@@ -596,8 +588,16 @@
                     groupTitle = itemGroupTitle;
                 }
 
+                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
+
+                var cssClass = 'ui-li-has-thumb listItem';
+
+                if (item.UserData) {
+                    cssClass += ' libraryItemUserData' + item.UserData.Key;
+                }
+
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="ui-li-has-thumb" data-itemid="' + item.Id + '"><a href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-href="' + href + '"><a href="' + href + '">';
 
                 var imgUrl;
 
@@ -629,8 +629,7 @@
 
                 if (item.Type == 'Episode') {
                     textlines.push(item.SeriesName || 'Unknown Series');
-                }
-                else if (item.Type == 'MusicAlbum') {
+                } else if (item.Type == 'MusicAlbum') {
                     textlines.push(item.AlbumArtist || 'Unknown Artist');
                 }
 
@@ -659,28 +658,13 @@
                 if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
                     if (item.UserData.UnplayedItemCount) {
                         html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
-                    }
-                    else if (item.UserData.Played && item.Type != 'TvChannel') {
+                    } else if (item.UserData.Played && item.Type != 'TvChannel') {
                         html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                     }
                 }
                 html += '</a>';
 
-                var itemCommands = [];
-
-                //if (MediaController.canPlay(item)) {
-                //    itemCommands.push('playmenu');
-                //}
-
-                if (item.Type != "Recording" && item.Type != "Program") {
-                    itemCommands.push('edit');
-                }
-
-                if (item.LocalTrailerCount) {
-                    itemCommands.push('trailer');
-                }
-
-                html += '<a href="#" data-icon="ellipsis-v" data-itemid="' + item.Id + '" data-commands="' + itemCommands.join(',') + '" data-href="' + LibraryBrowser.getHref(item, options.context) + '" class="listviewMenuButton">';
+                html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton">';
                 html += '</a>';
 
                 html += '</li>';
@@ -693,6 +677,62 @@
 
             index++;
             return outerHtml;
+        },
+
+        getItemDataAttributes: function (item, options) {
+
+            var atts = [];
+
+            var itemCommands = LibraryBrowser.getItemCommands(item);
+
+            atts.push('data-itemid="' + item.Id + '"');
+            atts.push('data-commands="' + itemCommands.join(',') + '"');
+            atts.push('data-context="' + (options.context || '') + '"');
+            atts.push('data-itemtype="' + item.Type + '"');
+            atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+            atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+
+            atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
+            atts.push('data-locationtype="' + (item.LocationType || '') + '"');
+
+            if (item.IsPlaceHolder) {
+                atts.push('data-placeholder="true"');
+            }
+
+            var html = atts.join(' ');
+
+            if (html) {
+                html = ' ' + html;
+            }
+
+            return html;
+        },
+
+        getItemCommands: function (item) {
+
+            var itemCommands = [];
+
+            //if (MediaController.canPlay(item)) {
+            //    itemCommands.push('playmenu');
+            //}
+
+            if (item.Type != "Recording" && item.Type != "Program") {
+                itemCommands.push('edit');
+            }
+
+            if (item.LocalTrailerCount) {
+                itemCommands.push('trailer');
+            }
+
+            if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+                itemCommands.push('instantmix');
+            }
+
+            if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+                itemCommands.push('shuffle');
+            }
+
+            return itemCommands;
         },
 
         getPosterViewHtml: function (options) {
@@ -712,23 +752,18 @@
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
                     options.shape = options.shape == 'auto' ? 'backdrop' : 'smallBackdrop';
-                }
-                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
+                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;
                     options.shape = 'square';
-                }
-                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
+                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
                     options.coverImage = true;
                     options.shape = 'square';
-                }
-                else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
+                } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
                     options.shape = 'banner';
                     options.coverImage = true;
-                }
-                else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
+                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
                     options.shape = 'portrait';
-                }
-                else {
+                } else {
                     options.shape = options.defaultShape || 'portrait';
                 }
             }
@@ -760,8 +795,7 @@
                         html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + val + '</h2>';
                         currentIndexValue = val;
                     }
-                }
-                else if (options.timeline) {
+                } else if (options.timeline) {
                     var year = item.ProductionYear || "Unknown Year";
 
                     if (year != currentIndexValue) {
@@ -792,8 +826,7 @@
                         tag: item.ImageTags.Primary
                     });
 
-                }
-                else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
+                } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
@@ -801,8 +834,7 @@
                         tag: item.ImageTags.Thumb
                     });
 
-                }
-                else if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                } else if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
@@ -810,8 +842,7 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                }
-                else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+                } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
@@ -819,8 +850,7 @@
                         tag: item.ImageTags.Thumb
                     });
 
-                }
-                else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
+                } else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Banner",
@@ -828,8 +858,7 @@
                         tag: item.ImageTags.Banner
                     });
 
-                }
-                else if (options.preferThumb && item.SeriesThumbImageTag && options.inheritThumb !== false) {
+                } else if (options.preferThumb && item.SeriesThumbImageTag && options.inheritThumb !== false) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
@@ -837,16 +866,14 @@
                         tag: item.SeriesThumbImageTag
                     });
 
-                }
-                else if (options.preferThumb && item.ParentThumbItemId && options.inheritThumb !== false) {
+                } else if (options.preferThumb && item.ParentThumbItemId && options.inheritThumb !== false) {
 
                     imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
                         type: "Thumb",
                         maxWidth: downloadHeight
                     });
 
-                }
-                else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
+                } else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
@@ -855,8 +882,7 @@
                     });
 
                     forceName = true;
-                }
-                else if (item.ImageTags && item.ImageTags.Primary) {
+                } else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 400;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
@@ -868,8 +894,7 @@
                         tag: item.ImageTags.Primary
                     });
 
-                }
-                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+                } else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
                     height = 220;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
@@ -881,8 +906,7 @@
                         tag: item.AlbumPrimaryImageTag
                     });
 
-                }
-                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
@@ -890,8 +914,7 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                }
-                else if (item.ImageTags && item.ImageTags.Thumb) {
+                } else if (item.ImageTags && item.ImageTags.Thumb) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
@@ -899,8 +922,7 @@
                         tag: item.ImageTags.Thumb
                     });
 
-                }
-                else if (item.SeriesThumbImageTag) {
+                } else if (item.SeriesThumbImageTag) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
@@ -908,46 +930,40 @@
                         tag: item.SeriesThumbImageTag
                     });
 
-                }
-                else if (item.ParentThumbItemId) {
+                } else if (item.ParentThumbItemId) {
 
                     imgUrl = ApiClient.getThumbImageUrl(item, {
                         type: "Thumb",
                         maxWidth: downloadHeight
                     });
 
-                }
-                else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+                } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/audio.png';
                     }
                     background = defaultBackground;
 
-                }
-                else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
+                } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/collection.png';
                     }
 
                     background = defaultBackground;
-                }
-                else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
+                } else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/video.png';
                     }
                     background = defaultBackground;
-                }
-                else if (item.Type == "Person") {
+                } else if (item.Type == "Person") {
 
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/person.png';
                     }
                     background = defaultBackground;
-                }
-                else {
+                } else {
                     if (item.Name && options.showTitle) {
                         imgUrl = 'css/images/items/list/collection.png';
                     }
@@ -971,7 +987,7 @@
                 var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
                 if (item.UserData) {
-                    cssClass += ' posterItemUserData' + item.UserData.Key;
+                    cssClass += ' libraryItemUserData' + item.UserData.Key;
                 }
 
                 if (options.showChildCountIndicator && item.ChildCount) {
@@ -982,25 +998,13 @@
                     }
                 }
 
-                var itemCommands = [];
-
-                //if (MediaController.canPlay(item)) {
-                //    itemCommands.push('playmenu');
-                //}
-
-                if (item.Type != "Recording" && item.Type != "Program") {
-                    itemCommands.push('edit');
-                }
-
-                if (item.LocalTrailerCount) {
-                    itemCommands.push('trailer');
-                }
-
                 if (options.showChildCountIndicator) {
                     cssClass += ' groupingPosterItem';
                 }
 
-                html += '<a data-commands="' + itemCommands.join(',') + '" data-itemid="' + item.Id + '" class="' + cssClass + '" data-mediasourcecount="' + mediaSourceCount + '" href="' + href + '">';
+                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
+
+                html += '<a' + dataAttributes + ' class="' + cssClass + '" href="' + href + '">';
 
                 var style = "";
 
@@ -1034,11 +1038,9 @@
                     if (options.showLocationTypeIndicator !== false) {
                         html += LibraryBrowser.getOfflineIndicatorHtml(item);
                     }
-                }
-                else if (options.showUnplayedIndicator !== false) {
+                } else if (options.showUnplayedIndicator !== false) {
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
-                }
-                else if (options.showChildCountIndicator) {
+                } else if (options.showChildCountIndicator) {
                     html += LibraryBrowser.getGroupCountIndicator(item);
                 }
 
@@ -1268,8 +1270,7 @@
 
                 name = "Special - " + name;
 
-            }
-            else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
+            } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
 
                 var displayIndexNumber = item.IndexNumber;
 
@@ -1440,14 +1441,11 @@
 
             if (item.AlbumArtist && item.Type == "Audio") {
                 html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
-            }
-            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
                 html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + '">' + item.AlbumArtist + '</a>');
-            }
-            else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
+            } else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
                 html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + '">' + item.Artists[0] + '</a>');
-            }
-            else if (item.SeriesName && item.Type == "Episode") {
+            } else if (item.SeriesName && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>');
             }
@@ -1455,23 +1453,18 @@
             if (item.SeriesName && item.Type == "Season") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>');
-            }
-            else if (item.ParentIndexNumber != null && item.Type == "Episode") {
+            } else if (item.ParentIndexNumber != null && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">Season ' + item.ParentIndexNumber + '</a>');
-            }
-            else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
+            } else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + (item.AlbumId || item.ParentId) + '">' + item.Album + '</a>');
 
-            }
-            else if (item.Album && item.Type == "MusicVideo" && item.AlbumId) {
+            } else if (item.Album && item.Type == "MusicVideo" && item.AlbumId) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.AlbumId + '">' + item.Album + '</a>');
 
-            }
-            else if (item.AlbumArtist && item.Type == "MusicAlbum") {
+            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
 
-            }
-            else if (item.Album) {
+            } else if (item.Album) {
                 html.push(item.Album);
 
             }
@@ -1510,6 +1503,91 @@
             } else {
                 $(linksElem).hide();
             }
+        },
+
+        getDefaultPageSizeSelections: function () {
+
+            return [20, 50, 100, 200, 300, 400, 500];
+        },
+
+        getQueryPagingHtml: function (options) {
+
+            var startIndex = options.startIndex;
+            var limit = options.limit;
+            var totalRecordCount = options.totalRecordCount;
+
+            if (limit && options.updatePageSizeSetting !== false) {
+                try {
+                    store.setItem('pagesize_', limit);
+                } catch (e) {
+
+                }
+            }
+
+            var html = '';
+
+            var recordsEnd = Math.min(startIndex + limit, totalRecordCount);
+
+            // 20 is the minimum page size
+            var showControls = totalRecordCount > 20 || limit < totalRecordCount;
+
+            html += '<div class="listPaging">';
+
+            html += '<span style="margin-right: 10px;vertical-align:middle;">';
+
+            var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
+            html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
+
+            html += '</span>';
+
+            if (showControls || options.viewButton || options.addSelectionButton || options.additionalButtonsHtml) {
+
+                html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
+
+                if (showControls) {
+
+                    html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+
+                    html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                }
+
+                html += (options.additionalButtonsHtml || '');
+
+                if (options.addSelectionButton) {
+                    html += '<button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="' + Globalize.translate('ButtonSelect') + '" class="btnToggleSelections">' + Globalize.translate('ButtonSelect') + '</button>';
+                }
+
+                if (options.viewButton) {
+
+                    html += '<button data-icon="ellipsis-v" data-iconpos="notext" data-inline="true" data-mini="true" onclick="$(\'.viewPanel\', $(this).parents(\'.page\')).panel(\'toggle\');">View</button>';
+                }
+
+                html += '</div>';
+
+                if (showControls && options.showLimit !== false) {
+                    var id = "selectPageSize";
+
+                    var pageSizes = options.pageSizes || LibraryBrowser.getDefaultPageSizeSelections();
+
+                    var optionsHtml = pageSizes.map(function (val) {
+
+                        if (limit == val) {
+
+                            return '<option value="' + val + '" selected="selected">' + val + '</option>';
+
+                        } else {
+                            return '<option value="' + val + '">' + val + '</option>';
+                        }
+                    }).join('');
+
+                    // Add styles to defeat jquery mobile
+                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + optionsHtml + '</select></div>';
+                }
+            }
+
+            html += '</div>';
+
+            return html;
         },
 
         getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes, showLimit) {

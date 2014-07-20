@@ -1,17 +1,20 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${HeaderUsers}</title>
+    <title>${TitleServer}</title>
 </head>
 <body>
-    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
+    <div id="userProfilesPage" data-role="page" class="page type-interior dashboardHomePage">
 
         <div data-role="content">
             <div class="content-primary">
+                
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="userprofiles.html" data-role="button" class="ui-btn-active">${TabProfiles}</a>
+                    <a href="dashboard.html" data-role="button">${TabDashboard}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabUsers}</a>
+                    <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
+                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
-
 
                 <div class="readOnlyContent">
                     <p id="pAddUser">

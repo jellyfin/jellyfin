@@ -96,22 +96,30 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         /// Sends the async.
         /// </summary>
         /// <param name="bytes">The bytes.</param>
-        /// <param name="type">The type.</param>
         /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendAsync(byte[] bytes, WebSocketMessageType type, bool endOfMessage, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] bytes, bool endOfMessage, CancellationToken cancellationToken)
         {
-            System.Net.WebSockets.WebSocketMessageType nativeType;
-
-            if (!Enum.TryParse(type.ToString(), true, out nativeType))
-            {
-                _logger.Warn("Unrecognized WebSocketMessageType: {0}", type.ToString());
-            }
-
             var completionSource = new TaskCompletionSource<bool>();
 
-            WebSocket.SendAsync(Encoding.UTF8.GetString(bytes), res => completionSource.TrySetResult(true));
+            WebSocket.SendAsync(bytes, res => completionSource.TrySetResult(true));
+
+            return completionSource.Task;
+        }
+
+        /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="endOfMessage">if set to <c>true</c> [end of message].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            var completionSource = new TaskCompletionSource<bool>();
+
+            WebSocket.SendAsync(text, res => completionSource.TrySetResult(true));
 
             return completionSource.Task;
         }

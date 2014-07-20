@@ -20,131 +20,142 @@
         </div>
         <div data-role="content">
             <div class="viewSettings">
-                <div class="viewControls" data-role="controlgroup" data-type="horizontal">
-                    <button data-mini="true" data-icon="sort" data-inline="true" data-iconpos="notext" title="${ButtonSort}" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
-                    <button data-mini="true" data-icon="filter" data-inline="true" data-iconpos="notext" title="${ButtonFilter}" onclick="$('#filterPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonFilter}</button>
-                </div>
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-position-fixed="true">
 
+        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${HeaderSortBy}</strong>
-                    </legend>
 
-                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                    <label for="radioSortName">${OptionNameSort}</label>
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabSort">${TabSort}</a>
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
+                </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioBudget" value="off" data-sortby="Budget" data-mini="true">
-                    <label for="radioBudget">${OptionBudget}</label>
+                <div class="tabView viewTab">
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
-                    <label for="radioCommunityRating">${OptionCommunityRating}</label>
+                    <div>
+                        <label for="selectPageSize">${LabelPageSize}</label>
+                        <select id="selectPageSize"></select>
+                    </div>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCriticRating" value="off" data-sortby="CriticRating" data-mini="true">
-                    <label for="radioCriticRating">${OptionCriticRating}</label>
+                </div>
+                <div class="tabFilter viewTab">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${HeaderFilters}
+                        </legend>
+                        <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
+                        <label for="chkPlayed">${OptionPlayed}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
-                    <label for="radioDateCreated">${OptionDateAdded}</label>
+                        <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
+                        <label for="chkUnplayed">${OptionUnplayed}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
-                    <label for="radioDatePlayed">${OptionDatePlayed}</label>
+                        <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
+                        <label for="chkResumable">${OptionResumable}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
-                    <label for="radioPlayCount">${OptionPlayCount}</label>
+                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkIsFavorite">${OptionFavorite}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
-                    <label for="radioPremiereDate">${OptionReleaseDate}</label>
+                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
+                        <label for="chkLikes">${OptionLikes}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRevenue" value="off" data-sortby="Revenue" data-mini="true">
-                    <label for="radioRevenue">${OptionRevenue}</label>
+                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikes">${OptionDislikes}</label>
+                    </fieldset>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${LabelVideoType}
+                        </legend>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
-                    <label for="radioRuntime">${OptionRuntime}</label>
+                        <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
+                        <label for="chkBluray">${OptionBluray}</label>
 
-                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioVideoBitRate" value="off" data-sortby="VideoBitRate,SortName" data-mini="true">
-                    <label for="radioVideoBitRate">${OptionVideoBitrate}</label>
-                </fieldset>
+                        <input class="chkVideoTypeFilter" type="checkbox" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
+                        <label for="chkDvd">${OptionDvd}</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${HeaderSortOrder}</strong>
-                    </legend>
+                        <input class="chkVideoTypeFilter" type="checkbox" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
+                        <label for="chkIso">${OptionIso}</label>
 
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                    <label for="radioAscending">${OptionAscending}</label>
+                        <input class="chk3DFilter" type="checkbox" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
+                        <label for="chk3D">${Option3D}</label>
+                    </fieldset>
 
-                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                    <label for="radioDescending">${OptionDescending}</label>
-                </fieldset>
-            </form>
-        </div>
-        <div data-role="panel" id="filterPanel" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${HeaderFilters}</strong>
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayed">${OptionPlayed}</label>
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${LabelFeatures}
+                        </legend>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkUnplayed" id="chkUnplayed" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayed">${OptionUnplayed}</label>
+                        <input class="chkFeatureFilter" type="checkbox" name="chkSubtitle" id="chkSubtitle" data-mini="true">
+                        <label for="chkSubtitle">${OptionHasSubtitles}</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable" data-mini="true">
-                    <label for="chkResumable">${OptionResumable}</label>
+                        <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
+                        <label for="chkTrailer">${OptionHasTrailer}</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavorite">${OptionFavorite}</label>
+                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
+                        <label for="chkThemeSong">${OptionHasThemeSong}</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                    <label for="chkLikes">${OptionLikes}</label>
+                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
+                        <label for="chkThemeVideo">${OptionHasThemeVideo}</label>
 
-                    <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikes">${OptionDislikes}</label>
-                </fieldset>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${LabelVideoType}</strong>
-                    </legend>
+                    </fieldset>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-filter="Bluray" data-mini="true">
-                    <label for="chkBluray">${OptionBluray}</label>
+                </div>
+                <div class="tabSort viewTab">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${HeaderSortBy}
+                        </legend>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" name="chkDvd" id="chkDvd" data-filter="Dvd" data-mini="true">
-                    <label for="chkDvd">${OptionDvd}</label>
+                        <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                        <label for="radioSortName">${OptionNameSort}</label>
 
-                    <input class="chkVideoTypeFilter" type="checkbox" name="chkIso" id="chkIso" data-filter="Iso" data-mini="true">
-                    <label for="chkIso">${OptionIso}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioBudget" value="off" data-sortby="Budget" data-mini="true">
+                        <label for="radioBudget">${OptionBudget}</label>
 
-                    <input class="chk3DFilter" type="checkbox" name="chk3D" id="chk3D" data-filter="Digital3D,Sbs3D" data-mini="true">
-                    <label for="chk3D">${Option3D}</label>
-                </fieldset>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
+                        <label for="radioCommunityRating">${OptionCommunityRating}</label>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        <strong>${LabelFeatures}</strong>
-                    </legend>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCriticRating" value="off" data-sortby="CriticRating" data-mini="true">
+                        <label for="radioCriticRating">${OptionCriticRating}</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" name="chkSubtitle" id="chkSubtitle" data-mini="true">
-                    <label for="chkSubtitle">${OptionHasSubtitles}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                        <label for="radioDateCreated">${OptionDateAdded}</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
-                    <label for="chkTrailer">${OptionHasTrailer}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
+                        <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                    <label for="chkThemeSong">${OptionHasThemeSong}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
+                        <label for="radioPlayCount">${OptionPlayCount}</label>
 
-                    <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                    <label for="chkThemeVideo">${OptionHasThemeVideo}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                        <label for="radioPremiereDate">${OptionReleaseDate}</label>
 
-                </fieldset>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRevenue" value="off" data-sortby="Revenue" data-mini="true">
+                        <label for="radioRevenue">${OptionRevenue}</label>
 
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
+                        <label for="radioRuntime">${OptionRuntime}</label>
+
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioVideoBitRate" value="off" data-sortby="VideoBitRate,SortName" data-mini="true">
+                        <label for="radioVideoBitRate">${OptionVideoBitrate}</label>
+                    </fieldset>
+
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${HeaderSortOrder}
+                        </legend>
+
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                        <label for="radioAscending">${OptionAscending}</label>
+
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                        <label for="radioDescending">${OptionDescending}</label>
+                    </fieldset>
+                </div>
             </form>
         </div>
     </div>

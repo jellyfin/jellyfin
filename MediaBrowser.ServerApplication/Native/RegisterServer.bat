@@ -1,7 +1,6 @@
 rem %1 = http server port
 rem %2 = http server url
 rem %3 = udp server port
-rem %4 = tcp server port (web socket)
 
 if [%1]==[] GOTO DONE
 
@@ -17,11 +16,6 @@ if [%3]==[] GOTO DONE
 
 netsh advfirewall firewall delete rule name="Port %3" protocol=UDP localport=%3
 netsh advfirewall firewall add rule name="Port %3" dir=in action=allow protocol=UDP localport=%3
-
-if [%4]==[] GOTO DONE
-
-netsh advfirewall firewall delete rule name="Port %4" protocol=TCP localport=%4
-netsh advfirewall firewall add rule name="Port %4" dir=in action=allow protocol=TCP localport=%4
 
 
 :DONE

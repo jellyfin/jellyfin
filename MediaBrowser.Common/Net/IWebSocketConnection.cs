@@ -63,11 +63,10 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <param name="buffer">The buffer.</param>
-        /// <param name="type">The type.</param>
+        /// <param name="text">The text.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">buffer</exception>
-        Task SendAsync(byte[] buffer, WebSocketMessageType type, CancellationToken cancellationToken);
+        Task SendAsync(string text, CancellationToken cancellationToken);
     }
 }

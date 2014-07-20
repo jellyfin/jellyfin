@@ -23,12 +23,12 @@
                 <div id="items"></div>
             </div>
         </div>
-        <div data-role="panel" id="sortPanel" data-position="right" data-display="overlay" data-position-fixed="true">
+        <div data-role="panel" id="sortPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
 
             <form>
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>${HeaderSortBy}</strong>
+                        ${HeaderSortBy}
                     </legend>
 
                     <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
@@ -40,7 +40,7 @@
 
                 <fieldset data-role="controlgroup">
                     <legend>
-                        <strong>${HeaderSortOrder}</strong>
+                        ${HeaderSortOrder}
                     </legend>
 
                     <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">

@@ -65,6 +65,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 throw new ArgumentException("Video codec copy is not allowed here.");
             }
 
+            if (string.IsNullOrEmpty(request.MediaSourceId))
+            {
+                throw new ArgumentException("MediaSourceId is required");
+            }
+
             var result = GetAsync(request).Result;
 
             return result;
