@@ -58,7 +58,7 @@
     "ButtonMute": "Mute",
     "ButtonUnmute": "Unmute",
     "ButtonStop": "Stop",
-    "ButtonNextTrack": "Next track",
+    "ButtonNextTrack": "Next Track",
     "ButtonPause": "Pause",
     "ButtonPlay": "P\u0159ehr\u00e1t",
     "ButtonEdit": "Upravit",
@@ -313,5 +313,9 @@
     "ButtonAudioTracks": "Audio Tracks",
     "ButtonSubtitles": "Titulky",
     "ButtonScenes": "Sc\u00e9ny",
-    "ButtonQuality": "Quality"
+    "ButtonQuality": "Quality",
+    "HeaderNotifications": "Notifications",
+    "HeaderSelectPlayer": "Select Player:",
+    "ButtonSelect": "Vybrat",
+    "ButtonNew": "Nov\u00e9"
 }

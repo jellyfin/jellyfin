@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
@@ -36,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="socket">The socket.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public NativeWebSocket(System.Net.WebSockets.WebSocket socket, ILogger logger)
+        public NativeWebSocket(WebSocket socket, ILogger logger)
         {
             if (socket == null)
             {
@@ -153,6 +154,22 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
 
             return WebSocket.SendAsync(new ArraySegment<byte>(bytes), nativeType, true, linkedTokenSource.Token);
+        }
+
+        public Task SendAsync(byte[] bytes, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
+
+            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), System.Net.WebSockets.WebSocketMessageType.Binary, true, linkedTokenSource.Token);
+        }
+
+        public Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token);
+
+            var bytes = Encoding.UTF8.GetBytes(text);
+
+            return WebSocket.SendAsync(new ArraySegment<byte>(bytes), System.Net.WebSockets.WebSocketMessageType.Text, true, linkedTokenSource.Token);
         }
 
         /// <summary>

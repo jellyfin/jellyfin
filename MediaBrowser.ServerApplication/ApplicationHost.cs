@@ -208,12 +208,13 @@ namespace MediaBrowser.ServerApplication
         private IUserViewManager UserViewManager { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
-        
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
+        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
+        /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool isRunningAsService)
             : base(applicationPaths, logManager)
         {
@@ -284,7 +285,6 @@ namespace MediaBrowser.ServerApplication
             await base.Init(progress).ConfigureAwait(false);
 
             MigrateModularConfigurations();
-            ApplyDefaultMetadataSettings();
         }
 
         private void PerformVersionMigration()
@@ -328,21 +328,6 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerConfigurationManager.SaveConfiguration();
             }
-        }
-
-        private void ApplyDefaultMetadataSettings()
-        {
-            if (!ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied &&
-                ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
-            {
-                // Make sure xbmc metadata is disabled for existing users.
-                // New users will be handled by the startup wizard.
-
-                ServerConfigurationManager.DisableMetadataService("Xbmc Nfo");
-            }
-
-            ServerConfigurationManager.Configuration.DefaultMetadataSettingsApplied = true;
-            ServerConfigurationManager.SaveConfiguration();
         }
 
         private void DeleteDeprecatedModules()
@@ -1111,7 +1096,6 @@ namespace MediaBrowser.ServerApplication
                 ServerAuthorization.AuthorizeServer(
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
                     HttpServerUrlPrefixes.First(),
-                    ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
                     UdpServerEntryPoint.PortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }

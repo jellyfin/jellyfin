@@ -9,7 +9,7 @@ namespace MediaBrowser.Tests.Resolvers
         [TestMethod]
         public void TestGetEpisodeNumberFromFile()
         {
-            Assert.AreEqual(03, TVUtils.GetEpisodeNumberFromFile(@"S02E03 blah.avi", true));
+            Assert.AreEqual(03, TVUtils.GetEpisodeNumberFromFile(@"Season 02\S02E03 blah.avi", true));
 
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\01x02 blah.avi", true));
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\S01x02 blah.avi", true));

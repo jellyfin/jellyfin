@@ -67,14 +67,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 {
                     return null;
                 }
-
-                // Without these movies that have the name season in them could cause the parent folder to be resolved as a series
-                if (filename.IndexOf("[tmdbid=", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    return null;
-                }
                 
-                if (args.ContainsMetaFileByName("series.xml") || filename.IndexOf("[tvdbid=", StringComparison.OrdinalIgnoreCase) != -1 || TVUtils.IsSeriesFolder(args.Path, collectionType == CollectionType.TvShows, args.FileSystemChildren, args.DirectoryService))
+                if (TVUtils.IsSeriesFolder(args.Path, collectionType == CollectionType.TvShows, args.FileSystemChildren, args.DirectoryService))
                 {
                     return new Series();
                 }

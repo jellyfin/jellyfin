@@ -446,7 +446,7 @@ namespace MediaBrowser.WebDashboard.Api
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
             // jQuery + jQuery mobile
-            await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
@@ -534,8 +534,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "alphapicker.js",
                                 "addpluginpage.js",
                                 "advancedconfigurationpage.js",
-                                "advancedpaths.js",
-                                "advancedserversettings.js",
                                 "metadataadvanced.js",
                                 "appsplayback.js",
                                 "autoorganizetv.js",

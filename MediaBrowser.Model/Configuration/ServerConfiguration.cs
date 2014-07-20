@@ -35,12 +35,6 @@ namespace MediaBrowser.Model.Configuration
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the legacy web socket port number.
-        /// </summary>
-        /// <value>The legacy web socket port number.</value>
-        public int LegacyWebSocketPortNumber { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
@@ -216,7 +210,6 @@ namespace MediaBrowser.Model.Configuration
             MediaEncodingQuality = EncodingQuality.Auto;
             ImageSavingConvention = ImageSavingConvention.Compatible;
             HttpServerPortNumber = 8096;
-            LegacyWebSocketPortNumber = 8945;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;

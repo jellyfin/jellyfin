@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Providers.Movies;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MediaBrowser.Tests.Providers {
@@ -19,12 +18,6 @@ namespace MediaBrowser.Tests.Providers {
             NameParser.ParseName("My Movie 2 (2013)", out name, out year);
             Assert.AreEqual("My Movie 2", name);
             Assert.AreEqual(2013, year);
-
-            name = string.Empty;
-            year = null;
-            NameParser.ParseName("2013 - My Movie 2", out name, out year);
-            Assert.AreEqual(2013, year);
-            Assert.AreEqual("My Movie 2", name);
 
             name = string.Empty;
             year = null;
