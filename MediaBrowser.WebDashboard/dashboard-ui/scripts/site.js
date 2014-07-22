@@ -522,9 +522,9 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
-                $(this).off("panelafterclose").remove();
+                $(this).off("panelclose").remove();
             });
         });
     },

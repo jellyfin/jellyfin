@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using ServiceStack;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Sync
@@ -50,9 +51,11 @@ namespace MediaBrowser.Api.Sync
     {
     }
 
-    [Route("/Sync/Schedules", "POST", Summary = "Gets sync schedules.")]
-    public class CreateSyncSchedule : SyncScheduleRequest
+    [Route("/Sync/Targets", "GET", Summary = "Gets a list of available sync targets.")]
+    public class GetSyncTarget : IReturn<List<SyncTarget>>
     {
+        [ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
     }
 
     [Authenticated]
@@ -63,6 +66,13 @@ namespace MediaBrowser.Api.Sync
         public SyncService(ISyncManager syncManager)
         {
             _syncManager = syncManager;
+        }
+
+        public object Get(GetSyncTarget request)
+        {
+            var result = _syncManager.GetSyncTargets(request.UserId);
+
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetSyncJobs request)
@@ -116,13 +126,6 @@ namespace MediaBrowser.Api.Sync
         public void Post(CreateSyncJob request)
         {
             var task = _syncManager.CreateJob(request);
-
-            Task.WaitAll(task);
-        }
-
-        public void Post(CreateSyncSchedule request)
-        {
-            var task = _syncManager.CreateSchedule(request);
 
             Task.WaitAll(task);
         }

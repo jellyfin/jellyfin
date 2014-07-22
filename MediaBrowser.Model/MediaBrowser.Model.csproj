@@ -303,7 +303,6 @@
     <Compile Include="Sync\SyncQuality.cs" />
     <Compile Include="Sync\SyncSchedule.cs" />
     <Compile Include="Sync\SyncScheduleQuery.cs" />
-    <Compile Include="Sync\SyncScheduleRequest.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="Themes\AppTheme.cs" />

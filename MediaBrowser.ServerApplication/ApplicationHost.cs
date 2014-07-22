@@ -561,7 +561,10 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager);
+            SyncManager = new SyncManager();
+            RegisterSingleInstance(SyncManager);
+
+            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager);
             RegisterSingleInstance(DtoService);
 
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository);
@@ -613,9 +616,6 @@ namespace MediaBrowser.ServerApplication
             EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger,
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
-
-            SyncManager = new SyncManager();
-            RegisterSingleInstance(SyncManager);
 
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);

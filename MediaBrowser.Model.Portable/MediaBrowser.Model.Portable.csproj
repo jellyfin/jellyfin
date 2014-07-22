@@ -866,9 +866,6 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncScheduleQuery.cs">
       <Link>Sync\SyncScheduleQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Sync\SyncScheduleRequest.cs">
-      <Link>Sync\SyncScheduleRequest.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncTarget.cs">
       <Link>Sync\SyncTarget.cs</Link>
     </Compile>

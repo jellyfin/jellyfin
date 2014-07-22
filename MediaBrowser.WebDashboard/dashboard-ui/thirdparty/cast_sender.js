@@ -5,7 +5,7 @@ chrome.cast.ApiBootstrap_ = function() {
 };
 chrome.cast.ApiBootstrap_.EXTENSION_IDS = ["boadgeojelhgndaghljhdicfkmllpafd", "dliochdbjfkdbacpmhlcpmleaejidimm", "hfaagokkkhdbgiakmmlclaapfelnkoah", "fmfcbgogabcbclcofgocippekhfcmgfj", "enhhojjnijigcajfphajepfemndkmdlo"];
 chrome.cast.ApiBootstrap_.findInstalledExtension_ = function(callback) {
-  //chrome.cast.ApiBootstrap_.findInstalledExtensionHelper_(0, callback);
+  chrome.cast.ApiBootstrap_.findInstalledExtensionHelper_(0, callback);
 };
 chrome.cast.ApiBootstrap_.findInstalledExtensionHelper_ = function(index, callback) {
   index == chrome.cast.ApiBootstrap_.EXTENSION_IDS.length ? callback(null) : chrome.cast.ApiBootstrap_.isExtensionInstalled_(chrome.cast.ApiBootstrap_.EXTENSION_IDS[index], function(installed) {

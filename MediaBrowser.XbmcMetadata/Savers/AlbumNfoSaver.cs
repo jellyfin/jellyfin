@@ -43,37 +43,25 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var album = (MusicAlbum)item;
             
-            var tracks = album.Tracks
-                .ToList();
-
-            var artists = tracks
-                .SelectMany(i =>
-                {
-                    var list = new List<string>();
-
-                    if (!string.IsNullOrEmpty(i.AlbumArtist))
-                    {
-                        list.Add(i.AlbumArtist);
-                    }
-                    list.AddRange(i.Artists);
-
-                    return list;
-                })
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var artist in artists)
+            foreach (var artist in album.Artists)
             {
                 writer.WriteElementString("artist", artist);
             }
 
-            AddTracks(tracks, writer);
+            foreach (var artist in album.AlbumArtists)
+            {
+                writer.WriteElementString("albumartist", artist);
+            }
+
+            AddTracks(album.Tracks, writer);
         }        
         
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private void AddTracks(IEnumerable<Audio> tracks, XmlWriter writer)
         {
-            foreach (var track in tracks.OrderBy(i => i.ParentIndexNumber ?? 0).ThenBy(i => i.IndexNumber ?? 0))
+            foreach (var track in tracks.OrderBy(i => i.ParentIndexNumber ?? 0)
+                .ThenBy(i => i.IndexNumber ?? 0))
             {
                 writer.WriteStartElement("track");
 
@@ -103,7 +91,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var list = new List<string>
             {
                     "track",
-                    "artist"
+                    "artist",
+                    "albumartist"
             };
 
             return list;

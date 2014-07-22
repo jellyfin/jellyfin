@@ -757,13 +757,17 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceProperties = new DeviceInfo();
 
-            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
-            if (name != null)
-                deviceProperties.Name = name.Value;
+            var friendlyNames = new List<string>();
 
-            var name2 = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
-            if (name2 != null)
-                deviceProperties.Name = name2.Value;
+            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
+            if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+                friendlyNames.Add(name.Value);
+
+            var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
+            if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+                friendlyNames.Add(room.Value);
+
+            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)

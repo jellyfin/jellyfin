@@ -476,9 +476,9 @@
 
         $(document.body).append(html);
 
-        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
-            $(this).off("panelafterclose").remove();
+            $(this).off("panelclose").remove();
         });
 
         promise.done(function (targets) {

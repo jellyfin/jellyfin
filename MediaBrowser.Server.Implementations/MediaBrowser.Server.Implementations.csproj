@@ -272,6 +272,7 @@
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
     <Compile Include="Sync\CloudSyncProvider.cs" />
+    <Compile Include="Sync\MockSyncProvider.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
