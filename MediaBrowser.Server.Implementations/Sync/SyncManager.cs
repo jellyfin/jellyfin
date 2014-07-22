@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Controller.Sync;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Sync;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using System;
@@ -10,7 +13,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class SyncManager : ISyncManager
     {
-        private ISyncProvider[] _providers = new ISyncProvider[]{};
+        private ISyncProvider[] _providers = new ISyncProvider[] { };
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
         {
@@ -18,11 +21,6 @@ namespace MediaBrowser.Server.Implementations.Sync
         }
 
         public Task<List<SyncJob>> CreateJob(SyncJobRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SyncSchedule> CreateSchedule(SyncScheduleRequest request)
         {
             throw new NotImplementedException();
         }
@@ -57,9 +55,70 @@ namespace MediaBrowser.Server.Implementations.Sync
             throw new NotImplementedException();
         }
 
-        public IEnumerable<SyncTarget> GetSyncTargets()
+        public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
-            return _providers.SelectMany(i => i.GetSyncTargets());
+            return _providers
+                .SelectMany(GetSyncTargets)
+                .OrderBy(i => i.Name);
+        }
+
+        private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider)
+        {
+            var providerId = GetSyncProviderId(provider);
+
+            return provider.GetSyncTargets().Select(i => new SyncTarget
+            {
+                Name = i.Name,
+                Id = providerId + "-" + i.Id
+            });
+        }
+
+        private ISyncProvider GetSyncProvider(SyncTarget target)
+        {
+            var providerId = target.Id.Split(new[] { '-' }, 2).First();
+
+            return _providers.First(i => string.Equals(providerId, GetSyncProviderId(i)));
+        }
+
+        private string GetSyncProviderId(ISyncProvider provider)
+        {
+            return (provider.GetType().Name + provider.Name).GetMD5().ToString("N");
+        }
+
+        public bool SupportsSync(BaseItem item)
+        {
+            if (item.LocationType == LocationType.Virtual)
+            {
+                return false;
+            }
+
+            if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            {
+                if (item.RunTimeTicks.HasValue)
+                {
+                    var video = item as Video;
+
+                    if (video != null)
+                    {
+                        if (video.VideoType != VideoType.VideoFile)
+                        {
+                            return false;
+                        }
+
+                        if (video.IsMultiPart)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
         }
     }
 }

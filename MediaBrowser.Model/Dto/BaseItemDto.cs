@@ -53,6 +53,8 @@ namespace MediaBrowser.Model.Dto
         public bool IsUnidentified { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
+
+        public bool? SupportsSync { get; set; }
         
         /// <summary>
         /// Gets or sets the DVD season number.

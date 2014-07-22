@@ -10,12 +10,12 @@ namespace MediaBrowser.Server.Implementations.Sync
     {
         public IEnumerable<SyncTarget> GetSyncTargets()
         {
-            throw new NotImplementedException();
+            return new List<SyncTarget>();
         }
 
         public DeviceProfile GetDeviceProfile(SyncTarget target)
         {
-            throw new NotImplementedException();
+            return new DeviceProfile();
         }
 
         public string Name

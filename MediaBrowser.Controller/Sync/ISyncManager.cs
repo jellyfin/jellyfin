@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Querying;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,13 +14,6 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="request">The request.</param>
         /// <returns>Task.</returns>
         Task<List<SyncJob>> CreateJob(SyncJobRequest request);
-
-        /// <summary>
-        /// Creates the schedule.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task.</returns>
-        Task<SyncSchedule> CreateSchedule(SyncScheduleRequest request);
 
         /// <summary>
         /// Gets the jobs.
@@ -69,7 +63,13 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Gets the synchronize targets.
         /// </summary>
-        /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncTarget> GetSyncTargets();
+        IEnumerable<SyncTarget> GetSyncTargets(string userId);
+
+        /// <summary>
+        /// Supportses the synchronize.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool SupportsSync(BaseItem item);
     }
 }

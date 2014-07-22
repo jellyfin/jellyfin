@@ -86,9 +86,17 @@ namespace MediaBrowser.Dlna.Channels
                     return;
                 }
 
-                var device = await Device.CreateuPnpDeviceAsync(new Uri(location), _httpClient, _config, _logger).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(new Uri(location), _httpClient, _config, _logger)
+                            .ConfigureAwait(false);
 
-                _servers.Add(device);
+                if (!_servers.Any(i => string.Equals(i.Properties.UUID, device.Properties.UUID, StringComparison.OrdinalIgnoreCase)))
+                {
+                    _servers.Add(device);
+                }
+            }
+            catch (Exception ex)
+            {
+                
             }
             finally
             {

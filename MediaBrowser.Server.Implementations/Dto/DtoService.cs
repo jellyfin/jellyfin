@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -38,8 +39,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IProviderManager _providerManager;
 
         private readonly Func<IChannelManager> _channelManagerFactory;
+        private readonly ISyncManager _syncManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -50,6 +52,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _fileSystem = fileSystem;
             _providerManager = providerManager;
             _channelManagerFactory = channelManagerFactory;
+            _syncManager = syncManager;
         }
 
         /// <summary>
@@ -145,6 +148,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, fields);
+
+            if (fields.Contains(ItemFields.SyncInfo))
+            {
+                dto.SupportsSync = _syncManager.SupportsSync(item);
+            }
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {

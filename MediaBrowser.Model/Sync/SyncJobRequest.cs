@@ -10,19 +10,25 @@ namespace MediaBrowser.Model.Sync
         /// <value>The device identifier.</value>
         public List<string> TargetIds { get; set; }
         /// <summary>
-        /// Gets or sets the item identifier.
+        /// Gets or sets the item ids.
         /// </summary>
-        /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
+        /// <value>The item ids.</value>
+        public List<string> ItemIds { get; set; }
         /// <summary>
         /// Gets or sets the quality.
         /// </summary>
         /// <value>The quality.</value>
         public SyncQuality Quality { get; set; }
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
 
         public SyncJobRequest()
         {
             TargetIds = new List<string>();
+            ItemIds = new List<string>();
         }
     }
 }
