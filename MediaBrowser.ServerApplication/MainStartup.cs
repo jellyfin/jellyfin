@@ -193,7 +193,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="appPaths">The app paths.</param>
         private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
-            logger.Info("Media Browser Server started");
+            logger.Info("Media Browser Server started"); 
             ApplicationHost.LogEnvironmentInfo(logger, appPaths);
         }
 
@@ -221,13 +221,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             var task = _appHost.Init(initProgress);
-            Task.WaitAll(task);
-
-            task = _appHost.RunStartupTasks();
-            Task.WaitAll(task);
-
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
 
             if (runService)
             {
@@ -235,6 +229,11 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                Task.WaitAll(task);
+
+                SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+   
                 HideSplashScreen();
 
                 ShowTrayIcon();
