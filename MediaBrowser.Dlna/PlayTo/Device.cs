@@ -370,6 +370,8 @@ namespace MediaBrowser.Dlna.PlayTo
             if (_disposed)
                 return;
 
+            const int maxSuccessiveStopReturns = 5;
+
             try
             {
                 var transportState = await GetTransportInfo().ConfigureAwait(false);
@@ -408,7 +410,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         _successiveStopCount++;
 
-                        if (_successiveStopCount >= 10)
+                        if (_successiveStopCount >= maxSuccessiveStopReturns)
                         {
                             RestartTimerInactive();
                         }
@@ -423,6 +425,13 @@ namespace MediaBrowser.Dlna.PlayTo
             catch (Exception ex)
             {
                 _logger.ErrorException("Error updating device info", ex);
+
+                _successiveStopCount++;
+
+                if (_successiveStopCount >= maxSuccessiveStopReturns)
+                {
+                    RestartTimerInactive();
+                }
             }
         }
 
@@ -828,17 +837,15 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
             }
 
+            var device = new Device(deviceProperties, httpClient, logger, config);
+
             if (isRenderer)
             {
-                var device = new Device(deviceProperties, httpClient, logger, config);
-
                 await device.GetRenderingProtocolAsync().ConfigureAwait(false);
                 await device.GetAVProtocolAsync().ConfigureAwait(false);
-
-                return device;
             }
 
-            return null;
+            return device;
         }
 
         #endregion

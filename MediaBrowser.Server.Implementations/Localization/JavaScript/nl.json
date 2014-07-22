@@ -314,8 +314,10 @@
     "ButtonSubtitles": "Ondertitels",
     "ButtonScenes": "Scenes",
     "ButtonQuality": "Kwaliteit",
-    "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderNotifications": "Meldingen",
+    "HeaderSelectPlayer": "Selecteer Speler:",
     "ButtonSelect": "Selecteer",
-    "ButtonNew": "Nieuw"
+    "ButtonNew": "Nieuw",
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Fout"
 }

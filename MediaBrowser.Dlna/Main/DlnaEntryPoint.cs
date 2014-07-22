@@ -38,7 +38,7 @@ namespace MediaBrowser.Dlna.Main
         private SsdpHandler _ssdpHandler;
         private DeviceDiscovery _deviceDiscovery;
 
-        private readonly List<Guid> _registeredServerIds = new List<Guid>();
+        private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
         public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor)
@@ -63,7 +63,7 @@ namespace MediaBrowser.Dlna.Main
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
 
-            DlnaChannelFactory.Instance.Start(_deviceDiscovery);
+            DlnaChannelFactory.Instance.Start(_deviceDiscovery, () => _registeredServerIds);
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -109,7 +109,7 @@ namespace MediaBrowser.Dlna.Main
 
                 _ssdpHandler.Start();
 
-                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _httpClient, _ssdpHandler);
+                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _httpClient, _ssdpHandler, _network);
 
                 _deviceDiscovery.Start();
             }
@@ -174,7 +174,7 @@ namespace MediaBrowser.Dlna.Main
                 
                 _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address), services);
 
-                _registeredServerIds.Add(guid);
+                _registeredServerIds.Add(guid.ToString("N"));
             }
         }
 
@@ -216,8 +216,9 @@ namespace MediaBrowser.Dlna.Main
                         _dlnaManager,
                         _appHost,
                         _imageProcessor,
-                        _ssdpHandler,
-                        _deviceDiscovery);
+                        _deviceDiscovery,
+                        _httpClient,
+                        _config);
 
                     _manager.Start();
                 }
@@ -260,7 +261,7 @@ namespace MediaBrowser.Dlna.Main
             {
                 try
                 {
-                    _ssdpHandler.UnregisterNotification(id);
+                    _ssdpHandler.UnregisterNotification(new Guid(id));
                 }
                 catch (Exception ex)
                 {

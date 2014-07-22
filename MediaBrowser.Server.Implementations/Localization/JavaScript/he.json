@@ -317,5 +317,7 @@
     "HeaderNotifications": "Notifications",
     "HeaderSelectPlayer": "Select Player:",
     "ButtonSelect": "\u05d1\u05d7\u05e8",
-    "ButtonNew": "\u05d7\u05d3\u05e9"
+    "ButtonNew": "\u05d7\u05d3\u05e9",
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Error"
 }

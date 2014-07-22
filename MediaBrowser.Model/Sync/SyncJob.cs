@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the device identifier.
         /// </summary>
         /// <value>The device identifier.</value>
-        public string DeviceId { get; set; }
+        public string TargetId { get; set; }
         /// <summary>
         /// Gets or sets the item identifier.
         /// </summary>

@@ -12,7 +12,6 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html" data-role="button">${TabServices}</a>
-                    <a href="metadatachapters.html" data-role="button">${TabChapters}</a>
                     <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
                     <a href="metadataxbmc.html" data-role="button">${TabXbmcMetadata}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
@@ -20,23 +19,6 @@
 
                 <form id="advancedMetadataConfigurationForm">
 
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
-                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkEnableTmdbPersonUpdates" data-mini="true" />
-                            <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
-                        </li>
-                        <li>
-                            <input type="checkbox" id="chkEnableTvdbUpdates" data-mini="true" />
-                            <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
-                        </li>
-                    </ul>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="txtMetadataPath">${LabelMetadataPath}</label>
@@ -48,6 +30,75 @@
                         </li>
                     </ul>
 
+                    <div data-role="collapsible">
+                        <h2>${HeaderAutomaticUpdates}</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
+                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableTmdbPersonUpdates" data-mini="true" />
+                                    <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableTvdbUpdates" data-mini="true" />
+                                    <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderChapters}</h2>
+                        <div>
+                            <br/>
+                            <div style="display: none;">
+                                <p>${HeaderChapterDownloadingHelp}</p>
+
+                                <div class="chapterDownloadSettings" style="display: none;">
+                                    <fieldset data-role="controlgroup">
+                                        <legend>${HeaderDownloadChaptersFor}</legend>
+                                        <input type="checkbox" data-mini="true" id="chkDownloadChapterMovies" />
+                                        <label for="chkDownloadChapterMovies">${OptionMovies}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkDownloadChapterEpisodes" />
+                                        <label for="chkDownloadChapterEpisodes">${OptionEpisodes}</label>
+                                    </fieldset>
+                                    <br />
+                                    <div class="chapterFetchers">
+                                    </div>
+                                    <br />
+                                    <br />
+                                </div>
+                                <div class="noChapterProviders" style="display: none; color: green;">
+                                    <p>${MessageNoChapterProviders}</p>
+                                    <br />
+                                </div>
+                            </div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label>${HeaderExtractChapterImagesFor}</label>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkChaptersMovies" />
+                                        <label for="chkChaptersMovies">${OptionMovies}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkChaptersEpisodes" />
+                                        <label for="chkChaptersEpisodes">${OptionEpisodes}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkChaptersOtherVideos" />
+                                        <label for="chkChaptersOtherVideos">${OptionOtherVideos}</label>
+                                        <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br/><br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

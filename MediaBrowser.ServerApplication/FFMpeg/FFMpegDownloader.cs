@@ -26,10 +26,10 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
 
-        private readonly string[] _fontUrls = new[]
-            {
-                "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
-            };
+        private readonly string[] _fontUrls =
+        {
+            "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
+        };
 
         public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem)
         {
@@ -251,6 +251,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     Task.Run(async () =>
                     {
                         await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
+                        
                         await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
                     });
                 }

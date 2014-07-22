@@ -18,8 +18,7 @@
 
         statusCode: {
 
-            401: onAuthFailure,
-            403: onAuthFailure
+            401: onAuthFailure
         },
 
         error: function (event) {
@@ -712,10 +711,6 @@ var Dashboard = {
             divider: true,
             href: "advanced.html",
             selected: page.hasClass("advancedConfigurationPage")
-        }, {
-            name: Globalize.translate('TabScheduledTasks'),
-            href: "scheduledtasks.html",
-            selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
         }, {
             name: Globalize.translate('TabHelp'),
             href: "support.html",

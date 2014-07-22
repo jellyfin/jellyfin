@@ -317,5 +317,7 @@
     "HeaderNotifications": "Notifications",
     "HeaderSelectPlayer": "Select Player:",
     "ButtonSelect": "Seleccionar",
-    "ButtonNew": "Nuevo"
+    "ButtonNew": "Nuevo",
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Error"
 }

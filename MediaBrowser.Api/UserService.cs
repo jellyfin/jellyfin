@@ -405,7 +405,7 @@ namespace MediaBrowser.Api
 
                 if (!success)
                 {
-                    throw new UnauthorizedAccessException("Invalid user or password entered.");
+                    throw new ArgumentException("Invalid user or password entered.");
                 }
 
                 var task = _userManager.ChangePassword(user, request.NewPassword);

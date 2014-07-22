@@ -16,9 +16,11 @@
 
     loadScheduledTask: function (task) {
 
-        Dashboard.setPageTitle(task.Name);
+        var page = $.mobile.activePage;
 
-        $('#pTaskDescription', $.mobile.activePage).html(task.Description);
+        $('.taskName', page).html(task.Name);
+
+        $('#pTaskDescription', page).html(task.Description);
 
         ScheduledTaskPage.loadTaskTriggers(task);
 

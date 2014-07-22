@@ -25,10 +25,12 @@ namespace MediaBrowser.Dlna.Ssdp
         private readonly SsdpHandler _ssdpHandler;
         private readonly CancellationTokenSource _tokenSource;
         private readonly IHttpClient _httpClient;
+        private readonly INetworkManager _networkManager;
 
-        public event EventHandler<GenericEventArgs<DeviceDiscoveryInfo>> DeviceDiscovered;
+        public event EventHandler<SsdpMessageEventArgs> DeviceDiscovered;
+        public event EventHandler<SsdpMessageEventArgs> DeviceLeft;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IHttpClient httpClient, SsdpHandler ssdpHandler)
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IHttpClient httpClient, SsdpHandler ssdpHandler, INetworkManager networkManager)
         {
             _tokenSource = new CancellationTokenSource();
 
@@ -36,11 +38,12 @@ namespace MediaBrowser.Dlna.Ssdp
             _config = config;
             _httpClient = httpClient;
             _ssdpHandler = ssdpHandler;
+            _networkManager = networkManager;
         }
 
         public void Start()
         {
-            //_ssdpHandler.MessageReceived += _ssdpHandler_MessageReceived;
+            _ssdpHandler.MessageReceived += _ssdpHandler_MessageReceived;
 
             foreach (var network in GetNetworkInterfaces())
             {
@@ -72,8 +75,30 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
+         void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
+            string nts;
+            e.Headers.TryGetValue("NTS", out nts);
+
+            if (String.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
+                String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
+                !_disposed)
+            {
+                EventHelper.FireEventIfNotNull(DeviceLeft, this, e, _logger);
+                return;
+            }
+            
+             try
+            {
+                //TryCreateDevice(e, IPAddress.Parse(_networkManager.GetLocalIpAddresses().First()));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating play to controller", ex);
+            }
         }
 
         private IEnumerable<NetworkInterface> GetNetworkInterfaces()
@@ -113,8 +138,9 @@ namespace MediaBrowser.Dlna.Ssdp
                         if (receivedBytes > 0)
                         {
                             var args = SsdpHelper.ParseSsdpResponse(receiveBuffer, endPoint);
+                            args.LocalIp = localIp;
 
-                            TryCreateDevice(args, localIp);
+                            TryCreateDevice(args);
                         }
                     }
 
@@ -197,7 +223,7 @@ namespace MediaBrowser.Dlna.Ssdp
             return socket;
         }
 
-        private async void TryCreateDevice(SsdpMessageEventArgs args, IPAddress localIp)
+        private  void TryCreateDevice(SsdpMessageEventArgs args)
         {
             string nts;
             args.Headers.TryGetValue("NTS", out nts);
@@ -230,38 +256,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.Debug("{0} Device message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
             }
 
-            try
-            {
-                await TryCreateDevice(new Uri(location), localIp, usn, nt).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error creating play to controller", ex);
-            }
-        }
-
-        private async Task TryCreateDevice(Uri uri, IPAddress localIp, string usn, string nt)
-        {
-            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
-
-            if (device != null)
-            {
-                EventHelper.FireEventIfNotNull(DeviceDiscovered, this, new GenericEventArgs<DeviceDiscoveryInfo>
-                {
-                    Argument = new DeviceDiscoveryInfo
-                    {
-                        Device = device,
-                        LocalIpAddress = localIp,
-                        Uri = uri,
-                        Usn = usn, 
-                        Nt = nt
-                    }
-
-                }, _logger);
-            }
+            EventHelper.FireEventIfNotNull(DeviceDiscovered, this, args, _logger);
         }
 
         public void Dispose()

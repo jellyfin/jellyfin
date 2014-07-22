@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -34,7 +33,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IImageProcessor _imageProcessor;
 
-        private readonly SsdpHandler _ssdpHandler;
+        private readonly DeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
 
         public bool IsSessionActive
@@ -52,7 +51,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -61,8 +60,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _dlnaManager = dlnaManager;
             _userManager = userManager;
             _imageProcessor = imageProcessor;
-            _ssdpHandler = ssdpHandler;
             _serverAddress = serverAddress;
+            _deviceDiscovery = deviceDiscovery;
             _logger = logger;
         }
 
@@ -75,9 +74,38 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.MediaChanged += _device_MediaChanged;
             _device.Start();
 
-            _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
+            _deviceDiscovery.DeviceLeft += _deviceDiscovery_DeviceLeft;
 
             _updateTimer = new Timer(updateTimer_Elapsed, null, 60000, 60000);
+        }
+
+        void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
+        {
+            string nts;
+            e.Headers.TryGetValue("NTS", out nts);
+
+            string usn;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
+
+            string nt;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
+
+            if ( usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
+                !_disposed)
+            {
+                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    try
+                    {
+                        _sessionManager.ReportSessionEnded(_session.Id);
+                    }
+                    catch
+                    {
+                        // Could throw if the session is already gone
+                    }
+                }
+            }
         }
 
         private void updateTimer_Elapsed(object state)
@@ -99,37 +127,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private string GetServerAddress()
         {
             return _serverAddress;
-        }
-
-        void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
-        {
-            string nts;
-            e.Headers.TryGetValue("NTS", out nts);
-
-            string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
-
-            string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
-
-            if (String.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
-                String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
-                usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
-                !_disposed)
-            {
-                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    try
-                    {
-                        _sessionManager.ReportSessionEnded(_session.Id);
-                    }
-                    catch
-                    {
-                        // Could throw if the session is already gone
-                    }
-                }
-            }
         }
 
         async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
@@ -626,7 +623,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _device.MediaChanged -= _device_MediaChanged;
-                _ssdpHandler.MessageReceived -= _SsdpHandler_MessageReceived;
+                _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
 
                 DisposeUpdateTimer();
 

@@ -125,7 +125,7 @@
     "HeaderLatestMedia": "Latest Media",
     "ButtonMore": "V\u00edce...",
     "HeaderFavoriteMovies": "Obl\u00edben\u00e9 filmy",
-    "HeaderFavoriteShows": "Favorite Shows",
+    "HeaderFavoriteShows": "Obl\u00edben\u00e9 seri\u00e1ly",
     "HeaderFavoriteEpisodes": "Favorite Episodes",
     "HeaderFavoriteGames": "Favorite Games",
     "HeaderRatingsDownloads": "Rating \/ Downloads",
@@ -208,7 +208,7 @@
     "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
     "ButtonHome": "Dom\u016f",
     "ButtonDashboard": "Dashboard",
-    "ButtonReports": "Reports",
+    "ButtonReports": "Hl\u00e1\u0161en\u00ed",
     "ButtonMetadataManager": "Metadata Manager",
     "HeaderTime": "Time",
     "HeaderName": "N\u00e1zev",
@@ -317,5 +317,7 @@
     "HeaderNotifications": "Notifications",
     "HeaderSelectPlayer": "Select Player:",
     "ButtonSelect": "Vybrat",
-    "ButtonNew": "Nov\u00e9"
+    "ButtonNew": "Nov\u00e9",
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Error"
 }

@@ -1,12 +1,20 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${ScheduledTasksTitle}</title>
+    <title>${TitleAdvanced}</title>
 </head>
 <body>
-    <div id="scheduledTasksPage" data-role="page" class="page type-interior">
+    <div id="scheduledTasksPage" data-role="page" class="page type-interior advancedConfigurationPage">
         <div data-role="content">
             <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabScheduledTasks}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
                 <div class="readOnlyContent">
                     <p>${ScheduledTasksHelp}</p>
                     <div id="divScheduledTasks"></div>

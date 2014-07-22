@@ -895,6 +895,12 @@
                     self.currentItem = null;
                     self.currentMediaSource = null;
 
+                    // When the browser regains focus it may start auto-playing the last video
+                    if ($.browser.safari) {
+                        elem.src = 'files/dummy.mp4';
+                        elem.play();
+                    }
+
                 }).trigger("ended");
 
             } else {

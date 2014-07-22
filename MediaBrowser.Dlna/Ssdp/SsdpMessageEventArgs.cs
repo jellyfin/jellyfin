@@ -12,6 +12,8 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public Dictionary<string, string> Headers { get; set; }
 
+        public IPAddress LocalIp { get; set; }
+
         public SsdpMessageEventArgs()
         {
             Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

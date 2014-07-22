@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the device identifier.
         /// </summary>
         /// <value>The device identifier.</value>
-        public List<string> DeviceIds { get; set; }
+        public List<string> TargetIds { get; set; }
         /// <summary>
         /// Gets or sets the quality.
         /// </summary>
@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Sync
 
         public SyncScheduleRequest()
         {
-            DeviceIds = new List<string>();
+            TargetIds = new List<string>();
         }
     }
 }
