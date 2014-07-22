@@ -194,13 +194,7 @@ namespace MediaBrowser.ServerApplication
         private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
             logger.Info("Media Browser Server started");
-            logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
-
-            logger.Info("Server: {0}", Environment.MachineName);
-            logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
-            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
-
-            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
+            ApplicationHost.LogEnvironmentInfo(logger, appPaths);
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
