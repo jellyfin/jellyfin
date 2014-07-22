@@ -319,7 +319,9 @@
     <Compile Include="Sorting\SortExtensions.cs" />
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
+    <Compile Include="Sync\ICloudSyncProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
+    <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
   </ItemGroup>

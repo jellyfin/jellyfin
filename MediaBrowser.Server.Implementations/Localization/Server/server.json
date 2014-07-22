@@ -900,5 +900,8 @@
     "TabUsers":  "Users",
     "HeaderFeatures":  "Features",
     "HeaderAdvanced":  "Advanced",
-    "ButtonSync":  "Sync"
+    "ButtonSync":  "Sync",
+    "TabScheduledTasks":  "Scheduled Tasks",
+    "HeaderChapters":  "Chapters",
+    "HeaderResumeSettings":  "Resume Settings"
 }

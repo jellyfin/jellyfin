@@ -224,6 +224,7 @@
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
+    <Compile Include="Security\AuthenticationException.cs" />
     <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
@@ -269,6 +270,8 @@
     <Compile Include="Persistence\SqliteUserRepository.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
+    <Compile Include="Sync\AppSyncProvider.cs" />
+    <Compile Include="Sync\CloudSyncProvider.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />

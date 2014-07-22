@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
@@ -26,11 +28,12 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
+        private readonly IHttpClient _httpClient;
+        private readonly IServerConfigurationManager _config;
 
-        private readonly SsdpHandler _ssdpHandler;
         private readonly DeviceDiscovery _deviceDiscovery;
         
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, DeviceDiscovery deviceDiscovery)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -40,8 +43,9 @@ namespace MediaBrowser.Dlna.PlayTo
             _dlnaManager = dlnaManager;
             _appHost = appHost;
             _imageProcessor = imageProcessor;
-            _ssdpHandler = ssdpHandler;
             _deviceDiscovery = deviceDiscovery;
+            _httpClient = httpClient;
+            _config = config;
         }
 
         public void Start()
@@ -49,14 +53,19 @@ namespace MediaBrowser.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
         }
 
-        async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<DeviceDiscoveryInfo> e)
+        async void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
         {
-            var device = e.Argument.Device;
-            var localIp = e.Argument.LocalIpAddress;
+            var localIp = e.LocalIp;
 
-            var usn = e.Argument.Usn;
-            var nt = e.Argument.Nt;
+            string usn;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
+            string nt;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+
+            string location;
+            if (!e.Headers.TryGetValue("Location", out location)) location = string.Empty;
+            
             // It has to report that it's a media renderer
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
@@ -67,12 +76,14 @@ namespace MediaBrowser.Dlna.PlayTo
             if (_sessionManager.Sessions.Any(i => usn.IndexOf(i.DeviceId, StringComparison.OrdinalIgnoreCase) != -1))
             {
                 return;
-            } 
+            }
+
+            var uri = new Uri(location);
+
+            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
             
             if (device.RendererCommands != null)
             {
-                var uri = e.Argument.Uri;
-
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
 
@@ -90,8 +101,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         _dlnaManager,
                         _userManager,
                         _imageProcessor,
-                        _ssdpHandler,
-                        serverAddress);
+                        serverAddress,
+                        _deviceDiscovery);
 
                     controller.Init(device);
 

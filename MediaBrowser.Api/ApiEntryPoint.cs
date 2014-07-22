@@ -302,75 +302,38 @@ namespace MediaBrowser.Api
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
-        /// <param name="delete">The delete.</param>
+        /// <param name="deleteFiles">The delete files.</param>
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">deviceId</exception>
         /// <exception cref="System.ArgumentNullException">sourcePath</exception>
-        internal async Task KillTranscodingJobs(string deviceId, Func<string, bool> delete, bool acquireLock)
+        internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException("deviceId");
             }
 
-            var jobs = new List<TranscodingJob>();
-
-            lock (_activeTranscodingJobs)
-            {
-                // This is really only needed for HLS. 
-                // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            if (jobs.Count == 0)
-            {
-                return;
-            }
-
-            if (acquireLock)
-            {
-                await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-
-            try
-            {
-                foreach (var job in jobs)
-                {
-                    KillTranscodingJob(job, delete);
-                }
-            }
-            finally
-            {
-                if (acquireLock)
-                {
-                    TranscodingStartLock.Release();
-                }
-            }
+            return KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles, acquireLock);
         }
 
         /// <summary>
         /// Kills the transcoding jobs.
         /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="delete">The delete.</param>
+        /// <param name="killJob">The kill job.</param>
+        /// <param name="deleteFiles">The delete files.</param>
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">deviceId</exception>
-        internal async Task KillTranscodingJobs(string deviceId, TranscodingJobType type, Func<string, bool> delete, bool acquireLock)
+        internal async Task KillTranscodingJobs(Func<TranscodingJob,bool> killJob, Func<string, bool> deleteFiles, bool acquireLock)
         {
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException("deviceId");
-            }
-
             var jobs = new List<TranscodingJob>();
 
             lock (_activeTranscodingJobs)
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase) && i.Type == type));
+                jobs.AddRange(_activeTranscodingJobs.Where(killJob));
             }
 
             if (jobs.Count == 0)
@@ -387,7 +350,7 @@ namespace MediaBrowser.Api
             {
                 foreach (var job in jobs)
                 {
-                    KillTranscodingJob(job, delete);
+                    KillTranscodingJob(job, deleteFiles);
                 }
             }
             finally

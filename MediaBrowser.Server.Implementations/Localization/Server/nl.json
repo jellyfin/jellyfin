@@ -627,7 +627,7 @@
     "TabNowPlaying": "Wordt nu afgespeeld",
     "TabNavigation": "Navigatie",
     "TabControls": "Besturing",
-    "ButtonFullscreen": "Toggle fullscreen",
+    "ButtonFullscreen": "Schakelen tussen volledig scherm ",
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Ondertitels",
     "ButtonAudioTracks": "Audio tracks",
@@ -883,6 +883,10 @@
     "LabelPageSize": "Schermgrootte:",
     "LabelView": "Weergave:",
     "TabUsers": "Gebruikers",
-    "HeaderFeatures": "Features",
-    "HeaderAdvanced": "Advanced"
+    "HeaderFeatures": "Functies",
+    "HeaderAdvanced": "Geavanceerd",
+    "ButtonSync": "Sync",
+    "TabScheduledTasks": "Geplande taken",
+    "HeaderChapters": "Hoofdstukken",
+    "HeaderResumeSettings": "Resume Settings"
 }

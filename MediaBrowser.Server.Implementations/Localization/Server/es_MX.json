@@ -884,5 +884,9 @@
     "LabelView": "Vista:",
     "TabUsers": "Usuarios",
     "HeaderFeatures": "Features",
-    "HeaderAdvanced": "Advanced"
+    "HeaderAdvanced": "Advanced",
+    "ButtonSync": "Sync",
+    "TabScheduledTasks": "Tareas Programadas",
+    "HeaderChapters": "Chapters",
+    "HeaderResumeSettings": "Resume Settings"
 }

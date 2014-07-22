@@ -884,5 +884,9 @@
     "LabelView": "View:",
     "TabUsers": "Users",
     "HeaderFeatures": "Features",
-    "HeaderAdvanced": "Advanced"
+    "HeaderAdvanced": "Advanced",
+    "ButtonSync": "Sync",
+    "TabScheduledTasks": "Scheduled Tasks",
+    "HeaderChapters": "Chapters",
+    "HeaderResumeSettings": "Resume Settings"
 }

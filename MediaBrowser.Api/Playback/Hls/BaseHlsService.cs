@@ -104,11 +104,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                     else
                     {
-                        if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
-                        {
-                            await ApiEntryPoint.Instance.KillTranscodingJobs(state.Request.DeviceId, TranscodingJobType.Hls, p => true, false).ConfigureAwait(false);
-                        }
-
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {

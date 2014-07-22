@@ -188,6 +188,7 @@ namespace MediaBrowser.ServerApplication
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
+        private ISyncManager SyncManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -613,7 +614,8 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
-            RegisterSingleInstance<ISyncManager>(new SyncManager());
+            SyncManager = new SyncManager();
+            RegisterSingleInstance(SyncManager);
 
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);
@@ -823,6 +825,7 @@ namespace MediaBrowser.ServerApplication
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
+            SyncManager.AddParts(GetExports<ISyncProvider>());
         }
 
         /// <summary>
@@ -1139,15 +1142,16 @@ namespace MediaBrowser.ServerApplication
 
             var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
 
-            HasUpdateAvailable = versionObject != null && versionObject >= ApplicationVersion;
+            var isUpdateAvailable = versionObject != null && versionObject > ApplicationVersion;
+            HasUpdateAvailable = isUpdateAvailable;
 
-            if (versionObject != null && versionObject >= ApplicationVersion)
+            if (isUpdateAvailable)
             {
                 Logger.Info("New application version is available: {0}", versionObject);
             }
 
-            return versionObject != null ? 
-                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = versionObject > ApplicationVersion, Package = version } :
+            return versionObject != null ?
+                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
                 new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
         }
 

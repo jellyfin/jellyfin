@@ -314,8 +314,10 @@
     "ButtonSubtitles": "Legendas",
     "ButtonScenes": "Cenas",
     "ButtonQuality": "Qualidade",
-    "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderNotifications": "Avisos",
+    "HeaderSelectPlayer": "Selecione onde executar:",
     "ButtonSelect": "Selecionar",
-    "ButtonNew": "Nova"
+    "ButtonNew": "Nova",
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Error"
 }

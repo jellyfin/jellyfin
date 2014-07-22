@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (user != null && user.Configuration.IsDisabled)
             {
-                throw new UnauthorizedAccessException("User account has been disabled.");
+                throw new AuthenticationException("User account has been disabled.");
             }
 
             if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&

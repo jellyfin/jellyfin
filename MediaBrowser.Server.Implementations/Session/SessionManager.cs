@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Security;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -232,7 +233,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (user != null && user.Configuration.IsDisabled)
             {
-                throw new UnauthorizedAccessException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
+                throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
             var activityDate = DateTime.UtcNow;
@@ -1111,12 +1112,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
-            if (!session.UserId.HasValue)
-            {
-                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
-            }
-
-            if (session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == userId)
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
@@ -1144,12 +1140,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
-            if (!session.UserId.HasValue)
-            {
-                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
-            }
-
-            if (session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == userId)
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
@@ -1166,7 +1157,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new UnauthorizedAccessException();
+                throw new AuthenticationException();
             }
 
             var result = _authRepo.Get(new AuthenticationInfoQuery
@@ -1178,12 +1169,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (info == null)
             {
-                throw new UnauthorizedAccessException();
+                throw new AuthenticationException();
             }
 
             if (!info.IsActive)
             {
-                throw new UnauthorizedAccessException("Access token has expired.");
+                throw new AuthenticationException("Access token has expired.");
             }
 
             if (!string.IsNullOrWhiteSpace(info.UserId))
@@ -1192,7 +1183,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (user == null || user.Configuration.IsDisabled)
                 {
-                    throw new UnauthorizedAccessException("User account has been disabled.");
+                    throw new AuthenticationException("User account has been disabled.");
                 }
             }
         }
@@ -1225,7 +1216,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!result)
             {
-                throw new UnauthorizedAccessException("Invalid user or password entered.");
+                throw new AuthenticationException("Invalid user or password entered.");
             }
 
             var user = _userManager.Users

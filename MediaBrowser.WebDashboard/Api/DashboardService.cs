@@ -450,7 +450,12 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+
+            // This script produces errors in older versions of safari
+            if ((Request.UserAgent ?? string.Empty).IndexOf("chrome/", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+            }
             
             await AppendLocalization(memoryStream).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
@@ -535,7 +540,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "addpluginpage.js",
                                 "advancedconfigurationpage.js",
                                 "metadataadvanced.js",
-                                "appsplayback.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
                                 "channels.js",
@@ -591,7 +595,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
-                                "metadatachapters.js",
                                 "metadataxbmc.js",
                                 "moviegenres.js",
                                 "moviecollections.js",

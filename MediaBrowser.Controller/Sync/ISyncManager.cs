@@ -60,5 +60,16 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelSchedule(string id);
+
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        void AddParts(IEnumerable<ISyncProvider> providers);
+
+        /// <summary>
+        /// Gets the synchronize targets.
+        /// </summary>
+        /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
+        IEnumerable<SyncTarget> GetSyncTargets();
     }
 }
