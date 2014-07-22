@@ -193,8 +193,14 @@ namespace MediaBrowser.ServerApplication
         /// <param name="appPaths">The app paths.</param>
         private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
-            logger.Info("Media Browser Server started"); 
-            ApplicationHost.LogEnvironmentInfo(logger, appPaths);
+            logger.Info("Media Browser Server started");
+            logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
+
+            logger.Info("Server: {0}", Environment.MachineName);
+            logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
+            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
+
+            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -219,6 +225,7 @@ namespace MediaBrowser.ServerApplication
                 SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
+
 
             var task = _appHost.Init(initProgress);
             task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
