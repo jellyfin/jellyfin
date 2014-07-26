@@ -53,6 +53,12 @@
     font-weight: 500;
     src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
 }
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'), url(fonts/RobotoBold.woff) format('woff');
+}
 
 * {
     text-shadow: none!important;
@@ -61,7 +67,7 @@
 body {
     overflow-y: scroll!important;
     font-size: 13px;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: Roboto, Arial, Helvetica, sans-serif;
 }
 
 .bodyWithPopupOpen {
@@ -83,7 +89,7 @@ h1, h1 a {
 }
 
 .ui-loader h1 {
-    font-family: 'Open Sans';
+    font-family: Roboto;
     font-weight: bold!important;
     font-size: 18px;
 }
@@ -104,6 +110,15 @@ h2 {
 .ui-controlgroup a, a.ui-btn {
     font-weight: bold;
 }*/
+
+.ui-btn {
+    font-family: Roboto;
+    font-weight: 500!important;
+}
+
+.ui-listview li h3 {
+    font-weight: 500;
+}
 
 h1 a {
     text-decoration: none;
@@ -217,7 +232,7 @@ h1 .imageLink {
 
 .pageTitle {
     margin-top: 0;
-    font-family: "Open Sans";
+    font-family: Roboto;
 }
 
 .imageButton {
@@ -276,12 +291,10 @@ h1 .imageLink {
 
 .content-secondary {
     z-index: 1000;
-    background: #333;
     border: 0;
-    border-right: 1px solid #ddd;
     display: none;
     text-align: left;
-    width: 25%;
+    width: 220px;
     position: fixed;
     top: 51px;
     left: 0;
@@ -289,25 +302,25 @@ h1 .imageLink {
     margin: 0;
 }
 
-    .content-secondary h1 {
-        margin: 0;
-        padding: 20px 0 25px 20px;
-        color: #fff;
-    }
+.sidebarLinks {
+    margin-top: 2.75em;
+    margin-left: 1em;
+}
 
 .sidebarLinks a {
     display: block;
     padding: .6em 20px .6em 20px;
     text-decoration: none;
-    color: #eee!important;
+    color: #333!important;
     text-shadow: none!important;
-    font-weight: 400!important;
+    font-weight: 500!important;
     font-size: 14px;
+    border-radius: 2px;
 }
 
     .sidebarLinks a:hover {
-        background: #f2f2f2;
-        color: #000!important;
+        background: #52B54B;
+        color: #fff!important;
     }
 
     .sidebarLinks a.selectedSidebarLink {
@@ -318,7 +331,7 @@ h1 .imageLink {
 
 .sidebarDivider {
     height: 1px;
-    background: #444;
+    background: #ddd;
     margin: .25em 0;
 }
 
@@ -341,21 +354,21 @@ h1 .imageLink {
 
 .dashboardPanelDivider {
     height: 1px;
-    background: #444;
+    background: #ddd;
     margin: .25em 0;
 }
 
 .dashboardPanelLink {
-    padding: .6em .5em .6em 1.25em;
+    padding: .7em .5em .7em 1.25em;
     display: block;
     text-decoration: none;
-    color: #fff!important;
+    color: #000!important;
     font-weight: normal !important;
 }
 
     .dashboardPanelLink:hover {
-        background: #f2f2f2;
-        color: #000!important;
+        background: #52B54B;
+        color: #fff!important;
     }
 
 .selectedDashboardPanelLink {
@@ -365,10 +378,6 @@ h1 .imageLink {
 
 .dashboardPanel .ui-panel-inner {
     padding: 0;
-}
-
-.dashboardPanel {
-    background: #262626!important;
 }
 
 .appLinks a {
@@ -427,10 +436,8 @@ h1 .imageLink {
     }
 
     .content-primary {
-        width: 65%;
-        float: right;
-        padding: 80px 6% 3em 0;
-        margin: 0;
+        padding: 80px 0 3em 0;
+        margin: 0 0 0 270px;
     }
 
         .content-primary ul:first-child {
@@ -442,42 +449,6 @@ h1 .imageLink {
 
     .page:not(.standalonePage) .header {
         padding-top: 0;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-
-    .content-secondary {
-        width: 20%;
-    }
-
-    .content-primary {
-        width: 70%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-
-    .content-secondary {
-        width: 17%;
-    }
-
-    .content-primary {
-        width: 74%;
-    }
-}
-
-@media all and (min-width: 1920px) {
-
-
-    .content-secondary {
-        width: 20%;
-    }
-
-    .content-primary {
-        width: 71%;
     }
 }
 
@@ -881,11 +852,7 @@ progress {
     }
 
 .activeSession {
-    display: inline-block;
-    position: relative;
-    margin: 4px;
-    width: 275px;
-    height: 154.6875px;
+    width: 50%;
 }
 
 .sessionNowPlayingContent {
@@ -979,12 +946,6 @@ progress {
     bottom: 0;
 }
 
-.activeSession:hover {
-    -moz-box-shadow: 0 0 10px 3px #38c;
-    -webkit-box-shadow: 0 0 10px 3px #38c;
-    box-shadow: 0 0 10px 3px #38c;
-}
-
 .sessionNowPlayingTime {
     color: #fff;
     position: absolute;
@@ -1042,20 +1003,7 @@ progress {
     background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
 }
 
-@media all and (max-width: 1000px) {
-
-    .activeSession {
-        width: 230px;
-        height: 129.375px;
-    }
-}
-
 @media all and (max-width: 550px) {
-
-    .activeSession {
-        width: 210px;
-        height: 118.125px;
-    }
 
     .sessionAppName {
         max-width: 160px;
@@ -1064,20 +1012,11 @@ progress {
 
 @media all and (max-width: 500px) {
 
-    .activeSession {
-        width: 200px;
-        height: 112.5px;
-    }
-
     .sessionAppName {
         max-width: 150px;
     }
-}
-
-@media all and (max-width: 400px) {
 
     .activeSession {
-        width: 250px;
-        height: 140.625px;
+        width: 100%;
     }
 }

@@ -529,10 +529,10 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
-
+            
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                .Where(i => FileSystem.GetFileNameWithoutExtension(i).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
@@ -564,7 +564,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, directoryService, null).Select(audio =>
@@ -1564,7 +1564,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
             {
-                Name = System.IO.Path.GetFileNameWithoutExtension(Path);
+                Name = FileSystem.GetFileNameWithoutExtension(Path);
                 hasChanges = true;
             }
 

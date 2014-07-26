@@ -477,7 +477,7 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization);
+            var subtitleResolver = new SubtitleResolver(_localization, _fileSystem);
 
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, options.DirectoryService, false).ToList();
 
@@ -790,7 +790,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
             if (files.Count > 0)
             {
-                var parts = Path.GetFileNameWithoutExtension(files[0].FullName).Split('_');
+                var parts = _fileSystem.GetFileNameWithoutExtension(files[0]).Split('_');
 
                 if (parts.Length == 3)
                 {
@@ -798,7 +798,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     files = files.TakeWhile(f =>
                     {
-                        var fileParts = Path.GetFileNameWithoutExtension(f.FullName).Split('_');
+                        var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
 

@@ -1,6 +1,4 @@
-﻿using System.Text;
-using Amib.Threading;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host.HttpListener;
@@ -10,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +19,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         private readonly ILogger _logger;
         private HttpListener _listener;
         private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
-        private readonly SmartThreadPool _threadPoolManager;
 
         public System.Action<Exception, IRequest> ErrorHandler { get; set; }
         public Action<WebSocketConnectEventArgs> WebSocketHandler { get; set; }
@@ -28,11 +26,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
 
         private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         
-        public HttpListenerServer(ILogger logger, SmartThreadPool threadPoolManager)
+        public HttpListenerServer(ILogger logger)
         {
             _logger = logger;
-
-            _threadPoolManager = threadPoolManager;
         }
 
         /// <summary>
@@ -63,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
 
             _listener.Start();
 
-            ThreadPool.QueueUserWorkItem(Listen);
+            Task.Factory.StartNew(Listen, TaskCreationOptions.LongRunning);
         }
 
         private bool IsListening
@@ -72,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         }
 
         // Loop here to begin processing of new requests.
-        private void Listen(object state)
+        private void Listen()
         {
             while (IsListening)
             {
@@ -130,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
                 _listenForNextRequest.Set();
             }
 
-            _threadPoolManager.QueueWorkItem(() => InitTask(context));
+            Task.Factory.StartNew(() => InitTask(context));
         }
 
         private void InitTask(HttpListenerContext context)
@@ -287,8 +283,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
 
                 if (disposing)
                 {
-                    _threadPoolManager.Dispose();
-
                     Stop();
                 }
 

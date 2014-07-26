@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Channels;
@@ -20,7 +22,7 @@ namespace MediaBrowser.Dlna.Channels
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
-        
+
         private DeviceDiscovery _deviceDiscovery;
 
         private readonly SemaphoreSlim _syncLock = new SemaphoreSlim(1, 1);
@@ -96,7 +98,7 @@ namespace MediaBrowser.Dlna.Channels
             }
             catch (Exception ex)
             {
-                
+
             }
             finally
             {
@@ -123,7 +125,7 @@ namespace MediaBrowser.Dlna.Channels
             }
 
             await _syncLock.WaitAsync().ConfigureAwait(false);
-            
+
             try
             {
                 var list = _servers.ToList();
@@ -163,7 +165,23 @@ namespace MediaBrowser.Dlna.Channels
 
         public IEnumerable<IChannel> GetChannels()
         {
-            return _servers.Select(i => new ServerChannel(i)).ToList();
+            //if (_servers.Count > 0)
+            //{
+            //    var service = _servers[0].Properties.Services
+            //        .FirstOrDefault(i => string.Equals(i.ServiceType, "urn:schemas-upnp-org:service:ContentDirectory:1", StringComparison.OrdinalIgnoreCase));
+
+            //    var controlUrl = service == null ? null : (_servers[0].Properties.BaseUrl.TrimEnd('/') + "/" + service.ControlUrl.TrimStart('/'));
+
+            //    if (!string.IsNullOrEmpty(controlUrl))
+            //    {
+            //        return new List<IChannel>
+            //    {
+            //        new ServerChannel(_servers.ToList(), _httpClient, _logger, controlUrl)
+            //    };
+            //    }
+            //}
+
+            return new List<IChannel>();
         }
 
         public void Dispose()
@@ -178,31 +196,37 @@ namespace MediaBrowser.Dlna.Channels
 
     public class ServerChannel : IChannel, IFactoryChannel
     {
-        private readonly Device _device;
+        private readonly List<Device> _servers = new List<Device>();
+        private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
+        private readonly string _controlUrl;
 
-        public ServerChannel(Device device)
+        public ServerChannel(List<Device> servers, IHttpClient httpClient, ILogger logger, string controlUrl)
         {
-            _device = device;
+            _servers = servers;
+            _httpClient = httpClient;
+            _logger = logger;
+            _controlUrl = controlUrl;
         }
 
         public string Name
         {
-            get { return _device.Properties.Name; }
+            get { return "Devices"; }
         }
 
         public string Description
         {
-            get { return _device.Properties.ModelDescription; }
+            get { return string.Empty; }
         }
 
         public string DataVersion
         {
-            get { return "1"; }
+            get { return DateTime.UtcNow.Ticks.ToString(); }
         }
 
         public string HomePageUrl
         {
-            get { return _device.Properties.ModelUrl; }
+            get { return string.Empty; }
         }
 
         public ChannelParentalRating ParentalRating
@@ -234,10 +258,68 @@ namespace MediaBrowser.Dlna.Channels
             return true;
         }
 
-        public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
-            // TODO: Implement
-            return Task.FromResult(new ChannelItemResult());
+            IEnumerable<ChannelItemInfo> items;
+
+            if (string.IsNullOrWhiteSpace(query.FolderId))
+            {
+                items = _servers.Select(i => new ChannelItemInfo
+                {
+                    FolderType = ChannelFolderType.Container,
+                    Id = GetServerId(i),
+                    Name = i.Properties.Name,
+                    Overview = i.Properties.ModelDescription,
+                    Type = ChannelItemType.Folder
+                });
+            }
+            else
+            {
+                var idParts = query.FolderId.Split('|');
+                var folderId = idParts.Length == 2 ? idParts[1] : null;
+
+                var result = await new ContentDirectoryBrowser(_httpClient, _logger).Browse(new ContentDirectoryBrowseRequest
+                {
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    ParentId = folderId,
+                    ContentDirectoryUrl = _controlUrl
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                items = result.Items.ToList();
+            }
+
+            var list = items.ToList();
+            var count = list.Count;
+
+            list = ApplyPaging(list, query).ToList();
+
+            return new ChannelItemResult
+            {
+                Items = list,
+                TotalRecordCount = count
+            };
+        }
+
+        private string GetServerId(Device device)
+        {
+            return device.Properties.UUID.GetMD5().ToString("N");
+        }
+
+        private IEnumerable<T> ApplyPaging<T>(IEnumerable<T> items, InternalChannelItemQuery query)
+        {
+            if (query.StartIndex.HasValue)
+            {
+                items = items.Skip(query.StartIndex.Value);
+            }
+
+            if (query.Limit.HasValue)
+            {
+                items = items.Take(query.Limit.Value);
+            }
+
+            return items;
         }
 
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)

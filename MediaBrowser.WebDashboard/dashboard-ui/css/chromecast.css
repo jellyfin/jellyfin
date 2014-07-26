@@ -28,8 +28,7 @@
     margin-right: .5em;
     height: 100%;
     position: relative;
-    top: -19px;
-    font-family: "Open Sans";
+    top: -20px;
 }
 
 @media all and (max-width: 800px) {

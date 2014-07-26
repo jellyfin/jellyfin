@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using System;
@@ -189,11 +190,14 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, IDirectoryService directoryService)
+        private static bool IsSeasonFolder(string path, IDirectoryService directoryService, IFileSystem fileSystem)
         {
             // It's a season folder if it's named as such and does not contain any audio files, apart from theme.mp3
-            return GetSeasonNumberFromPath(path) != null && !directoryService.GetFiles(path).Any(i => EntityResolutionHelper.IsAudioFile(i.FullName) && !string.Equals(Path.GetFileNameWithoutExtension(i.FullName), BaseItem.ThemeSongFilename));
+            return GetSeasonNumberFromPath(path) != null && 
+                !directoryService.GetFiles(path)
+                .Any(i => EntityResolutionHelper.IsAudioFile(i.FullName) && !string.Equals(fileSystem.GetFileNameWithoutExtension(i), BaseItem.ThemeSongFilename));
         }
 
         /// <summary>
@@ -204,7 +208,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeriesFolder(string path, bool considerSeasonlessSeries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        public static bool IsSeriesFolder(string path, bool considerSeasonlessSeries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem)
         {
             // A folder with more than 3 non-season folders in will not becounted as a series
             var nonSeriesFolders = 0;
@@ -225,7 +229,7 @@ namespace MediaBrowser.Controller.Library
 
                 if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    if (IsSeasonFolder(child.FullName, directoryService))
+                    if (IsSeasonFolder(child.FullName, directoryService, fileSystem))
                     {
                         return true;
                     }

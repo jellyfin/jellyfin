@@ -1,11 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using System.Collections.Generic;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
     public class CollectionFolderLocalImageProvider : ILocalImageFileProvider, IHasOrder
     {
+        private readonly IFileSystem _fileSystem;
+
+        public CollectionFolderLocalImageProvider(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         public string Name
         {
             get { return "Collection Folder Images"; }
@@ -29,7 +37,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var collectionFolder = (CollectionFolder)item;
 
-            return new LocalImageProvider().GetImages(item, collectionFolder.PhysicalLocations, directoryService);
+            return new LocalImageProvider(_fileSystem).GetImages(item, collectionFolder.PhysicalLocations, directoryService);
         }
     }
 }

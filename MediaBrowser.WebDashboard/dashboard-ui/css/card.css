@@ -1,0 +1,224 @@
+﻿.card {
+    display: inline-block;
+    text-align: left;
+    -webkit-transition: all 500ms ease;
+    -moz-transition: all 500ms ease;
+    -o-transition: all 500ms ease;
+    -ms-transition: all 500ms ease;
+    transition: all 500ms ease;
+    position: relative;
+}
+
+.cardBox {
+    margin: 4px 4px;
+}
+
+.visualCardBox {
+    padding: 5px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #fff;
+}
+
+.cardScalable {
+    position: relative;
+}
+
+.card-16-9 .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+.card-1-1 .cardPadder {
+    padding-bottom: 100%;
+}
+
+.card-4-3 .cardPadder {
+    padding-bottom: 75%;
+}
+
+.card-3-2 .cardPadder {
+    padding-bottom: 66.666666666667%;
+}
+
+.cardContent {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+    .cardContent:hover {
+        -moz-box-shadow: 0 0 0 5px #38c;
+        -webkit-box-shadow: 0 0 0 5px #38c;
+        box-shadow: 0 0 0 5px #38c;
+    }
+
+.cardBox .cardContent:hover {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.cardContent:hover .cardImage {
+    opacity: .5;
+}
+
+/*.preview-overlay-container {
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    -moz-opacity: 0;
+    opacity: 0;
+    filter: alpha(opacity=0);
+    -webkit-transition: all .25s ease;
+    -moz-transition: all .25s ease;
+    -o-transition: all .25s ease;
+    transition: all .25s ease;
+    background: rgba(0,0,0,0.4);
+    cursor: pointer;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}*/
+
+.cardFooter {
+}
+
+.cardContent .cardFooter {
+    position: absolute;
+    bottom: 0;
+    background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
+    left: 0;
+    right: 0;
+    color: #fff;
+}
+
+.cardText {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: none;
+    white-space: nowrap;
+    padding: 5px 4px 4px;
+    text-shadow: none;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.cardContent .cardText {
+    padding-left: 5px;
+    padding: 0 5px 4px;
+}
+
+@media all and (max-width: 600px) {
+
+    .packageReviewText {
+        display: none;
+    }
+}
+
+.cardImage {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    width: 100%;
+    height: 100%;
+}
+
+.card-1-1 {
+    width: 50%;
+}
+
+.card-16-9:not(.manualSize) {
+    width: 50%;
+}
+
+@media all and (min-width: 500px) {
+
+    .card-1-1 {
+        width: 33.3%;
+    }
+}
+
+
+@media all and (min-width: 540px) {
+
+    .card-16-9:not(.manualSize) {
+        width: 33.3%;
+    }
+}
+
+
+@media all and (min-width: 800px) {
+
+    .card-1-1 {
+        width: 25%;
+    }
+}
+
+
+@media all and (min-width: 1000px) {
+
+    .card-1-1 {
+        width: 20%;
+    }
+
+    .card-16-9:not(.manualSize) {
+        width: 25%;
+    }
+}
+
+
+@media all and (min-width: 1200px) {
+
+    .card-1-1 {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+
+@media all and (min-width: 1400px) {
+
+    .card-1-1 {
+        width: 14.285714285714285714285714285714%;
+    }
+
+    .card-16-9:not(.manualSize) {
+        width: 20%;
+    }
+}
+
+
+@media all and (min-width: 1600px) {
+
+    .card-1-1 {
+        width: 12.5%;
+    }
+
+    .card-16-9:not(.manualSize) {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+.detailPage169Card {
+    width: 50%;
+}
+
+@media all and (min-width: 540px) {
+
+    .detailPage169Card {
+        width: 33.3%;
+    }
+}

@@ -688,7 +688,9 @@
 
     function onUserDataChanged(userData) {
 
-        $('.libraryItemUserData' + userData.Key).each(function () {
+        var cssClass = LibraryBrowser.getUserDataCssClass(userData.Key);
+
+        $('.' + cssClass).each(function () {
 
             this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
 

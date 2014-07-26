@@ -1,19 +1,22 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
     public class InternalMetadataFolderImageProvider : ILocalImageFileProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public InternalMetadataFolderImageProvider(IServerConfigurationManager config)
+        public InternalMetadataFolderImageProvider(IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -57,7 +60,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             try
             {
-                return new LocalImageProvider().GetImages(item, path, directoryService);
+                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
             }
             catch (DirectoryNotFoundException)
             {

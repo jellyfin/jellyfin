@@ -24,7 +24,7 @@
                 var isChecked = user.Configuration.ExcludeFoldersFromGrouping.indexOf(i.Id) == -1;
                 var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-                currentHtml += '<input class="chkGroupFolder" data-folderid="' + i.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedHtml + ' />';
+                currentHtml += '<input class="chkGroupFolder" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
 
                 return currentHtml;
 
@@ -57,7 +57,7 @@
                 var isChecked = user.Configuration.DisplayChannelsWithinViews.indexOf(i.Id) != -1;
                 var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-                currentHtml += '<input class="chkGroupChannel" data-channelid="' + i.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedHtml + ' />';
+                currentHtml += '<input class="chkGroupChannel" data-channelid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
 
                 return currentHtml;
 

@@ -59,12 +59,18 @@
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<a class='backdropPosterItem posterItem' style='margin: .75em 5px 1em;' href='" + href + "' " + target + ">";
+            html += "<div class='card card-16-9'>";
 
+            html += '<div class="cardBox visualCardBox">';
+            html += '<div class="cardScalable">';
+
+            html += '<div class="cardPadder"></div>';
+
+            html += '<a class="cardContent" href="' + href + '"' + target + '>';
             if (plugin.thumbImage) {
-                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;">';
+                html += '<div class="cardImage" style="background-image:url(\'' + plugin.thumbImage + '\');">';
             } else {
-                html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');">';
+                html += '<div class="cardImage" style="background-image:url(\'css/images/items/list/collection.png\');">';
             }
 
             if (plugin.isPremium) {
@@ -76,14 +82,20 @@
             }
             html += "</div>";
 
-            html += "<div class='posterItemText' style='color:#000;'>";
+            // cardContent
+            html += "</a>";
 
+            // cardScalable
+            html += "</div>";
+
+            html += '<div class="cardFooter">';
+
+            html += "<div class='cardText'>";
             html += plugin.name;
-
             html += "</div>";
 
             if (!plugin.isExternal) {
-                html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
+                html += "<div class='cardText packageReviewText'>";
                 html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
                 html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
@@ -98,7 +110,7 @@
                 return ip.Name == plugin.name;
             })[0];
 
-            html += "<div class='posterItemText' style='color:#000;'>";
+            html += "<div class='cardText'>";
 
             if (installedPlugin) {
                 html += Globalize.translate('LabelVersionInstalled').replace("{0}", installedPlugin.Version);
@@ -107,7 +119,14 @@
             }
             html += "</div>";
 
-            html += "</a>";
+            // cardFooter
+            html += "</div>";
+
+            // cardBox
+            html += "</div>";
+
+            // card
+            html += "</div>";
 
             pluginhtml += html;
 

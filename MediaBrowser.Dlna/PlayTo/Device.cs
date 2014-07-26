@@ -819,12 +819,12 @@ namespace MediaBrowser.Dlna.PlayTo
             foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
             {
                 if (services == null)
-                    return null;
+                    continue;
 
                 var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
 
                 if (servicesList == null)
-                    return null;
+                    continue;
 
                 foreach (var element in servicesList)
                 {

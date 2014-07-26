@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using System;
@@ -11,6 +12,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     /// </summary>
     public class LocalTrailerResolver : BaseVideoResolver<Trailer>
     {
+        private readonly IFileSystem _fileSystem;
+
+        public LocalTrailerResolver(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -33,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 }
 
                 // Support xbmc local trailer convention, but only when looking for local trailers (hence the parent == null check)
-                if (args.Parent == null && Path.GetFileNameWithoutExtension(args.Path).EndsWith(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase))
+                if (args.Parent == null && _fileSystem.GetFileNameWithoutExtension(args.Path).EndsWith(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase))
                 {
                     return base.Resolve(args);
                 }

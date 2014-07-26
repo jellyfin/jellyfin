@@ -2,21 +2,22 @@
 
     function submitJob(userId, items, form) {
 
-        var targets = $('.chkSyncTarget:checked', form).get().map(function (c) {
+        var target = $('.radioSync:checked', form).get().map(function (c) {
 
             return c.getAttribute('data-targetid');
-        });
 
-        if (!targets.length) {
+        })[0];
 
-            Dashboard.alert('Please select one or more sync targets.');
+        if (!target) {
+
+            Dashboard.alert('Please select a device to sync to.');
             return;
         }
 
         var options = {
 
             userId: userId,
-            TargetIds: targets.join(','),
+            TargetId: target,
 
             ItemIds: items.map(function (i) {
                 return i.Id;
@@ -34,7 +35,6 @@
 
         }).done(function () {
 
-            $('.syncPanel').panel('close');
         });
     }
 
@@ -61,8 +61,8 @@
 
             html += targets.map(function (t) {
 
-                var targetHtml = '<label for="chkSync' + t.Id + '">' + t.Name + '</label>';
-                targetHtml += '<input class="chkSyncTarget" data-targetid="' + t.Id + '" type="checkbox" id="chkSync' + t.Id + '" />';
+                var targetHtml = '<label for="radioSync' + t.Id + '">' + t.Name + '</label>';
+                targetHtml += '<input class="radioSync" data-targetid="' + t.Id + '" type="radio" id="radioSync' + t.Id + '" />';
 
                 return targetHtml;
 
@@ -109,6 +109,7 @@
     }
 
     function isAvailable(item, user) {
+
         return item.SupportsSync;
     }
 

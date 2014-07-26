@@ -126,30 +126,37 @@
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
-            var linkId = "lnkUser" + i;
+            html += '<div class="card card-1-1"><div class="cardBox visualCardBox">';
 
-            html += "<a class='posterItem squarePosterItem' id='" + linkId + "' data-haspw='" + user.HasPassword + "' data-username='" + user.Name + "' data-userid='" + user.Id + "' href='#' data-ajax='false' \">";
+            html += '<div class="cardScalable">';
+
+            html += '<div class="cardPadder"></div>';
+            html += '<a class="cardContent" href="#" data-ajax="false" data-haspw="' + user.HasPassword + '" data-username="' + user.Name + '" data-userid="' + user.Id + '">';
 
             if (user.PrimaryImageTag) {
 
                 var imgUrl = ApiClient.getUserImageUrl(user.Id, {
-                    width: 500,
+                    width: 300,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
                 });
 
-                html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
             }
             else {
 
                 var background = LibraryBrowser.getMetroColor(user.Id);
 
-                html += '<div class="posterItemImage" style="background-color:' + background + ';"></div>';
+                html += '<div class="cardImage" style="background-color:' + background + ';"></div>';
             }
 
-            html += '<div class="posterItemText" style="color:#000;">' + user.Name + '</div>';
+            html += '</a>';
+            html += '</div>';
 
-            html += '<div class="posterItemText" style="color:#000;">';
+            html += '<div class="cardFooter">';
+            html += '<div class="cardText">' + user.Name + '</div>';
+
+            html += '<div class="cardText">';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
@@ -158,13 +165,15 @@
                 html += "&nbsp;";
             }
             html += '</div>';
+            html += '</div>';
+            html += '</div>';
 
-            html += '</a>';
+            html += '</div>';
         }
 
         var elem = $('#divUsers', '#loginPage').html(html);
 
-        $('.posterItem', elem).on('click', function () {
+        $('a', elem).on('click', function () {
 
             var name = this.getAttribute('data-username');
             var haspw = this.getAttribute('data-haspw');

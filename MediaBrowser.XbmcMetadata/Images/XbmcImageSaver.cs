@@ -88,7 +88,7 @@ namespace MediaBrowser.XbmcMetadata.Images
                 if (item is Episode)
                 {
                     var seasonFolder = Path.GetDirectoryName(item.Path);
-
+                    
                     var imageFilename = Path.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
 
                     return new[] { Path.Combine(seasonFolder, imageFilename) };

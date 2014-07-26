@@ -564,11 +564,15 @@
             return '';
         },
 
+        getUserDataCssClass: function(key) {
+            return 'libraryItemUserData' + key;
+        },
+
         getListViewHtml: function (options) {
 
             var outerHtml = "";
 
-            outerHtml += '<ul data-role="listview" data-inset="true" class="itemsListview">';
+            outerHtml += '<ul data-role="listview" class="itemsListview">';
 
             var index = 0;
             var groupTitle = '';
@@ -593,7 +597,7 @@
                 var cssClass = 'ui-li-has-thumb listItem';
 
                 if (item.UserData) {
-                    cssClass += ' libraryItemUserData' + item.UserData.Key;
+                    cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
                 }
 
                 var href = LibraryBrowser.getHref(item, options.context);
@@ -987,7 +991,7 @@
                 var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
                 if (item.UserData) {
-                    cssClass += ' libraryItemUserData' + item.UserData.Key;
+                    cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
                 }
 
                 if (options.showChildCountIndicator && item.ChildCount) {

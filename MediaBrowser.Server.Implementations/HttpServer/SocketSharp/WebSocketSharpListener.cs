@@ -1,14 +1,13 @@
-﻿using System;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
+using ServiceStack;
+using ServiceStack.Web;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Amib.Threading;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
-using ServiceStack;
-using ServiceStack.Web;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 
@@ -20,12 +19,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         private WebSocketSharp.Server.HttpServer _httpsv;
 
         private readonly ILogger _logger;
-        private readonly SmartThreadPool _threadPoolManager;
 
-        public WebSocketSharpListener(ILogger logger, SmartThreadPool threadPoolManager)
+        public WebSocketSharpListener(ILogger logger)
         {
             _logger = logger;
-            _threadPoolManager = threadPoolManager;
         }
 
         public IEnumerable<string> LocalEndPoints
@@ -33,9 +30,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get { return _localEndPoints.Keys.ToList(); }
         }
 
-        public System.Action<Exception, IRequest> ErrorHandler { get; set; }
+        public Action<Exception, IRequest> ErrorHandler { get; set; }
 
-        public System.Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
+        public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
 
         public Action<WebSocketConnectEventArgs> WebSocketHandler { get; set; }
 
@@ -50,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         void _httpsv_OnRequest(object sender, HttpRequestEventArgs e)
         {
-            _threadPoolManager.QueueWorkItem(() => InitTask(e.Context));
+            Task.Factory.StartNew(() => InitTask(e.Context));
         }
 
         private void InitTask(HttpListenerContext context)

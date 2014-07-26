@@ -28,7 +28,7 @@
     bottom: 0;
     vertical-align: middle;
     text-align: center;
-    border: 0!important;
+    border: 0 !important;
     outline: none;
     padding: 0 20px;
     cursor: pointer;
@@ -67,11 +67,11 @@
     padding: .5em;
     background-color: #181818;
     border-radius: 5px;
-    height: 14px!important;
+    height: 14px !important;
 }
 
 .barsMenuButton:hover {
-    opacity: 1!important;
+    opacity: 1 !important;
 }
 
 .barsMenuButton img:hover {
@@ -87,7 +87,7 @@
 .libraryMenuButtonText {
     color: #fff !important;
     text-decoration: none;
-    font-weight: 400!important;
+    font-weight: 400 !important;
     font-size: 15px;
     display: inline-block;
     vertical-align: middle;
@@ -127,7 +127,7 @@
 
 .viewMenuLink {
     text-decoration: none;
-    color: #ccc!important;
+    color: #ccc !important;
     padding: 7px .5em 6px;
     display: inline-block;
     vertical-align: middle;
@@ -135,7 +135,7 @@
 
 .viewMenuTextLink:hover {
     background-color: #38c;
-    color: #fff!important;
+    color: #fff !important;
     opacity: 1;
 }
 
@@ -162,9 +162,9 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 38px!important;
+    padding: .6em .5em .6em 38px !important;
     font-size: 15px;
-    font-weight: 300!important;
+    font-weight: 300 !important;
     font-family: Roboto;
     background-repeat: no-repeat;
     background-size: 14px 14px;
@@ -239,16 +239,16 @@
 }
 
 .selectedMediaFolder {
-    background-color: #52B54B!important;
-    color: #fff!important;
+    background-color: #52B54B !important;
+    color: #fff !important;
 }
 
 .itemDetailPage .selectedMediaFolder {
-    background-color: rgba(51,136,204,.8)!important;
+    background-color: rgba(51,136,204,.8) !important;
 }
 
 .ui-panel.ui-body-b {
-    background-color: #181818;
+    background-color: #222;
 }
 
 .libraryViewNavInner {
@@ -260,30 +260,35 @@
     height: 61px;
 }
 
-.libraryViewNav .ui-btn-active .libraryViewNavLinkContent {
+.libraryViewNav .ui-btn-active {
     border-bottom-color: #38c;
-    color: #fff;
+    color: #fff !important;
 }
 
 .libraryViewNav a {
     display: inline-block;
-    padding: 12px 0 0;
-    color: #eee!important;
+    padding: 12px 0 9px;
+    color: #ddd !important;
     text-decoration: none;
     margin: 0 0;
     position: relative;
     font-weight: normal;
+    border-bottom: 5px solid transparent;
 }
 
     .libraryViewNav a:hover {
-        color: #bbb!important;
+        color: #2ad !important;
     }
 
 .libraryViewNavLinkContent {
-    border-bottom: 5px solid transparent;
     display: inline-block;
-    padding: 2px 1em 11px;
-    color: #ddd;
+    padding: 2px 15px 2px 17px;
+}
+
+.libraryViewNav a+a .libraryViewNavLinkContent {
+    border-left: 1px solid #333;
+    position: relative;
+    left: -2px;
 }
 
 @media all and (max-width: 500px) {

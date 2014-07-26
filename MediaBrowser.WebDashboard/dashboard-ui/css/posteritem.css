@@ -283,13 +283,6 @@
     top: 42%;
 }
 
-@media all and (max-width: 600px) {
-
-    .packageReviewText {
-        display: none;
-    }
-}
-
 @media all and (max-width: 1200px) {
 
     .portraitPosterItem .posterItemOverlayInner {
@@ -505,4 +498,9 @@
         .portraitPosterItem .posterItemImage {
             height: 240px;
         }
+}
+
+
+.scalableItem {
+    
 }

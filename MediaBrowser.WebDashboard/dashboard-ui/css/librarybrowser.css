@@ -541,10 +541,6 @@ a.itemTag:hover {
 }
 
 .lblDetailTab {
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    font-family: 'Open Sans';
-    padding: .5em 1em;
     border-color: #1f1f1f !important;
 }
 
@@ -575,22 +571,6 @@ a.itemTag:hover {
 
 .mediaBrowserAccent {
     color: #52B54B !important;
-}
-
-.libraryPanelCollapsibleHeader a {
-    font-size: 16px;
-    font-weight: 300 !important;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-}
-
-.selectedLibraryPanelLink {
-    background: #38c !important;
-}
-
-.libraryPanelLink {
-    font-size: 14px;
-    font-weight: 300 !important;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
 .detailImageProgressContainer {
@@ -1237,7 +1217,6 @@ a.itemTag:hover {
         right: 1.3em;
         font-weight: normal;
         font-size: 13px;
-        font-family: "Open Sans";
     }
 
     .itemsListview .ui-li-count {

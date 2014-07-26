@@ -209,6 +209,7 @@ namespace MediaBrowser.ServerApplication
         private IUserViewManager UserViewManager { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
+        private ISyncRepository SyncRepository { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -525,6 +526,9 @@ namespace MediaBrowser.ServerApplication
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
+            SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            RegisterSingleInstance(SyncRepository);
+
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer);
             RegisterSingleInstance(UserManager);
 
@@ -561,7 +565,7 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            SyncManager = new SyncManager();
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"));
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager);
@@ -700,6 +704,15 @@ namespace MediaBrowser.ServerApplication
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<ISyncRepository> GetSyncRepository()
+        {
+            var repo = new SyncRepository(LogManager.GetLogger("SyncRepository"), ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 

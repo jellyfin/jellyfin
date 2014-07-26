@@ -175,7 +175,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (video != null && !video.IsPlaceHolder)
                 {
                     return !video.SubtitleFiles
-                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, false)
+                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, _fileSystem, false)
                         .Select(i => i.FullName)
                         .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }

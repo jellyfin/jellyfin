@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
@@ -47,7 +47,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
             var directoryPath = directoryInfo.FullName;
 
-            var specificFile = Path.Combine(directoryPath, Path.GetFileNameWithoutExtension(info.Path) + ".xml");
+            var specificFile = Path.Combine(directoryPath, fileSystem.GetFileNameWithoutExtension(info.Path) + ".xml");
 
             var file = new FileInfo(specificFile);
 

@@ -1,5 +1,4 @@
-﻿using Amib.Threading;
-using Funq;
+﻿using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -15,7 +14,6 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,7 +35,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener _listener;
 
-        private readonly SmartThreadPool _threadPoolManager;
         private const int IdleTimeout = 300;
 
         private readonly ContainerAdapter _containerAdapter;
@@ -62,9 +59,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _logger = logManager.GetLogger("HttpServer");
 
             _containerAdapter = new ContainerAdapter(applicationHost);
-
-            _threadPoolManager = new SmartThreadPool(IdleTimeout,
-                maxWorkerThreads: Math.Max(16, Environment.ProcessorCount * 2));
         }
 
         public override void Configure(Container container)
@@ -158,8 +152,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = NativeWebSocket.IsSupported
-                ? _listener = new HttpListenerServer(_logger, _threadPoolManager)
-                : _listener = new WebSocketSharpListener(_logger, _threadPoolManager);
+                ? _listener = new HttpListenerServer(_logger)
+                : _listener = new WebSocketSharpListener(_logger);
 
             _listener.WebSocketHandler = WebSocketHandler;
             _listener.ErrorHandler = ErrorHandler;
@@ -356,8 +350,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (disposing)
                 {
-                    _threadPoolManager.Dispose();
-
                     Stop();
                 }
 

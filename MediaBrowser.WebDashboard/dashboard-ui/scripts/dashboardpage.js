@@ -227,7 +227,7 @@
 
         var parentElement = $('.activeDevices', page);
 
-        $('.activeSession', parentElement).addClass('deadSession');
+        $('.card', parentElement).addClass('deadSession');
 
         for (var i = 0, length = sessions.length; i < length; i++) {
 
@@ -244,13 +244,19 @@
 
             var nowPlayingItem = session.NowPlayingItem;
 
-            var className = nowPlayingItem ? 'playingSession activeSession' : 'activeSession';
+            var className = nowPlayingItem ? 'card card-16-9 activeSession manualSize' : 'card card-16-9 activeSession manualSize';
 
             if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                 className += ' transcodingSession';
             }
 
             html += '<div class="' + className + '" id="' + rowId + '">';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
+
+            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardContent">';
 
             html += '<div class="sessionNowPlayingContent"';
 
@@ -332,9 +338,17 @@
             } else {
                 html += '<div class="sessionTranscodingFramerate"></div>';
             }
+            html += '</div>';
 
             html += '</div>';
 
+            // cardScalable
+            html += '</div>';
+
+            // cardBox
+            html += '</div>';
+
+            // card
             html += '</div>';
 
         }

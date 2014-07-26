@@ -45,7 +45,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             try
             {
-                return new LocalImageProvider().GetImages(item, path, directoryService);
+                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
             }
             catch (DirectoryNotFoundException)
             {

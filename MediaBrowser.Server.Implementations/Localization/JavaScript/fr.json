@@ -77,7 +77,7 @@
     "MessageInvalidUser": "Nom d'utilisateur et mot de passe invalides.",
     "HeaderAllRecordings": "Tous les enregistrements",
     "RecommendationBecauseYouLike": "Parce-que vous aimez {0}",
-    "RecommendationBecauseYouWatched": "Parece-que vous avez regard\u00e9 {0}",
+    "RecommendationBecauseYouWatched": "Parce que vous avez regard\u00e9 {0}",
     "RecommendationDirectedBy": "R\u00e9alis\u00e9 par {0}",
     "RecommendationStarring": "Mettant en vedette {0}",
     "HeaderConfirmRecordingCancellation": "Confirmer l'annulation de l'enregistrement.",

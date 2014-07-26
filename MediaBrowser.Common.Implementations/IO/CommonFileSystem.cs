@@ -367,5 +367,20 @@ namespace MediaBrowser.Common.Implementations.IO
 
             return newPath;
         }
+
+        public string GetFileNameWithoutExtension(FileSystemInfo info)
+        {
+            if (info is DirectoryInfo)
+            {
+                return info.Name;
+            }
+
+            return Path.GetFileNameWithoutExtension(info.FullName);
+        }
+
+        public string GetFileNameWithoutExtension(string path)
+        {
+            return Path.GetFileNameWithoutExtension(path);
+        }
     }
 }

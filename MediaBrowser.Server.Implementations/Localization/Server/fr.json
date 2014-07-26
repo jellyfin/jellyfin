@@ -824,8 +824,8 @@
     "LabelProtocolInfoHelp": "La valeur sera utilis\u00e9e par le p\u00e9riph\u00e9rique pour r\u00e9pondre aux requ\u00eates GetProtocolInfo.",
     "TabXbmcMetadata": "Xbmc",
     "HeaderXbmcMetadataHelp": "Media Browser inclut un support natif pour les m\u00e9tadonn\u00e9es Nfo Xbmc et les images. Pour activer ou d\u00e9sactiver les m\u00e9tadonn\u00e9es Xbmc, utiliser l'onglet Avanc\u00e9 pour configurer les options de vos types de m\u00e9dia.",
-    "LabelXbmcMetadataUser": "Add user watch data to nfo's for:",
-    "LabelXbmcMetadataUserHelp": "Activer ceci pour synchroniser en permanence Media Browser et Xbmc",
+    "LabelXbmcMetadataUser": "Ajouter aux nfo, les donn\u00e9es de surveillance de l'utilisateur :",
+    "LabelXbmcMetadataUserHelp": "Activer ceci pour synchroniser les donn\u00e9es de surveillance entre Media Browser et Xbmc",
     "LabelXbmcMetadataDateFormat": "Format de la date de sortie :",
     "LabelXbmcMetadataDateFormatHelp": "Toutes les dates provenant des nfo seront lues et \u00e9crites en utilisant ce format.",
     "LabelXbmcMetadataSaveImagePaths": "Sauvegarder les chemins d'images dans les fichiers nfo.",
@@ -888,5 +888,7 @@
     "ButtonSync": "Sync",
     "TabScheduledTasks": "T\u00e2ches planifi\u00e9es",
     "HeaderChapters": "Chapitres",
-    "HeaderResumeSettings": "Reprendre les param\u00e8tres"
+    "HeaderResumeSettings": "Reprendre les param\u00e8tres",
+    "TabSync": "Sync",
+    "TitleUsers": "Users"
 }

@@ -34,10 +34,11 @@
                     <div data-role="collapsible">
                         <h2>${HeaderAutomaticUpdates}</h2>
                         <div>
+                            <br />   
                             <ul data-role="listview" class="ulForm">
                                 <li>
                                     <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
-                                    <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel" data-mini="true">
+                                    <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
                                         <option value="Release">${OptionRelease}</option>
                                         <option value="Beta">${OptionBeta}</option>
                                         <option value="Dev">${OptionDev}</option>
@@ -59,6 +60,7 @@
                     <div data-role="collapsible">
                         <h2>${HeaderResumeSettings}</h2>
                         <div>
+                            <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
                                     <label for="txtMinResumePct">${LabelMinResumePercentage}</label>
@@ -87,10 +89,10 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
                                 ${ButtonCancel}
                             </button>
                         </li>

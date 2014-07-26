@@ -601,9 +601,7 @@ var Dashboard = {
 
         if (!sidebar.length) {
 
-            var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
-
-            html += '<br/>';
+            var html = '<div class="content-secondary toolsSidebar">';
 
             html += '<div class="sidebarLinks">';
 
@@ -640,9 +638,9 @@ var Dashboard = {
             // content-secondary
             html += '</div>';
 
-            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
+            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="a">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
+            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             for (i = 0, length = links.length; i < length; i++) {
 
@@ -669,7 +667,8 @@ var Dashboard = {
 
             html += '</div>';
 
-            $(page).append(html).trigger('create');
+            $('.content-primary', page).before(html);
+            $(page).trigger('create');
         }
     },
 
@@ -681,6 +680,10 @@ var Dashboard = {
             name: Globalize.translate('TabServer'),
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
+        }, {
+            name: Globalize.translate('TabUsers'),
+            href: "userprofiles.html",
+            selected: page.hasClass("userProfilesPage")
         }, {
             name: Globalize.translate('TabLibrary'),
             divider: true,

@@ -249,7 +249,7 @@
         else if (context == 'movies' || item.Type == 'Movie') {
             elem = $('#movieTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
-            
+
             if (item.Type == 'BoxSet') {
                 $('.lnkCollections', page).addClass('ui-btn-active');
             } else {
@@ -1101,7 +1101,10 @@
 
             var onclick = item.PlayAccess == 'Full' ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="posterItem smallBackdropPosterItem" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card card-16-9 manualSize detailPage169Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
 
             var imgUrl;
 
@@ -1117,15 +1120,27 @@
                 imgUrl = "css/images/items/list/chapter.png";
             }
 
-            html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            html += '<div class="cardPadder"></div>';
 
-            html += '<div class="posterItemTextOverlay">';
-            html += '<div class="posterItemText">' + chapterName + '</div>';
-            html += '<div class="posterItemText">';
+            html += '<div class="cardContent">';
+            html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
+            html += '<div class="cardFooter">';
+            html += '<div class="cardText">' + chapterName + '</div>';
+            html += '<div class="cardText">';
             html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
-
             html += '</div>';
+
+            //cardFooter
+            html += "</div>";
+
+            // cardContent
+            html += '</div>';
+
+            // cardScalable
+            html += '</div>';
+
+            // cardBox
             html += '</div>';
 
             html += '</a>';
@@ -1291,13 +1306,16 @@
 
             var item = items[i];
 
-            var cssClass = "posterItem smallBackdropPosterItem";
+            var cssClass = "card card-16-9 manualSize detailPage169Card";
 
             var href = "itemdetails.html?id=" + item.Id;
 
             var onclick = item.PlayAccess == 'Full' ? ' onclick="MediaController.play(\'' + item.Id + '\'); return false;"' : "";
 
             html += '<a class="' + cssClass + '" href="' + href + '"' + onclick + '>';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
 
             var imageTags = item.ImageTags || {};
 
@@ -1315,12 +1333,14 @@
                 imgUrl = "css/images/items/detail/video.png";
             }
 
-            html += '<div class="posterItemImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            html += '<div class="cardPadder"></div>';
 
-            html += '<div class="posterItemTextOverlay">';
-            html += '<div class="posterItemText">' + item.Name + '</div>';
-            html += '<div class="posterItemText">';
+            html += '<div class="cardContent">';
+            html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
+            html += '<div class="cardFooter">';
+            html += '<div class="cardText">' + item.Name + '</div>';
+            html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {
                 html += Dashboard.getDisplayTime(item.RunTimeTicks);
             }
@@ -1328,10 +1348,20 @@
                 html += "&nbsp;";
             }
             html += '</div>';
+
+            //cardFooter
+            html += "</div>";
+
+            // cardContent
+            html += '</div>';
+
+            // cardScalable
+            html += '</div>';
+
+            // cardBox
             html += '</div>';
 
             html += '</a>';
-
         }
 
         if (limit && items.length > limit) {

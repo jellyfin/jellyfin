@@ -21,10 +21,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public override string GetSavePath(IHasMetadata item)
         {
-            return GetMovieSavePath(item);
+            return GetMovieSavePath(item, FileSystem);
         }
 
-        public static string GetMovieSavePath(IHasMetadata item)
+        public static string GetMovieSavePath(IHasMetadata item, IFileSystem fileSystem)
         {
             var video = (Video)item;
 
@@ -32,7 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var path = item.ContainingFolderPath;
 
-                return Path.Combine(path, Path.GetFileNameWithoutExtension(path) + ".nfo");
+                return Path.Combine(path, fileSystem.GetFileNameWithoutExtension(path) + ".nfo");
             }
 
             return Path.ChangeExtension(item.Path, ".nfo");
