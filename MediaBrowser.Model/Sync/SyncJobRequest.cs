@@ -5,10 +5,10 @@ namespace MediaBrowser.Model.Sync
     public class SyncJobRequest
     {
         /// <summary>
-        /// Gets or sets the device identifier.
+        /// Gets or sets the target identifier.
         /// </summary>
-        /// <value>The device identifier.</value>
-        public List<string> TargetIds { get; set; }
+        /// <value>The target identifier.</value>
+        public string TargetId { get; set; }
         /// <summary>
         /// Gets or sets the item ids.
         /// </summary>
@@ -24,11 +24,35 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [unwatched only].
+        /// </summary>
+        /// <value><c>true</c> if [unwatched only]; otherwise, <c>false</c>.</value>
+        public bool UnwatchedOnly { get; set; }
+        /// <summary>
+        /// Gets or sets the limit.
+        /// </summary>
+        /// <value>The limit.</value>
+        public long? Limit { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the limit.
+        /// </summary>
+        /// <value>The type of the limit.</value>
+        public SyncLimitType? LimitType { get; set; }
 
         public SyncJobRequest()
         {
-            TargetIds = new List<string>();
             ItemIds = new List<string>();
         }
+    }
+
+    public enum SyncLimitType
+    {
+        ItemCount = 0
     }
 }

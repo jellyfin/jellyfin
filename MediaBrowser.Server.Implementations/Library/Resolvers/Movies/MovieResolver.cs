@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -22,12 +23,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILogger logger)
+        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _applicationPaths = appPaths;
             _libraryManager = libraryManager;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -407,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (!string.IsNullOrWhiteSpace(filenamePrefix))
             {
-                if (sortedMovies.All(i => Path.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
+                if (sortedMovies.All(i => _fileSystem.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
                 {
                     firstMovie.HasLocalAlternateVersions = true;
 

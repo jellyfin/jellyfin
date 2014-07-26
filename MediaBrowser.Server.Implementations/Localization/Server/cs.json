@@ -767,10 +767,10 @@
     "OptionAuto": "Auto",
     "OptionYes": "Ano",
     "OptionNo": "Ne",
-    "LabelHomePageSection1": "Home page section one:",
-    "LabelHomePageSection2": "Home page section two:",
-    "LabelHomePageSection3": "Home page section three:",
-    "LabelHomePageSection4": "Home page section four:",
+    "LabelHomePageSection1": "Home page section 1:",
+    "LabelHomePageSection2": "Home page section 2:",
+    "LabelHomePageSection3": "Home page section 3:",
+    "LabelHomePageSection4": "Home page section 4:",
     "OptionMyViewsButtons": "My views (buttons)",
     "OptionMyViews": "My views",
     "OptionMyViewsSmall": "My views (small)",
@@ -888,5 +888,7 @@
     "ButtonSync": "Sync",
     "TabScheduledTasks": "Scheduled Tasks",
     "HeaderChapters": "Chapters",
-    "HeaderResumeSettings": "Resume Settings"
+    "HeaderResumeSettings": "Resume Settings",
+    "TabSync": "Sync",
+    "TitleUsers": "Users"
 }

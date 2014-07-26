@@ -57,6 +57,7 @@
     <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />
     <Compile Include="ConnectionManager\ControlHandler.cs" />
     <Compile Include="ConnectionManager\ServiceActionListBuilder.cs" />
+    <Compile Include="ContentDirectory\ContentDirectoryBrowser.cs" />
     <Compile Include="Didl\Filter.cs" />
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />

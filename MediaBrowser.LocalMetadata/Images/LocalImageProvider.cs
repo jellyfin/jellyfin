@@ -1,19 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
     public class LocalImageProvider : ILocalImageFileProvider
     {
+        private readonly IFileSystem _fileSystem;
+
+        public LocalImageProvider(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+        
         public string Name
         {
             get { return "Local Images"; }
@@ -117,7 +125,7 @@ namespace MediaBrowser.LocalMetadata.Images
             var baseItem = item as BaseItem;
             if (baseItem != null && baseItem.IsInMixedFolder)
             {
-                imagePrefix = Path.GetFileNameWithoutExtension(item.Path) + "-";
+                imagePrefix = _fileSystem.GetFileNameWithoutExtension(item.Path) + "-";
             }
 
             PopulatePrimaryImages(item, images, files, imagePrefix);
@@ -172,7 +180,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             if (!string.IsNullOrEmpty(item.Path))
             {
-                var name = Path.GetFileNameWithoutExtension(item.Path);
+                var name = _fileSystem.GetFileNameWithoutExtension(item.Path);
 
                 if (!string.IsNullOrEmpty(name))
                 {
@@ -188,7 +196,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             if (!string.IsNullOrEmpty(item.Path))
             {
-                var name = Path.GetFileNameWithoutExtension(item.Path);
+                var name = _fileSystem.GetFileNameWithoutExtension(item.Path);
 
                 if (!string.IsNullOrEmpty(name))
                 {
@@ -259,6 +267,7 @@ namespace MediaBrowser.LocalMetadata.Images
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
         private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images, IDirectoryService directoryService)
         {
             var seasonNumber = season.IndexNumber;
@@ -316,7 +325,7 @@ namespace MediaBrowser.LocalMetadata.Images
         private FileSystemInfo GetImage(IEnumerable<FileSystemInfo> files, string name)
         {
             var candidates = files
-                .Where(i => string.Equals(name, Path.GetFileNameWithoutExtension(i.Name), StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             return BaseItem.SupportedImageExtensions

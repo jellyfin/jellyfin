@@ -297,12 +297,12 @@
     <Compile Include="Session\SessionUserInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Sync\SyncJob.cs" />
+    <Compile Include="Sync\SyncJobCreationResult.cs" />
+    <Compile Include="Sync\SyncJobItem.cs" />
     <Compile Include="Sync\SyncJobQuery.cs" />
     <Compile Include="Sync\SyncJobRequest.cs" />
     <Compile Include="Sync\SyncJobStatus.cs" />
     <Compile Include="Sync\SyncQuality.cs" />
-    <Compile Include="Sync\SyncSchedule.cs" />
-    <Compile Include="Sync\SyncScheduleQuery.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="Themes\AppTheme.cs" />

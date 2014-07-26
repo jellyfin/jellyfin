@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
@@ -13,10 +14,12 @@ namespace MediaBrowser.Providers.MediaInfo
     public class SubtitleResolver
     {
         private readonly ILocalizationManager _localization;
+        private readonly IFileSystem _fileSystem;
 
-        public SubtitleResolver(ILocalizationManager localization)
+        public SubtitleResolver(ILocalizationManager localization, IFileSystem fileSystem)
         {
             _localization = localization;
+            _fileSystem = fileSystem;
         }
 
         public IEnumerable<MediaStream> GetExternalSubtitleStreams(Video video,
@@ -24,17 +27,17 @@ namespace MediaBrowser.Providers.MediaInfo
           IDirectoryService directoryService,
           bool clearCache)
         {
-            var files = GetSubtitleFiles(video, directoryService, clearCache);
+            var files = GetSubtitleFiles(video, directoryService, _fileSystem, clearCache);
 
             var streams = new List<MediaStream>();
 
-            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+            var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(video.Path);
 
             foreach (var file in files)
             {
                 var fullName = file.FullName;
 
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
+                var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(file);
 
                 var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
 
@@ -96,7 +99,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public static IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService, bool clearCache)
+        public static IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
         {
             var containingPath = video.ContainingFolderPath;
 
@@ -107,16 +110,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var files = directoryService.GetFiles(containingPath, clearCache);
 
-            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+            var videoFileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(video.Path);
 
             return files.Where(i =>
             {
                 if (!i.Attributes.HasFlag(FileAttributes.Directory) &&
                     SubtitleExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    var fullName = i.FullName;
-
-                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
+                    var fileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(i);
 
                     if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     {

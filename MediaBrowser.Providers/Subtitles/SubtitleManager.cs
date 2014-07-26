@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Subtitles
             using (var stream = response.Stream)
             {
                 var savePath = Path.Combine(Path.GetDirectoryName(video.Path),
-                    Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
+                    _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
 
                 if (response.IsForced)
                 {

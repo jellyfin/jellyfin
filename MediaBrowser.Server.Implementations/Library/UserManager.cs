@@ -282,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <exception cref="System.ArgumentException"></exception>
         public async Task<User> CreateUser(string name)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
             }

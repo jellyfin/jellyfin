@@ -372,7 +372,7 @@ namespace MediaBrowser.Dlna
                         Info = new DeviceProfileInfo
                         {
                             Id = i.FullName.ToLower().GetMD5().ToString("N"),
-                            Name = Path.GetFileNameWithoutExtension(i.FullName),
+                            Name = _fileSystem.GetFileNameWithoutExtension(i),
                             Type = type
                         }
                     })

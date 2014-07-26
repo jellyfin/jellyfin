@@ -314,10 +314,10 @@
     "ButtonSubtitles": "Subt\u00edtulos",
     "ButtonScenes": "Escenas",
     "ButtonQuality": "Calidad",
-    "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderNotifications": "Notificaciones",
+    "HeaderSelectPlayer": "Seleccionar Reproductor:",
     "ButtonSelect": "Seleccionar",
     "ButtonNew": "Nuevo",
-    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
-    "HeaderVideoError": "Video Error"
+    "MessageInternetExplorerWebm": "Para mejores resultados con Internet Explorer por favor instale el complemento WebM para IE.",
+    "HeaderVideoError": "Error de Video"
 }

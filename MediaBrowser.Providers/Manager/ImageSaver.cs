@@ -292,7 +292,7 @@ namespace MediaBrowser.Providers.Manager
         private string GetStandardSavePath(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             string filename;
-
+            
             switch (type)
             {
                 case ImageType.Art:
@@ -305,7 +305,7 @@ namespace MediaBrowser.Providers.Manager
                     filename = item is MusicAlbum ? "cdart" : "disc";
                     break;
                 case ImageType.Primary:
-                    filename = item is Episode ? Path.GetFileNameWithoutExtension(item.Path) : "folder";
+                    filename = item is Episode ? _fileSystem.GetFileNameWithoutExtension(item.Path) : "folder";
                     break;
                 case ImageType.Backdrop:
                     filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
@@ -367,7 +367,7 @@ namespace MediaBrowser.Providers.Manager
                 return zeroIndexFilename;
             }
 
-            var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
+            var filenames = images.Select(i => _fileSystem.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;
             while (filenames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
@@ -473,7 +473,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var seasonFolder = Path.GetDirectoryName(item.Path);
 
-                    var imageFilename = Path.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
+                    var imageFilename = _fileSystem.GetFileNameWithoutExtension(item.Path) + "-thumb" + extension;
 
                     return new[] { Path.Combine(seasonFolder, imageFilename) };
                 }
@@ -560,7 +560,7 @@ namespace MediaBrowser.Providers.Manager
             }
             var folder = Path.GetDirectoryName(item.Path);
 
-            return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
+            return Path.Combine(folder, _fileSystem.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);
         }
     }
 }

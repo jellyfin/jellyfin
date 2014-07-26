@@ -888,5 +888,7 @@
     "ButtonSync": "Sync",
     "TabScheduledTasks": "Scheduled Tasks",
     "HeaderChapters": "Chapters",
-    "HeaderResumeSettings": "Resume Settings"
+    "HeaderResumeSettings": "Resume Settings",
+    "TabSync": "Sync",
+    "TitleUsers": "Users"
 }

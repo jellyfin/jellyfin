@@ -1,9 +1,14 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,26 +18,111 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class SyncManager : ISyncManager
     {
-        private ISyncProvider[] _providers = new ISyncProvider[] { };
+        private readonly ILibraryManager _libraryManager;
+        private readonly ISyncRepository _repo;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly ILogger _logger;
+
+        private ISyncProvider[] _providers = { };
+
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger)
+        {
+            _libraryManager = libraryManager;
+            _repo = repo;
+            _imageProcessor = imageProcessor;
+            _logger = logger;
+        }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
         {
             _providers = providers.ToArray();
         }
 
-        public Task<List<SyncJob>> CreateJob(SyncJobRequest request)
+        public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            throw new NotImplementedException();
+            var items = GetItemsForSync(request.ItemIds).ToList();
+
+            if (items.Count == 1)
+            {
+                request.Name = GetDefaultName(items[0]);
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentException("Please supply a name for the sync job.");
+            }
+
+            var target = GetSyncTargets(request.UserId)
+                .First(i => string.Equals(request.TargetId, i.Id));
+
+            var jobId = Guid.NewGuid().ToString("N");
+
+            var job = new SyncJob
+            {
+                Id = jobId,
+                Name = request.Name,
+                TargetId = target.Id,
+                UserId = request.UserId,
+                UnwatchedOnly = request.UnwatchedOnly,
+                Limit = request.Limit,
+                LimitType = request.LimitType,
+                RequestedItemIds = request.ItemIds,
+                DateCreated = DateTime.UtcNow,
+                DateLastModified = DateTime.UtcNow
+            };
+
+            await _repo.Create(job).ConfigureAwait(false);
+
+            return new SyncJobCreationResult
+            {
+                Job = GetJob(jobId)
+            };
         }
 
         public QueryResult<SyncJob> GetJobs(SyncJobQuery query)
         {
-            throw new NotImplementedException();
+            var result = _repo.GetJobs(query);
+
+            result.Items.ForEach(FillMetadata);
+
+            return result;
         }
 
-        public QueryResult<SyncSchedule> GetSchedules(SyncScheduleQuery query)
+        private void FillMetadata(SyncJob job)
         {
-            throw new NotImplementedException();
+            var item = GetItemsForSync(job.RequestedItemIds)
+                .FirstOrDefault();
+
+            if (item != null)
+            {
+                var hasSeries = item as IHasSeries;
+                if (hasSeries != null)
+                {
+                    job.ParentName = hasSeries.SeriesName;
+                }
+
+                var hasAlbumArtist = item as IHasAlbumArtist;
+                if (hasAlbumArtist != null)
+                {
+                    job.ParentName = hasAlbumArtist.AlbumArtists.FirstOrDefault();
+                }
+
+                var primaryImage = item.GetImageInfo(ImageType.Primary, 0);
+
+                if (primaryImage != null)
+                {
+                    try
+                    {
+                        job.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
+                        job.PrimaryImageItemId = item.Id.ToString("N");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting image info", ex);
+                    }
+                }
+            }
         }
 
         public Task CancelJob(string id)
@@ -40,29 +130,19 @@ namespace MediaBrowser.Server.Implementations.Sync
             throw new NotImplementedException();
         }
 
-        public Task CancelSchedule(string id)
-        {
-            throw new NotImplementedException();
-        }
-
         public SyncJob GetJob(string id)
         {
-            throw new NotImplementedException();
-        }
-
-        public SyncSchedule GetSchedule(string id)
-        {
-            throw new NotImplementedException();
+            return _repo.GetJob(id);
         }
 
         public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
             return _providers
-                .SelectMany(GetSyncTargets)
+                .SelectMany(i => GetSyncTargets(i, userId))
                 .OrderBy(i => i.Name);
         }
 
-        private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider)
+        private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider, string userId)
         {
             var providerId = GetSyncProviderId(provider);
 
@@ -119,6 +199,38 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return false;
+        }
+
+        private IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds)
+        {
+            return itemIds.SelectMany(GetItemsForSync).DistinctBy(i => i.Id);
+        }
+
+        private IEnumerable<BaseItem> GetItemsForSync(string id)
+        {
+            var item = _libraryManager.GetItemById(id);
+
+            if (item == null)
+            {
+                throw new ArgumentException("Item with Id " + id + " not found.");
+            }
+
+            if (!SupportsSync(item))
+            {
+                throw new ArgumentException("Item with Id " + id + " does not support sync.");
+            }
+
+            return GetItemsForSync(item);
+        }
+
+        private IEnumerable<BaseItem> GetItemsForSync(BaseItem item)
+        {
+            return new[] { item };
+        }
+
+        private string GetDefaultName(BaseItem item)
+        {
+            return item.Name;
         }
     }
 }

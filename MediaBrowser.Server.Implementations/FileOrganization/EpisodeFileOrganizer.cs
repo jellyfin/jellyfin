@@ -248,12 +248,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 .ToList();
 
             var folder = Path.GetDirectoryName(targetPath);
-            var targetFileNameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
-
+            var targetFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(targetPath);
+            
             try
             {
                 var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
-                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(Path.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(_fileSystem.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
 
                 episodePaths.AddRange(filesOfOtherExtensions);
             }

@@ -35,18 +35,18 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            var path = GetMovieSavePath(info);
+            var path = GetMovieSavePath(info, FileSystem);
 
             return directoryService.GetFile(path);
         }
 
-        public static string GetMovieSavePath(ItemInfo item)
+        public static string GetMovieSavePath(ItemInfo item, IFileSystem fileSystem)
         {
             if (Directory.Exists(item.Path))
             {
                 var path = item.Path;
 
-                return Path.Combine(path, Path.GetFileNameWithoutExtension(path) + ".nfo");
+                return Path.Combine(path, fileSystem.GetFileNameWithoutExtension(path) + ".nfo");
             }
 
             return Path.ChangeExtension(item.Path, ".nfo");

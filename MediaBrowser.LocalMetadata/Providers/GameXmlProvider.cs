@@ -36,7 +36,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
             var directoryPath = directoryInfo.FullName;
 
-            var specificFile = Path.Combine(directoryPath, Path.GetFileNameWithoutExtension(info.Path) + ".xml");
+            var specificFile = Path.Combine(directoryPath, FileSystem.GetFileNameWithoutExtension(info.Path) + ".xml");
 
             var file = new FileInfo(specificFile);
 

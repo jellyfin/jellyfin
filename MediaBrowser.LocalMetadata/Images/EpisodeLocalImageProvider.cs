@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -11,6 +12,13 @@ namespace MediaBrowser.LocalMetadata.Images
 {
     public class EpisodeLocalLocalImageProvider : ILocalImageFileProvider
     {
+        private readonly IFileSystem _fileSystem;
+
+        public EpisodeLocalLocalImageProvider(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         public string Name
         {
             get { return "Local Images"; }
@@ -27,7 +35,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var parentPathFiles = directoryService.GetFileSystemEntries(parentPath);
 
-            var nameWithoutExtension = Path.GetFileNameWithoutExtension(item.Path);
+            var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(item.Path);
 
             var files = GetFilesFromParentFolder(nameWithoutExtension, parentPathFiles);
 
@@ -60,7 +68,7 @@ namespace MediaBrowser.LocalMetadata.Images
                   
                   if (BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                   {
-                      var currentNameWithoutExtension = Path.GetFileNameWithoutExtension(i.Name);
+                      var currentNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
 
                       if (string.Equals(filenameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                       {

@@ -45,9 +45,9 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Nat, Version=1.2.20.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Nat.1.2.20.0\lib\net40\Mono.Nat.dll</HintPath>
+      <HintPath>..\packages\Mono.Nat.1.2.21.0\lib\net40\Mono.Nat.dll</HintPath>
     </Reference>
     <Reference Include="Nowin">
       <HintPath>..\ThirdParty\Nowin\Nowin.dll</HintPath>
@@ -274,6 +274,7 @@
     <Compile Include="Sync\CloudSyncProvider.cs" />
     <Compile Include="Sync\MockSyncProvider.cs" />
     <Compile Include="Sync\SyncManager.cs" />
+    <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />

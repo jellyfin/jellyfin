@@ -235,7 +235,9 @@ namespace MediaBrowser.Server.Implementations.Localization
             .Where(i => i != null)
             .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-').Last();
+            var countryCode = _fileSystem.GetFileNameWithoutExtension(file)
+                .Split('-')
+                .Last();
 
             _allParentalRatings.TryAdd(countryCode, dict);
         }

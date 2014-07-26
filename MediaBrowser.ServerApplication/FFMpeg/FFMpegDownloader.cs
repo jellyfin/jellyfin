@@ -101,7 +101,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                          EncoderPath = encoder,
                          ProbePath = probe,
-                         Version = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(probe))
+                         Version = Path.GetFileName(Path.GetDirectoryName(probe))
                     };
                 }
             }

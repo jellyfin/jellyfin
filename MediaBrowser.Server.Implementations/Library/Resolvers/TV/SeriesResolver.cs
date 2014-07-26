@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -14,6 +15,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeriesResolver : FolderResolver<Series>
     {
+        private readonly IFileSystem _fileSystem;
+
+        public SeriesResolver(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -67,8 +75,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 {
                     return null;
                 }
-                
-                if (TVUtils.IsSeriesFolder(args.Path, collectionType == CollectionType.TvShows, args.FileSystemChildren, args.DirectoryService))
+
+                if (TVUtils.IsSeriesFolder(args.Path, collectionType == CollectionType.TvShows, args.FileSystemChildren, args.DirectoryService, _fileSystem))
                 {
                     return new Series();
                 }

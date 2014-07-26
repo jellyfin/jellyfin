@@ -1157,7 +1157,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private string GetCollectionType(string path)
         {
             return new DirectoryInfo(path).EnumerateFiles("*.collection", SearchOption.TopDirectoryOnly)
-                .Select(i => Path.GetFileNameWithoutExtension(i.FullName))
+                .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();
         }
 
@@ -1486,23 +1486,22 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
         {
-            var id = "namedview_3_" + name;
-            var guid = id.GetMD5();
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
+                "views",
+                _fileSystem.GetValidFilename(type));
 
-            var item = GetItemById(guid) as UserView;
+            var id = (path + "_namedview_" + name).GetMBId(typeof(UserView));
+
+            var item = GetItemById(id) as UserView;
             
             if (item == null)
             {
-                var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
-                    "views",
-                    _fileSystem.GetValidFilename(type));
-
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                 item = new UserView
                 {
                     Path = path,
-                    Id = guid,
+                    Id = id,
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = type,

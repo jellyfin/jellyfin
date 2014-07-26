@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.Movies
             var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
             var filename = string.Format("all-{0}.json",
-                preferredLanguage ?? string.Empty);
+                preferredLanguage);
 
             return Path.Combine(path, filename);
         }
