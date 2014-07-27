@@ -83,14 +83,18 @@ body {
     }
 
 h1, h1 a {
+    font-weight: 300!important;
+    font-size: 28px;
+}
+
+.libraryPage h1, .libraryPage h1 a {
     font-weight: 100!important;
     font-size: 28px;
-    font-family: Roboto;
 }
 
 .ui-loader h1 {
     font-family: Roboto;
-    font-weight: bold!important;
+    font-weight: 500!important;
     font-size: 18px;
 }
 
@@ -162,14 +166,6 @@ pre, textarea.pre {
 
 .hide {
     display: none;
-}
-
-/*
-    Page / Base styles
-    */
-.page:not(.libraryPage) {
-    background: #f2f2f2;
-    background-attachment: fixed;
 }
 
 /*
@@ -437,7 +433,7 @@ h1 .imageLink {
 
     .content-primary {
         padding: 80px 0 3em 0;
-        margin: 0 0 0 270px;
+        margin: 0 0 0 260px;
     }
 
         .content-primary ul:first-child {

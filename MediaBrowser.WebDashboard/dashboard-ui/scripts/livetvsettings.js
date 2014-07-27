@@ -12,13 +12,13 @@
             $('.noLiveTvServices', page).show();
         }
 
-        $('#selectGuideDays', page).val(config.LiveTvOptions.GuideDays || '').selectmenu('refresh');
+        $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
         var serviceOptions = liveTvInfo.Services.map(function (s) {
             return '<option value="' + s.Name + '">' + s.Name + '</option>';
         });
 
-        $('#selectActiveService', page).html(serviceOptions).val(config.LiveTvOptions.ActiveService || '').selectmenu('refresh');
+        $('#selectActiveService', page).html(serviceOptions).val(config.ActiveService || '').selectmenu('refresh');
 
         Dashboard.hideLoadingMsg();
     }
@@ -29,7 +29,7 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getServerConfiguration();
+        var promise1 = ApiClient.getNamedConfiguration("livetv");
 
         var promise2 = ApiClient.getLiveTvInfo();
 
@@ -49,13 +49,13 @@
 
             var form = this;
 
-            ApiClient.getServerConfiguration().done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
 
-                config.LiveTvOptions.GuideDays = $('#selectGuideDays', form).val() || null;
-                config.LiveTvOptions.ActiveService = $('#selectActiveService', form).val() || null;
+                config.GuideDays = $('#selectGuideDays', form).val() || null;
+                config.ActiveService = $('#selectActiveService', form).val() || null;
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
 
             // Disable default form submission

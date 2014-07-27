@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Sync
         Queued = 0,
         Transcoding = 1,
         TranscodingFailed = 2,
-        Transfering = 3,
+        Transferring = 3,
         Completed = 4,
         Cancelled = 5
     }

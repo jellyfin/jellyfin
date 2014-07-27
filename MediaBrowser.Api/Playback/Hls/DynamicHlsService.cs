@@ -269,10 +269,18 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentFilename = Path.GetFileName(segmentPath);
 
-            // If it appears in the playlist, it's done
-            if (File.ReadAllText(playlistPath).IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+            using (var fileStream = FileSystem.GetFileStream(playlistPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
             {
-                return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+                using (var reader = new StreamReader(fileStream))
+                {
+                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // If it appears in the playlist, it's done
+                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+                    }
+                }
             }
 
             // if a different file is encoding, it's done

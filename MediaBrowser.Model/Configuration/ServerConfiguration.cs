@@ -304,7 +304,6 @@ namespace MediaBrowser.Model.Configuration
             };
 
             SubtitleOptions = new SubtitleOptions();
-            LiveTvOptions = new LiveTvOptions();
             TvFileOrganizationOptions = new TvFileOrganizationOptions();
         }
     }

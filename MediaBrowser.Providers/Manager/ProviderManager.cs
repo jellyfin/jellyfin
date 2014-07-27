@@ -540,18 +540,10 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
-            if (ConfigurationManager.Configuration.EnableInternetProviders)
-            {
-                // Fetchers
-                list.AddRange(imageProviders.Where(i => i is IRemoteImageProvider).Select(i => new MetadataPlugin
-                {
-                    Name = i.Name,
-                    Type = MetadataPluginType.ImageFetcher
-                }));
-            }
+            var enableInternet = ConfigurationManager.Configuration.EnableInternetProviders;
 
             // Fetchers
-            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (enableInternet && i is IRemoteImageProvider)).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.ImageFetcher

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
@@ -11,6 +12,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -83,6 +85,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public ILiveTvService ActiveService { get; private set; }
 
+        private LiveTvOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -91,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             _services.AddRange(services);
 
-            SetActiveService(_config.Configuration.LiveTvOptions.ActiveService);
+            SetActiveService(GetConfiguration().ActiveService);
         }
 
         private void SetActiveService(string name)
@@ -303,22 +310,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                // Avoid implicitly captured closure
-                var itemId = id;
-
-                var stream = _openStreams
-                    .Where(i => string.Equals(i.Value.ItemId, itemId) && isChannel == i.Value.IsChannel)
-                    .Take(1)
-                    .Select(i => i.Value)
-                    .FirstOrDefault();
-
-                if (stream != null)
-                {
-                    stream.ConsumerCount++;
-                    _logger.Debug("Returning existing live tv stream");
-                    return stream.Info;
-                }
-
                 var service = ActiveService;
                 LiveStreamInfo info;
 
@@ -1010,9 +1001,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private double GetGuideDays(int channelCount)
         {
-            if (_config.Configuration.LiveTvOptions.GuideDays.HasValue)
+            var config = GetConfiguration();
+
+            if (config.GuideDays.HasValue)
             {
-                return _config.Configuration.LiveTvOptions.GuideDays.Value;
+                return config.GuideDays.Value;
             }
 
             var programsPerDay = channelCount * 48;

@@ -11,7 +11,7 @@
     return {
         getDefaultPageSize: function () {
 
-            var saved = store.getItem('pagesize_');
+            var saved = store.getItem('pagesize__');
 
             if (saved) {
                 return parseInt(saved);
@@ -1522,7 +1522,7 @@
 
             if (limit && options.updatePageSizeSetting !== false) {
                 try {
-                    store.setItem('pagesize_', limit);
+                    store.setItem('pagesize__', limit);
                 } catch (e) {
 
                 }
@@ -1598,7 +1598,7 @@
 
             if (query.Limit && updatePageSizeSetting !== false) {
                 try {
-                    store.setItem('pagesize_', query.Limit);
+                    store.setItem('pagesize__', query.Limit);
                 } catch (e) {
 
                 }

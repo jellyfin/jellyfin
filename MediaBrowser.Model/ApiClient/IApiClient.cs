@@ -226,7 +226,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
         Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
-        
+
         /// <summary>
         /// Gets the users async.
         /// </summary>
@@ -253,7 +253,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task{SessionInfoDto}.</returns>
         Task<SessionInfoDto> GetCurrentSessionAsync(CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the item counts async.
         /// </summary>
@@ -368,7 +368,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetAlbumArtistsAsync(ArtistsQuery query);
-        
+
         /// <summary>
         /// Gets a studio
         /// </summary>
@@ -467,6 +467,13 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task{SystemInfo}.</returns>
         Task<SystemInfo> GetSystemInfoAsync(CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the public system information asynchronous.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;PublicSystemInfo&gt;.</returns>
+        Task<PublicSystemInfo> GetPublicSystemInfoAsync(CancellationToken cancellationToken);
+        
         /// <summary>
         /// Gets a person
         /// </summary>
@@ -672,7 +679,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="index">The index.</param>
         /// <returns>Task.</returns>
         Task SetSubtitleStreamIndex(string sessionId, int? index);
-        
+
         /// <summary>
         /// Instructs the client to display a message to the user
         /// </summary>
@@ -772,23 +779,16 @@ namespace MediaBrowser.Model.ApiClient
         IJsonSerializer JsonSerializer { get; set; }
 
         /// <summary>
-        /// Gets or sets the server host name (myserver or 192.168.x.x)
+        /// Gets or sets the server address
         /// </summary>
-        /// <value>The name of the server host.</value>
-        string ServerHostName { get; }
-
-        /// <summary>
-        /// Gets or sets the port number used by the API
-        /// </summary>
-        /// <value>The server API port.</value>
-        int ServerApiPort { get; }
+        /// <value>The server address.</value>
+        string ServerAddress { get; }
 
         /// <summary>
         /// Changes the server location.
         /// </summary>
-        /// <param name="hostName">Name of the host.</param>
-        /// <param name="apiPort">The API port.</param>
-        void ChangeServerLocation(string hostName, int apiPort);
+        /// <param name="address">The address.</param>
+        void ChangeServerLocation(string address);
 
         /// <summary>
         /// Gets or sets the type of the client.
@@ -812,7 +812,31 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets or sets the current user id.
         /// </summary>
         /// <value>The current user id.</value>
-        string CurrentUserId { get; set; }
+        string CurrentUserId { get; }
+
+        /// <summary>
+        /// Gets the access token.
+        /// </summary>
+        /// <value>The access token.</value>
+        string AccessToken { get; }
+
+        /// <summary>
+        /// Sets the authentication information.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="userId">The user identifier.</param>
+        void SetAuthenticationInfo(string accessToken, string userId);
+        
+        /// <summary>
+        /// Sets the authentication information.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        void SetAuthenticationInfo(string accessToken);
+
+        /// <summary>
+        /// Clears the authentication information.
+        /// </summary>
+        void ClearAuthenticationInfo();
 
         /// <summary>
         /// Gets the image URL.
@@ -853,7 +877,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetSubtitleUrl(SubtitleDownloadOptions options);
-        
+
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>

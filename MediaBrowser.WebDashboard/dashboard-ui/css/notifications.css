@@ -16,7 +16,7 @@
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
-    padding: 5px 12px;
+    padding: 4px 12px 5px;
     text-align: center;
     text-decoration: none !important;
     -moz-user-select: none;

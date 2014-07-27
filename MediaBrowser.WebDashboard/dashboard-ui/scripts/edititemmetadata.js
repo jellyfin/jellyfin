@@ -416,16 +416,17 @@
 
             var select = $('#selectOfficialRating', page);
 
-            populateRatings(result, select);
+            populateRatings(result, select, item.OfficialRating);
 
             select.val(item.OfficialRating || "").selectmenu('refresh');
 
             select = $('#selectCustomRating', page);
 
-            populateRatings(result, select);
+            populateRatings(result, select, item.CustomRating);
 
             select.val(item.CustomRating || "").selectmenu('refresh');
         });
+
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
         selectStatus.val(item.Status || "").selectmenu('refresh');
@@ -652,7 +653,7 @@
         populatePeople(page, currentItem.People);
     }
 
-    function populateRatings(allParentalRatings, select) {
+    function populateRatings(allParentalRatings, select, currentValue) {
 
         var html = "";
 
@@ -661,11 +662,21 @@
         var ratings = [];
         var i, length, rating;
 
+        var currentValueFound = false;
+
         for (i = 0, length = allParentalRatings.length; i < length; i++) {
 
             rating = allParentalRatings[i];
 
             ratings.push({ Name: rating.Name, Value: rating.Name });
+
+            if (rating.Name == currentValue) {
+                currentValueFound = true;
+            }
+        }
+
+        if (currentValue && !currentValueFound) {
+            ratings.push({ Name: currentValue, Value: currentValue });
         }
 
         for (i = 0, length = ratings.length; i < length; i++) {

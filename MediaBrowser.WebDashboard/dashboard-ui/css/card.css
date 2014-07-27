@@ -137,6 +137,10 @@
     height: 100%;
 }
 
+.coveredCardImage {
+    background-size: cover;
+}
+
 .card-1-1 {
     width: 50%;
 }

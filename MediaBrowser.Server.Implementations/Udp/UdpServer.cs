@@ -1,8 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -37,6 +41,11 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private bool _isDisposed;
 
+        private readonly List<Tuple<byte[], Action<string>>> _responders = new List<Tuple<byte[], Action<string>>>();
+
+        private readonly IServerApplicationHost _appHost;
+        private readonly IJsonSerializer _json;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
@@ -44,12 +53,24 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="networkManager">The network manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="httpServer">The HTTP server.</param>
-        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer)
+        /// <param name="appHost">The application host.</param>
+        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
             _httpServer = httpServer;
+            _appHost = appHost;
+
+            AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
+            AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
+        }
+
+        private void AddMessageResponder(string message, Action<string> responder)
+        {
+            var expectedMessageBytes = Encoding.UTF8.GetBytes(message);
+
+            _responders.Add(new Tuple<byte[], Action<string>>(expectedMessageBytes, responder));
         }
 
         /// <summary>
@@ -58,28 +79,51 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
         private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
-            const string context = "Server";
+            var responder = _responders.FirstOrDefault(i => i.Item1.SequenceEqual(e.Bytes));
 
-            var expectedMessage = String.Format("who is MediaBrowser{0}?", context);
-            var expectedMessageBytes = Encoding.UTF8.GetBytes(expectedMessage);
-
-            if (expectedMessageBytes.SequenceEqual(e.Bytes))
+            if (responder != null)
             {
-                _logger.Info("Received UDP server request from " + e.RemoteEndPoint);
+                responder.Item2(e.RemoteEndPoint);
+            }
+        }
 
-                var localAddress = GetLocalIpAddress();
+        private async void RespondToV1Message(string endpoint)
+        {
+            var localAddress = GetLocalIpAddress();
 
-                if (!string.IsNullOrEmpty(localAddress))
+            if (!string.IsNullOrEmpty(localAddress))
+            {
+                // Send a response back with our ip address and port
+                var response = String.Format("MediaBrowserServer|{0}:{1}", localAddress, _serverConfigurationManager.Configuration.HttpServerPortNumber);
+
+                await SendAsync(Encoding.UTF8.GetBytes(response), endpoint);
+            }
+            else
+            {
+                _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
+            }
+        }
+
+        private async void RespondToV2Message(string endpoint)
+        {
+            var localAddress = GetLocalIpAddress();
+
+            if (!string.IsNullOrEmpty(localAddress))
+            {
+                var serverAddress = string.Format("http://{0}:{1}", localAddress, _serverConfigurationManager.Configuration.HttpServerPortNumber);
+
+                var response = new ServerDiscoveryInfo
                 {
-                    // Send a response back with our ip address and port
-                    var response = String.Format("MediaBrowser{0}|{1}:{2}", context, GetLocalIpAddress(), _serverConfigurationManager.Configuration.HttpServerPortNumber);
+                    Address = serverAddress,
+                    Id = _appHost.ServerId,
+                    Name = _appHost.Name
+                };
 
-                    await SendAsync(Encoding.UTF8.GetBytes(response), e.RemoteEndPoint);
-                }
-                else
-                {
-                    _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
-                }
+                await SendAsync(Encoding.UTF8.GetBytes(_json.SerializeToString(response)), endpoint);
+            }
+            else
+            {
+                _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
             }
         }
 

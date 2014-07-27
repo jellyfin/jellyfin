@@ -52,6 +52,13 @@
         padding-left: 10px;
     }
 
+.menuArrow {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAbklEQ…yGDxkLaBtENI9kPMk0gaoW0Dyj0aWowFLYNYzWB6MWMAAAq1H3+Mhu2hQAAAAASUVORK5CYII=);
+    height: 24px;
+    width: 24px;
+    display: inline-block;
+}
+
 .headerButtonRight {
     border-width: 0 !important;
     padding: 0 15px;
@@ -62,39 +69,70 @@
         border-width: 0 !important;
     }
 
-.barsMenuButton img {
-    border: 1px solid #444 !important;
-    padding: .5em;
-    background-color: #181818;
-    border-radius: 5px;
-    height: 14px !important;
+.libraryMenuButton, .dashboardMenuButton {
+    padding-left: 10px !important;
+}
+
+.barMenuInner {
+    padding: 7px 10px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    box-shadow: rgba(255, 255, 255, 0.0980392) 0px 1px 0px 0px inset, rgba(255, 255, 255, 0.0745098) 0px 1px 0px 0px;
+    background-color: rgb(14, 14, 14);
+    background-image: linear-gradient(rgb(21, 21, 21), rgb(4, 4, 4));
+    background-repeat: repeat-x;
+    border-bottom-color: rgba(0, 0, 0, 0.247059);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-image-outset: 0px;
+    border-image-repeat: stretch;
+    border-image-slice: 100%;
+    border-image-source: none;
+    border-image-width: 1;
+    border-left-color: rgba(0, 0, 0, 0.0980392);
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: rgba(0, 0, 0, 0.0980392);
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-top-color: rgba(0, 0, 0, 0.0980392);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-top-style: solid;
+    border-top-width: 1px;
 }
 
 .barsMenuButton:hover {
-    opacity: 1 !important;
+    opacity: .5 !important;
 }
 
-.barsMenuButton img:hover {
-    background-color: #38c;
+.icon-bar {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background-color: #f5f5f5;
+    -webkit-border-radius: 1px;
+    -moz-border-radius: 1px;
+    border-radius: 1px;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-@media all and (min-width: 600px) {
-    .barsMenuButton {
-        opacity: .9;
+    .icon-bar + .icon-bar {
+        margin-top: 3px;
     }
-}
 
 .libraryMenuButtonText {
     color: #fff !important;
     text-decoration: none;
-    font-weight: 400 !important;
+    font-weight: 300 !important;
     font-size: 15px;
     display: inline-block;
     vertical-align: middle;
-    line-height: 51px;
     padding-left: 0 !important;
-    position: relative;
-    top: 2px;
     margin-left: -8px;
     cursor: default;
 }
@@ -137,10 +175,6 @@
     background-color: #38c;
     color: #fff !important;
     opacity: 1;
-}
-
-.barsMenuButton:hover {
-    opacity: .6;
 }
 
 .headerButtonRight:hover {
@@ -276,16 +310,20 @@
     border-bottom: 5px solid transparent;
 }
 
-    .libraryViewNav a:hover {
+    .libraryViewNav a:not(.ui-btn-active):hover {
         color: #2ad !important;
     }
 
 .libraryViewNavLinkContent {
     display: inline-block;
-    padding: 2px 15px 2px 17px;
+    padding: 2px 15px 2px 15px;
 }
 
-.libraryViewNav a+a .libraryViewNavLinkContent {
+.libraryViewNav a + a .libraryViewNavLinkContent {
+    padding-left: 17px;
+}
+
+.libraryViewNav a + a .libraryViewNavLinkContent {
     border-left: 1px solid #333;
     position: relative;
     left: -2px;

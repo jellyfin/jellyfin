@@ -130,9 +130,14 @@
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="txtMaxAllowedBitrate">${LabelMaxBitrate}</label>
+                                        <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
                                         <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">${LabelMaxBitrateHelp}</div>
+                                        <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtMaxStaticBitrate">${LabelMaxStaticBitrate}</label>
+                                        <input type="number" id="txtMaxStaticBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">${LabelMaxStaticBitrateHelp}</div>
                                     </li>
                                     <li>
                                         <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
@@ -385,6 +390,22 @@
                         </div>
 
                         <div style="margin: 1em 0;">
+                            <label for="selectTranscodingContext">${LabelContext}</label>
+                            <select id="selectTranscodingContext" data-mini="true">
+                                <option value="Streaming">${OptionContextStreaming}</option>
+                                <option value="Static">${OptionContextStatic}</option>
+                            </select>
+                        </div>
+
+                        <div id="fldTranscodingProtocol" style="margin: 1em 0;">
+                            <label for="selectTranscodingProtocol">${LabelProtocol}</label>
+                            <select id="selectTranscodingProtocol" data-mini="true">
+                                <option value="Http">${OptionProtocolHttp}</option>
+                                <option value="Hls">${OptionProtocolHls}</option>
+                            </select>
+                        </div>
+
+                        <div style="margin: 1em 0;">
                             <label for="txtTranscodingContainer">${LabelTranscodingContainer}</label>
                             <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
                         </div>
@@ -620,7 +641,7 @@
             $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
             $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
             $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
-       </script>
+        </script>
     </div>
 </body>
 </html>

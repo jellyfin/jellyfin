@@ -9,11 +9,19 @@
         //html += '</a>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
-        html += '<img src="css/images/menu.png" />';
+        html += '<div class="barMenuInner">';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '</div>';
         html += '</button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
-        html += '<img src="css/images/menu.png" />';
+        html += '<div class="barMenuInner">';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '</div>';
         html += '</button>';
         
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';

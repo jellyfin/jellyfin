@@ -75,7 +75,8 @@
         $('#txtIconMaxHeight', page).val(profile.MaxIconHeight || '');
 
         $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests).checkboxradio('refresh');
-        $('#txtMaxAllowedBitrate', page).val(profile.MaxBitrate || '');
+        $('#txtMaxAllowedBitrate', page).val(profile.MaxStreamingBitrate || '');
+        $('#txtMaxStaticBitrate', page).val(profile.MaxStaticBitrate || '');
 
         $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
         $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
@@ -346,6 +347,8 @@
         $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
         $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
+        $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http').selectmenu('refresh');
+        $('#selectTranscodingContext', popup).val(transcodingProfile.Context || 'Streaming').selectmenu('refresh');
 
         $('#txtTranscodingVideoProfile', popup).val(transcodingProfile.VideoProfile || '');
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
@@ -371,6 +374,8 @@
         currentSubProfile.Container = $('#txtTranscodingContainer', page).val();
         currentSubProfile.AudioCodec = $('#txtTranscodingAudioCodec', page).val();
         currentSubProfile.VideoCodec = $('#txtTranscodingVideoCodec', page).val();
+        currentSubProfile.Protocol = $('#selectTranscodingProtocol', page).val();
+        currentSubProfile.Context = $('#selectTranscodingContext', page).val();
 
         currentSubProfile.VideoProfile = $('#txtTranscodingVideoProfile', page).val();
         currentSubProfile.EnableMpegtsM2TsMode = $('#chkEnableMpegtsM2TsMode', page).checked();
@@ -777,7 +782,8 @@
         profile.RequiresPlainVideoItems = $('#chkRequiresPlainVideoItems', page).checked();
 
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
-        profile.MaxBitrate = $('#txtMaxAllowedBitrate', page).val();
+        profile.MaxStreamingBitrate = $('#txtMaxAllowedBitrate', page).val();
+        profile.MaxStaticBitrate = $('#LabelMaxStaticBitrateHelp', page).val();
 
         profile.ProtocolInfo = $('#txtProtocolInfo', page).val();
         profile.XDlnaCap = $('#txtXDlnaCap', page).val();
@@ -819,10 +825,12 @@
 
             if (this.value == 'Video') {
                 $('#fldTranscodingVideoCodec', page).show();
+                $('#fldTranscodingProtocol', page).show();
                 $('#fldEnableMpegtsM2TsMode', page).show();
                 $('#fldVideoProfile', page).show();
             } else {
                 $('#fldTranscodingVideoCodec', page).hide();
+                $('#fldTranscodingProtocol', page).hide();
                 $('#fldEnableMpegtsM2TsMode', page).hide();
                 $('#fldVideoProfile', page).hide();
             }

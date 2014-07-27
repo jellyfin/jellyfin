@@ -678,12 +678,12 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 1000px) {
+/*@media all and (min-width: 1000px) {
 
     .primaryDetailPageContent {
         max-width: 850px;
     }
-}
+}*/
 
 .detailPageParentLink {
     text-decoration: none;

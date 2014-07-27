@@ -66,22 +66,35 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <exception cref="System.ArgumentNullException">item</exception>
         public BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
         {
+            var dto = GetBaseItemDtoInternal(item, fields, user, owner);
+
             var byName = item as IItemByName;
 
-            if (byName != null)
+            if (byName != null && !(item is LiveTvChannel))
             {
-                var libraryItems = user != null ?
-                    user.RootFolder.GetRecursiveChildren(user) :
-                    _libraryManager.RootFolder.RecursiveChildren;
+                IEnumerable<BaseItem> libraryItems;
 
-                var dto = GetBaseItemDtoInternal(item, fields, user);
+                var artist = item as MusicArtist;
+
+                if (artist == null || artist.IsAccessedByName)
+                {
+                    libraryItems = user != null ?
+                       user.RootFolder.GetRecursiveChildren(user) :
+                       _libraryManager.RootFolder.RecursiveChildren;
+                }
+                else
+                {
+                    libraryItems = user != null ?
+                       artist.GetRecursiveChildren(user) :
+                       artist.RecursiveChildren;
+                }
 
                 SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
 
                 return dto;
             }
 
-            return GetBaseItemDtoInternal(item, fields, user, owner);
+            return dto;
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)

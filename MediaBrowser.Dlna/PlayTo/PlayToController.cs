@@ -537,7 +537,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate,
+                        MaxBitrate = profile.MaxStreamingBitrate,
                         MediaSourceId = mediaSourceId,
                         AudioStreamIndex = audioStreamIndex,
                         SubtitleStreamIndex = subtitleStreamIndex
@@ -557,7 +557,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate,
+                        MaxBitrate = profile.MaxStreamingBitrate,
                         MediaSourceId = mediaSourceId
                     }),
 

@@ -98,6 +98,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
       <Link>ApiClient\IServerEvents.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ServerDiscoveryInfo.cs">
+      <Link>ApiClient\ServerDiscoveryInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>

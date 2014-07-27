@@ -108,7 +108,7 @@ namespace MediaBrowser.Dlna.Didl
                    MediaSources = sources,
                    Profile = _profile,
                    DeviceId = deviceId,
-                   MaxBitrate = _profile.MaxBitrate
+                   MaxBitrate = _profile.MaxStreamingBitrate
                });
             }
 

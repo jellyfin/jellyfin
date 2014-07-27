@@ -22,5 +22,11 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value>The authentication token.</value>
         public string AccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
     }
 }
