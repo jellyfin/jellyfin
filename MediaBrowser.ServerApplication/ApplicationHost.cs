@@ -326,6 +326,13 @@ namespace MediaBrowser.ServerApplication
                 saveConfig = true;
             }
 
+            if (ServerConfigurationManager.Configuration.LiveTvOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("livetv", ServerConfigurationManager.Configuration.LiveTvOptions);
+                ServerConfigurationManager.Configuration.LiveTvOptions = null;
+                saveConfig = true;
+            }
+
             if (saveConfig)
             {
                 ServerConfigurationManager.SaveConfiguration();
@@ -1001,6 +1008,11 @@ namespace MediaBrowser.ServerApplication
 
         private readonly string _systemId = Environment.MachineName.GetMD5().ToString();
 
+        public string ServerId
+        {
+            get { return _systemId; }
+        }
+
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -1017,7 +1029,7 @@ namespace MediaBrowser.ServerApplication
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
-                Id = _systemId,
+                Id = ServerId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,

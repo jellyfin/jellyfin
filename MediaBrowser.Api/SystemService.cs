@@ -21,6 +21,12 @@ namespace MediaBrowser.Api
 
     }
 
+    [Route("/System/Info/Public", "GET", Summary = "Gets public information about the server")]
+    public class GetPublicSystemInfo : IReturn<PublicSystemInfo>
+    {
+
+    }
+
     /// <summary>
     /// Class RestartApplication
     /// </summary>
@@ -123,6 +129,20 @@ namespace MediaBrowser.Api
             var result = _appHost.GetSystemInfo();
 
             return ToOptimizedResult(result);
+        }
+
+        public object Get(GetPublicSystemInfo request)
+        {
+            var result = _appHost.GetSystemInfo();
+
+            var publicInfo = new PublicSystemInfo
+            {
+                Id = result.Id,
+                ServerName = result.ServerName,
+                Version = result.Version
+            };
+
+            return ToOptimizedResult(publicInfo);
         }
 
         /// <summary>

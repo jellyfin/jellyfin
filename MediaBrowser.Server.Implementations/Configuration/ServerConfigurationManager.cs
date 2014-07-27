@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
@@ -14,6 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Configuration
 {

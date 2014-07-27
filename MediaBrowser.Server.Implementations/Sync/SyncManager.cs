@@ -68,7 +68,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 LimitType = request.LimitType,
                 RequestedItemIds = request.ItemIds,
                 DateCreated = DateTime.UtcNow,
-                DateLastModified = DateTime.UtcNow
+                DateLastModified = DateTime.UtcNow,
+                ItemCount = 1
             };
 
             await _repo.Create(job).ConfigureAwait(false);

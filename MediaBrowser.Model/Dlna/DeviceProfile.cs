@@ -49,8 +49,9 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxIconWidth { get; set; }
         public int? MaxIconHeight { get; set; }
 
-        public int? MaxBitrate { get; set; }
-        
+        public int? MaxStreamingBitrate { get; set; }
+        public int? MaxStaticBitrate { get; set; }
+
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
         /// </summary>

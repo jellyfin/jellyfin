@@ -35,5 +35,29 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The context.</value>
         public EncodingContext Context { get; set; }
+
+        /// <summary>
+        /// Gets the maximum bitrate.
+        /// </summary>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        public int? GetMaxBitrate()
+        {
+            if (MaxBitrate.HasValue)
+            {
+                return MaxBitrate;
+            }
+
+            if (Profile != null)
+            {
+                if (Context == EncodingContext.Static)
+                {
+                    return Profile.MaxStaticBitrate;
+                }
+
+                return Profile.MaxStreamingBitrate;
+            }
+
+            return null;
+        }
     }
 }

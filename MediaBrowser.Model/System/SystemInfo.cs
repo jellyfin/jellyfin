@@ -6,14 +6,8 @@ namespace MediaBrowser.Model.System
     /// <summary>
     /// Class SystemInfo
     /// </summary>
-    public class SystemInfo
+    public class SystemInfo : PublicSystemInfo
     {
-        /// <summary>
-        /// Gets or sets the version.
-        /// </summary>
-        /// <value>The version.</value>
-        public string Version { get; set; }
-
         /// <summary>
         /// Gets or sets the operating sytem.
         /// </summary>
@@ -87,12 +81,6 @@ namespace MediaBrowser.Model.System
         public List<string> FailedPluginAssemblies { get; set; }
 
         /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public string Id { get; set; }
-
-        /// <summary>
         /// Gets or sets the program data path.
         /// </summary>
         /// <value>The program data path.</value>
@@ -153,12 +141,6 @@ namespace MediaBrowser.Model.System
         public bool SupportsAutoRunAtStartup { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the server.
-        /// </summary>
-        /// <value>The name of the server.</value>
-        public string ServerName { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()
@@ -169,5 +151,26 @@ namespace MediaBrowser.Model.System
 
             FailedPluginAssemblies = new List<string>();
         }
+    }
+
+    public class PublicSystemInfo
+    {
+        /// <summary>
+        /// Gets or sets the name of the server.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        public string ServerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version.
+        /// </summary>
+        /// <value>The version.</value>
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
     }
 }

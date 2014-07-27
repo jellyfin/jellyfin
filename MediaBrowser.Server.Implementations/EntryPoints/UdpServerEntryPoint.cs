@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
@@ -35,6 +36,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// The _HTTP server
         /// </summary>
         private readonly IHttpServer _httpServer;
+        private readonly IServerApplicationHost _appHost;
 
         public const int PortNumber = 7359;
 
@@ -45,12 +47,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="networkManager">The network manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="httpServer">The HTTP server.</param>
-        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer)
+        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
             _httpServer = httpServer;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer);
+            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer, _appHost);
 
             try
             {

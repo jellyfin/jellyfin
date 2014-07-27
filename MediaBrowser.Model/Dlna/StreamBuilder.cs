@@ -105,7 +105,7 @@ namespace MediaBrowser.Model.Dlna
                 RunTimeTicks = item.RunTimeTicks
             };
 
-            int? maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
+            int? maxBitrateSetting = options.GetMaxBitrate();
 
             MediaStream audioStream = item.DefaultAudioStream;
 
@@ -243,7 +243,7 @@ namespace MediaBrowser.Model.Dlna
 
             MediaStream videoStream = item.VideoStream;
 
-            int? maxBitrateSetting = options.MaxBitrate ?? options.Profile.MaxBitrate;
+            int? maxBitrateSetting = options.GetMaxBitrate();
 
             if (IsEligibleForDirectPlay(item, maxBitrateSetting, subtitleStream, options))
             {

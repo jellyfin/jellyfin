@@ -201,6 +201,14 @@ namespace MediaBrowser.Dlna.Channels
         private readonly ILogger _logger;
         private readonly string _controlUrl;
 
+        /// <summary>
+        /// Prevents core from throwing an exception
+        /// </summary>
+        public ServerChannel()
+        {
+            
+        }
+
         public ServerChannel(List<Device> servers, IHttpClient httpClient, ILogger logger, string controlUrl)
         {
             _servers = servers;

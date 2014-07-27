@@ -1236,7 +1236,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 User = _dtoService.GetUserDto(user),
                 SessionInfo = GetSessionInfoDto(session),
-                AccessToken = token
+                AccessToken = token,
+                ServerId = _appHost.ServerId
             };
         }
 
