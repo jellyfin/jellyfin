@@ -234,6 +234,8 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private Task SendMessage<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
+            if (SkipSending()) return Task.FromResult(true);
+
             var socket = GetActiveSocket();
 
             return socket.SendAsync(message, cancellationToken);
@@ -241,6 +243,8 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private Task SendMessages<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
+            if (SkipSending()) return Task.FromResult(true);
+
             var tasks = GetActiveSockets().Select(i => Task.Run(async () =>
             {
                 try
@@ -255,6 +259,27 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken));
 
             return Task.WhenAll(tasks);
+        }
+
+        private bool SkipSending()
+        {
+            if (Session != null)
+            {
+                if (string.Equals(Session.Client, "mb-classic", StringComparison.OrdinalIgnoreCase))
+                {
+                    Version version;
+
+                    if (!string.IsNullOrWhiteSpace(Session.ApplicationVersion) && Version.TryParse(Session.ApplicationVersion, out version))
+                    {
+                        if (version < new Version(3, 0, 196))
+                        {
+                            _logger.Debug("Skipping web socket message to MBC version {0}.", version);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         public void Dispose()

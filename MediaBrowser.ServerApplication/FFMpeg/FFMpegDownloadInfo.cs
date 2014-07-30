@@ -35,7 +35,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140721";
+                            return "20140612";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
@@ -113,8 +113,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 case PlatformID.Win32NT:
                     return new[]
                     {
-                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140721-git-ce385c8-win32-static.7z",
-                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140721-git-ce385c8-win32-static.7z"
+                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140612-git-3a1c895-win32-static.7z",
+                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140612-git-3a1c895-win32-static.7z"
                     };
 
                 case PlatformID.Unix:

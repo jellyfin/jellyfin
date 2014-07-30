@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var startingPercent = numComplete * percentPerUser * 100;
 
                 var innerProgress = new ActionableProgress<double>();
-                innerProgress.RegisterAction(p => progress.Report(startingPercent + (.8 * p)));
+                innerProgress.RegisterAction(p => progress.Report(startingPercent + (percentPerUser * p)));
 
                 await DownloadContent(user, cancellationToken, innerProgress).ConfigureAwait(false);
 

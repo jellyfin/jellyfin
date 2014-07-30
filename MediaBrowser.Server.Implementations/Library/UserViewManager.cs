@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -16,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -28,8 +32,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IServerApplicationPaths _appPaths;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IFileSystem fileSystem, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IFileSystem fileSystem, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerApplicationPaths appPaths)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
@@ -37,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _userManager = userManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
+            _appPaths = appPaths;
         }
 
         public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
@@ -123,6 +129,38 @@ namespace MediaBrowser.Server.Implementations.Library
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
             return _libraryManager.GetNamedView(name, type, sortName, cancellationToken);
+        }
+
+        public async Task<SpecialFolder> GetSpecialFolder(string name, SpecialFolderType type, string itemType, CancellationToken cancellationToken)
+        {
+            var path = Path.Combine(_appPaths.ItemsByNamePath,
+                "specialfolders",
+                _fileSystem.GetValidFilename(name));
+
+            var id = (path + "_specialfolder_" + name).GetMBId(typeof(SpecialFolder));
+
+            var item = _libraryManager.GetItemById(id) as SpecialFolder;
+
+            if (item == null)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                item = new SpecialFolder
+                {
+                    Path = path,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    SpecialFolderType = type,
+                    ItemTypeName = itemType
+                };
+
+                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            }
+
+            return item;
         }
     }
 }

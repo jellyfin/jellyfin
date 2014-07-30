@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string CollectionType
         {
-            get { return Model.Entities.CollectionType.BoxSets; }
+            get { return null; }
         }
     }
 }

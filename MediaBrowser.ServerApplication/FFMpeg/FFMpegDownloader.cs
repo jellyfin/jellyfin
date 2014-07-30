@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -140,13 +138,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     ExtractFFMpeg(tempFile, directory);
                     return;
                 }
-                catch (HttpException ex)
-                {
-                    _logger.ErrorException("Error downloading {0}", ex, url);
-                }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error unpacking {0}", ex, url);
+                    _logger.ErrorException("Error downloading {0}", ex, url);
                 }
             }
 

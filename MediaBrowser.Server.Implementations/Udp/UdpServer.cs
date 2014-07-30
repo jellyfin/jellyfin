@@ -54,13 +54,14 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="httpServer">The HTTP server.</param>
         /// <param name="appHost">The application host.</param>
-        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost)
+        public UdpServer(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost, IJsonSerializer json)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
             _httpServer = httpServer;
             _appHost = appHost;
+            _json = json;
 
             AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
             AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
@@ -77,13 +78,20 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// Raises the <see cref="E:MessageReceived" /> event.
         /// </summary>
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
-        private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
+        private void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
             var responder = _responders.FirstOrDefault(i => i.Item1.SequenceEqual(e.Bytes));
 
             if (responder != null)
             {
-                responder.Item2(e.RemoteEndPoint);
+                try
+                {
+                    responder.Item2(e.RemoteEndPoint);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in OnMessageReceived", ex);
+                }
             }
         }
 

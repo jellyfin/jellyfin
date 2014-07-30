@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -612,6 +613,13 @@ namespace MediaBrowser.Dlna.Didl
             {
                 return GetImageInfo(item, ImageType.Thumb);
             }
+            if (item.HasImage(ImageType.Backdrop))
+            {
+                if (item is Channel)
+                {
+                    return GetImageInfo(item, ImageType.Backdrop);
+                }
+            }
 
             if (item is Audio || item is Episode)
             {
@@ -633,7 +641,7 @@ namespace MediaBrowser.Dlna.Didl
 
             try
             {
-                tag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
+                tag = _imageProcessor.GetImageCacheTag(item, type);
             }
             catch
             {

@@ -97,11 +97,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             var info = _appHost.GetSystemInfo();
 
             CreatePortMap(device, info.HttpServerPortNumber);
-
-            if (info.WebSocketPortNumber != info.HttpServerPortNumber)
-            {
-                CreatePortMap(device, info.WebSocketPortNumber);
-            }
         }
 
         private void CreatePortMap(INatDevice device, int port)

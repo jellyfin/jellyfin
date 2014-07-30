@@ -11,12 +11,6 @@ namespace MediaBrowser.Common.Net
     public interface IServerManager : IDisposable
     {
         /// <summary>
-        /// Gets the web socket port number.
-        /// </summary>
-        /// <value>The web socket port number.</value>
-        int WebSocketPortNumber { get; }
-
-        /// <summary>
         /// Starts this instance.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
