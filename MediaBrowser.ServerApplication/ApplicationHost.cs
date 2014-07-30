@@ -533,8 +533,8 @@ namespace MediaBrowser.ServerApplication
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            SyncRepository = await GetSyncRepository().ConfigureAwait(false);
-            RegisterSingleInstance(SyncRepository);
+            //SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            //RegisterSingleInstance(SyncRepository);
 
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer);
             RegisterSingleInstance(UserManager);
@@ -598,9 +598,6 @@ namespace MediaBrowser.ServerApplication
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient);
-            RegisterSingleInstance<IContentDirectory>(contentDirectory);
-
             var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
@@ -610,8 +607,11 @@ namespace MediaBrowser.ServerApplication
             LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths);
             RegisterSingleInstance(UserViewManager);
+
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, UserViewManager, ChannelManager);
+            RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
@@ -1024,7 +1024,7 @@ namespace MediaBrowser.ServerApplication
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
                 IsNetworkDeployed = CanSelfUpdate,
-                WebSocketPortNumber = ServerManager.WebSocketPortNumber,
+                WebSocketPortNumber = HttpServerPort,
                 SupportsNativeWebSocket = true,
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),

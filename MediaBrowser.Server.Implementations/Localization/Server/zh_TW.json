@@ -691,6 +691,10 @@
     "HeaderProfileServerSettingsHelp": "These values control how Media Browser will present itself to the device.",
     "LabelMaxBitrate": "Max bitrate:",
     "LabelMaxBitrateHelp": "Specify a max bitrate in bandwidth constrained environments, or if the device imposes it's own limit.",
+    "LabelMaxStreamingBitrate": "Max streaming bitrate:",
+    "LabelMaxStreamingBitrateHelp": "Specify a max bitrate when streaming.",
+    "LabelMaxStaticBitrate": "Max sync bitrate:",
+    "LabelMaxStaticBitrateHelp": "Specify a max bitrate when syncing content at high quality.",
     "OptionIgnoreTranscodeByteRangeRequests": "Ignore transcode byte range requests",
     "OptionIgnoreTranscodeByteRangeRequestsHelp": "If enabled, these requests will be honored but will ignore the byte range header.",
     "LabelFriendlyName": "Friendly name",
@@ -890,5 +894,11 @@
     "HeaderChapters": "Chapters",
     "HeaderResumeSettings": "Resume Settings",
     "TabSync": "Sync",
-    "TitleUsers": "Users"
+    "TitleUsers": "Users",
+    "LabelProtocol": "Protocol:",
+    "OptionProtocolHttp": "Http",
+    "OptionProtocolHls": "Http Live Streaming",
+    "LabelContext": "Context:",
+    "OptionContextStreaming": "Streaming",
+    "OptionContextStatic": "Sync"
 }

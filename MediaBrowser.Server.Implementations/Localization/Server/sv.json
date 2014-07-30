@@ -691,6 +691,10 @@
     "HeaderProfileServerSettingsHelp": "Dessa v\u00e4rden styr hur Media Browser presenterar sig f\u00f6r enheten.",
     "LabelMaxBitrate": "H\u00f6gsta bithastighet:",
     "LabelMaxBitrateHelp": "Ange en h\u00f6gsta bithastighet i bandbreddsbegr\u00e4nsade milj\u00f6er, eller i fall d\u00e4r enheten har sina egna begr\u00e4nsningar.",
+    "LabelMaxStreamingBitrate": "Max streaming bitrate:",
+    "LabelMaxStreamingBitrateHelp": "Specify a max bitrate when streaming.",
+    "LabelMaxStaticBitrate": "Max sync bitrate:",
+    "LabelMaxStaticBitrateHelp": "Specify a max bitrate when syncing content at high quality.",
     "OptionIgnoreTranscodeByteRangeRequests": "Ignorera beg\u00e4ran om \"byte range\" vid omkodning",
     "OptionIgnoreTranscodeByteRangeRequestsHelp": "Om aktiverad kommer beg\u00e4ran att uppfyllas, men \"byte range\"-rubriken ignoreras.",
     "LabelFriendlyName": "\u00d6nskat namn",
@@ -890,5 +894,11 @@
     "HeaderChapters": "Chapters",
     "HeaderResumeSettings": "Resume Settings",
     "TabSync": "Sync",
-    "TitleUsers": "Users"
+    "TitleUsers": "Users",
+    "LabelProtocol": "Protocol:",
+    "OptionProtocolHttp": "Http",
+    "OptionProtocolHls": "Http Live Streaming",
+    "LabelContext": "Context:",
+    "OptionContextStreaming": "Streaming",
+    "OptionContextStatic": "Sync"
 }

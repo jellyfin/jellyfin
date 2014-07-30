@@ -16,7 +16,7 @@
   <ModelNumber>12.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>512</MaxAlbumArtWidth>

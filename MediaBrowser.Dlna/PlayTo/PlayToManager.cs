@@ -77,42 +77,44 @@ namespace MediaBrowser.Dlna.PlayTo
                 return;
             }
 
-            var uri = new Uri(location);
-
-            var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
-            
-            if (device.RendererCommands != null)
+            try
             {
-                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
-                    .ConfigureAwait(false);
+                var uri = new Uri(location);
 
-                var controller = sessionInfo.SessionController as PlayToController;
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
-                if (controller == null)
+                if (device.RendererCommands != null)
                 {
-                    var serverAddress = GetServerAddress(localIp);
+                    var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
+                        .ConfigureAwait(false);
 
-                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
-                        _sessionManager,
-                        _itemRepository,
-                        _libraryManager,
-                        _logger,
-                        _dlnaManager,
-                        _userManager,
-                        _imageProcessor,
-                        serverAddress,
-                        _deviceDiscovery);
+                    var controller = sessionInfo.SessionController as PlayToController;
 
-                    controller.Init(device);
-
-                    var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                                  _dlnaManager.GetDefaultProfile();
-
-                    _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
+                    if (controller == null)
                     {
-                        PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+                        var serverAddress = GetServerAddress(localIp);
 
-                        SupportedCommands = new List<string>
+                        sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
+                            _sessionManager,
+                            _itemRepository,
+                            _libraryManager,
+                            _logger,
+                            _dlnaManager,
+                            _userManager,
+                            _imageProcessor,
+                            serverAddress,
+                            _deviceDiscovery);
+
+                        controller.Init(device);
+
+                        var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                                      _dlnaManager.GetDefaultProfile();
+
+                        _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
+                        {
+                            PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+
+                            SupportedCommands = new List<string>
                         {
                             GeneralCommandType.VolumeDown.ToString(),
                             GeneralCommandType.VolumeUp.ToString(),
@@ -124,11 +126,16 @@ namespace MediaBrowser.Dlna.PlayTo
                             GeneralCommandType.SetSubtitleStreamIndex.ToString()
                         },
 
-                        SupportsMediaControl = true
-                    });
+                            SupportsMediaControl = true
+                        });
 
-                    _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                        _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating PlayTo device.", ex);
             }
         }
 

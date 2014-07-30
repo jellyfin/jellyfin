@@ -90,9 +90,14 @@ namespace MediaBrowser.Dlna.Ssdp
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            values["ST"] = "ssdp:all";
+
             values["MAN"] = "\"ssdp:discover\"";
-            values["MX"] = "10";
+
+            // Search target
+            values["ST"] = "ssdp:all";
+
+            // Seconds to delay response
+            values["MX"] = "3";
 
             SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
         }

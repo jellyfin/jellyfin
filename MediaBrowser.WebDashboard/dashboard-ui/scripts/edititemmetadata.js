@@ -90,7 +90,10 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.EnableContentDeletion &&
+                if (item.Type == 'BoxSet') {
+                    $('#fldDelete', page).show();
+                }
+                else if (user.Configuration.EnableContentDeletion &&
                     item.Type != "TvChannel" &&
                     item.Type != "Genre" &&
                     item.Type != "Studio" &&

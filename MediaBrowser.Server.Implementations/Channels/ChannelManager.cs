@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 .OrderBy(i => i.Name);
         }
 
-        public Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        public Task<QueryResult<Channel>> GetChannelsInternal(ChannelQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
@@ -148,21 +148,40 @@ namespace MediaBrowser.Server.Implementations.Channels
                 all = all.Take(query.Limit.Value).ToList();
             }
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var returnItems = all.ToArray();
 
-            var returnItems = all.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
-                .ToArray();
-
-            var result = new QueryResult<BaseItemDto>
+            var result = new QueryResult<Channel>
             {
                 Items = returnItems,
                 TotalRecordCount = totalCount
             };
 
             return Task.FromResult(result);
+        }
+
+        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(new Guid(query.UserId));
+
+            var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnItems,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
+
+            return result;
         }
 
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
@@ -846,7 +865,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, CancellationToken cancellationToken)
         {
             // Get the internal channel entity
             var channel = GetChannel(query.ChannelId);
@@ -868,6 +887,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                     throw new ArgumentException(string.Format("{0} channel only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
                 }
                 providerLimit = query.Limit;
+
+                // This will cause some providers to fail
+                if (providerLimit == 0)
+                {
+                    providerLimit = 1;
+                }
             }
 
             var user = string.IsNullOrWhiteSpace(query.UserId)
@@ -911,6 +936,31 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             return await GetReturnItems(internalItems, providerTotalRecordCount, user, query, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(new Guid(query.UserId));
+
+            var internalResult = await GetChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnItems,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
+
+            return result;
         }
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
@@ -1054,7 +1104,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 filename + ".json");
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<QueryResult<BaseItem>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
         {
             items = ApplyFilters(items, query.Filters, user);
 
@@ -1078,10 +1128,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             await RefreshIfNeeded(all, cancellationToken).ConfigureAwait(false);
 
-            var returnItemArray = all.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
-                .ToArray();
+            var returnItemArray = all.ToArray();
 
-            return new QueryResult<BaseItemDto>
+            return new QueryResult<BaseItem>
             {
                 Items = returnItemArray,
                 TotalRecordCount = totalCount

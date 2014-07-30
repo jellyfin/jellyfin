@@ -63,12 +63,7 @@
 
             var port = systemInfo.HttpServerPortNumber;
 
-            if (port == systemInfo.WebSocketPortNumber) {
-
-                $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
-            } else {
-                $('#ports', page).html(Globalize.translate('LabelRunningOnPorts').replace('{0}', '<b>' + port + '</b>').replace('{1}', '<b>' + systemInfo.WebSocketPortNumber + '</b>'));
-            }
+            $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
 
             if (systemInfo.CanSelfRestart) {
                 $('.btnRestartContainer', page).removeClass('hide');

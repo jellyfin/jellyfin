@@ -45,7 +45,7 @@ namespace MediaBrowser.Dlna.Channels
             _localServersLookup = localServersLookup;
 
             _deviceDiscovery = deviceDiscovery;
-            deviceDiscovery.DeviceDiscovered += deviceDiscovery_DeviceDiscovered;
+            //deviceDiscovery.DeviceDiscovered += deviceDiscovery_DeviceDiscovered;
             deviceDiscovery.DeviceLeft += deviceDiscovery_DeviceLeft;
         }
 
@@ -196,25 +196,16 @@ namespace MediaBrowser.Dlna.Channels
 
     public class ServerChannel : IChannel, IFactoryChannel
     {
-        private readonly List<Device> _servers = new List<Device>();
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly string _controlUrl;
+        public  string ControlUrl { get; set; }
+        public List<Device> Servers { get; set; }
 
-        /// <summary>
-        /// Prevents core from throwing an exception
-        /// </summary>
-        public ServerChannel()
+        public ServerChannel(IHttpClient httpClient, ILogger logger)
         {
-            
-        }
-
-        public ServerChannel(List<Device> servers, IHttpClient httpClient, ILogger logger, string controlUrl)
-        {
-            _servers = servers;
             _httpClient = httpClient;
             _logger = logger;
-            _controlUrl = controlUrl;
+            Servers = new List<Device>();
         }
 
         public string Name
@@ -272,7 +263,7 @@ namespace MediaBrowser.Dlna.Channels
 
             if (string.IsNullOrWhiteSpace(query.FolderId))
             {
-                items = _servers.Select(i => new ChannelItemInfo
+                items = Servers.Select(i => new ChannelItemInfo
                 {
                     FolderType = ChannelFolderType.Container,
                     Id = GetServerId(i),
@@ -291,7 +282,7 @@ namespace MediaBrowser.Dlna.Channels
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
                     ParentId = folderId,
-                    ContentDirectoryUrl = _controlUrl
+                    ContentDirectoryUrl = ControlUrl
 
                 }, cancellationToken).ConfigureAwait(false);
 

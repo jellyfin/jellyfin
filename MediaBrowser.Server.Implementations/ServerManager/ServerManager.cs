@@ -62,15 +62,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
-        /// Gets the web socket port number.
-        /// </summary>
-        /// <value>The web socket port number.</value>
-        public int WebSocketPortNumber
-        {
-            get { return ConfigurationManager.Configuration.HttpServerPortNumber; }
-        }
-
-        /// <summary>
         /// Gets the web socket listeners.
         /// </summary>
         /// <value>The web socket listeners.</value>

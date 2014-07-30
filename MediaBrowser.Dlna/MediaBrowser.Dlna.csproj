@@ -184,6 +184,10 @@
     <EmbeddedResource Include="Profiles\Xml\Windows 8 RT.xml" />
     <EmbeddedResource Include="Profiles\Xml\Windows Phone.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\logo240.jpg" />
+    <EmbeddedResource Include="Images\logo240.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

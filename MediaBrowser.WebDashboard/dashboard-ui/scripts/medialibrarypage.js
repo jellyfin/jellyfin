@@ -222,12 +222,10 @@
             { name: "Music", value: "music" },
             { name: "TV shows", value: "tvshows" },
             { name: "Books*", value: "books" },
-            { name: "Collections", value: "boxsets" },
             { name: "Games*", value: "games" },
             { name: "Home videos", value: "homevideos" },
             { name: "Music videos", value: "musicvideos" },
             { name: "Photos", value: "photos" },
-            //{ name: "Trailers", value: "trailers" },
             { name: "Adult videos", value: "adultvideos" },
             { name: "Mixed movies & tv", value: "mixed" }
         ];

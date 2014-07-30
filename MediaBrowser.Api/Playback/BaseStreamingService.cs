@@ -626,7 +626,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="state">The state.</param>
         /// <param name="outputVideoCodec">The output video codec.</param>
         /// <returns>System.String.</returns>
-        protected string GetInternalGraphicalSubtitleParam(StreamState state, string outputVideoCodec)
+        protected string GetGraphicalSubtitleParam(StreamState state, string outputVideoCodec)
         {
             var outputSizeParam = string.Empty;
 

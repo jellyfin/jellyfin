@@ -133,9 +133,11 @@
             html += '<div class="cardPadder"></div>';
             html += '<a class="cardContent" href="#" data-ajax="false" data-haspw="' + user.HasPassword + '" data-username="' + user.Name + '" data-userid="' + user.Id + '">';
 
+            var imgUrl;
+
             if (user.PrimaryImageTag) {
 
-                var imgUrl = ApiClient.getUserImageUrl(user.Id, {
+                 imgUrl = ApiClient.getUserImageUrl(user.Id, {
                     width: 300,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
@@ -147,7 +149,9 @@
 
                 var background = LibraryBrowser.getMetroColor(user.Id);
 
-                html += '<div class="cardImage" style="background-color:' + background + ';"></div>';
+                imgUrl = 'css/images/logindefault.png';
+
+                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
             }
 
             html += '</a>';

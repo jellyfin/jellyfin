@@ -30,6 +30,8 @@ namespace MediaBrowser.Dlna.Profiles
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
 
+            EnableAlbumArtInDidl = true;
+
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile

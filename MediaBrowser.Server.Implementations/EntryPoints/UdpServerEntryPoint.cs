@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Udp;
 using System.Net.Sockets;
 
@@ -37,6 +38,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly IHttpServer _httpServer;
         private readonly IServerApplicationHost _appHost;
+        private readonly IJsonSerializer _json;
 
         public const int PortNumber = 7359;
 
@@ -47,13 +49,14 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="networkManager">The network manager.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="httpServer">The HTTP server.</param>
-        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost)
+        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer, IServerApplicationHost appHost, IJsonSerializer json)
         {
             _logger = logger;
             _networkManager = networkManager;
             _serverConfigurationManager = serverConfigurationManager;
             _httpServer = httpServer;
             _appHost = appHost;
+            _json = json;
         }
 
         /// <summary>
@@ -61,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer, _appHost);
+            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer, _appHost, _json);
 
             try
             {

@@ -379,7 +379,7 @@ a.itemTag:hover {
 
 .itemBackdrop {
     background-size: cover;
-    background-position: center 13%;
+    background-position: center 15%;
     background-repeat: no-repeat;
     height: 600px;
     position: relative;
@@ -661,13 +661,6 @@ a.itemTag:hover {
 
     .itemBackdrop:not(.noBackdrop) {
         border-bottom: 1px solid #111;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .itemBackdrop {
-        background-size: 100% auto;
     }
 }
 

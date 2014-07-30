@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetInternalGraphicalSubtitleParam(state, codec);
+                args += GetGraphicalSubtitleParam(state, codec);
             }
 
             return args;

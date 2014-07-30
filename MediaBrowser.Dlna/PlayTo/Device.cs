@@ -424,7 +424,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error updating device info", ex);
+                _logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
 
                 _successiveStopCount++;
 
@@ -444,7 +444,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error updating device info", ex);
+                _logger.ErrorException("Error updating device volume info for {0}", ex, Properties.Name);
             }
         }
 

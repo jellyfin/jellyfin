@@ -94,7 +94,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
         public bool IsHidden
         {
-            get { return false; }
+            get { return true; }
         }
 
         public bool IsEnabled

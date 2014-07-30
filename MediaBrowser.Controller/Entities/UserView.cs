@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,10 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.Trailers:
                     return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
                         .OfType<Trailer>();
+                case CollectionType.Movies:
+                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
+                        .Where(i => i is Movie || i is BoxSet)
+                        .DistinctBy(i => i.Id);
                 default:
                     return mediaFolders.SelectMany(i => i.GetChildren(user, includeLinkedChildren));
             }
@@ -69,5 +74,31 @@ namespace MediaBrowser.Controller.Entities
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
         }
+    }
+
+    public class SpecialFolder : Folder
+    {
+        public SpecialFolderType SpecialFolderType { get; set; }
+        public string ItemTypeName { get; set; }
+        public string ParentId { get; set; }
+
+        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        {
+            var parent = (Folder)LibraryManager.GetItemById(new Guid(ParentId));
+
+            if (SpecialFolderType == SpecialFolderType.ItemsByType)
+            {
+                var items = parent.GetRecursiveChildren(user, includeLinkedChildren);
+
+                return items.Where(i => string.Equals(i.GetType().Name, ItemTypeName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return new List<BaseItem>();
+        }
+    }
+
+    public enum SpecialFolderType
+    {
+        ItemsByType = 1
     }
 }

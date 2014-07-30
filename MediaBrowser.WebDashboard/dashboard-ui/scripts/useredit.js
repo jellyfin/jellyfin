@@ -124,10 +124,8 @@
 
         if (userId) {
             $('#userProfileNavigation', page).show();
-            $('.serverNavigation', page).hide();
         } else {
             $('#userProfileNavigation', page).hide();
-            $('.serverNavigation', page).show();
         }
 
         Dashboard.getCurrentUser().done(function (loggedInUser) {

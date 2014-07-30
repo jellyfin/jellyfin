@@ -44,6 +44,14 @@ namespace MediaBrowser.Controller.Channels
         Channel GetChannel(string id);
 
         /// <summary>
+        /// Gets the channels internal.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;Channel&gt;&gt;.</returns>
+        Task<QueryResult<Channel>> GetChannelsInternal(ChannelQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -74,6 +82,14 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
         Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the channel items internal.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItem&gt;&gt;.</returns>
+        Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the cached channel item media sources.
