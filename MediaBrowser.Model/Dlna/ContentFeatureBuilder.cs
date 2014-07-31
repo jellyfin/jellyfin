@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.Dlna
             return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
         }
 
-        public string BuildVideoHeader(string container,
+        public List<string> BuildVideoHeader(string container,
             string videoCodec,
             string audioCodec,
             int? width,
@@ -149,30 +149,42 @@ namespace MediaBrowser.Model.Dlna
                 timestamp,
                 isAnamorphic);
 
-            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            List<string> orgPnValues = new List<string>();
 
-            if (string.IsNullOrEmpty(orgPn))
+            if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
+            {
+                orgPnValues.Add(mediaProfile.OrgPn);
+            }
+            else
             {
                 foreach (string s in GetVideoOrgPnValue(container, videoCodec, audioCodec, width, height, timestamp))
                 {
-                    orgPn = s;
+                    orgPnValues.Add(s);
                     break;
                 }
             }
 
-            if (string.IsNullOrEmpty(orgPn))
+            List<string> contentFeatureList = new List<string>();
+
+            foreach (string orgPn in orgPnValues)
             {
-                // TODO: Support multiple values and return multiple headers?
-                foreach (string s in (orgPn ?? string.Empty).Split(','))
-                {
-                    orgPn = s;
-                    break;
-                }
+                string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+
+                var value = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+
+                contentFeatureList.Add(value);
             }
 
-            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+            if (orgPnValues.Count == 0)
+            {
+                string contentFeatures = string.Empty;
 
-            return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+                var value = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+
+                contentFeatureList.Add(value);
+            }
+
+            return contentFeatureList;
         }
 
         private string GetImageOrgPnValue(string container, int? width, int? height)

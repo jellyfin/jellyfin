@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Server.Implementations.LiveTv

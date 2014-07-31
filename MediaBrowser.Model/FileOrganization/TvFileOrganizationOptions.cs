@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.FileOrganization
 {
     public class TvFileOrganizationOptions
     {

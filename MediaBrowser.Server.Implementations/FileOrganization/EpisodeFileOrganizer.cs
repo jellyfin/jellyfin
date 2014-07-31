@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
 
-            await OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, _config.Configuration.TvFileOrganizationOptions, true, result, cancellationToken).ConfigureAwait(false);
+            await OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, options, true, result, cancellationToken).ConfigureAwait(false);
 
             await _organizationService.SaveResult(result, CancellationToken.None).ConfigureAwait(false);
 

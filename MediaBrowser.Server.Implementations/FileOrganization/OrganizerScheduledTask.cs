@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -48,10 +49,15 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             get { return "Library"; }
         }
 
+        private TvFileOrganizationOptions GetTvOptions()
+        {
+            return _config.GetAutoOrganizeOptions().TvOptions;
+        }
+
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config, _providerManager)
-                .Organize(_config.Configuration.TvFileOrganizationOptions, cancellationToken, progress);
+                .Organize(GetTvOptions(), cancellationToken, progress);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
@@ -64,12 +70,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public bool IsHidden
         {
-            get { return !_config.Configuration.TvFileOrganizationOptions.IsEnabled; }
+            get { return !GetTvOptions().IsEnabled; }
         }
 
         public bool IsEnabled
         {
-            get { return _config.Configuration.TvFileOrganizationOptions.IsEnabled; }
+            get { return !GetTvOptions().IsEnabled; }
         }
     }
 }

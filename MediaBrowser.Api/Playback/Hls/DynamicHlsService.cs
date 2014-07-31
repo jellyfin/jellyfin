@@ -55,21 +55,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetMasterHlsVideoStream request)
         {
-            if (string.Equals(request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Audio codec copy is not allowed here.");
-            }
-
-            if (string.Equals(request.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Video codec copy is not allowed here.");
-            }
-
-            if (string.IsNullOrEmpty(request.MediaSourceId))
-            {
-                throw new ArgumentException("MediaSourceId is required");
-            }
-
             var result = GetAsync(request).Result;
 
             return result;
@@ -331,6 +316,21 @@ namespace MediaBrowser.Api.Playback.Hls
         private async Task<object> GetAsync(GetMasterHlsVideoStream request)
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
+
+            if (string.Equals(request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Audio codec copy is not allowed here.");
+            }
+
+            if (string.Equals(request.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Video codec copy is not allowed here.");
+            }
+
+            if (string.IsNullOrEmpty(request.MediaSourceId))
+            {
+                throw new ArgumentException("MediaSourceId is required");
+            }
 
             var audioBitrate = state.OutputAudioBitrate ?? 0;
             var videoBitrate = state.OutputVideoBitrate ?? 0;

@@ -97,8 +97,6 @@ namespace MediaBrowser.Dlna.Didl
 
         private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
-            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
-
             if (streamInfo == null)
             {
                 var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
@@ -112,6 +110,38 @@ namespace MediaBrowser.Dlna.Didl
                    MaxBitrate = _profile.MaxStreamingBitrate
                });
             }
+
+            var targetWidth = streamInfo.TargetWidth;
+            var targetHeight = streamInfo.TargetHeight;
+
+            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
+                streamInfo.VideoCodec,
+                streamInfo.AudioCodec,
+                targetWidth,
+                targetHeight,
+                streamInfo.TargetVideoBitDepth,
+                streamInfo.TargetVideoBitrate,
+                streamInfo.TargetAudioChannels,
+                streamInfo.TargetAudioBitrate,
+                streamInfo.TargetTimestamp,
+                streamInfo.IsDirectStream,
+                streamInfo.RunTimeTicks,
+                streamInfo.TargetVideoProfile,
+                streamInfo.TargetVideoLevel,
+                streamInfo.TargetFramerate,
+                streamInfo.TargetPacketLength,
+                streamInfo.TranscodeSeekInfo,
+                streamInfo.IsTargetAnamorphic);
+
+            foreach (var contentFeature in contentFeatureList)
+            {
+                AddVideoResource(container, video, deviceId, filter, contentFeature, streamInfo);
+            }
+        }
+
+        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
+        {
+            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
             var url = streamInfo.ToDlnaUrl(_serverAddress);
 
@@ -189,25 +219,6 @@ namespace MediaBrowser.Dlna.Didl
                ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
-                streamInfo.VideoCodec,
-                streamInfo.AudioCodec,
-                targetWidth,
-                targetHeight,
-                streamInfo.TargetVideoBitDepth,
-                streamInfo.TargetVideoBitrate,
-                streamInfo.TargetAudioChannels,
-                streamInfo.TargetAudioBitrate,
-                streamInfo.TargetTimestamp,
-                streamInfo.IsDirectStream,
-                streamInfo.RunTimeTicks,
-                streamInfo.TargetVideoProfile,
-                streamInfo.TargetVideoLevel,
-                streamInfo.TargetFramerate,
-                streamInfo.TargetPacketLength,
-                streamInfo.TranscodeSeekInfo,
-                streamInfo.IsTargetAnamorphic);
-
             res.SetAttribute("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
@@ -216,7 +227,7 @@ namespace MediaBrowser.Dlna.Didl
 
             container.AppendChild(res);
         }
-
+        
         private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);

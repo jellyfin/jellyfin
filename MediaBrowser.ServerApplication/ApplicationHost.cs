@@ -43,6 +43,7 @@ using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -330,6 +331,13 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerConfigurationManager.SaveConfiguration("livetv", ServerConfigurationManager.Configuration.LiveTvOptions);
                 ServerConfigurationManager.Configuration.LiveTvOptions = null;
+                saveConfig = true;
+            }
+
+            if (ServerConfigurationManager.Configuration.TvFileOrganizationOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });
+                ServerConfigurationManager.Configuration.TvFileOrganizationOptions = null;
                 saveConfig = true;
             }
 
