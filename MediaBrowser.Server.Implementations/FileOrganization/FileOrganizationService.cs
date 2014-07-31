@@ -95,6 +95,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _repo.Delete(resultId);
         }
 
+        private TvFileOrganizationOptions GetTvOptions()
+        {
+            return _config.GetAutoOrganizeOptions().TvOptions;
+        }
+
         public async Task PerformOrganization(string resultId)
         {
             var result = _repo.GetResult(resultId);
@@ -107,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeEpisodeFile(result.OriginalPath, _config.Configuration.TvFileOrganizationOptions, true, CancellationToken.None)
+            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetTvOptions(), true, CancellationToken.None)
                     .ConfigureAwait(false);
         }
 
@@ -121,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeWithCorrection(request, _config.Configuration.TvFileOrganizationOptions, CancellationToken.None).ConfigureAwait(false);
+            await organizer.OrganizeWithCorrection(request, GetTvOptions(), CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

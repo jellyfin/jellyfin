@@ -223,10 +223,11 @@ namespace MediaBrowser.Controller.Library
                     continue;
                 }
 
-                if ((attributes & FileAttributes.System) == FileAttributes.System)
-                {
-                    continue;
-                }
+                // Can't enforce this because files saved by Bitcasa are always marked System
+                //if ((attributes & FileAttributes.System) == FileAttributes.System)
+                //{
+                //    continue;
+                //}
 
                 if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
@@ -268,13 +269,16 @@ namespace MediaBrowser.Controller.Library
 
                 if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 {
+                    logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
                     continue;
                 }
 
-                if ((attributes & FileAttributes.System) == FileAttributes.System)
-                {
-                    continue;
-                }
+                // Can't enforce this because files saved by Bitcasa are always marked System
+                //if ((attributes & FileAttributes.System) == FileAttributes.System)
+                //{
+                //    logger.Debug("Igoring series subfolder marked system: {0}", child.FullName);
+                //    continue;
+                //}
 
                 if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
@@ -299,6 +303,8 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
+                    logger.Debug("Evaluating series file: {0}", child.FullName);
+                    
                     var fullName = child.FullName;
 
                     if (EntityResolutionHelper.IsVideoFile(fullName) || EntityResolutionHelper.IsVideoPlaceHolder(fullName))

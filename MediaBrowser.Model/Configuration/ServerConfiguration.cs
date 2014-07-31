@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.FileOrganization;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Weather;
-using System;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -10,18 +10,6 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class ServerConfiguration : BaseApplicationConfiguration
     {
-        /// <summary>
-        /// Gets or sets the zip code to use when displaying weather
-        /// </summary>
-        /// <value>The weather location.</value>
-        public string WeatherLocation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the weather unit to use when displaying weather
-        /// </summary>
-        /// <value>The weather unit.</value>
-        public WeatherUnits WeatherUnit { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
         /// </summary>
@@ -191,9 +179,6 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitleOptions SubtitleOptions { get; set; }
 
-        [Obsolete]
-        public string[] ManualLoginClients { get; set; }
-
         public ChannelOptions ChannelOptions { get; set; }
         public ChapterOptions ChapterOptions { get; set; }
 
@@ -236,8 +221,6 @@ namespace MediaBrowser.Model.Configuration
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
-
-            ManualLoginClients = new string[] { };
 
             SeasonZeroDisplayName = "Specials";
 
@@ -304,7 +287,6 @@ namespace MediaBrowser.Model.Configuration
             };
 
             SubtitleOptions = new SubtitleOptions();
-            TvFileOrganizationOptions = new TvFileOrganizationOptions();
         }
     }
 }

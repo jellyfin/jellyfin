@@ -1917,7 +1917,8 @@ namespace MediaBrowser.Api.Playback
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic
-                    );
+
+                    ).FirstOrDefault() ?? string.Empty;
             }
 
             foreach (var item in responseHeaders)

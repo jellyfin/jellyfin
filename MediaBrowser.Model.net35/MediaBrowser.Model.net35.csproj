@@ -115,9 +115,6 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\ImageSavingConvention.cs">
       <Link>Configuration\ImageSavingConvention.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\LiveTvOptions.cs">
-      <Link>Configuration\LiveTvOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataOptions.cs">
       <Link>Configuration\MetadataOptions.cs</Link>
     </Compile>
@@ -141,9 +138,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
       <Link>Configuration\SubtitlePlaybackMode.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TvFileOrganizationOptions.cs">
-      <Link>Configuration\TvFileOrganizationOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UnratedItem.cs">
       <Link>Configuration\UnratedItem.cs</Link>
@@ -436,6 +430,9 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\StringHelper.cs">
       <Link>Extensions\StringHelper.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\AutoOrganizeOptions.cs">
+      <Link>FileOrganization\AutoOrganizeOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\EpisodeFileOrganizationRequest.cs">
       <Link>FileOrganization\EpisodeFileOrganizationRequest.cs</Link>
     </Compile>
@@ -450,6 +447,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\FileSortingStatus.cs">
       <Link>FileOrganization\FileSortingStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\TvFileOrganizationOptions.cs">
+      <Link>FileOrganization\TvFileOrganizationOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
       <Link>Games\GameSystem.cs</Link>
@@ -498,6 +498,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvInfo.cs">
       <Link>LiveTv\LiveTvInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvOptions.cs">
+      <Link>LiveTv\LiveTvOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvServiceInfo.cs">
       <Link>LiveTv\LiveTvServiceInfo.cs</Link>

@@ -501,7 +501,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                return new ContentFeatureBuilder(profile)
+                var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
                     streamInfo.VideoCodec,
                     streamInfo.AudioCodec,
@@ -520,6 +520,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic);
+
+                return list.FirstOrDefault();
             }
 
             return null;
@@ -600,9 +602,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _currentPlaylistIndex = index;
             var currentitem = Playlist[index];
 
-            var dlnaheaders = GetDlnaHeaders(currentitem);
-
-            await _device.SetAvTransport(currentitem.StreamUrl, dlnaheaders, currentitem.Didl);
+            await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && streamInfo.IsDirectStream)

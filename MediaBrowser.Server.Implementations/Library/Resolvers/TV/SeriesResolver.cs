@@ -60,15 +60,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 var collectionType = args.GetCollectionType();
 
+                var isTvShowsFolder = string.Equals(collectionType, CollectionType.TvShows,
+                    StringComparison.OrdinalIgnoreCase);
+
                 // If there's a collection type and it's not tv, it can't be a series
                 if (!string.IsNullOrEmpty(collectionType) &&
-                    !string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) &&
+                    !isTvShowsFolder &&
                     !string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
 
-                if (TVUtils.IsSeriesFolder(args.Path, string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase), args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger))
+                if (TVUtils.IsSeriesFolder(args.Path, isTvShowsFolder, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger))
                 {
                     return new Series();
                 }
