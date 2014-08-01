@@ -30,10 +30,6 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.Trailers:
                     return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
                         .OfType<Trailer>();
-                case CollectionType.Movies:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
-                        .Where(i => i is Movie || i is BoxSet)
-                        .DistinctBy(i => i.Id);
                 default:
                     return mediaFolders.SelectMany(i => i.GetChildren(user, includeLinkedChildren));
             }
