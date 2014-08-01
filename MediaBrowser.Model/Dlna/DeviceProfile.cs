@@ -43,8 +43,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string AlbumArtPn { get; set; }
 
-        public int? MaxAlbumArtWidth { get; set; }
-        public int? MaxAlbumArtHeight { get; set; }
+        public int MaxAlbumArtWidth { get; set; }
+        public int MaxAlbumArtHeight { get; set; }
 
         public int? MaxIconWidth { get; set; }
         public int? MaxIconHeight { get; set; }

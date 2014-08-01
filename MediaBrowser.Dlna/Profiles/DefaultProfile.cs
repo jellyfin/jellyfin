@@ -24,13 +24,16 @@ namespace MediaBrowser.Dlna.Profiles
 
             AlbumArtPn = "JPEG_SM";
 
-            MaxAlbumArtHeight = 512;
-            MaxAlbumArtWidth = 512;
+            MaxAlbumArtHeight = 480;
+            MaxAlbumArtWidth = 480;
+
+            MaxIconWidth = 48;
+            MaxIconHeight = 48;
 
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
 
-            EnableAlbumArtInDidl = true;
+            EnableAlbumArtInDidl = false;
 
             TranscodingProfiles = new[]
             {

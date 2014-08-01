@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using System.Collections.Generic;
+using System.IO;
 
 namespace MediaBrowser.Controller.Drawing
 {
@@ -34,39 +35,36 @@ namespace MediaBrowser.Controller.Drawing
         public int? UnplayedCount { get; set; }
 
         public double? PercentPlayed { get; set; }
-        
+
         public string BackgroundColor { get; set; }
 
-        public bool HasDefaultOptions()
+        public bool HasDefaultOptions(string originalImagePath)
         {
-            return HasDefaultOptionsWithoutSize() && 
-                !Width.HasValue && 
-                !Height.HasValue && 
-                !MaxWidth.HasValue && 
+            return HasDefaultOptionsWithoutSize(originalImagePath) &&
+                !Width.HasValue &&
+                !Height.HasValue &&
+                !MaxWidth.HasValue &&
                 !MaxHeight.HasValue;
         }
 
-        public bool HasDefaultOptionsWithoutSize()
+        public bool HasDefaultOptionsWithoutSize(string originalImagePath)
         {
             return (!Quality.HasValue || Quality.Value == 100) &&
-                IsOutputFormatDefault &&
+                IsOutputFormatDefault(originalImagePath) &&
                 !AddPlayedIndicator &&
                 !PercentPlayed.HasValue &&
                 !UnplayedCount.HasValue &&
                 string.IsNullOrEmpty(BackgroundColor);
         }
 
-        private bool IsOutputFormatDefault
+        private bool IsOutputFormatDefault(string originalImagePath)
         {
-            get
+            if (OutputFormat == ImageOutputFormat.Original)
             {
-                if (OutputFormat == ImageOutputFormat.Original)
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
+
+            return string.Equals(Path.GetExtension(originalImagePath), "." + OutputFormat);
         }
     }
 }

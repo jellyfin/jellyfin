@@ -16,13 +16,13 @@
   <ModelNumber>Media Browser</ModelNumber>
   <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>true</IgnoreTranscodeByteRangeRequests>
-  <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
-  <MaxAlbumArtWidth>512</MaxAlbumArtWidth>
-  <MaxAlbumArtHeight>512</MaxAlbumArtHeight>
-  <MaxIconWidth xsi:nil="true" />
-  <MaxIconHeight xsi:nil="true" />
+  <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
+  <MaxIconWidth>48</MaxIconWidth>
+  <MaxIconHeight>48</MaxIconHeight>
   <MaxStreamingBitrate>8000000</MaxStreamingBitrate>
   <MaxStaticBitrate>8000000</MaxStaticBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>

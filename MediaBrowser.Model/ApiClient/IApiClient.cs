@@ -265,23 +265,26 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the episodes asynchronous.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query);
+        Task<ItemsResult> GetEpisodesAsync(EpisodeQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the seasons asynchronous.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSeasonsAsync(SeasonQuery query);
+        Task<ItemsResult> GetSeasonsAsync(SeasonQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Queries for items
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="ArgumentNullException">query</exception>
-        Task<ItemsResult> GetItemsAsync(ItemQuery query);
+        Task<ItemsResult> GetItemsAsync(ItemQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the instant mix from song async.
@@ -315,44 +318,50 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the similar movies async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query);
+        Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the similar trailers async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query);
+        Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the similar series async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query);
+        Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the similar albums async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query);
+        Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the similar games async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query);
+        Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the people async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<ItemsResult> GetPeopleAsync(PersonsQuery query);
+        Task<ItemsResult> GetPeopleAsync(PersonsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the artists.
@@ -382,8 +391,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the next up async.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query);
+        Task<ItemsResult> GetNextUpEpisodesAsync(NextUpQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the upcoming episodes asynchronous.

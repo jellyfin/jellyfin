@@ -394,9 +394,17 @@ namespace MediaBrowser.Dlna.Didl
 
             if (filter.Contains("dc:description"))
             {
-                if (!string.IsNullOrWhiteSpace(item.Overview))
+                var desc = item.Overview;
+
+                var hasShortOverview = item as IHasShortOverview;
+                if (hasShortOverview != null && !string.IsNullOrEmpty(hasShortOverview.ShortOverview))
                 {
-                    AddValue(element, "dc", "description", item.Overview, NS_DC);
+                    desc = hasShortOverview.ShortOverview;
+                }
+
+                if (!string.IsNullOrWhiteSpace(desc))
+                {
+                    AddValue(element, "dc", "description", desc, NS_DC);
                 }
             }
             if (filter.Contains("upnp:longDescription"))
@@ -569,7 +577,7 @@ namespace MediaBrowser.Dlna.Didl
 
             var result = element.OwnerDocument;
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight);
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
             var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
             var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
@@ -578,11 +586,9 @@ namespace MediaBrowser.Dlna.Didl
             icon.InnerText = albumartUrlInfo.Url;
             element.AppendChild(icon);
 
-            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth, _profile.MaxIconHeight);
+            // TOOD: Remove these default values
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
             icon = result.CreateElement("upnp", "icon", NS_UPNP);
-            profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
-            profile.InnerText = _profile.AlbumArtPn;
-            icon.SetAttributeNode(profile);
             icon.InnerText = iconUrlInfo.Url;
             element.AppendChild(icon);
 
@@ -591,6 +597,25 @@ namespace MediaBrowser.Dlna.Didl
                 return;
             }
 
+            AddImageResElement(item, element, 4096, 4096, "jpg");
+            AddImageResElement(item, element, 1024, 768, "jpg");
+            AddImageResElement(item, element, 640, 480, "jpg");
+            AddImageResElement(item, element, 160, 160, "jpg");
+        }
+
+        private void AddImageResElement(BaseItem item, XmlElement element, int maxWidth, int maxHeight, string format)
+        {
+            var imageInfo = GetImageInfo(item);
+
+            if (imageInfo == null)
+            {
+                return;
+            }
+
+            var result = element.OwnerDocument;
+
+            var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, format);
+
             var res = result.CreateElement(string.Empty, "res", NS_DIDL);
 
             res.InnerText = albumartUrlInfo.Url;
@@ -598,11 +623,11 @@ namespace MediaBrowser.Dlna.Didl
             var width = albumartUrlInfo.Width;
             var height = albumartUrlInfo.Height;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader("jpg", width, height);
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader(format, width, height);
 
             res.SetAttribute("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
-                "image/jpeg",
+                MimeTypes.GetMimeType("file." + format),
                 contentFeatures
                 ));
 
@@ -677,7 +702,7 @@ namespace MediaBrowser.Dlna.Didl
             return new ImageDownloadInfo
             {
                 ItemId = item.Id.ToString("N"),
-                Type = ImageType.Primary,
+                Type = type,
                 ImageTag = tag,
                 Width = width,
                 Height = height
@@ -702,48 +727,31 @@ namespace MediaBrowser.Dlna.Didl
             internal int? Height;
         }
 
-        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int? maxWidth, int? maxHeight)
+        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
-            var url = string.Format("{0}/Items/{1}/Images/{2}?params=",
+            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}",
                 _serverAddress,
                 info.ItemId,
-                info.Type);
-
-            var options = new List<string>
-            {
+                info.Type,
                 info.ImageTag,
-                "jpg"
-            };
-
-            if (maxWidth.HasValue)
-            {
-                options.Add(maxWidth.Value.ToString(_usCulture));
-            }
-
-            if (maxHeight.HasValue)
-            {
-                options.Add(maxHeight.Value.ToString(_usCulture));
-            }
-
-            url += string.Join(";", options.ToArray());
+                format,
+                maxWidth,
+                maxHeight);
 
             var width = info.Width;
             var height = info.Height;
 
             if (width.HasValue && height.HasValue)
             {
-                if (maxWidth.HasValue || maxHeight.HasValue)
+                var newSize = DrawingUtils.Resize(new ImageSize
                 {
-                    var newSize = DrawingUtils.Resize(new ImageSize
-                    {
-                        Height = height.Value,
-                        Width = width.Value
+                    Height = height.Value,
+                    Width = width.Value
 
-                    }, null, null, maxWidth, maxHeight);
+                }, null, null, maxWidth, maxHeight);
 
-                    width = Convert.ToInt32(newSize.Width);
-                    height = Convert.ToInt32(newSize.Height);
-                }
+                width = Convert.ToInt32(newSize.Width);
+                height = Convert.ToInt32(newSize.Height);
             }
 
             return new ImageUrlInfo

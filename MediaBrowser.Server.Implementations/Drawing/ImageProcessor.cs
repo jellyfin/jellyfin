@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var originalImagePath = options.Image.Path;
 
-            if (options.HasDefaultOptions() && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
+            if (options.HasDefaultOptions(originalImagePath) && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
                 // Just spit out the original file if all the options are default
                 return originalImagePath;
@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
 
-            if (options.HasDefaultOptionsWithoutSize() && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
+            if (options.HasDefaultOptionsWithoutSize(originalImagePath) && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
             {
                 // Just spit out the original file if the new size equals the old
                 return originalImagePath;
