@@ -446,7 +446,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }
             if (string.Equals(folder.ViewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return GetPlainFolderChildrenSorted(folder, user, sort);
+                return SortItems(folder.GetRecursiveChildren(user, true).OfType<Movie>(), user, sort);
             }
             if (string.Equals(folder.ViewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {

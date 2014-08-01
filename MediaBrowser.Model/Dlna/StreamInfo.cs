@@ -272,7 +272,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return MaxAudioChannels.HasValue && !IsDirectStream
                     ? (streamChannels.HasValue ? Math.Min(MaxAudioChannels.Value, streamChannels.Value) : MaxAudioChannels.Value)
-                    : stream == null ? null : streamChannels;
+                    : streamChannels;
             }
         }
 
