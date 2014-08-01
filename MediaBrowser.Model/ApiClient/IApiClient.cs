@@ -287,6 +287,14 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetItemsAsync(ItemQuery query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the user views.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;ItemsResult&gt;.</returns>
+        Task<ItemsResult> GetUserViews(string userId, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets the instant mix from song async.
         /// </summary>
         /// <param name="query">The query.</param>

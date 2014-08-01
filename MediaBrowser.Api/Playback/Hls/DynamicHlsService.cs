@@ -22,6 +22,12 @@ namespace MediaBrowser.Api.Playback.Hls
     [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetMasterHlsVideoStream : VideoStreamRequest
     {
+        public bool EnableAdaptiveBitrateStreaming { get; set; }
+
+        public GetMasterHlsVideoStream()
+        {
+            EnableAdaptiveBitrateStreaming = true;
+        }
     }
 
     [Route("/Videos/{Id}/main.m3u8", "GET")]
@@ -375,6 +381,13 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableAdaptiveBitrateStreaming(StreamState state)
         {
+            var request = state.Request as GetMasterHlsVideoStream;
+
+            if (request != null && !request.EnableAdaptiveBitrateStreaming)
+            {
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(state.MediaPath))
             {
                 // Opening live streams is so slow it's not even worth it
