@@ -400,6 +400,9 @@ namespace MediaBrowser.Model.Dlna
         {
             if (width.HasValue && height.HasValue)
             {
+                if ((width.Value <= 160) && (height.Value <= 160))
+                    return MediaFormatProfile.JPEG_SM;
+
                 if ((width.Value <= 640) && (height.Value <= 480))
                     return MediaFormatProfile.JPEG_SM;
 
@@ -407,9 +410,11 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.JPEG_MED;
                 }
+
+                return MediaFormatProfile.JPEG_LRG;
             }
 
-            return MediaFormatProfile.JPEG_LRG;
+            return MediaFormatProfile.JPEG_SM;
         }
     }
 }

@@ -358,29 +358,45 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             if (channel != null)
             {
-                return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                try
                 {
-                    ChannelId = channel.Id.ToString("N"),
-                    Limit = limit,
-                    StartIndex = startIndex,
-                    UserId = user.Id.ToString("N")
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    {
+                        ChannelId = channel.Id.ToString("N"),
+                        Limit = limit,
+                        StartIndex = startIndex,
+                        UserId = user.Id.ToString("N")
 
-                }, CancellationToken.None);
+                    }, CancellationToken.None);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                }
             }
 
             var channelFolderItem = folder as ChannelFolderItem;
 
             if (channelFolderItem != null)
             {
-                return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                try
                 {
-                    ChannelId = channelFolderItem.ChannelId,
-                    FolderId = channelFolderItem.Id.ToString("N"),
-                    Limit = limit,
-                    StartIndex = startIndex,
-                    UserId = user.Id.ToString("N")
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    {
+                        ChannelId = channelFolderItem.ChannelId,
+                        FolderId = channelFolderItem.Id.ToString("N"),
+                        Limit = limit,
+                        StartIndex = startIndex,
+                        UserId = user.Id.ToString("N")
 
-                }, CancellationToken.None);
+                    }, CancellationToken.None);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                }
             }
 
             return ToResult(GetPlainFolderChildrenSorted(folder, user, sort), startIndex, limit);
