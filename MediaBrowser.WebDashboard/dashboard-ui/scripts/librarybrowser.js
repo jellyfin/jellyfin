@@ -1,5 +1,7 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, store) {
 
+    var pageSizeKey = 'pagesize_v2';
+
     $(function () {
         $("body").on("create", function () {
             $(".lazy").unveil(200);
@@ -11,7 +13,7 @@
     return {
         getDefaultPageSize: function () {
 
-            var saved = store.getItem('pagesize__');
+            var saved = store.getItem(pageSizeKey);
 
             if (saved) {
                 return parseInt(saved);
@@ -20,12 +22,12 @@
             if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
                 return 100;
             }
-            return 20;
+            return 50;
         },
 
         getDefaultItemsView: function (view, mobileView) {
 
-            return $.browser.mobile ? mobileView : view;
+            return view;
 
         },
 
@@ -564,7 +566,7 @@
             return '';
         },
 
-        getUserDataCssClass: function(key) {
+        getUserDataCssClass: function (key) {
             return 'libraryItemUserData' + key;
         },
 
@@ -750,25 +752,25 @@
 
             var primaryImageAspectRatio;
 
-            if (options.shape == 'auto' || options.shape == 'autosmall') {
+            if (options.shape == 'auto' || options.shape == 'autohome') {
 
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
-                    options.shape = options.shape == 'auto' ? 'backdrop' : 'smallBackdrop';
+                    options.shape = options.shape == 'auto' ? 'backdrop' : 'homePageBackdrop';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;
-                    options.shape = 'square';
+                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
                     options.coverImage = true;
-                    options.shape = 'square';
+                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
                 } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
                     options.shape = 'banner';
                     options.coverImage = true;
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
-                    options.shape = 'portrait';
+                    options.shape = options.shape == 'auto' ? 'portrait' : 'homePagePortrait';
                 } else {
-                    options.shape = options.defaultShape || 'portrait';
+                    options.shape = options.defaultShape || (options.shape == 'auto' ? 'portrait' : 'homePagePortrait');
                 }
             }
 
@@ -974,17 +976,13 @@
                     background = defaultBackground;
                 }
 
-                var cssClass = "posterItem";
+                var cssClass = "card";
 
                 if (options.transparent !== false) {
-                    cssClass += " transparentPosterItem";
+                    cssClass += " transparentCard";
                 }
 
-                if (options.borderless) {
-                    cssClass += " borderlessPosterItem";
-                }
-
-                cssClass += ' ' + options.shape + 'PosterItem';
+                cssClass += ' ' + options.shape + 'Card';
 
                 var mediaSourceCount = item.MediaSourceCount || 1;
 
@@ -995,15 +993,11 @@
                 }
 
                 if (options.showChildCountIndicator && item.ChildCount) {
-                    cssClass += ' groupedPosterItem';
+                    cssClass += ' groupedCard';
 
                     if (item.Type == 'Series') {
                         cssClass += ' unplayedGroupings';
                     }
-                }
-
-                if (options.showChildCountIndicator) {
-                    cssClass += ' groupingPosterItem';
                 }
 
                 var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
@@ -1020,9 +1014,9 @@
                     style += "background-color:" + background + ";";
                 }
 
-                var imageCssClass = 'posterItemImage';
+                var imageCssClass = 'cardImage';
                 if (options.coverImage) {
-                    imageCssClass += " coveredPosterItemImage";
+                    imageCssClass += " coveredCardImage";
                 }
 
                 var dataSrc = "";
@@ -1032,11 +1026,14 @@
                     dataSrc = ' data-src="' + imgUrl + '"';
                 }
 
-                var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+                html += '<div class="cardBox">';
+                html += '<div class="cardScalable">';
 
-                html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
+                html += '<div class="cardPadder"></div>';
+                html += '<div class="cardContent">';
+                html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '></div>';
 
-                html += '<div class="posterItemOverlayTarget"></div>';
+                html += '<div class="cardOverlayTarget"></div>';
 
                 if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
                     if (options.showLocationTypeIndicator !== false) {
@@ -1060,91 +1057,193 @@
 
                     // Render this pre-enhanced to save on jquery mobile dom manipulation
                     html += '<div class="itemSelectionPanel" onclick="return false;" style="display:none;"><div class="ui-checkbox ui-mini"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
-
                 }
 
-                if (!options.overlayText) {
+                var footerText = LibraryBrowser.getCardFooterText(item, options, imgUrl, forceName);
+                var footerOverlayed = false;
 
-                    if (progressHtml) {
-                        html += '<div class="posterItemTextOverlay">';
-                        html += "<div class='posterItemProgress miniPosterItemProgress'>";
-                        html += progressHtml || "&nbsp;";
-                        html += "</div>";
-                        html += "</div>";
-                    }
+                if (options.overlayText || (forceName && !options.showTitle)) {
+                    html += footerText;
+                    footerOverlayed = true;
                 }
+
+                // cardContent
                 html += '</div>';
 
-                var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
+                // cardScalable
+                html += '</div>';
 
-                if (!imgUrl && !options.showTitle) {
-                    html += "<div class='posterItemDefaultText'>";
-                    html += htmlEncode(name);
-                    html += "</div>";
+                if (!options.overlayText && !footerOverlayed) {
+                    html += footerText;
                 }
 
-                var overlayText = options.overlayText || (forceName && !options.showTitle);
+                // cardBox
+                html += '</div>';
 
-                if (overlayText) {
-                    html += '<div class="posterItemTextOverlay">';
-                }
+                //var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
-                cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
+                //if (!options.overlayText) {
 
-                var lines = [];
+                //    if (progressHtml) {
+                //        html += '<div class="posterItemTextOverlay">';
+                //        html += "<div class='posterItemProgress miniPosterItemProgress'>";
+                //        html += progressHtml || "&nbsp;";
+                //        html += "</div>";
+                //        html += "</div>";
+                //    }
+                //}
+                //html += '</div>';
 
-                if (options.showParentTitle) {
+                //var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
 
-                    lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
-                }
+                //if (!imgUrl && !options.showTitle) {
+                //    html += "<div class='posterItemDefaultText'>";
+                //    html += htmlEncode(name);
+                //    html += "</div>";
+                //}
 
-                if (options.showTitle || forceName) {
+                //var overlayText = options.overlayText || (forceName && !options.showTitle);
 
-                    lines.push(htmlEncode(name));
-                }
+                //if (overlayText) {
+                //    html += '<div class="posterItemTextOverlay">';
+                //}
 
-                if (options.showItemCounts) {
+                //cssClass = options.centerText ? "posterItemText posterItemTextCentered" : "posterItemText";
 
-                    var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
+                //var lines = [];
 
-                    lines.push(itemCountHtml);
-                }
+                //if (options.showParentTitle) {
 
-                if (options.showPremiereDate && item.PremiereDate) {
+                //    lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                //}
 
-                    try {
+                //if (options.showTitle || forceName) {
 
-                        lines.push(LibraryBrowser.getPremiereDateText(item));
+                //    lines.push(htmlEncode(name));
+                //}
 
-                    } catch (err) {
-                        lines.push('');
+                //if (options.showItemCounts) {
 
-                    }
-                }
+                //    var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
 
-                if (options.showYear) {
+                //    lines.push(itemCountHtml);
+                //}
 
-                    lines.push(item.ProductionYear || '');
-                }
+                //if (options.showPremiereDate && item.PremiereDate) {
 
-                html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
+                //    try {
 
-                if (options.overlayText) {
+                //        lines.push(LibraryBrowser.getPremiereDateText(item));
 
-                    if (progressHtml) {
-                        html += "<div class='posterItemText posterItemProgress'>";
-                        html += progressHtml || "&nbsp;";
-                        html += "</div>";
-                    }
-                }
+                //    } catch (err) {
+                //        lines.push('');
 
-                if (overlayText) {
-                    html += "</div>";
-                }
+                //    }
+                //}
+
+                //if (options.showYear) {
+
+                //    lines.push(item.ProductionYear || '');
+                //}
+
+                //html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
+
+                //if (options.overlayText) {
+
+                //    if (progressHtml) {
+                //        html += "<div class='posterItemText posterItemProgress'>";
+                //        html += progressHtml || "&nbsp;";
+                //        html += "</div>";
+                //    }
+                //}
+
+                //if (overlayText) {
+                //    html += "</div>";
+                //}
 
                 html += "</a>";
 
             }
+
+            return html;
+        },
+
+        getCardFooterText: function (item, options, imgUrl, forceName) {
+
+            var html = '';
+
+            html += '<div class="cardFooter">';
+
+            var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+
+            if (!options.overlayText) {
+
+                if (progressHtml) {
+                    html += "<div class='cardProgress miniCardProgress'>";
+                    html += (progressHtml || "&nbsp;");
+                    html += "</div>";
+                }
+            }
+
+            var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
+
+            if (!imgUrl && !options.showTitle) {
+                html += "<div class='cardDefaultText'>";
+                html += htmlEncode(name);
+                html += "</div>";
+            }
+
+            var cssClass = options.centerText ? "cardText cardTextCentered" : "cardText";
+
+            var lines = [];
+
+            if (options.showParentTitle) {
+
+                lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+            }
+
+            if (options.showTitle || forceName) {
+
+                lines.push(htmlEncode(name));
+            }
+
+            if (options.showItemCounts) {
+
+                var itemCountHtml = LibraryBrowser.getItemCountsHtml(options, item);
+
+                lines.push(itemCountHtml);
+            }
+
+            if (options.showPremiereDate && item.PremiereDate) {
+
+                try {
+
+                    lines.push(LibraryBrowser.getPremiereDateText(item));
+
+                } catch (err) {
+                    lines.push('');
+
+                }
+            }
+
+            if (options.showYear) {
+
+                lines.push(item.ProductionYear || '');
+            }
+
+            html += LibraryBrowser.getPosterItemTextLines(lines, cssClass, !options.overlayText);
+
+            if (options.overlayText) {
+
+                if (progressHtml) {
+                    html += "<div class='cardText cardProgress'>";
+                    html += progressHtml || "&nbsp;";
+                    html += "</div>";
+                }
+            }
+
+            //cardFooter
+            html += "</div>";
 
             return html;
         },
@@ -1522,7 +1621,7 @@
 
             if (limit && options.updatePageSizeSetting !== false) {
                 try {
-                    store.setItem('pagesize__', limit);
+                    store.setItem(pageSizeKey, limit);
                 } catch (e) {
 
                 }
@@ -1598,7 +1697,7 @@
 
             if (query.Limit && updatePageSizeSetting !== false) {
                 try {
-                    store.setItem('pagesize__', query.Limit);
+                    store.setItem(pageSizeKey, query.Limit);
                 } catch (e) {
 
                 }

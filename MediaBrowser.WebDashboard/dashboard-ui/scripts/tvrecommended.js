@@ -35,8 +35,6 @@
 
     function loadNextUp(page, context) {
 
-        var screenWidth = $(window).width();
-
         var query = {
 
             Limit: 24,
@@ -71,14 +69,14 @@
 
             $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "backdrop",
+                shape: "homePageBackdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
+                overlayText: true,
                 context: context,
                 lazy: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
     }
@@ -114,14 +112,14 @@
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "backdrop",
+                shape: "homePageBackdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
+                overlayText: true,
                 lazy: true,
                 context: 'tv'
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
     }

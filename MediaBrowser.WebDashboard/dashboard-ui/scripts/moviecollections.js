@@ -81,7 +81,7 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createPosterItemMenus().trigger('itemsrendered');
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus().trigger('itemsrendered');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

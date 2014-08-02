@@ -23,5 +23,6 @@
         public const string Games = "games";
         public const string Channels = "channels";
         public const string LiveTv = "livetv";
+        public const string Playlists = "playlists";
     }
 }

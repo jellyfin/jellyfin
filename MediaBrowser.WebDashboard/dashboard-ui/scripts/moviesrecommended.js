@@ -29,7 +29,9 @@
         html += '<div>';
         html += LibraryBrowser.getPosterViewHtml({
             items: recommendation.Items,
-            lazy: true
+            lazy: true,
+            shape: 'homePagePortrait',
+            overlayText: true
         });
         html += '</div>';
 
@@ -68,12 +70,12 @@
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 preferBackdrop: true,
-                shape: 'backdrop',
-                overlayText: screenWidth >= 600,
+                shape: 'homePageBackdrop',
+                overlayText: true,
                 showTitle: true,
                 lazy: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
 
@@ -97,7 +99,7 @@
             var html = recommendations.map(getRecommendationHtml).join('');
 
             $('.noItemsMessage', page).hide();
-            $('.recommendations', page).html(html).trigger('create').createPosterItemMenus();
+            $('.recommendations', page).html(html).trigger('create').createCardMenus();
         });
 
     });

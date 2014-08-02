@@ -972,6 +972,15 @@
             $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer');
         }
 
+        self.canAutoPlayVideo = function () {
+
+            if ($.browser.msie || $.browser.mobile) {
+                return false;
+            }
+
+            return true;
+        };
+
         self.playVideo = function (item, mediaSource, startPosition) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -1062,7 +1071,7 @@
             // Create video player
             var html = '';
 
-            var requiresNativeControls = $.browser.msie || $.browser.mobile;
+            var requiresNativeControls = !self.canAutoPlayVideo();
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
