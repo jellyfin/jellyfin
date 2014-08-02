@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -10,16 +9,17 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -33,8 +33,9 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IPlaylistManager _playlists;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IFileSystem fileSystem, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerApplicationPaths appPaths)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IFileSystem fileSystem, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerApplicationPaths appPaths, IPlaylistManager playlists)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
@@ -43,6 +44,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
             _appPaths = appPaths;
+            _playlists = playlists;
         }
 
         public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
@@ -92,6 +94,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 recursiveChildren.OfType<BoxSet>().Any())
             {
                 list.Add(await GetUserView(CollectionType.BoxSets, user, CollectionType.BoxSets, cancellationToken).ConfigureAwait(false));
+            }
+
+            if (recursiveChildren.OfType<Playlist>().Any())
+            {
+                list.Add(_playlists.GetPlaylistsFolder(user.Id.ToString("N")));
             }
 
             if (query.IncludeExternalContent)

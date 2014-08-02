@@ -94,6 +94,9 @@
     <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterResult.cs">
       <Link>Chapters\RemoteChapterResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Collections\CollectionCreationResult.cs">
+      <Link>Collections\CollectionCreationResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
@@ -648,6 +651,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\SendToUserType.cs">
       <Link>Notifications\SendToUserType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistCreationResult.cs">
+      <Link>Playlists\PlaylistCreationResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
       <Link>Plugins\BasePluginConfiguration.cs</Link>

@@ -140,7 +140,6 @@
     <Compile Include="Music\FanArtAlbumProvider.cs" />
     <Compile Include="Music\FanArtArtistProvider.cs" />
     <Compile Include="Music\MusicBrainzAlbumProvider.cs" />
-    <Compile Include="Music\SoundtrackPostScanTask.cs" />
     <Compile Include="People\PersonMetadataService.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
     <Compile Include="Photos\ExifReader.cs" />

@@ -70,6 +70,7 @@
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="Library\ChapterService.cs" />
+    <Compile Include="PlaylistService.cs" />
     <Compile Include="Subtitles\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
