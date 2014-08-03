@@ -808,6 +808,8 @@
     "TabNextUp": "Next Up",
     "MessageNoMovieSuggestionsAvailable": "No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.",
     "MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the New button to start creating Collections.",
+    "MessageNoPlaylistsAvailable":  "Playlists allow you to create lists of content to play consecutively at a time. To add items to playlists, right click or tap and hold, then select Add to Playlist.",
+    "MessageNoPlaylistItemsAvailable":  "This playlist is currently empty.",
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
     "ButtonDismiss": "Dismiss",
     "MessageLearnHowToCustomize": "Learn how to customize this page to your own personal tastes. Click your user icon in the top right corner of the screen to view and update your preferences.",
@@ -915,5 +917,7 @@
     "OptionProtocolHls": "Http Live Streaming",
     "LabelContext": "Context:",
     "OptionContextStreaming": "Streaming",
-    "OptionContextStatic": "Sync"
+    "OptionContextStatic": "Sync",
+    "ButtonAddToPlaylist":  "Add to playlist",
+    "TabPlaylists":  "Playlists"
 }

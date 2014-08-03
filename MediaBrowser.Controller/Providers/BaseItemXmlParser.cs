@@ -1283,6 +1283,78 @@ namespace MediaBrowser.Controller.Providers
             return new[] { personInfo };
         }
 
+        protected LinkedChild GetLinkedChild(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            var linkedItem = new LinkedChild
+            {
+                Type = LinkedChildType.Manual
+            };
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Name":
+                            {
+                                linkedItem.ItemName = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "Type":
+                            {
+                                linkedItem.ItemType = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "Year":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int rval;
+
+                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                    {
+                                        linkedItem.ItemYear = rval;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "IndexNumber":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    int rval;
+
+                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                    {
+                                        linkedItem.ItemIndexNumber = rval;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(linkedItem.ItemName) || string.IsNullOrWhiteSpace(linkedItem.ItemType) ? null : linkedItem;
+        }
+
+
         /// <summary>
         /// Used to split names of comma or pipe delimeted genres and people
         /// </summary>

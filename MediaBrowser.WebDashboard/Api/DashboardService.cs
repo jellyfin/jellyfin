@@ -528,6 +528,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "chromecast.js",
                                 "backdrops.js",
                                 "sync.js",
+                                "playlistmanager.js",
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
@@ -621,6 +622,9 @@ namespace MediaBrowser.WebDashboard.Api
                                 "notificationsetting.js",
                                 "notificationsettings.js",
                                 "playlist.js",
+                                "playlists.js",
+                                "playlistedit.js",
+
                                 "plugincatalogpage.js",
                                 "pluginspage.js",
                                 "remotecontrol.js",
@@ -676,7 +680,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarymenu.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
-                                      "posteritem.css",
                                       "card.css",
                                       "tileitem.css",
                                       "metadataeditor.css",

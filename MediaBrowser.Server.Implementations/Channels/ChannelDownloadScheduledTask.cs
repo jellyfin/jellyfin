@@ -239,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
             }
 
-            File.Move(response.TempFilePath, destination);
+            File.Copy(response.TempFilePath, destination, true);
 
             await RefreshMediaSourceItem(destination, cancellationToken).ConfigureAwait(false);
 

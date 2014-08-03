@@ -7,11 +7,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BasePluginFolder : Folder, ICollectionFolder, IByReferenceItem
     {
-        protected BasePluginFolder()
-        {
-            DisplayMediaType = "CollectionFolder";
-        }
-
         public virtual string CollectionType
         {
             get { return null; }

@@ -462,7 +462,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             items = FilterUnsupportedContent(items);
 
-            if (folder is Series || folder is Season || folder is BoxSet)
+            if (folder.IsPreSorted)
             {
                 return items;
             }

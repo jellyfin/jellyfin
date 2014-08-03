@@ -1,9 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -11,7 +8,7 @@ using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class FolderXmlSaver : IMetadataFileSaver
+    public class PlaylistXmlSaver : IMetadataFileSaver
     {
         public string Name
         {
@@ -34,18 +31,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return false;
             }
 
-            if (item is Folder)
-            {
-                if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
-                    !(item is Season) &&
-                    !(item is GameSystem) &&
-                    !(item is Playlist))
-                {
-                    return updateType >= ItemUpdateType.MetadataDownload;
-                }
-            }
-
-            return false;
+            return item is BoxSet && updateType >= ItemUpdateType.MetadataDownload;
         }
 
         /// <summary>
@@ -60,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes((Folder)item, builder);
+            XmlSaverHelpers.AddCommonNodes((BoxSet)item, builder);
 
             builder.Append("</Item>");
 
@@ -76,7 +62,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <returns>System.String.</returns>
         public string GetSavePath(IHasMetadata item)
         {
-            return Path.Combine(item.Path, "folder.xml");
+            return Path.Combine(item.Path, "playlist.xml");
         }
     }
 }

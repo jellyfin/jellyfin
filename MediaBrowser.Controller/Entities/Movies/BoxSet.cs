@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Progress;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -56,6 +57,15 @@ namespace MediaBrowser.Controller.Entities.Movies
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
+        }
+
+        [IgnoreDataMember]
+        public override bool IsPreSorted
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)

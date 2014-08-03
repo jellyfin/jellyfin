@@ -162,13 +162,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                     throw new ArgumentException("Item already exists in collection");
                 }
 
-                list.Add(new LinkedChild
-                {
-                    ItemName = item.Name,
-                    ItemYear = item.ProductionYear,
-                    ItemType = item.GetType().Name,
-                    Type = LinkedChildType.Manual
-                });
+                list.Add(LinkedChild.Create(item));
 
                 var supportsGrouping = item as ISupportsBoxSetGrouping;
 

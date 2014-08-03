@@ -8,6 +8,10 @@ namespace MediaBrowser.Controller.Playlists
 
         public List<string> ItemIdList { get; set; }
 
+        public string MediaType { get; set; }
+
+        public string UserId { get; set; }
+
         public PlaylistCreationOptions()
         {
             ItemIdList = new List<string>();

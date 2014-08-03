@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -41,9 +43,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
         {
             var name = options.Name;
 
-            // Need to use the [boxset] suffix
-            // If internet metadata is not found, or if xml saving is off there will be no collection.xml
-            // This could cause it to get re-resolved as a plain folder
             var folderName = _fileSystem.GetValidFilename(name) + " [playlist]";
 
             var parentFolder = GetPlaylistsFolder(null);
@@ -53,7 +52,55 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 throw new ArgumentException();
             }
 
+            if (string.IsNullOrWhiteSpace(options.MediaType))
+            {
+                foreach (var itemId in options.ItemIdList)
+                {
+                    var item = _libraryManager.GetItemById(itemId);
+
+                    if (item == null)
+                    {
+                        throw new ArgumentException("No item exists with the supplied Id");
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(item.MediaType))
+                    {
+                        options.MediaType = item.MediaType;
+                    }
+                    else if (item is MusicArtist || item is MusicAlbum || item is MusicGenre)
+                    {
+                        options.MediaType = MediaType.Audio;
+                    }
+                    else if (item is Genre)
+                    {
+                        options.MediaType = MediaType.Video;
+                    }
+                    else
+                    {
+                        var folder = item as Folder;
+                        if (folder != null)
+                        {
+                            options.MediaType = folder.GetRecursiveChildren()
+                                .Where(i => !i.IsFolder)
+                                .Select(i => i.MediaType)
+                                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(options.MediaType))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(options.MediaType))
+            {
+                throw new ArgumentException("A playlist media type is required.");
+            }
+
             var path = Path.Combine(parentFolder.Path, folderName);
+            path = GetTargetPath(path);
 
             _iLibraryMonitor.ReportFileSystemChangeBeginning(path);
 
@@ -61,24 +108,27 @@ namespace MediaBrowser.Server.Implementations.Playlists
             {
                 Directory.CreateDirectory(path);
 
-                var collection = new Playlist
+                var playlist = new Playlist
                 {
                     Name = name,
                     Parent = parentFolder,
-                    Path = path
+                    Path = path,
+                    OwnerUserId = options.UserId
                 };
 
-                await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
+                playlist.SetMediaType(options.MediaType);
 
-                await collection.RefreshMetadata(new MetadataRefreshOptions(), CancellationToken.None)
+                await parentFolder.AddChild(playlist, CancellationToken.None).ConfigureAwait(false);
+
+                await playlist.RefreshMetadata(new MetadataRefreshOptions { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToPlaylist(collection.Id.ToString("N"), options.ItemIdList);
+                    await AddToPlaylist(playlist.Id.ToString("N"), options.ItemIdList);
                 }
 
-                return collection;
+                return playlist;
             }
             finally
             {
@@ -87,11 +137,28 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }
         }
 
+        private string GetTargetPath(string path)
+        {
+            while (Directory.Exists(path))
+            {
+                path += "1";
+            }
+
+            return path;
+        }
+
+        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
+        {
+            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
+
+            return Playlist.GetPlaylistItems(playlistMediaType, items, user);
+        }
+
         public async Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds)
         {
-            var collection = _libraryManager.GetItemById(playlistId) as Playlist;
+            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
 
-            if (collection == null)
+            if (playlist == null)
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
@@ -110,17 +177,17 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
                 itemList.Add(item);
 
-                list.Add(new LinkedChild
-                {
-                    Type = LinkedChildType.Manual,
-                    ItemId = item.Id
-                });
+                list.Add(LinkedChild.Create(item));
             }
 
-            collection.LinkedChildren.AddRange(list);
+            playlist.LinkedChildren.AddRange(list);
 
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await playlist.RefreshMetadata(new MetadataRefreshOptions{
+            
+                ForceSave = true
+
+            }, CancellationToken.None).ConfigureAwait(false);
         }
 
         public Task RemoveFromPlaylist(string playlistId, IEnumerable<int> indeces)
