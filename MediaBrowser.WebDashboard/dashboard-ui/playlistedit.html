@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleMediaBrowser}</title>
+</head>
+<body>
+    <div id="playlistEditorPage" data-role="page" class="page libraryPage" data-theme="b">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="playlists.html" class="ui-btn-active">${TabPlaylists}</a>
+        </div>
+
+        <div data-role="content">
+            <div class="viewSettings">
+
+                <div class="listTopPaging">
+                    &nbsp;
+                </div>
+            </div>
+            <div id="items" class="itemsContainer"></div>
+            <div class="noItemsMessage" style="display: none; text-align: center;">
+                <p>${MessageNoPlaylistItemsAvailable}</p>
+            </div>
+        </div>
+
+        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form>
+
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                </div>
+
+                <div class="tabView viewTab">
+
+                    <div>
+                        <label for="selectPageSize">${LabelPageSize}</label>
+                        <select id="selectPageSize"></select>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

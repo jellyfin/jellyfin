@@ -607,7 +607,8 @@
                 centerText: item.Type != "MusicAlbum",
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game",
                 borderless: item.Type == "Game",
-                context: context
+                context: context,
+                overlayText: item.Type != "MusicAlbum"
             });
 
             $('#similarContent', page).html(html).createCardMenus();

@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Playlists;
 using System.IO;
 using System.Linq;
 
@@ -14,8 +16,15 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public override bool IsVisible(User user)
         {
-            return GetChildren(user, true).Any() &&
-                base.IsVisible(user);
+            return base.IsVisible(user) && GetRecursiveChildren(user, false)
+                .OfType<Playlist>()
+                .Any(i => string.Equals(i.OwnerUserId, user.Id.ToString("N")));
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return RecursiveChildren
+                .OfType<Playlist>();
         }
 
         public override bool IsHidden
@@ -48,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public BasePluginFolder GetFolder()
         {
-            var path = Path.Combine(_appPaths.DataPath, "playlists");
+            var path = Path.Combine(_appPaths.CachePath, "playlists");
 
             Directory.CreateDirectory(path);
 

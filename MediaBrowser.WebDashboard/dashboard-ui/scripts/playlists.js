@@ -7,21 +7,28 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
+        IncludeItemTypes: "Playlist",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,DateCreated",
+        Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks",
         StartIndex: 0
     };
 
     function getSavedQueryKey() {
 
-        return 'musicartists' + (query.ParentId || '');
+        return 'playlists' + (query.ParentId || '');
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getArtists(Dashboard.getCurrentUserId(), query).done(function (result) {
+        var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+        var promise2 = Dashboard.getCurrentUser();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var result = response1[0];
+            var user = response2[0];
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
@@ -33,38 +40,44 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false,
-                addSelectionButton: true
+                showLimit: false
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
-            if (view == "List") {
+            if (result.TotalRecordCount) {
 
-                html = LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    context: 'music',
-                    sortBy: query.SortBy
-                });
+                if (view == "List") {
+
+                    html = LibraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        context: 'playlists',
+                        sortBy: query.SortBy
+                    });
+                }
+                else if (view == "Poster") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "square",
+                        context: 'playlists',
+                        showTitle: true,
+                        lazy: true,
+                        coverImage: true,
+                        showItemCounts: true
+                    });
+                }
+
+                html += pagingHtml;
+                $('.noItemsMessage', page).hide();
+
+            } else {
+
+                $('.noItemsMessage', page).show();
             }
-            else if (view == "Poster") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "square",
-                    context: 'music',
-                    showTitle: true,
-                    coverImage: true,
-                    centerText: true,
-                    lazy: true,
-                    selectionPanel: true
-                });
-            }
 
-            html += pagingHtml;
-
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -84,6 +97,19 @@
 
     function updateFilterControls(page) {
 
+        // Reset form values using the last used query
+        $('.radioSortBy', page).each(function () {
+
+            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+
+        }).checkboxradio('refresh');
+
+        $('.radioSortOrder', page).each(function () {
+
+            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+
+        }).checkboxradio('refresh');
+
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -95,13 +121,22 @@
 
         $('#selectView', page).val(view).selectmenu('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#musicArtistsPage", function () {
+    $(document).on('pageinit', "#playlistsPage", function () {
 
         var page = this;
+
+        $('.radioSortBy', this).on('click', function () {
+            query.SortBy = this.getAttribute('data-sortby');
+            reloadItems(page);
+        });
+
+        $('.radioSortOrder', this).on('click', function () {
+            query.SortOrder = this.getAttribute('data-sortorder');
+            reloadItems(page);
+        });
 
         $('.chkStandardFilter', this).on('change', function () {
 
@@ -116,20 +151,6 @@
 
             query.StartIndex = 0;
             query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
-
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(page);
-
-        }).on('alphaclear', function (e) {
-
-            query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
         });
@@ -149,10 +170,10 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicArtistsPage", function () {
+    }).on('pagebeforeshow', "#playlistsPage", function () {
 
         var page = this;
-        
+
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -176,9 +197,10 @@
             }
         });
 
-    }).on('pageshow', "#musicArtistsPage", function () {
+    }).on('pageshow', "#playlistsPage", function () {
 
         updateFilterControls(this);
+
     });
 
 })(jQuery, document);

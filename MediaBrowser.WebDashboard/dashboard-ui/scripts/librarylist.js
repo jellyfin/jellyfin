@@ -149,6 +149,18 @@
         return false;
     }
 
+    function onAddToPlaylistButtonClick() {
+        
+        var id = this.getAttribute('data-itemid');
+
+        PlaylistManager.showPanel([id]);
+
+        // Used by the tab menu, not the slide up
+        $('.tapHoldMenu').popup('close');
+
+        return false;
+    }
+
     function onShuffleButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -281,6 +293,10 @@
                 html += '<li data-icon="recycle"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
             }
 
+            if (commands.indexOf('playlist') != -1) {
+                html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+            }
+
             html += '</ul>';
 
             html += '</div>';
@@ -299,6 +315,7 @@
             $('.btnInstantMix', elem).on('click', onInstantMixButtonClick);
             $('.btnShuffle', elem).on('click', onShuffleButtonClick);
             $('.btnPlayTrailer', elem).on('click', onTrailerButtonClick);
+            $('.btnAddToPlaylist', elem).on('click', onAddToPlaylistButtonClick);
         });
     }
 
@@ -504,7 +521,8 @@
         return this.off('.cardHoverMenu')
             .on('mouseenter.cardHoverMenu', elems, onHoverIn)
             .on('mouseleave.cardHoverMenu', elems, onHoverOut)
-            .on("touchstart.cardHoverMenu", elems, preventTouchHover);
+            .on("touchstart.cardHoverMenu", elems, preventTouchHover)
+            .trigger('itemsrendered');
     };
 
     function toggleSelections(page) {
@@ -613,9 +631,30 @@
         BoxSetEditor.showPanel(page, selection);
     }
 
+    function addToPlaylist(page) {
+        
+        var selection = getSelectedItems(page);
+
+        if (selection.length < 1) {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessagePleaseSelectOneItem'),
+                title: Globalize.translate('HeaderError')
+            });
+
+            return;
+        }
+
+        PlaylistManager.showPanel(selection);
+    }
+
     $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
+
+        $('.btnAddToPlaylist', page).on('click', function () {
+            addToPlaylist(page);
+        });
 
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);

@@ -323,6 +323,13 @@
     "HeaderSelectPlayer": "Select Player:",
     "ButtonSelect": "Select",
     "ButtonNew": "New",
-    "MessageInternetExplorerWebm":  "For best results with Internet Explorer please install the WebM plugin for IE.",
-    "HeaderVideoError":  "Video Error"
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
+    "HeaderVideoError": "Video Error",
+    "ButtonAddToPlaylist": "Add to playlist",
+    "HeaderAddToPlaylist": "Add to Playlist",
+    "LabelName": "Name:",
+    "ButtonSubmit": "Submit",
+    "LabelSelectPlaylist":  "Playlist:",
+    "OptionNewPlaylist":  "New playlist...",
+    "MessageAddedToPlaylistSuccess":  "Ok"
 }

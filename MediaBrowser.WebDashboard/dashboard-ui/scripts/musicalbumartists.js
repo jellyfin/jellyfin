@@ -33,7 +33,8 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                addSelectionButton: true
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -56,7 +57,8 @@
                     showTitle: true,
                     coverImage: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    selectionPanel: true
                 });
             }
 

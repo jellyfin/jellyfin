@@ -6,7 +6,7 @@
             { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'homePageBackdrop', preferThumb: true, showTitle: false },
             { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'homePageBackdrop', preferThumb: true, showTitle: false },
             { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'homePageBackdrop', preferThumb: false, showTitle: true, showParentTitle: true },
-            { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'auto', preferThumb: false, showTitle: true },
+            { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
             { name: Globalize.translate('HeaderFavoriteAlbums'), types: "MusicAlbum", id: "favoriteAlbums", shape: 'homePageSquare', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true }
         ];
 

@@ -51,7 +51,7 @@
 @media all and (max-width: 800px) {
 
     .cardBox {
-        margin: 2px;
+        margin: 0 2px;
     }
 }
 
@@ -60,6 +60,15 @@
     .cardBox {
         margin: 1px;
     }
+}
+
+.bottomPaddedCard .cardBox {
+    margin-bottom: 10px;
+}
+
+.visualFooterCard .outerCardFooter {
+    background: #111;
+    padding-bottom: 4px;
 }
 
 .visualCardBox {
@@ -193,6 +202,10 @@
 .cardContent .cardText {
     padding-left: 5px;
     padding: 0 5px 4px;
+}
+
+.outerCardFooter .cardText + .cardText {
+    color: #ddd;
 }
 
 @media all and (max-width: 600px) {
@@ -362,6 +375,14 @@
 }
 
 
+@media all and (min-width: 1800px) {
+
+    .squareCard {
+        width: 10%;
+    }
+}
+
+
 @media all and (min-width: 1920px) {
 
     .portraitCard {
@@ -450,7 +471,7 @@
     width: 50%;
 }
 
-@media all and (min-width: 540px) {
+@media all and (min-width: 640px) {
 
     .homePageBackdropCard {
         width: 33.3%;

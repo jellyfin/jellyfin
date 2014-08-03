@@ -60,7 +60,6 @@
                 case "channels":
                     imgUrl = "css/images/items/folders/channels.png";
                     break;
-                case "boxsets":
                 default:
                     imgUrl = "css/images/items/folders/folder.png";
                     break;

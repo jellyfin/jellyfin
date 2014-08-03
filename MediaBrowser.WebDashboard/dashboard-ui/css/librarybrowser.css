@@ -12,6 +12,10 @@
     margin-left: .5em;
 }
 
+.libraryPage {
+    background-color: #202020;
+}
+
 .backdropPage {
     background-color: rgba(15, 15,15, .94) !important;
 }
@@ -49,8 +53,8 @@
 
 .listHeader {
     margin-top: .7em;
-    margin-bottom: 0;
-    padding-left: 4px;
+    margin-bottom: .15em;
+    padding-left: 2px;
 }
 
 .firstListHeader {
@@ -58,16 +62,8 @@
 }
 
 .ehsContent {
-    padding: 0;
-    border-spacing: 0;
-    border-collapse: collapse;
     margin: 0 auto;
 }
-
-    .ehsContent td {
-        padding: 0;
-        border-spacing: 0;
-    }
 
 .homePageSection + .homePageSection {
     margin-top: 1em;
@@ -101,20 +97,6 @@
 
 .firstListHeader + .sectionHeaderButton {
     top: 3px;
-}
-
-@media all and (min-width: 800px) {
-
-    .ehsContent {
-        width: 770px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .ehsContent {
-        width: 900px;
-    }
 }
 
 @media all and (min-width: 1200px) {
@@ -908,7 +890,7 @@ a.itemTag:hover {
     width: 27px;
     z-index: 1000;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     display: none;
     line-height: 1;
 }
@@ -917,6 +899,7 @@ a.itemTag:hover {
         display: block;
         text-decoration: none;
         padding: 1px 0;
+        font-weight: 500;
     }
 
         .alphabetPicker a:not(.selectedCharacter) {
@@ -979,7 +962,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 15px;
+        margin-right: 20px;
     }
 }
 

@@ -166,6 +166,7 @@
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
+    <Compile Include="Library\Resolvers\PlaylistResolver.cs" />
     <Compile Include="Library\SearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />
     <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />

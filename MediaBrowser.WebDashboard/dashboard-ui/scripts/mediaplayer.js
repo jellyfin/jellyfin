@@ -347,14 +347,10 @@
             var firstItem = items[0];
             var promise;
 
-            if (firstItem.IsFolder) {
+            if (firstItem.Type == "Playlist") {
 
                 promise = self.getItemsForPlayback({
                     ParentId: firstItem.Id,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio,Video"
                 });
             }
             else if (firstItem.Type == "MusicArtist") {
@@ -376,6 +372,16 @@
                     Recursive: true,
                     SortBy: "SortName",
                     MediaTypes: "Audio"
+                });
+            }
+            else if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
                 });
             }
 
@@ -801,11 +807,7 @@
                     SortBy: "Random"
                 };
 
-                if (item.IsFolder) {
-                    query.ParentId = id;
-
-                }
-                else if (item.Type == "MusicArtist") {
+                if (item.Type == "MusicArtist") {
 
                     query.MediaTypes = "Audio";
                     query.Artists = item.Name;
@@ -816,7 +818,12 @@
                     query.MediaTypes = "Audio";
                     query.Genres = item.Name;
 
-                } else {
+                }
+                else if (item.IsFolder) {
+                    query.ParentId = id;
+
+                }
+                else {
                     return;
                 }
 

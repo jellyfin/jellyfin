@@ -4,30 +4,23 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="musicAlbumArtistsPage" data-role="page" class="page libraryPage" data-theme="b">
+    <div id="playlistsPage" data-role="page" class="page libraryPage" data-theme="b">
+
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="musicrecommended.html">${TabSuggested}</a>
-            <a href="songs.html">${TabSongs}</a>
-            <a href="musicalbums.html">${TabAlbums}</a>
-            <a href="#" class="ui-btn-active">${TabAlbumArtists}</a>
-            <a href="musicartists.html">${TabArtists}</a>
-            <a href="musicgenres.html">${TabGenres}</a>
-            <a href="musicvideos.html">${TabMusicVideos}</a>
+            <a href="#" class="ui-btn-active">${TabPlaylists}</a>
         </div>
 
-        <div class="alphabetPicker">
-        </div>
         <div data-role="content">
             <div class="viewSettings">
+
                 <div class="listTopPaging">
-                </div>
-                <div class="selectionCommands" style="display: none;">
-                    <div data-role="controlgroup" data-type="horizontal" class="selectionCommandsControlGroup">
-                        <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                    </div>
+                    &nbsp;
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
+            <div class="noItemsMessage" style="display: none; text-align: center;">
+                <p>${MessageNoPlaylistsAvailable}</p>
+            </div>
         </div>
 
         <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
@@ -35,6 +28,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
                     <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabSort">${TabSort}</a>
                     <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                 </div>
 
@@ -67,6 +61,31 @@
                         <label for="chkDislikes">${OptionDislikes}</label>
                     </fieldset>
 
+                </div>
+                <div class="tabSort viewTab">
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${HeaderSortBy}
+                        </legend>
+
+                        <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                        <label for="radioSortName">${OptionNameSort}</label>
+
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                        <label for="radioDateCreated">${OptionDateAdded}</label>
+                    </fieldset>
+
+                    <fieldset data-role="controlgroup">
+                        <legend>
+                            ${HeaderSortOrder}
+                        </legend>
+
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                        <label for="radioAscending">${OptionAscending}</label>
+
+                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                        <label for="radioDescending">${OptionDescending}</label>
+                    </fieldset>
                 </div>
             </form>
         </div>

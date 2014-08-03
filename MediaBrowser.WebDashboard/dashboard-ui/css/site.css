@@ -85,12 +85,11 @@ body {
 
 h1, h1 a {
     font-weight: 300 !important;
-    font-size: 28px;
+    font-size: 30px;
 }
 
 .libraryPage h1, .libraryPage h1 a {
     font-weight: 100 !important;
-    font-size: 28px;
 }
 
 .ui-loader h1 {
