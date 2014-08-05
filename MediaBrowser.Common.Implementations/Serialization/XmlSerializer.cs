@@ -91,20 +91,5 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 return DeserializeFromStream(type, stream);
             }
         }
-
-        /// <summary>
-        /// Serializes to bytes.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns>System.Byte[][].</returns>
-        public byte[] SerializeToBytes(object obj)
-        {
-            using (var stream = new MemoryStream())
-            {
-                SerializeToStream(obj, stream);
-
-                return stream.ToArray();
-            }
-        }
     }
 }

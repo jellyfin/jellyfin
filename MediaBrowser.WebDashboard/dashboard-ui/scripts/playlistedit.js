@@ -1,6 +1,7 @@
 ﻿(function ($, document) {
 
     var view = LibraryBrowser.getDefaultItemsView('List', 'List');
+    var currentItem;
 
     // The base query options
     var query = {
@@ -30,6 +31,21 @@
             var result = response1[0];
             var user = response2[0];
             var item = response3[0];
+
+            currentItem = item;
+
+            if (MediaController.canPlay(item)) {
+                $('.btnPlay', page).removeClass('hide');
+            }
+            else {
+                $('.btnPlay', page).addClass('hide');
+            }
+
+            if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
+                $('.btnPlayTrailer', page).removeClass('hide');
+            } else {
+                $('.btnPlayTrailer', page).addClass('hide');
+            }
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
@@ -124,6 +140,18 @@
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
+        });
+
+        $('.btnPlay', page).on('click', function () {
+            var userdata = currentItem.UserData || {};
+
+            var mediaType = currentItem.MediaType;
+
+            if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
+                mediaType = "Audio";
+            }
+
+            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
         });
 
     }).on('pagebeforeshow', "#playlistEditorPage", function () {

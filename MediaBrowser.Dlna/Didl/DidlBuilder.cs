@@ -592,7 +592,7 @@ namespace MediaBrowser.Dlna.Didl
             icon.InnerText = iconUrlInfo.Url;
             element.AppendChild(icon);
 
-            if (!_profile.EnableAlbumArtInDidl)
+            if (!_profile.EnableAlbumArtInDidl && !(item is Photo))
             {
                 return;
             }

@@ -178,7 +178,6 @@
     "LabelVideoCodec": "Video: {0}",
     "LabelRemoteAccessUrl": "Accesso remoto: {0}",
     "LabelRunningOnPort": "Avviato su porta {0}",
-    "LabelRunningOnPorts": "Avviato su porte {0} e {1}.",
     "HeaderLatestFromChannel": "Ultime da {0}",
     "ButtonDownload": "Download",
     "LabelUnknownLanaguage": "lingua sconosciuta",
@@ -282,6 +281,7 @@
     "LabelLiveProgram": "LIVE",
     "LabelNewProgram": "Nuovo",
     "LabelPremiereProgram": "PREMIERE",
+    "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Cambia il tipo di cartella",
     "HeaderChangeFolderTypeHelp": "Per cambiare il tipo di cartella, rimuovere e ricostruire la collezione con il nuovo tipo.",
     "HeaderAlert": "Avviso",
@@ -319,5 +319,14 @@
     "ButtonSelect": "Seleziona",
     "ButtonNew": "Nuovo",
     "MessageInternetExplorerWebm": "Se utilizzi internet explorer installa WebM plugin",
-    "HeaderVideoError": "Video Error"
+    "HeaderVideoError": "Video Error",
+    "ButtonAddToPlaylist": "Add to playlist",
+    "HeaderAddToPlaylist": "Add to Playlist",
+    "LabelName": "Nome:",
+    "ButtonSubmit": "Invia",
+    "LabelSelectPlaylist": "Playlist:",
+    "OptionNewPlaylist": "New playlist...",
+    "MessageAddedToPlaylistSuccess": "Ok",
+    "ButtonViewSeriesRecording": "View series recording",
+    "ValueOriginalAirDate": "Original air date: {0}"
 }

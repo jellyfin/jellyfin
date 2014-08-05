@@ -1045,13 +1045,6 @@ namespace MediaBrowser.Controller.Entities
                                     return false;
                                 }
                             }
-                            if (info.ItemIndexNumber.HasValue)
-                            {
-                                if (info.ItemIndexNumber.Value != (i.IndexNumber ?? -1))
-                                {
-                                    return false;
-                                }
-                            }
                             return true;
                         }
                     }

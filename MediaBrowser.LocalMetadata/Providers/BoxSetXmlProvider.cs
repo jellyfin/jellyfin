@@ -1,10 +1,10 @@
-﻿using System.IO;
-using System.Threading;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Logging;
+using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
