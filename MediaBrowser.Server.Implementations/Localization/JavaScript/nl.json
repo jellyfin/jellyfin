@@ -178,7 +178,6 @@
     "LabelVideoCodec": "Video: {0}",
     "LabelRemoteAccessUrl": "Toegang op afstand: {0}",
     "LabelRunningOnPort": "Draait op poort {0}.",
-    "LabelRunningOnPorts": "Draait op poort {0} en {1}.",
     "HeaderLatestFromChannel": "Laatste van {0}",
     "ButtonDownload": "Download",
     "LabelUnknownLanaguage": "Onbekende taal",
@@ -282,6 +281,7 @@
     "LabelLiveProgram": "LIVE",
     "LabelNewProgram": "NIEUW",
     "LabelPremiereProgram": "PREMIERE",
+    "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Verander Maptype",
     "HeaderChangeFolderTypeHelp": "Als u het type map wilt wijzigen, verwijder het dan en maak dan een nieuwe collectie met het nieuwe type.",
     "HeaderAlert": "Waarschuwing",
@@ -319,5 +319,14 @@
     "ButtonSelect": "Selecteer",
     "ButtonNew": "Nieuw",
     "MessageInternetExplorerWebm": "Voor het beste resultaat met Internet Explorer installeert u de WebM plugin voor IE.",
-    "HeaderVideoError": "Video Fout"
+    "HeaderVideoError": "Video Fout",
+    "ButtonAddToPlaylist": "Toevoegen aan afspeellijst",
+    "HeaderAddToPlaylist": "Toevoegen aan afspeellijst",
+    "LabelName": "Naam:",
+    "ButtonSubmit": "Uitvoeren",
+    "LabelSelectPlaylist": "Afspeellijst:",
+    "OptionNewPlaylist": "Nieuwe afspeellijst...",
+    "MessageAddedToPlaylistSuccess": "Ok",
+    "ButtonViewSeriesRecording": "View series recording",
+    "ValueOriginalAirDate": "Original air date: {0}"
 }

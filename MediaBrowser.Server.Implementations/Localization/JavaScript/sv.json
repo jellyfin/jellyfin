@@ -178,7 +178,6 @@
     "LabelVideoCodec": "Video: {0}",
     "LabelRemoteAccessUrl": "Fj\u00e4rranslutning: {0}",
     "LabelRunningOnPort": "Anv\u00e4nder port {0}.",
-    "LabelRunningOnPorts": "Anv\u00e4nder port {0} och {1}.",
     "HeaderLatestFromChannel": "Senaste fr\u00e5n {0}",
     "ButtonDownload": "Ladda ned",
     "LabelUnknownLanaguage": "Ok\u00e4nt spr\u00e5k",
@@ -282,6 +281,7 @@
     "LabelLiveProgram": "LIVE",
     "LabelNewProgram": "NY",
     "LabelPremiereProgram": "PREMI\u00c4R",
+    "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "\u00c4ndra mapptyp",
     "HeaderChangeFolderTypeHelp": "F\u00f6r att \u00e4ndra mapptyp, ta bort den existerande och skapa en ny av den \u00f6nskade typen.",
     "HeaderAlert": "Varning",
@@ -319,5 +319,14 @@
     "ButtonSelect": "V\u00e4lj",
     "ButtonNew": "Nytillkommet",
     "MessageInternetExplorerWebm": "F\u00f6r b\u00e4sta resultat med Internet Explorer, installera WebM-till\u00e4gget f\u00f6r IE.",
-    "HeaderVideoError": "Videofel"
+    "HeaderVideoError": "Videofel",
+    "ButtonAddToPlaylist": "Add to playlist",
+    "HeaderAddToPlaylist": "Add to Playlist",
+    "LabelName": "Namn:",
+    "ButtonSubmit": "Bekr\u00e4fta",
+    "LabelSelectPlaylist": "Playlist:",
+    "OptionNewPlaylist": "New playlist...",
+    "MessageAddedToPlaylistSuccess": "Ok",
+    "ButtonViewSeriesRecording": "View series recording",
+    "ValueOriginalAirDate": "Original air date: {0}"
 }

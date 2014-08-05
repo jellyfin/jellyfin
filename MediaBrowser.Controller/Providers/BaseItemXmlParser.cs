@@ -1304,6 +1304,12 @@ namespace MediaBrowser.Controller.Providers
                                 break;
                             }
 
+                        case "Path":
+                            {
+                                linkedItem.Path = reader.ReadElementContentAsString();
+                                break;
+                            }
+
                         case "Type":
                             {
                                 linkedItem.ItemType = reader.ReadElementContentAsString();
@@ -1321,23 +1327,6 @@ namespace MediaBrowser.Controller.Providers
                                     if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                     {
                                         linkedItem.ItemYear = rval;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case "IndexNumber":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    int rval;
-
-                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-                                    {
-                                        linkedItem.ItemIndexNumber = rval;
                                     }
                                 }
 

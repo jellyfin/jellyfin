@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller.Entities
         public string ItemName { get; set; }
         public string ItemType { get; set; }
         public int? ItemYear { get; set; }
-        public int? ItemIndexNumber { get; set; }
 
         /// <summary>
         /// Serves as a cache
@@ -24,11 +23,8 @@ namespace MediaBrowser.Controller.Entities
         {
             return new LinkedChild
             {
-                ItemName = item.Name,
-                ItemYear = item.ProductionYear,
-                ItemType = item.GetType().Name,
-                Type = LinkedChildType.Manual,
-                ItemIndexNumber = item.IndexNumber
+                Path = item.Path,
+                Type = LinkedChildType.Manual
             };
         }
     }

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -31,7 +31,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return false;
             }
 
-            return item is BoxSet && updateType >= ItemUpdateType.MetadataDownload;
+            return item is Playlist && updateType >= ItemUpdateType.MetadataImport;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes((BoxSet)item, builder);
+            XmlSaverHelpers.AddCommonNodes((Playlist)item, builder);
 
             builder.Append("</Item>");
 

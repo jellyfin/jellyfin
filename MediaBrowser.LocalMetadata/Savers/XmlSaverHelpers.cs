@@ -717,7 +717,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 builder.Append("<" + singularNodeName + ">");
 
-                builder.Append("<Name>" + SecurityElement.Escape(link.ItemName) + "</Name>");
                 builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
 
                 if (link.ItemYear.HasValue)
@@ -725,10 +724,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
                 }
 
-                if (link.ItemIndexNumber.HasValue)
-                {
-                    builder.Append("<IndexNumber>" + SecurityElement.Escape(link.ItemIndexNumber.Value.ToString(UsCulture)) + "</IndexNumber>");
-                }
+                builder.Append("<Path>" + SecurityElement.Escape((link.Path ?? string.Empty)) + "</Path>");
 
                 builder.Append("</" + singularNodeName + ">");
             }

@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
@@ -7,18 +7,18 @@ using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
-    public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
+    public class PlaylistXmlParser : BaseItemXmlParser<Playlist>
     {
-        public BoxSetXmlParser(ILogger logger)
+        public PlaylistXmlParser(ILogger logger)
             : base(logger)
         {
         }
 
-        protected override void FetchDataFromXmlNode(XmlReader reader, BoxSet item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, Playlist item)
         {
             switch (reader.Name)
             {
-                case "CollectionItems":
+                case "PlaylistItems":
 
                     using (var subReader = reader.ReadSubtree())
                     {
@@ -32,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
         }
 
-        private void FetchFromCollectionItemsNode(XmlReader reader, BoxSet item)
+        private void FetchFromCollectionItemsNode(XmlReader reader, Playlist item)
         {
             reader.MoveToContent();
 
@@ -44,7 +44,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     switch (reader.Name)
                     {
-                        case "CollectionItem":
+                        case "PlaylistItem":
                             {
                                 using (var subReader = reader.ReadSubtree())
                                 {
