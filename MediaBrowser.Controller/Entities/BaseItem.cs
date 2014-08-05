@@ -52,6 +52,14 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        public virtual bool SupportsAddingToPlaylist
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>

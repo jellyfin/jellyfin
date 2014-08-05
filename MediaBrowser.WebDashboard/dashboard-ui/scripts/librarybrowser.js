@@ -657,6 +657,33 @@
                     });
 
                 }
+                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.AlbumPrimaryImageTag
+                    });
+
+                }
+                else if (item.AlbumId && item.SeriesPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.SeriesPrimaryImageTag
+                    });
+
+                }
+                else if (item.ParentPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.ParentPrimaryImageTag
+                    });
+                }
+
                 if (imgUrl) {
 
                     if (index < 10) {

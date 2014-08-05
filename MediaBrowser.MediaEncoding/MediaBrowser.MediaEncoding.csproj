@@ -66,6 +66,7 @@
     <Compile Include="Subtitles\SsaParser.cs" />
     <Compile Include="Subtitles\SubtitleEncoder.cs" />
     <Compile Include="Subtitles\SubtitleTrackInfo.cs" />
+    <Compile Include="Subtitles\TtmlWriter.cs" />
     <Compile Include="Subtitles\VttWriter.cs" />
   </ItemGroup>
   <ItemGroup>

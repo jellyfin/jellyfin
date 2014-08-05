@@ -124,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.Udp
                 {
                     Address = serverAddress,
                     Id = _appHost.ServerId,
-                    Name = _appHost.Name
+                    Name = _appHost.FriendlyName
                 };
 
                 await SendAsync(Encoding.UTF8.GetBytes(_json.SerializeToString(response)), endpoint);

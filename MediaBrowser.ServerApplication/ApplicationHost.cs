@@ -1058,8 +1058,18 @@ namespace MediaBrowser.ServerApplication
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
-                ServerName = string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName) ? Environment.MachineName : ServerConfigurationManager.Configuration.ServerName
+                ServerName = FriendlyName
             };
+        }
+
+        public string FriendlyName
+        {
+            get
+            {
+                return string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName)
+                    ? Environment.MachineName
+                    : ServerConfigurationManager.Configuration.ServerName;
+            }
         }
 
         public int HttpServerPort

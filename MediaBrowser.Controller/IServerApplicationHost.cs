@@ -46,5 +46,11 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The server identifier.</value>
         string ServerId { get; }
+
+        /// <summary>
+        /// Gets the name of the friendly.
+        /// </summary>
+        /// <value>The name of the friendly.</value>
+        string FriendlyName { get; }
     }
 }

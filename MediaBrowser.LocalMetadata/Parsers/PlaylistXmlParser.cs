@@ -18,6 +18,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             switch (reader.Name)
             {
+                case "OwnerUserId":
+                    {
+                        item.OwnerUserId = reader.ReadElementContentAsString();
+
+                        break;
+                    }
+
+                case "PlaylistMediaType":
+                    {
+                        item.PlaylistMediaType = reader.ReadElementContentAsString();
+
+                        break;
+                    }
+
                 case "PlaylistItems":
 
                     using (var subReader = reader.ReadSubtree())

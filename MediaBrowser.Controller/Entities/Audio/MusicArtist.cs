@@ -26,6 +26,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get

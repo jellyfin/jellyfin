@@ -233,10 +233,7 @@
 
         supportsPlaylists: function (item) {
 
-            if (item.Type == 'Playlist') {
-                return false;
-            }
-            return item.MediaType == "Audio" || item.MediaType == "Video" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "Series" || item.Type == "Season";
+            return item.SupportsPlaylists;
         }
     };
 

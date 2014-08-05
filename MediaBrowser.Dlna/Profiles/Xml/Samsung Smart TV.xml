@@ -107,9 +107,7 @@
     </ResponseProfile>
   </ResponseProfiles>
   <SoftSubtitleProfiles>
-    <SubtitleProfile>
-      <Format>smi</Format>
-    </SubtitleProfile>
+    <SubtitleProfile format="smi" />
   </SoftSubtitleProfiles>
   <ExternalSubtitleProfiles />
 </Profile>

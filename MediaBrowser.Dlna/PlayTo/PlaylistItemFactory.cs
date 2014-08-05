@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Session;
 using System;
 using System.Globalization;
 using System.IO;
@@ -29,7 +30,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (directPlay != null)
             {
-                playlistItem.StreamInfo.IsDirectStream = true;
+                playlistItem.StreamInfo.PlayMethod = PlayMethod.DirectStream;
                 playlistItem.StreamInfo.Container = Path.GetExtension(item.Path);
 
                 return playlistItem;
@@ -40,7 +41,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (transcodingProfile != null)
             {
-                playlistItem.StreamInfo.IsDirectStream = true;
+                playlistItem.StreamInfo.PlayMethod = PlayMethod.Transcode;
                 playlistItem.StreamInfo.Container = "." + transcodingProfile.Container.TrimStart('.');
             }
 
