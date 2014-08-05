@@ -122,7 +122,8 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <!--Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " /-->
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(ConfigurationName)' != 'Release Mono' ">if '$(ConfigurationName)' == 'Release' (
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
