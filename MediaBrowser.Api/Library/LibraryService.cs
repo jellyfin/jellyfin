@@ -284,6 +284,11 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedResult(result);
         }
 
+        public void Post(PostUpdatedSeries request)
+        {
+            
+        }
+
         public object Get(GetFile request)
         {
             var item = _libraryManager.GetItemById(request.Id);

@@ -1006,6 +1006,18 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem FindLinkedChild(LinkedChild info)
         {
+            if (!string.IsNullOrWhiteSpace(info.ItemName))
+            {
+                if (string.Equals(info.ItemType, "musicgenre", StringComparison.OrdinalIgnoreCase))
+                {
+                    return LibraryManager.GetMusicGenre(info.ItemName);
+                }
+                if (string.Equals(info.ItemType, "musicartist", StringComparison.OrdinalIgnoreCase))
+                {
+                    return LibraryManager.GetArtist(info.ItemName);
+                }
+            }
+
             if (!string.IsNullOrEmpty(info.Path))
             {
                 var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
@@ -1028,7 +1040,10 @@ namespace MediaBrowser.Controller.Entities
                         {
                             if (info.ItemYear.HasValue)
                             {
-                                return info.ItemYear.Value == (i.ProductionYear ?? -1);
+                                if (info.ItemYear.Value != (i.ProductionYear ?? -1))
+                                {
+                                    return false;
+                                }
                             }
                             return true;
                         }

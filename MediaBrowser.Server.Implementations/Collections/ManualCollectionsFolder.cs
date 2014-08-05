@@ -8,6 +8,7 @@ namespace MediaBrowser.Server.Implementations.Collections
         public ManualCollectionsFolder()
         {
             Name = "Collections";
+            DisplayMediaType = "CollectionFolder";
         }
 
         public override bool IsVisible(User user)

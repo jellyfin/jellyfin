@@ -178,7 +178,6 @@
     "LabelVideoCodec": "Video: {0}",
     "LabelRemoteAccessUrl": "Remote access: {0}",
     "LabelRunningOnPort": "Running on port {0}.",
-    "LabelRunningOnPorts": "Running on ports {0} and {1}.",
     "HeaderLatestFromChannel": "Latest from {0}",
     "ButtonDownload": "Download",
     "LabelUnknownLanaguage": "Unknown language",
@@ -282,6 +281,7 @@
     "LabelLiveProgram": "LIVE",
     "LabelNewProgram": "NEW",
     "LabelPremiereProgram": "PREMIERE",
+    "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Change Folder Type",
     "HeaderChangeFolderTypeHelp": "To change the folder type, please remove and rebuild the collection with the new type.",
     "HeaderAlert": "Alert",
@@ -318,6 +318,15 @@
     "HeaderSelectPlayer": "Select Player:",
     "ButtonSelect": "\u05d1\u05d7\u05e8",
     "ButtonNew": "\u05d7\u05d3\u05e9",
-    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM plugin for IE.",
-    "HeaderVideoError": "Video Error"
+    "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
+    "HeaderVideoError": "Video Error",
+    "ButtonAddToPlaylist": "Add to playlist",
+    "HeaderAddToPlaylist": "Add to Playlist",
+    "LabelName": "\u05e9\u05dd:",
+    "ButtonSubmit": "Submit",
+    "LabelSelectPlaylist": "Playlist:",
+    "OptionNewPlaylist": "New playlist...",
+    "MessageAddedToPlaylistSuccess": "Ok",
+    "ButtonViewSeriesRecording": "View series recording",
+    "ValueOriginalAirDate": "Original air date: {0}"
 }

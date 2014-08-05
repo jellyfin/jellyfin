@@ -75,6 +75,7 @@
     <Compile Include="Channels\ChannelQuery.cs" />
     <Compile Include="Chapters\RemoteChapterInfo.cs" />
     <Compile Include="Chapters\RemoteChapterResult.cs" />
+    <Compile Include="Collections\CollectionCreationResult.cs" />
     <Compile Include="Configuration\ChannelOptions.cs" />
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
@@ -204,6 +205,7 @@
     <Compile Include="Notifications\NotificationRequest.cs" />
     <Compile Include="Notifications\NotificationServiceInfo.cs" />
     <Compile Include="Notifications\NotificationTypeInfo.cs" />
+    <Compile Include="Playlists\PlaylistCreationResult.cs" />
     <Compile Include="Providers\ExternalIdInfo.cs" />
     <Compile Include="Providers\ExternalUrl.cs" />
     <Compile Include="Providers\ImageProviderInfo.cs" />

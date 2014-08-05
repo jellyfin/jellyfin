@@ -303,8 +303,6 @@ namespace MediaBrowser.Controller.Library
                 }
                 else
                 {
-                    logger.Debug("Evaluating series file: {0}", child.FullName);
-                    
                     var fullName = child.FullName;
 
                     if (EntityResolutionHelper.IsVideoFile(fullName) || EntityResolutionHelper.IsVideoPlaceHolder(fullName))

@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -37,7 +38,8 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 if (!(item is Series) && !(item is BoxSet) && !(item is MusicArtist) && !(item is MusicAlbum) &&
                     !(item is Season) &&
-                    !(item is GameSystem))
+                    !(item is GameSystem) &&
+                    !(item is Playlist))
                 {
                     return updateType >= ItemUpdateType.MetadataDownload;
                 }
