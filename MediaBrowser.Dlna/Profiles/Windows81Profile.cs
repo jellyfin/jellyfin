@@ -155,6 +155,13 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
+            ExternalSubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "ttml"
+                }
+            };
         }
     }
 }

@@ -8,5 +8,6 @@
         public const string VTT = "vtt";
         public const string SUB = "sub";
         public const string SMI = "smi";
+        public const string TTML = "ttml";
     }
 }

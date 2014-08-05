@@ -21,6 +21,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             SoundtrackIds = new List<Guid>();
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
         [IgnoreDataMember]
         public MusicArtist MusicArtist
         {

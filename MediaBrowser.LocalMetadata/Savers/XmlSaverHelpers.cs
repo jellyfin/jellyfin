@@ -704,7 +704,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         public static void AddLinkedChildren(Folder item, StringBuilder builder, string pluralNodeName, string singularNodeName)
         {
             var items = item.LinkedChildren
-                .Where(i => i.Type == LinkedChildType.Manual && !string.IsNullOrWhiteSpace(i.ItemName))
+                .Where(i => i.Type == LinkedChildType.Manual)
                 .ToList();
 
             if (items.Count == 0)
@@ -717,14 +717,20 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 builder.Append("<" + singularNodeName + ">");
 
-                builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
+                if (!string.IsNullOrWhiteSpace(link.ItemType))
+                {
+                    builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
+                }
 
                 if (link.ItemYear.HasValue)
                 {
                     builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
                 }
 
-                builder.Append("<Path>" + SecurityElement.Escape((link.Path ?? string.Empty)) + "</Path>");
+                if (!string.IsNullOrWhiteSpace(link.Path))
+                {
+                    builder.Append("<Path>" + SecurityElement.Escape((link.Path)) + "</Path>");
+                }
 
                 builder.Append("</" + singularNodeName + ">");
             }

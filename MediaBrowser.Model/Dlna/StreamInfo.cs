@@ -3,6 +3,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.Dlna
     {
         public string ItemId { get; set; }
 
-        public bool IsDirectStream { get; set; }
+        public PlayMethod PlayMethod { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
 
@@ -59,6 +60,7 @@ namespace MediaBrowser.Model.Dlna
         public MediaSourceInfo MediaSource { get; set; }
 
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+        public string SubtitleFormat { get; set; }
 
         public string MediaSourceId
         {
@@ -66,6 +68,11 @@ namespace MediaBrowser.Model.Dlna
             {
                 return MediaSource == null ? null : MediaSource.Id;
             }
+        }
+
+        public bool IsDirectStream
+        {
+            get { return PlayMethod == PlayMethod.DirectStream; }
         }
 
         public string ToUrl(string baseUrl)
@@ -122,6 +129,32 @@ namespace MediaBrowser.Model.Dlna
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
+        }
+
+        public string ToSubtitleUrl(string baseUrl)
+        {
+            if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
+            {
+                return null;
+            }
+
+            if (!SubtitleStreamIndex.HasValue)
+            {
+                return null;
+            }
+
+            // HLS will preserve timestamps so we can just grab the full subtitle stream
+            long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
+                ? 0
+                : StartPositionTicks;
+
+            return string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}", 
+                baseUrl,
+                ItemId,
+                MediaSourceId,
+                StringHelper.ToStringCultureInvariant(SubtitleStreamIndex.Value),
+                StringHelper.ToStringCultureInvariant(startPositionTicks),
+                SubtitleFormat);
         }
 
         /// <summary>
@@ -437,16 +470,12 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         Encode = 0,
         /// <summary>
-        /// Internal format is supported natively
-        /// </summary>
-        Direct = 1,
-        /// <summary>
         /// The embed
         /// </summary>
-        Embed = 2,
+        Embed = 1,
         /// <summary>
         /// The external
         /// </summary>
-        External = 3
+        External = 2
     }
 }

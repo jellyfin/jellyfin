@@ -147,6 +147,7 @@
     <Compile Include="Photos\PhotoHelper.cs" />
     <Compile Include="Photos\PhotoMetadataService.cs" />
     <Compile Include="Photos\PhotoProvider.cs" />
+    <Compile Include="Playlists\PlaylistMetadataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Manager\ProviderUtils.cs" />
     <Compile Include="Studios\StudiosImageProvider.cs" />

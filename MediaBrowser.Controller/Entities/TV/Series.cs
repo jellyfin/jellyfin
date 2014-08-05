@@ -39,6 +39,11 @@ namespace MediaBrowser.Controller.Entities.TV
             DisplaySpecialsWithSeasons = true;
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
         [IgnoreDataMember]
         public override bool IsPreSorted
         {

@@ -126,7 +126,7 @@ namespace MediaBrowser.Controller.Library
         {
             var filename = Path.GetFileName(path);
 
-            if (string.Equals(path, "specials", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(filename, "specials", StringComparison.OrdinalIgnoreCase))
             {
                 return 0;
             }

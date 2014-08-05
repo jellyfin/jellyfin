@@ -29,6 +29,11 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
         [IgnoreDataMember]
         public override bool IsPreSorted
         {

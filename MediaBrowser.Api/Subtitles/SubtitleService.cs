@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -11,6 +9,8 @@ using MediaBrowser.Model.Providers;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -69,7 +69,8 @@ namespace MediaBrowser.Api.Subtitles
         public string Id { get; set; }
     }
 
-    [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format (vtt).")]
+    [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format.")]
+    [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/{StartPositionTicks}/Stream.{Format}", "GET", Summary = "Gets subtitles in a specified format.")]
     public class GetSubtitle
     {
         /// <summary>
@@ -132,6 +133,7 @@ namespace MediaBrowser.Api.Subtitles
                 request.Index,
                 request.Format,
                 request.StartPositionTicks,
+                null,
                 CancellationToken.None).ConfigureAwait(false);
         }
 

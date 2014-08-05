@@ -55,6 +55,11 @@ namespace MediaBrowser.Controller.Entities
             LinkedAlternateVersions = new List<LinkedChild>();
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
+        }
+
         [IgnoreDataMember]
         public int MediaSourceCount
         {
