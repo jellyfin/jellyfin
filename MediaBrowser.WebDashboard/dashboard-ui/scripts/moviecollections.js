@@ -81,7 +81,7 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createPosterItemMenus().trigger('itemsrendered');
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -333,6 +333,17 @@
         });
     });
 
+    function redirectToCollection(id) {
+
+        var context = getParameterByName('context');
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+            Dashboard.navigate(LibraryBrowser.getHref(item, context));
+
+        });
+    }
+
     function createCollection(page) {
 
         var url = ApiClient.getUrl("Collections", {
@@ -355,16 +366,9 @@
             Dashboard.hideLoadingMsg();
 
             var id = result.Id;
-            var destination = 'itemdetails.html?id=' + id;
-
-            var context = getParameterByName('context');
-
-            if (context) {
-                destination += "&context=" + context;
-            }
 
             $('.newCollectionPanel', page).panel('toggle');
-            Dashboard.navigate(destination);
+            redirectToCollection(id);
 
         });
     }
@@ -384,19 +388,10 @@
 
             Dashboard.hideLoadingMsg();
 
-            var destination = 'itemdetails.html?id=' + id;
-
-            var context = getParameterByName('context');
-
-            if (context) {
-                destination += "&context=" + context;
-            }
-
             $('.newCollectionPanel', page).panel('toggle');
-            Dashboard.navigate(destination);
+            redirectToCollection(id);
 
         });
-
     }
 
     window.BoxSetEditor = {

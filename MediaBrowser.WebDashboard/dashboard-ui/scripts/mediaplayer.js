@@ -347,14 +347,10 @@
             var firstItem = items[0];
             var promise;
 
-            if (firstItem.IsFolder) {
+            if (firstItem.Type == "Playlist") {
 
                 promise = self.getItemsForPlayback({
                     ParentId: firstItem.Id,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio,Video"
                 });
             }
             else if (firstItem.Type == "MusicArtist") {
@@ -378,6 +374,16 @@
                     MediaTypes: "Audio"
                 });
             }
+            else if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
 
             if (promise) {
                 promise.done(function (result) {
@@ -399,10 +405,7 @@
 
                     translateItemsForPlayback(options.items).done(function (items) {
 
-                        self.playInternal(items[0], options.startPositionTicks, user);
-
-                        self.playlist = items;
-                        currentPlaylistIndex = 0;
+                        self.playWithIntros(items, options, user);
                     });
 
                 } else {
@@ -415,10 +418,7 @@
 
                         translateItemsForPlayback(result.Items).done(function (items) {
 
-                            self.playInternal(items[0], options.startPositionTicks, user);
-
-                            self.playlist = items;
-                            currentPlaylistIndex = 0;
+                            self.playWithIntros(items, options, user);
                         });
 
                     });
@@ -426,6 +426,27 @@
 
             });
 
+        };
+
+        self.playWithIntros = function (items, options, user) {
+
+            var firstItem = items[0];
+
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
+                self.playInternal(firstItem, options.startPositionTicks, user);
+
+                self.playlist = items;
+                currentPlaylistIndex = 0;
+            }
+
+            ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
+
+                items = intros.Items.concat(items);
+                self.playInternal(items[0], options.startPositionTicks, user);
+
+                self.playlist = items;
+                currentPlaylistIndex = 0;
+            });
         };
 
         self.getBitrateSetting = function () {
@@ -786,11 +807,7 @@
                     SortBy: "Random"
                 };
 
-                if (item.IsFolder) {
-                    query.ParentId = id;
-
-                }
-                else if (item.Type == "MusicArtist") {
+                if (item.Type == "MusicArtist") {
 
                     query.MediaTypes = "Audio";
                     query.Artists = item.Name;
@@ -801,7 +818,12 @@
                     query.MediaTypes = "Audio";
                     query.Genres = item.Name;
 
-                } else {
+                }
+                else if (item.IsFolder) {
+                    query.ParentId = id;
+
+                }
+                else {
                     return;
                 }
 

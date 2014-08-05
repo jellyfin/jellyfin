@@ -130,17 +130,15 @@
 
     function renderRecordings(page, result) {
 
-        var screenWidth = $(window).width();
-
         $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
 
             items: result.Items,
-            shape: "autosmall",
+            shape: "homePageSquare",
             showTitle: true,
-            overlayText: screenWidth >= 600,
+            overlayText: true,
             coverImage: true
 
-        })).createPosterItemMenus();
+        })).createCardMenus();
     }
 
     function renderSchedule(page, result) {

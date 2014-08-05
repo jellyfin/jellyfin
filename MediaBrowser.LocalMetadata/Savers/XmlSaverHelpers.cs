@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.LocalMetadata.Savers
@@ -109,7 +110,8 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "VoteCount",
                     "Website",
                     "Zap2ItId",
-                    "CollectionItems"
+                    "CollectionItems",
+                    "PlaylistItems"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -631,10 +633,16 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("</Persons>");
             }
 
-            var folder = item as BoxSet;
-            if (folder != null)
+            var boxset = item as BoxSet;
+            if (boxset != null)
             {
-                AddCollectionItems(folder, builder);
+                AddLinkedChildren(boxset, builder, "CollectionItems", "CollectionItem");
+            }
+
+            var playlist = item as Playlist;
+            if (playlist != null)
+            {
+                AddLinkedChildren(playlist, builder, "PlaylistItems", "PlaylistItem");
             }
         }
 
@@ -693,7 +701,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
-        public static void AddCollectionItems(Folder item, StringBuilder builder)
+        public static void AddLinkedChildren(Folder item, StringBuilder builder, string pluralNodeName, string singularNodeName)
         {
             var items = item.LinkedChildren
                 .Where(i => i.Type == LinkedChildType.Manual && !string.IsNullOrWhiteSpace(i.ItemName))
@@ -704,12 +712,11 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return;
             }
 
-            builder.Append("<CollectionItems>");
+            builder.Append("<" + pluralNodeName + ">");
             foreach (var link in items)
             {
-                builder.Append("<CollectionItem>");
+                builder.Append("<" + singularNodeName + ">");
 
-                builder.Append("<Name>" + SecurityElement.Escape(link.ItemName) + "</Name>");
                 builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
 
                 if (link.ItemYear.HasValue)
@@ -717,9 +724,11 @@ namespace MediaBrowser.LocalMetadata.Savers
                     builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
                 }
 
-                builder.Append("</CollectionItem>");
+                builder.Append("<Path>" + SecurityElement.Escape((link.Path ?? string.Empty)) + "</Path>");
+
+                builder.Append("</" + singularNodeName + ">");
             }
-            builder.Append("</CollectionItems>");
+            builder.Append("</" + pluralNodeName + ">");
         }
     }
 }

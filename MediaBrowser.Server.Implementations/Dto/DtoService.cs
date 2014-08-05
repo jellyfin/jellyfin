@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Drawing;
@@ -177,6 +178,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                         .Select(i => i.ToString("N"))
                         .ToArray();
                 }
+            }
+
+            if (item is Playlist)
+            {
+                AttachLinkedChildImages(dto, (Folder)item, user);
             }
 
             return dto;
@@ -819,7 +825,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
             }
 
-            var collectionFolder = item as CollectionFolder;
+            var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
                 dto.CollectionType = collectionFolder.CollectionType;
@@ -1208,6 +1214,45 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.ChannelId = channelItem.ChannelId;
                 dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
+            }
+        }
+
+        private void AttachLinkedChildImages(BaseItemDto dto, Folder folder, User user)
+        {
+            List<BaseItem> linkedChildren = null;
+
+            if (dto.BackdropImageTags.Count == 0)
+            {
+                if (linkedChildren == null)
+                {
+                    linkedChildren = user == null
+                        ? folder.GetRecursiveChildren().ToList()
+                        : folder.GetRecursiveChildren(user, true).ToList();
+                }
+                var parentWithBackdrop = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Backdrop).Any());
+
+                if (parentWithBackdrop != null)
+                {
+                    dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
+                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop);
+                }
+            }
+
+            if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+            {
+                if (linkedChildren == null)
+                {
+                    linkedChildren = user == null
+                        ? folder.GetRecursiveChildren().ToList()
+                        : folder.GetRecursiveChildren(user, true).ToList();
+                }
+                var parentWithImage = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Primary).Any());
+
+                if (parentWithImage != null)
+                {
+                    dto.ParentPrimaryImageItemId = GetDtoId(parentWithImage);
+                    dto.ParentPrimaryImageTag = GetImageCacheTag(parentWithImage, ImageType.Primary);
+                }
             }
         }
 

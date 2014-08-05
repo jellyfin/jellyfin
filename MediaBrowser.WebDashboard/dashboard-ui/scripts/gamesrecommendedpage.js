@@ -24,7 +24,7 @@
                 shape: 'auto',
                 lazy: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
 
@@ -55,7 +55,7 @@
                 shape: 'auto',
                 lazy: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
 

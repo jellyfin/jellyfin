@@ -53,19 +53,20 @@
     font-weight: 500;
     src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
 }
+
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'), url(fonts/RobotoBold.woff) format('woff');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Roboto Bold'), local('Roboto-Bold'), url(fonts/RobotoBold.woff) format('woff');
 }
 
 * {
-    text-shadow: none!important;
+    text-shadow: none !important;
 }
 
 body {
-    overflow-y: scroll!important;
+    overflow-y: scroll !important;
     font-size: 13px;
     font-family: Roboto, Arial, Helvetica, sans-serif;
 }
@@ -83,18 +84,17 @@ body {
     }
 
 h1, h1 a {
-    font-weight: 300!important;
-    font-size: 28px;
+    font-weight: 300 !important;
+    font-size: 30px;
 }
 
 .libraryPage h1, .libraryPage h1 a {
-    font-weight: 100!important;
-    font-size: 28px;
+    font-weight: 100 !important;
 }
 
 .ui-loader h1 {
     font-family: Roboto;
-    font-weight: 500!important;
+    font-weight: 500 !important;
     font-size: 18px;
 }
 
@@ -117,7 +117,7 @@ h2 {
 
 .ui-btn {
     font-family: Roboto;
-    font-weight: 500!important;
+    font-weight: 500 !important;
 }
 
 .ui-listview li h3 {
@@ -129,7 +129,7 @@ h1 a {
 }
 
 .libraryPage h1 a {
-    color: #fff!important;
+    color: #fff !important;
 }
 
 h1 a:hover {
@@ -243,7 +243,7 @@ h1 .imageLink {
     }
 
     .imageButton[disabled], .imageButton[disabled]:hover {
-        opacity: .3!important;
+        opacity: .3 !important;
         cursor: default;
     }
 
@@ -268,7 +268,7 @@ h1 .imageLink {
 }
 
 .ulForm {
-    margin-bottom: 20px!important;
+    margin-bottom: 20px !important;
 }
 
     .ulForm li:not(.ui-li-divider) {
@@ -278,7 +278,7 @@ h1 .imageLink {
     }
 
 .popup .ulForm {
-    margin-bottom: 0!important;
+    margin-bottom: 0 !important;
 }
 
 .content-primary {
@@ -303,27 +303,27 @@ h1 .imageLink {
     margin-left: 1em;
 }
 
-.sidebarLinks a {
-    display: block;
-    padding: .6em 20px .6em 20px;
-    text-decoration: none;
-    color: #333!important;
-    text-shadow: none!important;
-    font-weight: 500!important;
-    font-size: 14px;
-    border-radius: 2px;
-}
-
-    .sidebarLinks a:hover {
-        background: #52B54B;
-        color: #fff!important;
+    .sidebarLinks a {
+        display: block;
+        padding: .6em 20px .6em 20px;
+        text-decoration: none;
+        color: #333 !important;
+        text-shadow: none !important;
+        font-weight: 500 !important;
+        font-size: 14px;
+        border-radius: 2px;
     }
 
-    .sidebarLinks a.selectedSidebarLink {
-        background: #38c!important;
-        color: #fff!important;
-        margin-right: 0;
-    }
+        .sidebarLinks a:hover {
+            background: #52B54B;
+            color: #fff !important;
+        }
+
+        .sidebarLinks a.selectedSidebarLink {
+            background: #38c !important;
+            color: #fff !important;
+            margin-right: 0;
+        }
 
 .sidebarDivider {
     height: 1px;
@@ -332,12 +332,12 @@ h1 .imageLink {
 }
 
 .invalidEntry {
-    background-color: lightpink!important;
+    background-color: lightpink !important;
 }
 
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
-    margin-bottom: 40px!important;
+    margin-bottom: 40px !important;
 }
 
     .localnav + form {
@@ -345,7 +345,7 @@ h1 .imageLink {
     }
 
 .page > .ui-content {
-    padding-bottom: 100px;
+    padding-bottom: 120px;
 }
 
 .dashboardPanelDivider {
@@ -358,18 +358,18 @@ h1 .imageLink {
     padding: .7em .5em .7em 1.25em;
     display: block;
     text-decoration: none;
-    color: #000!important;
+    color: #000 !important;
     font-weight: normal !important;
 }
 
     .dashboardPanelLink:hover {
         background: #52B54B;
-        color: #fff!important;
+        color: #fff !important;
     }
 
 .selectedDashboardPanelLink {
     background: #38c;
-    color: #fff!important;
+    color: #fff !important;
 }
 
 .dashboardPanel .ui-panel-inner {
@@ -456,19 +456,19 @@ h1 .imageLink {
 }
 
 .mediaFolderLocations {
-    margin: 1em .25em!important;
+    margin: 1em .25em !important;
 }
 
 .mediaLocationsHeader {
-    padding-top: .75em!important;
-    padding-bottom: .75em!important;
+    padding-top: .75em !important;
+    padding-bottom: .75em !important;
 }
 
     .mediaLocationsHeader .ui-btn {
         position: absolute;
         right: -6px;
-        margin-top: 0!important;
-        margin-bottom: 0!important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         top: 6px;
     }
 
@@ -514,12 +514,12 @@ h1 .imageLink {
 }
 
 .posterViewItemWithNoText {
-    padding-bottom: 0!important;
+    padding-bottom: 0 !important;
 }
 
 .posterViewItem a {
-    color: white!important;
-    font-weight: normal!important;
+    color: white !important;
+    font-weight: normal !important;
     text-decoration: none;
 }
 
@@ -594,7 +594,7 @@ h1 .imageLink {
 @media all and (min-width: 1920px) {
 
     .posterViewItemText {
-        height: 25px!important;
+        height: 25px !important;
     }
 
     .posterViewItem {
@@ -649,7 +649,6 @@ h1 .imageLink {
     bottom: -2px;
     left: -2px;
     right: -2px;
-
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
@@ -740,9 +739,10 @@ progress {
     cursor: pointer;
     vertical-align: top;
 }
-.imgUserItemRating:last-child {
-    margin-right: 0;
-}
+
+    .imgUserItemRating:last-child {
+        margin-right: 0;
+    }
 
     .imgUserItemRating:hover {
         opacity: .5;
@@ -839,7 +839,7 @@ progress {
 }
 
 .btnShowStatusMessage {
-    font-weight: normal!important;
+    font-weight: normal !important;
     text-decoration: none;
 }
 
@@ -850,6 +850,11 @@ progress {
 .activeSession {
     width: 50%;
 }
+
+.activeSession .cardPadder {
+    padding-bottom: 56.25%;
+}
+
 
 .sessionNowPlayingContent {
     background-size: cover;
@@ -925,7 +930,7 @@ progress {
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
-    padding: .25em!important;
+    padding: .25em !important;
 }
 
 .activeSession:not(.playingSession) .sessionNowPlayingContent {
@@ -981,22 +986,22 @@ progress {
 /* Firefox */
 .transcodingProgress::-moz-progress-bar {
     border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Chrome */
 .transcodingProgress::-webkit-progress-value {
     border-radius: 5px;
-    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) )!important;
-    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) ) !important;
+    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Polyfill */
 .transcodingProgress[aria-valuenow]:before {
     border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
-    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
-    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
+    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
+    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 @media all and (max-width: 550px) {

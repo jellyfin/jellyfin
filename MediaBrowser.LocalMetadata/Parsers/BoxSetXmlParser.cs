@@ -1,17 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Xml;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
+using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
     {
-        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         public BoxSetXmlParser(ILogger logger)
             : base(logger)
         {
@@ -70,60 +67,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.LinkedChildren = list;
-        }
-
-        private LinkedChild GetLinkedChild(XmlReader reader)
-        {
-            reader.MoveToContent();
-
-            var linkedItem = new LinkedChild
-            {
-                Type = LinkedChildType.Manual
-            };
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Name":
-                            {
-                                linkedItem.ItemName = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        case "Type":
-                            {
-                                linkedItem.ItemType = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        case "Year":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    int rval;
-
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
-                                    {
-                                        linkedItem.ItemYear = rval;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            return string.IsNullOrWhiteSpace(linkedItem.ItemName) || string.IsNullOrWhiteSpace(linkedItem.ItemType) ? null : linkedItem;
         }
     }
 }

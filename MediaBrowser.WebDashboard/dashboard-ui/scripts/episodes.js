@@ -44,8 +44,6 @@
 
             updateFilterControls();
 
-            var screenWidth = $(window).width();
-
             if (view == "List") {
 
                 html = LibraryBrowser.getListViewHtml({
@@ -60,7 +58,7 @@
                     shape: "backdrop",
                     showTitle: true,
                     showParentTitle: true,
-                    overlayText: screenWidth >= 600,
+                    overlayText: true,
                     selectionPanel: true,
                     lazy: true,
                     context: 'tv'
@@ -69,7 +67,7 @@
 
             html += pagingHtml;
 
-            $('.itemsContainer', page).html(html).trigger('create').createPosterItemMenus().trigger('itemsrendered');
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

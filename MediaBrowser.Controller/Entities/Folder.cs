@@ -38,6 +38,12 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
         }
 
+        [IgnoreDataMember]
+        public virtual bool IsPreSorted
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
@@ -855,7 +861,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
+        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
             if (user == null)
             {

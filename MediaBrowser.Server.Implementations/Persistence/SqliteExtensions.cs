@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -150,6 +151,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
             await connection.OpenAsync().ConfigureAwait(false);
 
             return connection;
+        }
+
+        /// <summary>
+        /// Serializes to bytes.
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <param name="obj">The obj.</param>
+        /// <returns>System.Byte[][].</returns>
+        /// <exception cref="System.ArgumentNullException">obj</exception>
+        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                json.SerializeToStream(obj, stream);
+                return stream.ToArray();
+            }
         }
     }
 }

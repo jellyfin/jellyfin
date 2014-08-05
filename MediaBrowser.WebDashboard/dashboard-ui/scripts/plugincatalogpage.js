@@ -59,7 +59,7 @@
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<div class='card card-16-9'>";
+            html += "<div class='card backdropCard alternateHover bottomPaddedCard'>";
 
             html += '<div class="cardBox visualCardBox">';
             html += '<div class="cardScalable">';

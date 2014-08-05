@@ -39,6 +39,15 @@ namespace MediaBrowser.Controller.Entities.TV
             DisplaySpecialsWithSeasons = true;
         }
 
+        [IgnoreDataMember]
+        public override bool IsPreSorted
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public bool DisplaySpecialsWithSeasons { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }

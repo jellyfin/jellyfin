@@ -18,6 +18,15 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         [IgnoreDataMember]
         public Guid? ItemId { get; set; }
+
+        public static LinkedChild Create(BaseItem item)
+        {
+            return new LinkedChild
+            {
+                Path = item.Path,
+                Type = LinkedChildType.Manual
+            };
+        }
     }
 
     public enum LinkedChildType

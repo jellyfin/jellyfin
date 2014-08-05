@@ -12,6 +12,10 @@
     margin-left: .5em;
 }
 
+.libraryPage {
+    background-color: #202020;
+}
+
 .backdropPage {
     background-color: rgba(15, 15,15, .94) !important;
 }
@@ -33,7 +37,14 @@
 
 .libraryPage > .ui-content {
     padding-top: 10px;
-    padding-bottom: 120px;
+}
+
+@media all and (max-width: 1200px) {
+
+    .libraryPage > .ui-content {
+        padding-left: .4em !important;
+        padding-right: .4em !important;
+    }
 }
 
 .libraryPage .currentUsername {
@@ -42,8 +53,8 @@
 
 .listHeader {
     margin-top: .7em;
-    margin-bottom: 0;
-    padding-left: 4px;
+    margin-bottom: .15em;
+    padding-left: 2px;
 }
 
 .firstListHeader {
@@ -51,16 +62,8 @@
 }
 
 .ehsContent {
-    padding: 0;
-    border-spacing: 0;
-    border-collapse: collapse;
     margin: 0 auto;
 }
-
-    .ehsContent td {
-        padding: 0;
-        border-spacing: 0;
-    }
 
 .homePageSection + .homePageSection {
     margin-top: 1em;
@@ -96,35 +99,9 @@
     top: 3px;
 }
 
-@media all and (min-width: 800px) {
-
-    .ehsContent {
-        width: 770px;
-    }
-
-    .squareEhsContent {
-        width: 760px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .ehsContent {
-        width: 900px;
-    }
-
-    .squareEhsContent {
-        width: 900px;
-    }
-}
-
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 1000px;
-    }
-
-    .squareEhsContent {
         width: 1000px;
     }
 }
@@ -132,10 +109,6 @@
 @media all and (min-width: 1600px) {
 
     .ehsContent {
-        width: 1200px;
-    }
-
-    .squareEhsContent {
         width: 1200px;
     }
 }
@@ -917,7 +890,7 @@ a.itemTag:hover {
     width: 27px;
     z-index: 1000;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     display: none;
     line-height: 1;
 }
@@ -926,17 +899,16 @@ a.itemTag:hover {
         display: block;
         text-decoration: none;
         padding: 1px 0;
-        color: #bbb !important;
+        font-weight: 500;
     }
 
-        .alphabetPicker a:hover:not(.selectedCharacter) {
-            background: #666 !important;
-            color: #fff !important;
+        .alphabetPicker a:not(.selectedCharacter) {
+            color: #bbb !important;
         }
 
+
 .selectedCharacter {
-    color: #fff !important;
-    background: #4d90fe;
+    color: #4d90fe !important;
 }
 
 .itemOverlayContent {
@@ -990,7 +962,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 15px;
+        margin-right: 20px;
     }
 }
 

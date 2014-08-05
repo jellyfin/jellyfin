@@ -32,7 +32,8 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                addSelectionButton: true
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -46,12 +47,13 @@
                 context: 'music',
                 showItemCounts: true,
                 centerText: true,
-                lazy: true
+                lazy: true,
+                selectionPanel: true
             });
 
             html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

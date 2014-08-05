@@ -22,10 +22,10 @@
                 items: items,
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
-                shape: "square",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 
@@ -52,10 +52,10 @@
             $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 
@@ -82,10 +82,10 @@
             $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 

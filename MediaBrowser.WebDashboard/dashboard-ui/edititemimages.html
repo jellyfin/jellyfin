@@ -26,16 +26,16 @@
                 <div style="margin: -25px 0 1em;">
 
                     <div style="display: inline-block;">
-                        <a class="lnkBrowseImages lnkBrowseAllImages hide" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="cloud" data-mini="true">Browse Images</a>
+                        <a class="lnkBrowseImages lnkBrowseAllImages hide" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="cloud" data-mini="true">${ButtonBrowseImages}</a>
                     </div>
                     <div style="display: inline-block;">
-                        <a href="#popupUpload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true">Upload</a>
+                        <a href="#popupUpload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true">${ButtonUpload}</a>
                     </div>
                 </div>
 
                 <div id="imagesContainer" style="display: none;">
                     <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>Images</h3>
+                        <h3>${HeaderImages}</h3>
                         <div id="images">
                         </div>
                     </div>
@@ -43,7 +43,7 @@
 
                 <div id="backdropsContainer" style="display: none;">
                     <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>Backdrops</h3>
+                        <h3>${HeaderBackdrops}</h3>
                         <div id="backdrops">
                         </div>
                     </div>
@@ -51,7 +51,7 @@
 
                 <div id="screenshotsContainer" style="display: none;">
                     <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>Screenshots</h3>
+                        <h3>${Screenshots}</h3>
                         <div id="screenshots">
                         </div>
                     </div>
@@ -62,85 +62,85 @@
 
         <div data-role="popup" id="popupUpload" data-theme="a" data-corners="false">
             <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
-                <h2>Add/Update Image</h2>
+                <h2>${HeaderAddUpdateImage}</h2>
                 <div>
-                    <p>JPG/PNG only.</p>
+                    <p>${LabelJpgPngOnly}</p>
                     <input type="file" accept="image/*" id="uploadImage" name="uploadImage" />
 
                     <div id="imageDropZone" class="imageDropZone">
-                        <h3>Drop Image Here</h3>
+                        <h3>${LabelDropImageHere}</h3>
                         <output id="imageOutput"></output>
                     </div>
                     <div id="fldUpload" style="display: none;">
                         <p data-role="fieldcontain">
-                            <label for="selectImageType">Image Type:</label>
+                            <label for="selectImageType">${LabelImageType}</label>
                             <select id="selectImageType" name="selectImageType">
-                                <option value="Primary">Primary</option>
-                                <option value="Art">Art</option>
-                                <option value="Backdrop">Backdrop</option>
-                                <option value="Banner">Banner</option>
-                                <option value="Box">Box</option>
-                                <option value="BoxRear">Box rear</option>
-                                <option value="Disc">Disc</option>
-                                <option value="Logo">Logo</option>
-                                <option value="Menu">Menu</option>
-                                <option value="Screenshot">Screenshot</option>
-                                <option value="Thumb">Thumb</option>
+                                <option value="Primary">${OptionPrimary}</option>
+                                <option value="Art">${OptionArt}</option>
+                                <option value="Backdrop">${OptionBackdrop}</option>
+                                <option value="Banner">${OptionBanner}</option>
+                                <option value="Box">${OptionBox}</option>
+                                <option value="BoxRear">${OptionBoxRear}</option>
+                                <option value="Disc">${OptionDisc}</option>
+                                <option value="Logo">${OptionLogo}</option>
+                                <option value="Menu">${OptionMenu}</option>
+                                <option value="Screenshot">${OptionScreenshot}</option>
+                                <option value="Thumb">${OptionThumb}</option>
                             </select>
                         </p>
-                        <button type="submit" data-icon="check" data-theme="b">Upload</button>
+                        <button type="submit" data-icon="check" data-theme="b">${ButtonUpload}</button>
                     </div>
-                    <a data-role="button" data-rel="back" data-icon="delete" onclick="$('#uploadImage').val('').trigger('change');">Cancel</a>
+                    <a data-role="button" data-rel="back" data-icon="delete" onclick="$('#uploadImage').val('').trigger('change');">${ButtonCancel}</a>
                 </div>
             </form>
         </div>
 
         <div data-role="popup" class="popup popupDownload" data-theme="a">
 
-            <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">Close</a>
+            <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">${ButtonClose}</a>
             <div class="ui-bar-b" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em 0;">Browse Online Images</h3>
+                <h3 style="margin: .5em 0;">${HeaderBrowseOnlineImages}</h3>
             </div>
 
             <div data-role="content">
 
                 <div style="text-align: center;">
                     <div style="margin: 0; display: inline-block;">
-                        <label for="selectImageProvider">Source:</label>
+                        <label for="selectImageProvider">${LabelSource}</label>
                     </div>
                     <div style="margin: 0; display: inline-block;">
                         <select id="selectImageProvider" name="selectImageProvider" data-mini="true" data-inline="true">
-                            <option value="">All</option>
+                            <option value="">${OptionAll}</option>
                         </select>
                     </div>
                     <div style="margin: 0; display: inline-block;">
-                        <label for="selectBrowsableImageType">Image:</label>
+                        <label for="selectBrowsableImageType">${LabelImage}</label>
                     </div>
                     <div style="margin: 0; display: inline-block;">
                         <select id="selectBrowsableImageType" name="selectBrowsableImageType" data-mini="true" data-inline="true">
-                            <option value="Primary">Primary</option>
-                            <option value="Art">Art</option>
-                            <option value="Backdrop">Backdrop</option>
-                            <option value="Banner">Banner</option>
-                            <option value="Box">Box</option>
-                            <option value="BoxRear">Box rear</option>
-                            <option value="Disc">Disc</option>
-                            <option value="Logo">Logo</option>
-                            <option value="Menu">Menu</option>
-                            <option value="Screenshot">Screenshot</option>
-                            <option value="Thumb">Thumb</option>
+                            <option value="Primary">${OptionPrimary}</option>
+                            <option value="Art">${OptionArt}</option>
+                            <option value="Backdrop">${OptionBackdrop}</option>
+                            <option value="Banner">${OptionBanner}</option>
+                            <option value="Box">${OptionBox}</option>
+                            <option value="BoxRear">${OptionBoxRear}</option>
+                            <option value="Disc">${OptionDisc}</option>
+                            <option value="Logo">${OptionLogo}</option>
+                            <option value="Menu">${OptionMenu}</option>
+                            <option value="Screenshot">${OptionScreenshot}</option>
+                            <option value="Thumb">${OptionThumb}</option>
                         </select>
                     </div>
                     <div class="availableImagesPaging" style="margin: 0; display: inline-block;"></div>
                     <div style="margin: 0; display: inline-block; vertical-align: middle; margin-left: 10px;">
-                        <label for="chkAllLanguages">All Languages</label>
+                        <label for="chkAllLanguages">${LabelAllLanguages}</label>
                         <input type="checkbox" id="chkAllLanguages" data-mini="true" />
                     </div>
                 </div>
 
                 <div class="availableImagesList"></div>
                 <div style="text-align: center;">
-                    <a href="#" data-rel="back" data-role="button" data-mini="true" data-inline="true" data-icon="delete">Close</a>
+                    <a href="#" data-rel="back" data-role="button" data-mini="true" data-inline="true" data-icon="delete">${ButtonClose}</a>
                 </div>
             </div>
         </div>

@@ -49,7 +49,8 @@
                     preferThumb: true,
                     context: 'movies',
                     selectionPanel: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -81,7 +82,8 @@
                     showTitle: false,
                     centerText: true,
                     selectionPanel: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -101,7 +103,7 @@
 
             html += pagingHtml;
 
-            $('.itemsContainer', page).html(html).trigger('create').createPosterItemMenus().trigger('itemsrendered');
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

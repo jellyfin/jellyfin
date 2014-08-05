@@ -75,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public bool IsEnabled
         {
-            get { return !GetTvOptions().IsEnabled; }
+            get { return GetTvOptions().IsEnabled; }
         }
     }
 }

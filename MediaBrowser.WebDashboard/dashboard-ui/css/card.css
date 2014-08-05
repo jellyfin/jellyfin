@@ -9,8 +9,66 @@
     position: relative;
 }
 
+    .card, .card a {
+        text-decoration: none;
+        font-weight: 400 !important;
+    }
+
+.cardOverlayTarget {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, .85);
+    z-index: 999;
+    display: none;
+}
+
+.cardOverlayInner {
+    padding: 11px 12px 10px;
+}
+
+    .cardOverlayInner button:last-child {
+        margin-right: 0 !important;
+    }
+
+    .cardOverlayInner p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.smallBackdropPosterItem .cardOverlayInner > div {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .cardBox {
-    margin: 4px 4px;
+    margin: 4px;
+}
+
+@media all and (max-width: 800px) {
+
+    .cardBox {
+        margin: 0 2px;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .cardBox {
+        margin: 1px;
+    }
+}
+
+.bottomPaddedCard .cardBox {
+    margin-bottom: 10px;
+}
+
+.visualFooterCard .outerCardFooter {
+    background: #111;
+    padding-bottom: 4px;
 }
 
 .visualCardBox {
@@ -29,20 +87,28 @@
     position: relative;
 }
 
-.card-16-9 .cardPadder {
+.backdropCard .cardPadder {
     padding-bottom: 56.25%;
 }
 
-.card-1-1 .cardPadder {
+.smallBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+.squareCard .cardPadder {
     padding-bottom: 100%;
 }
 
-.card-4-3 .cardPadder {
+.letterBoxCard .cardPadder {
     padding-bottom: 75%;
 }
 
-.card-3-2 .cardPadder {
-    padding-bottom: 66.666666666667%;
+.portraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+.bannerCard .cardPadder {
+    padding-bottom: 18.5%;
 }
 
 .cardContent {
@@ -59,13 +125,13 @@
         box-shadow: 0 0 0 5px #38c;
     }
 
-.cardBox .cardContent:hover {
+.alternateHover:hover .cardContent {
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none;
 }
 
-.cardContent:hover .cardImage {
+.alternateHover:hover .cardImage {
     opacity: .5;
 }
 
@@ -111,15 +177,39 @@
     overflow: hidden;
     text-wrap: none;
     white-space: nowrap;
-    padding: 5px 4px 4px;
+    padding: 5px 4px 2px;
     text-shadow: none;
     font-size: 13px;
     font-weight: 400;
 }
 
+.cardOverlayInner {
+    color: #fff;
+}
+
+.cardTextCentered {
+    text-align: center;
+}
+
+.cardDefaultText {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.libraryPage .cardDefaultText, .libraryPage .cardText {
+    color: #fff;
+}
+
 .cardContent .cardText {
     padding-left: 5px;
     padding: 0 5px 4px;
+}
+
+.outerCardFooter .cardText + .cardText {
+    color: #ddd;
 }
 
 @media all and (max-width: 600px) {
@@ -141,17 +231,57 @@
     background-size: cover;
 }
 
-.card-1-1 {
+.bannerCard {
+    width: 100%;
+}
+
+.squareCard {
     width: 50%;
 }
 
-.card-16-9:not(.manualSize) {
+.backdropCard {
     width: 50%;
+}
+
+.smallBackdropCard {
+    width: 50%;
+}
+
+.portraitCard {
+    width: 33.3%;
+}
+
+.cardProgress {
+    line-height: 7px;
+}
+
+    .cardProgress .itemProgressBar {
+        height: 6px;
+        width: 100%;
+        opacity: .8;
+    }
+
+.miniCardProgress {
+    /* Make sure it's on top of the fade gradient '*/
+    z-index: 1000;
+}
+
+    .miniCardProgress .itemProgressBar {
+        height: 6px;
+        opacity: 1;
+    }
+
+@media all and (max-width: 1200px) {
+
+    .portraitCard .cardOverlayInner {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
 }
 
 @media all and (min-width: 500px) {
 
-    .card-1-1 {
+    .squareCard {
         width: 33.3%;
     }
 }
@@ -159,15 +289,39 @@
 
 @media all and (min-width: 540px) {
 
-    .card-16-9:not(.manualSize) {
+    .portraitCard {
+        width: 25%;
+    }
+
+    .smallBackdropCard {
         width: 33.3%;
+    }
+}
+
+
+@media all and (min-width: 640px) {
+
+    .backdropCard {
+        width: 33.3%;
+    }
+
+    .bannerCard {
+        width: 50%;
     }
 }
 
 
 @media all and (min-width: 800px) {
 
-    .card-1-1 {
+    .squareCard {
+        width: 25%;
+    }
+
+    .portraitCard {
+        width: 20%;
+    }
+
+    .smallBackdropCard {
         width: 25%;
     }
 }
@@ -175,19 +329,35 @@
 
 @media all and (min-width: 1000px) {
 
-    .card-1-1 {
+    .squareCard {
         width: 20%;
     }
 
-    .card-16-9:not(.manualSize) {
+    .backdropCard {
         width: 25%;
+    }
+
+    .smallBackdropCard {
+        width: 20%;
     }
 }
 
 
 @media all and (min-width: 1200px) {
 
-    .card-1-1 {
+    .squareCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .bannerCard {
+        width: 33.3%;
+    }
+
+    .portraitCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .smallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
 }
@@ -195,26 +365,73 @@
 
 @media all and (min-width: 1400px) {
 
-    .card-1-1 {
+    .squareCard {
         width: 14.285714285714285714285714285714%;
     }
 
-    .card-16-9:not(.manualSize) {
+    .backdropCard {
         width: 20%;
+    }
+
+    .portraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
+
+    .smallBackdropCard {
+        width: 14.285714285714285714285714285714%;
     }
 }
 
 
 @media all and (min-width: 1600px) {
 
-    .card-1-1 {
+    .squareCard {
         width: 12.5%;
     }
 
-    .card-16-9:not(.manualSize) {
+    .backdropCard {
         width: 16.666666666666666666666666666667%;
     }
+
+    .bannerCard {
+        width: 25%;
+    }
+
+    .portraitCard {
+        width: 10%;
+    }
+
+    .smallBackdropCard {
+        width: 12.5%;
+    }
 }
+
+
+@media all and (min-width: 1800px) {
+
+    .squareCard {
+        width: 10%;
+    }
+
+    .smallBackdropCard {
+        width: 10%;
+    }
+}
+
+
+@media all and (min-width: 1920px) {
+
+    .portraitCard {
+        width: 9.0909090909090909090909090909091%;
+    }
+}
+
+
+/** detailPage169 */
+.detailPage169Card .cardPadder {
+    padding-bottom: 56.25%;
+}
+
 
 .detailPage169Card {
     width: 50%;
@@ -224,5 +441,192 @@
 
     .detailPage169Card {
         width: 33.3%;
+    }
+}
+
+
+/** detailPagePortrait */
+.detailPagePortraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+
+.detailPagePortraitCard {
+    width: 33.3%;
+}
+
+@media all and (min-width: 540px) {
+
+    .detailPagePortraitCard {
+        width: 25%;
+    }
+}
+
+
+@media all and (min-width: 800px) {
+
+    .detailPagePortraitCard {
+        width: 20%;
+    }
+}
+
+
+/** detailPageSquare */
+.detailPageSquareCard .cardPadder {
+    padding-bottom: 100%;
+}
+
+
+.detailPageSquareCard {
+    width: 50%;
+}
+
+@media all and (min-width: 540px) {
+
+    .detailPageSquareCard {
+        width: 33.33%;
+    }
+}
+
+
+@media all and (min-width: 800px) {
+
+    .detailPageSquareCard {
+        width: 25%;
+    }
+}
+
+
+/** homePageBackdropCard */
+.homePageBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+
+.homePageBackdropCard {
+    width: 50%;
+}
+
+@media all and (min-width: 640px) {
+
+    .homePageBackdropCard {
+        width: 33.3%;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .homePageBackdropCard {
+        width: 25%;
+    }
+}
+
+
+/** homePageSquareCard */
+.homePageSquareCard .cardPadder {
+    padding-bottom: 100%;
+}
+
+
+.homePageSquareCard {
+    width: 50%;
+}
+
+@media all and (min-width: 540px) {
+
+    .homePageSquareCard {
+        width: 33.33%;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .homePageSquareCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .homePageSquareCard {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+
+/** homePagePortraitCard */
+.homePagePortraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+
+.homePagePortraitCard {
+    width: 33.3%;
+}
+
+@media all and (min-width: 540px) {
+
+    .homePagePortraitCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .homePagePortraitCard {
+        width: 20%;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+    .homePagePortraitCard {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .homePagePortraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
+}
+
+
+/** homePageSmallBackdropCard */
+.homePageSmallBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+
+.homePageSmallBackdropCard {
+    width: 50%;
+}
+
+@media all and (min-width: 540px) {
+
+    .homePageSmallBackdropCard {
+        width: 33.3%;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .homePageSmallBackdropCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 700px) {
+
+    .homePageSmallBackdropCard {
+        width: 20%;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+    .homePageSmallBackdropCard {
+        width: 16.666666666666666666666666666667%;
     }
 }

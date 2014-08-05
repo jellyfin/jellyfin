@@ -245,7 +245,7 @@
     background-image: url(images/items/folders/homevideos.png);
 }
 
-.generalViewMenu, .boxsetsViewMenu {
+.generalViewMenu, .boxsetsViewMenu, .playlistsViewMenu {
     background-image: url(images/items/folders/folder.png);
 }
 

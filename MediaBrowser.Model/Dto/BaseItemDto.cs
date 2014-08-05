@@ -594,7 +594,19 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The parent thumb image tag.</value>
         public string ParentThumbImageTag { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the parent primary image item identifier.
+        /// </summary>
+        /// <value>The parent primary image item identifier.</value>
+        public string ParentPrimaryImageItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent primary image tag.
+        /// </summary>
+        /// <value>The parent primary image tag.</value>
+        public string ParentPrimaryImageTag { get; set; }
+
         /// <summary>
         /// Gets or sets the chapters.
         /// </summary>

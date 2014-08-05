@@ -22,9 +22,11 @@
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
-                lazy: true
+                lazy: true,
+                shape: 'homePagePortrait',
+                overlayText: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
         });
 
     });

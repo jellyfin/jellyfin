@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Collections;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -91,10 +92,5 @@ namespace MediaBrowser.Api.Movies
 
             Task.WaitAll(task);
         }
-    }
-
-    public class CollectionCreationResult
-    {
-        public string Id { get; set; }
     }
 }

@@ -62,13 +62,13 @@
             html += '<div class="tvProgramTime">';
 
             if (program.IsLive) {
-                html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
+                html += '<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">'+Globalize.translate('newTvProgram')+'&nbsp;&nbsp;</span>';
             }
 
             var minutes = program.RunTimeTicks / 600000000;
@@ -242,13 +242,13 @@
 
             if (obj.IsSeries && !obj.IsRepeat) {
 
-                html.push('<span class="newTvProgram">NEW</span>');
+                html.push('<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'</span>');
 
             }
 
             if (obj.IsLive) {
 
-                html.push('<span class="liveTvProgram">LIVE</span>');
+                html.push('<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'</span>');
 
             }
 
@@ -258,7 +258,7 @@
 
             if (obj.IsHD) {
 
-                html.push('HD');
+                html.push(Globalize.translate('LabelHDProgram'));
 
             }
 
@@ -271,7 +271,7 @@
             html = html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 
             if (obj.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="View Series Recording">';
+                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="'+Globalize.translate('ButtonViewSeriesRecording')+'">';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
@@ -301,7 +301,7 @@
                 }
 
 
-                elem.html('Original air date:&nbsp;&nbsp;' + airDate).show();
+                elem.html(Globalize.translate('ValueOriginalAirDate').replace('{0}', airDate)).show();
             } else {
                 elem.hide();
             }

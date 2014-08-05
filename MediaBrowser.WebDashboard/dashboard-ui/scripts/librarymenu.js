@@ -231,7 +231,7 @@
 
     function getTopParentId() {
 
-        return getParameterByName('topParentId') || sessionStore.getItem('topParentId') || null;
+        return getParameterByName('topParentId') /*|| sessionStore.getItem('topParentId')*/ || null;
     }
 
     window.LibraryMenu = {
@@ -298,18 +298,22 @@
 
         });
 
-        $('.scopedLibraryViewNav a', page).each(function () {
+        var context = getParameterByName('context');
 
-            var src = this.href;
+        if (context !== 'playlists') {
+            $('.scopedLibraryViewNav a', page).each(function () {
 
-            if (src.indexOf('#') != -1) {
-                return;
-            }
+                var src = this.href;
 
-            src = replaceQueryString(src, 'topParentId', id);
+                if (src.indexOf('#') != -1) {
+                    return;
+                }
 
-            this.href = src;
-        });
+                src = replaceQueryString(src, 'topParentId', id);
+
+                this.href = src;
+            });
+        }
     }
 
     function updateContextText(page) {

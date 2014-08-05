@@ -14,7 +14,7 @@
 
         var html = '';
 
-        html += "<div class='card card-1-1'>";
+        html += "<div class='card squareCard'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';

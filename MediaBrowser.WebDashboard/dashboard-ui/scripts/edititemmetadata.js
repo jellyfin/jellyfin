@@ -90,7 +90,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (item.Type == 'BoxSet') {
+                if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
                     $('#fldDelete', page).show();
                 }
                 else if (user.Configuration.EnableContentDeletion &&

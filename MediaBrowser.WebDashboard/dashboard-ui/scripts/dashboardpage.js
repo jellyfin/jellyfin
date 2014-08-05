@@ -239,7 +239,7 @@
 
             var nowPlayingItem = session.NowPlayingItem;
 
-            var className = nowPlayingItem ? 'card card-16-9 activeSession manualSize' : 'card card-16-9 activeSession manualSize';
+            var className = nowPlayingItem ? 'card activeSession' : 'card activeSession';
 
             if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                 className += ' transcodingSession';
@@ -322,7 +322,7 @@
 
             html += '</div>';
 
-            html += '<div class="posterItemOverlayTarget">';
+            html += '<div class="cardOverlayTarget">';
 
             html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
             html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
@@ -978,7 +978,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             showOverlayTimeout = null;
         }
 
-        $('.posterItemOverlayTarget:visible', this).each(function () {
+        $('.cardOverlayTarget:visible', this).each(function () {
 
             var elem = this;
 
@@ -990,7 +990,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         });
 
-        $('.posterItemOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
+        $('.cardOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
 
             $(this).hide();
 
@@ -1005,7 +1005,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
                 return;
             }
 
-            var innerElem = $('.posterItemOverlayTarget', elem);
+            var innerElem = $('.cardOverlayTarget', elem);
 
             innerElem.show().each(function () {
 
