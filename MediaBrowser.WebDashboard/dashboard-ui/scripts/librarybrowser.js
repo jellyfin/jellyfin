@@ -759,7 +759,7 @@
 
             var atts = [];
 
-            var itemCommands = LibraryBrowser.getItemCommands(item);
+            var itemCommands = LibraryBrowser.getItemCommands(item, options);
 
             atts.push('data-itemid="' + item.Id + '"');
             atts.push('data-commands="' + itemCommands.join(',') + '"');
@@ -784,7 +784,7 @@
             return html;
         },
 
-        getItemCommands: function (item) {
+        getItemCommands: function (item, options) {
 
             var itemCommands = [];
 
@@ -809,7 +809,12 @@
             }
 
             if (PlaylistManager.supportsPlaylists(item)) {
-                itemCommands.push('playlist');
+
+                if (options.showRemoveFromPlaylist) {
+                    itemCommands.push('removefromplaylist');
+                } else {
+                    itemCommands.push('playlist');
+                }
             }
 
             return itemCommands;

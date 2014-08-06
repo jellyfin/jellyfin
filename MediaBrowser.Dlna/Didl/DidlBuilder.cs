@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Dlna.Didl
 {
@@ -615,9 +617,11 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             AddImageResElement(item, element, 4096, 4096, "jpg");
+            AddImageResElement(item, element, 4096, 4096, "png");
             AddImageResElement(item, element, 1024, 768, "jpg");
             AddImageResElement(item, element, 640, 480, "jpg");
             AddImageResElement(item, element, 160, 160, "jpg");
+            AddImageResElement(item, element, 160, 160, "png");
         }
 
         private void AddImageResElement(BaseItem item, XmlElement element, int maxWidth, int maxHeight, string format)
@@ -640,13 +644,21 @@ namespace MediaBrowser.Dlna.Didl
             var width = albumartUrlInfo.Width;
             var height = albumartUrlInfo.Height;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader(format, width, height);
+            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader(format, width, height, imageInfo.IsDirectStream);
 
             res.SetAttribute("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 MimeTypes.GetMimeType("file." + format),
                 contentFeatures
                 ));
+
+            res.SetAttribute("colorDepth", "24");
+
+            if (imageInfo.IsDirectStream)
+            {
+                // TODO: Add file size
+                //res.SetAttribute("size", imageInfo.Size.Value.ToString(_usCulture));
+            }
 
             if (width.HasValue && height.HasValue)
             {
@@ -722,7 +734,8 @@ namespace MediaBrowser.Dlna.Didl
                 Type = type,
                 ImageTag = tag,
                 Width = width,
-                Height = height
+                Height = height,
+                File = imageInfo.Path
             };
         }
 
@@ -734,6 +747,10 @@ namespace MediaBrowser.Dlna.Didl
 
             internal int? Width;
             internal int? Height;
+
+            internal bool IsDirectStream;
+
+            internal string File;
         }
 
         class ImageUrlInfo
@@ -758,6 +775,8 @@ namespace MediaBrowser.Dlna.Didl
             var width = info.Width;
             var height = info.Height;
 
+            info.IsDirectStream = false;
+
             if (width.HasValue && height.HasValue)
             {
                 var newSize = DrawingUtils.Resize(new ImageSize
@@ -769,6 +788,18 @@ namespace MediaBrowser.Dlna.Didl
 
                 width = Convert.ToInt32(newSize.Width);
                 height = Convert.ToInt32(newSize.Height);
+
+                var inputFormat = (Path.GetExtension(info.File) ?? string.Empty)
+                    .TrimStart('.')
+                    .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+
+                var normalizedFormat = format
+                    .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+
+                if (string.Equals(inputFormat, normalizedFormat, StringComparison.OrdinalIgnoreCase))
+                {
+                    info.IsDirectStream = maxWidth >= width.Value && maxHeight >= height.Value;
+                }
             }
 
             return new ImageUrlInfo

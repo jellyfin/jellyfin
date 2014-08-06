@@ -133,14 +133,21 @@ namespace MediaBrowser.Model.Dlna
 
         public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl)
         {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException(baseUrl);
+            }
+
+            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+
             if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
             {
-                return null;
+                return list;
             }
 
             if (!SubtitleStreamIndex.HasValue)
             {
-                return null;
+                return list;
             }
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
@@ -155,8 +162,6 @@ namespace MediaBrowser.Model.Dlna
                 StringHelper.ToStringCultureInvariant(SubtitleStreamIndex.Value),
                 StringHelper.ToStringCultureInvariant(startPositionTicks),
                 SubtitleFormat);
-
-            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
             foreach (MediaStream stream in MediaSource.MediaStreams)
             {

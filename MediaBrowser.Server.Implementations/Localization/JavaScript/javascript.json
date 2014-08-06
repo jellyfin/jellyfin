@@ -334,5 +334,6 @@
     "OptionNewPlaylist":  "New playlist...",
     "MessageAddedToPlaylistSuccess":  "Ok",
 	"ButtonViewSeriesRecording": "View series recording",
-	"ValueOriginalAirDate": "Original air date: {0}"
+	"ValueOriginalAirDate": "Original air date: {0}",
+    "ButtonRemoveFromPlaylist":  "Remove from playlist"
 }

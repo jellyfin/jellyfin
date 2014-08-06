@@ -190,9 +190,29 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public Task RemoveFromPlaylist(string playlistId, IEnumerable<int> indeces)
+        public async Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
         {
-            throw new NotImplementedException();
+            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
+
+            if (playlist == null)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var children = playlist.LinkedChildren.ToList();
+
+            var idList = entryIds.ToList();
+
+            var removals = children.Where(i => idList.Contains(i.Id));
+
+            playlist.LinkedChildren = children.Except(removals)
+                .ToList();
+
+            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            await playlist.RefreshMetadata(new MetadataRefreshOptions
+            {
+                ForceSave = true
+            }, CancellationToken.None).ConfigureAwait(false);
         }
 
         public Folder GetPlaylistsFolder(string userId)
