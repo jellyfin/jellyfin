@@ -13,6 +13,9 @@ namespace MediaBrowser.Controller.Entities
         public string ItemType { get; set; }
         public int? ItemYear { get; set; }
 
+        [IgnoreDataMember]
+        public string Id { get; set; }
+
         /// <summary>
         /// Serves as a cache
         /// </summary>
@@ -26,6 +29,11 @@ namespace MediaBrowser.Controller.Entities
                 Path = item.Path,
                 Type = LinkedChildType.Manual
             };
+        }
+
+        public LinkedChild()
+        {
+            Id = Guid.NewGuid().ToString("N");
         }
     }
 
