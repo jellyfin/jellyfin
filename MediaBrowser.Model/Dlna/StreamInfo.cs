@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
-        public string ToSubtitleUrl(string baseUrl)
+        public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl)
         {
             if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
             {
@@ -148,13 +148,31 @@ namespace MediaBrowser.Model.Dlna
                 ? 0
                 : StartPositionTicks;
 
-            return string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}", 
+            string url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
                 baseUrl,
                 ItemId,
                 MediaSourceId,
                 StringHelper.ToStringCultureInvariant(SubtitleStreamIndex.Value),
                 StringHelper.ToStringCultureInvariant(startPositionTicks),
                 SubtitleFormat);
+
+            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+
+            foreach (MediaStream stream in MediaSource.MediaStreams)
+            {
+                if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
+                {
+                    list.Add(new SubtitleStreamInfo
+                    {
+                        Url = url,
+                        IsForced = stream.IsForced,
+                        Language = stream.Language,
+                        Name = stream.Language ?? "Unknown"
+                    });
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -170,7 +188,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         foreach (MediaStream i in MediaSource.MediaStreams)
                         {
-                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio) 
+                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio)
                                 return i;
                         }
                         return null;
@@ -481,5 +499,13 @@ namespace MediaBrowser.Model.Dlna
         /// The HLS
         /// </summary>
         Hls = 3
+    }
+
+    public class SubtitleStreamInfo
+    {
+        public string Url { get; set; }
+        public string Language { get; set; }
+        public string Name { get; set; }
+        public bool IsForced { get; set; }
     }
 }

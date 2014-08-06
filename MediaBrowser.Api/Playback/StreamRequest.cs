@@ -1,4 +1,5 @@
-﻿using ServiceStack;
+﻿using MediaBrowser.Model.Dlna;
+using ServiceStack;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -160,6 +161,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "Level", Description = "Optional. Specify a level for the h264 profile, e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Level { get; set; }
 
+        [ApiMember(Name = "SubtitleDeliveryMethod", Description = "Optional. Specify the subtitle delivery method.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SubtitleDeliveryMethod SubtitleMethod { get; set; }
+        
         /// <summary>
         /// Gets a value indicating whether this instance has fixed resolution.
         /// </summary>

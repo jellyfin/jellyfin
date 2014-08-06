@@ -183,19 +183,34 @@ namespace MediaBrowser.Dlna.ContentDirectory
             //didl.SetAttribute("xmlns:sec", NS_SEC);
             result.AppendChild(didl);
 
-            var folder = (Folder)GetItemFromObjectId(id, user);
+            var item = GetItemFromObjectId(id, user);
 
-            var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
-
-            var totalCount = childrenResult.TotalRecordCount;
+            var totalCount = 0;
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
-                result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter));
+                var folder = item as Folder;
+
+                if (folder == null)
+                {
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, item, deviceId, filter));
+                }
+                else
+                {
+                    var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                    totalCount = childrenResult.TotalRecordCount;
+
+                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter));
+                }
                 provided++;
             }
             else
             {
+                var folder = (Folder)item;
+
+                var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                totalCount = childrenResult.TotalRecordCount;
+
                 provided = childrenResult.Items.Length;
 
                 foreach (var i in childrenResult.Items)
