@@ -106,8 +106,7 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
-  <SoftSubtitleProfiles>
-    <SubtitleProfile format="smi" />
-  </SoftSubtitleProfiles>
-  <ExternalSubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="smi" method="External" />
+  </SubtitleProfiles>
 </Profile>

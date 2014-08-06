@@ -68,8 +68,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles />
-  <SoftSubtitleProfiles>
-    <SubtitleProfile format="srt" />
-  </SoftSubtitleProfiles>
-  <ExternalSubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="External" />
+  </SubtitleProfiles>
 </Profile>

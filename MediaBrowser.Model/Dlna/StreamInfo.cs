@@ -476,6 +476,10 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// The external
         /// </summary>
-        External = 2
+        External = 2,
+        /// <summary>
+        /// The HLS
+        /// </summary>
+        Hls = 3
     }
 }
