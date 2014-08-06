@@ -101,7 +101,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
 
-                streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+               streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
                {
                    ItemId = video.Id.ToString("N"),
                    MediaSources = sources,
@@ -137,6 +137,23 @@ namespace MediaBrowser.Dlna.Didl
             {
                 AddVideoResource(container, video, deviceId, filter, contentFeature, streamInfo);
             }
+
+            foreach (var subtitle in streamInfo.GetExternalSubtitles(_serverAddress))
+            {
+                AddSubtitleElement(container, subtitle);
+            }
+        }
+
+        private void AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
+        {
+            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+            res.InnerText = info.Url;
+
+            // TODO: Remove this hard-coding
+            res.SetAttribute("protocolInfo", "http-get:*:text/srt:*");
+
+            container.AppendChild(res);
         }
 
         private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)

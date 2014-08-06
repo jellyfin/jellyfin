@@ -1642,7 +1642,10 @@ namespace MediaBrowser.Api.Playback
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
-                return false;
+                if (request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+                {
+                    return false;
+                }
             }
 
             // Source and target codecs must match

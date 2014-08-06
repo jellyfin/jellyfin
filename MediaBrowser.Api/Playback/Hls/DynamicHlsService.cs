@@ -25,8 +25,6 @@ namespace MediaBrowser.Api.Playback.Hls
     {
         public bool EnableAdaptiveBitrateStreaming { get; set; }
 
-        public SubtitleDeliveryMethod SubtitleMethod { get; set; }
-
         public GetMasterHlsVideoStream()
         {
             EnableAdaptiveBitrateStreaming = true;
