@@ -18,6 +18,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "MusicGenre-" + Name;
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself

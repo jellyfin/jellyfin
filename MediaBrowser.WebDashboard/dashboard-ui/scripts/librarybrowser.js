@@ -657,6 +657,33 @@
                     });
 
                 }
+                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.AlbumPrimaryImageTag
+                    });
+
+                }
+                else if (item.AlbumId && item.SeriesPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.SeriesPrimaryImageTag
+                    });
+
+                }
+                else if (item.ParentPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                        type: "Primary",
+                        width: 80,
+                        tag: item.ParentPrimaryImageTag
+                    });
+                }
+
                 if (imgUrl) {
 
                     if (index < 10) {
@@ -732,7 +759,7 @@
 
             var atts = [];
 
-            var itemCommands = LibraryBrowser.getItemCommands(item);
+            var itemCommands = LibraryBrowser.getItemCommands(item, options);
 
             atts.push('data-itemid="' + item.Id + '"');
             atts.push('data-commands="' + itemCommands.join(',') + '"');
@@ -757,7 +784,7 @@
             return html;
         },
 
-        getItemCommands: function (item) {
+        getItemCommands: function (item, options) {
 
             var itemCommands = [];
 
@@ -782,7 +809,12 @@
             }
 
             if (PlaylistManager.supportsPlaylists(item)) {
-                itemCommands.push('playlist');
+
+                if (options.showRemoveFromPlaylist) {
+                    itemCommands.push('removefromplaylist');
+                } else {
+                    itemCommands.push('playlist');
+                }
             }
 
             return itemCommands;

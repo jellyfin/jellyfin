@@ -193,11 +193,12 @@ namespace MediaBrowser.Dlna.Profiles
                }
            };
 
-            SoftSubtitleProfiles = new[]
+            SubtitleProfiles = new[]
             {
                 new SubtitleProfile
                 {
-                    Format = "srt"
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External
                 }
             };
         }

@@ -48,6 +48,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
+            long? endTimeTicks,
             CancellationToken cancellationToken)
         {
             var ms = new MemoryStream();
@@ -56,6 +57,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 // Return the original without any conversions, if possible
                 if (startTimeTicks == 0 && 
+                    !endTimeTicks.HasValue &&
                     string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
                 {
                     await stream.CopyToAsync(ms, 81920, cancellationToken).ConfigureAwait(false);
@@ -64,7 +66,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     var trackInfo = await GetTrackInfo(stream, inputFormat, cancellationToken).ConfigureAwait(false);
 
-                    UpdateStartingPosition(trackInfo, startTimeTicks);
+                    FilterEvents(trackInfo, startTimeTicks, endTimeTicks, false);
 
                     var writer = GetWriter(outputFormat);
 
@@ -81,19 +83,30 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return ms;
         }
 
-        private void UpdateStartingPosition(SubtitleTrackInfo track, long startPositionTicks)
+        private void FilterEvents(SubtitleTrackInfo track, long startPositionTicks, long? endTimeTicks, bool preserveTimestamps)
         {
-            if (startPositionTicks == 0) return;
+            // Drop subs that are earlier than what we're looking for
+            track.TrackEvents = track.TrackEvents
+                .SkipWhile(i => (i.StartPositionTicks - startPositionTicks) < 0 || (i.EndPositionTicks - startPositionTicks) < 0)
+                .ToList();
 
-            foreach (var trackEvent in track.TrackEvents)
+            if (endTimeTicks.HasValue)
             {
-                trackEvent.EndPositionTicks -= startPositionTicks;
-                trackEvent.StartPositionTicks -= startPositionTicks;
+                var endTime = endTimeTicks.Value;
+
+                track.TrackEvents = track.TrackEvents
+                    .TakeWhile(i => i.StartPositionTicks <= endTime)
+                    .ToList();
             }
 
-            track.TrackEvents = track.TrackEvents
-                .SkipWhile(i => i.StartPositionTicks < 0 || i.EndPositionTicks < 0)
-                .ToList();
+            if (!preserveTimestamps)
+            {
+                foreach (var trackEvent in track.TrackEvents)
+                {
+                    trackEvent.EndPositionTicks -= startPositionTicks;
+                    trackEvent.StartPositionTicks -= startPositionTicks;
+                }
+            }
         }
 
         public async Task<Stream> GetSubtitles(string itemId,
@@ -101,6 +114,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int subtitleStreamIndex,
             string outputFormat,
             long startTimeTicks,
+            long? endTimeTicks,
             CancellationToken cancellationToken)
         {
             var subtitle = await GetSubtitleStream(itemId, mediaSourceId, subtitleStreamIndex, cancellationToken)
@@ -110,7 +124,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var inputFormat = subtitle.Item2;
 
-                return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, cancellationToken).ConfigureAwait(false);
+                return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -253,6 +267,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase))
             {
                 return new VttWriter();
+            }
+            if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
+            {
+                return new TtmlWriter();
             }
 
             throw new ArgumentException("Unsupported format: " + format);

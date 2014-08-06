@@ -62,6 +62,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles />
-  <SoftSubtitleProfiles />
-  <ExternalSubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="ttml" method="External" />
+  </SubtitleProfiles>
 </Profile>

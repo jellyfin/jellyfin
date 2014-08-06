@@ -3,6 +3,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.Dlna
     {
         public string ItemId { get; set; }
 
-        public bool IsDirectStream { get; set; }
+        public PlayMethod PlayMethod { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
 
@@ -59,6 +60,7 @@ namespace MediaBrowser.Model.Dlna
         public MediaSourceInfo MediaSource { get; set; }
 
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+        public string SubtitleFormat { get; set; }
 
         public string MediaSourceId
         {
@@ -66,6 +68,11 @@ namespace MediaBrowser.Model.Dlna
             {
                 return MediaSource == null ? null : MediaSource.Id;
             }
+        }
+
+        public bool IsDirectStream
+        {
+            get { return PlayMethod == PlayMethod.DirectStream; }
         }
 
         public string ToUrl(string baseUrl)
@@ -124,6 +131,55 @@ namespace MediaBrowser.Model.Dlna
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
+        public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException(baseUrl);
+            }
+
+            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+
+            if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
+            {
+                return list;
+            }
+
+            if (!SubtitleStreamIndex.HasValue)
+            {
+                return list;
+            }
+
+            // HLS will preserve timestamps so we can just grab the full subtitle stream
+            long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
+                ? 0
+                : StartPositionTicks;
+
+            string url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                baseUrl,
+                ItemId,
+                MediaSourceId,
+                StringHelper.ToStringCultureInvariant(SubtitleStreamIndex.Value),
+                StringHelper.ToStringCultureInvariant(startPositionTicks),
+                SubtitleFormat);
+
+            foreach (MediaStream stream in MediaSource.MediaStreams)
+            {
+                if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
+                {
+                    list.Add(new SubtitleStreamInfo
+                    {
+                        Url = url,
+                        IsForced = stream.IsForced,
+                        Language = stream.Language,
+                        Name = stream.Language ?? "Unknown"
+                    });
+                }
+            }
+
+            return list;
+        }
+
         /// <summary>
         /// Returns the audio stream that will be used
         /// </summary>
@@ -137,7 +193,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         foreach (MediaStream i in MediaSource.MediaStreams)
                         {
-                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio) 
+                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio)
                                 return i;
                         }
                         return null;
@@ -437,16 +493,24 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         Encode = 0,
         /// <summary>
-        /// Internal format is supported natively
-        /// </summary>
-        Direct = 1,
-        /// <summary>
         /// The embed
         /// </summary>
-        Embed = 2,
+        Embed = 1,
         /// <summary>
         /// The external
         /// </summary>
-        External = 3
+        External = 2,
+        /// <summary>
+        /// The HLS
+        /// </summary>
+        Hls = 3
+    }
+
+    public class SubtitleStreamInfo
+    {
+        public string Url { get; set; }
+        public string Language { get; set; }
+        public string Name { get; set; }
+        public bool IsForced { get; set; }
     }
 }

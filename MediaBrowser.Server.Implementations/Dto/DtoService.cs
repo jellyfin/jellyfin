@@ -112,6 +112,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var dto = new BaseItemDto();
 
+            dto.SupportsPlaylists = item.SupportsAddingToPlaylist;
+
             if (fields.Contains(ItemFields.People))
             {
                 AttachPeople(dto, item);
@@ -849,17 +851,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Overview))
             {
-                // TODO: Remove this after a while, since it's been moved to the providers
-                if (item is MusicArtist)
-                {
-                    var strippedOverview = string.IsNullOrEmpty(item.Overview) ? item.Overview : item.Overview.StripHtml();
-
-                    dto.Overview = strippedOverview;
-                }
-                else
-                {
-                    dto.Overview = item.Overview;
-                }
+                dto.Overview = item.Overview;
             }
 
             if (fields.Contains(ItemFields.ShortOverview))

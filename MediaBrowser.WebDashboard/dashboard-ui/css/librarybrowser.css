@@ -45,6 +45,11 @@
         padding-left: .4em !important;
         padding-right: .4em !important;
     }
+
+    .detailSection {
+        margin-left: .25em;
+        margin-right: .25em;
+    }
 }
 
 .libraryPage .currentUsername {

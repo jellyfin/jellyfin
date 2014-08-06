@@ -385,7 +385,7 @@ namespace MediaBrowser.Model.Dlna
                 return ResolveImageJPGFormat(width, height);
 
             if (StringHelper.EqualsIgnoreCase(container, "png"))
-                return MediaFormatProfile.PNG_LRG;
+                return ResolveImagePNGFormat(width, height);
 
             if (StringHelper.EqualsIgnoreCase(container, "gif"))
                 return MediaFormatProfile.GIF_LRG;
@@ -401,7 +401,7 @@ namespace MediaBrowser.Model.Dlna
             if (width.HasValue && height.HasValue)
             {
                 if ((width.Value <= 160) && (height.Value <= 160))
-                    return MediaFormatProfile.JPEG_SM;
+                    return MediaFormatProfile.JPEG_TN;
 
                 if ((width.Value <= 640) && (height.Value <= 480))
                     return MediaFormatProfile.JPEG_SM;
@@ -415,6 +415,17 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return MediaFormatProfile.JPEG_SM;
+        }
+
+        private MediaFormatProfile ResolveImagePNGFormat(int? width, int? height)
+        {
+            if (width.HasValue && height.HasValue)
+            {
+                if ((width.Value <= 160) && (height.Value <= 160))
+                    return MediaFormatProfile.PNG_TN;
+            }
+
+            return MediaFormatProfile.PNG_LRG;
         }
     }
 }

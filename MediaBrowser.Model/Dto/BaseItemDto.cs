@@ -526,6 +526,12 @@ namespace MediaBrowser.Model.Dto
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports playlists].
+        /// </summary>
+        /// <value><c>true</c> if [supports playlists]; otherwise, <c>false</c>.</value>
+        public bool SupportsPlaylists { get; set; }
+
+        /// <summary>
         /// Determines whether the specified type is type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -630,12 +636,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the media.</value>
         public string MediaType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the overview HTML.
-        /// </summary>
-        /// <value>The overview HTML.</value>
-        public string OverviewHtml { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.

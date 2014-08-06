@@ -34,6 +34,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             Tags = new List<string>();
         }
 
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance has embedded image.
         /// </summary>

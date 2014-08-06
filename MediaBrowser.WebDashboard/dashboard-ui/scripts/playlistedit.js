@@ -73,7 +73,8 @@
                         context: 'playlists',
                         sortBy: query.SortBy,
                         showIndex: false,
-                        title: item.Name
+                        title: item.Name,
+                        showRemoveFromPlaylist: true
                     });
                 }
 
@@ -152,6 +153,12 @@
             }
 
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+        });
+
+        $('.itemsContainer', page).on('needsrefresh', function () {
+
+            reloadItems(page);
+
         });
 
     }).on('pagebeforeshow', "#playlistEditorPage", function () {

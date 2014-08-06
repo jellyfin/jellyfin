@@ -90,8 +90,7 @@ namespace MediaBrowser.Model.Dlna
         public CodecProfile[] CodecProfiles { get; set; }
         public ResponseProfile[] ResponseProfiles { get; set; }
 
-        public SubtitleProfile[] SoftSubtitleProfiles { get; set; }
-        public SubtitleProfile[] ExternalSubtitleProfiles { get; set; }
+        public SubtitleProfile[] SubtitleProfiles { get; set; }
       
         public DeviceProfile()
         {
@@ -100,9 +99,6 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfiles = new ResponseProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
-
-            SoftSubtitleProfiles = new SubtitleProfile[] { };
-            ExternalSubtitleProfiles = new SubtitleProfile[] { };
             
             XmlRootAttributes = new XmlAttribute[] { };
             

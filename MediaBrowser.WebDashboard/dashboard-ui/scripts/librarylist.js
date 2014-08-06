@@ -161,6 +161,20 @@
         return false;
     }
 
+    function onRemoveFromPlaylistButtonClick() {
+        
+        var id = this.getAttribute('data-itemid');
+
+        var page = $(this).parents('.page');
+
+        $('.itemsContainer', page).trigger('needsrefresh');
+
+        // Used by the tab menu, not the slide up
+        $('.tapHoldMenu').popup('close');
+
+        return false;
+    }
+
     function onShuffleButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -297,6 +311,10 @@
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
+            if (commands.indexOf('removefromplaylist') != -1) {
+                html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
+            }
+
             html += '</ul>';
 
             html += '</div>';
@@ -316,6 +334,7 @@
             $('.btnShuffle', elem).on('click', onShuffleButtonClick);
             $('.btnPlayTrailer', elem).on('click', onTrailerButtonClick);
             $('.btnAddToPlaylist', elem).on('click', onAddToPlaylistButtonClick);
+            $('.btnRemoveFromPlaylist', elem).on('click', onRemoveFromPlaylistButtonClick);
         });
     }
 
