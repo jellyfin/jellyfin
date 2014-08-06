@@ -1605,6 +1605,8 @@ namespace MediaBrowser.Api.Playback
             {
                 state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
+
+            state.AllMediaStreams = mediaStreams;
         }
 
         private async Task<MediaSourceInfo> GetChannelMediaInfo(string id,

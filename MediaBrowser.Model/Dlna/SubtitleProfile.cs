@@ -9,5 +9,8 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("protocol")]
         public string Protocol { get; set; }
+
+        [XmlAttribute("method")]
+        public SubtitleDeliveryMethod Method { get; set; }
     }
 }

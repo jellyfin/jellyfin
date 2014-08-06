@@ -518,7 +518,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 // See if the device can retrieve the subtitles externally
                 bool supportsSubsExternally = options.Context == EncodingContext.Streaming &&
-                    ContainsSubtitleFormat(options.Profile.ExternalSubtitleProfiles, _serverTextSubtitleOutputs);
+                    ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
 
                 if (supportsSubsExternally)
                 {
@@ -526,7 +526,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // See if the device can retrieve the subtitles externally
-                bool supportsEmbedded = ContainsSubtitleFormat(options.Profile.SoftSubtitleProfiles, _serverTextSubtitleOutputs);
+                bool supportsEmbedded = ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed, _serverTextSubtitleOutputs);
 
                 if (supportsEmbedded)
                 {
@@ -547,11 +547,11 @@ namespace MediaBrowser.Model.Dlna
             return codec;
         }
 
-        private bool ContainsSubtitleFormat(SubtitleProfile[] profiles, string[] formats)
+        private bool ContainsSubtitleFormat(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
         {
             foreach (SubtitleProfile profile in profiles)
             {
-                if (ListHelper.ContainsIgnoreCase(formats, profile.Format))
+                if (method == profile.Method && ListHelper.ContainsIgnoreCase(formats, profile.Format))
                 {
                     return true;
                 }

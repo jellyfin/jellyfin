@@ -38,6 +38,8 @@ namespace MediaBrowser.Api.Playback
 
         public string InputContainer { get; set; }
 
+        public List<MediaStream> AllMediaStreams { get; set; }
+        
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }
@@ -78,6 +80,7 @@ namespace MediaBrowser.Api.Playback
             SupportedAudioCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            AllMediaStreams = new List<MediaStream>();
         }
 
         public string InputAudioSync { get; set; }
