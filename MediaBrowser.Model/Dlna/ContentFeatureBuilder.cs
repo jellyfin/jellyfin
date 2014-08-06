@@ -14,12 +14,13 @@ namespace MediaBrowser.Model.Dlna
 
         public string BuildImageHeader(string container,
             int? width,
-            int? height)
+            int? height,
+            bool isDirectStream)
         {
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetImageOrgOpValue();
 
             // 0 = native, 1 = transcoded
-            const string orgCi = ";DLNA.ORG_CI=0";
+            var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
             DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |

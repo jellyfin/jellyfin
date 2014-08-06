@@ -13,6 +13,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="inputFormat">The input format.</param>
         /// <param name="outputFormat">The output format.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
+        /// <param name="endTimeTicks">The end time ticks.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> ConvertSubtitles(
@@ -20,6 +21,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
+            long? endTimeTicks,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -30,6 +32,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
         /// <param name="outputFormat">The output format.</param>
         /// <param name="startTimeTicks">The start time ticks.</param>
+        /// <param name="endTimeTicks">The end time ticks.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> GetSubtitles(string itemId,
@@ -37,6 +40,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             int subtitleStreamIndex,
             string outputFormat,
             long startTimeTicks,
+            long? endTimeTicks,
             CancellationToken cancellationToken);
 
         /// <summary>

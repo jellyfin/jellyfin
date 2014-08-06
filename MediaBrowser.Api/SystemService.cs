@@ -71,6 +71,8 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public SystemService(IServerApplicationHost appHost, IApplicationPaths appPaths, IFileSystem fileSystem)
         {

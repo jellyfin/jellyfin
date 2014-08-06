@@ -41,6 +41,9 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
         public string Id { get; set; }
+
+        [ApiMember(Name = "EntryIds", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string EntryIds { get; set; }
     }
 
     [Route("/Playlists/{Id}/Items", "GET", Summary = "Gets the original items of a playlist")]
@@ -122,9 +125,9 @@ namespace MediaBrowser.Api
 
         public void Delete(RemoveFromPlaylist request)
         {
-            //var task = _playlistManager.RemoveFromPlaylist(request.Id, request.Ids.Split(',').Select(i => new Guid(i)));
+            var task = _playlistManager.RemoveFromPlaylist(request.Id, request.EntryIds.Split(','));
 
-            //Task.WaitAll(task);
+            Task.WaitAll(task);
         }
 
         public object Get(GetPlaylistItems request)

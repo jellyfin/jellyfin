@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Security;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
@@ -42,17 +43,34 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <returns>Task.</returns>
         public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
+            var playlist = (Playlist)item;
+
             var builder = new StringBuilder();
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes((Playlist)item, builder);
+            if (!string.IsNullOrEmpty(playlist.OwnerUserId))
+            {
+                builder.Append("<OwnerUserId>" + SecurityElement.Escape(playlist.OwnerUserId) + "</OwnerUserId>");
+            }
+
+            if (!string.IsNullOrEmpty(playlist.PlaylistMediaType))
+            {
+                builder.Append("<PlaylistMediaType>" + SecurityElement.Escape(playlist.PlaylistMediaType) + "</PlaylistMediaType>");
+            }
+            
+            XmlSaverHelpers.AddCommonNodes(playlist, builder);
 
             builder.Append("</Item>");
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
+            {
+                "OwnerUserId",
+                "PlaylistMediaType"
+
+            });
         }
 
         /// <summary>

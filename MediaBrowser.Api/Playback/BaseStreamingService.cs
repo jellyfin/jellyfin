@@ -1605,6 +1605,8 @@ namespace MediaBrowser.Api.Playback
             {
                 state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
+
+            state.AllMediaStreams = mediaStreams;
         }
 
         private async Task<MediaSourceInfo> GetChannelMediaInfo(string id,
@@ -1640,7 +1642,10 @@ namespace MediaBrowser.Api.Playback
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
-                return false;
+                if (request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+                {
+                    return false;
+                }
             }
 
             // Source and target codecs must match

@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -551,24 +550,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     };
                 }
 
-                if (!string.IsNullOrEmpty(info.Path))
-                {
-                    item.Path = info.Path;
-                }
-                else if (!string.IsNullOrEmpty(info.Url))
-                {
-                    item.Path = info.Url;
-                }
-
                 isNew = true;
             }
 
             item.RecordingInfo = info;
             item.ServiceName = serviceName;
 
+            var originalPath = item.Path;
+
+            if (!string.IsNullOrEmpty(info.Path))
+            {
+                item.Path = info.Path;
+            }
+            else if (!string.IsNullOrEmpty(info.Url))
+            {
+                item.Path = info.Url;
+            }
+
+            var pathChanged = !string.Equals(originalPath, item.Path);
+
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
-                ForceSave = isNew
+                ForceSave = isNew || pathChanged
 
             }, cancellationToken);
 

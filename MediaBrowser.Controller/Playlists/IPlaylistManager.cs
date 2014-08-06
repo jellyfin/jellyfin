@@ -32,9 +32,9 @@ namespace MediaBrowser.Controller.Playlists
         /// Removes from playlist.
         /// </summary>
         /// <param name="playlistId">The playlist identifier.</param>
-        /// <param name="indeces">The indeces.</param>
+        /// <param name="entryIds">The entry ids.</param>
         /// <returns>Task.</returns>
-        Task RemoveFromPlaylist(string playlistId, IEnumerable<int> indeces);
+        Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds);
 
         /// <summary>
         /// Gets the playlists folder.
