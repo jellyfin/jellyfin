@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
@@ -339,7 +340,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }
             else if (search.SearchType == SearchType.Playlist)
             {
-
+                items = items.OfType<Playlist>();
             }
 
             items = SortItems(items, user, sort);
@@ -495,7 +496,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return items.Where(i =>
             {
                 // Unplayable
-                if (i.LocationType == LocationType.Virtual)
+                if (i.LocationType == LocationType.Virtual && !i.IsFolder)
                 {
                     return false;
                 }
@@ -507,7 +508,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                     return false;
                 }
 
-                // Upnp renderers won't understand these
                 if (i is Game || i is Book)
                 {
                     return false;

@@ -99,7 +99,8 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfiles = new ResponseProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
-            
+            SubtitleProfiles = new SubtitleProfile[] { };
+         
             XmlRootAttributes = new XmlAttribute[] { };
             
             SupportedMediaTypes = "Audio,Photo,Video";

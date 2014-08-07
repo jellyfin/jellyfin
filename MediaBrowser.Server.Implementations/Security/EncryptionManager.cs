@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Security;
 using System;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace MediaBrowser.Server.Implementations.Security
@@ -17,11 +16,7 @@ namespace MediaBrowser.Server.Implementations.Security
         {
             if (value == null) throw new ArgumentNullException("value");
 
-#if __MonoCS__
             return EncryptStringUniversal(value);
-#endif
-
-            return Encoding.Default.GetString(ProtectedData.Protect(Encoding.Default.GetBytes(value), null, DataProtectionScope.LocalMachine));
         }
 
         /// <summary>
@@ -34,11 +29,7 @@ namespace MediaBrowser.Server.Implementations.Security
         {
             if (value == null) throw new ArgumentNullException("value");
 
-#if __MonoCS__
             return DecryptStringUniversal(value);
-#endif
-
-            return Encoding.Default.GetString(ProtectedData.Unprotect(Encoding.Default.GetBytes(value), null, DataProtectionScope.LocalMachine));
         }
 
         private string EncryptStringUniversal(string value)

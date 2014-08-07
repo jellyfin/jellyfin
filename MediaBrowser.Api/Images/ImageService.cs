@@ -341,7 +341,7 @@ namespace MediaBrowser.Api.Images
                     ImageIndex = imageIndex,
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
-                    Size = fileInfo.Length,
+                    Size = info.Length ?? fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
                 };

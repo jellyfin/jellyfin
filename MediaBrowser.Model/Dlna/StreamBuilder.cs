@@ -537,16 +537,6 @@ namespace MediaBrowser.Model.Dlna
             return SubtitleDeliveryMethod.Encode;
         }
 
-        private string NormalizeSubtitleFormat(string codec)
-        {
-            if (StringHelper.EqualsIgnoreCase(codec, "subrip"))
-            {
-                return SubtitleFormat.SRT;
-            }
-
-            return codec;
-        }
-
         private bool ContainsSubtitleFormat(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
         {
             foreach (SubtitleProfile profile in profiles)
