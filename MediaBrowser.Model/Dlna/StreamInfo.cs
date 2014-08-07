@@ -172,7 +172,8 @@ namespace MediaBrowser.Model.Dlna
                         Url = url,
                         IsForced = stream.IsForced,
                         Language = stream.Language,
-                        Name = stream.Language ?? "Unknown"
+                        Name = stream.Language ?? "Unknown",
+                        Format = SubtitleFormat
                     });
                 }
             }
@@ -512,5 +513,6 @@ namespace MediaBrowser.Model.Dlna
         public string Language { get; set; }
         public string Name { get; set; }
         public bool IsForced { get; set; }
+        public string Format { get; set; }
     }
 }

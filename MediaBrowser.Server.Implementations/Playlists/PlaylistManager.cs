@@ -147,11 +147,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return path;
         }
 
-        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
+        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
-            return Playlist.GetPlaylistItems(playlistMediaType, items, user);
+            return Playlist.GetPlaylistItems(playlistMediaType, items, null);
         }
 
         public async Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds)
@@ -166,17 +166,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
             var list = new List<LinkedChild>();
             var itemList = new List<BaseItem>();
 
-            foreach (var itemId in itemIds)
+            var items = GetPlaylistItems(itemIds, playlist.MediaType).ToList();
+
+            foreach (var item in items)
             {
-                var item = _libraryManager.GetItemById(itemId);
-
-                if (item == null)
-                {
-                    throw new ArgumentException("No item exists with the supplied Id");
-                }
-
                 itemList.Add(item);
-
                 list.Add(LinkedChild.Create(item));
             }
 

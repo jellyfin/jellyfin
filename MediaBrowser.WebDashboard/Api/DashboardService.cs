@@ -221,6 +221,16 @@ namespace MediaBrowser.WebDashboard.Api
             var contentType = MimeTypes.GetMimeType(path);
 
             var isHtml = IsHtml(path);
+
+            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted)
+            {
+                if (path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    Request.Response.Redirect("wizardstart.html");
+                    return null;
+                }    
+            }
+
             var localizationCulture = GetLocalizationCulture();
 
             // Don't cache if not configured to do so

@@ -148,14 +148,37 @@ namespace MediaBrowser.Dlna.Didl
 
         private void AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
         {
-            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+            var subtitleProfile = _profile.SubtitleProfiles
+                .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase) && i.Method == SubtitleDeliveryMethod.External);
 
-            res.InnerText = info.Url;
+            if (subtitleProfile == null)
+            {
+                return;
+            }
 
-            // TODO: Remove this hard-coding
-            res.SetAttribute("protocolInfo", "http-get:*:text/srt:*");
+            var subtitleMode = subtitleProfile.DidlMode;
 
-            container.AppendChild(res);
+            if (string.Equals(subtitleMode, "CaptionInfoEx", StringComparison.OrdinalIgnoreCase))
+            {
+                var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
+
+                res.InnerText = info.Url;
+
+                // TODO: attribute needs SEC:
+                res.SetAttribute("type", info.Format.ToLower());
+                container.AppendChild(res);
+            }
+            else
+            {
+                var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+                res.InnerText = info.Url;
+
+                var protocolInfo = string.Format("http-get:*:text/{0}:*", info.Format.ToLower());
+                res.SetAttribute("protocolInfo", protocolInfo);
+
+                container.AppendChild(res);
+            }
         }
 
         private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
@@ -496,7 +519,7 @@ namespace MediaBrowser.Dlna.Didl
             }
             else
             {
-                throw new NotSupportedException();
+                objectClass.InnerText = "object.item";
             }
 
             return objectClass;
@@ -611,7 +634,7 @@ namespace MediaBrowser.Dlna.Didl
             icon.InnerText = iconUrlInfo.Url;
             element.AppendChild(icon);
 
-            if (!_profile.EnableAlbumArtInDidl && !(item is Photo))
+            if (!_profile.EnableAlbumArtInDidl)
             {
                 return;
             }
@@ -656,8 +679,8 @@ namespace MediaBrowser.Dlna.Didl
 
             if (imageInfo.IsDirectStream)
             {
-                // TODO: Add file size
-                //res.SetAttribute("size", imageInfo.Size.Value.ToString(_usCulture));
+                var length = imageInfo.ItemImageInfo.Length ?? new FileInfo(imageInfo.File).Length;
+                res.SetAttribute("size", length.ToString(_usCulture));
             }
 
             if (width.HasValue && height.HasValue)
@@ -735,7 +758,8 @@ namespace MediaBrowser.Dlna.Didl
                 ImageTag = tag,
                 Width = width,
                 Height = height,
-                File = imageInfo.Path
+                File = imageInfo.Path,
+                ItemImageInfo = imageInfo
             };
         }
 
@@ -751,6 +775,8 @@ namespace MediaBrowser.Dlna.Didl
             internal bool IsDirectStream;
 
             internal string File;
+
+            internal ItemImageInfo ItemImageInfo;
         }
 
         class ImageUrlInfo

@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public IEnumerable<BaseItem> GetManageableItems()
         {
-            return GetLinkedChildren();
+            return GetPlaylistItems(MediaType, GetLinkedChildren(), null);
         }
 
         private IEnumerable<BaseItem> GetPlayableItems(User user)
@@ -40,8 +40,12 @@ namespace MediaBrowser.Controller.Playlists
 
                 if (folder != null)
                 {
-                    var items = folder.GetRecursiveChildren(user, true)
-                        .Where(m => !m.IsFolder && string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
+                    var items = user == null
+                        ? folder.GetRecursiveChildren()
+                        : folder.GetRecursiveChildren(user, true);
+
+                    items = items
+                       .Where(m => !m.IsFolder);
 
                     if (!folder.IsPreSorted)
                     {
@@ -52,7 +56,8 @@ namespace MediaBrowser.Controller.Playlists
                 }
 
                 return new[] { i };
-            });
+
+            }).Where(m =>  string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
         }
 
         [IgnoreDataMember]

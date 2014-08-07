@@ -1183,24 +1183,18 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+            var result = await NativeApp.CheckForApplicationUpdate(ApplicationVersion,
+                        ConfigurationManager.CommonConfiguration.SystemUpdateLevel, InstallationManager,
+                        cancellationToken, progress).ConfigureAwait(false);
 
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", null, ApplicationVersion,
-                                                           ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            HasUpdateAvailable = result.IsUpdateAvailable;
 
-            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
-
-            var isUpdateAvailable = versionObject != null && versionObject > ApplicationVersion;
-            HasUpdateAvailable = isUpdateAvailable;
-
-            if (isUpdateAvailable)
+            if (result.IsUpdateAvailable)
             {
-                Logger.Info("New application version is available: {0}", versionObject);
+                Logger.Info("New application version is available: {0}", result.AvailableVersion);
             }
 
-            return versionObject != null ?
-                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
-                new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
+            return result;
         }
 
         /// <summary>

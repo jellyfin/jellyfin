@@ -24,8 +24,9 @@ namespace MediaBrowser.Model.Dlna
 
             DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
+                            DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
-
+            
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
 
@@ -62,16 +63,17 @@ namespace MediaBrowser.Model.Dlna
 
             DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
+                            DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
             if (isDirectStream)
             {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+                flagValue = flagValue | DlnaFlags.ByteBasedSeek;
             }
-            else if (runtimeTicks.HasValue)
-            {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
-            }
+            //else if (runtimeTicks.HasValue)
+            //{
+            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            //}
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));
@@ -120,16 +122,17 @@ namespace MediaBrowser.Model.Dlna
 
             DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
                             DlnaFlags.BackgroundTransferMode |
+                            DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
             if (isDirectStream)
             {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+                flagValue = flagValue | DlnaFlags.ByteBasedSeek;
             }
-            else if (runtimeTicks.HasValue)
-            {
-                //flagValue = flagValue | DlnaFlags.DLNA_ORG_FLAG_TIME_BASED_SEEK;
-            }
+            //else if (runtimeTicks.HasValue)
+            //{
+            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            //}
 
             string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
              DlnaMaps.FlagsToString(flagValue));

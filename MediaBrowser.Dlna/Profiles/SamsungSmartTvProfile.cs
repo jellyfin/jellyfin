@@ -344,7 +344,14 @@ namespace MediaBrowser.Dlna.Profiles
                 new SubtitleProfile
                 {
                     Format = "smi",
-                    Method = SubtitleDeliveryMethod.External
+                    Method = SubtitleDeliveryMethod.External,
+                    DidlMode = "CaptionInfoEx"
+                },
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External,
+                    DidlMode = "CaptionInfoEx"
                 }
             };
         }

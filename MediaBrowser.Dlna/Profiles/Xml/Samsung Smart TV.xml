@@ -107,6 +107,7 @@
     </ResponseProfile>
   </ResponseProfiles>
   <SubtitleProfiles>
-    <SubtitleProfile format="smi" method="External" />
+    <SubtitleProfile format="smi" method="External" didlMode="CaptionInfoEx" />
+    <SubtitleProfile format="srt" method="External" didlMode="CaptionInfoEx" />
   </SubtitleProfiles>
 </Profile>

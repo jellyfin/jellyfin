@@ -1309,7 +1309,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Path = file.FullName,
                     Type = type,
-                    DateModified = FileSystem.GetLastWriteTimeUtc(file)
+                    DateModified = FileSystem.GetLastWriteTimeUtc(file),
+                    Length = ((FileInfo)file).Length
                 });
             }
             else
@@ -1420,11 +1421,14 @@ namespace MediaBrowser.Controller.Entities
                     return null;
                 }
 
+                var info = new FileInfo(path);
+
                 return new ItemImageInfo
                 {
                     Path = path,
-                    DateModified = FileSystem.GetLastWriteTimeUtc(path),
-                    Type = imageType
+                    DateModified = FileSystem.GetLastWriteTimeUtc(info),
+                    Type = imageType,
+                    Length = info.Length
                 };
             }
 

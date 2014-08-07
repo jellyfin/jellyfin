@@ -7,10 +7,11 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("format")]
         public string Format { get; set; }
 
-        [XmlAttribute("protocol")]
-        public string Protocol { get; set; }
-
         [XmlAttribute("method")]
         public SubtitleDeliveryMethod Method { get; set; }
+
+        [XmlAttribute("didlMode")]
+        public string DidlMode { get; set; }
+
     }
 }
