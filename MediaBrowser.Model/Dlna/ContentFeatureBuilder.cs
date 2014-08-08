@@ -15,15 +15,15 @@ namespace MediaBrowser.Model.Dlna
         public string BuildImageHeader(string container,
             int? width,
             int? height,
-            bool isDirectStream)
+            bool isDirectStream,
+            string orgPn = null)
         {
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetImageOrgOpValue();
 
             // 0 = native, 1 = transcoded
             var orgCi = isDirectStream ? ";DLNA.ORG_CI=0" : ";DLNA.ORG_CI=1";
 
-            DlnaFlags flagValue = DlnaFlags.StreamingTransferMode |
-                            DlnaFlags.BackgroundTransferMode |
+            DlnaFlags flagValue = DlnaFlags.BackgroundTransferMode |
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
             
@@ -34,7 +34,10 @@ namespace MediaBrowser.Model.Dlna
                 width,
                 height);
 
-            string orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            if (string.IsNullOrEmpty(orgPn))
+            {
+                orgPn = mediaProfile == null ? null : mediaProfile.OrgPn;
+            }
 
             if (string.IsNullOrEmpty(orgPn))
             {
@@ -66,10 +69,10 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            if (isDirectStream)
-            {
-                flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            }
+            //if (isDirectStream)
+            //{
+            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
+            //}
             //else if (runtimeTicks.HasValue)
             //{
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
@@ -125,10 +128,10 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            if (isDirectStream)
-            {
-                flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            }
+            //if (isDirectStream)
+            //{
+            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
+            //}
             //else if (runtimeTicks.HasValue)
             //{
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;

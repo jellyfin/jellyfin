@@ -123,8 +123,10 @@
             buttonCount++;
         }
 
-        if (currentUser.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
-            html += '<a data-role="button" data-mini="true" data-inline="true" data-icon="edit" data-iconpos="notext" title="' + Globalize.translate('ButtonEdit') + '" href="edititemmetadata.html?id=' + item.Id + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonEdit') + '</button>';
+        var moreCommands = LibraryBrowser.getMoreCommands(item, currentUser);
+
+        if (moreCommands.length) {
+            html += '<button data-role="button" class="btnMoreCommands" data-morecommands="' + moreCommands.join(',') + '" data-itemid="' + item.Id + '" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
             buttonCount++;
         }
 
@@ -149,8 +151,21 @@
         return false;
     }
 
+    function onMoreButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+        var commands = this.getAttribute('data-morecommands').split(',');
+
+        LibraryBrowser.showMoreCommands(this, id, commands);
+
+        // Used by the tab menu, not the slide up
+        $('.tapHoldMenu').popup('close');
+
+        return false;
+    }
+
     function onAddToPlaylistButtonClick() {
-        
+
         var id = this.getAttribute('data-itemid');
 
         PlaylistManager.showPanel([id]);
@@ -162,7 +177,7 @@
     }
 
     function onRemoveFromPlaylistButtonClick() {
-        
+
         var id = this.getAttribute('data-itemid');
 
         var page = $(this).parents('.page');
@@ -495,6 +510,7 @@
                 innerElem.html(getOverlayHtml(item, user, elem, commands)).trigger('create');
 
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
+                $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
             });
 
             innerElem.show().each(function () {
@@ -651,7 +667,7 @@
     }
 
     function addToPlaylist(page) {
-        
+
         var selection = getSelectedItems(page);
 
         if (selection.length < 1) {
@@ -700,7 +716,7 @@
 
         }).join('')).selectmenu('refresh');
 
-        $('.itemsContainer', page).on('itemsrendered', function() {
+        $('.itemsContainer', page).on('itemsrendered', function () {
 
             $('.btnToggleSelections', page).off('click.toggleselections').on('click.toggleselections', function () {
                 toggleSelections(page);

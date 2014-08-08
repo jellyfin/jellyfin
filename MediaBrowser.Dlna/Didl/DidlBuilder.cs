@@ -636,18 +636,26 @@ namespace MediaBrowser.Dlna.Didl
 
             if (!_profile.EnableAlbumArtInDidl)
             {
-                return;
+                if (!(item is Photo) && !(item is Video))
+                {
+                    return;
+                }
             }
 
-            AddImageResElement(item, element, 4096, 4096, "jpg");
-            AddImageResElement(item, element, 4096, 4096, "png");
-            AddImageResElement(item, element, 1024, 768, "jpg");
-            AddImageResElement(item, element, 640, 480, "jpg");
-            AddImageResElement(item, element, 160, 160, "jpg");
-            AddImageResElement(item, element, 160, 160, "png");
+            AddImageResElement(item, element, 4096, 4096, "jpg", "JPEG_LRG");
+            AddImageResElement(item, element, 4096, 4096, "png", "PNG_LRG");
+            AddImageResElement(item, element, 1024, 768, "jpg", "JPEG_MED");
+            AddImageResElement(item, element, 640, 480, "jpg", "JPEG_SM");
+            AddImageResElement(item, element, 160, 160, "jpg", "JPEG_TN");
+            AddImageResElement(item, element, 160, 160, "png", "PNG_TN");
         }
 
-        private void AddImageResElement(BaseItem item, XmlElement element, int maxWidth, int maxHeight, string format)
+        private void AddImageResElement(BaseItem item, 
+            XmlElement element, 
+            int maxWidth, 
+            int maxHeight, 
+            string format, 
+            string org_Pn)
         {
             var imageInfo = GetImageInfo(item);
 
@@ -667,21 +675,14 @@ namespace MediaBrowser.Dlna.Didl
             var width = albumartUrlInfo.Width;
             var height = albumartUrlInfo.Height;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildImageHeader(format, width, height, imageInfo.IsDirectStream);
+            var contentFeatures = new ContentFeatureBuilder(_profile)
+                .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
 
             res.SetAttribute("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 MimeTypes.GetMimeType("file." + format),
                 contentFeatures
                 ));
-
-            res.SetAttribute("colorDepth", "24");
-
-            if (imageInfo.IsDirectStream)
-            {
-                var length = imageInfo.ItemImageInfo.Length ?? new FileInfo(imageInfo.File).Length;
-                res.SetAttribute("size", length.ToString(_usCulture));
-            }
 
             if (width.HasValue && height.HasValue)
             {

@@ -14,7 +14,6 @@ using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -341,7 +340,7 @@ namespace MediaBrowser.Api.Images
                     ImageIndex = imageIndex,
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
-                    Size = info.Length ?? fileInfo.Length,
+                    Size = fileInfo.Length,
                     Width = Convert.ToInt32(size.Width),
                     Height = Convert.ToInt32(size.Height)
                 };
@@ -365,7 +364,21 @@ namespace MediaBrowser.Api.Images
                 _libraryManager.RootFolder :
                 _libraryManager.GetItemById(request.Id);
 
-            return GetImage(request, item);
+            return GetImage(request, item, false);
+        }
+
+        /// <summary>
+        /// Gets the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Head(GetItemImage request)
+        {
+            var item = string.IsNullOrEmpty(request.Id) ?
+                _libraryManager.RootFolder :
+                _libraryManager.GetItemById(request.Id);
+
+            return GetImage(request, item, true);
         }
 
         /// <summary>
@@ -377,7 +390,7 @@ namespace MediaBrowser.Api.Images
         {
             var item = _userManager.Users.First(i => i.Id == request.Id);
 
-            return GetImage(request, item);
+            return GetImage(request, item, false);
         }
 
         public object Get(GetItemByNameImage request)
@@ -387,7 +400,7 @@ namespace MediaBrowser.Api.Images
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
-            return GetImage(request, item);
+            return GetImage(request, item, false);
         }
 
         /// <summary>
@@ -484,10 +497,10 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="item">The item.</param>
+        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="ResourceNotFoundException">
-        /// </exception>
-        public object GetImage(ImageRequest request, IHasImages item)
+        /// <exception cref="ResourceNotFoundException"></exception>
+        public object GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
         {
             var imageInfo = GetImageInfo(request, item);
 
@@ -534,7 +547,8 @@ namespace MediaBrowser.Api.Images
                 supportedImageEnhancers, 
                 contentType, 
                 cacheDuration,
-                responseHeaders)
+                responseHeaders,
+                isHeadRequest)
                 .Result;
         }
 
@@ -544,7 +558,8 @@ namespace MediaBrowser.Api.Images
             List<IImageEnhancer> enhancers,
             string contentType,
             TimeSpan? cacheDuration,
-            IDictionary<string,string> headers)
+            IDictionary<string,string> headers,
+            bool isHeadRequest)
         {
             var cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
@@ -574,7 +589,7 @@ namespace MediaBrowser.Api.Images
 
             var file = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
-            return ResultFactory.GetStaticFileResult(Request, file, contentType, cacheDuration, FileShare.Read, headers);
+            return ResultFactory.GetStaticFileResult(Request, file, contentType, cacheDuration, FileShare.Read, headers, isHeadRequest);
         }
 
         private string GetMimeType(ImageOutputFormat format, string path)

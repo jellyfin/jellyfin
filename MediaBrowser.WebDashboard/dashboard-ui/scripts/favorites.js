@@ -56,7 +56,7 @@
 
                     var href = "favorites.html?sectionid=" + section.id;
 
-                    html += '<a data-role="button" href="' + href + '" data-mini="true" data-inline="true">' + Globalize.translate('ButtonMore') + '</a>';
+                    html += '<a data-role="button" href="' + href + '" data-mini="true" data-inline="true">' + Globalize.translate('ButtonMoreItems') + '</a>';
                     html += '</div>';
                 }
                 html += '</div>';

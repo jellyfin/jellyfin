@@ -65,6 +65,13 @@
             loadForm(page, userId, result);
 
         });
+
+        // See backrops.js for comments on this
+        if ($.browser.msie) {
+            $('.fldEnableBackdrops', page).hide();
+        } else {
+            $('.fldEnableBackdrops', page).show();
+        }
     });
 
     window.WebClientPreferencesPage = {

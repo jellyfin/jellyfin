@@ -223,7 +223,6 @@
 
             html += '<tr>';
 
-            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
             html += LibraryBrowser.getSongHeaderCellHtml('Disc', 'desktopColumn', options.enableColumnSorting);
             html += LibraryBrowser.getSongHeaderCellHtml('#', 'desktopColumn', options.enableColumnSorting);
             html += LibraryBrowser.getSongHeaderCellHtml('Track', '', options.enableColumnSorting, 'Name', options.sortBy, options.sortOrder);
@@ -241,6 +240,8 @@
             html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
             html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
 
+            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
+
             html += '</tr></thead>';
 
             html += '<tbody>';
@@ -250,10 +251,6 @@
                 var item = items[i];
 
                 html += '<tr>';
-
-                html += '<td class="detailTableButtonsCell">';
-                html += '<button class="btnPlay" data-icon="play" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', false, \'Audio\');" data-inline="true" title="Play">Play</button>';
-                html += '</td>';
 
                 html += '<td class="desktopColumn">' + (item.ParentIndexNumber || "") + '</td>';
                 html += '<td class="desktopColumn">' + (item.IndexNumber || "") + '</td>';
@@ -297,6 +294,10 @@
 
                 html += '<td class="desktopColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
 
+                html += '<td class="detailTableButtonsCell">';
+                html += '<button class="btnPlay" data-icon="ellipsis-v" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', false, \'Audio\', null, true);" data-inline="true" title="Play">Play</button>';
+                html += '</td>';
+
                 html += '</tr>';
             }
 
@@ -323,7 +324,7 @@
             return html;
         },
 
-        showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
+        showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
                 MediaController.play(itemId);
@@ -335,7 +336,7 @@
             var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
-            html += '<li data-role="list-divider">Play Menu</li>';
+            html += '<li data-role="list-divider">Menu</li>';
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
 
@@ -355,6 +356,10 @@
                 html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
             }
 
+            if (showAddToPlaylist) {
+                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">Add to playlist</a></li>';
+            }
+
             html += '</ul>';
 
             html += '</div>';
@@ -370,6 +375,54 @@
 
         closePlayMenu: function () {
             $('.playFlyout').popup("close").remove();
+        },
+
+        getMoreCommands: function (item, user) {
+
+            var commands = [];
+
+            if (PlaylistManager.supportsPlaylists(item)) {
+                commands.push('playlist');
+            }
+
+            if (user.Configuration.IsAdministrator) {
+                if (item.Type != "Recording" && item.Type != "Program") {
+                    commands.push('edit');
+                }
+            }
+
+            return commands;
+        },
+
+        showMoreCommands: function (positionTo, itemId, commands) {
+
+            $('.playFlyout').popup("close").remove();
+
+            var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
+
+            html += '<ul data-role="listview" style="min-width: 180px;">';
+            html += '<li data-role="list-divider">Menu</li>';
+
+            if (commands.indexOf('playlist') != -1) {
+                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
+            }
+
+            if (commands.indexOf('edit') != -1) {
+                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">Edit metadata</a></li>';
+                html += '<li><a href="edititemimages.html?id=' + itemId + '">Edit images</a></li>';
+            }
+
+            html += '</ul>';
+
+            html += '</div>';
+
+            $($.mobile.activePage).append(html);
+
+            $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+
+                $(this).off("popupafterclose").remove();
+
+            }).parents(".ui-popup-container").css("margin-left", 55);
         },
 
         getHref: function (item, context, topParentId) {

@@ -28,8 +28,6 @@
 
             reloadFromItem(page, item);
         });
-
-        $('.btnEdit', page).attr('href', "edititemmetadata.html?id=" + id);
     }
 
     function reloadFromItem(page, item) {
@@ -50,13 +48,6 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
             LibraryBrowser.renderDetailPageBackdrop(page, item);
-
-            if (user.Configuration.IsAdministrator) {
-                $('.btnEdit', page).removeClass('hide');
-
-            } else {
-                $('.btnEdit', page).addClass('hide');
-            }
 
             var externalPlayUrl = getExternalPlayUrl(item);
             $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
@@ -103,6 +94,12 @@
                 $('.splitVersionContainer', page).show();
             } else {
                 $('.splitVersionContainer', page).hide();
+            }
+
+            if (LibraryBrowser.getMoreCommands(item, user).length) {
+                $('.btnMoreCommands', page).show();
+            } else {
+                $('.btnMoreCommands', page).show();
             }
         });
 
@@ -1492,6 +1489,16 @@
         $('.btnSync', page).on('click', function () {
 
             SyncManager.showMenu([currentItem]);
+        });
+
+        $('.btnMoreCommands', page).on('click', function () {
+
+            var button = this;
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+            });
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

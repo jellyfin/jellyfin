@@ -964,5 +964,6 @@
 	"OptionReportBooks": "Books",
 	"OptionReportArtists": "Artists",
 	"OptionReportAlbums": "Albums",
-	"OptionReportAdultVideos": "Adult videos"
+    "OptionReportAdultVideos": "Adult videos",
+    "ButtonMore":  "More"
 }
