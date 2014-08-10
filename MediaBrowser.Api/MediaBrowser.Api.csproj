@@ -118,10 +118,11 @@
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SearchService.cs" />
-    <Compile Include="SessionsService.cs" />
+    <Compile Include="Session\SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
     <Compile Include="Sync\SyncService.cs" />
-    <Compile Include="SystemService.cs" />
+    <Compile Include="System\ActivityLogService.cs" />
+    <Compile Include="System\SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
@@ -139,8 +140,8 @@
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideosService.cs" />
-    <Compile Include="WebSocket\SessionInfoWebSocketListener.cs" />
-    <Compile Include="WebSocket\SystemInfoWebSocketListener.cs" />
+    <Compile Include="Session\SessionInfoWebSocketListener.cs" />
+    <Compile Include="System\SystemInfoWebSocketListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

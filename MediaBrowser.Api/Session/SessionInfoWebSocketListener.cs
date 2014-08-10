@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Api.WebSocket
+namespace MediaBrowser.Api.Session
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener

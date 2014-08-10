@@ -195,7 +195,7 @@ namespace MediaBrowser.Api
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
             var isDashboard = string.Equals(authInfo.Client, "Dashboard", StringComparison.OrdinalIgnoreCase);
 
-            if ((Request.IsLocal && isDashboard) || 
+            if ((Request.IsLocal && isDashboard) ||
                 !_config.Configuration.IsStartupWizardCompleted)
             {
                 return Get(new GetUsers
@@ -327,7 +327,7 @@ namespace MediaBrowser.Api
             var revokeTask = _sessionMananger.RevokeUserTokens(user.Id.ToString("N"));
 
             Task.WaitAll(revokeTask);
-            
+
             var task = _userManager.DeleteUser(user);
 
             Task.WaitAll(task);
@@ -374,8 +374,17 @@ namespace MediaBrowser.Api
                 auth.DeviceId = "Unknown device id";
             }
 
-            var result = _sessionMananger.AuthenticateNewSession(request.Username, request.Password, auth.Client, auth.Version,
-                        auth.DeviceId, auth.Device, Request.RemoteIp, Request.IsLocal).Result;
+            var result = _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+            {
+                App = auth.Client,
+                AppVersion = auth.Version,
+                DeviceId = auth.DeviceId,
+                DeviceName = auth.Device,
+                Password = request.Password,
+                RemoteEndPoint = Request.RemoteIp,
+                Username = request.Username
+
+            }, Request.IsLocal).Result;
 
             return ToOptimizedResult(result);
         }
@@ -457,8 +466,8 @@ namespace MediaBrowser.Api
                 Task.WaitAll(revokeTask);
             }
 
-            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? 
-                _userManager.UpdateUser(user) : 
+            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
+                _userManager.UpdateUser(user) :
                 _userManager.RenameUser(user, dtoUser.Name);
 
             Task.WaitAll(task);

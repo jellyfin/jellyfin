@@ -23,7 +23,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         public void Run()
         {
             _notificationsRepo.NotificationAdded += _notificationsRepo_NotificationAdded;
-            _notificationsRepo.NotificationUpdated += _notificationsRepo_NotificationUpdated;
 
             _notificationsRepo.NotificationsMarkedRead += _notificationsRepo_NotificationsMarkedRead;
         }
@@ -40,13 +39,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _serverManager.SendWebSocketMessage("NotificationsMarkedRead", msg);
         }
 
-        void _notificationsRepo_NotificationUpdated(object sender, NotificationUpdateEventArgs e)
-        {
-            var msg = e.Notification.UserId + "|" + e.Notification.Id;
-
-            _serverManager.SendWebSocketMessage("NotificationUpdated", msg);
-        }
-
         void _notificationsRepo_NotificationAdded(object sender, NotificationUpdateEventArgs e)
         {
             var msg = e.Notification.UserId + "|" + e.Notification.Id;
@@ -57,7 +49,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         public void Dispose()
         {
             _notificationsRepo.NotificationAdded -= _notificationsRepo_NotificationAdded;
-            _notificationsRepo.NotificationUpdated -= _notificationsRepo_NotificationUpdated;
         }
     }
 }

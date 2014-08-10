@@ -623,7 +623,7 @@ namespace MediaBrowser.Model.ApiClient
         Task ReportPlaybackStoppedAsync(PlaybackStopInfo info);
 
         /// <summary>
-        /// Instructs antoher client to browse to a library item.
+        /// Instructs another client to browse to a library item.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
         /// <param name="itemId">The id of the item to browse to.</param>

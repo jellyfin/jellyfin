@@ -13,4 +13,9 @@
         /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
         bool IsEnabled { get; }
     }
+
+    public interface IScheduledTaskActivityLog
+    {
+        bool IsActivityLogged { get; }
+    }
 }

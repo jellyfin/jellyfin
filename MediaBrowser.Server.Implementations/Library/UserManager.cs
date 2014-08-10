@@ -48,6 +48,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The user repository.</value>
         private IUserRepository UserRepository { get; set; }
+        public event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
         private readonly IXmlSerializer _xmlSerializer;
 
@@ -390,7 +391,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <param name="newPassword">The new password.</param>
         /// <returns>Task.</returns>
-        public Task ChangePassword(User user, string newPassword)
+        public async Task ChangePassword(User user, string newPassword)
         {
             if (user == null)
             {
@@ -399,7 +400,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             user.Password = string.IsNullOrEmpty(newPassword) ? string.Empty : GetSha1String(newPassword);
 
-            return UpdateUser(user);
+            await UpdateUser(user).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
         }
 
         /// <summary>

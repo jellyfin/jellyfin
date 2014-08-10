@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Api
+namespace MediaBrowser.Api.Session
 {
     /// <summary>
     /// Class GetSessions

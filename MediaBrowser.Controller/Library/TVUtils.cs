@@ -269,7 +269,7 @@ namespace MediaBrowser.Controller.Library
 
                 if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 {
-                    logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
+                    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
                     continue;
                 }
 

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Providers;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,16 @@ namespace MediaBrowser.Controller.Subtitles
 {
     public interface ISubtitleManager
     {
+        /// <summary>
+        /// Occurs when [subtitle download failure].
+        /// </summary>
+        event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
+
+        /// <summary>
+        /// Occurs when [subtitles downloaded].
+        /// </summary>
+        event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -31,7 +42,7 @@ namespace MediaBrowser.Controller.Subtitles
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{RemoteSubtitleInfo}}.</returns>
-        Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request, 
+        Task<IEnumerable<RemoteSubtitleInfo>> SearchSubtitles(SubtitleSearchRequest request,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -41,8 +52,8 @@ namespace MediaBrowser.Controller.Subtitles
         /// <param name="subtitleId">The subtitle identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task DownloadSubtitles(Video video, 
-            string subtitleId, 
+        Task DownloadSubtitles(Video video,
+            string subtitleId,
             CancellationToken cancellationToken);
 
         /// <summary>

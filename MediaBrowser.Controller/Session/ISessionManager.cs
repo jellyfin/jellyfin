@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
 using System;
@@ -46,6 +47,16 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
+
+        /// <summary>
+        /// Occurs when [authentication failed].
+        /// </summary>
+        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
+
+        /// <summary>
+        /// Occurs when [authentication succeeded].
+        /// </summary>
+        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
         
         /// <summary>
         /// Gets the sessions.
@@ -211,23 +222,10 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="appVersion">The application version.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="request">The request.</param>
         /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
-        Task<AuthenticationResult> AuthenticateNewSession(string username, 
-            string password, 
-            string clientType, 
-            string appVersion, 
-            string deviceId, 
-            string deviceName, 
-            string remoteEndPoint,
-            bool isLocal);
+        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request, bool isLocal);
 
         /// <summary>
         /// Reports the capabilities.

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncRepository : ISyncRepository
+    public class SyncRepository : ISyncRepository, IDisposable
     {
         private IDbConnection _connection;
         private readonly ILogger _logger;
@@ -422,8 +422,50 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             info.TargetId = reader.GetString(5);
-            
+
             return info;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private readonly object _disposeLock = new object();
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                try
+                {
+                    lock (_disposeLock)
+                    {
+                        if (_connection != null)
+                        {
+                            if (_connection.IsOpen())
+                            {
+                                _connection.Close();
+                            }
+
+                            _connection.Dispose();
+                            _connection = null;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing database", ex);
+                }
+            }
         }
     }
 }

@@ -59,6 +59,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\ActivityLogEntry.cs" />
     <Compile Include="ApiClient\HttpResponseEventArgs.cs" />
     <Compile Include="ApiClient\IApiClient.cs" />
     <Compile Include="ApiClient\ApiClientExtensions.cs" />
@@ -99,7 +100,7 @@
     <Compile Include="Configuration\PathSubstitution.cs" />
     <Compile Include="Notifications\SendToUserType.cs" />
     <Compile Include="Configuration\ServerConfiguration.cs" />
-    <Compile Include="Configuration\SubtitleOptions.cs" />
+    <Compile Include="Providers\SubtitleOptions.cs" />
     <Compile Include="Configuration\UnratedItem.cs" />
     <Compile Include="Dlna\AudioOptions.cs" />
     <Compile Include="Dlna\CodecProfile.cs" />

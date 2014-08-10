@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -12,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -45,8 +48,15 @@ namespace MediaBrowser.Providers.MediaInfo
             get { return "Library"; }
         }
 
+        private SubtitleOptions GetOptions()
+        {
+            return _config.GetConfiguration<SubtitleOptions>("subtitles");
+        }
+
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            var options = GetOptions();
+
             var videos = _libraryManager.RootFolder
                 .RecursiveChildren
                 .OfType<Video>()
@@ -57,9 +67,9 @@ namespace MediaBrowser.Providers.MediaInfo
                         return false;
                     }
 
-                    return (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+                    return (options.DownloadEpisodeSubtitles &&
                             i is Episode) ||
-                           (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
+                           (options.DownloadMovieSubtitles &&
                             i is Movie);
                 })
                 .ToList();
@@ -70,7 +80,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 try
                 {
-                    await DownloadSubtitles(video, cancellationToken).ConfigureAwait(false);
+                    await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -86,11 +96,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private async Task DownloadSubtitles(Video video, CancellationToken cancellationToken)
+        private async Task DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
         {
-            if ((_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+            if ((options.DownloadEpisodeSubtitles &&
                 video is Episode) ||
-                (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
+                (options.DownloadMovieSubtitles &&
                 video is Movie))
             {
                 var mediaStreams = video.GetMediaSources(false).First().MediaStreams;
@@ -103,9 +113,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     .DownloadSubtitles(video,
                     currentStreams,
                     externalSubtitleStreams,
-                    _config.Configuration.SubtitleOptions.SkipIfGraphicalSubtitlesPresent,
-                    _config.Configuration.SubtitleOptions.SkipIfAudioTrackMatches,
-                    _config.Configuration.SubtitleOptions.DownloadLanguages,
+                    options.SkipIfGraphicalSubtitlesPresent,
+                    options.SkipIfAudioTrackMatches,
+                    options.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
                 // Rescan

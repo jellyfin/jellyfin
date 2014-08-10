@@ -4,7 +4,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Api.WebSocket
+namespace MediaBrowser.Api.System
 {
     /// <summary>
     /// Class SystemInfoWebSocketListener

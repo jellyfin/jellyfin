@@ -207,46 +207,6 @@ namespace MediaBrowser.Server.Implementations.Notifications
         }
 
         /// <summary>
-        /// Gets the notification.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Notification.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// id
-        /// or
-        /// userId
-        /// </exception>
-        public Notification GetNotification(string id, string userId)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("id");
-            }
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new ArgumentNullException("userId");
-            }
-
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId where Id=@Id And UserId = @UserId";
-
-                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = new Guid(id);
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(userId);
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
-                {
-                    if (reader.Read())
-                    {
-                        return GetNotification(reader);
-                    }
-                }
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets the level.
         /// </summary>
         /// <param name="reader">The reader.</param>
@@ -285,32 +245,6 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in NotificationAdded event handler", ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the notification.
-        /// </summary>
-        /// <param name="notification">The notification.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task UpdateNotification(Notification notification, CancellationToken cancellationToken)
-        {
-            await ReplaceNotification(notification, cancellationToken).ConfigureAwait(false);
-
-            if (NotificationUpdated != null)
-            {
-                try
-                {
-                    NotificationUpdated(this, new NotificationUpdateEventArgs
-                    {
-                        Notification = notification
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in NotificationUpdated event handler", ex);
                 }
             }
         }

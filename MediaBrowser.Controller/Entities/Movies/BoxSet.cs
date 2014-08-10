@@ -102,17 +102,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             var totalItems = items.Count;
             var percentages = new Dictionary<Guid, double>(totalItems);
 
-            var tasks = new List<Task>();
-
             // Refresh songs
             foreach (var item in items)
             {
-                if (tasks.Count >= 3)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
                 var innerProgress = new ActionableProgress<double>();
 
@@ -132,12 +124,8 @@ namespace MediaBrowser.Controller.Entities.Movies
                 });
 
                 // Avoid implicitly captured closure
-                var taskChild = item;
-                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                await RefreshItem(item, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            tasks.Clear();
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);

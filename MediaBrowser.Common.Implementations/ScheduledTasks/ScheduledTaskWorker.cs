@@ -547,6 +547,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             if (ex != null)
             {
                 result.ErrorMessage = ex.Message;
+                result.LongErrorMessage = ex.StackTrace;
             }
 
             var path = GetHistoryFilePath();

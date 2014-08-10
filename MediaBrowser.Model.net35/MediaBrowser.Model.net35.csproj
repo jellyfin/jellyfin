@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\mediabrowser.model\activity\ActivityLogEntry.cs">
+      <Link>Activity\ActivityLogEntry.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\GeneralCommandEventArgs.cs">
       <Link>ApiClient\GeneralCommandEventArgs.cs</Link>
     </Compile>
@@ -135,9 +138,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\SubtitleOptions.cs">
-      <Link>Configuration\SubtitleOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
       <Link>Configuration\SubtitlePlaybackMode.cs</Link>
@@ -684,6 +684,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Providers\RemoteSubtitleInfo.cs">
       <Link>Providers\RemoteSubtitleInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\SubtitleOptions.cs">
+      <Link>Providers\SubtitleOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\AllThemeMediaResult.cs">
       <Link>Querying\AllThemeMediaResult.cs</Link>

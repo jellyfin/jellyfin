@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
-    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask, IScheduledTaskActivityLog
     {
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
@@ -76,6 +76,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         public bool IsEnabled
         {
             get { return GetTvOptions().IsEnabled; }
+        }
+
+        public bool IsActivityLogged
+        {
+            get { return false; }
         }
     }
 }

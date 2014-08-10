@@ -9,6 +9,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Activity;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
@@ -53,6 +54,7 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.Server.Implementations.Activity;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
@@ -340,6 +342,13 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });
                 ServerConfigurationManager.Configuration.TvFileOrganizationOptions = null;
+                saveConfig = true;
+            }
+
+            if (ServerConfigurationManager.Configuration.SubtitleOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("subtitles", ServerConfigurationManager.Configuration.SubtitleOptions);
+                ServerConfigurationManager.Configuration.SubtitleOptions = null;
                 saveConfig = true;
             }
 
@@ -641,6 +650,10 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
+            var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
+            RegisterSingleInstance(activityLogRepo);
+            RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo));
+
             var authContext = new AuthorizationContext();
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
@@ -724,6 +737,15 @@ namespace MediaBrowser.ServerApplication
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<IActivityRepository> GetActivityLogRepository()
+        {
+            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 

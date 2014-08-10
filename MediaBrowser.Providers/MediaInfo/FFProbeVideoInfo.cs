@@ -13,10 +13,12 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -464,6 +466,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        private SubtitleOptions GetOptions()
+        {
+            return _config.GetConfiguration<SubtitleOptions>("subtitles");
+        }
+
         /// <summary>
         /// Adds the external subtitles.
         /// </summary>
@@ -484,9 +491,11 @@ namespace MediaBrowser.Providers.MediaInfo
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (enableSubtitleDownloading && (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+            var subtitleOptions = GetOptions();
+
+            if (enableSubtitleDownloading && (subtitleOptions.DownloadEpisodeSubtitles &&
                 video is Episode) ||
-                (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
+                (subtitleOptions.DownloadMovieSubtitles &&
                 video is Movie))
             {
                 var downloadedLanguages = await new SubtitleDownloader(_logger,
@@ -494,9 +503,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     .DownloadSubtitles(video,
                     currentStreams,
                     externalSubtitleStreams,
-                    _config.Configuration.SubtitleOptions.SkipIfGraphicalSubtitlesPresent,
-                    _config.Configuration.SubtitleOptions.SkipIfAudioTrackMatches,
-                    _config.Configuration.SubtitleOptions.DownloadLanguages,
+                    subtitleOptions.SkipIfGraphicalSubtitlesPresent,
+                    subtitleOptions.SkipIfAudioTrackMatches,
+                    subtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
                 // Rescan
