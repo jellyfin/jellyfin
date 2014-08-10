@@ -408,8 +408,7 @@
             }
 
             if (commands.indexOf('edit') != -1) {
-                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">Edit metadata</a></li>';
-                html += '<li><a href="edititemimages.html?id=' + itemId + '">Edit images</a></li>';
+                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">Edit</a></li>';
             }
 
             html += '</ul>';
@@ -1788,9 +1787,9 @@
             if (showControls) {
 
                 html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
-                html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
+                html += '<button type="button" data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
 
-                html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit >= totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                html += '<button type="button" data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit >= totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
                 html += '</div>';
 
                 if (showLimit !== false) {

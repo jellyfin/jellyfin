@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             try
             {
-                var webSocketContext = ctx.AcceptWebSocket(null, null);
+                var webSocketContext = ctx.AcceptWebSocket(null);
 
                 if (WebSocketHandler != null)
                 {

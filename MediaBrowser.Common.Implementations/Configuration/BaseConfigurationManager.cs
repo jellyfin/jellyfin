@@ -29,6 +29,11 @@ namespace MediaBrowser.Common.Implementations.Configuration
         public event EventHandler<EventArgs> ConfigurationUpdated;
 
         /// <summary>
+        /// Occurs when [configuration updating].
+        /// </summary>
+        public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdating;
+        
+        /// <summary>
         /// Occurs when [named configuration updated].
         /// </summary>
         public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
@@ -217,6 +222,13 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 throw new ArgumentException("Expected configuration type is " + configurationType.Name);
             }
 
+            EventHelper.FireEventIfNotNull(NamedConfigurationUpdating, this, new ConfigurationUpdateEventArgs
+            {
+                Key = key,
+                NewConfiguration = configuration
+
+            }, Logger);
+            
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
             var path = GetConfigurationFile(key);

@@ -13,5 +13,21 @@ namespace MediaBrowser.Model.Events
         /// </summary>
         /// <value>The argument.</value>
         public T Argument { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericEventArgs{T}"/> class.
+        /// </summary>
+        /// <param name="arg">The argument.</param>
+        public GenericEventArgs(T arg)
+        {
+            Argument = arg;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericEventArgs{T}"/> class.
+        /// </summary>
+        public GenericEventArgs()
+        {
+        }
     }
 }

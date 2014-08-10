@@ -27,7 +27,7 @@ namespace MediaBrowser.LocalMetadata
 
             var path = file.FullName;
 
-            await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            //await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -46,7 +46,7 @@ namespace MediaBrowser.LocalMetadata
             }
             finally
             {
-                XmlProviderUtils.XmlParsingResourcePool.Release();
+                //XmlProviderUtils.XmlParsingResourcePool.Release();
             }
 
             return result;

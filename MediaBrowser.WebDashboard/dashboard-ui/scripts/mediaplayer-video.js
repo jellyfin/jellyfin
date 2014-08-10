@@ -981,6 +981,16 @@
             return true;
         };
 
+        // Replace audio version
+        self.cleanup = function (playerElement) {
+
+            if (playerElement.tagName.toLowerCase() == 'video') {
+                currentTimeElement.html('--:--');
+
+                unbindEventsForPlayback();
+            }
+        };
+
         self.playVideo = function (item, mediaSource, startPosition) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -1197,6 +1207,10 @@
 
             }).one("playing.mediaplayerevent", function () {
 
+
+                // For some reason this is firing at the start, so don't bind until playback has begun
+                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+
                 self.onPlaybackStart(this, item, mediaSource);
 
             }).on("pause.mediaplayerevent", function (e) {
@@ -1265,15 +1279,7 @@
 
                 self.toggleFullscreen();
 
-            }).on("ended.playbackstopped", function () {
-
-                currentTimeElement.html('--:--');
-
-                self.onPlaybackStopped.call(this);
-
-                unbindEventsForPlayback();
-
-            }).one('ended.playnext', self.playNextAfterEnded);
+            });
 
             bindEventsForPlayback();
 

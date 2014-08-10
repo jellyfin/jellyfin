@@ -68,6 +68,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\IActivityManager.cs" />
+    <Compile Include="Activity\IActivityRepository.cs" />
     <Compile Include="Channels\ChannelFolderItem.cs" />
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\ChannelItemResult.cs" />
@@ -241,6 +243,7 @@
     <Compile Include="Security\AuthenticationInfoQuery.cs" />
     <Compile Include="Security\IAuthenticationRepository.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
+    <Compile Include="Session\AuthenticationRequest.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemIdentifier.cs" />
@@ -320,6 +323,7 @@
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Sorting\SortExtensions.cs" />
+    <Compile Include="Subtitles\SubtitleDownloadEventArgs.cs" />
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
     <Compile Include="Sync\ICloudSyncProvider.cs" />

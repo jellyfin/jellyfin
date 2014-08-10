@@ -40,6 +40,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}", "GET")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}", "HEAD")]
     [Api(Description = "Gets an item image")]
     public class GetItemImage : ImageRequest
     {

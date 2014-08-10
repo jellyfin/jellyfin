@@ -32,6 +32,22 @@
         DashboardPage.reloadSystemInfo(page);
         DashboardPage.reloadNews(page);
         DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
+
+        $('.activityItems', page).activityLogList();
+    },
+
+    onPageHide: function () {
+
+        var page = this;
+
+        $('.activityItems', page).activityLogList('destroy');
+
+        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        DashboardPage.stopInterval();
+
+        if (DashboardPage.sessionUpdateTimer) {
+            clearInterval(DashboardPage.sessionUpdateTimer);
+        }
     },
 
     renderPaths: function (page, systemInfo) {
@@ -132,16 +148,6 @@
             });
         });
 
-    },
-
-    onPageHide: function () {
-
-        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
-        DashboardPage.stopInterval();
-
-        if (DashboardPage.sessionUpdateTimer) {
-            clearInterval(DashboardPage.sessionUpdateTimer);
-        }
     },
 
     startInterval: function () {
@@ -1040,6 +1046,153 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.playingSession', onHoverIn)
             .on('mouseleave.sessionItemMenu', '.playingSession', onHoverOut);
+    };
+
+})(jQuery, document, window);
+
+
+(function ($, document, window) {
+
+    function getEntryHtml(entry) {
+
+        var html = '';
+
+        html += '<div class="newsItem" style="padding: .5em 0;">';
+
+        html += '<div class="notificationContent" style="display:block;">';
+
+        var date = parseISO8601Date(entry.Date, { toLocal: true });
+
+        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : 'green';
+
+        html += '<div style="margin: 0;color:' + color + ';">' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase() + '</div>';
+
+        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
+        html += entry.Name;
+        html += '</div>';
+
+        entry.ShortOverview = entry.ShortOverview || '&nbsp;';
+
+        if (entry.ShortOverview) {
+
+            html += '<div class="newsItemDescription" style="margin: .5em 0 0;">';
+
+            if (entry.Overview) {
+                html += '<a href="#" class="btnShowOverview" style="text-decoration:none;font-weight:500;">';
+            }
+            html += entry.ShortOverview;
+            if (entry.Overview) {
+                html += '</a>';
+            }
+
+            html += '</div>';
+
+            if (entry.Overview) {
+                html += '<div class="newsItemLongDescription" style="display:none;">' + entry.Overview + '</div>';
+            }
+        }
+
+        //if (notification.Url) {
+        //    html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
+        //}
+
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function renderList(elem, result, startIndex, limit) {
+
+        var html = result.Items.map(getEntryHtml).join('');
+
+        if (result.TotalRecordCount > limit) {
+
+            var query = { StartIndex: startIndex, Limit: limit };
+
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, limit, false);
+        }
+
+        $(elem).html(html).trigger('create');
+
+        $('.btnNextPage', elem).on('click', function () {
+            reloadData(elem, startIndex + limit, limit);
+        });
+
+        $('.btnPreviousPage', elem).on('click', function () {
+            reloadData(elem, startIndex - limit, limit);
+        });
+
+        $('.btnShowOverview', elem).on('click', function () {
+
+            var item = $(this).parents('.newsItem');
+            var overview = $('.newsItemLongDescription', item).html();
+            var name = $('.notificationName', item).html();
+
+            Dashboard.alert({
+                message: overview,
+                title: name
+            });
+        });
+    }
+
+    function reloadData(elem, startIndex, limit) {
+
+        if (startIndex == null) {
+            startIndex = parseInt(elem.getAttribute('data-activitystartindex') || '0');
+        }
+
+        limit = limit || parseInt(elem.getAttribute('data-activitylimit') || '7');
+
+        ApiClient.getJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
+
+            startIndex: startIndex,
+            limit: limit
+
+        })).done(function (result) {
+
+            elem.setAttribute('data-activitystartindex', startIndex);
+            elem.setAttribute('data-activitylimit', limit);
+
+            renderList(elem, result, startIndex, limit);
+        });
+    }
+
+    function createList(elem) {
+
+        elem.each(function () {
+
+            reloadData(this);
+        });
+
+        $(ApiClient).on('websocketmessage.activityloglistener', function (e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "ActivityLogEntryCreated") {
+                elem.each(function () {
+
+                    reloadData(this);
+                });
+            }
+        });
+    }
+
+    function destroyList(elem) {
+
+        $(ApiClient).off('websocketmessage.activityloglistener');
+    }
+
+    $.fn.activityLogList = function (action) {
+
+        if (action == 'destroy') {
+            destroyList(this);
+        } else {
+            createList(this);
+        }
+
+        return this;
     };
 
 })(jQuery, document, window);

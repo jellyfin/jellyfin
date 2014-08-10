@@ -756,19 +756,13 @@ progress {
     height: 70px;
 }
 
-
-.latestNewsItems {
-    min-height: 100px;
-    min-width: 200px;
-}
-
 .newsItem {
     padding: 1em 0;
     border-bottom: 1px solid #ddd;
 }
 
 .newsItemDescription {
-    max-height: 50px;
+    max-height: 34px;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -786,47 +780,55 @@ progress {
 @media all and (max-width: 1440px) {
 
     .dashboardHomeRightColumn {
-        margin-top: 2em;
+        margin-top: 1em;
     }
 }
 
 .dashboardContent {
-    max-width: 1000px;
+    max-width: 1550px;
     margin-top: -10px;
+}
+
+.dashboardHomeRightColumn {
+    vertical-align: top;
 }
 
 @media all and (min-width: 1440px) {
 
     .dashboardHomeLeftColumn {
         width: 600px;
-        float: left;
-    }
-
-    .latestNewsItems {
-        max-width: 280px;
+        display: inline-block;
+        vertical-align: top;
     }
 
     .dashboardHomeRightColumn {
-        float: right;
+        vertical-align: top;
     }
+
+    .firstDashboardHomeRightColumn {
+        display: inline-block;
+        width: 440px;
+        margin-left: 2em;
+    }
+
+        .firstDashboardHomeRightColumn .ui-collapsible-content {
+            height: 585px;
+            min-width: 300px;
+        }
 }
 
-@media all and (min-width: 1500px) {
+@media all and (min-width: 1920px) {
 
-    .latestNewsItems {
-        max-width: 300px;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .latestNewsItems {
-        max-width: 400px;
+    .dashboardHomeRightColumn {
+        display: inline-block;
+        max-width: 440px;
+        margin-left: 2em;
+        min-width: 400px;
     }
 
-    .dashboardContent {
-        max-width: 1100px;
-    }
+        .dashboardHomeRightColumn .ui-collapsible-content {
+            height: 585px;
+        }
 }
 
 .organizerButtonCell {
@@ -851,9 +853,9 @@ progress {
     width: 50%;
 }
 
-.activeSession .cardPadder {
-    padding-bottom: 56.25%;
-}
+    .activeSession .cardPadder {
+        padding-bottom: 56.25%;
+    }
 
 
 .sessionNowPlayingContent {

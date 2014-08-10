@@ -396,7 +396,7 @@ var Dashboard = {
         var html = '<div data-role="popup" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
 
         html += '<div class="ui-bar-a" style="text-align:center;">';
-        html += '<h3>' + title + '</h3>';
+        html += '<h3 style="padding: 0 1em;">' + title + '</h3>';
         html += '</div>';
 
         html += '<div style="padding: 1em;">';
@@ -1262,7 +1262,6 @@ $(function () {
 
     $(document).on('contextmenu', '.ui-popup-screen', function (e) {
 
-        document.title = '1';
         $('.ui-popup').popup('close');
 
         e.preventDefault();

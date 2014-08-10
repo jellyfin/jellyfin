@@ -7,6 +7,11 @@ namespace MediaBrowser.Common.Configuration
     public interface IConfigurationManager
     {
         /// <summary>
+        /// Occurs when [configuration updating].
+        /// </summary>
+        event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdating;
+
+        /// <summary>
         /// Occurs when [configuration updated].
         /// </summary>
         event EventHandler<EventArgs> ConfigurationUpdated;

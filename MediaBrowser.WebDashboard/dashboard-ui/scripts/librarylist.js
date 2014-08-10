@@ -168,10 +168,10 @@
 
         var id = this.getAttribute('data-itemid');
 
-        PlaylistManager.showPanel([id]);
-
         // Used by the tab menu, not the slide up
         $('.tapHoldMenu').popup('close');
+
+        PlaylistManager.showPanel([id]);
 
         return false;
     }

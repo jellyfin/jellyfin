@@ -101,6 +101,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\ActivityManager.cs" />
+    <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDownloadScheduledTask.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
     <Compile Include="Drawing\UnplayedCountIndicator.cs" />
     <Compile Include="Dto\DtoService.cs" />
+    <Compile Include="EntryPoints\ActivityLogEntryPoint.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />

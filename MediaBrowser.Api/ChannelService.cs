@@ -230,7 +230,7 @@ namespace MediaBrowser.Api
                 SortOrder = request.SortOrder,
                 SortBy = (request.SortBy ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
                 Filters = request.GetFilters().ToArray(),
-                Fields = request.GetItemFields().ToList()
+                Fields = request.GetItemFields().ToArray()
 
             }, CancellationToken.None).Result;
 

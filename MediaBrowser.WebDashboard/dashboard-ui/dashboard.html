@@ -68,7 +68,7 @@
                             </div>
                         </div>
 
-                        <div id="runningTasksCollapsible" data-role="collapsible" data-collapsed="false" style="margin-top: 2em; display: none;">
+                        <div id="runningTasksCollapsible" data-role="collapsible" data-collapsed="false" style="margin-top: 1em; display: none;">
                             <h3>${HeaderRunningTasks}</h3>
                             <div>
                                 <div id="divRunningTasks">
@@ -76,7 +76,42 @@
                             </div>
                         </div>
 
-                        <div id="contribute" style="margin-top: 4em; display: none;">
+                        <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
+                            <h3>${HeaderLinks}</h3>
+                            <div>
+                                <p><a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a></p>
+                                <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
+                                <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible" data-collapsed="true">
+                            <h3>${HeaderSystemPaths}</h3>
+                            <div>
+                                <p>
+                                    <b>${LabelCache}</b><br />
+                                    <span id="cachePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelImagesByName}</b><br />
+                                    <span id="imagesByNamePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelLogs}</b><br />
+                                    <span id="logPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelMetadata}</b><br />
+                                    <span id="metadataPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelTranscodingTemporaryFiles}</b><br />
+                                    <span id="transcodingTemporaryPath"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="contribute" style="margin-top: 2em; display: none;">
                             <h2 style="margin: 0 0 .35em;">${HeaderHelpImproveMediaBrowser}</h2>
                             <div>
                                 <a data-role="button" data-icon="mail" data-mini="true" href="supporter.html">
@@ -119,48 +154,18 @@
                         </div>
                     </div>
 
-                    <div class="readOnlyContent dashboardHomeRightColumn">
+                    <div class="readOnlyContent dashboardHomeRightColumn firstDashboardHomeRightColumn">
                         <div data-role="collapsible" data-collapsed="false">
-                            <h3>${HeaderLatestNews}</h3>
-                            <div class="latestNewsItems">
+                            <h3>${HeaderActivity}</h3>
+                            <div class="activityItems">
                             </div>
                         </div>
                     </div>
 
-
-                    <div class="readOnlyContent" style="clear: left;">
-                        <div data-role="collapsible" data-collapsed="true">
-                            <h3>${HeaderLinks}</h3>
-                            <div>
-                                <p><a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a></p>
-                                <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
-                                <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
-                            </div>
-                        </div>
-
-                        <div data-role="collapsible" data-collapsed="true">
-                            <h3>${HeaderSystemPaths}</h3>
-                            <div>
-                                <p>
-                                    <b>${LabelCache}</b><br />
-                                    <span id="cachePath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelImagesByName}</b><br />
-                                    <span id="imagesByNamePath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelLogs}</b><br />
-                                    <span id="logPath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelMetadata}</b><br />
-                                    <span id="metadataPath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelTranscodingTemporaryFiles}</b><br />
-                                    <span id="transcodingTemporaryPath"></span>
-                                </p>
+                    <div class="readOnlyContent dashboardHomeRightColumn">
+                        <div data-role="collapsible" data-collapsed="false">
+                            <h3>${HeaderLatestNews}</h3>
+                            <div class="latestNewsItems">
                             </div>
                         </div>
                     </div>

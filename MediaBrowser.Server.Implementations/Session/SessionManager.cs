@@ -14,11 +14,13 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
+using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +29,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Security;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -76,6 +77,10 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
             new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
 
+        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
+
+        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
+        
         /// <summary>
         /// Occurs when [playback start].
         /// </summary>
@@ -398,6 +403,11 @@ namespace MediaBrowser.Server.Implementations.Session
                         ApplicationVersion = appVersion,
                         Id = Guid.NewGuid().ToString("N")
                     };
+
+                    sessionInfo.DeviceName = deviceName;
+                    sessionInfo.UserId = userId;
+                    sessionInfo.UserName = username;
+                    sessionInfo.RemoteEndPoint = remoteEndPoint;
 
                     OnSessionStarted(sessionInfo);
 
@@ -1191,44 +1201,37 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="appVersion">The application version.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="request">The request.</param>
         /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
+        /// <exception cref="AuthenticationException">Invalid user or password entered.</exception>
         /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
         /// <exception cref="UnauthorizedAccessException">Invalid user or password entered.</exception>
-        public async Task<AuthenticationResult> AuthenticateNewSession(string username,
-            string password,
-            string clientType,
-            string appVersion,
-            string deviceId,
-            string deviceName,
-            string remoteEndPoint,
+        public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request,
             bool isLocal)
         {
-            var result = (isLocal && string.Equals(clientType, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
-                await _userManager.AuthenticateUser(username, password).ConfigureAwait(false);
+            var result = (isLocal && string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
+                await _userManager.AuthenticateUser(request.Username, request.Password).ConfigureAwait(false);
 
             if (!result)
             {
+                EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+
                 throw new AuthenticationException("Invalid user or password entered.");
             }
 
             var user = _userManager.Users
-                .First(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
+                .First(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
-            var token = await GetAuthorizationToken(user.Id.ToString("N"), deviceId, clientType, deviceName).ConfigureAwait(false);
+            var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);
 
-            var session = await LogSessionActivity(clientType,
-                appVersion,
-                deviceId,
-                deviceName,
-                remoteEndPoint,
+            EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+            
+            var session = await LogSessionActivity(request.App,
+                request.AppVersion,
+                request.DeviceId,
+                request.DeviceName,
+                request.RemoteEndPoint,
                 user)
                 .ConfigureAwait(false);
 

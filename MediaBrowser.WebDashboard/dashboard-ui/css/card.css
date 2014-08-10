@@ -521,6 +521,13 @@
     }
 }
 
+@media all and (min-width: 1920px) {
+
+    .homePageBackdropCard {
+        width: 20%;
+    }
+}
+
 
 /** homePageSquareCard */
 .homePageSquareCard .cardPadder {
@@ -546,10 +553,38 @@
     }
 }
 
+@media all and (min-width: 1000px) {
+
+    .homePageSquareCard {
+        width: 20%;
+    }
+}
+
 @media all and (min-width: 1200px) {
 
     .homePageSquareCard {
         width: 16.666666666666666666666666666667%;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .homePageSquareCard {
+        width: 14.285714285714285714285714285714%;
+    }
+}
+
+@media all and (min-width: 1280px) {
+
+    .homePageSquareCard {
+        width: 14.285714285714285714285714285714%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+
+    .homePageSquareCard {
+        width: 12.5%;
     }
 }
 
@@ -592,6 +627,20 @@
     }
 }
 
+@media all and (min-width: 1600px) {
+
+    .homePagePortraitCard {
+        width: 12.5%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+
+    .homePagePortraitCard {
+        width: 11.111111111111111111111111111111%;
+    }
+}
+
 
 /** homePageSmallBackdropCard */
 .homePageSmallBackdropCard .cardPadder {
@@ -628,5 +677,12 @@
 
     .homePageSmallBackdropCard {
         width: 16.666666666666666666666666666667%;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .homePageSmallBackdropCard {
+        width: 14.285714285714285714285714285714%;
     }
 }

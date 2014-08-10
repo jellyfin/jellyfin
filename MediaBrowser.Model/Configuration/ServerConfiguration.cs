@@ -2,6 +2,7 @@
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -285,8 +286,6 @@ namespace MediaBrowser.Model.Configuration
 
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
             };
-
-            SubtitleOptions = new SubtitleOptions();
         }
     }
 }

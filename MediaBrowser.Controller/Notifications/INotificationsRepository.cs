@@ -16,10 +16,6 @@ namespace MediaBrowser.Controller.Notifications
         /// </summary>
         event EventHandler<NotificationUpdateEventArgs> NotificationAdded;
         /// <summary>
-        /// Occurs when [notification updated].
-        /// </summary>
-        event EventHandler<NotificationUpdateEventArgs> NotificationUpdated;
-        /// <summary>
         /// Occurs when [notifications marked read].
         /// </summary>
         event EventHandler<NotificationReadEventArgs> NotificationsMarkedRead;
@@ -36,14 +32,6 @@ namespace MediaBrowser.Controller.Notifications
         /// <param name="query">The query.</param>
         /// <returns>NotificationResult.</returns>
         NotificationResult GetNotifications(NotificationQuery query);
-
-        /// <summary>
-        /// Gets the notification.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Notification.</returns>
-        Notification GetNotification(string id, string userId);
 
         /// <summary>
         /// Adds the notification.

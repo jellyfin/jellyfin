@@ -153,6 +153,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
+            //_logger.Debug("Websocket message received: {0}", result.MessageType);
+
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
                 try

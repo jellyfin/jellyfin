@@ -31,6 +31,7 @@ namespace MediaBrowser.Controller.Library
 
         event EventHandler<GenericEventArgs<User>> UserCreated;
         event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+        event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
         /// <summary>
         /// Updates the configuration.

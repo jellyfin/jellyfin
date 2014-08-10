@@ -114,7 +114,14 @@
 @media all and (min-width: 1600px) {
 
     .ehsContent {
-        width: 1200px;
+        width: 1280px;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .ehsContent {
+        width: 1500px;
     }
 }
 

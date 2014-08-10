@@ -2,14 +2,12 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -37,7 +35,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly ITaskManager _taskManager;
         private readonly INotificationManager _notificationManager;
 
-        private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IServerApplicationHost _appHost;
@@ -45,14 +42,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private Timer LibraryUpdateTimer { get; set; }
         private readonly object _libraryChangedSyncLock = new object();
 
-        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, IServerConfigurationManager config, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost)
+        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost)
         {
             _installationManager = installationManager;
             _userManager = userManager;
             _logger = logger;
             _taskManager = taskManager;
             _notificationManager = notificationManager;
-            _config = config;
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _appHost = appHost;
@@ -317,7 +313,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             }
         }
 
-        private string GetItemName(BaseItem item)
+        public static string GetItemName(BaseItem item)
         {
             var name = item.Name;
 

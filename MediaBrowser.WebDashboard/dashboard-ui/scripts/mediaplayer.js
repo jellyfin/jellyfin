@@ -606,6 +606,8 @@
 
             if (newItem) {
 
+                console.log('playing next track');
+
                 Dashboard.getCurrentUser().done(function (user) {
 
                     self.playInternal(newItem, 0, user);
@@ -1092,13 +1094,21 @@
             $(self).trigger('volumechange', [state]);
         };
 
+        self.cleanup = function() {
+
+        };
+
         self.onPlaybackStopped = function () {
+
+            console.log('playback stopped');
 
             $('body').removeClass('bodyWithPopupOpen');
 
             var playerElement = this;
 
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
+
+            self.cleanup(playerElement);
 
             clearProgressInterval();
 
@@ -1253,19 +1263,30 @@
 
             }).on("volumechange.mediaplayerevent", function () {
 
+                console.log('audio element event: volumechange');
+
                 self.onVolumeChanged(this);
 
             }).one("playing.mediaplayerevent", function () {
 
+                console.log('audio element event: playing');
+
                 $('.mediaPlayerAudioContainer').hide();
+
+                // For some reason this is firing at the start, so don't bind until playback has begun
+                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 
             }).on("pause.mediaplayerevent", function () {
 
+                console.log('audio element event: pause');
+
                 self.onPlaystateChange(this);
 
             }).on("playing.mediaplayerevent", function () {
+
+                console.log('audio element event: playing');
 
                 self.onPlaystateChange(this);
 
@@ -1273,7 +1294,7 @@
 
                 self.setCurrentTime(self.getCurrentTicks(this));
 
-            }).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded)[0];
+            })[0];
         };
 
         function canPlayAudioStreamDirect(audioStream) {
