@@ -54,7 +54,14 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _logger.Debug("Starting NAT discovery");
                 
                 NatUtility.DeviceFound += NatUtility_DeviceFound;
-                NatUtility.DeviceLost += NatUtility_DeviceLost;
+                
+                // Mono.Nat does never rise this event. The event is there however it is useless. 
+                // You could remove it with no risk. 
+                // NatUtility.DeviceLost += NatUtility_DeviceLost;
+                
+                
+                // it is hard to say what one should do when an unhandled exception is raised
+                // because there isn't anything one can do about it. Probably save a log or ignored it.
                 NatUtility.UnhandledException += NatUtility_UnhandledException;
                 NatUtility.StartDiscovery();
 
@@ -88,6 +95,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
             catch (Exception)
             {
+                // I think it could be a good idea to log the exception because 
+                //   you are using permanent portmapping here (never expire) and that means that next time
+                //   CreatePortMap is invoked it can fails with a 718-ConflictInMappingEntry or not. That depends
+                //   on the router's upnp implementation (specs says it should fail however some routers don't do it)
+                //   It also can fail with others like 727-ExternalPortOnlySupportsWildcard, 728-NoPortMapsAvailable
+                // and those errors (upnp errors) could be useful for diagnosting.  
+                
                 //_logger.ErrorException("Error creating port forwarding rules", ex);
             }
         }
@@ -109,11 +123,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             });
         }
 
-        void NatUtility_DeviceLost(object sender, DeviceEventArgs e)
-        {
-            var device = e.Device;
-            _logger.Debug("NAT device lost: {0}", device.LocalAddress.ToString());
-        }
+        // As I said before, this method will be never invoked. You can remove it.
+        //void NatUtility_DeviceLost(object sender, DeviceEventArgs e)
+        //{
+        //    var device = e.Device;
+        //    _logger.Debug("NAT device lost: {0}", device.LocalAddress.ToString());
+        //}
 
         public void Dispose()
         {
@@ -126,11 +141,19 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             try
             {
-                NatUtility.DeviceFound -= NatUtility_DeviceFound;
-                NatUtility.DeviceLost -= NatUtility_DeviceLost;
-                NatUtility.UnhandledException -= NatUtility_UnhandledException;
+                // This is not a significant improvement
                 NatUtility.StopDiscovery();
+                NatUtility.DeviceFound -= NatUtility_DeviceFound;
+                //NatUtility.DeviceLost -= NatUtility_DeviceLost;
+                NatUtility.UnhandledException -= NatUtility_UnhandledException;
             }
+            // Statements in try-block will no fail because StopDiscovery is a one-line 
+            // method that was no chances to fail.
+            //		public static void StopDiscovery ()
+		    //      {
+            //          searching.Reset();
+		    //      }
+		    // IMO you could remove the catch-block
             catch (Exception ex)
             {
                 _logger.ErrorException("Error stopping NAT Discovery", ex);
