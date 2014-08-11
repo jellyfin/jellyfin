@@ -122,6 +122,7 @@
     <Compile Include="SimilarItemsHelper.cs" />
     <Compile Include="Sync\SyncService.cs" />
     <Compile Include="System\ActivityLogService.cs" />
+    <Compile Include="System\ActivityLogWebSocketListener.cs" />
     <Compile Include="System\SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />

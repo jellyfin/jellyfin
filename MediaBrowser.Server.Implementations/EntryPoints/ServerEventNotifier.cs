@@ -3,13 +3,11 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Activity;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using System;
 using System.Threading;
@@ -49,7 +47,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IDtoService _dtoService;
 
         private readonly ISessionManager _sessionManager;
-        private readonly IActivityManager _activityManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerEventNotifier" /> class.
@@ -61,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="taskManager">The task manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager, IActivityManager activityManager)
+        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
         {
             _serverManager = serverManager;
             _userManager = userManager;
@@ -70,7 +67,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _taskManager = taskManager;
             _dtoService = dtoService;
             _sessionManager = sessionManager;
-            _activityManager = activityManager;
         }
 
         public void Run()
@@ -88,13 +84,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
-
-            _activityManager.EntryCreated += _activityManager_EntryCreated;
-        }
-
-        void _activityManager_EntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
-        {
-            _serverManager.SendWebSocketMessage("ActivityLogEntryCreated", e.Argument);
         }
 
         void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)

@@ -1014,15 +1014,15 @@
         };
     }
 
-    MediaController.registerPlayer(new chromecastPlayer());
+    //MediaController.registerPlayer(new chromecastPlayer());
 
-    $(MediaController).on('playerchange', function () {
+    //$(MediaController).on('playerchange', function () {
 
-        if (MediaController.getPlayerInfo().name == PlayerName) {
-            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
-                castPlayer.launchApp();
-            }
-        }
-    });
+    //    if (MediaController.getPlayerInfo().name == PlayerName) {
+    //        if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+    //            castPlayer.launchApp();
+    //        }
+    //    }
+    //});
 
 })(window, window.chrome, console);

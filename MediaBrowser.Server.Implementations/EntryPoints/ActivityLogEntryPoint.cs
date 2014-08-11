@@ -184,7 +184,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("AuthenticationSucceededWithUserName"), e.Argument.Username),
-                Type = "AuthenticationSucceeded"
+                Type = "AuthenticationSucceeded",
+                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint)
             });
         }
 
@@ -193,7 +194,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("FailedLoginAttemptWithUserName"), e.Argument.Username),
-                Type = "AuthenticationFailed"
+                Type = "AuthenticationFailed",
+                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint)
             });
         }
 

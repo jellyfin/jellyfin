@@ -1170,18 +1170,42 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
             var msg = data;
 
-            if (msg.MessageType === "ActivityLogEntryCreated") {
+            if (msg.MessageType === "ActivityLogEntry") {
                 elem.each(function () {
 
                     reloadData(this);
                 });
             }
+
+        }).on('websocketopen.activityloglistener', function (e, data) {
+
+            startListening();
         });
+    }
+
+    function startListening() {
+        
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ActivityLogEntryStart", "0,1500");
+        }
+
+    }
+
+    function stopListening() {
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ActivityLogEntryStop", "0,1500");
+        }
+
     }
 
     function destroyList(elem) {
 
-        $(ApiClient).off('websocketmessage.activityloglistener');
+        $(ApiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+
+        stopListening();
+
+        return this;
     }
 
     $.fn.activityLogList = function (action) {
@@ -1191,6 +1215,8 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
         } else {
             createList(this);
         }
+
+        startListening();
 
         return this;
     };

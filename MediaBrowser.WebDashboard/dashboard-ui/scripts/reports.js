@@ -25,135 +25,135 @@
                 {
                     return [
                         {},
-                        { name: 'Series', sortField: 'SeriesSortName,SortName' },
-                        { name: 'Season', sortField: 'SortName' },
-                        { name: 'Season Number', sortField: 'IndexNumber' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' }
+                        { name: Globalize.translate('HeaderSeries'), sortField: 'SeriesSortName,SortName', type: 'Series' },
+                        { name: Globalize.translate('HeaderSeason'), sortField: 'SortName', type: 'Season' },
+                        { name: Globalize.translate('HeaderSeasonNumber'), type: 'Season Number', sortField: 'IndexNumber' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' }
                     ];
                 }
             case 'Series':
                 {
                     return [
                         {},
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Network', sortField: 'Studio,SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Year', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
-                        { name: 'Runtime', sortField: 'Runtime,SortName' },
-                        { name: 'Trailers' },
-                        { name: 'Specials' }
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderNetwork'), sortField: 'Studio,SortName', type: 'Network' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderYear'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Year' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderRuntime'), sortField: 'Runtime,SortName', type: 'Runtime' },
+                        { name: Globalize.translate('HeaderTrailers'), type: 'Trailers' },
+                        { name: Globalize.translate('HeaderSpecials'), type: 'Specials' }
                     ];
                 }
             case 'Game':
                 {
                     return [
                         {},
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Game System', sortField: 'GameSystem,SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,GameSystem,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,GameSystem,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,GameSystem,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,GameSystem,SortName' },
-                        { name: 'Players', sortField: 'Players,GameSystem,SortName' },
-                        { name: 'Trailers' }
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderGameSystem'), sortField: 'GameSystem,SortName', type: 'Game System' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,GameSystem,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderPlayers'), type: 'Players', sortField: 'Players,GameSystem,SortName' },
+                        { name: Globalize.translate('HeaderTrailers'), type: 'Trailers' }
                     ];
                 }
             case 'Audio':
                 {
                     return [
                         {},
-                        { name: 'Album Artist', sortField: 'AlbumArtist,Album,SortName' },
-                        { name: 'Album', sortField: 'Album,SortName' },
-                        { name: 'Disc' },
-                        { name: 'Track' },
-                        { name: 'Name', sortField: 'Name' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Runtime', sortField: 'Runtime,SortName' },
-                        { name: 'Audio' },
-                        { name: 'Embedded Image' }
+                        { name: Globalize.translate('HeaderAlbumArtist'), sortField: 'AlbumArtist,Album,SortName', type: 'Album Artist' },
+                        { name: Globalize.translate('HeaderAlbum'), type: 'Album', sortField: 'Album,SortName' },
+                        { name: Globalize.translate('HeaderDisc'), type: 'Disc' },
+                        { name: Globalize.translate('HeaderTrack'), type: 'Track' },
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderRuntime'), sortField: 'Runtime,SortName', type: 'Runtime' },
+                        { name: Globalize.translate('HeaderAudio'), type: 'Audio' },
+                        { name: Globalize.translate('HeaderEmbeddedImage'), type: 'Embedded Image' }
                     ];
                 }
             case 'Episode':
                 {
                     return [
                         {},
-                        { name: 'Series', sortField: 'SeriesSortName,SortName' },
-                        { name: 'Season' },
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
-                        { name: 'Runtime', sortField: 'Runtime,SortName' },
-                        { name: 'Video' },
-                        { name: 'Resolution' },
-                        { name: 'Audio' },
-                        { name: 'Subtitles' }
+                        { name: Globalize.translate('HeaderSeries'), sortField: 'SeriesSortName,SortName', type: 'Series' },
+                        { name: Globalize.translate('HeaderSeason') },
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderRuntime'), sortField: 'Runtime,SortName', type: 'Runtime' },
+                        { name: Globalize.translate('HeaderVideo'), type: 'Video' },
+                        { name: Globalize.translate('HeaderResolution'), type: 'Resolution' },
+                        { name: Globalize.translate('HeaderAudio'), type: 'Audio' },
+                        { name: Globalize.translate('HeaderSubtitles'), type: 'Subtitles' }
                     ];
                 }
             case 'BoxSet':
                 {
                     return [
                         {},
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
-                        { name: 'Trailers' }
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderTrailers'), type: 'Trailers' }
                     ];
                 }
             case 'Book':
                 {
                     return [
                         {},
-                        { name: 'Series' },
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' }
+                        { name: Globalize.translate('HeaderSeries'), type: 'Series' },
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' }
                     ];
                 }
             case 'MusicArtist':
                 {
                     return [
                         {},
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' }
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' }
                     ];
                 }
             case 'MusicAlbum':
                 {
                     return [
                         {},
-                        { name: 'Album Artist', sortField: 'AlbumArtist,SortName' },
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
-                        { name: 'Runtime', sortField: 'Runtime,SortName' }
+                        { name: Globalize.translate('HeaderAlbumArtist'), sortField: 'AlbumArtist,SortName', type: 'Album Artist' },
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderRuntime'), sortField: 'Runtime,SortName', type: 'Runtime' }
                     ];
                 }
             default:
                 {
                     return [
                         {},
-                        { name: 'Name', sortField: 'SortName' },
-                        { name: 'Date Added', sortField: 'DateCreated,SortName' },
-                        { name: 'Release Date', sortField: 'ProductionYear,PremiereDate,SortName' },
-                        { name: 'Parental Rating', sortField: 'OfficialRating,SortName' },
-                        { name: 'Community Rating', sortField: 'CommunityRating,SortName' },
-                        { name: 'Runtime', sortField: 'Runtime,SortName' },
-                        { name: 'Video' },
-                        { name: 'Resolution' },
-                        { name: 'Audio' },
-                        { name: 'Subtitles' },
-                        { name: 'Trailers' },
-                        { name: 'Specials' }
+                        { name: Globalize.translate('HeaderName'), sortField: 'SortName', type: 'Name' },
+                        { name: Globalize.translate('HeaderDateAdded'), sortField: 'DateCreated,SortName', type: 'Date Added' },
+                        { name: Globalize.translate('HeaderReleaseDate'), sortField: 'ProductionYear,PremiereDate,SortName', type: 'Release Date' },
+                        { name: Globalize.translate('HeaderParentalRating'), sortField: 'OfficialRating,SortName', type: 'Parental Rating' },
+                        { name: Globalize.translate('HeaderCommunityRating'), sortField: 'CommunityRating,SortName', type: 'Community Rating' },
+                        { name: Globalize.translate('HeaderRuntime'), sortField: 'Runtime,SortName', type: 'Runtime' },
+                        { name: Globalize.translate('HeaderVideo'), type: 'Video' },
+                        { name: Globalize.translate('HeaderResolution'), type: 'Resolution' },
+                        { name: Globalize.translate('HeaderAudio'), type: 'Audio' },
+                        { name: Globalize.translate('HeaderSubtitles'), type: 'Subtitles' },
+                        { name: Globalize.translate('HeaderTrailers'), type: 'Trailers' },
+                        { name: Globalize.translate('HeaderSpecials'), type: 'Specials'  }
                     ];
                 }
         }
