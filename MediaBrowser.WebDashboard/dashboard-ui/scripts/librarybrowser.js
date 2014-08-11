@@ -690,7 +690,7 @@
                 }
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-href="' + href + '"><a href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '"><a href="' + href + '">';
 
                 var imgUrl;
 

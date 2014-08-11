@@ -46,7 +46,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             return new ITaskTrigger[] { 
             
                 // At startup
-                new StartupTrigger (),
+                new StartupTrigger {DelayMs = 60000},
 
                 // Every so often
                 new IntervalTrigger { Interval = TimeSpan.FromHours(24)}

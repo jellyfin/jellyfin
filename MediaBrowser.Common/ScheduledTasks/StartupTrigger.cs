@@ -8,6 +8,13 @@ namespace MediaBrowser.Common.ScheduledTasks
     /// </summary>
     public class StartupTrigger : ITaskTrigger
     {
+        public int DelayMs { get; set; }
+
+        public StartupTrigger()
+        {
+            DelayMs = 3000;
+        }
+
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
@@ -16,7 +23,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             if (isApplicationStartup)
             {
-                await Task.Delay(3000).ConfigureAwait(false);
+                await Task.Delay(DelayMs).ConfigureAwait(false);
 
                 OnTriggered();
             }

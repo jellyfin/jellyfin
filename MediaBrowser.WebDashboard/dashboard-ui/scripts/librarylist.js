@@ -178,11 +178,11 @@
 
     function onRemoveFromPlaylistButtonClick() {
 
-        var id = this.getAttribute('data-itemid');
+        var playlistItemId = this.getAttribute('data-playlistitemid');
 
         var page = $(this).parents('.page');
 
-        $('.itemsContainer', page).trigger('needsrefresh');
+        $('.itemsContainer', page).trigger('removefromplaylist', [playlistItemId]);
 
         // Used by the tab menu, not the slide up
         $('.tapHoldMenu').popup('close');
@@ -272,6 +272,7 @@
         }
 
         var itemId = card.getAttribute('data-itemid');
+        var playlistItemId = card.getAttribute('data-playlistitemid');
         var commands = card.getAttribute('data-commands').split(',');
         var itemType = card.getAttribute('data-itemtype');
         var mediaType = card.getAttribute('data-mediatype');
@@ -327,7 +328,7 @@
             }
 
             if (commands.indexOf('removefromplaylist') != -1) {
-                html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
+                html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
             }
 
             html += '</ul>';

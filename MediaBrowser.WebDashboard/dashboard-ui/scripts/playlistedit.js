@@ -104,6 +104,23 @@
         });
     }
 
+    function removeFromPlaylist(page, ids) {
+
+        ApiClient.ajax({
+
+            url: ApiClient.getUrl('Playlists/' + currentItem.Id + '/Items', {
+                EntryIds: ids.join(',')
+            }),
+
+            type: 'DELETE'
+
+        }).done(function () {
+
+            reloadItems(page);
+        });
+
+    }
+
     function updateFilterControls(page) {
 
         // Reset form values using the last used query
@@ -158,6 +175,10 @@
         $('.itemsContainer', page).on('needsrefresh', function () {
 
             reloadItems(page);
+
+        }).on('removefromplaylist', function (e, playlistItemId) {
+
+            removeFromPlaylist(page, [playlistItemId]);
 
         });
 

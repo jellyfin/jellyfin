@@ -1131,7 +1131,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             var name = $('.notificationName', item).html();
 
             Dashboard.alert({
-                message: overview,
+                message: '<div style="max-height:300px; overflow: auto;">' + overview + '</div>',
                 title: name
             });
         });

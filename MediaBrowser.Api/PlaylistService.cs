@@ -134,6 +134,7 @@ namespace MediaBrowser.Api
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
             var items = playlist.GetManageableItems().ToArray();
 
             var count = items.Length;
@@ -149,8 +150,15 @@ namespace MediaBrowser.Api
             }
 
             var dtos = items
-                   .Select(i => _dtoService.GetBaseItemDto(i, request.GetItemFields().ToList(), user))
+                   .Select(i => _dtoService.GetBaseItemDto(i.Item2, request.GetItemFields().ToList(), user))
                    .ToArray();
+
+            var index = 0;
+            foreach (var item in dtos)
+            {
+                item.PlaylistItemId = items[index].Item1.Id;
+                index++;
+            }
 
             var result = new ItemsResult
             {

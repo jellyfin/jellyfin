@@ -924,6 +924,18 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i != null);
         }
 
+
+        /// <summary>
+        /// Gets the linked children.
+        /// </summary>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<Tuple<LinkedChild,BaseItem>> GetLinkedChildrenInfos()
+        {
+            return LinkedChildren
+                .Select(i => new Tuple<LinkedChild,BaseItem>(i, GetLinkedChild(i)))
+                .Where(i => i.Item2 != null);
+        }
+
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var changesFound = false;

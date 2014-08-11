@@ -809,26 +809,36 @@ progress {
         display: inline-block;
         width: 440px;
         margin-left: 2em;
+        min-width: 300px;
     }
 
         .firstDashboardHomeRightColumn .ui-collapsible-content {
             height: 585px;
-            min-width: 300px;
         }
 }
 
-@media all and (min-width: 1920px) {
+@media all and (min-width: 1580px) {
 
     .dashboardHomeRightColumn {
         display: inline-block;
+        margin-left: 1em;
+        width: 300px;
+        min-width: 300px;
+    }
+
+        .dashboardHomeRightColumn .ui-collapsible-content {
+            height: auto;
+            min-height: 585px;
+        }
+}
+
+@media all and (min-width: 1880px) {
+
+    .dashboardHomeRightColumn {
         max-width: 440px;
         margin-left: 2em;
         min-width: 400px;
     }
-
-        .dashboardHomeRightColumn .ui-collapsible-content {
-            height: 585px;
-        }
 }
 
 .organizerButtonCell {

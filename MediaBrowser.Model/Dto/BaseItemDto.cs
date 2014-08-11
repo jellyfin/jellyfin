@@ -30,6 +30,12 @@ namespace MediaBrowser.Model.Dto
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the playlist item identifier.
+        /// </summary>
+        /// <value>The playlist item identifier.</value>
+        public string PlaylistItemId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the date created.
         /// </summary>
         /// <value>The date created.</value>
