@@ -195,7 +195,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 Name = string.Format(_localization.GetLocalizedString("FailedLoginAttemptWithUserName"), e.Argument.Username),
                 Type = "AuthenticationFailed",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint)
+                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), e.Argument.RemoteEndPoint),
+                Severity = LogSeverity.Error
             });
         }
 
@@ -427,7 +428,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
                     Type = "ScheduledTaskFailed",
                     Overview = string.Join(Environment.NewLine, vals.ToArray()),
-                    ShortOverview = runningTime
+                    ShortOverview = runningTime,
+                    Severity = LogSeverity.Error
                 });
             }
         }

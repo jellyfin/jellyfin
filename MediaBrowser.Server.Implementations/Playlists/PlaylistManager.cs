@@ -193,13 +193,14 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
 
-            var children = playlist.LinkedChildren.ToList();
+            var children = playlist.GetManageableItems().ToList();
 
             var idList = entryIds.ToList();
 
-            var removals = children.Where(i => idList.Contains(i.Id));
+            var removals = children.Where(i => idList.Contains(i.Item1.Id));
 
             playlist.LinkedChildren = children.Except(removals)
+                .Select(i => i.Item1)
                 .ToList();
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);

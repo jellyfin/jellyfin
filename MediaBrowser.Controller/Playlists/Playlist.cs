@@ -22,9 +22,9 @@ namespace MediaBrowser.Controller.Playlists
             return GetPlayableItems(user);
         }
 
-        public IEnumerable<BaseItem> GetManageableItems()
+        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
         {
-            return GetPlaylistItems(MediaType, GetLinkedChildren(), null);
+            return GetLinkedChildrenInfos();
         }
 
         private IEnumerable<BaseItem> GetPlayableItems(User user)
