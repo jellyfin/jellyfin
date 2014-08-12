@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Globalization;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
@@ -56,10 +58,24 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public event EventHandler<SsdpMessageEventArgs> MessageReceived;
 
-        private void OnMessageReceived(SsdpMessageEventArgs args)
+        private async void OnMessageReceived(SsdpMessageEventArgs args)
         {
             if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
+                var mx = args.Headers["mx"];
+                int delaySeconds;
+                if (!string.IsNullOrWhiteSpace(mx) && 
+                    int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
+                    && delaySeconds > 0)
+                {
+                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
+                    {
+                        _logger.Debug("Delaying search response by {0} seconds", delaySeconds);
+                    }
+
+                    await Task.Delay(delaySeconds * 1000).ConfigureAwait(false);
+                }
+
                 RespondToSearch(args.EndPoint, args.Headers["st"]);
             }
 
@@ -168,7 +184,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null);
+                    SendDatagram(header, values, endpoint);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {
