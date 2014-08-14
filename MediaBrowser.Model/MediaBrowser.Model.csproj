@@ -243,6 +243,7 @@
     <Compile Include="Querying\ItemCountsQuery.cs" />
     <Compile Include="Querying\ItemsByNameQuery.cs" />
     <Compile Include="Entities\BaseItemInfo.cs" />
+    <Compile Include="Querying\LatestItemsQuery.cs" />
     <Compile Include="Querying\NextUpQuery.cs" />
     <Compile Include="Querying\QueryResult.cs" />
     <Compile Include="Querying\SeasonQuery.cs" />

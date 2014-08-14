@@ -78,6 +78,9 @@
         $('#txtMaxAllowedBitrate', page).val(profile.MaxStreamingBitrate || '');
         $('#txtMaxStaticBitrate', page).val(profile.MaxStaticBitrate || '');
 
+        $('#txtMusicStreamingTranscodingBitrate', page).val(profile.MusicStreamingTranscodingBitrate || '');
+        $('#txtMusicStaticBitrate', page).val(profile.MusicSyncBitrate || '');
+
         $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
         $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
 
@@ -784,6 +787,9 @@
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
         profile.MaxStreamingBitrate = $('#txtMaxAllowedBitrate', page).val();
         profile.MaxStaticBitrate = $('#LabelMaxStaticBitrateHelp', page).val();
+
+        profile.MusicStreamingTranscodingBitrate = $('#txtMusicStreamingTranscodingBitrate', page).val();
+        profile.MusicSyncBitrate = $('#txtMusicStaticBitrate', page).val();
 
         profile.ProtocolInfo = $('#txtProtocolInfo', page).val();
         profile.XDlnaCap = $('#txtXDlnaCap', page).val();

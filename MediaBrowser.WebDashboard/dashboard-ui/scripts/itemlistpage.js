@@ -37,6 +37,12 @@
 
             updateFilterControls(page);
 
+            var context = getParameterByName('context');
+
+            if (context == 'home') {
+                context = 'folders';
+            }
+
             if (view == "Backdrop") {
 
                 html = LibraryBrowser.getPosterViewHtml({
@@ -44,7 +50,8 @@
                     shape: "smallBackdrop",
                     showTitle: true,
                     centerText: true,
-                    preferBackdrop: true
+                    preferBackdrop: true,
+                    context: context
                 });
             }
             else if (view == "Poster") {
@@ -52,7 +59,8 @@
                     items: result.Items,
                     shape: "auto",
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    context: context
                 });
             }
 

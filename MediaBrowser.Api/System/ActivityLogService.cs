@@ -3,6 +3,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
+using System;
+using System.Globalization;
 
 namespace MediaBrowser.Api.System
 {
@@ -22,6 +24,9 @@ namespace MediaBrowser.Api.System
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
+
+        [ApiMember(Name = "MinDate", Description = "Optional. The minimum date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MinDate { get; set; }
     }
 
     [Authenticated]
@@ -36,7 +41,11 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetActivityLogs request)
         {
-            var result = _activityManager.GetActivityLogEntries(request.StartIndex, request.Limit);
+            DateTime? minDate = string.IsNullOrWhiteSpace(request.MinDate) ?
+                (DateTime?)null :
+                DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+
+            var result = _activityManager.GetActivityLogEntries(minDate, request.StartIndex, request.Limit);
 
             return ToOptimizedResult(result);
         }

@@ -9,5 +9,7 @@ namespace MediaBrowser.Controller.Library
     public interface IUserViewManager
     {
         Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken);
+
+        Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken);
     }
 }

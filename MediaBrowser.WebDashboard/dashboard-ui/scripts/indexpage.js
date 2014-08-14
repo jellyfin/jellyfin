@@ -130,8 +130,7 @@
 
             Limit: screenWidth >= 2400 ? 24 : (screenWidth >= 1600 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
             Fields: "PrimaryImageAspectRatio",
-            IsPlayed: false,
-            IsFolder: false
+            IsPlayed: false
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {

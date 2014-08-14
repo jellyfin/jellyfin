@@ -370,7 +370,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 55);
+            }).parents(".ui-popup-container").css("margin-left", 30);
         },
 
         closePlayMenu: function () {
@@ -426,7 +426,7 @@
 
         getHref: function (item, context, topParentId) {
 
-            var href = LibraryBrowser.getHrefInternal(item);
+            var href = LibraryBrowser.getHrefInternal(item, context);
 
             if (context) {
                 href += href.indexOf('?') == -1 ? "?context=" : "&context=";
@@ -445,7 +445,7 @@
             return href;
         },
 
-        getHrefInternal: function (item) {
+        getHrefInternal: function (item, context) {
 
             if (!item) {
                 throw new Error('item cannot be null');
@@ -466,35 +466,37 @@
                 return 'channelslatest.html';
             }
 
-            if (item.CollectionType == 'movies') {
-                return 'movieslatest.html?topParentId=' + item.Id;
-            }
+            if (context != 'folders') {
+                if (item.CollectionType == 'movies') {
+                    return 'movieslatest.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'boxsets') {
-                return 'collections.html?topParentId=' + item.Id;
-            }
+                if (item.CollectionType == 'boxsets') {
+                    return 'collections.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'trailers') {
-                return 'movietrailers.html?topParentId=' + item.Id;
-            }
+                if (item.CollectionType == 'trailers') {
+                    return 'movietrailers.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'movies') {
-                return 'movieslatest.html?topParentId=' + item.Id;
-            }
+                if (item.CollectionType == 'movies') {
+                    return 'movieslatest.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'tvshows') {
-                return 'tvrecommended.html?topParentId=' + item.Id;
-            }
+                if (item.CollectionType == 'tvshows') {
+                    return 'tvrecommended.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'music') {
-                return 'musicrecommended.html?topParentId=' + item.Id;
-            }
+                if (item.CollectionType == 'music') {
+                    return 'musicrecommended.html?topParentId=' + item.Id;
+                }
 
-            if (item.CollectionType == 'games') {
-                return 'gamesrecommended.html?topParentId=' + item.Id;
-            }
-            if (item.CollectionType == 'playlists') {
-                return 'playlists.html?topParentId=' + item.Id;
+                if (item.CollectionType == 'games') {
+                    return 'gamesrecommended.html?topParentId=' + item.Id;
+                }
+                if (item.CollectionType == 'playlists') {
+                    return 'playlists.html?topParentId=' + item.Id;
+                }
             }
             if (item.Type == 'CollectionFolder') {
                 return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;

@@ -217,10 +217,11 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                if (!playlistItem.AudioBitrate.HasValue)
-                {
-                    playlistItem.AudioBitrate = 128000;
-                }
+                var configuredBitrate = options.AudioTranscodingBitrate ??
+                    (options.Context == EncodingContext.Static ? options.Profile.MusicSyncBitrate : options.Profile.MusicStreamingTranscodingBitrate) ??
+                    128000;
+
+                playlistItem.AudioBitrate = Math.Min(configuredBitrate, playlistItem.AudioBitrate ?? configuredBitrate);
             }
 
             return playlistItem;

@@ -318,11 +318,12 @@ namespace MediaBrowser.Api.UserLibrary
                 .OrderByDescending(i => i.DateCreated)
                 .Where(i => i.LocationType != LocationType.Virtual);
 
-            if (request.IsFolder.HasValue)
-            {
-                var val = request.IsFolder.Value;
-                libraryItems = libraryItems.Where(f => f.IsFolder == val);
-            }
+
+            //if (request.IsFolder.HasValue)
+            //{
+                //var val = request.IsFolder.Value;
+                libraryItems = libraryItems.Where(f => f.IsFolder == false);
+            //}
             
             if (!string.IsNullOrEmpty(request.IncludeItemTypes))
             {

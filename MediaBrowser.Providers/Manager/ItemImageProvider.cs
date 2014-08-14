@@ -236,6 +236,11 @@ namespace MediaBrowser.Providers.Manager
         {
             try
             {
+                if (!item.SupportsRemoteImageDownloading)
+                {
+                    return;
+                }
+
                 if (!refreshOptions.ReplaceAllImages && 
                     refreshOptions.ReplaceImages.Count == 0 && 
                     ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))

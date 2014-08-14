@@ -18,9 +18,18 @@
         return 'playlists' + (query.ParentId || '');
     }
 
+    function showLoadingMessage(page) {
+
+        $('.popupLoading', page).popup('open');
+    }
+
+    function hideLoadingMessage(page) {
+        $('.popupLoading', page).popup('close');
+    }
+
     function reloadItems(page) {
 
-        Dashboard.showLoadingMsg();
+        showLoadingMessage(page);
 
         var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
         var promise2 = Dashboard.getCurrentUser();
@@ -91,7 +100,7 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
-            Dashboard.hideLoadingMsg();
+            hideLoadingMessage(page);
         });
     }
 

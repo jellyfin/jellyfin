@@ -33,6 +33,7 @@
 
     function getNewPlaylistPanel() {
 
+        Dashboard.showLoadingMsg();
         $('.newPlaylistPanel').panel('destroy').remove();
 
         var html = '<div data-role="panel" data-position="right" data-display="overlay" class="newPlaylistPanel" data-position-fixed="true" data-theme="a">';
@@ -103,6 +104,7 @@
             select.html(selectHtml).selectmenu('refresh');
             
             select.val(lastPlaylistId || '').selectmenu('refresh').trigger('change');
+            Dashboard.hideLoadingMsg();
         });
 
         $('form', elem).on('submit', onAddToPlaylistFormSubmit);

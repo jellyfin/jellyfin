@@ -24,5 +24,9 @@
         public const string Channels = "channels";
         public const string LiveTv = "livetv";
         public const string Playlists = "playlists";
+        public const string Folders = "folders";
+
+        public const string LiveTvChannels = "LiveTvChannels";
+        public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
     }
 }

@@ -627,12 +627,12 @@
     "TabNowPlaying": "Reproduzindo Agora",
     "TabNavigation": "Navega\u00e7\u00e3o",
     "TabControls": "Controles",
-    "ButtonFullscreen": "Alternar para tela cheia",
+    "ButtonFullscreen": "Alternar tela cheia",
     "ButtonScenes": "Cenas",
     "ButtonSubtitles": "Legendas",
     "ButtonAudioTracks": "Faixas de \u00e1udio",
-    "ButtonPreviousTrack": "Faixa anterior",
-    "ButtonNextTrack": "Pr\u00f3xima faixa",
+    "ButtonPreviousTrack": "Faixa Anterior",
+    "ButtonNextTrack": "Pr\u00f3xima Faixa",
     "ButtonStop": "Parar",
     "ButtonPause": "Pausar",
     "LabelGroupMoviesIntoCollections": "Agrupar filmes nas cole\u00e7\u00f5es",
@@ -788,6 +788,7 @@
     "HeaderMetadataManager": "Gerenciador de Metadados",
     "HeaderPreferences": "Prefer\u00eancias",
     "MessageLoadingChannels": "Carregando conte\u00fado do canal...",
+    "MessageLoadingContent": "Loading content...",
     "ButtonMarkRead": "Marcar com lido",
     "OptionDefaultSort": "Padr\u00e3o",
     "OptionCommunityMostWatchedSort": "Mais Assistidos",
@@ -979,5 +980,7 @@
     "UserStartedPlayingItemWithValues": "{0} come\u00e7ou a executar {1}",
     "UserStoppedPlayingItemWithValues": "{0} parou de executar {1}",
     "AppDeviceValues": "App: {0}, Dispositivo: {1}",
-    "ProviderValue": "Provedor: {0}"
+    "ProviderValue": "Provedor: {0}",
+    "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
 }

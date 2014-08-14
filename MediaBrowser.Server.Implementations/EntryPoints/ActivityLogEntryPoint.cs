@@ -61,15 +61,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         public void Run()
         {
-            _taskManager.TaskExecuting += _taskManager_TaskExecuting;
-            _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+            //_taskManager.TaskExecuting += _taskManager_TaskExecuting;
+            //_taskManager.TaskCompleted += _taskManager_TaskCompleted;
 
-            _installationManager.PluginInstalled += _installationManager_PluginInstalled;
-            _installationManager.PluginUninstalled += _installationManager_PluginUninstalled;
-            _installationManager.PluginUpdated += _installationManager_PluginUpdated;
+            //_installationManager.PluginInstalled += _installationManager_PluginInstalled;
+            //_installationManager.PluginUninstalled += _installationManager_PluginUninstalled;
+            //_installationManager.PluginUpdated += _installationManager_PluginUpdated;
 
-            _libraryManager.ItemAdded += _libraryManager_ItemAdded;
-            _libraryManager.ItemRemoved += _libraryManager_ItemRemoved;
+            //_libraryManager.ItemAdded += _libraryManager_ItemAdded;
+            //_libraryManager.ItemRemoved += _libraryManager_ItemRemoved;
 
             _sessionManager.SessionStarted += _sessionManager_SessionStarted;
             _sessionManager.AuthenticationFailed += _sessionManager_AuthenticationFailed;
@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
             _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
 
-            _subManager.SubtitlesDownloaded += _subManager_SubtitlesDownloaded;
+            //_subManager.SubtitlesDownloaded += _subManager_SubtitlesDownloaded;
             _subManager.SubtitleDownloadFailure += _subManager_SubtitleDownloadFailure;
 
             _userManager.UserCreated += _userManager_UserCreated;
@@ -87,8 +87,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _userManager.UserDeleted += _userManager_UserDeleted;
             _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
-            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+            //_config.ConfigurationUpdated += _config_ConfigurationUpdated;
+            //_config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
 
             //_logManager.LoggerLoaded += _logManager_LoggerLoaded;
 
@@ -165,6 +165,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             if (string.IsNullOrWhiteSpace(session.UserName))
             {
                 name = string.Format(_localization.GetLocalizedString("DeviceOfflineWithName"), session.DeviceName);
+
+                // Causing too much spam for now
+                return;
             }
             else
             {
@@ -288,6 +291,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             if (string.IsNullOrWhiteSpace(session.UserName))
             {
                 name = string.Format(_localization.GetLocalizedString("DeviceOnlineWithName"), session.DeviceName);
+
+                // Causing too much spam for now
+                return;
             }
             else
             {
@@ -394,6 +400,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             if (result.Status == TaskCompletionStatus.Cancelled)
             {
+                return;
                 CreateLogEntry(new ActivityLogEntry
                 {
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskCancelledWithName"), task.Name),
@@ -403,6 +410,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
             else if (result.Status == TaskCompletionStatus.Completed)
             {
+                return;
                 CreateLogEntry(new ActivityLogEntry
                 {
                     Name = string.Format(_localization.GetLocalizedString("ScheduledTaskCompletedWithName"), task.Name),

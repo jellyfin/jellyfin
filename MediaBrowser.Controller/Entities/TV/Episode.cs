@@ -189,6 +189,20 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public override bool SupportsRemoteImageDownloading
+        {
+            get
+            {
+                if (IsMissingEpisode)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public bool IsMissingEpisode
         {
             get

@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Linq;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -40,7 +42,11 @@ namespace MediaBrowser.Providers.Playlists
 
             if (mergeMetadataSettings)
             {
-                target.LinkedChildren = source.LinkedChildren;
+                var list = source.LinkedChildren.ToList();
+
+                list.AddRange(target.LinkedChildren);
+
+                target.LinkedChildren = list;
             }
         }
     }

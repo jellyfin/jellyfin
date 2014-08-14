@@ -627,12 +627,12 @@
     "TabNowPlaying": "Spilles Av",
     "TabNavigation": "Navigering",
     "TabControls": "Kontrollerer",
-    "ButtonFullscreen": "Veksle fullskjerm",
+    "ButtonFullscreen": "Toggle fullscreen",
     "ButtonScenes": "Scener",
     "ButtonSubtitles": "Undertekster",
-    "ButtonAudioTracks": "Lyd spor",
-    "ButtonPreviousTrack": "Previous track",
-    "ButtonNextTrack": "Next track",
+    "ButtonAudioTracks": "Audio tracks",
+    "ButtonPreviousTrack": "Forrige Spor",
+    "ButtonNextTrack": "Neste Spor",
     "ButtonStop": "Stopp",
     "ButtonPause": "Pause",
     "LabelGroupMoviesIntoCollections": "Grupper filmer inni samlinger",
@@ -788,6 +788,7 @@
     "HeaderMetadataManager": "Metadata Behandler",
     "HeaderPreferences": "Preferanser",
     "MessageLoadingChannels": "Laster kanal innhold...",
+    "MessageLoadingContent": "Loading content...",
     "ButtonMarkRead": "Marker Som Lest",
     "OptionDefaultSort": "Standard",
     "OptionCommunityMostWatchedSort": "Mest Sett",
@@ -979,5 +980,7 @@
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",
-    "ProviderValue": "Provider: {0}"
+    "ProviderValue": "Provider: {0}",
+    "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
 }

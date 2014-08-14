@@ -37,6 +37,12 @@ namespace MediaBrowser.Model.Dlna
         public EncodingContext Context { get; set; }
 
         /// <summary>
+        /// Gets or sets the audio transcoding bitrate.
+        /// </summary>
+        /// <value>The audio transcoding bitrate.</value>
+        public int? AudioTranscodingBitrate { get; set; }
+
+        /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>

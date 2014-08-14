@@ -12,6 +12,6 @@ namespace MediaBrowser.Controller.Activity
 
         Task Create(ActivityLogEntry entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(int? startIndex, int? limit);
+        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
     }
 }

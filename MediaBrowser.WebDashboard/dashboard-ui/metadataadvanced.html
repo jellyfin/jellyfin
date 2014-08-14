@@ -56,7 +56,7 @@
                     <div data-role="collapsible">
                         <h2>${HeaderChapters}</h2>
                         <div>
-                            <br/>
+                            <br />
                             <div style="display: none;">
                                 <p>${HeaderChapterDownloadingHelp}</p>
 
@@ -98,7 +98,42 @@
                             </ul>
                         </div>
                     </div>
-                    <br/><br />
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderPeople}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label>${HeaderDownloadPeopleMetadataFor}</label>
+                                    <div data-role="controlgroup">
+                                        <input type="checkbox" data-mini="true" id="chkPeopleActors" />
+                                        <label for="chkPeopleActors">${OptionActors}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleComposers" />
+                                        <label for="chkPeopleComposers">${OptionComposers}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleDirectors" />
+                                        <label for="chkPeopleDirectors">${OptionDirectors}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleGuestStars" />
+                                        <label for="chkPeopleGuestStars">${OptionGuestStars}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleProducers" />
+                                        <label for="chkPeopleProducers">${OptionProducers}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleWriters" />
+                                        <label for="chkPeopleWriters">${OptionWriters}</label>
+
+                                        <input type="checkbox" data-mini="true" id="chkPeopleOthers" />
+                                        <label for="chkPeopleOthers">${OptionOthers}</label>
+                                        <div class="fieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br /><br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">

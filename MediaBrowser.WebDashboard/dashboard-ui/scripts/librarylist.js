@@ -381,7 +381,6 @@
             Limit: parseInt($('.playedIndicator', card).html() || '10'),
             Fields: "PrimaryImageAspectRatio,DateCreated",
             ParentId: itemId,
-            IsFolder: false,
             GroupItems: false
         };
 

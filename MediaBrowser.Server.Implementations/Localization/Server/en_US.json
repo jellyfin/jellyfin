@@ -788,6 +788,7 @@
     "HeaderMetadataManager": "Metadata Manager",
     "HeaderPreferences": "Preferences",
     "MessageLoadingChannels": "Loading channel content...",
+    "MessageLoadingContent": "Loading content...",
     "ButtonMarkRead": "Mark Read",
     "OptionDefaultSort": "Default",
     "OptionCommunityMostWatchedSort": "Most Watched",
@@ -979,5 +980,7 @@
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",
-    "ProviderValue": "Provider: {0}"
+    "ProviderValue": "Provider: {0}",
+    "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
 }

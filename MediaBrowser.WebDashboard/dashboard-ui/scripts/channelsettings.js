@@ -47,6 +47,7 @@
             .selectmenu("refresh");
 
         $('#txtDownloadAge', page).val(config.MaxDownloadAge || '');
+        $('#txtDownloadSizeLimit', page).val(config.DownloadSizeLimit || '');
 
         $('#txtCachePath', page).val(config.DownloadPath || '');
 
@@ -108,6 +109,7 @@
             // This should be null if empty
             config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
             config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
+            config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
 
             config.DownloadPath = $('#txtCachePath', form).val() || null;
 

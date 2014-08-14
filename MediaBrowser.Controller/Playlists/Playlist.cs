@@ -12,6 +12,14 @@ namespace MediaBrowser.Controller.Playlists
     {
         public string OwnerUserId { get; set; }
 
+        protected override bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetPlayableItems(user);
@@ -34,7 +42,12 @@ namespace MediaBrowser.Controller.Playlists
 
         public static IEnumerable<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user)
         {
-            return inputItems.SelectMany(i =>
+            if (user != null)
+            {
+                inputItems = inputItems.Where(i => i.IsVisible(user));
+            }
+
+            inputItems = inputItems.SelectMany(i =>
             {
                 var folder = i as Folder;
 
@@ -58,6 +71,31 @@ namespace MediaBrowser.Controller.Playlists
                 return new[] { i };
 
             }).Where(m =>  string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
+
+            return FilterInaccessibleItems(inputItems, user);
+        }
+
+        public static IEnumerable<BaseItem> FilterInaccessibleItems(IEnumerable<BaseItem> items, User user)
+        {
+            return items;
+            //var locations = user.RootFolder.Children.OfType<CollectionFolder>().SelectMany(i => i.PhysicalLocations).ToList();
+
+            //return items.Where(i =>
+            //{
+            //    var parent = i.Parent;
+
+            //    while (parent != null)
+            //    {
+            //        parent = parent.Parent;
+
+            //        if (parent != null && parent.Parent is AggregateFolder)
+            //        {
+            //            break;
+            //        }
+            //    }
+
+            //    return parent == null || locations.Contains(parent.Path, StringComparer.OrdinalIgnoreCase);
+            //});
         }
 
         [IgnoreDataMember]

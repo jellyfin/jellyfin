@@ -1145,10 +1145,15 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         limit = limit || parseInt(elem.getAttribute('data-activitylimit') || '7');
 
+        // Show last 24 hours
+        var minDate = new Date();
+        minDate.setTime(minDate.getTime() - 86400000);
+
         ApiClient.getJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
 
             startIndex: startIndex,
-            limit: limit
+            limit: limit,
+            minDate: minDate.toISOString()
 
         })).done(function (result) {
 

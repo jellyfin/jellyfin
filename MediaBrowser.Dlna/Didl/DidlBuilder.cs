@@ -80,16 +80,18 @@ namespace MediaBrowser.Dlna.Didl
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
 
-            var audio = item as Audio;
-            if (audio != null)
-            {
-                AddAudioResource(element, audio, deviceId, filter, streamInfo);
-            }
+            var hasMediaSources = item as IHasMediaSources;
 
-            var video = item as Video;
-            if (video != null)
+            if (hasMediaSources != null)
             {
-                AddVideoResource(element, video, deviceId, filter, streamInfo);
+                if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+                {
+                    AddAudioResource(element, hasMediaSources, deviceId, filter, streamInfo);
+                }
+                else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                {
+                    AddVideoResource(element, hasMediaSources, deviceId, filter, streamInfo);
+                }
             }
 
             AddCover(item, element);
@@ -97,7 +99,7 @@ namespace MediaBrowser.Dlna.Didl
             return element;
         }
 
-        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
@@ -181,7 +183,7 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddVideoResource(XmlElement container, Video video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
+        private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -270,7 +272,7 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
         
-        private void AddAudioResource(XmlElement container, Audio audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddAudioResource(XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -636,9 +638,12 @@ namespace MediaBrowser.Dlna.Didl
 
             if (!_profile.EnableAlbumArtInDidl)
             {
-                if (!(item is Photo) && !(item is Video))
+                if (!string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase) && !string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    return;
+                    if (!item.IsFolder)
+                    {
+                        return;
+                    }
                 }
             }
 

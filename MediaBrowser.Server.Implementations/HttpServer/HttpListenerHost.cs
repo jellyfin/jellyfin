@@ -35,8 +35,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener _listener;
 
-        private const int IdleTimeout = 300;
-
         private readonly ContainerAdapter _containerAdapter;
 
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
@@ -152,7 +150,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = NativeWebSocket.IsSupported
-                ? _listener = new WebSocketSharpListener(_logger)
+                ? _listener = new HttpListenerServer(_logger)
+                //? _listener = new WebSocketSharpListener(_logger)
                 : _listener = new WebSocketSharpListener(_logger);
 
             _listener.WebSocketHandler = WebSocketHandler;

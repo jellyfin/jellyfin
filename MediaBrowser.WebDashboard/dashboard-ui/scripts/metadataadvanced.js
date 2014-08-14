@@ -7,6 +7,14 @@
         $('#chkEnableFanartUpdates', page).checked(config.EnableFanArtUpdates).checkboxradio("refresh");
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
 
+        $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata).checkboxradio("refresh");
+        $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata).checkboxradio("refresh");
+        $('#chkPeopleDirectors', page).checked(config.PeopleMetadataOptions.DownloadDirectorMetadata).checkboxradio("refresh");
+        $('#chkPeopleProducers', page).checked(config.PeopleMetadataOptions.DownloadProducerMetadata).checkboxradio("refresh");
+        $('#chkPeopleWriters', page).checked(config.PeopleMetadataOptions.DownloadWriterMetadata).checkboxradio("refresh");
+        $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata).checkboxradio("refresh");
+        $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -170,6 +178,14 @@
             config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.MetadataPath = $('#txtMetadataPath', form).val();
+
+            config.PeopleMetadataOptions.DownloadActorMetadata = $('#chkPeopleActors', form).checked();
+            config.PeopleMetadataOptions.DownloadComposerMetadata = $('#chkPeopleComposers', form).checked();
+            config.PeopleMetadataOptions.DownloadDirectorMetadata = $('#chkPeopleDirectors', form).checked();
+            config.PeopleMetadataOptions.DownloadGuestStarMetadata = $('#chkPeopleGuestStars', form).checked();
+            config.PeopleMetadataOptions.DownloadProducerMetadata = $('#chkPeopleProducers', form).checked();
+            config.PeopleMetadataOptions.DownloadWriterMetadata = $('#chkPeopleWriters', form).checked();
+            config.PeopleMetadataOptions.DownloadOtherPeopleMetadata = $('#chkPeopleOthers', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
         });

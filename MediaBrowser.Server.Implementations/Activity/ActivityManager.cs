@@ -32,9 +32,9 @@ namespace MediaBrowser.Server.Implementations.Activity
             EventHelper.FireEventIfNotNull(EntryCreated, this, new GenericEventArgs<ActivityLogEntry>(entry), _logger);
         }
 
-        public QueryResult<ActivityLogEntry> GetActivityLogEntries(int? startIndex, int? limit)
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
-            return _repo.GetActivityLogEntries(startIndex, limit);
+            return _repo.GetActivityLogEntries(minDate, startIndex, limit);
         }
     }
 }

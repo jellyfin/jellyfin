@@ -154,6 +154,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is locked; otherwise, <c>false</c>.</value>
         bool IsLocked { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports remote image downloading].
+        /// </summary>
+        /// <value><c>true</c> if [supports remote image downloading]; otherwise, <c>false</c>.</value>
+        bool SupportsRemoteImageDownloading { get; }
     }
 
     public static class HasImagesExtensions

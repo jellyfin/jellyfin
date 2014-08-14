@@ -32,6 +32,8 @@ namespace MediaBrowser.Dlna.Profiles
 
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
+            MusicStreamingTranscodingBitrate = 128000;
+            MusicSyncBitrate = 128000;
 
             EnableAlbumArtInDidl = false;
 

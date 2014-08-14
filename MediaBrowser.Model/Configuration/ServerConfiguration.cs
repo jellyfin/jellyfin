@@ -186,6 +186,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DefaultMetadataSettingsApplied { get; set; }
 
         public bool EnableTokenAuthentication { get; set; }
+        public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -228,6 +229,8 @@ namespace MediaBrowser.Model.Configuration
             EnableRealtimeMonitor = true;
 
             UICulture = "en-us";
+
+            PeopleMetadataOptions = new PeopleMetadataOptions();
 
             MetadataOptions = new[]
             {
@@ -286,6 +289,23 @@ namespace MediaBrowser.Model.Configuration
 
                 new MetadataOptions(0, 1280) {ItemType = "Season"}
             };
+        }
+    }
+
+    public class PeopleMetadataOptions
+    {
+        public bool DownloadActorMetadata { get; set; }
+        public bool DownloadDirectorMetadata { get; set; }
+        public bool DownloadProducerMetadata { get; set; }
+        public bool DownloadWriterMetadata { get; set; }
+        public bool DownloadComposerMetadata { get; set; }
+        public bool DownloadOtherPeopleMetadata { get; set; }
+        public bool DownloadGuestStarMetadata { get; set; }
+
+        public PeopleMetadataOptions()
+        {
+            DownloadActorMetadata = true;
+            DownloadDirectorMetadata = true;
         }
     }
 }

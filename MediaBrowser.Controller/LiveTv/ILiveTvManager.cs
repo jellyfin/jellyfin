@@ -280,5 +280,22 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
         IEnumerable<User> GetEnabledUsers();
+
+        /// <summary>
+        /// Gets the internal channels.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;LiveTvChannel&gt;&gt;.</returns>
+        Task<QueryResult<LiveTvChannel>> GetInternalChannels(LiveTvChannelQuery query,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the internal recordings.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItem&gt;&gt;.</returns>
+        Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken);
     }
 }

@@ -761,6 +761,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\ItemsResult.cs">
       <Link>Querying\ItemsResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\LatestItemsQuery.cs">
+      <Link>Querying\LatestItemsQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\NextUpQuery.cs">
       <Link>Querying\NextUpQuery.cs</Link>
     </Compile>

@@ -25,6 +25,8 @@
   <MaxIconHeight>48</MaxIconHeight>
   <MaxStreamingBitrate>8000000</MaxStreamingBitrate>
   <MaxStaticBitrate>8000000</MaxStaticBitrate>
+  <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
+  <MusicSyncBitrate>128000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000</ProtocolInfo>
@@ -107,4 +109,5 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
+  <SubtitleProfiles />
 </Profile>

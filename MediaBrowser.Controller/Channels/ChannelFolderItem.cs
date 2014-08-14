@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {

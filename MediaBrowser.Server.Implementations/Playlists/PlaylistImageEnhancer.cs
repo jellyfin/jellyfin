@@ -76,17 +76,16 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 })
                 .Where(i => i != null)
                 .DistinctBy(i => i.Id)
-                .OrderBy(i => Guid.NewGuid())
+                .ToList();
+
+            // Rotate the images no more than once per day
+            var random = new Random(DateTime.Now.DayOfYear).Next();
+
+            return items
+                .OrderBy(i => random - items.IndexOf(i))
                 .Take(4)
                 .OrderBy(i => i.Name)
                 .ToList();
-
-            if (items.Count == 0)
-            {
-                return new List<BaseItem>();
-            }
-
-            return items;
         }
 
         private const string Version = "3";

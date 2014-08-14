@@ -84,7 +84,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (canPlayWebm()) {
+            if (self.canPlayWebm()) {
                 return '.webm';
             }
 
@@ -139,7 +139,7 @@
                     if (finalParams.isStatic) {
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
                     } else {
-                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension);
                     }
 
                     currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
@@ -289,7 +289,7 @@
                 //return false;
             }
 
-            if (extension == 'm4v') {
+            if (extension == 'm4v' || extension == 'mkv') {
                 return $.browser.chrome;
             }
 
@@ -1094,7 +1094,7 @@
             $(self).trigger('volumechange', [state]);
         };
 
-        self.cleanup = function() {
+        self.cleanup = function () {
 
         };
 
@@ -1167,10 +1167,10 @@
             }
         }
 
-        function canPlayWebm() {
+        self.canPlayWebm = function() {
 
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
-        }
+        };
 
         self.canAutoPlayAudio = function () {
 

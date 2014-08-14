@@ -906,7 +906,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Ensure the location is available.
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
-            return new PeopleValidator(this, _logger).ValidatePeople(cancellationToken, new MetadataRefreshOptions(), progress);
+            return new PeopleValidator(this, _logger, ConfigurationManager).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
