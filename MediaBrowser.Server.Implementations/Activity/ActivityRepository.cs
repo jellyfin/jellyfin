@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.Activity
             }
         }
 
-        public QueryResult<ActivityLogEntry> GetActivityLogEntries(int? startIndex, int? limit)
+        public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
             using (var cmd = _connection.CreateCommand())
             {
@@ -147,16 +147,32 @@ namespace MediaBrowser.Server.Implementations.Activity
 
                 var whereClauses = new List<string>();
 
+                if (minDate.HasValue)
+                {
+                    whereClauses.Add("DateCreated>=@DateCreated");
+                    cmd.Parameters.Add(cmd, "@DateCreated", DbType.Date).Value = minDate.Value;
+                }
+
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
                 if (startIndex.HasValue && startIndex.Value > 0)
                 {
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLogEntries ORDER BY DateCreated DESC LIMIT {0})",
+                    var pagingWhereText = whereClauses.Count == 0 ?
+                        string.Empty :
+                        " where " + string.Join(" AND ", whereClauses.ToArray());
+                    
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM ActivityLogEntries {0} ORDER BY DateCreated DESC LIMIT {1})",
+                        pagingWhereText,
                         startIndex.Value.ToString(_usCulture)));
                 }
 
-                if (whereClauses.Count > 0)
-                {
-                    cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
-                }
+                var whereText = whereClauses.Count == 0 ? 
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                cmd.CommandText += whereText;
 
                 cmd.CommandText += " ORDER BY DateCreated DESC";
 
@@ -165,7 +181,7 @@ namespace MediaBrowser.Server.Implementations.Activity
                     cmd.CommandText += " LIMIT " + limit.Value.ToString(_usCulture);
                 }
 
-                cmd.CommandText += "; select count (Id) from ActivityLogEntries";
+                cmd.CommandText += "; select count (Id) from ActivityLogEntries" + whereTextWithoutPaging;
 
                 var list = new List<ActivityLogEntry>();
                 var count = 0;

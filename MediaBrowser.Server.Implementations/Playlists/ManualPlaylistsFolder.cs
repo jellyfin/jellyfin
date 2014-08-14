@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public BasePluginFolder GetFolder()
         {
-            var path = Path.Combine(_appPaths.CachePath, "playlists");
+            var path = Path.Combine(_appPaths.DataPath, "playlists");
 
             Directory.CreateDirectory(path);
 

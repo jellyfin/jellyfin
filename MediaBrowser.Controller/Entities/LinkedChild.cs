@@ -19,7 +19,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Serves as a cache
         /// </summary>
-        [IgnoreDataMember]
         public Guid? ItemId { get; set; }
 
         public static LinkedChild Create(BaseItem item)

@@ -93,12 +93,17 @@ namespace MediaBrowser.Server.Implementations.Library
             if (user.Configuration.DisplayCollectionsView &&
                 recursiveChildren.OfType<BoxSet>().Any())
             {
-                list.Add(await GetUserView(CollectionType.BoxSets, user, CollectionType.BoxSets, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.BoxSets, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             if (recursiveChildren.OfType<Playlist>().Any())
             {
                 list.Add(_playlists.GetPlaylistsFolder(user.Id.ToString("N")));
+            }
+
+            if (user.Configuration.DisplayFoldersView)
+            {
+                list.Add(await GetUserView(CollectionType.Folders, user, "zz_" + CollectionType.Folders, cancellationToken).ConfigureAwait(false));
             }
 
             if (query.IncludeExternalContent)
@@ -131,7 +136,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).Cast<Folder>();
         }
 
-        private Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 

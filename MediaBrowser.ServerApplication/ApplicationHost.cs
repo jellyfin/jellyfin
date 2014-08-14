@@ -830,6 +830,8 @@ namespace MediaBrowser.ServerApplication
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
             ChannelVideoItem.ChannelManager = ChannelManager;
+            BaseItem.LiveTvManager = LiveTvManager;
+            UserView.UserViewManager = UserViewManager;
         }
 
         /// <summary>

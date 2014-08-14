@@ -168,6 +168,7 @@
     <Compile Include="Library\LibraryManagerExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
+    <Compile Include="LiveTv\RecordingGroup.cs" />
     <Compile Include="LiveTv\RecordingStatusChangedEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
     <Compile Include="LiveTv\LiveStreamInfo.cs" />

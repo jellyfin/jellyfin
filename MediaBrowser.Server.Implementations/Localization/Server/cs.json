@@ -480,7 +480,7 @@
     "HeaderProgram": "Program",
     "HeaderClients": "Klienti",
     "LabelCompleted": "Hotovo",
-    "LabelFailed": "Failed",
+    "LabelFailed": "Chyba",
     "LabelSkipped": "P\u0159esko\u010deno",
     "HeaderEpisodeOrganization": "Organizace epizod",
     "LabelSeries": "Series:",
@@ -630,8 +630,8 @@
     "ButtonFullscreen": "Toggle fullscreen",
     "ButtonScenes": "Sc\u00e9ny",
     "ButtonSubtitles": "Titulky",
-    "ButtonAudioTracks": "Audio tracks",
-    "ButtonPreviousTrack": "Previous track",
+    "ButtonAudioTracks": "Audio stopy",
+    "ButtonPreviousTrack": "P\u0159edchod\u00ed stopa",
     "ButtonNextTrack": "Next track",
     "ButtonStop": "Stop",
     "ButtonPause": "Pause",
@@ -788,6 +788,7 @@
     "HeaderMetadataManager": "Spr\u00e1vce metadat",
     "HeaderPreferences": "Preferences",
     "MessageLoadingChannels": "Loading channel content...",
+    "MessageLoadingContent": "Loading content...",
     "ButtonMarkRead": "Ozna\u010dit jako p\u0159e\u010dten\u00e9",
     "OptionDefaultSort": "Default",
     "OptionCommunityMostWatchedSort": "Nejsledovan\u011bj\u0161\u00ed",
@@ -979,5 +980,7 @@
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",
-    "ProviderValue": "Provider: {0}"
+    "ProviderValue": "Provider: {0}",
+    "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
 }

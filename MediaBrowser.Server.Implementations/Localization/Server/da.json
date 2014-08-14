@@ -627,10 +627,10 @@
     "TabNowPlaying": "Spiler nu",
     "TabNavigation": "Navigation",
     "TabControls": "Controls",
-    "ButtonFullscreen": "Toggle fullscreen",
+    "ButtonFullscreen": "Skift til fuldsk\u00e6rm",
     "ButtonScenes": "Scener",
     "ButtonSubtitles": "Undertekster",
-    "ButtonAudioTracks": "Audio tracks",
+    "ButtonAudioTracks": "Lyd filer",
     "ButtonPreviousTrack": "Previous track",
     "ButtonNextTrack": "Next track",
     "ButtonStop": "Stop",
@@ -788,6 +788,7 @@
     "HeaderMetadataManager": "Metadata Manager",
     "HeaderPreferences": "Preferences",
     "MessageLoadingChannels": "Loading channel content...",
+    "MessageLoadingContent": "Loading content...",
     "ButtonMarkRead": "Mark Read",
     "OptionDefaultSort": "Default",
     "OptionCommunityMostWatchedSort": "Most Watched",
@@ -979,5 +980,7 @@
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",
-    "ProviderValue": "Provider: {0}"
+    "ProviderValue": "Provider: {0}",
+    "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
 }

@@ -7,16 +7,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using WebSocketSharp.Net;
-using WebSocketSharp.Server;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
         private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        private WebSocketSharp.Server.HttpServer _httpsv;
+        private WebSocketSharp.Net.HttpListener _listener;
+        private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
 
         private readonly ILogger _logger;
 
@@ -38,16 +39,85 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public void Start(IEnumerable<string> urlPrefixes)
         {
-            _httpsv = new WebSocketSharp.Server.HttpServer(8096, false, urlPrefixes.First());
+            if (_listener == null)
+                _listener = new WebSocketSharp.Net.HttpListener();
 
-            _httpsv.OnRequest += _httpsv_OnRequest;
+            foreach (var prefix in urlPrefixes)
+            {
+                _logger.Info("Adding HttpListener prefix " + prefix);
+                _listener.Prefixes.Add(prefix);
+            }
 
-            _httpsv.Start();
+            _listener.Start();
+
+            Task.Factory.StartNew(Listen, TaskCreationOptions.LongRunning);
         }
 
-        void _httpsv_OnRequest(object sender, HttpRequestEventArgs e)
+        private bool IsListening
         {
-            Task.Factory.StartNew(() => InitTask(e.Context));
+            get { return _listener != null && _listener.IsListening; }
+        }
+
+        // Loop here to begin processing of new requests.
+        private void Listen()
+        {
+            while (IsListening)
+            {
+                if (_listener == null) return;
+
+                try
+                {
+                    _listener.BeginGetContext(ListenerCallback, _listener);
+                    _listenForNextRequest.WaitOne();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Listen()", ex);
+                    return;
+                }
+                if (_listener == null) return;
+            }
+        }
+
+        // Handle the processing of a request in here.
+        private void ListenerCallback(IAsyncResult asyncResult)
+        {
+            var listener = asyncResult.AsyncState as HttpListener;
+            HttpListenerContext context;
+
+            if (listener == null) return;
+            var isListening = listener.IsListening;
+
+            try
+            {
+                if (!isListening)
+                {
+                    _logger.Debug("Ignoring ListenerCallback() as HttpListener is no longer listening"); return;
+                }
+                // The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
+                // blocks until there is a request to be processed or some type of data is available.
+                context = listener.EndGetContext(asyncResult);
+            }
+            catch (Exception ex)
+            {
+                // You will get an exception when httpListener.Stop() is called
+                // because there will be a thread stopped waiting on the .EndGetContext()
+                // method, and again, that is just the way most Begin/End asynchronous
+                // methods of the .NET Framework work.
+                var errMsg = ex + ": " + IsListening;
+                _logger.Warn(errMsg);
+                return;
+            }
+            finally
+            {
+                // Once we know we have a request (or exception), we signal the other thread
+                // so that it calls the BeginGetContext() (or possibly exits if we're not
+                // listening any more) method to start handling the next incoming request
+                // while we continue to process this request on a different thread.
+                _listenForNextRequest.Set();
+            }
+
+            Task.Factory.StartNew(() => InitTask(context));
         }
 
         private void InitTask(HttpListenerContext context)
@@ -169,20 +239,39 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public void Stop()
         {
-            _httpsv.Stop();
+            if (_listener != null)
+            {
+                foreach (var prefix in _listener.Prefixes.ToList())
+                {
+                    _listener.Prefixes.Remove(prefix);
+                }
+
+                _listener.Close();
+            }
         }
 
-        private readonly object _disposeLock = new object();
         public void Dispose()
         {
+            Dispose(true);
+        }
+
+        private bool _disposed;
+        private readonly object _disposeLock = new object();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
             lock (_disposeLock)
             {
-                if (_httpsv != null)
+                if (_disposed) return;
+
+                if (disposing)
                 {
-                    _httpsv.OnRequest -= _httpsv_OnRequest;
-                    _httpsv.Stop();
-                    _httpsv = null;
+                    Stop();
                 }
+
+                //release unmanaged resources here...
+                _disposed = true;
             }
         }
     }

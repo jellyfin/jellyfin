@@ -184,7 +184,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint);
+                    SendDatagram(header, values, endpoint, null);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {

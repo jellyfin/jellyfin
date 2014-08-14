@@ -157,12 +157,6 @@ namespace MediaBrowser.Server.Implementations.Security
 
                 var startIndex = query.StartIndex ?? 0;
 
-                if (startIndex > 0)
-                {
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens ORDER BY DateCreated LIMIT {0})",
-                        startIndex.ToString(_usCulture)));
-                }
-
                 if (!string.IsNullOrWhiteSpace(query.AccessToken))
                 {
                     whereClauses.Add("AccessToken=@AccessToken");
@@ -187,10 +181,26 @@ namespace MediaBrowser.Server.Implementations.Security
                     cmd.Parameters.Add(cmd, "@IsActive", DbType.Boolean).Value = query.IsActive.Value;
                 }
 
-                if (whereClauses.Count > 0)
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                if (startIndex > 0)
                 {
-                    cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                    var pagingWhereText = whereClauses.Count == 0 ?
+                        string.Empty :
+                        " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
+                        pagingWhereText,
+                        startIndex.ToString(_usCulture)));
                 }
+
+                var whereText = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                cmd.CommandText += whereText;
 
                 cmd.CommandText += " ORDER BY DateCreated";
 
@@ -199,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.Security
                     cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
                 }
 
-                cmd.CommandText += "; select count (Id) from AccessTokens";
+                cmd.CommandText += "; select count (Id) from AccessTokens" + whereTextWithoutPaging;
 
                 var list = new List<AuthenticationInfo>();
                 var count = 0;

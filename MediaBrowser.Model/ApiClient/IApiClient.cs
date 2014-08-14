@@ -204,6 +204,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<BaseItemDto> GetItemAsync(string id, string userId);
 
         /// <summary>
+        /// Gets the latest items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItemDto&gt;&gt;.</returns>
+        Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query);
+        
+        /// <summary>
         /// Gets the intros async.
         /// </summary>
         /// <param name="itemId">The item id.</param>

@@ -442,10 +442,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<IEnumerable<BaseItem>> GetUserViewChildren(UserView folder, User user, SortCriteria sort)
         {
-            if (string.Equals(folder.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
-            {
-                return new List<BaseItem>();
-            }
             if (string.Equals(folder.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
                 var result = await _channelManager.GetChannelsInternal(new ChannelQuery()
@@ -467,6 +463,22 @@ namespace MediaBrowser.Dlna.ContentDirectory
             if (string.Equals(folder.ViewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
                 return SortItems(folder.GetChildren(user, true).OfType<MusicArtist>(), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTvRecordingGroups, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTvChannels, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
             }
 
             return GetPlainFolderChildrenSorted(folder, user, sort);

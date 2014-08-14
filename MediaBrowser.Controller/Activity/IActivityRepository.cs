@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Querying;
+using System;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Activity
@@ -8,6 +9,6 @@ namespace MediaBrowser.Controller.Activity
     {
         Task Create(ActivityLogEntry entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(int? startIndex, int? limit);
+        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
     }
 }

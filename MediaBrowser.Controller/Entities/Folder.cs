@@ -840,7 +840,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (includeLinkedChildren)
             {
-                foreach (var child in GetLinkedChildren())
+                foreach (var child in GetLinkedChildren(user))
                 {
                     if (child.IsVisible(user))
                     {
@@ -924,6 +924,31 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i != null);
         }
 
+        protected virtual bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public IEnumerable<BaseItem> GetLinkedChildren(User user)
+        {
+            if (!FilterLinkedChildrenPerUser)
+            {
+                return GetLinkedChildren();
+            }
+
+            var locations = user.RootFolder
+                .Children
+                .OfType<CollectionFolder>()
+                .SelectMany(i => i.PhysicalLocations)
+                .ToList();
+            
+            return LinkedChildren.Where(i => string.IsNullOrWhiteSpace(i.Path) || locations.Any(l => FileSystem.ContainsSubPath(l, i.Path)))
+                .Select(GetLinkedChild)
+                .Where(i => i != null);
+        }
 
         /// <summary>
         /// Gets the linked children.

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -24,6 +25,14 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             DisplayOrder = ItemSortBy.PremiereDate;
             Keywords = new List<string>();
+        }
+
+        protected override bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
@@ -72,6 +81,8 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var children = base.GetChildren(user, includeLinkedChildren);
 
+            children = Playlist.FilterInaccessibleItems(children, user);
+
             if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by name
@@ -83,9 +94,15 @@ namespace MediaBrowser.Controller.Entities.Movies
                 // Sort by release date
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
             }
-            
+
             // Default sorting
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
+        }
+
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
+        {
+            var children = base.GetRecursiveChildren(user, includeLinkedChildren);
+            return Playlist.FilterInaccessibleItems(children, user);
         }
 
         public BoxSetInfo GetLookupInfo()

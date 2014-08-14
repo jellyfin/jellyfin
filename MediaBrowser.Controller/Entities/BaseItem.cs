@@ -2,6 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -65,6 +66,15 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         public bool IsInMixedFolder { get; set; }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsRemoteImageDownloading
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private string _name;
         /// <summary>
@@ -227,6 +237,7 @@ namespace MediaBrowser.Controller.Entities
         public static IItemRepository ItemRepository { get; set; }
         public static IFileSystem FileSystem { get; set; }
         public static IUserDataManager UserDataManager { get; set; }
+        public static ILiveTvManager LiveTvManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
