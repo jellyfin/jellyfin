@@ -64,7 +64,7 @@ namespace MediaBrowser.ServerApplication.Native
             
         }
 
-        public Task<CheckForUpdateResult> CheckForApplicationUpdate(Version currentVersion,
+        public static Task<CheckForUpdateResult> CheckForApplicationUpdate(Version currentVersion,
             PackageVersionClass updateLevel,
             IInstallationManager installationManager,
             CancellationToken cancellationToken,
