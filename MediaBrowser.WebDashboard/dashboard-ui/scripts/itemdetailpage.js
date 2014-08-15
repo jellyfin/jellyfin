@@ -562,7 +562,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: item.Type == "MusicAlbum" ? 4 : 5,
+            limit: 5,
             fields: "PrimaryImageAspectRatio,UserData"
         };
 
@@ -724,7 +724,11 @@
 
             if (item.Type == "MusicAlbum") {
 
-                $('#childrenContent', page).html(LibraryBrowser.getSongTableHtml(result.Items, { showArtist: true })).trigger('create');
+                $('#childrenContent', page).html(LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    smallIcon: true
+
+                })).trigger('create').createCardMenus();
 
             } else {
 
@@ -760,7 +764,7 @@
                     });
                 }
 
-                $('#childrenContent', page).html(html).createCardMenus();
+                $('#childrenContent', page).html(html).trigger('create').createCardMenus();
 
                 if (item.Type == "BoxSet") {
 
@@ -996,7 +1000,12 @@
 
             $('#themeSongsCollapsible', page).show();
 
-            $('#themeSongsContent', page).html(LibraryBrowser.getSongTableHtml(items, { showArtist: true, showAlbum: true, showAlbumArtist: true })).trigger('create');
+            var html = LibraryBrowser.getListViewHtml({
+                items: items,
+                smallIcon: true
+            });
+
+            $('#themeSongsContent', page).html(html).trigger('create');
         } else {
             $('#themeSongsCollapsible', page).hide();
         }

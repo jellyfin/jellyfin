@@ -225,46 +225,6 @@ namespace MediaBrowser.Api
             //return ToOptimizedResult(new List<UserDto>());
         }
 
-        private bool IsInLocalNetwork(string remoteEndpoint)
-        {
-            if (string.IsNullOrWhiteSpace(remoteEndpoint))
-            {
-                throw new ArgumentNullException("remoteEndpoint");
-            }
-
-            IPAddress address;
-            if (!IPAddress.TryParse(remoteEndpoint, out address))
-            {
-                return true;
-            }
-
-            const int lengthMatch = 4;
-
-            if (remoteEndpoint.Length >= lengthMatch)
-            {
-                var prefix = remoteEndpoint.Substring(0, lengthMatch);
-
-                if (_networkManager.GetLocalIpAddresses()
-                    .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return true;
-                }
-            }
-
-            // Private address space:
-            // http://en.wikipedia.org/wiki/Private_network
-
-            return
-
-                // If url was requested with computer name, we may see this
-                remoteEndpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
-
-                remoteEndpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
-                remoteEndpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -283,10 +243,10 @@ namespace MediaBrowser.Api
             {
                 users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
             }
-
+            
             var result = users
                 .OrderBy(u => u.Name)
-                .Select(_dtoService.GetUserDto)
+                .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -306,7 +266,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = _dtoService.GetUserDto(user);
+            var result = _userManager.GetUserDto(user, Request.RemoteIp);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -410,7 +370,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var success = _userManager.AuthenticateUser(user.Name, request.CurrentPassword).Result;
+                var success = _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).Result;
 
                 if (!success)
                 {
@@ -488,7 +448,7 @@ namespace MediaBrowser.Api
 
             newUser.UpdateConfiguration(dtoUser.Configuration);
 
-            var result = _dtoService.GetUserDto(newUser);
+            var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
 
             return ToOptimizedResult(result);
         }

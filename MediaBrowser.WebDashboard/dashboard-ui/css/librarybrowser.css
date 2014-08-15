@@ -1185,15 +1185,20 @@ a.itemTag:hover {
     }
 }
 
-.itemsListview {
+
+.itemsContainer .itemsListview {
     max-width: 800px;
+}
+
+.itemsListview {
     margin: 0 auto !important;
 }
 
     .itemsListview .ui-li-aside {
-        right: 1.3em;
-        font-weight: normal;
+        right: 70px;
         font-size: 13px;
+        top: 35%;
+        font-weight: 300 !important;
     }
 
     .itemsListview .ui-li-count {
@@ -1215,6 +1220,57 @@ a.itemTag:hover {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
+}
+
+.listviewIcon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: 70px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+.ui-li-has-icon > .ui-btn {
+    padding-left: 5.25em !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+.listItem h3 {
+    font-weight: 400;
+}
+
+.listItem p {
+    font-weight: 300 !important;
+}
+
+.ui-li-has-icon h3 {
+    margin-bottom: 10px !important;
+}
+
+.listItem > .ui-btn + .ui-btn {
+    border: 0 !important;
+    width: 60px !important;
+    height: 90% !important;
+    top: 5% !important;
+    padding-left: 0 !important;
+}
+
+.listItem a:first-child {
+    margin-right: 0 !important;
+    background-color: transparent !important;
+    border-color: #282828 !important;
+}
+
+.listItem a + a {
+    background-color: #202020 !important;
+}
+
+.listItem:hover a {
+    background-color: #333 !important;
 }
 
 @media all and (max-width: 600px) {

@@ -478,21 +478,21 @@
 
 
 .detailPageSquareCard {
-    width: 50%;
+        width: 33.33%;
 }
 
 @media all and (min-width: 540px) {
 
     .detailPageSquareCard {
-        width: 33.33%;
+        width: 25%;
     }
 }
 
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 600px) {
 
     .detailPageSquareCard {
-        width: 25%;
+        width: 20%;
     }
 }
 

@@ -120,10 +120,6 @@ h2 {
     font-weight: 500 !important;
 }
 
-.ui-listview li h3 {
-    font-weight: 500;
-}
-
 h1 a {
     text-decoration: none;
 }
@@ -134,6 +130,10 @@ h1 a {
 
 h1 a:hover {
     text-decoration: underline;
+}
+
+.ui-listview li h3 {
+    font-weight: 400;
 }
 
 pre, textarea.pre {

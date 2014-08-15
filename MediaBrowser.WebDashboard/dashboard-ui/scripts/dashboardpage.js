@@ -622,6 +622,10 @@
 
             return "<img src='css/images/clients/android.png' />";
         }
+        if (clientLowered == "nuvue") {
+
+            return "<img src='css/images/clients/nuvue.png' />";
+        }
         if (clientLowered == "roku") {
 
             return "<img src='css/images/clients/roku.jpg' />";

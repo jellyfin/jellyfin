@@ -123,12 +123,8 @@
             buttonCount++;
         }
 
-        var moreCommands = LibraryBrowser.getMoreCommands(item, currentUser);
-
-        if (moreCommands.length) {
-            html += '<button data-role="button" class="btnMoreCommands" data-morecommands="' + moreCommands.join(',') + '" data-itemid="' + item.Id + '" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
-            buttonCount++;
-        }
+        html += '<button data-role="button" class="btnMoreCommands" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
+        buttonCount++;
 
         html += '</div>';
 
@@ -153,13 +149,14 @@
 
     function onMoreButtonClick() {
 
-        var id = this.getAttribute('data-itemid');
-        var commands = this.getAttribute('data-morecommands').split(',');
+        var card = $(this).parents('.card')[0];
 
-        LibraryBrowser.showMoreCommands(this, id, commands);
-
-        // Used by the tab menu, not the slide up
+        // Used by the tab menu
         $('.tapHoldMenu').popup('close');
+
+        showContextMenu(card, {
+            showPlayOptions: false
+        });
 
         return false;
     }
@@ -255,13 +252,13 @@
 
     function onCardTapHold(e) {
 
-        showContextMenu(this);
+        showContextMenu(this, {});
 
         e.preventDefault();
         return false;
     }
 
-    function showContextMenu(card) {
+    function showContextMenu(card, options) {
 
         $('.tapHoldMenu').popup("close").remove();
 
@@ -299,16 +296,18 @@
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
-            if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType, isPlaceHolder)) {
-                html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
-            }
+            if (options.showPlayOptions !== false) {
+                if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType, isPlaceHolder)) {
+                    html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
+                }
 
-            if (playbackPositionTicks && mediaType != "Audio") {
-                html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
-            }
+                if (playbackPositionTicks && mediaType != "Audio") {
+                    html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
+                }
 
-            if (commands.indexOf('trailer') != -1) {
-                html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
+                if (commands.indexOf('trailer') != -1) {
+                    html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
+                }
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
@@ -356,7 +355,7 @@
 
     function onListViewMenuButtonClick(e) {
 
-        showContextMenu(this);
+        showContextMenu(this, {});
 
         e.preventDefault();
         return false;

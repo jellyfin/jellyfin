@@ -432,10 +432,9 @@
 
             if (query.IncludeItemTypes == "Audio") {
 
-                html += LibraryBrowser.getSongTableHtml(result.Items, {
-                    showAlbum: true,
-                    showArtist: true,
-                    showAlbumArtist: true
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    smallIcon: true
                 });
 
             }

@@ -68,7 +68,7 @@
                 html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">'+Globalize.translate('newTvProgram')+'&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'&nbsp;&nbsp;</span>';
             }
 
             var minutes = program.RunTimeTicks / 600000000;

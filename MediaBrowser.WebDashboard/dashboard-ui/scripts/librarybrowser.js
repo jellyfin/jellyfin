@@ -223,8 +223,6 @@
 
             html += '<tr>';
 
-            html += LibraryBrowser.getSongHeaderCellHtml('Disc', 'desktopColumn', options.enableColumnSorting);
-            html += LibraryBrowser.getSongHeaderCellHtml('#', 'desktopColumn', options.enableColumnSorting);
             html += LibraryBrowser.getSongHeaderCellHtml('Track', '', options.enableColumnSorting, 'Name', options.sortBy, options.sortOrder);
 
             if (options.showAlbum) {
@@ -251,9 +249,6 @@
                 var item = items[i];
 
                 html += '<tr>';
-
-                html += '<td class="desktopColumn">' + (item.ParentIndexNumber || "") + '</td>';
-                html += '<td class="desktopColumn">' + (item.IndexNumber || "") + '</td>';
 
                 html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
 
@@ -685,7 +680,7 @@
 
                 var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
 
-                var cssClass = 'ui-li-has-thumb listItem';
+                var cssClass = options.smallIcon ? 'ui-li-has-icon listItem' : 'ui-li-has-thumb listItem';
 
                 if (item.UserData) {
                     cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
@@ -696,13 +691,14 @@
 
                 var imgUrl;
 
+                var downloadWidth = options.smallIcon ? 70 : 80;
+                // Scaling 400w episode images to 80 doesn't turn out very well
+                var minScale = item.Type == 'Episode' || item.Type == 'Game' || options.smallIcon ? 2 : 1.5;
+
                 if (item.ImageTags.Primary) {
 
-                    // Scaling 400w episode images to 80 doesn't turn out very well
-                    var minScale = item.Type == 'Episode' || item.Type == 'Game' ? 2 : null;
-
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        width: 80,
+                        width: downloadWidth,
                         tag: item.ImageTags.Primary,
                         type: "Primary",
                         index: 0,
@@ -715,8 +711,9 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
                         type: "Primary",
-                        width: 80,
-                        tag: item.AlbumPrimaryImageTag
+                        width: downloadWidth,
+                        tag: item.AlbumPrimaryImageTag,
+                        minScale: minScale
                     });
 
                 }
@@ -724,8 +721,9 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Primary",
-                        width: 80,
-                        tag: item.SeriesPrimaryImageTag
+                        width: downloadWidth,
+                        tag: item.SeriesPrimaryImageTag,
+                        minScale: minScale
                     });
 
                 }
@@ -733,17 +731,26 @@
 
                     imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
                         type: "Primary",
-                        width: 80,
-                        tag: item.ParentPrimaryImageTag
+                        width: downloadWidth,
+                        tag: item.ParentPrimaryImageTag,
+                        minScale: minScale
                     });
                 }
 
                 if (imgUrl) {
 
-                    if (index < 10) {
-                        html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                    if (options.smallIcon) {
+                        if (index < 10) {
+                            html += '<div class="listviewIcon ui-li-icon" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                        } else {
+                            html += '<div class="listviewIcon ui-li-icon lazy" data-src="' + imgUrl + '"></div>';
+                        }
                     } else {
-                        html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
+                        if (index < 10) {
+                            html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                        } else {
+                            html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
+                        }
                     }
                 }
 
@@ -756,6 +763,10 @@
                 }
 
                 textlines.push(LibraryBrowser.getPosterViewDisplayName(item));
+
+                if (item.Type == 'Audio') {
+                    textlines.push(item.Artists.join(', ') || 'Unknown Artist');
+                }
 
                 if (item.Type == 'Game') {
                     textlines.push(item.GameSystem || 'Unknown Game System');

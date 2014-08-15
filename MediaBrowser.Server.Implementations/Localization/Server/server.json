@@ -1014,5 +1014,9 @@
     "ViewTypeFolders": "Folders",
     "LabelDisplayFoldersView": "Display a folders view to show plain media folders",
     "ViewTypeLiveTvRecordingGroups":  "Recordings",
-    "ViewTypeLiveTvChannels":  "Channels"
+    "ViewTypeLiveTvChannels": "Channels",
+    "LabelAllowLocalAccessWithoutPassword": "Allow local access without a password",
+    "LabelAllowLocalAccessWithoutPasswordHelp": "When enabled, a password will not be required when signing in from within your home network.",
+    "HeaderPassword": "Password",
+    "HeaderLocalAccess":  "Local Access"
 }

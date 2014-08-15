@@ -74,7 +74,8 @@
                         sortBy: query.SortBy,
                         showIndex: false,
                         title: item.Name,
-                        showRemoveFromPlaylist: true
+                        showRemoveFromPlaylist: true,
+                        smallIcon: true
                     });
                 }
 

@@ -2144,7 +2144,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         function normalizeImageOptions(options) {
 
-            var ratio = window.devicePixelRatio;
+            var ratio = window.devicePixelRatio || 1;
 
             if (ratio) {
 

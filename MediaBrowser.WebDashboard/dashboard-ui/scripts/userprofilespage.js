@@ -41,7 +41,7 @@
             html += "</h3>";
 
             html += "<p class='ui-li-aside'>";
-            if (user.Configuration.HasPassword) html += '<img src="css/images/userdata/password.png" alt="' + Globalize.translate('Password') + '" title="' + Globalize.translate('Password') + '" class="userProfileIcon" />';
+            if (user.HasConfiguredPassword) html += '<img src="css/images/userdata/password.png" alt="' + Globalize.translate('Password') + '" title="' + Globalize.translate('Password') + '" class="userProfileIcon" />';
             if (user.Configuration.IsAdministrator) html += '<img src="css/images/userdata/administrator.png" alt="' + Globalize.translate('Administrator') + '" title="' + Globalize.translate('Administrator') + '" class="userProfileIcon" />';
 
             html += "</p>";

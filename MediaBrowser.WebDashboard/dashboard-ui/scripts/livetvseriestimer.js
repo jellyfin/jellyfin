@@ -133,7 +133,7 @@
         $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
 
             items: result.Items,
-            shape: "homePageSquare",
+            shape: "detailPageSquare",
             showTitle: true,
             overlayText: true,
             coverImage: true

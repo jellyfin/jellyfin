@@ -8,16 +8,19 @@
 
             Dashboard.setPageTitle(user.Name);
 
-            if (user.HasPassword) {
+            if (user.HasConfiguredPassword) {
                 $('#btnResetPassword', page).show();
                 $('#fldCurrentPassword', page).show();
                 $('.formheader', page).hide();
+                $('.localAccessSection', page).show();
             } else {
                 $('#btnResetPassword', page).hide();
                 $('#fldCurrentPassword', page).hide();
                 $('.formheader', page).show();
+                $('.localAccessSection', page).hide();
             }
 
+            $('#chkEnableLocalAccessWithoutPassword', page).checked(user.Configuration.EnableLocalPassword).checkboxradio('refresh');
         });
 
         $('#txtCurrentPassword', page).val('');
@@ -26,6 +29,24 @@
     }
 
     function save(page) {
+
+        var userId = getParameterByName("userId");
+
+        ApiClient.getUser(userId).done(function (user) {
+
+            user.Configuration.EnableLocalPassword = $('#chkEnableLocalAccessWithoutPassword', page).checked();
+
+            ApiClient.updateUser(user).done(function() {
+
+                Dashboard.hideLoadingMsg();
+
+                Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
+                loadUser(page);
+            });
+        });
+    }
+
+    function savePassword(page) {
 
         var userId = getParameterByName("userId");
 
@@ -56,6 +77,19 @@
                 Dashboard.showError(Globalize.translate('PasswordMatchError'));
                 return false;
             }
+
+            Dashboard.showLoadingMsg();
+
+            savePassword(page);
+
+            // Disable default form submission
+            return false;
+
+        };
+
+        self.onLocalAccessSubmit = function () {
+
+            var page = $.mobile.activePage;
 
             Dashboard.showLoadingMsg();
 
