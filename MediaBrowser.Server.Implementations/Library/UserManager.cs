@@ -1,14 +1,20 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +23,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Security;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -52,17 +57,25 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly IXmlSerializer _xmlSerializer;
 
+        private readonly INetworkManager _networkManager;
+
+        private readonly Func<IImageProcessor> _imageProcessorFactory;
+        private readonly Func<IDtoService> _dtoServiceFactory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory)
         {
             _logger = logger;
             UserRepository = userRepository;
             _xmlSerializer = xmlSerializer;
+            _networkManager = networkManager;
+            _imageProcessorFactory = imageProcessorFactory;
+            _dtoServiceFactory = dtoServiceFactory;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
         }
@@ -120,15 +133,7 @@ namespace MediaBrowser.Server.Implementations.Library
             Users = await LoadUsers().ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Authenticates a User and returns a result indicating whether or not it succeeded
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        /// <exception cref="System.ArgumentNullException">user</exception>
-        /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public async Task<bool> AuthenticateUser(string username, string password)
+        public async Task<bool> AuthenticateUser(string username, string password, string remoteEndPoint)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -142,9 +147,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
-            var existingPasswordString = string.IsNullOrEmpty(user.Password) ? GetSha1String(string.Empty) : user.Password;
+            var success = string.Equals(GetPasswordHash(user), password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
 
-            var success = string.Equals(existingPasswordString, password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+            if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
+            {
+                success = string.Equals(GetLocalPasswordHash(user), password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+            }
 
             // Update LastActivityDate and LastLoginDate, then save
             if (success)
@@ -156,6 +164,25 @@ namespace MediaBrowser.Server.Implementations.Library
             _logger.Info("Authentication request for {0} {1}.", user.Name, (success ? "has succeeded" : "has been denied"));
 
             return success;
+        }
+
+        private string GetPasswordHash(User user)
+        {
+            return string.IsNullOrEmpty(user.Password)
+                ? GetSha1String(string.Empty)
+                : user.Password;
+        }
+
+        private string GetLocalPasswordHash(User user)
+        {
+            return string.IsNullOrEmpty(user.LocalPassword)
+                ? GetSha1String(string.Empty)
+                : user.LocalPassword;
+        }
+
+        private bool IsPasswordEmpty(string passwordHash)
+        {
+            return string.Equals(passwordHash, GetSha1String(string.Empty), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -195,6 +222,65 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return users;
+        }
+
+        public UserDto GetUserDto(User user, string remoteEndPoint = null)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            var passwordHash = GetPasswordHash(user);
+
+            var hasConfiguredDefaultPassword = !IsPasswordEmpty(passwordHash);
+
+            var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+                !IsPasswordEmpty(GetLocalPasswordHash(user)) :
+                hasConfiguredDefaultPassword;
+
+            var dto = new UserDto
+            {
+                Id = user.Id.ToString("N"),
+                Name = user.Name,
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasConfiguredDefaultPassword,
+                LastActivityDate = user.LastActivityDate,
+                LastLoginDate = user.LastLoginDate,
+                Configuration = user.Configuration
+            };
+
+            var image = user.GetImageInfo(ImageType.Primary, 0);
+
+            if (image != null)
+            {
+                dto.PrimaryImageTag = GetImageCacheTag(user, image);
+
+                try
+                {
+                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
+                }
+                catch (Exception ex)
+                {
+                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
+                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
+                }
+            }
+
+            return dto;
+        }
+
+        private string GetImageCacheTag(BaseItem item, ItemImageInfo image)
+        {
+            try
+            {
+                return _imageProcessorFactory().GetImageCacheTag(item, image);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting {0} image info for {1}", ex, image.Type, image.Path);
+                return null;
+            }
         }
 
         /// <summary>
@@ -398,7 +484,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("user");
             }
 
-            user.Password = string.IsNullOrEmpty(newPassword) ? string.Empty : GetSha1String(newPassword);
+            user.Password = string.IsNullOrEmpty(newPassword) ? GetSha1String(string.Empty) : GetSha1String(newPassword);
 
             await UpdateUser(user).ConfigureAwait(false);
 

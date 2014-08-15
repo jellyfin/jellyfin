@@ -934,19 +934,50 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetLinkedChildren(User user)
         {
-            if (!FilterLinkedChildrenPerUser)
+            if (!FilterLinkedChildrenPerUser || user == null)
             {
                 return GetLinkedChildren();
             }
 
             var locations = user.RootFolder
-                .Children
+                .GetChildren(user, true)
                 .OfType<CollectionFolder>()
                 .SelectMany(i => i.PhysicalLocations)
                 .ToList();
             
-            return LinkedChildren.Where(i => string.IsNullOrWhiteSpace(i.Path) || locations.Any(l => FileSystem.ContainsSubPath(l, i.Path)))
-                .Select(GetLinkedChild)
+            return LinkedChildren
+                .Select(i =>
+                {
+                    var requiresPostFilter = true;
+
+                    if (!string.IsNullOrWhiteSpace(i.Path))
+                    {
+                        requiresPostFilter = false;
+
+                        if (!locations.Any(l => FileSystem.ContainsSubPath(l, i.Path)))
+                        {
+                            return null;
+                        }
+                    }
+
+                    var child = GetLinkedChild(i);
+
+                    if (requiresPostFilter && child != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(child.Path))
+                        {
+                            Logger.Debug("Found LinkedChild with null path: {0}", child.Name);
+                            return child;
+                        }
+
+                        if (!locations.Any(l => FileSystem.ContainsSubPath(l, child.Path)))
+                        {
+                            return null;
+                        }
+                    }
+
+                    return child;
+                })
                 .Where(i => i != null);
         }
 

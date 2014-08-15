@@ -1,6 +1,8 @@
 {
     "LabelExit": "Tutup",
+    "HeaderPassword": "Password",
     "LabelVisitCommunity": "Melawat Masyarakat",
+    "HeaderLocalAccess": "Local Access",
     "LabelGithubWiki": "Github Wiki",
     "LabelSwagger": "Swagger",
     "LabelStandard": "Biasa",
@@ -695,6 +697,10 @@
     "LabelMaxStreamingBitrateHelp": "Specify a max bitrate when streaming.",
     "LabelMaxStaticBitrate": "Max sync bitrate:",
     "LabelMaxStaticBitrateHelp": "Specify a max bitrate when syncing content at high quality.",
+    "LabelMusicStaticBitrate": "Music sync bitrate:",
+    "LabelMusicStaticBitrateHelp": "Specify a max bitrate when syncing music",
+    "LabelMusicStreamingTranscodingBitrate": "Music transcoding bitrate:",
+    "LabelMusicStreamingTranscodingBitrateHelp": "Specify a max bitrate when streaming music",
     "OptionIgnoreTranscodeByteRangeRequests": "Ignore transcode byte range requests",
     "OptionIgnoreTranscodeByteRangeRequestsHelp": "If enabled, these requests will be honored but will ignore the byte range header.",
     "LabelFriendlyName": "Friendly name",
@@ -982,5 +988,17 @@
     "AppDeviceValues": "App: {0}, Device: {1}",
     "ProviderValue": "Provider: {0}",
     "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
-    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder"
+    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder",
+    "HeaderRecentActivity": "Recent Activity",
+    "HeaderPeople": "People",
+    "HeaderDownloadPeopleMetadataFor": "Download biography and images for:",
+    "OptionComposers": "Composers",
+    "OptionOthers": "Others",
+    "HeaderDownloadPeopleMetadataForHelp": "Enabling additional options will provide more on-screen information but will result in slower library scans.",
+    "ViewTypeFolders": "Folders",
+    "LabelDisplayFoldersView": "Display a folders view to show plain media folders",
+    "ViewTypeLiveTvRecordingGroups": "Recordings",
+    "ViewTypeLiveTvChannels": "Channels",
+    "LabelAllowLocalAccessWithoutPassword": "Allow local access without a password",
+    "LabelAllowLocalAccessWithoutPasswordHelp": "When enabled, a password will not be required when signing in from within your home network."
 }

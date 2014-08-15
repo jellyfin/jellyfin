@@ -806,6 +806,8 @@ namespace MediaBrowser.Api.Playback
 
             if (string.IsNullOrEmpty(state.MediaPath))
             {
+                var checkCodecs = false;
+
                 if (string.Equals(state.ItemType, typeof(LiveTvChannel).Name))
                 {
                     var streamInfo = await LiveTvManager.GetChannelStream(state.Request.Id, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -824,6 +826,9 @@ namespace MediaBrowser.Api.Playback
                         state.MediaPath = streamInfo.Url;
                         state.InputProtocol = MediaProtocol.Http;
                     }
+
+                    AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
+                    checkCodecs = true;
                 }
 
                 else if (string.Equals(state.ItemType, typeof(LiveTvVideoRecording).Name) ||
@@ -844,6 +849,24 @@ namespace MediaBrowser.Api.Playback
                     {
                         state.MediaPath = streamInfo.Url;
                         state.InputProtocol = MediaProtocol.Http;
+                    }
+
+                    AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
+                    checkCodecs = true;
+                }
+
+                var videoRequest = state.VideoRequest;
+
+                if (videoRequest != null && checkCodecs)
+                {
+                    if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
+                    {
+                        state.OutputVideoCodec = "copy";
+                    }
+
+                    if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
+                    {
+                        state.OutputAudioCodec = "copy";
                     }
                 }
             }

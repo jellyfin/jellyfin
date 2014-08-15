@@ -24,6 +24,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The password.</value>
         public string Password { get; set; }
+        public string LocalPassword { get; set; }
 
         /// <summary>
         /// Gets or sets the path.

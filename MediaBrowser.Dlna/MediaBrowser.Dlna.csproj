@@ -73,6 +73,7 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
+    <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
     <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
@@ -187,6 +188,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Images\logo240.jpg" />
     <EmbeddedResource Include="Images\logo240.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

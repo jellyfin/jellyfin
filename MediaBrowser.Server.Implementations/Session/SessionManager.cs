@@ -1211,7 +1211,7 @@ namespace MediaBrowser.Server.Implementations.Session
             bool isLocal)
         {
             var result = (isLocal && string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
-                await _userManager.AuthenticateUser(request.Username, request.Password).ConfigureAwait(false);
+                await _userManager.AuthenticateUser(request.Username, request.Password, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)
             {
@@ -1234,10 +1234,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 request.RemoteEndPoint,
                 user)
                 .ConfigureAwait(false);
-
+            
             return new AuthenticationResult
             {
-                User = _dtoService.GetUserDto(user),
+                User = _userManager.GetUserDto(user, request.RemoteEndPoint),
                 SessionInfo = GetSessionInfoDto(session),
                 AccessToken = token,
                 ServerId = _appHost.ServerId

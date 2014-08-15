@@ -79,6 +79,7 @@ namespace MediaBrowser.Dlna
                 //new WindowsMediaCenterProfile(),
                 new WindowsPhoneProfile(),
                 new AndroidProfile(),
+                new DirectTvProfile(),
                 new DefaultProfile()
             };
 

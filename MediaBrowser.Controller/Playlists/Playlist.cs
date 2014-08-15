@@ -72,30 +72,7 @@ namespace MediaBrowser.Controller.Playlists
 
             }).Where(m =>  string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
 
-            return FilterInaccessibleItems(inputItems, user);
-        }
-
-        public static IEnumerable<BaseItem> FilterInaccessibleItems(IEnumerable<BaseItem> items, User user)
-        {
-            return items;
-            //var locations = user.RootFolder.Children.OfType<CollectionFolder>().SelectMany(i => i.PhysicalLocations).ToList();
-
-            //return items.Where(i =>
-            //{
-            //    var parent = i.Parent;
-
-            //    while (parent != null)
-            //    {
-            //        parent = parent.Parent;
-
-            //        if (parent != null && parent.Parent is AggregateFolder)
-            //        {
-            //            break;
-            //        }
-            //    }
-
-            //    return parent == null || locations.Contains(parent.Path, StringComparer.OrdinalIgnoreCase);
-            //});
+            return inputItems;
         }
 
         [IgnoreDataMember]

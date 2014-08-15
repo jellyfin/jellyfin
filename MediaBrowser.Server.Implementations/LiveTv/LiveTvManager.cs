@@ -17,6 +17,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
+        private readonly IJsonSerializer _jsonSerializer;
 
         private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
@@ -57,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization)
+        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -67,6 +69,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _libraryManager = libraryManager;
             _taskManager = taskManager;
             _localization = localization;
+            _jsonSerializer = jsonSerializer;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
@@ -299,7 +302,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             _refreshedPrograms.TryAdd(program.Id, true);
-            
+
             await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
         }
 
@@ -351,6 +354,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     info = await service.GetRecordingStream(recording.Id, cancellationToken).ConfigureAwait(false);
                 }
 
+                _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
                 Sanitize(info);
 
                 var data = new LiveStreamData

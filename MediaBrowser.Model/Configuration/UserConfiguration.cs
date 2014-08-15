@@ -75,6 +75,8 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayCollectionsView { get; set; }
         public bool DisplayFoldersView { get; set; }
 
+        public bool EnableLocalPassword { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -95,6 +97,7 @@ namespace MediaBrowser.Model.Configuration
 
             ExcludeFoldersFromGrouping = new string[] { };
             DisplayCollectionsView = true;
+            DisplayFoldersView = true;
         }
     }
 }
