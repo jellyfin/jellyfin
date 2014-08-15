@@ -44,46 +44,6 @@ namespace MediaBrowser.ServerApplication.Networking
             };
         }
 
-        public bool IsInLocalNetwork(string endpoint)
-        {
-            if (string.IsNullOrWhiteSpace(endpoint))
-            {
-                throw new ArgumentNullException("endpoint");
-            }
-
-            IPAddress address;
-            if (!IPAddress.TryParse(endpoint, out address))
-            {
-                return true;
-            }
-
-            const int lengthMatch = 4;
-
-            if (endpoint.Length >= lengthMatch)
-            {
-                var prefix = endpoint.Substring(0, lengthMatch);
-
-                if (GetLocalIpAddresses()
-                    .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return true;
-                }
-            }
-
-            // Private address space:
-            // http://en.wikipedia.org/wiki/Private_network
-
-            return
-
-                // If url was requested with computer name, we may see this
-                endpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
-
-                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
-        }
-
         /// <summary>
         /// To the type of the network share.
         /// </summary>
