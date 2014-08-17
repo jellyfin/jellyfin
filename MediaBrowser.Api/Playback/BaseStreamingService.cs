@@ -468,11 +468,9 @@ namespace MediaBrowser.Api.Playback
         /// <param name="state">The state.</param>
         /// <param name="outputVideoCodec">The output video codec.</param>
         /// <param name="allowTimeStampCopy">if set to <c>true</c> [allow time stamp copy].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         protected string GetOutputSizeParam(StreamState state,
             string outputVideoCodec,
-            CancellationToken cancellationToken,
             bool allowTimeStampCopy = true)
         {
             // http://sonnati.wordpress.com/2012/10/19/ffmpeg-the-swiss-army-knife-of-internet-streaming-part-vi/
@@ -562,7 +560,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
             {
-                var subParam = GetTextSubtitleParam(state, cancellationToken);
+                var subParam = GetTextSubtitleParam(state);
 
                 filters.Add(subParam);
 
@@ -584,10 +582,8 @@ namespace MediaBrowser.Api.Playback
         /// Gets the text subtitle param.
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
-        protected string GetTextSubtitleParam(StreamState state,
-            CancellationToken cancellationToken)
+        protected string GetTextSubtitleParam(StreamState state)
         {
             var seconds = Math.Round(TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds);
 
@@ -635,7 +631,7 @@ namespace MediaBrowser.Api.Playback
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec, CancellationToken.None).TrimEnd('"');
+                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec).TrimEnd('"');
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 

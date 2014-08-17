@@ -70,6 +70,8 @@
 
             currentItem = item;
 
+            Backdrops.setBackdrops(page, [item]);
+
             renderHeader(page, item, context);
 
             var name = item.Name;
@@ -97,7 +99,7 @@
 
                 var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + editQuery : null;
 
-                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref));
+                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
                 if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
                     $('.btnEdit', page).show();
@@ -162,49 +164,49 @@
         if (item.MovieCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
-            html += '<label for="radioMovies">Movies (' + item.MovieCount + ')</label>';
+            html += '<label for="radioMovies">Movies</label>';
         }
 
         if (item.SeriesCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
-            html += '<label for="radioShows">TV Shows (' + item.SeriesCount + ')</label>';
+            html += '<label for="radioShows">TV Shows</label>';
         }
 
         if (item.EpisodeCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
-            html += '<label for="radioEpisodes">Episodes (' + item.EpisodeCount + ')</label>';
+            html += '<label for="radioEpisodes">Episodes</label>';
         }
 
         if (item.TrailerCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
-            html += '<label for="radioTrailers">Trailers (' + item.TrailerCount + ')</label>';
+            html += '<label for="radioTrailers">Trailers</label>';
         }
 
         if (item.GameCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
-            html += '<label for="radioGames">Games (' + item.GameCount + ')</label>';
+            html += '<label for="radioGames">Games</label>';
         }
 
         if (item.AlbumCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioAlbums">Albums (' + item.AlbumCount + ')</label>';
+            html += '<label for="radioAlbums">Albums</label>';
         }
 
         if (item.SongCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioSongs">Songs (' + item.SongCount + ')</label>';
+            html += '<label for="radioSongs">Songs</label>';
         }
 
         if (item.MusicVideoCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioMusicVideos">Music Videos (' + item.MusicVideoCount + ')</label>';
+            html += '<label for="radioMusicVideos">Music Videos</label>';
         }
 
         html += '</fieldset>';
@@ -321,7 +323,7 @@
 
     function renderDetails(page, item, context) {
 
-        LibraryBrowser.renderDetailPageBackdrop(page, item);
+        //LibraryBrowser.renderDetailPageBackdrop(page, item);
         LibraryBrowser.renderOverview($('.itemOverview', page), item);
 
         renderUserDataIcons(page, item);
@@ -472,22 +474,17 @@
             }
             else if (query.IncludeItemTypes == "MusicAlbum") {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    shape: "square",
-                    context: 'music',
-                    showTitle: true,
-                    showParentTitle: true
+                    smallIcon: true
                 });
 
             }
             else {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    shape: "square",
-                    showTitle: true,
-                    centerText: true
+                    smallIcon: true
                 });
             }
 

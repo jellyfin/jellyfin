@@ -107,6 +107,41 @@
         return val == '1' || (val != '0' && !$.browser.mobile);
     }
 
+    function setBackdrops(page, items) {
+
+        var images = items.filter(function (i) {
+
+            return i.BackdropImageTags.length > 0;
+
+        }).map(function (i) {
+            return {
+                id: i.Id,
+                tag: i.BackdropImageTags[0]
+            };
+        });
+
+        if (images.length) {
+            $(page).addClass('backdropPage');
+
+            var index = getRandom(0, images.length - 1);
+            var item = images[index];
+
+            var screenWidth = $(window).width();
+
+            var imgUrl = ApiClient.getScaledImageUrl(item.id, {
+                type: "Backdrop",
+                tag: item.tag,
+                maxWidth: screenWidth,
+                quality: 80
+            });
+
+            getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+
+        } else {
+            $(page).removeClass('backdropPage');
+        }
+    }
+
     $(document).on('pagebeforeshow', ".page", function () {
 
         var page = this;
@@ -127,5 +162,10 @@
         }
 
     });
+
+    window.Backdrops = {
+
+        setBackdrops: setBackdrops
+    };
 
 })(jQuery, document);

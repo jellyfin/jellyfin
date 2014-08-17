@@ -7,7 +7,7 @@
             if (this.checked) {
                 SupporterPage.addRecurringFields();
             } else {
-                SupporterPage.removeRecurringFields();
+                SupporterPage.removeRecurringFields(page);
             }
         });
     },
@@ -17,7 +17,7 @@
         $("<input type='hidden' name='a3' class='pprecurring' />")
             .attr('value', $('#donateAmt', '#supporterPage').val())
             .appendTo("#payPalForm", '#supporterPage');
-        $("<input type='hidden' name='p3' value='6' class='pprecurring' />")
+        $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
             .appendTo("#payPalForm", '#supporterPage');
         $("<input type='hidden' name='t3' value='M' class='pprecurring' />")
             .appendTo("#payPalForm", '#supporterPage');
@@ -33,11 +33,11 @@
             
     },
     
-    removeRecurringFields: function() {
-        $('.pprecurring', '#supporterPage').remove();
+    removeRecurringFields: function(page) {
+        $('.pprecurring', page).remove();
         
         //change command back
-        $('#ppCmd', '#supporterPage').val('_xclick');
+        $('#ppCmd', page).val('_xclick');
 
     },
     

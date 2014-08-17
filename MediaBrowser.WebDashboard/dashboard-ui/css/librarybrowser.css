@@ -17,7 +17,11 @@
 }
 
 .backdropPage {
-    background-color: rgba(15, 15,15, .94) !important;
+    background-color: rgba(15, 15,15, .86) !important;
+}
+
+.backdropPage:not(.lightBackdropPage) {
+    background-color: rgba(15, 15,15, .92) !important;
 }
 
 .backdropContainer {
@@ -125,7 +129,7 @@
     }
 }
 
-.detailPageContent {
+.detailPageContent, .detailPageContent>table {
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -441,6 +445,11 @@ a.itemTag:hover {
     box-shadow: 0 0 20px 3px #38c;
 }
 
+.itemByNameImageContainer .itemDetailImage {
+    margin: 0 !important;
+    max-height: 220px;
+}
+
 .parentName {
     font-size: 14px;
     display: block;
@@ -457,18 +466,22 @@ a.itemTag:hover {
 
 .itemOverview {
     text-overflow: ellipsis;
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: .5em;
 }
 
 .desktopOverview {
     min-width: 500px;
-    max-height: 100px;
-    overflow-y: auto;
-    padding-right: 1em;
 }
 
 .mobileOverview {
     display: none;
     padding: 0 1em;
+}
+
+.empty {
+    margin: 0;
 }
 
 .mobileGenres {
@@ -608,7 +621,7 @@ a.itemTag:hover {
         margin-top: 0;
     }
 
-    .mobileOverview, .mobileGenres, .mobileDetailButtons {
+    .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
         display: block;
     }
 
@@ -626,15 +639,11 @@ a.itemTag:hover {
             display: block !important;
         }
 
-    .primaryDetailPageContent {
-        margin: 0 1em;
+    .primaryDetailPageContent .userDataIcons {
+        margin-left: 0 !important;
+        margin-top: 1em;
+        display: block;
     }
-
-        .primaryDetailPageContent .userDataIcons {
-            margin-left: 0 !important;
-            margin-top: 1.5em;
-            display: block;
-        }
 }
 
 
@@ -655,13 +664,6 @@ a.itemTag:hover {
         width: auto;
     }
 }
-
-/*@media all and (min-width: 1000px) {
-
-    .primaryDetailPageContent {
-        max-width: 850px;
-    }
-}*/
 
 .detailPageParentLink {
     text-decoration: none;
@@ -956,17 +958,6 @@ a.itemTag:hover {
         margin-right: auto;
     }
 
-@media all and (min-width: 750px) {
-
-    .lnkSibling:not(.hide) {
-        display: block;
-    }
-
-    .itemBackdrop:not(.noBackdrop) {
-        border-bottom: 1px solid #111;
-    }
-}
-
 @media all and (min-height: 500px) {
 
     .alphabetPicker {
@@ -1209,8 +1200,8 @@ a.itemTag:hover {
     }
 
     .itemsListview .playedIndicator {
-        right: 1em;
-        top: 55%;
+        left: 55px;
+        top: 2px;
         background: rgba(82, 181, 75, .8);
     }
 
@@ -1266,7 +1257,8 @@ a.itemTag:hover {
 }
 
 .listItem a + a {
-    background-color: #202020 !important;
+    background-color: transparent !important;
+    z-index: 1000;
 }
 
 .listItem:hover a {

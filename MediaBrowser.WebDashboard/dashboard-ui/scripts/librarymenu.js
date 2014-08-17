@@ -254,7 +254,8 @@
         } else {
 
             $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
-            $('.headerSelectedPlayer').html(info.deviceName || info.name);
+
+            $('.headerSelectedPlayer').html((info.deviceName || info.name));
         }
     }
 

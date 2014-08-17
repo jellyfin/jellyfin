@@ -27,7 +27,7 @@
 
         getDefaultItemsView: function (view, mobileView) {
 
-            return view;
+            return $.browser.mobile ? mobileView : view;
 
         },
 
@@ -578,9 +578,14 @@
 
         },
 
-        getListViewIndex: function (item, sortBy) {
+        getListViewIndex: function (item, options) {
 
-            sortBy = (sortBy || '').toLowerCase();
+            if (options.index == 'disc') {
+
+                return item.ParentIndexNumber == null ? '' : 'Disc ' + item.ParentIndexNumber;
+            }
+
+            var sortBy = (options.sortBy || '').toLowerCase();
             var code, name;
 
             if (sortBy.indexOf('sortname') == 0) {
@@ -666,7 +671,8 @@
                 var html = '';
 
                 if (options.showIndex !== false) {
-                    var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options.sortBy);
+
+                    var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options);
 
                     if (itemGroupTitle != groupTitle) {
 
@@ -2026,7 +2032,7 @@
             });
         },
 
-        getDetailImageHtml: function (item, href) {
+        getDetailImageHtml: function (item, href, preferThumb) {
 
             var imageTags = item.ImageTags || {};
 
@@ -2040,7 +2046,15 @@
 
             var imageHeight = 280;
 
-            if (imageTags.Primary) {
+            if (preferThumb && imageTags.Thumb) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Thumb",
+                    maxHeight: imageHeight,
+                    tag: item.ImageTags.Thumb
+                });
+            }
+            else if (imageTags.Primary) {
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
@@ -2262,6 +2276,12 @@
             $('a', elem).each(function () {
                 $(this).attr("target", "_blank");
             });
+
+            if (overview) {
+                elem.removeClass('empty');
+            } else {
+                elem.addClass('empty');
+            }
 
         },
 

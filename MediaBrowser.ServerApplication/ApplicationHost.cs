@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Api;
+﻿using System.Net;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -310,20 +311,6 @@ namespace MediaBrowser.ServerApplication
                 saveConfig = true;
             }
 
-            if (ServerConfigurationManager.Configuration.ChapterOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("chapters", ServerConfigurationManager.Configuration.ChapterOptions);
-                ServerConfigurationManager.Configuration.ChapterOptions = null;
-                saveConfig = true;
-            }
-
-            if (ServerConfigurationManager.Configuration.ChannelOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("channels", ServerConfigurationManager.Configuration.ChannelOptions);
-                ServerConfigurationManager.Configuration.ChannelOptions = null;
-                saveConfig = true;
-            }
-
             if (ServerConfigurationManager.Configuration.NotificationOptions != null)
             {
                 ServerConfigurationManager.SaveConfiguration("notifications", ServerConfigurationManager.Configuration.NotificationOptions);
@@ -385,117 +372,6 @@ namespace MediaBrowser.ServerApplication
             {
                 // Not there, no big deal
             }
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "remote-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "chapter-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-audio-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-tv"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-collections"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-movies"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-movies"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-music"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-tv"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-people"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tvdb-v3"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-            });
         }
 
         private void MigrateUserFolders()

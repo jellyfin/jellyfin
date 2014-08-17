@@ -330,7 +330,7 @@ function parseISO8601Date(s, options) {
     }
 
     return new Date(ms);
-};
+}
 
 // jqm.page.params.js - version 0.1
 // Copyright (c) 2011, Kin Blas

@@ -221,14 +221,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public object Post(MarkPlayedItem request)
-        {
-            var result = MarkPlayed(request).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        private async Task<UserItemDataDto> MarkPlayed(MarkPlayedItem request)
+        public async Task<object> Post(MarkPlayedItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -250,18 +243,18 @@ namespace MediaBrowser.Api.UserLibrary
                 await UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed).ConfigureAwait(false);
             }
 
-            return dto;
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(OnPlaybackStart request)
+        public Task Post(OnPlaybackStart request)
         {
             var queueableMediaTypes = (request.QueueableMediaTypes ?? string.Empty);
 
-            Post(new ReportPlaybackStart
+            return Post(new ReportPlaybackStart
             {
                 CanSeek = request.CanSeek,
                 ItemId = request.Id,
@@ -272,22 +265,20 @@ namespace MediaBrowser.Api.UserLibrary
             });
         }
 
-        public void Post(ReportPlaybackStart request)
+        public Task Post(ReportPlaybackStart request)
         {
             request.SessionId = GetSession().Id;
 
-            var task = _sessionManager.OnPlaybackStart(request);
-
-            Task.WaitAll(task);
+            return _sessionManager.OnPlaybackStart(request);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(OnPlaybackProgress request)
+        public Task Post(OnPlaybackProgress request)
         {
-            Post(new ReportPlaybackProgress
+            return Post(new ReportPlaybackProgress
             {
                 ItemId = request.Id,
                 PositionTicks = request.PositionTicks,
@@ -300,22 +291,20 @@ namespace MediaBrowser.Api.UserLibrary
             });
         }
 
-        public void Post(ReportPlaybackProgress request)
+        public Task Post(ReportPlaybackProgress request)
         {
             request.SessionId = GetSession().Id;
 
-            var task = _sessionManager.OnPlaybackProgress(request);
-
-            Task.WaitAll(task);
+            return _sessionManager.OnPlaybackProgress(request);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(OnPlaybackStopped request)
+        public Task Delete(OnPlaybackStopped request)
         {
-            Post(new ReportPlaybackStopped
+            return Post(new ReportPlaybackStopped
             {
                 ItemId = request.Id,
                 PositionTicks = request.PositionTicks,
@@ -323,13 +312,11 @@ namespace MediaBrowser.Api.UserLibrary
             });
         }
 
-        public void Post(ReportPlaybackStopped request)
+        public Task Post(ReportPlaybackStopped request)
         {
             request.SessionId = GetSession().Id;
 
-            var task = _sessionManager.OnPlaybackStopped(request);
-
-            Task.WaitAll(task);
+            return _sessionManager.OnPlaybackStopped(request);
         }
 
         /// <summary>

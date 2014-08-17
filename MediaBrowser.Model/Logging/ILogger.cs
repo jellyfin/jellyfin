@@ -52,14 +52,6 @@ namespace MediaBrowser.Model.Logging
         void FatalException(string message, Exception exception, params object[] paramList);
         
         /// <summary>
-        /// Logs the specified severity.
-        /// </summary>
-        /// <param name="severity">The severity.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="paramList">The param list.</param>
-        void Log(LogSeverity severity, string message, params object[] paramList);
-
-        /// <summary>
         /// Logs the exception.
         /// </summary>
         /// <param name="message">The message.</param>

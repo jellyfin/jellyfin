@@ -348,22 +348,10 @@ namespace MediaBrowser.Model.Dto
         public UserItemDataDto UserData { get; set; }
 
         /// <summary>
-        /// Gets or sets the played percentage.
-        /// </summary>
-        /// <value>The played percentage.</value>
-        public double? PlayedPercentage { get; set; }
-
-        /// <summary>
         /// Gets or sets the recursive item count.
         /// </summary>
         /// <value>The recursive item count.</value>
         public int? RecursiveItemCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        public int? RecursiveUnplayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the child count.

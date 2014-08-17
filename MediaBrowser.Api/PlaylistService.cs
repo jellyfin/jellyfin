@@ -97,16 +97,15 @@ namespace MediaBrowser.Api
             _libraryManager = libraryManager;
         }
 
-        public object Post(CreatePlaylist request)
+        public async Task<object> Post(CreatePlaylist request)
         {
-            var task = _playlistManager.CreatePlaylist(new PlaylistCreationOptions
+            var item = await _playlistManager.CreatePlaylist(new PlaylistCreationOptions
             {
                 Name = request.Name,
                 ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
                 UserId = request.UserId
-            });
 
-            var item = task.Result;
+            }).ConfigureAwait(false);
 
             var dto = _dtoService.GetBaseItemDto(item, new List<ItemFields>());
 

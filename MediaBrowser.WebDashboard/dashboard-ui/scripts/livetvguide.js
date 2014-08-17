@@ -396,6 +396,10 @@
         start.setHours(0, 0, 0, 0);
         end.setHours(0, 0, 0, 0);
 
+        if (start.getTime() >= end.getTime()) {
+            end.setDate(start.getDate() + 1);
+        }
+
         start = new Date(Math.max(today, start));
 
         var html = '';
@@ -417,7 +421,10 @@
 
         var val = elem.val();
         var date = new Date();
-        date.setTime(parseInt(val));
+
+        if (val) {
+            date.setTime(parseInt(val));
+        }
 
         changeDate(page, date);
     }

@@ -256,9 +256,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     SetSpecialCounts(folder, user, dto, fields);
                 }
 
-                dto.UserData.Played = dto.PlayedPercentage.HasValue && dto.PlayedPercentage.Value >= 100;
-                dto.UserData.PlayedPercentage = dto.PlayedPercentage;
-                dto.UserData.UnplayedItemCount = dto.RecursiveUnplayedItemCount;
+                dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
             }
 
             else
@@ -1365,11 +1363,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
-            dto.RecursiveUnplayedItemCount = unplayed;
+            dto.UserData.UnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
             {
-                dto.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
+                dto.UserData.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
             }
 
             if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))

@@ -70,6 +70,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return currentUserId;
         };
 
+        self.accessToken = function() {
+            return accessToken;
+        };
+
         self.setCurrentUserId = function (userId, token) {
 
             currentUserId = userId;

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
 using System.Collections.Generic;
@@ -64,9 +65,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                 await new ProgressiveFileCopier(_fileSystem, _job)
                     .StreamFile(Path, responseStream).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.Error("Error streaming media. The client has most likely disconnected or transcoding has failed.");
+                Logger.ErrorException("Error streaming media. The client has most likely disconnected or transcoding has failed.", ex);
 
                 throw;
             }

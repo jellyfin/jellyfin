@@ -726,7 +726,9 @@
 
                 $('#childrenContent', page).html(LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true
+                    smallIcon: true,
+                    showIndex: true,
+                    index: 'disc'
 
                 })).trigger('create').createCardMenus();
 

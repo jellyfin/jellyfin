@@ -27,9 +27,13 @@
     };
 
     var PlayerName = 'Chromecast';
+
+    var messageNamespace = 'urn:x-cast:com.google.cast.sample.playlist';
+
     var cPlayer = {
         deviceState: DEVICE_STATE.IDLE
     };
+
     var CastPlayer = function () {
 
         /* device variables */
@@ -109,7 +113,7 @@
         // v2 Id 472F0435
         // default receiver chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
-        var applicationID = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
+        var applicationID = "472F0435";
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -146,16 +150,28 @@
      * status gets synced up with current media of the session 
      */
     CastPlayer.prototype.sessionListener = function (e) {
+
         this.session = e;
         if (this.session) {
+
+            console.log('sessionListener');
+
             this.deviceState = DEVICE_STATE.ACTIVE;
+
             MediaController.setActivePlayer(PlayerName);
+
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
 
+            this.session.addMessageListener(messageNamespace, this.messageListener.bind(this));
             this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
         }
+    };
+
+    CastPlayer.prototype.messageListener = function (namespace, message) {
+
+        console.log('Message from receiver, namespace: ' + namespace + ', message: ' + message);
     };
 
     /**
@@ -179,7 +195,12 @@
      * session update listener
      */
     CastPlayer.prototype.sessionUpdateListener = function (isAlive) {
-        if (!isAlive) {
+
+        console.log('sessionUpdateListener alive: ' + isAlive);
+
+        if (isAlive) {
+        }
+        else {
             this.session = null;
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
@@ -255,21 +276,31 @@
      * Loads media into a running receiver application
      * @param {Number} mediaIndex An index number to indicate current media content
      */
-    CastPlayer.prototype.loadMedia = function (userId, options, command) {
+    CastPlayer.prototype.loadMedia = function (options, command) {
 
         if (!this.session) {
             console.log("no session");
             return;
         }
 
-        options.userId = userId;
-
         var message = {
-            playOptions: options,
-            command: command
+            options: options,
+            command: command,
+
+            userId: Dashboard.getCurrentUserId(),
+            deviceId: ApiClient.deviceId(),
+            accessToken: ApiClient.accessToken(),
+            serverAddress: ApiClient.serverAddress()
         };
 
-        this.session.sendMessage('urn:x-cast:com.google.cast.sample.playlist', JSON.stringify(message));
+        message = JSON.stringify(message);
+        //console.log(message);
+
+        this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
+    };
+
+    CastPlayer.prototype.onPlayCommandSuccess = function() {
+        console.log('Play command was sent ok.');
     };
 
     /**
@@ -503,6 +534,9 @@
      * @param {Object} e An media status update object 
      */
     CastPlayer.prototype.updateProgressBar = function (e) {
+
+        console.log('CastPlayer.updateProgressBar');
+
         if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
             clearInterval(this.timer);
             this.castPlayerState = PLAYER_STATE.STOPPED;
@@ -529,6 +563,9 @@
      * Update progress bar based on timer  
      */
     CastPlayer.prototype.updateProgressBarByTimer = function () {
+
+        console.log('CastPlayer.updateProgressBarByTimer');
+
         if (!this.currentMediaTime) {
             this.currentMediaDuration = this.session.media[0].currentTime;
         }
@@ -575,84 +612,13 @@
     // Create Cast Player
     var castPlayer = new CastPlayer();
 
-    function getCustomData(item, mediaSourceId, startTimeTicks) {
-
-        return {
-
-            serverAddress: ApiClient.serverAddress(),
-            itemId: item.Id,
-            userId: Dashboard.getCurrentUserId(),
-            deviceName: ApiClient.deviceName(),
-            //deviceId: ApiClient.deviceId(),
-            startTimeTicks: startTimeTicks || 0,
-            runTimeTicks: item.RunTimeTicks
-        };
-
-    }
-
-    function translateItemsForPlayback(items) {
-
-        var deferred = $.Deferred();
-
-        var firstItem = items[0];
-        var promise;
-
-        if (firstItem.Type == "Playlist") {
-
-            promise = self.getItemsForPlayback({
-                ParentId: firstItem.Id,
-            });
-        }
-        else if (firstItem.Type == "MusicArtist") {
-
-            promise = self.getItemsForPlayback({
-                Artists: firstItem.Name,
-                Filters: "IsNotFolder",
-                Recursive: true,
-                SortBy: "SortName",
-                MediaTypes: "Audio"
-            });
-
-        }
-        else if (firstItem.Type == "MusicGenre") {
-
-            promise = self.getItemsForPlayback({
-                Genres: firstItem.Name,
-                Filters: "IsNotFolder",
-                Recursive: true,
-                SortBy: "SortName",
-                MediaTypes: "Audio"
-            });
-        }
-        else if (firstItem.IsFolder) {
-
-            promise = self.getItemsForPlayback({
-                ParentId: firstItem.Id,
-                Filters: "IsNotFolder",
-                Recursive: true,
-                SortBy: "SortName",
-                MediaTypes: "Audio,Video"
-            });
-        }
-
-        if (promise) {
-            promise.done(function (result) {
-
-                deferred.resolveWith(null, [result.Items]);
-            });
-        } else {
-            deferred.resolveWith(null, [items]);
-        }
-
-        return deferred.promise();
-    }
-
     function chromecastPlayer() {
 
         var self = this;
 
         var getItemFields = "MediaSources,Chapters";
 
+        // MediaController needs this
         self.name = PlayerName;
 
         self.isPaused = false;
@@ -663,23 +629,88 @@
 
         self.runtimeTicks = 0;
 
-        $(castPlayer).on("/playback/complete", function (e) {
+        self.getItemsForPlayback = function (query) {
 
-            var state = self.getPlayerStateInternal();
+            var userId = Dashboard.getCurrentUserId();
 
-            $(self).trigger("playbackstop", [state]);
+            query.Limit = query.Limit || 100;
+            query.Fields = getItemFields;
+            query.ExcludeLocationTypes = "Virtual";
 
-        });
+            return ApiClient.getItems(userId, query);
+        };
 
-        $(castPlayer).on("/playback/update", function (e, data) {
+        self.translateItemsForPlayback = function(items) {
 
-            self.positionTicks = data.positionTicks;
-            self.runtimeTicks = data.runtimeTicks;
+            var deferred = $.Deferred();
 
-            var state = self.getPlayerStateInternal();
+            var firstItem = items[0];
+            var promise;
 
-            $(self).trigger("positionchange", [state]);
-        });
+            if (firstItem.Type == "Playlist") {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                });
+            } else if (firstItem.Type == "MusicArtist") {
+
+                promise = self.getItemsForPlayback({
+                    Artists: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+
+            } else if (firstItem.Type == "MusicGenre") {
+
+                promise = self.getItemsForPlayback({
+                    Genres: firstItem.Name,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio"
+                });
+            } else if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
+
+            if (promise) {
+                promise.done(function(result) {
+
+                    deferred.resolveWith(null, [result.Items]);
+                });
+            } else {
+                deferred.resolveWith(null, [items]);
+            }
+
+            return deferred.promise();
+        };
+
+        //$(castPlayer).on("/playback/complete", function (e) {
+
+        //    var state = self.getPlayerStateInternal();
+
+        //    $(self).trigger("playbackstop", [state]);
+
+        //});
+
+        //$(castPlayer).on("/playback/update", function (e, data) {
+
+        //    self.positionTicks = data.positionTicks;
+        //    self.runtimeTicks = data.runtimeTicks;
+
+        //    var state = self.getPlayerStateInternal();
+
+        //    $(self).trigger("positionchange", [state]);
+        //});
 
         self.play = function (options) {
 
@@ -687,7 +718,7 @@
 
                 if (options.items) {
 
-                    translateItemsForPlayback(options.items).done(function (items) {
+                    self.translateItemsForPlayback(options.items).done(function (items) {
 
                         self.playWithIntros(items, options, user);
                     });
@@ -700,7 +731,7 @@
 
                     }).done(function (result) {
 
-                        translateItemsForPlayback(result.Items).done(function (items) {
+                        self.translateItemsForPlayback(result.Items).done(function (items) {
 
                             self.playWithIntros(items, options, user);
                         });
@@ -716,10 +747,10 @@
 
             var firstItem = items[0];
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
                 self.playWithCommand(options, 'PlayNow');
-
-             }
+                return;
+            }
 
             ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
 
@@ -731,7 +762,17 @@
 
         self.playWithCommand = function (options, command) {
 
-            castPlayer.loadMedia(Dashboard.getCurrentUserId(), options, command);
+            if (!options.items) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).done(function(item) {
+
+                    options.items = [item];
+                    self.playWithCommand(options, command);
+                });
+
+                return;
+            }
+
+            castPlayer.loadMedia(options, command);
         };
 
         self.unpause = function () {
@@ -896,6 +937,7 @@
         self.getCurrentTargetInfo = function () {
 
             var appName = null;
+
             if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.receiver.friendlyName) {
                 appName = castPlayer.session.receiver.friendlyName;
             }
@@ -903,10 +945,11 @@
             return {
                 name: PlayerName,
                 id: PlayerName,
-                playerName: self.name, // TODO: PlayerName == self.name, so do we need to use either/or?
+                playerName: PlayerName,
                 playableMediaTypes: ["Audio", "Video"],
                 isLocalPlayer: false,
-                appName: appName,
+                appName: PlayerName,
+                deviceName: appName,
                 supportedCommands: ["VolumeUp",
                                     "VolumeDown",
                                     "Mute",
@@ -1014,15 +1057,15 @@
         };
     }
 
-    //MediaController.registerPlayer(new chromecastPlayer());
+    MediaController.registerPlayer(new chromecastPlayer());
 
-    //$(MediaController).on('playerchange', function () {
+    $(MediaController).on('playerchange', function () {
 
-    //    if (MediaController.getPlayerInfo().name == PlayerName) {
-    //        if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
-    //            castPlayer.launchApp();
-    //        }
-    //    }
-    //});
+        if (MediaController.getPlayerInfo().name == PlayerName) {
+            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+                castPlayer.launchApp();
+            }
+        }
+    });
 
 })(window, window.chrome, console);

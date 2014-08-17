@@ -111,9 +111,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSearchHints request)
+        public async Task<object> Get(GetSearchHints request)
         {
-            var result = GetSearchHintsAsync(request).Result;
+            var result = await GetSearchHintsAsync(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

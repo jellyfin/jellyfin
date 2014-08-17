@@ -231,6 +231,8 @@ namespace MediaBrowser.WebDashboard.Api
                 }    
             }
 
+            path = path.Replace("scripts/jquery.mobile-1.4.3.min.map", "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.map", StringComparison.OrdinalIgnoreCase);
+
             var localizationCulture = GetLocalizationCulture();
 
             // Don't cache if not configured to do so

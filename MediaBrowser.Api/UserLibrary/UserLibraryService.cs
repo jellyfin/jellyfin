@@ -400,7 +400,7 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(dtos.ToList());
         }
 
-        public object Get(GetUserViews request)
+        public async Task<object> Get(GetUserViews request)
         {
             var user = _userManager.GetUserById(new Guid(request.UserId));
 
@@ -418,7 +418,7 @@ namespace MediaBrowser.Api.UserLibrary
                 query.IncludeExternalContent = request.IncludeExternalContent.Value;
             }
 
-            var folders = _userViewManager.GetUserViews(query, CancellationToken.None).Result;
+            var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
             var dtos = folders.OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, fields, user))

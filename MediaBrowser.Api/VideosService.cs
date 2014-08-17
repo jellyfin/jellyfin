@@ -97,14 +97,7 @@ namespace MediaBrowser.Api
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public void Delete(DeleteAlternateSources request)
-        {
-            var task = RemoveAlternateVersions(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task RemoveAlternateVersions(DeleteAlternateSources request)
+        public async Task Delete(DeleteAlternateSources request)
         {
             var video = (Video)_libraryManager.GetItemById(request.Id);
 
@@ -119,14 +112,7 @@ namespace MediaBrowser.Api
             await video.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public void Post(MergeVersions request)
-        {
-            var task = MergeVersions(request);
-
-            Task.WaitAll(task);
-        }
-
-        private async Task MergeVersions(MergeVersions request)
+        public async Task Post(MergeVersions request)
         {
             var items = request.Ids.Split(',')
                 .Select(i => new Guid(i))
@@ -172,12 +158,12 @@ namespace MediaBrowser.Api
                     return 0;
                 })
                     .ThenByDescending(i =>
-                {
-                    var stream = i.GetDefaultVideoStream();
+                    {
+                        var stream = i.GetDefaultVideoStream();
 
-                    return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+                        return stream == null || stream.Width == null ? 0 : stream.Width.Value;
 
-                }).First();
+                    }).First();
             }
 
             foreach (var item in videos.Where(i => i.Id != primaryVersion.Id))

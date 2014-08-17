@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -198,14 +199,14 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetChannelFolder request)
+        public async Task<object> Get(GetChannelFolder request)
         {
-            return ToOptimizedResult(_channelManager.GetChannelFolder(request.UserId, CancellationToken.None).Result);
+            return ToOptimizedResult(await _channelManager.GetChannelFolder(request.UserId, CancellationToken.None).ConfigureAwait(false));
         }
-        
-        public object Get(GetChannels request)
+
+        public async Task<object> Get(GetChannels request)
         {
-            var result = _channelManager.GetChannels(new ChannelQuery
+            var result = await _channelManager.GetChannels(new ChannelQuery
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -213,14 +214,14 @@ namespace MediaBrowser.Api
                 SupportsLatestItems = request.SupportsLatestItems,
                 IsFavorite = request.IsFavorite
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetChannelItems request)
+        public async Task<object> Get(GetChannelItems request)
         {
-            var result = _channelManager.GetChannelItems(new ChannelItemQuery
+            var result = await _channelManager.GetChannelItems(new ChannelItemQuery
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -232,14 +233,14 @@ namespace MediaBrowser.Api
                 Filters = request.GetFilters().ToArray(),
                 Fields = request.GetItemFields().ToArray()
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetLatestChannelItems request)
+        public async Task<object> Get(GetLatestChannelItems request)
         {
-            var result = _channelManager.GetLatestChannelItems(new AllChannelMediaQuery
+            var result = await _channelManager.GetLatestChannelItems(new AllChannelMediaQuery
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -248,7 +249,7 @@ namespace MediaBrowser.Api
                 Filters = request.GetFilters().ToArray(),
                 Fields = request.GetItemFields().ToList()
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }

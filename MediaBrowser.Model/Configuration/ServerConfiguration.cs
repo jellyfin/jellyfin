@@ -180,9 +180,6 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitleOptions SubtitleOptions { get; set; }
 
-        public ChannelOptions ChannelOptions { get; set; }
-        public ChapterOptions ChapterOptions { get; set; }
-
         public bool DefaultMetadataSettingsApplied { get; set; }
 
         public bool EnableTokenAuthentication { get; set; }
