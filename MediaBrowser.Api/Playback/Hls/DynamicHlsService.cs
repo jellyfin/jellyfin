@@ -393,17 +393,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (EnableAdaptiveBitrateStreaming(state))
             {
-                var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
+                //var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
 
-                // By default, vary by just 200k
-                var variation = GetBitrateVariation(totalBitrate);
+                //// By default, vary by just 200k
+                //var variation = GetBitrateVariation(totalBitrate);
 
-                var newBitrate = totalBitrate - variation;
-                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
+                //var newBitrate = totalBitrate - variation;
+                //AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
 
-                variation *= 2;
-                newBitrate = totalBitrate - variation;
-                AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
+                //variation *= 2;
+                //newBitrate = totalBitrate - variation;
+                //AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
             }
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
