@@ -112,12 +112,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSearchCapabilities()
         {
-            return new Headers(true) { { "SearchCaps", "upnp:class,dc:title,upnp:artist" } };
+            return new Headers(true) { { "SearchCaps", "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords" } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortCapabilities()
         {
-            return new Headers(true) { { "SortCaps", string.Empty } };
+            return new Headers(true) { { "SortCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
@@ -317,14 +317,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<QueryResult<BaseItem>> GetChildrenSorted(Folder folder, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
-            if (search.SearchType == SearchType.Unknown)
-            {
-                return await GetChildrenSorted(folder, user, sort, startIndex, limit).ConfigureAwait(false);
-            }
+            // TODO: Make a recursive version of GetChildrenSorted (although sorting isn't needed)
+            var result = folder.GetRecursiveChildren(user, true);
 
-            var result = await GetChildrenSorted(folder, user, sort, null, null).ConfigureAwait(false);
-
-            var items = FilterUnsupportedContent(result.Items);
+            var items = FilterUnsupportedContent(result);
 
             if (search.SearchType == SearchType.Audio)
             {
@@ -341,6 +337,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
             else if (search.SearchType == SearchType.Playlist)
             {
                 items = items.OfType<Playlist>();
+            }
+            else if (search.SearchType == SearchType.MusicAlbum)
+            {
+                items = items.OfType<MusicAlbum>();
             }
 
             items = SortItems(items, user, sort);

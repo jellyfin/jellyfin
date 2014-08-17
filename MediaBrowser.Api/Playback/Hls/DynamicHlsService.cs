@@ -20,7 +20,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
+    /// <summary>
+    /// Options is needed for chromecast. Threw Head in there since it's related
+    /// </summary>
     [Route("/Videos/{Id}/master.m3u8", "GET", Summary = "Gets a video stream using HTTP live streaming.")]
+    [Route("/Videos/{Id}/master.m3u8", "HEAD", Summary = "Gets a video stream using HTTP live streaming.")]
+    [Route("/Videos/{Id}/master.m3u8", "OPTIONS", Summary = "Gets a video stream using HTTP live streaming.")]
     public class GetMasterHlsVideoStream : VideoStreamRequest
     {
         public bool EnableAdaptiveBitrateStreaming { get; set; }
@@ -61,7 +66,21 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetMasterHlsVideoStream request)
         {
-            var result = GetAsync(request).Result;
+            var result = GetAsync(request, "GET").Result;
+
+            return result;
+        }
+
+        public object Options(GetMasterHlsVideoStream request)
+        {
+            var result = GetAsync(request, "OPTIONS").Result;
+
+            return result;
+        }
+
+        public object Head(GetMasterHlsVideoStream request)
+        {
+            var result = GetAsync(request, "HEAD").Result;
 
             return result;
         }
@@ -69,10 +88,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public object Get(GetMainHlsVideoStream request)
         {
             var result = GetPlaylistAsync(request, "main").Result;
-
-            // Get the transcoding started
-            //var start = GetStartNumber(request);
-            //var segment = GetDynamicSegment(request, start.ToString(UsCulture)).Result;
 
             return result;
         }
@@ -319,7 +334,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return job != null && !job.HasExited;
         }
 
-        private async Task<object> GetAsync(GetMasterHlsVideoStream request)
+        private async Task<object> GetAsync(GetMasterHlsVideoStream request, string method)
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
@@ -338,10 +353,15 @@ namespace MediaBrowser.Api.Playback.Hls
                 throw new ArgumentException("MediaSourceId is required");
             }
 
-            var audioBitrate = state.OutputAudioBitrate ?? 0;
-            var videoBitrate = state.OutputVideoBitrate ?? 0;
+            var playlistText = string.Empty;
 
-            var playlistText = GetMasterPlaylistFileText(state, videoBitrate + audioBitrate);
+            if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                var audioBitrate = state.OutputAudioBitrate ?? 0;
+                var videoBitrate = state.OutputVideoBitrate ?? 0;
+
+                playlistText = GetMasterPlaylistFileText(state, videoBitrate + audioBitrate);
+            }
 
             return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
@@ -359,14 +379,14 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistUrl = (state.RunTimeTicks ?? 0) > 0 ? "main.m3u8" : "live.m3u8";
             playlistUrl += queryString;
 
-            var request = (GetMasterHlsVideoStream) state.Request;
+            var request = (GetMasterHlsVideoStream)state.Request;
 
             var subtitleStreams = state.AllMediaStreams
                 .Where(i => i.IsTextSubtitleStream)
                 .ToList();
 
-            var subtitleGroup = subtitleStreams.Count > 0 && request.SubtitleMethod == SubtitleDeliveryMethod.Hls ? 
-                "subs" : 
+            var subtitleGroup = subtitleStreams.Count > 0 && request.SubtitleMethod == SubtitleDeliveryMethod.Hls ?
+                "subs" :
                 null;
 
             AppendPlaylist(builder, playlistUrl, totalBitrate, subtitleGroup);
@@ -582,7 +602,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, CancellationToken.None, false);
+                args += GetOutputSizeParam(state, codec, false);
             }
 
             // This is for internal graphical subs

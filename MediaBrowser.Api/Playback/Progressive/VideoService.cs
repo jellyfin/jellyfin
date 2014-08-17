@@ -11,7 +11,6 @@ using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
 using System.IO;
-using System.Threading;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -50,6 +49,12 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.wtv", "HEAD")]
     [Route("/Videos/{Id}/stream.m2ts", "HEAD")]
     [Route("/Videos/{Id}/stream", "HEAD")]
+    [Route("/Videos/{Id}/stream.mp4", "OPTIONS")]
+    [Route("/Videos/{Id}/stream.m4v", "OPTIONS")]
+    [Route("/Videos/{Id}/stream.mkv", "OPTIONS")]
+    [Route("/Videos/{Id}/stream.avi", "OPTIONS")]
+    [Route("/Videos/{Id}/stream.webm", "OPTIONS")]
+    [Route("/Videos/{Id}/stream.ts", "OPTIONS")]
     [Api(Description = "Gets a video stream")]
     public class GetVideoStream : VideoStreamRequest
     {
@@ -81,6 +86,16 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Head(GetVideoStream request)
+        {
+            return ProcessRequest(request, true);
+        }
+
+        /// <summary>
+        /// Optionses the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Options(GetVideoStream request)
         {
             return ProcessRequest(request, true);
         }
@@ -154,7 +169,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, CancellationToken.None);
+                args += GetOutputSizeParam(state, codec);
             }
 
             var qualityParam = GetVideoQualityParam(state, codec, false);

@@ -295,16 +295,16 @@ namespace MediaBrowser.Api.LiveTv
             }
         }
 
-        public object Get(GetLiveTvInfo request)
+        public async Task<object> Get(GetLiveTvInfo request)
         {
-            var info = _liveTvManager.GetLiveTvInfo(CancellationToken.None).Result;
+            var info = await _liveTvManager.GetLiveTvInfo(CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(info);
         }
 
-        public object Get(GetChannels request)
+        public async Task<object> Get(GetChannels request)
         {
-            var result = _liveTvManager.GetChannels(new LiveTvChannelQuery
+            var result = await _liveTvManager.GetChannels(new LiveTvChannelQuery
             {
                 ChannelType = request.Type,
                 UserId = request.UserId,
@@ -314,26 +314,26 @@ namespace MediaBrowser.Api.LiveTv
                 IsLiked = request.IsLiked,
                 IsDisliked = request.IsDisliked
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetChannel request)
+        public async Task<object> Get(GetChannel request)
         {
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
 
-            var result = _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).Result;
+            var result = await _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetLiveTvFolder request)
+        public async Task<object> Get(GetLiveTvFolder request)
         {
-            return ToOptimizedResult(_liveTvManager.GetLiveTvFolder(request.UserId, CancellationToken.None).Result);
+            return ToOptimizedResult(await _liveTvManager.GetLiveTvFolder(request.UserId, CancellationToken.None).ConfigureAwait(false));
         }
 
-        public object Get(GetPrograms request)
+        public async Task<object> Get(GetPrograms request)
         {
             var query = new ProgramQuery
             {
@@ -361,12 +361,12 @@ namespace MediaBrowser.Api.LiveTv
                 query.MaxEndDate = DateTime.Parse(request.MaxEndDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
-            var result = _liveTvManager.GetPrograms(query, CancellationToken.None).Result;
+            var result = await _liveTvManager.GetPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetRecommendedPrograms request)
+        public async Task<object> Get(GetRecommendedPrograms request)
         {
             var query = new RecommendedProgramQuery
             {
@@ -376,7 +376,7 @@ namespace MediaBrowser.Api.LiveTv
                 HasAired = request.HasAired
             };
 
-            var result = _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).Result;
+            var result = await _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -386,9 +386,9 @@ namespace MediaBrowser.Api.LiveTv
             return Get(request);
         }
 
-        public object Get(GetRecordings request)
+        public async Task<object> Get(GetRecordings request)
         {
-            var result = _liveTvManager.GetRecordings(new RecordingQuery
+            var result = await _liveTvManager.GetRecordings(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
                 UserId = request.UserId,
@@ -399,35 +399,35 @@ namespace MediaBrowser.Api.LiveTv
                 SeriesTimerId = request.SeriesTimerId,
                 IsInProgress = request.IsInProgress
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetRecording request)
+        public async Task<object> Get(GetRecording request)
         {
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
 
-            var result = _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).Result;
+            var result = await _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetTimer request)
+        public async Task<object> Get(GetTimer request)
         {
-            var result = _liveTvManager.GetTimer(request.Id, CancellationToken.None).Result;
+            var result = await _liveTvManager.GetTimer(request.Id, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetTimers request)
+        public async Task<object> Get(GetTimers request)
         {
-            var result = _liveTvManager.GetTimers(new TimerQuery
+            var result = await _liveTvManager.GetTimers(new TimerQuery
             {
                 ChannelId = request.ChannelId,
                 SeriesTimerId = request.SeriesTimerId
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -459,21 +459,21 @@ namespace MediaBrowser.Api.LiveTv
             Task.WaitAll(task);
         }
 
-        public object Get(GetSeriesTimers request)
+        public async Task<object> Get(GetSeriesTimers request)
         {
-            var result = _liveTvManager.GetSeriesTimers(new SeriesTimerQuery
+            var result = await _liveTvManager.GetSeriesTimers(new SeriesTimerQuery
             {
                 SortOrder = request.SortOrder,
                 SortBy = request.SortBy
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetSeriesTimer request)
+        public async Task<object> Get(GetSeriesTimer request)
         {
-            var result = _liveTvManager.GetSeriesTimer(request.Id, CancellationToken.None).Result;
+            var result = await _liveTvManager.GetSeriesTimer(request.Id, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -496,27 +496,27 @@ namespace MediaBrowser.Api.LiveTv
             Task.WaitAll(task);
         }
 
-        public object Get(GetDefaultTimer request)
+        public async Task<object> Get(GetDefaultTimer request)
         {
             if (string.IsNullOrEmpty(request.ProgramId))
             {
-                var result = _liveTvManager.GetNewTimerDefaults(CancellationToken.None).Result;
+                var result = await _liveTvManager.GetNewTimerDefaults(CancellationToken.None).ConfigureAwait(false);
 
                 return ToOptimizedSerializedResultUsingCache(result);
             }
             else
             {
-                var result = _liveTvManager.GetNewTimerDefaults(request.ProgramId, CancellationToken.None).Result;
+                var result = await _liveTvManager.GetNewTimerDefaults(request.ProgramId, CancellationToken.None).ConfigureAwait(false);
 
                 return ToOptimizedSerializedResultUsingCache(result);
             }
         }
 
-        public object Get(GetProgram request)
+        public async Task<object> Get(GetProgram request)
         {
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
 
-            var result = _liveTvManager.GetProgram(request.Id, CancellationToken.None, user).Result;
+            var result = await _liveTvManager.GetProgram(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -539,23 +539,23 @@ namespace MediaBrowser.Api.LiveTv
             Task.WaitAll(task);
         }
 
-        public object Get(GetRecordingGroups request)
+        public async Task<object> Get(GetRecordingGroups request)
         {
-            var result = _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
+            var result = await _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
             {
                 UserId = request.UserId
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetRecordingGroup request)
+        public async Task<object> Get(GetRecordingGroup request)
         {
-            var result = _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
+            var result = await _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
             {
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             var group = result.Items.FirstOrDefault(i => string.Equals(i.Id, request.Id, StringComparison.OrdinalIgnoreCase));
 

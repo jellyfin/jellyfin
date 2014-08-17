@@ -12,7 +12,6 @@ using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
@@ -275,7 +274,7 @@ namespace MediaBrowser.Api
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Delete(DeleteUser request)
+        public async Task Delete(DeleteUser request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -284,13 +283,8 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var revokeTask = _sessionMananger.RevokeUserTokens(user.Id.ToString("N"));
-
-            Task.WaitAll(revokeTask);
-
-            var task = _userManager.DeleteUser(user);
-
-            Task.WaitAll(task);
+            await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+            await _userManager.DeleteUser(user).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -313,7 +307,7 @@ namespace MediaBrowser.Api
             });
         }
 
-        public object Post(AuthenticateUserByName request)
+        public async Task<object> Post(AuthenticateUserByName request)
         {
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
@@ -334,7 +328,7 @@ namespace MediaBrowser.Api
                 auth.DeviceId = "Unknown device id";
             }
 
-            var result = _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
+            var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
             {
                 App = auth.Client,
                 AppVersion = auth.Version,
@@ -344,7 +338,7 @@ namespace MediaBrowser.Api
                 RemoteEndPoint = Request.RemoteIp,
                 Username = request.Username
 
-            }, Request.IsLocal).Result;
+            }, Request.IsLocal).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -353,7 +347,7 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdateUserPassword request)
+        public async Task Post(UpdateUserPassword request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -364,22 +358,18 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                var task = _userManager.ResetPassword(user);
-
-                Task.WaitAll(task);
+                await _userManager.ResetPassword(user).ConfigureAwait(false);
             }
             else
             {
-                var success = _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).Result;
+                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).ConfigureAwait(false);
 
                 if (!success)
                 {
                     throw new ArgumentException("Invalid user or password entered.");
                 }
 
-                var task = _userManager.ChangePassword(user, request.NewPassword);
-
-                Task.WaitAll(task);
+                await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
             }
         }
 
@@ -387,7 +377,7 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(UpdateUser request)
+        public async Task Post(UpdateUser request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
@@ -421,16 +411,14 @@ namespace MediaBrowser.Api
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
 
-                var revokeTask = _sessionMananger.RevokeUserTokens(user.Id.ToString("N"));
-
-                Task.WaitAll(revokeTask);
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
             }
 
             var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
                 _userManager.UpdateUser(user) :
                 _userManager.RenameUser(user, dtoUser.Name);
 
-            Task.WaitAll(task);
+            await task.ConfigureAwait(false);
 
             user.UpdateConfiguration(dtoUser.Configuration);
         }

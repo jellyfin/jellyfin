@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -496,6 +497,10 @@ namespace MediaBrowser.Dlna.Didl
                     {
                         classType = "object.container.album.videoAlbum";
                     }
+                    else if (item is Playlist)
+                    {
+                        classType = "object.container.playlistContainer";
+                    }
                 }
 
                 objectClass.InnerText = classType ?? "object.container.storageFolder";
@@ -560,7 +565,7 @@ namespace MediaBrowser.Dlna.Didl
 
                 foreach (var artist in audio.AlbumArtists)
                 {
-                    AddValue(element, "upnp", "albumArtist", artist, NS_UPNP);
+                    AddAlbumArtist(element, artist);
                 }
             }
 
@@ -570,8 +575,12 @@ namespace MediaBrowser.Dlna.Didl
             {
                 foreach (var artist in album.AlbumArtists)
                 {
+                    AddAlbumArtist(element, artist);
                     AddValue(element, "upnp", "artist", artist, NS_UPNP);
-                    AddValue(element, "upnp", "albumArtist", artist, NS_UPNP);
+                }
+                foreach (var artist in album.Artists)
+                {
+                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
                 }
             }
 
@@ -582,6 +591,7 @@ namespace MediaBrowser.Dlna.Didl
                 if (!string.IsNullOrEmpty(musicVideo.Artist))
                 {
                     AddValue(element, "upnp", "artist", musicVideo.Artist, NS_UPNP);
+                    AddAlbumArtist(element, musicVideo.Artist);
                 }
 
                 if (!string.IsNullOrEmpty(musicVideo.Album))
@@ -593,6 +603,28 @@ namespace MediaBrowser.Dlna.Didl
             if (item.IndexNumber.HasValue)
             {
                 AddValue(element, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+
+                if (item is Episode)
+                {
+                    AddValue(element, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+                }
+            }
+        }
+
+        private void AddAlbumArtist(XmlElement elem, string name)
+        {
+            try
+            {
+                var newNode = elem.OwnerDocument.CreateElement("upnp", "artist", NS_UPNP);
+                newNode.InnerText = name;
+
+                newNode.SetAttribute("role", "AlbumArtist");
+
+                elem.AppendChild(newNode);
+            }
+            catch (XmlException)
+            {
+                //_logger.Error("Error adding xml value: " + value);
             }
         }
 
