@@ -728,7 +728,8 @@
                     items: result.Items,
                     smallIcon: true,
                     showIndex: true,
-                    index: 'disc'
+                    index: 'disc',
+                    showIndexNumber: true
 
                 })).trigger('create').createCardMenus();
 

@@ -63,12 +63,6 @@
         this.currentMediaTime = 0;
         // @type {Number} A number for current media duration
         this.currentMediaDuration = -1;
-        // @type {Timer} A timer for tracking progress of media
-        this.timer = null;
-        // @type {Boolean} A boolean to stop timer update of progress when triggered by media status event 
-        this.progressFlag = true;
-        // @type {Number} A number in milliseconds for minimal progress update
-        this.timerStep = 1000;
 
         this.hasReceivers = false;
 
@@ -85,7 +79,6 @@
 
         // bind once - commit 2ebffc2271da0bc5e8b13821586aee2a2e3c7753
         this.errorHandler = this.onError.bind(this);
-        this.incrementMediaTimeHandler = this.incrementMediaTime.bind(this);
         this.mediaStatusUpdateHandler = this.onMediaStatusUpdate.bind(this);
 
         this.initializeCastPlayer();
@@ -111,9 +104,10 @@
 
         // v1 Id AE4DA10A
         // v2 Id 472F0435
+        // v3 Id 69C59853
         // default receiver chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
-        var applicationID = "69C59853";
+        var applicationID = "472F0435";
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -205,7 +199,6 @@
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
             this.currentMediaSession = null;
-            clearInterval(this.timer);
 
             MediaController.removeActivePlayer(PlayerName);
         }
@@ -219,9 +212,6 @@
     CastPlayer.prototype.launchApp = function () {
         console.log("chromecast launching app...");
         chrome.cast.requestSession(this.onRequestSessionSuccess.bind(this), this.onLaunchError.bind(this));
-        if (this.timer) {
-            clearInterval(this.timer);
-        }
     };
 
     /**
@@ -269,7 +259,6 @@
         this.deviceState = DEVICE_STATE.IDLE;
         this.castPlayerState = PLAYER_STATE.IDLE;
         this.currentMediaSession = null;
-        clearInterval(this.timer);
     };
 
     /**
@@ -315,17 +304,10 @@
 
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
-            clearInterval(this.timer);
-            this.startProgressTimer();
         }
 
         if (how == 'activeSession') {
             this.castPlayerState = mediaSession.playerState;
-        }
-
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            // start progress timer
-            this.startProgressTimer();
         }
 
         this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
@@ -345,29 +327,12 @@
      * @param {!Boolean} e true/false
      */
     CastPlayer.prototype.onMediaStatusUpdate = function (e) {
+
         if (e == false) {
             this.currentMediaTime = 0;
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
         console.log("chromecast updating media");
-        this.updateProgressBarByTimer();
-    };
-
-    /**
-     * Helper function
-     * Increment media current position by 1 second 
-     */
-    CastPlayer.prototype.incrementMediaTime = function () {
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            if (this.currentMediaTime < this.currentMediaDuration) {
-                this.currentMediaTime += 1;
-                this.updateProgressBarByTimer();
-            }
-            else {
-                this.currentMediaTime = 0;
-                clearInterval(this.timer);
-            }
-        }
     };
 
     /**
@@ -385,16 +350,6 @@
                 this.currentMediaSession.play(null,
                   this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
                   this.errorHandler);
-                this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
-                this.castPlayerState = PLAYER_STATE.PLAYING;
-                // start progress timer
-                clearInterval(this.timer);
-                this.startProgressTimer();
-                break;
-            case PLAYER_STATE.IDLE:
-            case PLAYER_STATE.LOADING:
-            case PLAYER_STATE.STOPPED:
-                this.loadMedia();
                 this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
                 this.castPlayerState = PLAYER_STATE.PLAYING;
                 break;
@@ -417,7 +372,6 @@
             this.currentMediaSession.pause(null,
               this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
               this.errorHandler);
-            clearInterval(this.timer);
         }
     };
 
@@ -434,7 +388,6 @@
           this.mediaCommandSuccessCallback.bind(this, "stopped " + this.currentMediaSession.sessionId),
           this.errorHandler);
         this.castPlayerState = PLAYER_STATE.STOPPED;
-        clearInterval(this.timer);
     };
 
     /**
@@ -538,7 +491,7 @@
         console.log('CastPlayer.updateProgressBar');
 
         if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-            clearInterval(this.timer);
+
             this.castPlayerState = PLAYER_STATE.STOPPED;
             if (e.idleReason == 'FINISHED') {
                 $(this).trigger("/playback/complete", e);
@@ -546,17 +499,7 @@
         }
         else {
             var p = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
-            this.progressFlag = false;
-            setTimeout(this.setProgressFlag.bind(this), 1000); // don't update progress in 1 second
         }
-    };
-
-    /**
-     * Set progressFlag with a timeout of 1 second to avoid UI update
-     * until a media status update from receiver 
-     */
-    CastPlayer.prototype.setProgressFlag = function () {
-        this.progressFlag = true;
     };
 
     /**
@@ -589,24 +532,11 @@
         }
 
         if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
-            clearInterval(this.timer);
+
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
             $(this).trigger("/playback/complete", true);
         }
-    };
-
-    /**
-    * @param {function} A callback function for the fucntion to start timer 
-    */
-    CastPlayer.prototype.startProgressTimer = function () {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-
-        // start progress timer
-        this.timer = setInterval(this.incrementMediaTimeHandler, this.timerStep);
     };
 
     // Create Cast Player

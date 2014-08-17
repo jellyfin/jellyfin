@@ -768,7 +768,12 @@
                     textlines.push(item.AlbumArtist || 'Unknown Artist');
                 }
 
-                textlines.push(LibraryBrowser.getPosterViewDisplayName(item));
+                var displayName = LibraryBrowser.getPosterViewDisplayName(item);
+
+                if (options.showIndexNumber && item.IndexNumber != null) {
+                    displayName = item.IndexNumber + ". " + displayName;
+                }
+                textlines.push(displayName);
 
                 if (item.Type == 'Audio') {
                     textlines.push(item.Artists.join(', ') || 'Unknown Artist');

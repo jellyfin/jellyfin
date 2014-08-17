@@ -244,9 +244,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         {
             var log = new StringBuilder();
 
-            //var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
+            var logHeaders = true;
 
-            //log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
+            if (logHeaders)
+            {
+                var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
+
+                log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
+            }
 
             var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
 
