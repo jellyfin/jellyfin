@@ -28,7 +28,7 @@
 
     var PlayerName = 'Chromecast';
 
-    var messageNamespace = 'urn:x-cast:com.google.cast.sample.playlist';
+    var messageNamespace = 'urn:x-cast:com.google.cast.mediabrowser.v3';
 
     var cPlayer = {
         deviceState: DEVICE_STATE.IDLE
