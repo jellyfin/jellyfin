@@ -489,7 +489,14 @@ namespace MediaBrowser.Providers.Manager
             var hasIdentity = info as IHasIdentities<IItemIdentity>;
             if (hasIdentity != null)
             {
-                await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    //await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in identity providers", ex);
+                }
             }
 
             return info;
