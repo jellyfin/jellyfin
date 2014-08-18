@@ -24,7 +24,9 @@ namespace MediaBrowser.Dlna.Profiles
                          Name = "User-Agent",
                          Value = "DIRECTV"
                     }
-                }
+                },
+
+                FriendlyName = "^DIRECTV.*$"
             };
 
             DirectPlayProfiles = new[]

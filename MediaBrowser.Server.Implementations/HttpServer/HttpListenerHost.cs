@@ -83,11 +83,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization"));
+            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, X-MediaBrowser-Token"));
 
             //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
             //    new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
             //}));
+
+            PreRequestFilters.Add((httpReq, httpRes) =>
+            {
+                //Handles Request and closes Responses after emitting global HTTP Headers
+                if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.EndRequest(); //add a 'using ServiceStack;'
+                }
+            });
 
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }

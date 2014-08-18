@@ -25,7 +25,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     [Route("/Videos/{Id}/master.m3u8", "GET", Summary = "Gets a video stream using HTTP live streaming.")]
     [Route("/Videos/{Id}/master.m3u8", "HEAD", Summary = "Gets a video stream using HTTP live streaming.")]
-    [Route("/Videos/{Id}/master.m3u8", "OPTIONS", Summary = "Gets a video stream using HTTP live streaming.")]
     public class GetMasterHlsVideoStream : VideoStreamRequest
     {
         public bool EnableAdaptiveBitrateStreaming { get; set; }
@@ -67,13 +66,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public object Get(GetMasterHlsVideoStream request)
         {
             var result = GetAsync(request, "GET").Result;
-
-            return result;
-        }
-
-        public object Options(GetMasterHlsVideoStream request)
-        {
-            var result = GetAsync(request, "OPTIONS").Result;
 
             return result;
         }

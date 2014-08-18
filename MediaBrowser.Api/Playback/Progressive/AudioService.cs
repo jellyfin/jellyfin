@@ -20,8 +20,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Audio/{Id}/stream", "GET", Summary = "Gets an audio stream")]
     [Route("/Audio/{Id}/stream.{Container}", "HEAD", Summary = "Gets an audio stream")]
     [Route("/Audio/{Id}/stream", "HEAD", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream.{Container}", "OPTIONS", Summary = "Gets an audio stream")]
-    [Route("/Audio/{Id}/stream", "OPTIONS", Summary = "Gets an audio stream")]
     public class GetAudioStream : StreamRequest
     {
         [ApiMember(Name = "Container", Description = "Container", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -53,16 +51,6 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Head(GetAudioStream request)
-        {
-            return ProcessRequest(request, true);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Options(GetAudioStream request)
         {
             return ProcessRequest(request, true);
         }
