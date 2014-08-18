@@ -81,7 +81,7 @@
         // v3 Id 69C59853
         // default receiver chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
-        var applicationID = "472F0435";
+        var applicationID = "69C59853";
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
@@ -261,6 +261,8 @@
             return;
         }
 
+        var player = this;
+
         var message = {
             options: options,
             command: command,
@@ -271,14 +273,29 @@
             serverAddress: ApiClient.serverAddress()
         };
 
+        var address = message.serverAddress.toLowerCase();
+        if (address.indexOf('localhost') != -1 || address.indexOf('127.0.0') != -1) {
+
+            ApiClient.getSystemInfo().done(function(info) {
+
+                message.serverAddress = info.WanAddress;
+                player.sendMessage(message);
+            });
+
+        } else {
+            player.sendMessage(message);
+        }
+    };
+
+    CastPlayer.prototype.sendMessage = function(message) {
         message = JSON.stringify(message);
         //console.log(message);
 
         this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
-    };
+    }
 
     CastPlayer.prototype.onPlayCommandSuccess = function () {
-        console.log('Play command was sent ok.');
+        console.log('Message was sent to receiver ok.');
     };
 
     /**
