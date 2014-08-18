@@ -46,9 +46,7 @@
 
             var playerTime = Math.floor(10000000 * (mediaElement || self.currentMediaElement).currentTime);
 
-            //if (!self.isCopyingTimestamps) {
             playerTime += self.startTimeTicksOffset;
-            //}
 
             return playerTime;
         };

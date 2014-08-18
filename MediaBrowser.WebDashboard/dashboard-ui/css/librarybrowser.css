@@ -21,7 +21,7 @@
 }
 
 .backdropPage:not(.lightBackdropPage) {
-    background-color: rgba(15, 15,15, .92) !important;
+    background-color: rgba(15, 15,15, .94) !important;
 }
 
 .backdropContainer {

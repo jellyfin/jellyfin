@@ -95,6 +95,8 @@
             currentPlayer = player;
             currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
 
+            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+
             $(self).trigger('playerchange');
         };
 

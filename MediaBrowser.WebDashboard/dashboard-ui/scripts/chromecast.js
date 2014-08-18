@@ -43,39 +43,13 @@
         /* Cast player variables */
         // @type {Object} a chrome.cast.media.Media object
         this.currentMediaSession = null;
-        // @type {Number} volume
-        this.currentVolume = 1;
 
         // @type {string} a chrome.cast.Session object
         this.session = null;
         // @type {PLAYER_STATE} A state for Cast media player
         this.castPlayerState = PLAYER_STATE.IDLE;
 
-        // @type {Boolean} Fullscreen mode on/off
-        this.fullscreen = false;
-
-        /* Current media variables */
-        // @type {Boolean} Audio on and off
-        this.audio = true;
-        // @type {Number} A number for current media index
-        this.currentMediaIndex = 0;
-        // @type {Number} A number for current media time
-        this.currentMediaTime = 0;
-        // @type {Number} A number for current media duration
-        this.currentMediaDuration = -1;
-
         this.hasReceivers = false;
-
-        this.currentMediaOffset = 0;
-
-        // Progress bar element id
-        this.progressBar = "positionSlider";
-
-        // Timec display element id
-        this.duration = "currentTime";
-
-        // Playback display element id
-        this.playback = "playTime";
 
         // bind once - commit 2ebffc2271da0bc5e8b13821586aee2a2e3c7753
         this.errorHandler = this.onError.bind(this);
@@ -158,6 +132,8 @@
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
 
+            console.log(JSON.stringify(e));
+
             this.session.addMessageListener(messageNamespace, this.messageListener.bind(this));
             this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
         }
@@ -165,7 +141,12 @@
 
     CastPlayer.prototype.messageListener = function (namespace, message) {
 
-        console.log('Message from receiver, namespace: ' + namespace + ', message: ' + message);
+        message = JSON.parse(message);
+
+        if (message.type && message.type.indexOf('playback') == 0) {
+            $(this).trigger(message.type, [message.data]);
+
+        }
     };
 
     /**
@@ -232,12 +213,12 @@
         console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
 
-        Dashboard.alert({
+        //Dashboard.alert({
 
-            title: Globalize.translate("Error"),
-            message: Globalize.translate("ErrorLaunchingChromecast")
+        //    title: Globalize.translate("Error"),
+        //    message: Globalize.translate("ErrorLaunchingChromecast")
 
-        });
+        //});
 
         MediaController.removeActivePlayer(PlayerName);
     };
@@ -288,7 +269,7 @@
         this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
     };
 
-    CastPlayer.prototype.onPlayCommandSuccess = function() {
+    CastPlayer.prototype.onPlayCommandSuccess = function () {
         console.log('Play command was sent ok.');
     };
 
@@ -300,7 +281,6 @@
 
         console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
-        this.currentMediaTime = mediaSession.currentTime;
 
         if (how == 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
@@ -311,7 +291,6 @@
         }
 
         this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
-        this.currentMediaDuration = mediaSession.media.duration * 10000000;
     };
 
     /**
@@ -329,10 +308,9 @@
     CastPlayer.prototype.onMediaStatusUpdate = function (e) {
 
         if (e == false) {
-            this.currentMediaTime = 0;
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
-        console.log("chromecast updating media");
+        console.log("chromecast updating media: " + e);
     };
 
     /**
@@ -401,8 +379,8 @@
         }
 
         if (!mute) {
-            this.currentVolume = vol || 1;
-            this.session.setReceiverVolumeLevel(this.currentVolume,
+
+            this.session.setReceiverVolumeLevel(vol || 1,
               this.mediaCommandSuccessCallback.bind(this),
               this.errorHandler);
         }
@@ -482,63 +460,6 @@
         console.log(info);
     };
 
-    /**
-     * Update progress bar when there is a media status update
-     * @param {Object} e An media status update object 
-     */
-    CastPlayer.prototype.updateProgressBar = function (e) {
-
-        console.log('CastPlayer.updateProgressBar');
-
-        if (e.idleReason == 'FINISHED' && e.playerState == 'IDLE') {
-
-            this.castPlayerState = PLAYER_STATE.STOPPED;
-            if (e.idleReason == 'FINISHED') {
-                $(this).trigger("/playback/complete", e);
-            }
-        }
-        else {
-            var p = Number(e.currentTime / this.currentMediaSession.media.duration + 1).toFixed(3);
-        }
-    };
-
-    /**
-     * Update progress bar based on timer  
-     */
-    CastPlayer.prototype.updateProgressBarByTimer = function () {
-
-        console.log('CastPlayer.updateProgressBarByTimer');
-
-        if (!this.currentMediaTime) {
-            this.currentMediaDuration = this.session.media[0].currentTime;
-        }
-
-        if (!this.currentMediaDuration) {
-            this.currentMediaDuration = this.session.media[0].media.customData.runTimeTicks;
-        }
-
-        var pp = 0;
-        if (this.currentMediaDuration > 0) {
-            pp = Number(this.currentMediaTime / this.currentMediaDuration).toFixed(3);
-        }
-
-        if (this.progressFlag) {
-            // don't update progress if it's been updated on media status update event
-            $(this).trigger("/playback/update",
-            [{
-                positionTicks: this.currentMediaTime * 10000000,
-                runtimeTicks: this.currentMediaDuration
-            }]);
-        }
-
-        if (pp > 100 || this.castPlayerState == PLAYER_STATE.IDLE) {
-
-            this.deviceState = DEVICE_STATE.IDLE;
-            this.castPlayerState = PLAYER_STATE.IDLE;
-            $(this).trigger("/playback/complete", true);
-        }
-    };
-
     // Create Cast Player
     var castPlayer = new CastPlayer();
 
@@ -570,7 +491,7 @@
             return ApiClient.getItems(userId, query);
         };
 
-        self.translateItemsForPlayback = function(items) {
+        self.translateItemsForPlayback = function (items) {
 
             var deferred = $.Deferred();
 
@@ -613,7 +534,7 @@
             }
 
             if (promise) {
-                promise.done(function(result) {
+                promise.done(function (result) {
 
                     deferred.resolveWith(null, [result.Items]);
                 });
@@ -624,23 +545,28 @@
             return deferred.promise();
         };
 
-        //$(castPlayer).on("/playback/complete", function (e) {
+        $(castPlayer).on("playbackstart", function (e, data) {
 
-        //    var state = self.getPlayerStateInternal();
+            console.log('cc: playbackstart');
+            var state = self.getPlayerStateInternal(data);
+            $(self).trigger("playbackstart", [state]);
+        });
 
-        //    $(self).trigger("playbackstop", [state]);
+        $(castPlayer).on("playbackstop", function (e, data) {
 
-        //});
+            console.log('cc: playbackstop');
+            var state = self.getPlayerStateInternal(data);
 
-        //$(castPlayer).on("/playback/update", function (e, data) {
+            $(self).trigger("playbackstop", [state]);
+        });
 
-        //    self.positionTicks = data.positionTicks;
-        //    self.runtimeTicks = data.runtimeTicks;
+        $(castPlayer).on("playbackprogress", function (e, data) {
 
-        //    var state = self.getPlayerStateInternal();
+            console.log('cc: positionchange');
+            var state = self.getPlayerStateInternal(data);
 
-        //    $(self).trigger("positionchange", [state]);
-        //});
+            $(self).trigger("positionchange", [state]);
+        });
 
         self.play = function (options) {
 
@@ -693,7 +619,7 @@
         self.playWithCommand = function (options, command) {
 
             if (!options.items) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).done(function(item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).done(function (item) {
 
                     options.items = [item];
                     self.playWithCommand(options, command);
@@ -885,8 +811,7 @@
                                     "Mute",
                                     "Unmute",
                                     "ToggleMute",
-                                    "SetVolume",
-                                    "DisplayContent"]
+                                    "SetVolume"]
             };
         };
 
@@ -933,57 +858,14 @@
             return deferred.promise();
         };
 
-        self.getPlayerStateInternal = function () {
+        self.lastPlayerData = {};
 
-            var state = {
-                PlayState: {
+        self.getPlayerStateInternal = function (data) {
 
-                    CanSeek: self.runtimeTicks && self.positionTicks > 0,
-                    PositionTicks: self.positionTicks,
-                    VolumeLevel: castPlayer.currentVolume * 100,
-                    IsPaused: self.isPaused,
-                    IsMuted: self.isMuted
-
-                    // TODO: Implement
-                    // AudioStreamIndex: null,
-                    // SubtitleStreamIndex: null,
-                    // PlayMethod: 'DirectStream' or 'Transcode'
-                }
-            };
-
-            // TODO: Implement
-            var isPlaying = false;
-
-            if (isPlaying) {
-
-                //state.PlayState.MediaSourceId = 'xxx';
-
-                state.NowPlayingItem = {
-
-                    RunTimeTicks: self.runtimeTicks,
-                    Name: 'Chromecast'
-                };
-
-                var nowPlayingItem = state.NowPlayingItem;
-
-                // TODO: Fill in these properties using chromecast mediainfo and/or custom data
-                //nowPlayingItem.Id = item.Id;
-                //nowPlayingItem.MediaType = item.MediaType;
-                //nowPlayingItem.Type = item.Type;
-                //nowPlayingItem.Name = item.Name;
-
-                //nowPlayingItem.IndexNumber = item.IndexNumber;
-                //nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
-                //nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
-                //nowPlayingItem.ProductionYear = item.ProductionYear;
-                //nowPlayingItem.PremiereDate = item.PremiereDate;
-                //nowPlayingItem.SeriesName = item.SeriesName;
-                //nowPlayingItem.Album = item.Album;
-                //nowPlayingItem.Artists = item.Artists;
-
-            }
-
-            return state;
+            data = data || self.lastPlayerData;
+            self.lastPlayerData = data;
+            console.log(JSON.stringify(data));
+            return data;
         };
     }
 
