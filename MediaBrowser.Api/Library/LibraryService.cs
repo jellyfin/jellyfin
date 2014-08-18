@@ -466,11 +466,13 @@ namespace MediaBrowser.Api.Library
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Delete(DeleteItem request)
+        public void Delete(DeleteItem request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            return _libraryManager.DeleteItem(item);
+            var task = _libraryManager.DeleteItem(item);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>

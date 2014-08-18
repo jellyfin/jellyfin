@@ -242,7 +242,7 @@ namespace MediaBrowser.Api
             {
                 users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
             }
-            
+
             var result = users
                 .OrderBy(u => u.Name)
                 .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
@@ -274,7 +274,14 @@ namespace MediaBrowser.Api
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task Delete(DeleteUser request)
+        public void Delete(DeleteUser request)
+        {
+            var task = DeleteAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task DeleteAsync(DeleteUser request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -347,7 +354,13 @@ namespace MediaBrowser.Api
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task Post(UpdateUserPassword request)
+        public void Post(UpdateUserPassword request)
+        {
+            var task = PostAsync(request);
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(UpdateUserPassword request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -372,12 +385,19 @@ namespace MediaBrowser.Api
                 await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
             }
         }
-
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public async Task Post(UpdateUser request)
+        public void Post(UpdateUser request)
+        {
+            var task = PostAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(UpdateUser request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs

@@ -87,9 +87,11 @@ namespace MediaBrowser.Api.Sync
             return ToOptimizedResult(result);
         }
 
-        public Task Delete(CancelSyncJob request)
+        public void Delete(CancelSyncJob request)
         {
-            return _syncManager.CancelJob(request.Id);
+            var task = _syncManager.CancelJob(request.Id);
+
+            Task.WaitAll(task);
         }
 
         public async Task<object> Post(CreateSyncJob request)

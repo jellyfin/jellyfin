@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, X-MediaBrowser-Token"));
+            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token"));
 
             //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
             //    new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
