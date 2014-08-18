@@ -97,7 +97,14 @@ namespace MediaBrowser.Api
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public async Task Delete(DeleteAlternateSources request)
+        public void Delete(DeleteAlternateSources request)
+        {
+            var task = DeleteAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task DeleteAsync(DeleteAlternateSources request)
         {
             var video = (Video)_libraryManager.GetItemById(request.Id);
 
@@ -112,7 +119,14 @@ namespace MediaBrowser.Api
             await video.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public async Task Post(MergeVersions request)
+        public void Post(MergeVersions request)
+        {
+            var task = PostAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(MergeVersions request)
         {
             var items = request.Ids.Split(',')
                 .Select(i => new Guid(i))

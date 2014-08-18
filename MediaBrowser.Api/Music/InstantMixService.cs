@@ -34,6 +34,20 @@ namespace MediaBrowser.Api.Music
         public string Name { get; set; }
     }
 
+    [Route("/Artists/InstantMix", "GET", Summary = "Creates an instant playlist based on a given artist")]
+    public class GetInstantMixFromArtistId : BaseGetSimilarItems
+    {
+        [ApiMember(Name = "Id", Description = "The artist Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/MusicGenres/InstantMix", "GET", Summary = "Creates an instant playlist based on a music genre")]
+    public class GetInstantMixFromMusicGenreId : BaseGetSimilarItems
+    {
+        [ApiMember(Name = "Id", Description = "The genre Id", IsRequired = true, DataType = "string", ParameterType = "querypath", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     [Authenticated]
     public class InstantMixService : BaseApiService
     {
@@ -49,6 +63,28 @@ namespace MediaBrowser.Api.Music
             _dtoService = dtoService;
             _musicManager = musicManager;
             _libraryManager = libraryManager;
+        }
+
+        public object Get(GetInstantMixFromArtistId request)
+        {
+            var item = (MusicArtist)_libraryManager.GetItemById(request.Id);
+
+            var user = _userManager.GetUserById(request.UserId.Value);
+
+            var items = _musicManager.GetInstantMixFromArtist(item.Name, user);
+
+            return GetResult(items, user, request);
+        }
+
+        public object Get(GetInstantMixFromMusicGenreId request)
+        {
+            var item = (MusicGenre)_libraryManager.GetItemById(request.Id);
+
+            var user = _userManager.GetUserById(request.UserId.Value);
+
+            var items = _musicManager.GetInstantMixFromGenres(new[] { item.Name }, user);
+
+            return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromSong request)

@@ -124,18 +124,13 @@
 
             console.log('sessionListener');
 
-            this.deviceState = DEVICE_STATE.ACTIVE;
-
-            MediaController.setActivePlayer(PlayerName);
-
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
 
             console.log(JSON.stringify(e));
 
-            this.session.addMessageListener(messageNamespace, this.messageListener.bind(this));
-            this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
+            this.onSessionConnected(e);
         }
     };
 
@@ -200,10 +195,23 @@
      * @param {Object} e A chrome.cast.Session object
      */
     CastPlayer.prototype.onRequestSessionSuccess = function (e) {
+
         console.log("chromecast session success: " + e.sessionId);
-        this.session = e;
+        this.onSessionConnected(e);
+    };
+
+    CastPlayer.prototype.onSessionConnected = function (session) {
+
+        this.session = session;
+
         this.deviceState = DEVICE_STATE.ACTIVE;
+
+        this.session.addMessageListener(messageNamespace, this.messageListener.bind(this));
         this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
+
+        $(this).trigger('connect');
+
+        MediaController.setActivePlayer(PlayerName);
     };
 
     /**
@@ -467,83 +475,25 @@
 
         var self = this;
 
-        var getItemFields = "MediaSources,Chapters";
-
         // MediaController needs this
         self.name = PlayerName;
-
-        self.isPaused = false;
-
-        self.isMuted = false;
-
-        self.positionTicks = 0;
-
-        self.runtimeTicks = 0;
 
         self.getItemsForPlayback = function (query) {
 
             var userId = Dashboard.getCurrentUserId();
 
             query.Limit = query.Limit || 100;
-            query.Fields = getItemFields;
             query.ExcludeLocationTypes = "Virtual";
 
             return ApiClient.getItems(userId, query);
         };
 
-        self.translateItemsForPlayback = function (items) {
+        $(castPlayer).on("connect", function (e) {
 
-            var deferred = $.Deferred();
-
-            var firstItem = items[0];
-            var promise;
-
-            if (firstItem.Type == "Playlist") {
-
-                promise = self.getItemsForPlayback({
-                    ParentId: firstItem.Id,
-                });
-            } else if (firstItem.Type == "MusicArtist") {
-
-                promise = self.getItemsForPlayback({
-                    Artists: firstItem.Name,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio"
-                });
-
-            } else if (firstItem.Type == "MusicGenre") {
-
-                promise = self.getItemsForPlayback({
-                    Genres: firstItem.Name,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio"
-                });
-            } else if (firstItem.IsFolder) {
-
-                promise = self.getItemsForPlayback({
-                    ParentId: firstItem.Id,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio,Video"
-                });
-            }
-
-            if (promise) {
-                promise.done(function (result) {
-
-                    deferred.resolveWith(null, [result.Items]);
-                });
-            } else {
-                deferred.resolveWith(null, [items]);
-            }
-
-            return deferred.promise();
-        };
+            console.log('cc: connect');
+            // Reset this so the next query doesn't make it appear like content is playing.
+            self.lastPlayerData = {};
+        });
 
         $(castPlayer).on("playbackstart", function (e, data) {
 
@@ -558,6 +508,9 @@
             var state = self.getPlayerStateInternal(data);
 
             $(self).trigger("playbackstop", [state]);
+
+            // Reset this so the next query doesn't make it appear like content is playing.
+            self.lastPlayerData = {};
         });
 
         $(castPlayer).on("playbackprogress", function (e, data) {
@@ -574,10 +527,7 @@
 
                 if (options.items) {
 
-                    self.translateItemsForPlayback(options.items).done(function (items) {
-
-                        self.playWithIntros(items, options, user);
-                    });
+                    self.playWithCommand(options, 'PlayNow');
 
                 } else {
 
@@ -587,33 +537,14 @@
 
                     }).done(function (result) {
 
-                        self.translateItemsForPlayback(result.Items).done(function (items) {
-
-                            self.playWithIntros(items, options, user);
-                        });
+                        options.items = result.Items;
+                        self.playWithCommand(options, 'PlayNow');
 
                     });
                 }
 
             });
 
-        };
-
-        self.playWithIntros = function (items, options, user) {
-
-            var firstItem = items[0];
-
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
-                self.playWithCommand(options, 'PlayNow');
-                return;
-            }
-
-            ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
-
-                items = intros.Items.concat(items);
-                options.items = items;
-                self.playWithCommand(options, 'PlayNow');
-            });
         };
 
         self.playWithCommand = function (options, command) {
@@ -632,12 +563,10 @@
         };
 
         self.unpause = function () {
-            self.isPaused = !self.isPaused;
             castPlayer.playMedia();
         };
 
         self.pause = function () {
-            self.isPaused = true;
             castPlayer.pauseMedia();
         };
 
@@ -647,40 +576,11 @@
 
             ApiClient.getItem(userId, id).done(function (item) {
 
-                var query = {
-                    UserId: userId,
-                    Fields: getItemFields,
-                    Limit: 50,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "Random"
-                };
+                self.playWithCommand({
 
-                if (item.Type == "MusicArtist") {
+                    items: [item]
 
-                    query.MediaTypes = "Audio";
-                    query.Artists = item.Name;
-
-                }
-                else if (item.Type == "MusicGenre") {
-
-                    query.MediaTypes = "Audio";
-                    query.Genres = item.Name;
-
-                }
-                else if (item.IsFolder) {
-                    query.ParentId = id;
-
-                }
-                else {
-                    return;
-                }
-
-                self.getItemsForPlayback(query).done(function (result) {
-
-                    self.play({ items: result.Items });
-
-                });
+                }, 'Shuffle');
 
             });
 
@@ -692,53 +592,11 @@
 
             ApiClient.getItem(userId, id).done(function (item) {
 
-                var promise;
+                self.playWithCommand({
 
-                if (item.Type == "MusicArtist") {
+                    items: [item]
 
-                    promise = ApiClient.getInstantMixFromArtist(name, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: 50
-                    });
-
-                }
-                else if (item.Type == "MusicGenre") {
-
-                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: 50
-                    });
-
-                }
-                else if (item.Type == "MusicAlbum") {
-
-                    promise = ApiClient.getInstantMixFromAlbum(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: 50
-                    });
-
-                }
-                else if (item.Type == "Audio") {
-
-                    promise = ApiClient.getInstantMixFromSong(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: 50
-                    });
-
-                }
-                else {
-                    return;
-                }
-
-                promise.done(function (result) {
-
-                    self.play({ items: result.Items });
-
-                });
+                }, 'InstantMix');
 
             });
 
@@ -765,12 +623,10 @@
         };
 
         self.mute = function () {
-            self.isMuted = true;
             castPlayer.mute();
         };
 
         self.unMute = function () {
-            self.isMuted = false;
             castPlayer.unMute();
         };
 
