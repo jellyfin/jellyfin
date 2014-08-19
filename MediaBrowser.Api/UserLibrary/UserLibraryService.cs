@@ -420,8 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
-            var dtos = folders.OrderBy(i => i.SortName)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>

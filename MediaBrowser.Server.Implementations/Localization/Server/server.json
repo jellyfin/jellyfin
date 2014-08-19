@@ -1018,5 +1018,7 @@
     "LabelAllowLocalAccessWithoutPassword": "Allow local access without a password",
     "LabelAllowLocalAccessWithoutPasswordHelp": "When enabled, a password will not be required when signing in from within your home network.",
     "HeaderPassword": "Password",
-    "HeaderLocalAccess":  "Local Access"
+    "HeaderLocalAccess": "Local Access",
+    "HeaderViewOrder": "View Order",
+    "LabelSelectUserViewOrder":  "Choose the order your views will be displayed in within Media Browser apps"
 }

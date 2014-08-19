@@ -30,8 +30,8 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var artist = _libraryManager.GetArtist(name);
 
-            var genres = _libraryManager.RootFolder
-                .RecursiveChildren
+            var genres = user.RootFolder
+                .GetRecursiveChildren(user)
                 .OfType<Audio>()
                 .Where(i => i.HasArtist(name))
                 .SelectMany(i => i.Genres)

@@ -133,7 +133,19 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).Cast<Folder>();
+            var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
+
+            var orders = user.Configuration.OrderedViews.ToList();
+
+            return list
+                .OrderBy(i =>
+                {
+                    var index = orders.IndexOf(i.Id.ToString("N"));
+
+                    return index == -1 ? int.MaxValue : index;
+                })
+                .ThenBy(sorted.IndexOf)
+                .ThenBy(i => i.SortName);
         }
 
         public Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)
