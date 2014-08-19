@@ -205,11 +205,22 @@
         this.deviceState = DEVICE_STATE.ACTIVE;
 
         this.session.addMessageListener(messageNamespace, this.messageListener.bind(this));
+        this.session.addMediaListener(this.sessionMediaListener.bind(this));
         this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
 
         $(this).trigger('connect');
 
         MediaController.setActivePlayer(PlayerName);
+    };
+
+    /**
+     * session update listener
+     */
+    CastPlayer.prototype.sessionMediaListener = function (e) {
+
+        console.log('sessionMediaListener');
+        this.currentMediaSession = e;
+        this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
     };
 
     /**
@@ -259,39 +270,45 @@
             return;
         }
 
+        this.sendMessage({
+            options: options,
+            command: command
+        });
+    };
+
+    CastPlayer.prototype.sendMessage = function (message) {
+
         var player = this;
 
-        var message = {
-            options: options,
-            command: command,
-
+        message = $.extend(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
             serverAddress: ApiClient.serverAddress()
-        };
+        });
 
         // If the user is on localhost we need a different address to send to the receiver
         var address = message.serverAddress.toLowerCase();
         if (address.indexOf('localhost') != -1 || address.indexOf('127.0.0') != -1) {
 
-            ApiClient.getSystemInfo().done(function(info) {
+            ApiClient.getSystemInfo().done(function (info) {
 
                 message.serverAddress = info.WanAddress;
-                player.sendMessage(message);
+                player.sendMessageInternal(message);
             });
 
         } else {
-            player.sendMessage(message);
+            player.sendMessageInternal(message);
         }
     };
 
-    CastPlayer.prototype.sendMessage = function(message) {
+    CastPlayer.prototype.sendMessageInternal = function (message) {
+
         message = JSON.stringify(message);
         //console.log(message);
 
         this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
-    }
+    };
 
     CastPlayer.prototype.onPlayCommandSuccess = function () {
         console.log('Message was sent to receiver ok.');
@@ -514,6 +531,9 @@
         $(castPlayer).on("playbackstart", function (e, data) {
 
             console.log('cc: playbackstart');
+
+            castPlayer.initializeCastPlayer();
+
             var state = self.getPlayerStateInternal(data);
             $(self).trigger("playbackstart", [state]);
         });
@@ -636,6 +656,10 @@
 
         self.displayContent = function (options) {
 
+            castPlayer.sendMessage({
+                options: options,
+                command: 'DisplayContent'
+            });
         };
 
         self.mute = function () {
@@ -683,7 +707,8 @@
                                     "Mute",
                                     "Unmute",
                                     "ToggleMute",
-                                    "SetVolume"]
+                                    "SetVolume",
+                                    "DisplayContent"]
             };
         };
 
@@ -747,6 +772,7 @@
 
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
+
             console.log(JSON.stringify(data));
             return data;
         };

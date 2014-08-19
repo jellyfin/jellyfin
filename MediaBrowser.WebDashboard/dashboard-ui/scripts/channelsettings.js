@@ -20,7 +20,7 @@
 
             var isChecked = config.DownloadingChannels.indexOf(channel.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkChannelDownload" type="checkbox" name="' + id + '" id="' + id + '" data-channelid="' + channel.Id + '" data-mini="true"' + isChecked + '>';
+            html += '<input class="chkChannelDownload" type="checkbox" name="' + id + '" id="' + id + '" data-channelid="' + channel.Id + '"' + isChecked + '>';
             html += '<label for="' + id + '">' + channel.Name + '</label>';
         }
 
