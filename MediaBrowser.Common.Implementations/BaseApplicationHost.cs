@@ -432,7 +432,7 @@ namespace MediaBrowser.Common.Implementations
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
                 RegisterSingleInstance(HttpClient);
 
-                NetworkManager = CreateNetworkManager();
+                NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
                 RegisterSingleInstance(NetworkManager);
 
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager, LogManager);
@@ -500,7 +500,7 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
-        protected abstract INetworkManager CreateNetworkManager();
+        protected abstract INetworkManager CreateNetworkManager(ILogger logger);
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies

@@ -433,8 +433,7 @@ var Dashboard = {
 
     refreshSystemInfoFromServer: function () {
 
-        // TODO: Eventually remove the currentUserId check
-        if (Dashboard.getAccessToken() || Dashboard.getCurrentUserId()) {
+        if (Dashboard.getAccessToken()) {
             ApiClient.getSystemInfo().done(function (info) {
 
                 Dashboard.updateSystemInfo(info);

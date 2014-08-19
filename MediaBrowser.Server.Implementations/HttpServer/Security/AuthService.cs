@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -52,12 +53,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             ValidateUser(req);
         }
 
+        // TODO: Remove this when all clients have supported the new sescurity
+        private readonly List<string> _updatedClients = new List<string>(){"Dashboard"}; 
+
         private void ValidateUser(IRequest req)
         {
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (!string.IsNullOrWhiteSpace(auth.Token) || _config.Configuration.EnableTokenAuthentication)
+            if (!string.IsNullOrWhiteSpace(auth.Token)
+                || _config.Configuration.EnableTokenAuthentication
+                || _updatedClients.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 SessionManager.ValidateSecurityToken(auth.Token);
             }

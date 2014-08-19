@@ -27,6 +27,12 @@ namespace MediaBrowser.Model.System
         public string MacAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the local address.
+        /// </summary>
+        /// <value>The local address.</value>
+        public string LocalAddress { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether this instance has pending restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending restart; otherwise, <c>false</c>.</value>
