@@ -554,9 +554,9 @@ namespace MediaBrowser.ServerApplication
             SetKernelProperties();
         }
 
-        protected override INetworkManager CreateNetworkManager()
+        protected override INetworkManager CreateNetworkManager(ILogger logger)
         {
-            return new NetworkManager();
+            return new NetworkManager(logger);
         }
 
         protected override IFileSystem CreateFileSystemManager()
@@ -958,8 +958,37 @@ namespace MediaBrowser.ServerApplication
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
-                ServerName = FriendlyName
+                ServerName = FriendlyName,
+                LocalAddress = GetLocalIpAddress()
             };
+        }
+
+        /// <summary>
+        /// Gets the local ip address.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetLocalIpAddress()
+        {
+            var localAddresses = NetworkManager.GetLocalIpAddresses().ToList();
+
+            // Cross-check the local ip addresses with addresses that have been received on with the http server
+            var matchedAddress = HttpServer.LocalEndPoints
+                .ToList()
+                .Select(i => i.Split(':').FirstOrDefault())
+                .Where(i => !string.IsNullOrEmpty(i))
+                .FirstOrDefault(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase));
+
+            // Return the first matched address, if found, or the first known local address
+            var address = matchedAddress ?? localAddresses.FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(address))
+            {
+                address = string.Format("http://{0}:{1}",
+                    address,
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(CultureInfo.InvariantCulture));
+            }
+
+            return address;
         }
 
         public string FriendlyName

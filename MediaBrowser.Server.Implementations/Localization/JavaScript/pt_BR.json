@@ -58,7 +58,7 @@
     "ButtonMute": "Mudo",
     "ButtonUnmute": "Remover Mudo",
     "ButtonStop": "Parar",
-    "ButtonNextTrack": "Pr\u00f3xima Faixa",
+    "ButtonNextTrack": "Faixa Seguinte",
     "ButtonPause": "Pausar",
     "ButtonPlay": "Reproduzir",
     "ButtonEdit": "Editar",
@@ -352,7 +352,7 @@
     "HeaderTrack": "Faixa",
     "HeaderDisc": "Disco",
     "OptionMovies": "Filmes",
-    "OptionCollections": "Cole\u00e7\u00e3o",
+    "OptionCollections": "Cole\u00e7\u00f5es",
     "OptionSeries": "S\u00e9ries",
     "OptionSeasons": "Temporadas",
     "OptionEpisodes": "Epis\u00f3dios",
@@ -368,11 +368,11 @@
     "ButtonUp": "Para cima",
     "ButtonDown": "Para baixo",
     "LabelMetadataReaders": "Leitores de metadados:",
-    "LabelMetadataReadersHelp": "Classifique suas fontes preferidas de metadados locais por ordem de prioridade. O primeiro arquivo encontrado ser\u00e1 lido.",
+    "LabelMetadataReadersHelp": "Classifique por ordem de prioridade suas fontes de metadados locais preferidas. O primeiro arquivo encontrado ser\u00e1 lido.",
     "LabelMetadataDownloaders": "Downloaders de metadados:",
-    "LabelMetadataDownloadersHelp": "Ative e classifique seus downloaders preferidos de metadados por ordem de prioridade. Downloaders com prioridade mais baixa s\u00f3 ser\u00e3o usados para baixar informa\u00e7\u00e3o que n\u00e3o existe.",
+    "LabelMetadataDownloadersHelp": "Ative e classifique por ordem de prioridade seus downloaders de metadados preferidos. Downloaders com prioridade mais baixa s\u00f3 ser\u00e3o usados para baixar informa\u00e7\u00e3o que ainda n\u00e3o existe.",
     "LabelMetadataSavers": "Gravadores de metadados:",
     "LabelMetadataSaversHelp": "Escolha os formatos de arquivos nos quais deseja gravar seus metadados.",
     "LabelImageFetchers": "Buscadores de imagem:",
-    "LabelImageFetchersHelp": "Ative e classifique seus buscadores preferidos de imagem por ordem de prioridade."
+    "LabelImageFetchersHelp": "Ative e classifique por ordem de prioridade seus buscadores de imagem preferidos."
 }
