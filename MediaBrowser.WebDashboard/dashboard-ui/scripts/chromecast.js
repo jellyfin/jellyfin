@@ -270,6 +270,18 @@
             return;
         }
 
+        // Convert the items to smaller stubs to send the minimal amount of information
+        options.items = options.items.map(function (i) {
+
+            return {
+                Id: i.Id,
+                Name: i.Name,
+                Type: i.Type,
+                MediaType: i.MediaType,
+                IsFolder: i.IsFolder
+            };
+        });
+
         this.sendMessage({
             options: options,
             command: command
@@ -466,22 +478,22 @@
      * @param {Event} e An event object from seek 
      */
     CastPlayer.prototype.seekMedia = function (event) {
+
         var pos = parseInt(event);
 
         var curr = pos / 10000000;
 
-        if (this.castPlayerState != PLAYER_STATE.PLAYING && this.castPlayerState != PLAYER_STATE.PAUSED) {
+        if (!this.currentMediaSession) {
             return;
         }
 
-        this.currentMediaTime = curr;
-        console.log('Seeking ' + this.currentMediaSession.sessionId + ':' +
-          this.currentMediaSession.mediaSessionId + ' to ' + curr);
         var request = new chrome.cast.media.SeekRequest();
-        request.currentTime = this.currentMediaTime;
+        request.currentTime = curr;
+
         this.currentMediaSession.seek(request,
           this.onSeekSuccess.bind(this, 'media seek done'),
           this.errorHandler);
+
         this.castPlayerState = PLAYER_STATE.SEEKING;
     };
 
@@ -717,9 +729,17 @@
         };
 
         self.nextTrack = function () {
+            castPlayer.sendMessage({
+                options: {},
+                command: 'NextTrack'
+            });
         };
 
         self.previousTrack = function () {
+            castPlayer.sendMessage({
+                options: {},
+                command: 'PreviousTrack'
+            });
         };
 
         self.beginPlayerUpdates = function () {
