@@ -342,14 +342,17 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
                     {
                         return false;
                     }
 
-                    if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
+                    if (provider is IRemoteImageProvider)
                     {
-                        return false;
+                        if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                        {
+                            return false;
+                        }
                     }
                 }
             }

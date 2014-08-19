@@ -912,9 +912,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromArtist = function (name, options) {
+        self.getInstantMixFromArtist = function (options) {
 
-            var url = self.getUrl("Artists/" + self.encodeName(name) + "/InstantMix", options);
+            var url = self.getUrl("Artists/InstantMix", options);
 
             return self.ajax({
                 type: "GET",
@@ -923,9 +923,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromMusicGenre = function (name, options) {
+        self.getInstantMixFromMusicGenre = function (options) {
 
-            var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/InstantMix", options);
+            var url = self.getUrl("MusicGenres/InstantMix", options);
 
             return self.ajax({
                 type: "GET",
@@ -2060,30 +2060,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-         * Gets a year
-         */
-        self.getYear = function (yea, userId) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var options = {};
-
-            if (userId) {
-                options.userId = userId;
-            }
-
-            var url = self.getUrl("Years/" + self.encodeName(name), options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
          * Gets a Person
          */
         self.getPerson = function (name, userId) {
@@ -2196,43 +2172,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             };
 
             var url = "Users/" + userId + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            normalizeImageOptions(options);
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a person image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getPersonImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Persons/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;

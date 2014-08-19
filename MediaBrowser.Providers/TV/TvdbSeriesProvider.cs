@@ -57,11 +57,30 @@ namespace MediaBrowser.Providers.TV
         {
             var seriesId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
 
-            if (!string.IsNullOrEmpty(seriesId))
+            if (string.IsNullOrEmpty(seriesId))
             {
+                return await FindSeries(searchInfo.Name, cancellationToken).ConfigureAwait(false);
             }
-            
-            return new List<RemoteSearchResult>();
+
+            var metadata = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
+
+            var list = new List<RemoteSearchResult>();
+
+            if (metadata.HasMetadata)
+            {
+                var res = new RemoteSearchResult
+                {
+                    Name = metadata.Item.Name,
+                    PremiereDate = metadata.Item.PremiereDate,
+                    ProductionYear = metadata.Item.ProductionYear,
+                    ProviderIds = metadata.Item.ProviderIds,
+                    SearchProviderName = Name
+                };
+
+                list.Add(res);
+            }
+
+            return list;
         }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
@@ -79,18 +98,13 @@ namespace MediaBrowser.Providers.TV
 
                 if (string.IsNullOrEmpty(seriesId))
                 {
-                    seriesId = await FindSeries(itemId.Name, cancellationToken).ConfigureAwait(false);
-                }
+                    var srch = await GetSearchResults(itemId, cancellationToken).ConfigureAwait(false);
 
-                if (string.IsNullOrEmpty(seriesId))
-                {
-                    int? yearInName = null;
-                    string nameWithoutYear;
-                    NameParser.ParseName(itemId.Name, out nameWithoutYear, out yearInName);
+                    var entry = srch.FirstOrDefault();
 
-                    if (!string.IsNullOrEmpty(nameWithoutYear) && !string.Equals(nameWithoutYear, itemId.Name, StringComparison.OrdinalIgnoreCase))
+                    if (entry != null)
                     {
-                        seriesId = await FindSeries(nameWithoutYear, cancellationToken).ConfigureAwait(false);
+                        seriesId = entry.GetProviderId(MetadataProviders.Tvdb);
                     }
                 }
             }
@@ -262,8 +276,29 @@ namespace MediaBrowser.Providers.TV
         /// <param name="name">The name.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> FindSeries(string name, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> FindSeries(string name, CancellationToken cancellationToken)
         {
+            var results = (await FindSeriesInternal(name, cancellationToken).ConfigureAwait(false)).ToList();
+
+            if (results.Count == 0)
+            {
+                int? yearInName = null;
+                string nameWithoutYear;
+                NameParser.ParseName(name, out nameWithoutYear, out yearInName);
+
+                if (!string.IsNullOrEmpty(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    results = (await FindSeriesInternal(nameWithoutYear, cancellationToken).ConfigureAwait(false)).ToList();
+                }
+            }
+
+            return results;
+        }
+
+        private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, CancellationToken cancellationToken)
+        {
+            // TODO: Support returning more data, including image url's for the identify function
+
             var url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
             var doc = new XmlDocument();
 
@@ -277,6 +312,8 @@ namespace MediaBrowser.Providers.TV
             {
                 doc.Load(results);
             }
+
+            var searchResults = new List<RemoteSearchResult>();
 
             if (doc.HasChildNodes)
             {
@@ -305,7 +342,17 @@ namespace MediaBrowser.Providers.TV
                         {
                             var id = node.SelectSingleNode("./seriesid");
                             if (id != null)
-                                return id.InnerText;
+                            {
+                                var searchResult = new RemoteSearchResult
+                                {
+                                    Name = titles.FirstOrDefault(),
+                                    SearchProviderName = Name
+                                };
+
+                                searchResult.SetProviderId(MetadataProviders.Tvdb, id.InnerText);
+
+                                searchResults.Add(searchResult);
+                            }
                         }
 
                         foreach (var title in titles)
@@ -317,7 +364,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             _logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");
-            return null;
+            return searchResults;
         }
 
         /// <summary>
@@ -1133,11 +1180,20 @@ namespace MediaBrowser.Providers.TV
         {
             string tvdbId;
             if (!info.ProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out tvdbId))
-                tvdbId = await FindSeries(info.Name, CancellationToken.None);
+            {
+                var srch = await GetSearchResults(info, CancellationToken.None).ConfigureAwait(false);
+
+                var entry = srch.FirstOrDefault();
+
+                if (entry != null)
+                {
+                    tvdbId = entry.GetProviderId(MetadataProviders.Tvdb);
+                }
+            }
 
             if (!string.IsNullOrEmpty(tvdbId))
             {
-                return new SeriesIdentity {Type = MetadataProviders.Tvdb.ToString(), Id = tvdbId};
+                return new SeriesIdentity { Type = MetadataProviders.Tvdb.ToString(), Id = tvdbId };
             }
 
             return null;

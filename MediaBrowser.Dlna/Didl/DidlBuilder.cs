@@ -163,13 +163,13 @@ namespace MediaBrowser.Dlna.Didl
 
             if (string.Equals(subtitleMode, "CaptionInfoEx", StringComparison.OrdinalIgnoreCase))
             {
-                var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
+                //var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
 
-                res.InnerText = info.Url;
+                //res.InnerText = info.Url;
 
-                // TODO: attribute needs SEC:
-                res.SetAttribute("type", info.Format.ToLower());
-                container.AppendChild(res);
+                //// TODO: attribute needs SEC:
+                //res.SetAttribute("type", info.Format.ToLower());
+                //container.AppendChild(res);
             }
             else
             {

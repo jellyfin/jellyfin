@@ -11,21 +11,7 @@
             return ApiClient.getItem(Dashboard.getCurrentUserId(), id);
         }
 
-        var name = getParameterByName('person');
-
-        if (name) {
-            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('studio');
-
-        if (name) {
-
-            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
-
-        }
-
-        name = getParameterByName('genre');
+        var name = getParameterByName('genre');
 
         if (name) {
             return ApiClient.getGenre(name, Dashboard.getCurrentUserId());

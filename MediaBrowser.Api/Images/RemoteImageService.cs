@@ -199,21 +199,21 @@ namespace MediaBrowser.Api.Images
             return _providerManager.GetRemoteImageProviderInfo(item).ToList();
         }
 
-        public object Get(GetRemoteImages request)
+        public async Task<object> Get(GetRemoteImages request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            return GetRemoteImageResult(item, request);
+            return await GetRemoteImageResult(item, request).ConfigureAwait(false);
         }
 
-        public object Get(GetItemByNameRemoteImages request)
+        public async Task<object> Get(GetItemByNameRemoteImages request)
         {
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
-            return GetRemoteImageResult(item, request);
+            return await GetRemoteImageResult(item, request).ConfigureAwait(false);
         }
 
         private async Task<RemoteImageResult> GetRemoteImageResult(BaseItem item, BaseRemoteImageRequest request)
@@ -304,7 +304,12 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetRemoteImage request)
+        public object Get(GetRemoteImage request)
+        {
+            return GetAsync(request).Result;
+        }
+
+        public async Task<object> GetAsync(GetRemoteImage request)
         {
             var urlHash = request.ImageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
@@ -342,7 +347,7 @@ namespace MediaBrowser.Api.Images
 
             return ToStaticFileResult(contentPath);
         }
-
+        
         /// <summary>
         /// Downloads the image.
         /// </summary>

@@ -1380,7 +1380,7 @@
 
             if (cast.PrimaryImageTag) {
 
-                imgUrl = ApiClient.getPersonImageUrl(cast.Name, {
+                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
                     width: 100,
                     tag: cast.PrimaryImageTag,
                     type: "primary"

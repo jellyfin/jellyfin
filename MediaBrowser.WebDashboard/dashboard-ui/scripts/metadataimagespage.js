@@ -367,31 +367,25 @@
 
             var plugin = plugins[i];
 
-            if (i > 0) {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+            html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
+            if (i > 0) {
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
                 html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
-
-                html += '</li>';
             }
             else if (plugins.length > 1) {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
                 html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
-
-                html += '</li>';
             }
             else {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
                 html += plugin.Name;
 
-                html += '</li>';
             }
+            html += '</li>';
         }
 
         html += '</ul>';

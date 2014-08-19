@@ -77,6 +77,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableLocalPassword { get; set; }
 
+        public string[] OrderedViews { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -90,6 +92,7 @@ namespace MediaBrowser.Model.Configuration
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
 
+            OrderedViews = new string[] { };
             BlockedMediaFolders = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
             BlockedChannels = new string[] { };

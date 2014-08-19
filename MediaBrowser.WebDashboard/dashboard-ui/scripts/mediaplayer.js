@@ -847,19 +847,21 @@
 
                 if (item.Type == "MusicArtist") {
 
-                    promise = ApiClient.getInstantMixFromArtist(name, {
+                    promise = ApiClient.getInstantMixFromArtist({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: 50,
+                        Id: id
                     });
 
                 }
                 else if (item.Type == "MusicGenre") {
 
-                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
+                    promise = ApiClient.getInstantMixFromMusicGenre({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: 50,
+                        Id: id
                     });
 
                 }

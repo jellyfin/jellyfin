@@ -122,13 +122,11 @@
         this.session = e;
         if (this.session) {
 
-            console.log('sessionListener');
+            console.log('sessionListener ' + JSON.stringify(e));
 
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
             }
-
-            console.log(JSON.stringify(e));
 
             this.onSessionConnected(e);
         }
@@ -273,6 +271,7 @@
             serverAddress: ApiClient.serverAddress()
         };
 
+        // If the user is on localhost we need a different address to send to the receiver
         var address = message.serverAddress.toLowerCase();
         if (address.indexOf('localhost') != -1 || address.indexOf('127.0.0') != -1) {
 
@@ -706,18 +705,29 @@
             // Stop polling here
         };
 
+        function getCurrentVolume() {
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+
+            return state.VolumeLevel == null ? 100 : state.VolumeLevel;
+        }
+
         self.volumeDown = function () {
-            var vol = castPlayer.volumeLevel - 0.02;
-            castPlayer.setReceiverVolume(false, vol / 100);
+
+            self.setVolume(getCurrentVolume() - 2);
         };
 
         self.volumeUp = function () {
-            var vol = castPlayer.volumeLevel + 0.02;
-            castPlayer.setReceiverVolume(false, vol / 100);
+
+            self.setVolume(getCurrentVolume() + 2);
         };
 
         self.setVolume = function (vol) {
-            castPlayer.setReceiverVolume(false, vol / 100);
+
+            vol = Math.min(vol, 100);
+            vol = Math.max(vol, 0);
+
+            castPlayer.setReceiverVolume(false, (vol / 100));
         };
 
         self.getPlayerState = function () {

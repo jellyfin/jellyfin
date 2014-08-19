@@ -891,22 +891,22 @@ var Dashboard = {
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
 
         if (url) {

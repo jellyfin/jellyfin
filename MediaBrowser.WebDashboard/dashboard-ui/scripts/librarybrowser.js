@@ -2119,16 +2119,8 @@
                 url = "css/images/items/detail/video.png";
             }
 
-            var identifierName = "id";
-            var identifierValue = item.Id;
-
-            if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.Type == "GameGenre") {
-                identifierName = item.Type;
-                identifierValue = ApiClient.encodeName(item.Name);
-            }
-
             if (!href) {
-                href = "itemgallery.html?" + identifierName + "=" + identifierValue;
+                href = "itemgallery.html?id=" + item.Id;
             }
 
             var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);

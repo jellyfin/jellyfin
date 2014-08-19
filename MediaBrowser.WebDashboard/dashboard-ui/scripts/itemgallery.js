@@ -2,42 +2,11 @@
 
     var currentItem;
 
-    function getPromise() {
-
-        var name = getParameterByName('person');
-
-        if (name) {
-            return ApiClient.getPerson(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('studio');
-
-        if (name) {
-
-            return ApiClient.getStudio(name, Dashboard.getCurrentUserId());
-
-        }
-
-        name = getParameterByName('genre');
-
-        if (name) {
-            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('musicartist');
-
-        if (name) {
-            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
-        }
-
-        return ApiClient.getItem(Dashboard.getCurrentUserId(), getParameterByName('id'));
-    }
-
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        getPromise().done(function (item) {
+        ApiClient.getItem(Dashboard.getCurrentUserId(), getParameterByName('id')).done(function (item) {
 
             currentItem = item;
 

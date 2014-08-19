@@ -297,9 +297,9 @@ namespace MediaBrowser.Api.Session
             Task.WaitAll(task);
         }
 
-        public Task Post(CreateKey request)
+        public void Post(CreateKey request)
         {
-            return _authRepo.Create(new AuthenticationInfo
+            var task = _authRepo.Create(new AuthenticationInfo
             {
                 AppName = request.App,
                 IsActive = true,
@@ -307,6 +307,8 @@ namespace MediaBrowser.Api.Session
                 DateCreated = DateTime.UtcNow
 
             }, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         public void Post(ReportSessionEnded request)
@@ -355,7 +357,7 @@ namespace MediaBrowser.Api.Session
             return ToOptimizedResult(result.Select(_sessionManager.GetSessionInfoDto).ToList());
         }
 
-        public Task Post(SendPlaystateCommand request)
+        public void Post(SendPlaystateCommand request)
         {
             var command = new PlaystateRequest
             {
@@ -363,14 +365,16 @@ namespace MediaBrowser.Api.Session
                 SeekPositionTicks = request.SeekPositionTicks
             };
 
-            return _sessionManager.SendPlaystateCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlaystateCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Post(DisplayContent request)
+        public void Post(DisplayContent request)
         {
             var command = new BrowseRequest
             {
@@ -379,14 +383,16 @@ namespace MediaBrowser.Api.Session
                 ItemType = request.ItemType
             };
 
-            return _sessionManager.SendBrowseCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendBrowseCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Post(SendSystemCommand request)
+        public void Post(SendSystemCommand request)
         {
             GeneralCommandType commandType;
             var name = request.Command;
@@ -404,14 +410,16 @@ namespace MediaBrowser.Api.Session
                 ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null
             };
 
-            return _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Post(SendMessageCommand request)
+        public void Post(SendMessageCommand request)
         {
             var command = new MessageCommand
             {
@@ -420,14 +428,16 @@ namespace MediaBrowser.Api.Session
                 Text = request.Text
             };
 
-            return _sessionManager.SendMessageCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendMessageCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Post(Play request)
+        public void Post(Play request)
         {
             var command = new PlayRequest
             {
@@ -437,10 +447,12 @@ namespace MediaBrowser.Api.Session
                 StartPositionTicks = request.StartPositionTicks
             };
 
-            return _sessionManager.SendPlayCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlayCommand(GetSession().Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
-        public Task Post(SendGeneralCommand request)
+        public void Post(SendGeneralCommand request)
         {
             var currentSession = GetSession();
 
@@ -450,16 +462,20 @@ namespace MediaBrowser.Api.Session
                 ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null
             };
 
-            return _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, command, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
-        public Task Post(SendFullGeneralCommand request)
+        public void Post(SendFullGeneralCommand request)
         {
             var currentSession = GetSession();
 
             request.ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null;
 
-            return _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, request, CancellationToken.None);
+            var task = _sessionManager.SendGeneralCommand(currentSession.Id, request.Id, request, CancellationToken.None);
+
+            Task.WaitAll(task);
         }
 
         public void Post(AddUserToSession request)
