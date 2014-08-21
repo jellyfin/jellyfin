@@ -75,7 +75,8 @@
                         showIndex: false,
                         title: item.Name,
                         showRemoveFromPlaylist: true,
-                        smallIcon: true
+                        smallIcon: true,
+                        playFromHere: true
                     });
                 }
 
@@ -180,6 +181,24 @@
         }).on('removefromplaylist', function (e, playlistItemId) {
 
             removeFromPlaylist(page, [playlistItemId]);
+
+        }).on('playallfromhere', function (e, index) {
+
+            LibraryBrowser.playAllFromHere({
+                
+                Recursive: true,
+                ParentId: query.ParentId
+
+            }, index);
+
+        }).on('queueallfromhere', function (e, index) {
+
+            LibraryBrowser.queueAllFromHere({
+
+                Recursive: true,
+                ParentId: query.ParentId
+
+            }, index);
 
         });
 

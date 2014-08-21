@@ -9,10 +9,10 @@
 
         MediaController.getCurrentPlayer().displayContent({
 
-            itemName: item.Name,
-            itemId: item.Id,
-            itemType: item.Type,
-            context: info.context
+            ItemName: item.Name,
+            ItemId: item.Id,
+            ItemType: item.Type,
+            Context: info.context
         });
     }
 

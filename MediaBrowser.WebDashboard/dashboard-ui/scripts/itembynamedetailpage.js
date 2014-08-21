@@ -2,6 +2,7 @@
 
     var currentItem;
     var shape;
+    var currentItemsQuery;
 
     function getPromise() {
 
@@ -404,6 +405,8 @@
 
         addCurrentItemToQuery(query);
 
+        currentItemsQuery = query;
+
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             var html = '';
@@ -422,7 +425,8 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true
+                    smallIcon: true,
+                    playFromHere: true
                 });
 
             }
@@ -462,7 +466,8 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true
+                    smallIcon: true,
+                    playFromHere: true
                 });
 
             }
@@ -507,6 +512,16 @@
         $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
+        });
+
+        $('.itemsContainer', page).on('playallfromhere', function (e, index) {
+
+            LibraryBrowser.playAllFromHere(currentItemsQuery, index);
+
+        }).on('queueallfromhere', function (e, index) {
+
+            LibraryBrowser.queueAllFromHere(currentItemsQuery, index);
+
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {

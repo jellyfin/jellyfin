@@ -7,7 +7,6 @@ using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +23,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UserId { get; set; }
+
+        [ApiMember(Name = "MediaType", Description = "The playlist media type", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string MediaType { get; set; }
     }
 
     [Route("/Playlists/{Id}/Items", "POST", Summary = "Adds items to a playlist")]
@@ -99,20 +101,16 @@ namespace MediaBrowser.Api
 
         public async Task<object> Post(CreatePlaylist request)
         {
-            var item = await _playlistManager.CreatePlaylist(new PlaylistCreationOptions
+            var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
                 Name = request.Name,
                 ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                UserId = request.UserId
+                UserId = request.UserId,
+                MediaType = request.MediaType
 
             }).ConfigureAwait(false);
 
-            var dto = _dtoService.GetBaseItemDto(item, new List<ItemFields>());
-
-            return ToOptimizedResult(new PlaylistCreationResult
-            {
-                Id = dto.Id
-            });
+            return ToOptimizedResult(result);
         }
 
         public void Post(AddToPlaylist request)

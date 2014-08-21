@@ -92,6 +92,35 @@
             return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
         },
 
+        playAllFromHere: function (query, index) {
+
+            query = $.extend({}, query);
+            query.StartIndex = index;
+            query.Limit = 100;
+            query.Fields = "MediaSources,Chapters";
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+
+                MediaController.play({
+                    items: result.Items
+                });
+            });
+        },
+
+        queueAllFromHere: function (query, index) {
+            query = $.extend({}, query);
+            query.StartIndex = index;
+            query.Limit = 100;
+            query.Fields = "MediaSources,Chapters";
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+
+                MediaController.queue({
+                    items: result.Items
+                });
+            });
+        },
+
         getItemCountsHtml: function (options, item) {
 
             var counts = [];
@@ -573,7 +602,7 @@
                 }
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '"><a href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-index="' + index + '" data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '"><a href="' + href + '">';
 
                 var imgUrl;
 
@@ -701,13 +730,13 @@
 
                 html += '</li>';
 
+                index++;
                 return html;
 
             }).join('');
 
             outerHtml += '</ul>';
 
-            index++;
             return outerHtml;
         },
 
@@ -771,6 +800,11 @@
                 } else {
                     itemCommands.push('playlist');
                 }
+            }
+
+            if (options.playFromHere) {
+                itemCommands.push('playfromhere');
+                itemCommands.push('queuefromhere');
             }
 
             return itemCommands;

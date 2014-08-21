@@ -133,6 +133,12 @@
         return html;
     }
 
+    function closeContextMenu() {
+
+        // Used by the tab menu, not the slide up
+        $('.tapHoldMenu').popup('close');
+    }
+
     function onTrailerButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -141,8 +147,7 @@
             MediaController.play({ items: trailers });
         });
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         return false;
     }
@@ -151,8 +156,7 @@
 
         var card = $(this).parents('.card')[0];
 
-        // Used by the tab menu
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         showContextMenu(card, {
             showPlayOptions: false
@@ -165,24 +169,9 @@
 
         var id = this.getAttribute('data-itemid');
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         PlaylistManager.showPanel([id]);
-
-        return false;
-    }
-
-    function onRemoveFromPlaylistButtonClick() {
-
-        var playlistItemId = this.getAttribute('data-playlistitemid');
-
-        var page = $(this).parents('.page');
-
-        $('.itemsContainer', page).trigger('removefromplaylist', [playlistItemId]);
-
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
 
         return false;
     }
@@ -193,8 +182,7 @@
 
         MediaController.shuffle(id);
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         return false;
     }
@@ -205,8 +193,7 @@
 
         MediaController.instantMix(id);
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         return false;
     }
@@ -217,8 +204,7 @@
 
         MediaController.queue(id);
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         return false;
     }
@@ -229,8 +215,52 @@
 
         MediaController.play(id);
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
+
+        return false;
+    }
+
+    function onPlayAllFromHereButtonClick() {
+
+        var index = this.getAttribute('data-index');
+
+        var page = $(this).parents('.page');
+
+        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
+
+        closeContextMenu();
+
+        itemsContainer.trigger('playallfromhere', [index]);
+
+        return false;
+    }
+
+    function onQueueAllFromHereButtonClick() {
+
+        var index = this.getAttribute('data-index');
+
+        var page = $(this).parents('.page');
+
+        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
+
+        closeContextMenu();
+
+        itemsContainer.trigger('queueallfromhere', [index]);
+
+        return false;
+    }
+
+    function onRemoveFromPlaylistButtonClick() {
+
+        var playlistItemId = this.getAttribute('data-playlistitemid');
+
+        var page = $(this).parents('.page');
+
+        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
+
+        itemsContainer.trigger('removefromplaylist', [playlistItemId]);
+
+        closeContextMenu();
 
         return false;
     }
@@ -244,8 +274,7 @@
             startPositionTicks: parseInt(this.getAttribute('data-ticks'))
         });
 
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
+        closeContextMenu();
 
         return false;
     }
@@ -260,7 +289,7 @@
 
     function showContextMenu(card, options) {
 
-        $('.tapHoldMenu').popup("close").remove();
+        closeContextMenu();
 
         var displayContextItem = card;
 
@@ -277,6 +306,7 @@
         var playAccess = card.getAttribute('data-playaccess');
         var locationType = card.getAttribute('data-locationtype');
         var isPlaceHolder = card.getAttribute('data-placeholder') == 'true';
+        var index = card.getAttribute('data-index');
 
         $(card).addClass('hasContextMenu');
 
@@ -297,8 +327,13 @@
             }
 
             if (options.showPlayOptions !== false) {
+
                 if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType, isPlaceHolder)) {
                     html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
+
+                    if (commands.indexOf('playfromhere') != -1) {
+                        html += '<li data-icon="play"><a href="#" class="btnPlayAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonPlayAllFromHere') + '</a></li>';
+                    }
                 }
 
                 if (playbackPositionTicks && mediaType != "Audio") {
@@ -312,6 +347,10 @@
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
                 html += '<li data-icon="plus"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
+
+                if (commands.indexOf('queuefromhere') != -1) {
+                    html += '<li data-icon="plus"><a href="#" class="btnQueueAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonQueueAllFromHere') + '</a></li>';
+                }
             }
 
             if (commands.indexOf('instantmix') != -1) {
@@ -350,6 +389,8 @@
             $('.btnPlayTrailer', elem).on('click', onTrailerButtonClick);
             $('.btnAddToPlaylist', elem).on('click', onAddToPlaylistButtonClick);
             $('.btnRemoveFromPlaylist', elem).on('click', onRemoveFromPlaylistButtonClick);
+            $('.btnPlayAllFromHere', elem).on('click', onPlayAllFromHereButtonClick);
+            $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
         });
     }
 

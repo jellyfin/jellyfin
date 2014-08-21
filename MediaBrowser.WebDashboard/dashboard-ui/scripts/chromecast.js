@@ -438,7 +438,7 @@
 
         if (!mute) {
 
-            this.session.setReceiverVolumeLevel(vol || 1,
+            this.session.setReceiverVolumeLevel((vol || 1),
               this.mediaCommandSuccessCallback.bind(this),
               this.errorHandler);
         }
@@ -450,33 +450,12 @@
     };
 
     /**
-     * Toggle mute CC
-     */
-    CastPlayer.prototype.toggleMute = function () {
-        if (this.audio == true) {
-            this.mute();
-        }
-        else {
-            this.unMute();
-        }
-    };
-
-    /**
      * Mute CC
      */
     CastPlayer.prototype.mute = function () {
         this.audio = false;
         this.setReceiverVolume(true);
     };
-
-    /**
-     * Unmute CC
-     */
-    CastPlayer.prototype.unMute = function () {
-        this.audio = true;
-        this.setReceiverVolume(false);
-    };
-
 
     /**
      * media seek function in either Cast or local mode
@@ -684,11 +663,19 @@
         };
 
         self.unMute = function () {
-            castPlayer.unMute();
+            self.setVolume(getCurrentVolume() + 2);
         };
 
         self.toggleMute = function () {
-            castPlayer.toggleMute();
+
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+
+            if (state.IsMuted) {
+                self.unMute();
+            } else {
+                self.mute();
+            }
         };
 
         self.getTargets = function () {
@@ -724,12 +711,33 @@
                                     "Mute",
                                     "Unmute",
                                     "ToggleMute",
-                                    "SetVolume"]
+                                    "SetVolume",
+                                    "SetAudioStreamIndex",
+                                    "SetSubtitleStreamIndex",
+                                    "DisplayContent"]
             };
         };
 
         self.seek = function (position) {
             castPlayer.seekMedia(position);
+        };
+
+        self.setAudioStreamIndex = function (index) {
+            castPlayer.sendMessage({
+                options: {
+                    index: index
+                },
+                command: 'SetAudioStreamIndex'
+            });
+        };
+
+        self.setSubtitleStreamIndex = function (index) {
+            castPlayer.sendMessage({
+                options: {
+                    index: index
+                },
+                command: 'SetSubtitleStreamIndex'
+            });
         };
 
         self.nextTrack = function () {

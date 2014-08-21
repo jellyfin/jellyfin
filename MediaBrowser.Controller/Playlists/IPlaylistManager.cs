@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Playlists;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace MediaBrowser.Controller.Playlists
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task&lt;Playlist&gt;.</returns>
-        Task<Playlist> CreatePlaylist(PlaylistCreationOptions options);
+        Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options);
 
         /// <summary>
         /// Adds to playlist.
