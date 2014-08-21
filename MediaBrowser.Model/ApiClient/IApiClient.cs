@@ -5,6 +5,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
@@ -1257,5 +1258,35 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
         Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Creates the playlist.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task&lt;PlaylistCreationResult&gt;.</returns>
+        Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest request);
+
+        /// <summary>
+        /// Adds to playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="itemIds">The item ids.</param>
+        /// <returns>Task.</returns>
+        Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds);
+
+        /// <summary>
+        /// Removes from playlist.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="entryIds">The entry ids.</param>
+        /// <returns>Task.</returns>
+        Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds);
+
+        /// <summary>
+        /// Gets the playlist items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItemDto&gt;&gt;.</returns>
+        Task<QueryResult<BaseItemDto>> GetPlaylistItems(PlaylistItemQuery query);
     }
 }

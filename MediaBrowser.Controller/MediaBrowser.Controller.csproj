@@ -222,7 +222,6 @@
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Playlists\IPlaylistManager.cs" />
     <Compile Include="Playlists\Playlist.cs" />
-    <Compile Include="Playlists\PlaylistCreationOptions.cs" />
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\ICustomMetadataProvider.cs" />
     <Compile Include="Providers\IExternalId.cs" />

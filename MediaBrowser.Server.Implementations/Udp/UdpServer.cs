@@ -114,11 +114,9 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             if (!string.IsNullOrEmpty(info.LocalAddress))
             {
-                var serverAddress = string.Format("http://{0}", info.LocalAddress);
-
                 var response = new ServerDiscoveryInfo
                 {
-                    Address = serverAddress,
+                    Address = info.LocalAddress,
                     Id = info.Id,
                     Name = info.ServerName
                 };

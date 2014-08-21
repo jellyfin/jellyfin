@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Playlists;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>();
         }
 
-        public async Task<Playlist> CreatePlaylist(PlaylistCreationOptions options)
+        public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options)
         {
             var name = options.Name;
 
@@ -128,7 +129,10 @@ namespace MediaBrowser.Server.Implementations.Playlists
                     await AddToPlaylist(playlist.Id.ToString("N"), options.ItemIdList);
                 }
 
-                return playlist;
+                return new PlaylistCreationResult
+                {
+                    Id = playlist.Id.ToString("N")
+                };
             }
             finally
             {
@@ -177,8 +181,9 @@ namespace MediaBrowser.Server.Implementations.Playlists
             playlist.LinkedChildren.AddRange(list);
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await playlist.RefreshMetadata(new MetadataRefreshOptions{
-            
+            await playlist.RefreshMetadata(new MetadataRefreshOptions
+            {
+
                 ForceSave = true
 
             }, CancellationToken.None).ConfigureAwait(false);

@@ -652,8 +652,14 @@
     <Compile Include="..\MediaBrowser.Model\Notifications\SendToUserType.cs">
       <Link>Notifications\SendToUserType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistCreationRequest.cs">
+      <Link>Playlists\PlaylistCreationRequest.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistCreationResult.cs">
       <Link>Playlists\PlaylistCreationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistItemQuery.cs">
+      <Link>Playlists\PlaylistItemQuery.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
       <Link>Plugins\BasePluginConfiguration.cs</Link>
