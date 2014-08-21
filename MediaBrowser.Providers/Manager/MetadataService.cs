@@ -103,9 +103,6 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
-            // Identify item
-            TIdType id = null;
-
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -122,22 +119,18 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+                    var id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+
                     var result = await RefreshWithProviders(itemOfType, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
+
+                    MergeIdentities(itemOfType, id);
                 }
             }
-
-            if (id == null)
-            {
-                id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
-            }
-
-            MergeIdentities(itemOfType, id);
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
@@ -491,7 +484,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 try
                 {
-                    //await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+                    await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
