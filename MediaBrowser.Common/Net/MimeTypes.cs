@@ -203,6 +203,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "application/x-javascript";
             }
+            if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return JsonMimeType;
+            }
             if (ext.Equals(".map", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/x-javascript";

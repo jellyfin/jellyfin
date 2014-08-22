@@ -61,6 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Subtitles\ISubtitleParser.cs" />
     <Compile Include="Subtitles\ISubtitleWriter.cs" />
+    <Compile Include="Subtitles\JsonWriter.cs" />
     <Compile Include="Subtitles\SrtParser.cs" />
     <Compile Include="Subtitles\SrtWriter.cs" />
     <Compile Include="Subtitles\AssParser.cs" />

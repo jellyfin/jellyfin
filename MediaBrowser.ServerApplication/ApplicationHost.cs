@@ -535,7 +535,7 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext, ServerConfigurationManager));
 
-            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
+            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
