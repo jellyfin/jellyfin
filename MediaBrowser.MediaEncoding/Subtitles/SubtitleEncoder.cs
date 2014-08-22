@@ -239,10 +239,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new SrtParser();
             }
-            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
                 return new SsaParser();
+            }
+            if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            {
+                return new AssParser();
             }
 
             if (throwIfMissing)

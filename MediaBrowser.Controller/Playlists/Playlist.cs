@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             return inputItems.SelectMany(i => GetPlaylistItems(i, user))
-                .Where(m =>  string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
+                .Where(m => string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
         }
 
         private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem i, User user)
@@ -57,25 +57,31 @@ namespace MediaBrowser.Controller.Playlists
             var musicGenre = i as MusicGenre;
             if (musicGenre != null)
             {
-                var songs = user.RootFolder
-                    .GetRecursiveChildren(user)
+                var items = user == null
+                    ? LibraryManager.RootFolder.GetRecursiveChildren()
+                    : user.RootFolder.GetRecursiveChildren(user, true);
+
+                var songs = items
                     .OfType<Audio>()
                     .Where(a => a.Genres.Contains(musicGenre.Name, StringComparer.OrdinalIgnoreCase));
 
-                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
             var musicArtist = i as MusicArtist;
             if (musicArtist != null)
             {
-                var songs = user.RootFolder
-                    .GetRecursiveChildren(user)
+                var items = user == null
+                    ? LibraryManager.RootFolder.GetRecursiveChildren()
+                    : user.RootFolder.GetRecursiveChildren(user, true);
+
+                var songs = items
                     .OfType<Audio>()
                     .Where(a => a.HasArtist(musicArtist.Name));
 
-                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
-            
+
             var folder = i as Folder;
 
             if (folder != null)
