@@ -43,7 +43,6 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
-        $('.btnEdit', page).attr('href', '#');
 
         getPromise().done(function (item) {
 
@@ -53,7 +52,6 @@
             if (context) {
                 editQuery += '&context=' + context;
             }
-            $('.btnEdit', page).attr('href', 'edititemmetadata.html' + editQuery);
 
             currentItem = item;
 
@@ -88,10 +86,10 @@
 
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
-                if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
-                    $('.btnEdit', page).show();
+                if (LibraryBrowser.getMoreCommands(item, user).length) {
+                    $('.btnMoreCommands', page).show();
                 } else {
-                    $('.btnEdit', page).hide();
+                    $('.btnMoreCommands', page).show();
                 }
 
             });
@@ -464,9 +462,10 @@
             }
             else if (query.IncludeItemTypes == "MusicAlbum") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    smallIcon: true,
+                    shape: "square",
+                    context: 'music',
                     playFromHere: true
                 });
 
@@ -522,6 +521,16 @@
 
             LibraryBrowser.queueAllFromHere(currentItemsQuery, index);
 
+        });
+
+        $('.btnMoreCommands', page).on('click', function () {
+
+            var button = this;
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+            });
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {

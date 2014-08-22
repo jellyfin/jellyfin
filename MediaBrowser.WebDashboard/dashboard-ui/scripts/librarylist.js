@@ -319,12 +319,20 @@
 
             var href = card.getAttribute('data-href') || card.href;
 
-            html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
-            html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
+            if (commands.indexOf('playlist') != -1) {
+                html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+            }
 
             if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
+
+            if (commands.indexOf('instantmix') != -1) {
+                html += '<li data-icon="recycle"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
+            }
+
+            html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
+            html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
             if (options.showPlayOptions !== false) {
 
@@ -353,16 +361,8 @@
                 }
             }
 
-            if (commands.indexOf('instantmix') != -1) {
-                html += '<li data-icon="recycle"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
-            }
-
             if (commands.indexOf('shuffle') != -1) {
                 html += '<li data-icon="recycle"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
-            }
-
-            if (commands.indexOf('playlist') != -1) {
-                html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('removefromplaylist') != -1) {

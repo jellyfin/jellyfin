@@ -141,22 +141,29 @@ namespace MediaBrowser.Api
 
         private string AutoDetectMetadataService()
         {
-            var paths = _libraryManager.GetDefaultVirtualFolders()
-                .SelectMany(i => i.Locations)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(i => new DirectoryInfo(i))
-                .ToList();
-
-            if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                .Any())
+            try
             {
-                return XbmcMetadata;
+                var paths = _libraryManager.GetDefaultVirtualFolders()
+                   .SelectMany(i => i.Locations)
+                   .Distinct(StringComparer.OrdinalIgnoreCase)
+                   .Select(i => new DirectoryInfo(i))
+                   .ToList();
+
+                if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
+                    .Any())
+                {
+                    return XbmcMetadata;
+                }
+
+                if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
+                    .Any(i => string.Equals(i.Name, "series.xml", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "movie.xml", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return MediaBrowserMetadata;
+                }
             }
-
-            if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                .Any(i => string.Equals(i.Name, "series.xml", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "movie.xml", StringComparison.OrdinalIgnoreCase)))
+            catch (Exception)
             {
-                return MediaBrowserMetadata;
+                
             }
             
             return XbmcMetadata;

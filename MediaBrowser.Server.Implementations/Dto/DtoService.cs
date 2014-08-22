@@ -1366,6 +1366,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.RecursiveItemCount = recursiveItemCount;
             dto.UserData.UnplayedItemCount = unplayed;
+            dto.RecursiveUnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
             {

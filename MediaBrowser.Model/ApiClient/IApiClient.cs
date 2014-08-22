@@ -1271,8 +1271,9 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="playlistId">The playlist identifier.</param>
         /// <param name="itemIds">The item ids.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds);
+        Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId);
 
         /// <summary>
         /// Removes from playlist.

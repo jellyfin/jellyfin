@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
                         if (folder != null)
                         {
                             options.MediaType = folder.GetRecursiveChildren()
-                                .Where(i => !i.IsFolder)
+                                .Where(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
                                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
                         }
@@ -99,6 +99,8 @@ namespace MediaBrowser.Server.Implementations.Playlists
             {
                 throw new ArgumentException("A playlist media type is required.");
             }
+
+            var user = _userManager.GetUserById(new Guid(options.UserId));
 
             var path = Path.Combine(parentFolder.Path, folderName);
             path = GetTargetPath(path);
@@ -126,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToPlaylist(playlist.Id.ToString("N"), options.ItemIdList);
+                    await AddToPlaylistInternal(playlist.Id.ToString("N"), options.ItemIdList, user);
                 }
 
                 return new PlaylistCreationResult
@@ -151,14 +153,21 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return path;
         }
 
-        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType)
+        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
-            return Playlist.GetPlaylistItems(playlistMediaType, items, null);
+            return Playlist.GetPlaylistItems(playlistMediaType, items, user);
         }
 
-        public async Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds)
+        public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)
+        {
+            var user = string.IsNullOrWhiteSpace(userId) ? null : _userManager.GetUserById(new Guid(userId));
+
+            return AddToPlaylistInternal(playlistId, itemIds, user);
+        }
+
+        private async Task AddToPlaylistInternal(string playlistId, IEnumerable<string> itemIds, User user)
         {
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
 
@@ -170,7 +179,9 @@ namespace MediaBrowser.Server.Implementations.Playlists
             var list = new List<LinkedChild>();
             var itemList = new List<BaseItem>();
 
-            var items = GetPlaylistItems(itemIds, playlist.MediaType).ToList();
+            var items = GetPlaylistItems(itemIds, playlist.MediaType, user)
+                .Where(i => i.SupportsAddingToPlaylist)
+                .ToList();
 
             foreach (var item in items)
             {
@@ -183,7 +194,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             await playlist.RefreshMetadata(new MetadataRefreshOptions
             {
-
                 ForceSave = true
 
             }, CancellationToken.None).ConfigureAwait(false);

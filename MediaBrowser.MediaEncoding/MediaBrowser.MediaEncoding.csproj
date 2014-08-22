@@ -63,6 +63,7 @@
     <Compile Include="Subtitles\ISubtitleWriter.cs" />
     <Compile Include="Subtitles\SrtParser.cs" />
     <Compile Include="Subtitles\SrtWriter.cs" />
+    <Compile Include="Subtitles\AssParser.cs" />
     <Compile Include="Subtitles\SsaParser.cs" />
     <Compile Include="Subtitles\SubtitleEncoder.cs" />
     <Compile Include="Subtitles\SubtitleTrackInfo.cs" />

@@ -313,11 +313,15 @@
 
         var player = this;
 
+        var bitrateSetting = MediaPlayer.getBitrateSetting();
+        bitrateSetting = Math.min(bitrateSetting, 10000000);
+
         message = $.extend(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
-            serverAddress: ApiClient.serverAddress()
+            serverAddress: ApiClient.serverAddress(),
+            maxBitrate: bitrateSetting
         });
 
         getEndpointInfo().done(function (endpoint) {

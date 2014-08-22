@@ -102,7 +102,7 @@
             }).join('');
 
             select.html(selectHtml).selectmenu('refresh');
-            
+
             select.val(lastPlaylistId || '').selectmenu('refresh').trigger('change');
             Dashboard.hideLoadingMsg();
         });
@@ -210,7 +210,8 @@
 
         var url = ApiClient.getUrl("Playlists/" + id + "/Items", {
 
-            Ids: $('.fldSelectedItemIds', panel).val() || ''
+            Ids: $('.fldSelectedItemIds', panel).val() || '',
+            userId: Dashboard.getCurrentUserId()
         });
 
         ApiClient.ajax({
