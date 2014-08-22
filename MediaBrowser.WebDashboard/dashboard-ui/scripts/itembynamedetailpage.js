@@ -398,7 +398,7 @@
         query = $.extend(query, options || {});
 
         if (query.IncludeItemTypes == "Audio") {
-            query.SortBy = "Album,SortName";
+            query.SortBy = "AlbumArtist,Album,SortName";
         }
 
         addCurrentItemToQuery(query);
@@ -466,7 +466,9 @@
                     items: result.Items,
                     shape: "square",
                     context: 'music',
-                    playFromHere: true
+                    playFromHere: true,
+                    showTitle: true,
+                    showParentTitle: true
                 });
 
             }
