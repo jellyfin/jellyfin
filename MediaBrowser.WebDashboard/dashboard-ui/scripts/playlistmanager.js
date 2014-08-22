@@ -211,7 +211,8 @@
         var url = ApiClient.getUrl("Playlists/" + id + "/Items", {
 
             Ids: $('.fldSelectedItemIds', panel).val() || '',
-            userId: Dashboard.getCurrentUserId()
+            userId: Dashboard.getCurrentUserId(),
+            SortBy: 'SortName'
         });
 
         ApiClient.ajax({

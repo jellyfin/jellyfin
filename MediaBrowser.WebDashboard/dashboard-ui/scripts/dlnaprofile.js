@@ -786,7 +786,7 @@
 
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
         profile.MaxStreamingBitrate = $('#txtMaxAllowedBitrate', page).val();
-        profile.MaxStaticBitrate = $('#LabelMaxStaticBitrateHelp', page).val();
+        profile.MaxStaticBitrate = $('#txtMaxStaticBitrate', page).val();
 
         profile.MusicStreamingTranscodingBitrate = $('#txtMusicStreamingTranscodingBitrate', page).val();
         profile.MusicSyncBitrate = $('#txtMusicStaticBitrate', page).val();

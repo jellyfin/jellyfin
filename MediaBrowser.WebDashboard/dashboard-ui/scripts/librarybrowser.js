@@ -308,7 +308,7 @@
             html += '<li data-role="list-divider">Menu</li>';
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
+                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
             }
 
             if (commands.indexOf('edit') != -1) {
