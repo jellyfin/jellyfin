@@ -1020,5 +1020,8 @@
     "HeaderPassword": "Password",
     "HeaderLocalAccess": "Local Access",
     "HeaderViewOrder": "View Order",
-    "LabelSelectUserViewOrder":  "Choose the order your views will be displayed in within Media Browser apps"
+    "LabelSelectUserViewOrder":  "Choose the order your views will be displayed in within Media Browser apps",
+    "OptionNoTrailer": "No Trailer",
+    "OptionNoThemeSong": "No Theme Song",
+    "OptionNoThemeVideo": "No Theme Video"
 }
