@@ -61,14 +61,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MediaBrowser.IsoMounter">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.68\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=3.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="pfmclrapi">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.68\lib\net45\pfmclrapi.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
@@ -100,7 +100,6 @@
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="EntryPoints\WanAddressEntryPoint.cs" />
     <Compile Include="FFMpeg\FFMpegDownloader.cs" />
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />

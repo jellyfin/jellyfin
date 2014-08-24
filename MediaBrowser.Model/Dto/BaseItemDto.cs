@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -227,6 +227,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
 
+        /// <summary>
+        /// Gets or sets the recursive unplayed item count.
+        /// </summary>
+        /// <value>The recursive unplayed item count.</value>
+        public int? RecursiveUnplayedItemCount { get; set; }
+        
         /// <summary>
         /// Gets or sets the season count.
         /// </summary>

@@ -7,6 +7,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -26,14 +27,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly IJsonSerializer _json;
 
-        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
+        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
+            _json = json;
         }
 
         private string SubtitleCachePath
@@ -239,10 +242,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new SrtParser();
             }
-            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
                 return new SsaParser();
+            }
+            if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            {
+                return new AssParser();
             }
 
             if (throwIfMissing)
@@ -260,6 +266,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("format");
             }
 
+            if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
+            {
+                return new JsonWriter(_json);
+            }
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
                 return new SrtWriter();

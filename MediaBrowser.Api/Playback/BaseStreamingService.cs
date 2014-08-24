@@ -1193,13 +1193,13 @@ namespace MediaBrowser.Api.Playback
                     return state.VideoRequest.Framerate.Value;
                 }
 
-                var maxrate = state.VideoRequest.MaxFramerate ?? 23.97602;
+                var maxrate = state.VideoRequest.MaxFramerate;
 
-                if (state.VideoStream != null)
+                if (maxrate.HasValue && state.VideoStream != null)
                 {
                     var contentRate = state.VideoStream.AverageFrameRate ?? state.VideoStream.RealFrameRate;
 
-                    if (contentRate.HasValue && contentRate.Value > maxrate)
+                    if (contentRate.HasValue && contentRate.Value > maxrate.Value)
                     {
                         return maxrate;
                     }

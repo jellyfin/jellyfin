@@ -159,7 +159,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new SubtitleProfile
                 {
-                    Format = "ttml",
+                    Format = "vtt",
                     Method = SubtitleDeliveryMethod.External
                 }
             };

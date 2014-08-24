@@ -4,8 +4,10 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using Mono.Nat;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -16,6 +18,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
 
         private bool _isStarted;
+
+        private Timer _timer;
 
         public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config)
         {
@@ -43,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         public void Run()
         {
             //NatUtility.Logger = new LogWriter(_logger);
-            
+
             Reload();
         }
 
@@ -52,20 +56,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             if (_config.Configuration.EnableUPnP)
             {
                 _logger.Debug("Starting NAT discovery");
-                
+
                 NatUtility.DeviceFound += NatUtility_DeviceFound;
-                
+
                 // Mono.Nat does never rise this event. The event is there however it is useless. 
                 // You could remove it with no risk. 
                 // NatUtility.DeviceLost += NatUtility_DeviceLost;
-                
-                
+
+
                 // it is hard to say what one should do when an unhandled exception is raised
                 // because there isn't anything one can do about it. Probably save a log or ignored it.
                 NatUtility.UnhandledException += NatUtility_UnhandledException;
                 NatUtility.StartDiscovery();
 
                 _isStarted = true;
+
+                _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromHours(6), TimeSpan.FromHours(6));
             }
         }
 
@@ -101,16 +107,27 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 //   on the router's upnp implementation (specs says it should fail however some routers don't do it)
                 //   It also can fail with others like 727-ExternalPortOnlySupportsWildcard, 728-NoPortMapsAvailable
                 // and those errors (upnp errors) could be useful for diagnosting.  
-                
+
                 //_logger.ErrorException("Error creating port forwarding rules", ex);
             }
         }
 
+        private List<string> _createdRules = new List<string>();
         private void CreateRules(INatDevice device)
         {
-            var info = _appHost.GetSystemInfo();
+            // On some systems the device discovered event seems to fire repeatedly
+            // This check will help ensure we're not trying to port map the same device over and over
 
-            CreatePortMap(device, info.HttpServerPortNumber);
+            var address = device.LocalAddress.ToString();
+
+            if (!_createdRules.Contains(address))
+            {
+                _createdRules.Add(address);
+                
+                var info = _appHost.GetSystemInfo();
+
+                CreatePortMap(device, info.HttpServerPortNumber);
+            }
         }
 
         private void CreatePortMap(INatDevice device, int port)
@@ -139,6 +156,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             _logger.Debug("Stopping NAT discovery");
 
+            if (_timer != null)
+            {
+                _timer.Dispose();
+                _timer = null;
+            }
+
             try
             {
                 // This is not a significant improvement
@@ -150,10 +173,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             // Statements in try-block will no fail because StopDiscovery is a one-line 
             // method that was no chances to fail.
             //		public static void StopDiscovery ()
-		    //      {
+            //      {
             //          searching.Reset();
-		    //      }
-		    // IMO you could remove the catch-block
+            //      }
+            // IMO you could remove the catch-block
             catch (Exception ex)
             {
                 _logger.ErrorException("Error stopping NAT Discovery", ex);

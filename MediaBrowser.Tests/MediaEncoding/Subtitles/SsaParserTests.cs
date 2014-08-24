@@ -39,7 +39,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                      }
                                       };
 
-            var sut = new SsaParser();
+            var sut = new AssParser();
 
             var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\data.ssa");
 

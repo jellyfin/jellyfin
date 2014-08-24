@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             get
             {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
+                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 20;
             }
         }
 

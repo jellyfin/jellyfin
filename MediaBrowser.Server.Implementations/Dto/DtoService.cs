@@ -251,7 +251,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.ChildCount = GetChildCount(folder, user);
 
-                if (!(folder is UserRootFolder))
+                // These are just far too slow. 
+                // TODO: Disable for CollectionFolder
+                if (!(folder is UserRootFolder) && !(folder is UserView))
                 {
                     SetSpecialCounts(folder, user, dto, fields);
                 }
@@ -1364,6 +1366,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.RecursiveItemCount = recursiveItemCount;
             dto.UserData.UnplayedItemCount = unplayed;
+            dto.RecursiveUnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
             {
