@@ -34,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     var text = trackEvent.Text;
 
-                    text = Regex.Replace(text, @"\\N", "<br/>", RegexOptions.IgnoreCase);
+                    text = Regex.Replace(text, @"\\n", "<br/>", RegexOptions.IgnoreCase);
 
                     writer.WriteLine("<p begin=\"{0}\" dur=\"{1}\">{2}</p>",
                         trackEvent.StartPositionTicks,
