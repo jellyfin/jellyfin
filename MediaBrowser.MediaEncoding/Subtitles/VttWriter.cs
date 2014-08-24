@@ -23,7 +23,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var text = trackEvent.Text;
 
                     // TODO: Not sure how to handle these
-                    text = Regex.Replace(text, @"\\N", " ", RegexOptions.IgnoreCase);
+                    text = Regex.Replace(text, @"\\n", " ", RegexOptions.IgnoreCase);
 
                     writer.WriteLine(text);
                     writer.WriteLine(string.Empty);
