@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Playlists
+namespace MediaBrowser.Model.Playlists
 {
-    public class PlaylistCreationOptions
+    public class PlaylistCreationRequest
     {
-        public string Name { get; set; }
+         public string Name { get; set; }
 
         public List<string> ItemIdList { get; set; }
 
@@ -12,9 +12,9 @@ namespace MediaBrowser.Controller.Playlists
 
         public string UserId { get; set; }
 
-        public PlaylistCreationOptions()
+        public PlaylistCreationRequest()
         {
             ItemIdList = new List<string>();
         }
-    }
+   }
 }

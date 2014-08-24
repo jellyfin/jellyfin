@@ -9,10 +9,10 @@
 
         MediaController.getCurrentPlayer().displayContent({
 
-            itemName: item.Name,
-            itemId: item.Id,
-            itemType: item.Type,
-            context: info.context
+            ItemName: item.Name,
+            ItemId: item.Id,
+            ItemType: item.Type,
+            Context: info.context
         });
     }
 
@@ -444,7 +444,7 @@
             html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-commands="' + target.supportedCommands.join(',') + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" data-devicename="' + (target.deviceName || '') + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
             html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
 
-            if (target.appName) {
+            if (target.appName && target.appName != target.name) {
                 html += '<br/><span>' + target.appName + '</span>';
             }
 

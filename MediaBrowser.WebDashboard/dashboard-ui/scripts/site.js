@@ -433,8 +433,7 @@ var Dashboard = {
 
     refreshSystemInfoFromServer: function () {
 
-        // TODO: Eventually remove the currentUserId check
-        if (Dashboard.getAccessToken() || Dashboard.getCurrentUserId()) {
+        if (Dashboard.getAccessToken()) {
             ApiClient.getSystemInfo().done(function (info) {
 
                 Dashboard.updateSystemInfo(info);
@@ -1275,14 +1274,13 @@ $(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 
-    var userId = Dashboard.getCurrentUserId();
-
-    if (userId) {
+    if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
 
         Dashboard.getCurrentUser().done(function (user) {
 
             if (!user.Configuration.IsAdministrator && page.hasClass('type-interior') && !page.hasClass('publicUserPage')) {
                 window.location.replace("index.html");
+                return;
             }
 
             Dashboard.ensureToolsMenu(page, user);

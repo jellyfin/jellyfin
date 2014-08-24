@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -385,17 +386,19 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (EnableAdaptiveBitrateStreaming(state))
             {
-                //var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
+                var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
 
-                //// By default, vary by just 200k
-                //var variation = GetBitrateVariation(totalBitrate);
+                // By default, vary by just 200k
+                var variation = GetBitrateVariation(totalBitrate);
 
-                //var newBitrate = totalBitrate - variation;
-                //AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
+                var newBitrate = totalBitrate - variation;
+                var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
+                AppendPlaylist(builder, variantUrl, newBitrate, subtitleGroup);
 
-                //variation *= 2;
-                //newBitrate = totalBitrate - variation;
-                //AppendPlaylist(builder, playlistUrl.Replace(requestedVideoBitrate.ToString(UsCulture), (requestedVideoBitrate - variation).ToString(UsCulture)), newBitrate, subtitleGroup);
+                variation *= 2;
+                newBitrate = totalBitrate - variation;
+                variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
+                AppendPlaylist(builder, variantUrl, newBitrate, subtitleGroup);
             }
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
@@ -404,6 +407,14 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return builder.ToString();
+        }
+
+        private string ReplaceBitrate(string url, int oldValue, int newValue)
+        {
+            return url.Replace(
+                "videobitrate=" + oldValue.ToString(UsCulture),
+                "videobitrate=" + newValue.ToString(UsCulture),
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder)
@@ -470,8 +481,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private int GetBitrateVariation(int bitrate)
         {
-            // By default, vary by just 100k
-            var variation = 100000;
+            // By default, vary by just 50k
+            var variation = 50000;
 
             if (bitrate >= 10000000)
             {
@@ -496,6 +507,10 @@ namespace MediaBrowser.Api.Playback.Hls
             else if (bitrate >= 600000)
             {
                 variation = 200000;
+            }
+            else if (bitrate >= 400000)
+            {
+                variation = 100000;
             }
 
             return variation;

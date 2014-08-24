@@ -2,6 +2,7 @@
 
     var currentItem;
     var shape;
+    var currentItemsQuery;
 
     function getPromise() {
 
@@ -42,7 +43,6 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
-        $('.btnEdit', page).attr('href', '#');
 
         getPromise().done(function (item) {
 
@@ -52,7 +52,6 @@
             if (context) {
                 editQuery += '&context=' + context;
             }
-            $('.btnEdit', page).attr('href', 'edititemmetadata.html' + editQuery);
 
             currentItem = item;
 
@@ -87,10 +86,10 @@
 
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
-                if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
-                    $('.btnEdit', page).show();
+                if (LibraryBrowser.getMoreCommands(item, user).length) {
+                    $('.btnMoreCommands', page).show();
                 } else {
-                    $('.btnEdit', page).hide();
+                    $('.btnMoreCommands', page).show();
                 }
 
             });
@@ -150,49 +149,49 @@
         if (item.MovieCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
-            html += '<label for="radioMovies">Movies</label>';
+            html += '<label for="radioMovies">'+Globalize.translate('TabMovies')+'</label>';
         }
 
         if (item.SeriesCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
-            html += '<label for="radioShows">TV Shows</label>';
+            html += '<label for="radioShows">'+Globalize.translate('TabSeries')+'</label>';
         }
 
         if (item.EpisodeCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
-            html += '<label for="radioEpisodes">Episodes</label>';
+            html += '<label for="radioEpisodes">'+Globalize.translate('TabEpisodes')+'</label>';
         }
 
         if (item.TrailerCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
-            html += '<label for="radioTrailers">Trailers</label>';
+            html += '<label for="radioTrailers">'+Globalize.translate('TabTrailers')+'</label>';
         }
 
         if (item.GameCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
-            html += '<label for="radioGames">Games</label>';
+            html += '<label for="radioGames">'+Globalize.translate('TabGames')+'</label>';
         }
 
         if (item.AlbumCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioAlbums">Albums</label>';
+            html += '<label for="radioAlbums">'+Globalize.translate('TabAlbums')+'</label>';
         }
 
         if (item.SongCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioSongs">Songs</label>';
+            html += '<label for="radioSongs">'+Globalize.translate('TabSongs')+'</label>';
         }
 
         if (item.MusicVideoCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
-            html += '<label for="radioMusicVideos">Music Videos</label>';
+            html += '<label for="radioMusicVideos">'+Globalize.translate('TabMusicVideos')+'</label>';
         }
 
         html += '</fieldset>';
@@ -322,7 +321,7 @@
             try {
                 var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
 
-                $('#itemBirthday', page).show().html("Born:&nbsp;&nbsp;" + birthday);
+                $('#itemBirthday', page).show().html(Globalize.translate('BirthDateValue').replace('{0}', birthday));
             }
             catch (err) {
                 $('#itemBirthday', page).hide();
@@ -336,7 +335,7 @@
             try {
                 var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
 
-                $('#itemDeathDate', page).show().html("Died:&nbsp;&nbsp;" + deathday);
+                $('#itemDeathDate', page).show().html(Globalize.translate('DeathDateValue').replace('{0}', deathday));
             }
             catch (err) {
                 $('#itemBirthday', page).hide();
@@ -348,7 +347,7 @@
 
             var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
 
-            $('#itemBirthLocation', page).show().html("Birthplace:&nbsp;&nbsp;" + gmap).trigger('create');
+            $('#itemBirthLocation', page).show().html(Globalize.translate('BirthPlaceValue').replace('{0}', gmap)).trigger('create');
         } else {
             $('#itemBirthLocation', page).hide();
         }
@@ -399,10 +398,12 @@
         query = $.extend(query, options || {});
 
         if (query.IncludeItemTypes == "Audio") {
-            query.SortBy = "Album,SortName";
+            query.SortBy = "AlbumArtist,Album,SortName";
         }
 
         addCurrentItemToQuery(query);
+
+        currentItemsQuery = query;
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
@@ -422,7 +423,8 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true
+                    smallIcon: true,
+                    playFromHere: true
                 });
 
             }
@@ -460,9 +462,13 @@
             }
             else if (query.IncludeItemTypes == "MusicAlbum") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    smallIcon: true
+                    shape: "square",
+                    context: 'music',
+                    playFromHere: true,
+                    showTitle: true,
+                    showParentTitle: true
                 });
 
             }
@@ -507,6 +513,26 @@
         $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
             LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
+        });
+
+        $('.itemsContainer', page).on('playallfromhere', function (e, index) {
+
+            LibraryBrowser.playAllFromHere(currentItemsQuery, index);
+
+        }).on('queueallfromhere', function (e, index) {
+
+            LibraryBrowser.queueAllFromHere(currentItemsQuery, index);
+
+        });
+
+        $('.btnMoreCommands', page).on('click', function () {
+
+            var button = this;
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+            });
         });
 
     }).on('pageshow', "#itemByNameDetailPage", function () {

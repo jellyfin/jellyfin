@@ -58,18 +58,15 @@
 
             updateFilterControls(page);
             
-            html += LibraryBrowser.getSongTableHtml(result.Items, {
-                showAlbum: true,
-                showArtist: true,
-                showAlbumArtist: true,
-                enableColumnSorting: true,
-                sortBy: query.SortBy,
-                sortOrder: query.SortOrder
+            html += LibraryBrowser.getListViewHtml({
+                items: result.Items,
+                smallIcon: true,
+                showIndex: true
             });
 
             html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

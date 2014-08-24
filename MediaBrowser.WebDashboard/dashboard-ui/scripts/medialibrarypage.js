@@ -72,13 +72,14 @@
 
         })[0];
 
-        typeName = typeName ? typeName.name : "Mixed movies & tv";
+        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeMixed');
 
-        html += '<p style="padding-left:.5em;">Folder type: <b>' + typeName + '</b></p>';
+        html += '<p style="padding-left:.5em;">';
 
-        html += '<ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
+		html += Globalize.translate('LabelFolderTypeValue').replace('{0}', '<b>' + typeName + '</b>');
+		html += '</p><ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
-        html += '<li data-role="list-divider" class="mediaLocationsHeader">Media Locations';
+        html += '<li data-role="list-divider" class="mediaLocationsHeader">' + Globalize.translate('HeaderMediaLocations');
         html += '<button type="button" data-icon="plus" data-mini="true" data-inline="true" data-iconpos="notext" onclick="MediaLibraryPage.addMediaLocation(' + index + ');"></button>';
         html += '</li>';
 
@@ -93,13 +94,13 @@
         html += '</ul>';
 
         if (addPathMappingInfo) {
-            html += '<p style="margin:1.5em 0;">Optional: <a href="librarypathmapping.html">Path substitution</a> can map server paths to network shares that clients can access for direct playback.</p>';
+            html += '<p style="margin:1.5em 0;">'+Globalize.translate('LabelPathSubstitutionHelp')+'</p>';
         }
 
         html += '<p>';
-        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">Remove</button>';
-        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">Rename</button>';
-        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">Change type</button>';
+        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">'+Globalize.translate('ButtonRemove')+'</button>';
+        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">'+Globalize.translate('ButtonRename')+'</button>';
+        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">'+Globalize.translate('ButtonChangeType')+'</button>';
         html += '</p>';
 
         html += '</div>';
@@ -111,7 +112,7 @@
 
         $('.collectionTypeFieldDescription').show();
 
-        MediaLibraryPage.getTextValue("Add Media Folder", "Name (Movies, Music, TV, etc):", "", true, function (name, type) {
+        MediaLibraryPage.getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('HeaderAddMediaFolderHelp'), "", true, function (name, type) {
 
             MediaLibraryPage.lastVirtualFolderName = name;
 
@@ -218,16 +219,16 @@
         return [
 
             { name: "", value: "" },
-            { name: "Movies", value: "movies" },
-            { name: "Music", value: "music" },
-            { name: "TV shows", value: "tvshows" },
-            { name: "Books*", value: "books" },
-            { name: "Games*", value: "games" },
-            { name: "Home videos", value: "homevideos" },
-            { name: "Music videos", value: "musicvideos" },
-            { name: "Photos", value: "photos" },
-            { name: "Adult videos", value: "adultvideos" },
-            { name: "Mixed movies & tv", value: "mixed" }
+            { name: Globalize.translate('FolderTypeMovies'), value: "movies" },
+            { name: Globalize.translate('FolderTypeMusic'), value: "music" },
+            { name: Globalize.translate('FolderTypeTvShows'), value: "tvshows" },
+            { name: Globalize.translate('FolderTypeBooks') + '*', value: "books" },
+            { name: Globalize.translate('FolderTypeGames') + '*', value: "games" },
+            { name: Globalize.translate('FolderTypeHomeVideos'), value: "homevideos" },
+            { name: Globalize.translate('FolderTypeMusicVideos'), value: "musicvideos" },
+            { name: Globalize.translate('FolderTypePhotos'), value: "photos" },
+            { name: Globalize.translate('FolderTypeAdultVideos'), value: "adultvideos" },
+            { name: Globalize.translate('FolderTypeMixed'), value: "mixed" }
         ];
 
     },
@@ -241,7 +242,7 @@
 
         $('.collectionTypeFieldDescription').hide();
 
-        MediaLibraryPage.getTextValue("Rename Media Folder", "New name:", virtualFolder.Name, false, function (newName) {
+        MediaLibraryPage.getTextValue(Globalize.translate('HeaderRenameMediaFolder'), Globalize.translate('LabelNewName'), virtualFolder.Name, false, function (newName) {
 
             if (virtualFolder.Name != newName) {
 
@@ -263,16 +264,16 @@
             return this.innerHTML;
         }).get();
 
-        var msg = "Are you sure you wish to remove " + virtualFolder.Name + "?";
+        var msg = Globalize.translate('MessageAreYouSureYouWishToRemoveMediaFolder');
 
         if (locations.length) {
-            msg += "<br/><br/>The following media locations will be removed from your library:<br/><br/>";
+            msg += "<br/><br/>"+Globalize.translate("MessageTheFollowingLocationWillBeRemovedFromLibrary")+"<br/><br/>";
             msg += locations.join("<br/>");
         }
 
         MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
 
-        Dashboard.confirm(msg, "Remove Media Folder", function (confirmResult) {
+        Dashboard.confirm(msg, Globalize.translate('HeaderRemoveMediaFolder'), function (confirmResult) {
 
             if (confirmResult) {
 
@@ -295,7 +296,7 @@
 
         var location = virtualFolder.Locations[index];
 
-        Dashboard.confirm("Are you sure you wish to remove this location?", "Remove Media Location", function (confirmResult) {
+        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
 
             if (confirmResult) {
 

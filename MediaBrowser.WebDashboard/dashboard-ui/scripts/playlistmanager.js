@@ -102,7 +102,7 @@
             }).join('');
 
             select.html(selectHtml).selectmenu('refresh');
-            
+
             select.val(lastPlaylistId || '').selectmenu('refresh').trigger('change');
             Dashboard.hideLoadingMsg();
         });
@@ -136,7 +136,8 @@
         var options = {
 
             Recursive: true,
-            IncludeItemTypes: "Playlist"
+            IncludeItemTypes: "Playlist",
+            SortBy: 'SortName'
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -210,7 +211,8 @@
 
         var url = ApiClient.getUrl("Playlists/" + id + "/Items", {
 
-            Ids: $('.fldSelectedItemIds', panel).val() || ''
+            Ids: $('.fldSelectedItemIds', panel).val() || '',
+            userId: Dashboard.getCurrentUserId()
         });
 
         ApiClient.ajax({

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     public class WanAddressEntryPoint : IServerEntryPoint
     {

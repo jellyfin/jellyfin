@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +11,13 @@ namespace MediaBrowser.Common.Implementations.Networking
 {
     public abstract class BaseNetworkManager
     {
+        protected ILogger Logger { get; private set; }
+
+        protected BaseNetworkManager(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         /// <summary>
         /// Gets the machine's local ip address
         /// </summary>
@@ -28,15 +36,14 @@ namespace MediaBrowser.Common.Implementations.Networking
 
         public bool IsInLocalNetwork(string endpoint)
         {
+            return IsInLocalNetworkInternal(endpoint, true);
+        }
+
+        public bool IsInLocalNetworkInternal(string endpoint, bool resolveHost)
+        {
             if (string.IsNullOrWhiteSpace(endpoint))
             {
                 throw new ArgumentNullException("endpoint");
-            }
-
-            IPAddress address;
-            if (!IPAddress.TryParse(endpoint, out address))
-            {
-                return true;
             }
 
             const int lengthMatch = 4;
@@ -55,7 +62,7 @@ namespace MediaBrowser.Common.Implementations.Networking
             // Private address space:
             // http://en.wikipedia.org/wiki/Private_network
 
-            return
+            var isPrivate =
 
                 // If url was requested with computer name, we may see this
                 endpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -64,6 +71,42 @@ namespace MediaBrowser.Common.Implementations.Networking
                 endpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+
+            if (isPrivate)
+            {
+                return true;
+            }
+
+            IPAddress address;
+            if (resolveHost && !IPAddress.TryParse(endpoint, out address))
+            {
+                var host = new Uri(endpoint).DnsSafeHost;
+
+                Logger.Debug("Resolving host {0}", host);
+
+                try
+                {
+                    address = GetIpAddresses(host).FirstOrDefault();
+
+                    if (address != null)
+                    {
+                        Logger.Debug("{0} resolved to {1}", host, address);
+
+                        return IsInLocalNetworkInternal(address.ToString(), false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error resovling hostname {0}", ex, host);
+                }
+            }
+
+            return false;
+        }
+        
+        public IEnumerable<IPAddress> GetIpAddresses(string hostName)
+        {
+            return Dns.GetHostAddresses(hostName);
         }
 
         private IEnumerable<IPAddress> GetIPsDefault()
@@ -103,7 +146,7 @@ namespace MediaBrowser.Common.Implementations.Networking
                 .Select(i => i.ToString())
                 .Reverse();
         }
-        
+
         /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>

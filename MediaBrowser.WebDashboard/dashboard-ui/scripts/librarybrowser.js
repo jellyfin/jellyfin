@@ -92,6 +92,35 @@
             return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
         },
 
+        playAllFromHere: function (query, index) {
+
+            query = $.extend({}, query);
+            query.StartIndex = index;
+            query.Limit = 100;
+            query.Fields = "MediaSources,Chapters";
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+
+                MediaController.play({
+                    items: result.Items
+                });
+            });
+        },
+
+        queueAllFromHere: function (query, index) {
+            query = $.extend({}, query);
+            query.StartIndex = index;
+            query.Limit = 100;
+            query.Fields = "MediaSources,Chapters";
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+
+                MediaController.queue({
+                    items: result.Items
+                });
+            });
+        },
+
         getItemCountsHtml: function (options, item) {
 
             var counts = [];
@@ -182,126 +211,6 @@
             return counts.join(' • ');
         },
 
-        getSongHeaderCellHtml: function (text, cssClass, enableSorting, sortField, selectedSortField, sortDirection) {
-
-            var html = cssClass ? '<th class="' + cssClass + '">' : '<th>';
-
-            if (text && enableSorting) {
-                html += '<a class="lnkColumnSort" data-sortfield="' + sortField + '" href="#" style="text-decoration:underline;">';
-            }
-
-            html += text;
-
-            if (text && enableSorting) {
-
-                html += '</a>';
-
-                if (sortField == selectedSortField) {
-
-                    if (sortDirection == "Descending") {
-                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&darr;</span>';
-                    } else {
-                        html += '<span style="font-weight:bold;margin-left:5px;vertical-align:top;font-size:12px;">&uarr;</span>';
-                    }
-                }
-            }
-
-            html += '</th>';
-
-            return html;
-        },
-
-        getSongTableHtml: function (items, options) {
-
-            options = options || {};
-
-            var html = '';
-
-            var cssClass = "detailTable";
-
-            html += '<div class="detailTableContainer"><table class="' + cssClass + '"><thead>';
-
-            html += '<tr>';
-
-            html += LibraryBrowser.getSongHeaderCellHtml('Track', '', options.enableColumnSorting, 'Name', options.sortBy, options.sortOrder);
-
-            if (options.showAlbum) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Album', '', options.enableColumnSorting, 'Album,SortName', options.sortBy, options.sortOrder);
-            }
-            if (options.showArtist) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Artist', 'tabletColumn', options.enableColumnSorting, 'Artist,Album,SortName', options.sortBy, options.sortOrder);
-            }
-            if (options.showAlbumArtist) {
-                html += LibraryBrowser.getSongHeaderCellHtml('Album Artist', 'tabletColumn', options.enableColumnSorting, 'AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            }
-
-            html += LibraryBrowser.getSongHeaderCellHtml('Runtime', 'tabletColumn', options.enableColumnSorting, 'Runtime,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-            html += LibraryBrowser.getSongHeaderCellHtml('Plays', 'desktopColumn', options.enableColumnSorting, 'PlayCount,AlbumArtist,Album,SortName', options.sortBy, options.sortOrder);
-
-            html += LibraryBrowser.getSongHeaderCellHtml('', '', options.enableColumnSorting);
-
-            html += '</tr></thead>';
-
-            html += '<tbody>';
-
-            for (var i = 0, length = items.length; i < length; i++) {
-
-                var item = items[i];
-
-                html += '<tr>';
-
-                html += '<td><a href="' + LibraryBrowser.getHref(item, "music") + '">' + (item.Name || "") + '</a></td>';
-
-                if (options.showAlbum) {
-                    if (item.Album && item.ParentId) {
-                        html += '<td><a href="itemdetails.html?id=' + item.ParentId + '">' + item.Album + '</a></td>';
-                    } else {
-                        html += '<td>' + (item.Album || '') + '</td>';
-                    }
-                }
-
-                if (options.showArtist) {
-
-                    if (item.Artists && item.Artists.length) {
-
-                        var artistLinksHtml = LibraryBrowser.getArtistLinksHtml(item.Artists);
-
-                        html += '<td class="tabletColumn">' + artistLinksHtml + '</td>';
-                    } else {
-                        html += '<td class="tabletColumn"></td>';
-                    }
-                }
-
-                if (options.showAlbumArtist) {
-
-                    if (item.AlbumArtist) {
-
-                        html += '<td class="tabletColumn">' + LibraryBrowser.getArtistLinksHtml([item.AlbumArtist]) + '</td>';
-
-                    } else {
-                        html += '<td class="tabletColumn"></td>';
-                    }
-                }
-
-                var time = Dashboard.getDisplayTime(item.RunTimeTicks || 0);
-
-                html += '<td class="tabletColumn">' + time + '</td>';
-
-                html += '<td class="desktopColumn">' + (item.UserData ? item.UserData.PlayCount : 0) + '</td>';
-
-                html += '<td class="detailTableButtonsCell">';
-                html += '<button class="btnPlay" data-icon="ellipsis-v" type="button" data-iconpos="notext" onclick="LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'Audio\', false, \'Audio\', null, true);" data-inline="true" title="Play">Play</button>';
-                html += '</td>';
-
-                html += '</tr>';
-            }
-
-            html += '</tbody>';
-            html += '</table></div>';
-
-            return html;
-        },
-
         getArtistLinksHtml: function (artists) {
 
             var html = [];
@@ -365,7 +274,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 30);
+            }).parents(".ui-popup-container");
         },
 
         closePlayMenu: function () {
@@ -399,7 +308,7 @@
             html += '<li data-role="list-divider">Menu</li>';
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
+                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
             }
 
             if (commands.indexOf('edit') != -1) {
@@ -416,7 +325,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 55);
+            }).parents(".ui-popup-container");
         },
 
         getHref: function (item, context, topParentId) {
@@ -693,7 +602,7 @@
                 }
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '"><a href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-index="' + index + '" data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '"><a href="' + href + '">';
 
                 var imgUrl;
 
@@ -708,7 +617,6 @@
                         tag: item.ImageTags.Primary,
                         type: "Primary",
                         index: 0,
-                        EnableImageEnhancers: false,
                         minScale: minScale
                     });
 
@@ -821,13 +729,13 @@
 
                 html += '</li>';
 
+                index++;
                 return html;
 
             }).join('');
 
             outerHtml += '</ul>';
 
-            index++;
             return outerHtml;
         },
 
@@ -891,6 +799,11 @@
                 } else {
                     itemCommands.push('playlist');
                 }
+            }
+
+            if (options.playFromHere) {
+                itemCommands.push('playfromhere');
+                itemCommands.push('queuefromhere');
             }
 
             return itemCommands;

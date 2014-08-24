@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -78,7 +77,6 @@ using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
-using MediaBrowser.ServerApplication.EntryPoints;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
@@ -535,7 +533,7 @@ namespace MediaBrowser.ServerApplication
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext, ServerConfigurationManager));
 
-            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
+            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
@@ -554,9 +552,9 @@ namespace MediaBrowser.ServerApplication
             SetKernelProperties();
         }
 
-        protected override INetworkManager CreateNetworkManager()
+        protected override INetworkManager CreateNetworkManager(ILogger logger)
         {
-            return new NetworkManager();
+            return new NetworkManager(logger);
         }
 
         protected override IFileSystem CreateFileSystemManager()
@@ -958,8 +956,37 @@ namespace MediaBrowser.ServerApplication
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
-                ServerName = FriendlyName
+                ServerName = FriendlyName,
+                LocalAddress = GetLocalIpAddress()
             };
+        }
+
+        /// <summary>
+        /// Gets the local ip address.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetLocalIpAddress()
+        {
+            var localAddresses = NetworkManager.GetLocalIpAddresses().ToList();
+
+            // Cross-check the local ip addresses with addresses that have been received on with the http server
+            var matchedAddress = HttpServer.LocalEndPoints
+                .ToList()
+                .Select(i => i.Split(':').FirstOrDefault())
+                .Where(i => !string.IsNullOrEmpty(i))
+                .FirstOrDefault(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase));
+
+            // Return the first matched address, if found, or the first known local address
+            var address = matchedAddress ?? localAddresses.FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(address))
+            {
+                address = string.Format("http://{0}:{1}",
+                    address,
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(CultureInfo.InvariantCulture));
+            }
+
+            return address;
         }
 
         public string FriendlyName

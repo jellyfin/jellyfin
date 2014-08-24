@@ -174,12 +174,16 @@ namespace MediaBrowser.Api.Subtitles
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
-            
+
             return ResultFactory.GetResult(builder.ToString(), Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         public object Get(GetSubtitle request)
         {
+            if (string.Equals(request.Format, "js", StringComparison.OrdinalIgnoreCase))
+            {
+                request.Format = "json";
+            }
             if (string.IsNullOrEmpty(request.Format))
             {
                 var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));

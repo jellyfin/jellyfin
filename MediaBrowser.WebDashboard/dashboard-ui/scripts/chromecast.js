@@ -211,6 +211,11 @@
         $(this).trigger('connect');
 
         MediaController.setActivePlayer(PlayerName);
+
+        this.sendMessage({
+            options: {},
+            command: 'Identify'
+        });
     };
 
     /**
@@ -288,30 +293,49 @@
         });
     };
 
+    var endpointInfo;
+    function getEndpointInfo() {
+
+        if (endpointInfo) {
+
+            var deferred = $.Deferred();
+            deferred.resolveWith(null, [endpointInfo]);
+            return deferred.promise();
+        }
+
+        return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).done(function (info) {
+
+            endpointInfo = info;
+        });
+    }
+
     CastPlayer.prototype.sendMessage = function (message) {
 
         var player = this;
+
+        var bitrateSetting = MediaPlayer.getBitrateSetting();
+        bitrateSetting = Math.min(bitrateSetting, 10000000);
 
         message = $.extend(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
-            serverAddress: ApiClient.serverAddress()
+            serverAddress: ApiClient.serverAddress(),
+            maxBitrate: bitrateSetting
         });
 
-        // If the user is on localhost we need a different address to send to the receiver
-        var address = message.serverAddress.toLowerCase();
-        if (address.indexOf('localhost') != -1 || address.indexOf('127.0.0') != -1) {
+        getEndpointInfo().done(function (endpoint) {
 
-            ApiClient.getSystemInfo().done(function (info) {
+            if (endpoint.IsLocal || endpoint.IsInNetwork) {
+                ApiClient.getSystemInfo().done(function (info) {
 
-                message.serverAddress = info.WanAddress;
+                    message.serverAddress = info.LocalAddress;
+                    player.sendMessageInternal(message);
+                });
+            } else {
                 player.sendMessageInternal(message);
-            });
-
-        } else {
-            player.sendMessageInternal(message);
-        }
+            }
+        });
     };
 
     CastPlayer.prototype.sendMessageInternal = function (message) {
@@ -375,18 +399,8 @@
             return;
         }
 
-        switch (this.castPlayerState) {
-            case PLAYER_STATE.LOADED:
-            case PLAYER_STATE.PAUSED:
-                this.currentMediaSession.play(null,
-                  this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId),
-                  this.errorHandler);
-                this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
-                this.castPlayerState = PLAYER_STATE.PLAYING;
-                break;
-            default:
-                break;
-        }
+        this.currentMediaSession.play(null, this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.currentMediaSession.sessionId), this.errorHandler);
+        //this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
     };
 
     /**
@@ -398,12 +412,7 @@
             return;
         }
 
-        if (this.castPlayerState == PLAYER_STATE.PLAYING) {
-            this.castPlayerState = PLAYER_STATE.PAUSED;
-            this.currentMediaSession.pause(null,
-              this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId),
-              this.errorHandler);
-        }
+        this.currentMediaSession.pause(null, this.mediaCommandSuccessCallback.bind(this, "paused " + this.currentMediaSession.sessionId), this.errorHandler);
     };
 
     /**
@@ -433,7 +442,7 @@
 
         if (!mute) {
 
-            this.session.setReceiverVolumeLevel(vol || 1,
+            this.session.setReceiverVolumeLevel((vol || 1),
               this.mediaCommandSuccessCallback.bind(this),
               this.errorHandler);
         }
@@ -445,33 +454,12 @@
     };
 
     /**
-     * Toggle mute CC
-     */
-    CastPlayer.prototype.toggleMute = function () {
-        if (this.audio == true) {
-            this.mute();
-        }
-        else {
-            this.unMute();
-        }
-    };
-
-    /**
      * Mute CC
      */
     CastPlayer.prototype.mute = function () {
         this.audio = false;
         this.setReceiverVolume(true);
     };
-
-    /**
-     * Unmute CC
-     */
-    CastPlayer.prototype.unMute = function () {
-        this.audio = true;
-        this.setReceiverVolume(false);
-    };
-
 
     /**
      * media seek function in either Cast or local mode
@@ -679,11 +667,19 @@
         };
 
         self.unMute = function () {
-            castPlayer.unMute();
+            self.setVolume(getCurrentVolume() + 2);
         };
 
         self.toggleMute = function () {
-            castPlayer.toggleMute();
+
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
+
+            if (state.IsMuted) {
+                self.unMute();
+            } else {
+                self.mute();
+            }
         };
 
         self.getTargets = function () {
@@ -720,12 +716,32 @@
                                     "Unmute",
                                     "ToggleMute",
                                     "SetVolume",
+                                    "SetAudioStreamIndex",
+                                    "SetSubtitleStreamIndex",
                                     "DisplayContent"]
             };
         };
 
         self.seek = function (position) {
             castPlayer.seekMedia(position);
+        };
+
+        self.setAudioStreamIndex = function (index) {
+            castPlayer.sendMessage({
+                options: {
+                    index: index
+                },
+                command: 'SetAudioStreamIndex'
+            });
+        };
+
+        self.setSubtitleStreamIndex = function (index) {
+            castPlayer.sendMessage({
+                options: {
+                    index: index
+                },
+                command: 'SetSubtitleStreamIndex'
+            });
         };
 
         self.nextTrack = function () {

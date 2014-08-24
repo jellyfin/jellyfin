@@ -70,22 +70,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// The _semaphoreLocks
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
-        }
-
-        /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>

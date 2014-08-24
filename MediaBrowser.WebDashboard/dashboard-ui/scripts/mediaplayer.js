@@ -435,6 +435,7 @@
 
                 self.playlist = items;
                 currentPlaylistIndex = 0;
+                return;
             }
 
             ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {

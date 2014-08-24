@@ -604,9 +604,12 @@
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkNoSubtitle', page).checked(query.HasSubtitles === false).checkboxradio('refresh');
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkNoTrailer', page).checked(query.HasTrailer == false).checkboxradio('refresh');
         $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('#chkNoThemeSong', page).checked(query.HasThemeSong == false).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('#chkNoThemeVideo', page).checked(query.HasThemeVideo == false).checkboxradio('refresh');
         $('#chkIsPlaceHolder', page).checked(query.IsPlaceHolder == true).checkboxradio('refresh');
 
         $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
@@ -722,6 +725,18 @@
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
 
+            $('#chkNoTrailer', page).checked(false).checkboxradio('refresh');
+
+            reloadItems(page);
+        });
+
+        $('#chkNoTrailer', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? false : null;
+
+            $('#chkTrailer', page).checked(false).checkboxradio('refresh');
+
             reloadItems(page);
         });
 
@@ -746,6 +761,18 @@
             query.StartIndex = 0;
             query.HasThemeSong = this.checked ? true : null;
 
+            $('#chkNoThemeSong', page).checked(false).checkboxradio('refresh');
+
+            reloadItems(page);
+        });
+
+        $('#chkNoThemeSong', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeSong = this.checked ? false : null;
+
+            $('#chkThemeSong', page).checked(false).checkboxradio('refresh');
+
             reloadItems(page);
         });
 
@@ -753,6 +780,18 @@
 
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
+            
+            $('#chkNoThemeVideo', page).checked(false).checkboxradio('refresh');
+
+            reloadItems(page);
+        });
+        
+        $('#chkNoThemeVideo', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeVideo = this.checked ? false : null;
+            
+            $('#chkThemeVideo', page).checked(false).checkboxradio('refresh');
 
             reloadItems(page);
         });
