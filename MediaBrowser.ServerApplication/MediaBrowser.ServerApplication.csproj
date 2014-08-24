@@ -100,7 +100,6 @@
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="EntryPoints\WanAddressEntryPoint.cs" />
     <Compile Include="FFMpeg\FFMpegDownloader.cs" />
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
