@@ -48,7 +48,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         }
                         multiline.Add(line);
                     }
-                    subEvent.Text = string.Join(@"\N", multiline);
+                    subEvent.Text = string.Join(@"\n", multiline);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, "<", "&lt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, ">", "&gt;", RegexOptions.IgnoreCase);

@@ -147,7 +147,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public static string GetFormattedText(string text)
         {
-            text = text.Replace("\\N", Environment.NewLine).Replace("\\n", Environment.NewLine);
+            text = text.Replace("\\n", Environment.NewLine).Replace("\\n", Environment.NewLine);
             bool italic = false;
 
             for (int i = 0; i < 10; i++) // just look ten times...
