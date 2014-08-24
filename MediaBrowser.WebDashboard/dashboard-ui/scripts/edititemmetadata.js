@@ -140,7 +140,8 @@
             var formatString = idInfo.UrlFormatString || '';
 
             html += '<div data-role="fieldcontain">';
-            html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+            var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            html += '<label for="' + id + '">' + idLabel + '</label>';
 
             html += '<div style="display: inline-block; width: 250px;">';
 
@@ -338,14 +339,14 @@
         }
 
         if (item.Type == "Person") {
-            $('#lblPremiereDate', page).html('Date of birth');
-            $('#lblYear', page).html('Birth year');
-            $('#lblEndDate', page).html('Death date');
+            $('#lblPremiereDate', page).html(Globalize.translate('LabelBirthDate'));
+            $('#lblYear', page).html(Globalize.translate('LabelBirthYear'));
+            $('#lblEndDate', page).html(Globalize.translate('LabelDeathDate'));
             $('#fldPlaceOfBirth', page).show();
         } else {
-            $('#lblPremiereDate', page).html('Release date');
-            $('#lblYear', page).html('Year');
-            $('#lblEndDate', page).html('End date');
+            $('#lblPremiereDate', page).html(Globalize.translate('LabelReleaseDate'));
+            $('#lblYear', page).html(Globalize.translate('LabelYear'));
+            $('#lblEndDate', page).html(Globalize.translate('LabelEndDate'));
             $('#fldPlaceOfBirth', page).hide();
         }
 
@@ -359,13 +360,13 @@
             $('#fldIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblIndexNumber', page).html('Episode number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                $('#lblIndexNumber', page).html('Season number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                $('#lblIndexNumber', page).html('Track number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelTrackNumber'));
             } else {
-                $('#lblIndexNumber', page).html('Number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelNumber'));
             }
         } else {
             $('#fldIndexNumber', page).hide();
@@ -375,11 +376,11 @@
             $('#fldParentIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblParentIndexNumber', page).html('Season number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                $('#lblParentIndexNumber', page).html('Disc number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelDiscNumber'));
             } else {
-                $('#lblParentIndexNumber', page).html('Parent number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelParentNumber'));
             }
         } else {
             $('#fldParentIndexNumber', page).hide();
@@ -394,8 +395,8 @@
         if (item.Type == "BoxSet") {
             $('#fldDisplayOrder', page).show();
 
-            $('#labelDisplayOrder', page).html('Title display order:');
-            $('#selectDisplayOrder', page).html('<option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
+            $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
+            $('#selectDisplayOrder', page).html('<option value="SortName">'+Globalize.translate('OptionSortName')+'</option><option value="PremiereDate">'+Globalize.translate('OptionReleaseDate')+'</option>').selectmenu('refresh');
         } else {
             $('#selectDisplayOrder', page).html('').selectmenu('refresh');
             $('#fldDisplayOrder', page).hide();
@@ -571,7 +572,7 @@
 
             var person = people[i];
 
-            var type = person.Type || 'Person';
+            var type = person.Type || Globalize.translate('PersonTypePerson');
 
             if (type != lastType) {
                 html += '<li data-role="list-divider">' + type + '</li>';
@@ -993,7 +994,9 @@
                 var id = "txtLookup" + idInfo.Key;
 
                 html += '<div data-role="fieldcontain">';
-                html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+				
+				var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+                html += '<label for="' + id + '">' + idLabel + '</label>';
 
                 var value = providerIds[idInfo.Key] || '';
 
@@ -1016,9 +1019,7 @@
 
             $('.identifyProviderIds', page).html(html).trigger('create');
 
-            var friendlyName = item.Type == "BoxSet" ? "Collection" : item.Type == "MusicArtist" ? "Artist" : item.Type == "MusicAlbum" ? "Album" : item.Type;
-
-            $('.identificationHeader', page).html('Identify ' + friendlyName);
+            $('.identificationHeader', page).html(Globalize.translate('HeaderIdentify'));
 
             $('.popupIdentifyForm', page).show();
             $('.identificationSearchResults', page).hide();

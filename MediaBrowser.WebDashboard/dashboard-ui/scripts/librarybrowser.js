@@ -274,7 +274,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 30);
+            }).parents(".ui-popup-container");
         },
 
         closePlayMenu: function () {
@@ -325,7 +325,7 @@
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container").css("margin-left", 55);
+            }).parents(".ui-popup-container");
         },
 
         getHref: function (item, context, topParentId) {
@@ -617,7 +617,6 @@
                         tag: item.ImageTags.Primary,
                         type: "Primary",
                         index: 0,
-                        EnableImageEnhancers: false,
                         minScale: minScale
                     });
 

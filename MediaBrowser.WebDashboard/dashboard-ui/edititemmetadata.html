@@ -32,11 +32,11 @@
                                 <div style="margin-top: -15px;"></div>
                             </div>
                             <button class="btnSave" type="submit" data-theme="a" data-icon="check" data-mini="true" data-inline="true">
-                                Save
+                                ${ButtonSave}
                             </button>
-                            <button class="btnRefresh btnRefreshBasic" type="button" data-icon="refresh" data-mini="true" data-inline="true">Refresh</button>
-                            <button class="btnRefresh btnRefreshAdvanced" type="button" data-icon="refresh" data-mini="true" data-inline="true">Advanced Refresh</button>
-                            <button id="btnIdentify" type="button" data-icon="info" data-mini="true" data-inline="true">Identify</button>
+                            <button class="btnRefresh btnRefreshBasic" type="button" data-icon="refresh" data-mini="true" data-inline="true">${ButtonRefresh}</button>
+                            <button class="btnRefresh btnRefreshAdvanced" type="button" data-icon="refresh" data-mini="true" data-inline="true">${ButtonAdvancedRefresh}</button>
+                            <button id="btnIdentify" type="button" data-icon="info" data-mini="true" data-inline="true">${ButtonIdentify}</button>
                             <div style="vertical-align: bottom; display: inline-block;">
                                 <div id="fldDelete" style="display: none;">
                                     <button id="btnDelete" type="button" data-icon="delete" data-mini="true" data-inline="true">${ButtonDelete}</button>
@@ -46,156 +46,156 @@
 
                         <div style="padding: 10px 0;">
                             <div data-role="fieldcontain" id="fldPath">
-                                <label for="txtPath">Path:</label>
+                                <label for="txtPath">${LabelPath}</label>
                                 <input type="text" id="txtPath" data-mini="true" readonly="readonly" />
                             </div>
                             <div data-role="fieldcontain">
-                                <label for="txtName">Name:</label>
+                                <label for="txtName">${LabelName}</label>
                                 <input type="text" id="txtName" required="required" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldSortName" style="display: none;">
-                                <label for="txtSortName">Sort name:</label>
+                                <label for="txtSortName">${LabelSortName}</label>
                                 <input type="text" id="txtSortName" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldDateAdded" style="display: none;">
-                                <label for="txtDateAdded">Date added:</label>
+                                <label for="txtDateAdded">${LabelDateAdded}</label>
                                 <input type="date" id="txtDateAdded" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldStatus" style="display: none;">
-                                <label for="selectStatus">Status:</label>
+                                <label for="selectStatus">${LabelStatus}</label>
                                 <select id="selectStatus" data-mini="true"></select>
                             </div>
                             <div data-role="fieldcontain" id="fldArtist" style="display: none;">
-                                <label for="txtArtist">Artists:</label>
-                                <input type="text" id="txtArtist" data-mini="true" placeholder="Separate multiple using ;" />
+                                <label for="txtArtist">${LabelArtists}</label>
+                                <input type="text" id="txtArtist" data-mini="true" placeholder="${LabelArtistsHelp}" />
                             </div>
                             <div data-role="fieldcontain" id="fldAlbumArtist" style="display: none;">
-                                <label for="txtAlbumArtist">Album artist:</label>
+                                <label for="txtAlbumArtist">${LabelAlbumArtist}</label>
                                 <input type="text" id="txtAlbumArtist" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldAlbum" style="display: none;">
-                                <label for="txtAlbum">Album:</label>
+                                <label for="txtAlbum">${LabelAlbum}</label>
                                 <input type="text" id="txtAlbum" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
-                                <label id="lblParentIndexNumber" for="txtParentIndexNumber">Parent number:</label>
+                                <label id="lblParentIndexNumber" for="txtParentIndexNumber"></label>
                                 <input type="number" id="txtParentIndexNumber" data-mini="true" pattern="[0-9]*" />
                             </div>
                             <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
-                                <label id="lblIndexNumber" for="txtIndexNumber">Number:</label>
+                                <label id="lblIndexNumber" for="txtIndexNumber"></label>
                                 <input type="number" id="txtIndexNumber" data-mini="true" pattern="[0-9]*" />
                             </div>
                             <div id="fldCommunityRating" style="display: none;" data-role="fieldcontain">
-                                <label for="txtCommunityRating">Community rating:</label>
+                                <label for="txtCommunityRating">${LabelCommunityRating}</label>
                                 <input type="number" id="txtCommunityRating" step=".1" min="0" max="10" data-mini="true" />
                             </div>
                             <div id="fldCommunityVoteCount" style="display: none;" data-role="fieldcontain">
-                                <label for="txtCommunityVoteCount">Vote count:</label>
+                                <label for="txtCommunityVoteCount">${LabelVoteCount}</label>
                                 <input type="number" id="txtCommunityVoteCount" data-mini="true" />
                             </div>
                             <div id="fldMetascore" style="display: none;" data-role="fieldcontain">
-                                <label for="txtMetascore">Metascore:</label>
+                                <label for="txtMetascore">${LabelMetascore}</label>
                                 <input type="number" id="txtMetascore" step="1" min="0" max="100" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
-                                <label for="txtCriticRating">Critic rating:</label>
+                                <label for="txtCriticRating">${LabelCriticRating}</label>
                                 <input type="number" id="txtCriticRating" step=".1" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldCriticRatingSummary" style="display: none;">
-                                <label for="txtCriticRatingSummary">Critic rating summary:</label>
+                                <label for="txtCriticRatingSummary">${LabelCriticRatingSummary}</label>
                                 <input type="text" id="txtCriticRatingSummary" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldAwardSummary" style="display: none;">
-                                <label for="txtAwardSummary">Award summary:</label>
+                                <label for="txtAwardSummary">${LabelAwardSummary}</label>
                                 <input type="text" id="txtAwardSummary" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain">
-                                <label for="txtHomePageUrl">Website:</label>
+                                <label for="txtHomePageUrl">${LabelWebsite}</label>
                                 <input type="url" id="txtHomePageUrl" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldTagline" style="display: none;">
-                                <label for="txtTagline">Tagline:</label>
+                                <label for="txtTagline">${LabelTagline}</label>
                                 <input type="text" id="txtTagline" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain">
-                                <label for="txtOverview">Overview:</label>
+                                <label for="txtOverview">${LabelOverview}</label>
                                 <textarea id="txtOverview" data-mini="true"></textarea>
                             </div>
                             <div data-role="fieldcontain" id="fldShortOverview" style="display: none;">
-                                <label for="txtShortOverview">Short overview:</label>
+                                <label for="txtShortOverview">${LabelShortOverview}</label>
                                 <textarea id="txtShortOverview" data-mini="true"></textarea>
                             </div>
                             <div data-role="fieldcontain" id="fldPremiereDate" style="display: none;">
-                                <label id="lblPremiereDate" for="txtPremiereDate">Release date:</label>
+                                <label id="lblPremiereDate" for="txtPremiereDate">${LabelReleaseDate}</label>
                                 <input type="date" id="txtPremiereDate" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldYear" style="display: none;">
-                                <label id="lblYear" for="txtProductionYear">Year:</label>
+                                <label id="lblYear" for="txtProductionYear">${LabelYear}</label>
                                 <input type="number" id="txtProductionYear" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldPlaceOfBirth" style="display: none;">
-                                <label for="txtPlaceOfBirth">Place of birth:</label>
+                                <label for="txtPlaceOfBirth">${LabelPlaceOfBirth}</label>
                                 <input type="text" id="txtPlaceOfBirth" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
-                                <label id="lblEndDate" for="txtEndDate">End date:</label>
+                                <label id="lblEndDate" for="txtEndDate">${LabelEndDate}</label>
                                 <input type="date" id="txtEndDate" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
-                                <label for="selectAirDays">Air Days:</label>
+                                <label for="selectAirDays">${LabelAirDays}</label>
 
                                 <div data-role="controlgroup" data-mini="true">
                                     <input type="checkbox" class="chkAirDay" id="chkSunday" data-day="Sunday">
-                                    <label for="chkSunday">Sunday</label>
+                                    <label for="chkSunday">${OptionSunday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkMonday" data-day="Monday">
-                                    <label for="chkMonday">Monday</label>
+                                    <label for="chkMonday">${OptionMonday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkTuesday" data-day="Tuesday">
-                                    <label for="chkTuesday">Tuesday</label>
+                                    <label for="chkTuesday">${OptionTuesday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkWednesday" data-day="Wednesday">
-                                    <label for="chkWednesday">Wednesday</label>
+                                    <label for="chkWednesday">${OptionWednesday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkThursday" data-day="Thursday">
-                                    <label for="chkThursday">Thursday</label>
+                                    <label for="chkThursday">${OptionThursday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkFriday" data-day="Friday">
-                                    <label for="chkFriday">Friday</label>
+                                    <label for="chkFriday">${OptionFriday}</label>
                                     <input type="checkbox" class="chkAirDay" id="chkSaturday" data-day="Saturday">
-                                    <label for="chkSaturday">Saturday</label>
+                                    <label for="chkSaturday">${OptionSaturday}</label>
                                 </div>
 
                             </div>
                             <div data-role="fieldcontain" id="fldAirTime" style="display: none;">
-                                <label for="txtAirTime">Air Time:</label>
+                                <label for="txtAirTime">${LabelAirTime}</label>
                                 <input type="time" id="txtAirTime" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldSeriesRuntime" style="display: none;">
-                                <label for="txtSeriesRuntime">Run Time (minutes):</label>
+                                <label for="txtSeriesRuntime">${LabelRuntimeMinutes}</label>
                                 <input type="number" id="txtSeriesRuntime" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldOfficialRating" style="display: none;">
-                                <label for="selectOfficialRating">Parental rating:</label>
+                                <label for="selectOfficialRating">${LabelParentalRating}</label>
                                 <select id="selectOfficialRating" data-mini="true"></select>
                             </div>
                             <div data-role="fieldcontain" id="fldCustomRating" style="display: none;">
-                                <label for="selectCustomRating">Custom rating:</label>
+                                <label for="selectCustomRating">${LabelCustomRating}</label>
                                 <select id="selectCustomRating" data-mini="true"></select>
                             </div>
                             <div data-role="fieldcontain" id="fldBudget" style="display: none;">
-                                <label for="txtBudget">Budget ($):</label>
+                                <label for="txtBudget">${LabelBudget}</label>
                                 <input type="number" id="txtBudget" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
-                                <label for="txtRevenue">Revenue ($):</label>
+                                <label for="txtRevenue">${LabelRevenue}</label>
                                 <input type="number" id="txtRevenue" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
-                                <label for="txtOriginalAspectRatio">Original aspect ratio:</label>
+                                <label for="txtOriginalAspectRatio">${LabelOriginalAspectRatio}</label>
                                 <input type="text" id="txtOriginalAspectRatio" data-mini="true" />
                             </div>
                             <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
-                                <label for="txtPlayers">Players:</label>
+                                <label for="txtPlayers">${LabelPlayers}</label>
                                 <input type="number" id="txtPlayers" data-mini="true" pattern="[0-9]*" />
                             </div>
                             <div data-role="fieldcontain" id="fld3dFormat" style="display: none;">
-                                <label for="select3dFormat">3D Format:</label>
+                                <label for="select3dFormat">${Label3DFormat}</label>
                                 <select id="select3dFormat" data-mini="true">
                                     <option value=""></option>
                                     <option value="HalfSideBySide">HSBS</option>
@@ -207,150 +207,150 @@
                         </div>
                         <br />
                         <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none; margin-top: 1em;">
-                            <h3>Alternate Episode Numbers</h3>
+                            <h3>${HeaderAlternateEpisodeNumbers}</h3>
                             <div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtDvdSeasonNumber">Dvd season number:</label>
+                                    <label for="txtDvdSeasonNumber">${LabelDvdSeasonNumber}</label>
                                     <input type="number" id="txtDvdSeasonNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtDvdEpisodeNumber">Dvd episode number:</label>
+                                    <label for="txtDvdEpisodeNumber">${LabelDvdEpisodeNumber}</label>
                                     <input type="number" id="txtDvdEpisodeNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtAbsoluteEpisodeNumber">Absolute episode number:</label>
+                                    <label for="txtAbsoluteEpisodeNumber">${LabelAbsoluteEpisodeNumber}</label>
                                     <input type="number" id="txtAbsoluteEpisodeNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none; margin-top: 1em;">
-                            <h3>Special Episode Info</h3>
+                            <h3>${HeaderSpecialEpisodeInfo}</h3>
                             <div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtAirsBeforeSeason">Airs before season:</label>
+                                    <label for="txtAirsBeforeSeason">${LabelAirsBeforeSeason}</label>
                                     <input type="number" id="txtAirsBeforeSeason" data-mini="true" pattern="[0-9]*" />
                                 </div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtAirsAfterSeason">Airs after season:</label>
+                                    <label for="txtAirsAfterSeason">${LabelAirsAfterSeason}</label>
                                     <input type="number" id="txtAirsAfterSeason" data-mini="true" pattern="[0-9]*" />
                                 </div>
                                 <div data-role="fieldcontain">
-                                    <label for="txtAirsBeforeEpisode">Airs before episode:</label>
+                                    <label for="txtAirsBeforeEpisode">${LabelAirsBeforeEpisode}</label>
                                     <input type="number" id="txtAirsBeforeEpisode" data-mini="true" pattern="[0-9]*" />
                                 </div>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" data-collapsed="false" style="margin-top: 1em;">
-                            <h3>External Id's</h3>
+                            <h3>${HeaderExternalIds}</h3>
                             <div class="externalIds">
                             </div>
                         </div>
 
                         <div data-role="collapsible" data-mini="true" id="collapsibleDisplaySettings" style="display: none; margin-top: 1em;">
-                            <h3>Display Settings</h3>
+                            <h3>${HeaderDisplaySettings}</h3>
                             <div>
                                 <div data-role="fieldcontain" id="fldSourceType" style="display: none;" class="fldDisplaySetting">
-                                    <label for="txtDisplayMediaType">Treat image as:</label>
+                                    <label for="txtDisplayMediaType">${LabelTreatImageAs}</label>
                                     <input type="text" id="txtDisplayMediaType" data-mini="true" />
                                 </div>
                                 <div data-role="fieldcontain" id="fldDisplaySpecialsInline" class="fldDisplaySetting">
-                                    <label for="chkDisplaySpecialsInline">Display specials within seasons they aired in.</label>
+                                    <label for="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</label>
                                     <input data-mini="true" type="checkbox" id="chkDisplaySpecialsInline" />
                                 </div>
                                 <div data-role="fieldcontain" id="fldDisplayOrder" class="fldDisplaySetting">
-                                    <label for="selectDisplayOrder" id="labelDisplayOrder">Display order:</label>
+                                    <label for="selectDisplayOrder" id="labelDisplayOrder">${LabelDisplayOrder}</label>
                                     <select id="selectDisplayOrder" data-mini="true">
                                     </select>
                                 </div>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Countries</h3>
+                            <h3>${HeaderCountries}</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Genres</h3>
+                            <h3>${HeaderGenres}</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
                             </div>
                         </div>
                         <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>People</h3>
+                            <h3>${HeaderPeople}</h3>
                             <div>
                                 <br />
-                                <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">Add Person</button>
+                                <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">${ButtonAdd}</button>
                                 <br />
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
                             </div>
                         </div>
                         <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Plot Keywords</h3>
+                            <h3>${HeaderPlotKeywords}</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Studios</h3>
+                            <h3>${HeaderStudios}</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                             </div>
                         </div>
                         <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Tags</h3>
+                            <h3>${HeaderTags}</h3>
                             <div data-role="editableListviewContainer">
                                 <div data-role="fieldcontain">
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
-                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">Add</a>
+                                    <a data-role="button" data-theme="b" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
                                 </div>
                                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                             </div>
                         </div>
                         <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none; margin-top: 1em;">
-                            <h3>Metadata Settings</h3>
+                            <h3>${HeaderMetadataSettings}</h3>
                             <div>
                                 <div data-role="fieldcontain">
-                                    <label for="selectLanguage">Preferred language: </label>
+                                    <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
                                     <select id="selectLanguage" data-mini="true"></select>
                                 </div>
-                                <div class="fieldDescription editorfieldDescription">Leave empty to inherit settings from a parent item, or the global default value.</div>
+                                <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
                                 <br />
                                 <div data-role="fieldcontain">
-                                    <label for="selectCountry">Country: </label>
+                                    <label for="selectCountry">${LabelCountry}</label>
                                     <select id="selectCountry" data-mini="true"></select>
                                 </div>
-                                <div class="fieldDescription editorfieldDescription">Leave empty to inherit settings from a parent item, or the global default value.</div>
+                                <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
 
                                 <p>
                                     <br />
-                                    <label for="chkLockData">Lock this item to prevent future changes.</label>
+                                    <label for="chkLockData">${LabelLockItemToPreventChanges}</label>
                                     <input data-mini="true" type="checkbox" id="chkLockData" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                 </p>
                                 <div id="providerSettingsContainer" style="display: none">
@@ -359,7 +359,7 @@
                         </div>
                         <br/>
                         <button class="btnSave" type="submit" data-theme="a" data-icon="check">
-                            Save
+                            ${ButtonSave}
                         </button>
                     </div>
 
@@ -369,15 +369,17 @@
         <div data-role="popup" id="popupConfirmDelete" class="popup" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>Confirm Deletion</h3>
+                <h3>${HeaderConfirmDeletion}</h3>
             </div>
 
             <div data-role="content">
                 <form class="popupConfirmDeleteForm">
-                    <p>The following <strong style='color: red;'>file location will be deleted</strong>:</p>
+                    <p style="color:red;">${LabelFollowingFileWillBeDeleted}</p>
                     <p class="deletePath"></p>
 
-                    <p>If you wish to continue, please confirm by entering the value of <span id="challengeValueText" style="font-weight: bold;"></span></p>
+                    <p>${LabelIfYouWishToContinueWithDeletion}</p>
+					
+					<p id="challengeValueText" style="font-weight: bold;"></p>
 
                     <p>
                         <input type="number" id="txtDeleteTest" data-mini="true" pattern="[0-9]*" required="required" />
@@ -386,10 +388,10 @@
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="check">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -397,28 +399,27 @@
 
         </div>
         <div data-role="popup" class="popupIdentify popup" data-theme="a">
-            <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+            <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">
 
-                <button type="button" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext" style="position: absolute; top: 8px; left: 10px; margin: 0;" class="btnSearchAgain">Search</button>
+                <button type="button" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext" style="position: absolute; top: 8px; left: 10px; margin: 0;" class="btnSearchAgain">${ButtonSearch}</button>
 
-                <h3 class="identificationHeader">Identify Item
-                </h3>
+                <h3 class="identificationHeader">${HeaderIdentifyItem}</h3>
             </div>
 
             <div data-role="content">
 
                 <form class="popupIdentifyForm" style="max-width: initial;">
 
-                    <p>Enter one or more search criteria. Remove criteria to increase search results.</p>
+                    <p>${HeaderIdentifyItemHelp}</p>
 
                     <div>
-                        <label for="txtLookupName">Name:</label>
+                        <label for="txtLookupName">${LabelName}</label>
                         <input type="text" id="txtLookupName" data-mini="true" class="identifyField" data-lookup="Name" />
                     </div>
                     <div class="fldLookupYear">
-                        <label for="txtLookupYear">Year:</label>
+                        <label for="txtLookupYear">${LabelYear}</label>
                         <input type="number" id="txtLookupYear" data-mini="true" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" />
                     </div>
 
@@ -427,10 +428,10 @@
 
                     <p>
                         <button type="submit" data-theme="b" data-icon="search" data-mini="true">
-                            Search
+                            ${ButtonSearch}
                         </button>
                         <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -446,43 +447,43 @@
         <div data-role="popup" id="popupEditPerson" class="popup" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em;">Person Info</h3>
+                <h3 style="margin: .5em;">${HeaderPersonInfo}</h3>
             </div>
 
             <div data-role="content">
                 <form class="popupEditPersonForm">
 
                     <div>
-                        <label for="txtPersonName">Name:</label>
+                        <label for="txtPersonName">${LabelName}</label>
                         <input type="text" id="txtPersonName" required="required" data-mini="true" />
                     </div>
 
                     <div>
-                        <label for="selectPersonType">Type:</label>
+                        <label for="selectPersonType">${LabelType}</label>
                         <select id="selectPersonType" data-mini="true">
                             <option value=""></option>
-                            <option value="Actor">Actor</option>
-                            <option value="Composer">Composer</option>
-                            <option value="Director">Director</option>
-                            <option value="GuestStar">Guest Star</option>
-                            <option value="Producer">Producer</option>
-                            <option value="Writer">Writer</option>
+                            <option value="Actor">${OptionActor}</option>
+                            <option value="Composer">${OptionComposer}</option>
+                            <option value="Director">${OptionDirector}</option>
+                            <option value="GuestStar">${OptionGuestStar}</option>
+                            <option value="Producer">${OptionProducer}</option>
+                            <option value="Writer">${OptionWriter}</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="txtPersonRole">Role:</label>
+                        <label for="txtPersonRole">${LabelPersonRole}</label>
                         <input type="text" id="txtPersonRole" data-mini="true" />
-                        <div class="fieldDescription">Role is generally only applicable to actors.</div>
+                        <div class="fieldDescription">${LabelPersonRoleHelp}</div>
                     </div>
                     <br />
                     <input type="hidden" id="fldPersonIndex" />
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>
@@ -493,7 +494,7 @@
         <div data-role="popup" class="popup popupAdvancedRefresh" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em;">Refresh Metadata</h3>
+                <h3 style="margin: .5em;">${HeaderRefreshMetadata}</h3>
             </div>
 
             <div data-role="content">
@@ -501,30 +502,30 @@
 
                     <br />
                     <div>
-                        <label for="selectMetadataRefreshMode">Metadata refresh mode:</label>
+                        <label for="selectMetadataRefreshMode">${LabelMetadataRefreshMode}</label>
                         <select id="selectMetadataRefreshMode" data-mini="true">
-                            <option value="">None</option>
-                            <option value="local">Local Refresh Only</option>
-                            <option value="missing">Add Missing Data Only</option>
-                            <option value="all">Refresh All Data</option>
+                            <option value="">${OptionNone}</option>
+                            <option value="local">${OptionLocalRefreshOnly}</option>
+                            <option value="missing">${OptionAddMissingDataOnly}</option>
+                            <option value="all">${OptionRefreshAllData}</option>
                         </select>
                     </div>
                     <br />
                     <div>
-                        <label for="selectImageRefreshMode">Images refresh mode:</label>
+                        <label for="selectImageRefreshMode">${LabelImageRefreshMode}</label>
                         <select id="selectImageRefreshMode" data-mini="true">
-                            <option value="">None</option>
-                            <option value="missing">Download missing images</option>
-                            <option value="all">Replace existing images</option>
+                            <option value="">${OptionNone}</option>
+                            <option value="missing">${OptionDownloadMissingImages}</option>
+                            <option value="all">${OptionReplaceExistingImages}</option>
                         </select>
                     </div>
                     <br />
                     <p>
                         <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            Ok
+                            ${ButtonOk}
                         </button>
                         <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            Cancel
+                            ${ButtonCancel}
                         </button>
                     </p>
                 </form>

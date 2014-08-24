@@ -62,7 +62,8 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
-                var mx = args.Headers["mx"];
+                string mx = null;
+                args.Headers.TryGetValue("mx", out mx);
                 int delaySeconds;
                 if (!string.IsNullOrWhiteSpace(mx) && 
                     int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)

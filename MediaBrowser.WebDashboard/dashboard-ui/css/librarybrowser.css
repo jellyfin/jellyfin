@@ -20,9 +20,9 @@
     background-color: rgba(15, 15,15, .86) !important;
 }
 
-.backdropPage:not(.lightBackdropPage) {
-    background-color: rgba(15, 15,15, .94) !important;
-}
+    .backdropPage:not(.lightBackdropPage) {
+        background-color: rgba(15, 15,15, .94) !important;
+    }
 
 .backdropContainer {
     position: fixed;
@@ -129,7 +129,7 @@
     }
 }
 
-.detailPageContent, .detailPageContent>table {
+.detailPageContent, .detailPageContent > table {
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -1270,4 +1270,8 @@ a.itemTag:hover {
     .itemsListview .ui-li-aside {
         display: none;
     }
+}
+
+.tapHoldMenu li a, .playFlyout li a {
+    font-size: 14px;
 }

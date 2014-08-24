@@ -79,9 +79,6 @@
       <Link>FFMpeg\FFMpegDownloader.cs</Link>
     </Compile>
     <Compile Include="IO\FileSystemFactory.cs" />
-    <Compile Include="..\MediaBrowser.ServerApplication\EntryPoints\WanAddressEntryPoint.cs">
-      <Link>EntryPoints\WanAddressEntryPoint.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloadInfo.cs">
       <Link>FFMpeg\FFMpegDownloadInfo.cs</Link>
     </Compile>
