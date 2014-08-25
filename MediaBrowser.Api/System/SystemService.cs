@@ -38,8 +38,10 @@ namespace MediaBrowser.Api.System
     {
     }
 
+    /// <summary>
+    /// This is currently not authenticated because the uninstaller needs to be able to shutdown the server.
+    /// </summary>
     [Route("/System/Shutdown", "POST", Summary = "Shuts down the application")]
-    [Authenticated]
     public class ShutdownApplication
     {
     }

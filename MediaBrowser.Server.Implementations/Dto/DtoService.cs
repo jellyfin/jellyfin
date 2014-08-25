@@ -501,7 +501,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     {
                         return _libraryManager.GetPerson(c);
                     }
-                    catch (IOException ex)
+                    catch (Exception ex)
                     {
                         _logger.ErrorException("Error getting person {0}", ex, c);
                         return null;

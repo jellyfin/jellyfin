@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.Session
 
         public bool ContainsUser(Guid userId)
         {
-            return (UserId ?? Guid.Empty) == UserId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
+            return (UserId ?? Guid.Empty) == userId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
         }
     }
 }
