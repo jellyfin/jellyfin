@@ -151,6 +151,7 @@
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
+    <Compile Include="Entities\IThemeMedia.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />

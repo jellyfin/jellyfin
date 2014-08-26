@@ -20,13 +20,16 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
         IHasTags,
-        IHasMediaSources
+        IHasMediaSources,
+        IThemeMedia
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
         public List<string> Tags { get; set; }
+
+        public bool IsThemeMedia { get; set; }
 
         public Audio()
         {

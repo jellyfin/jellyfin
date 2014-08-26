@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Dlna.PlayTo;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -75,7 +72,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-         void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
+        void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
             e.Headers.TryGetValue("NTS", out nts);
@@ -87,10 +84,16 @@ namespace MediaBrowser.Dlna.Ssdp
                 EventHelper.FireEventIfNotNull(DeviceLeft, this, e, _logger);
                 return;
             }
-            
-             try
+
+            try
             {
-                //TryCreateDevice(e, IPAddress.Parse(_networkManager.GetLocalIpAddresses().First()));
+                //var ip = _networkManager.GetLocalIpAddresses().FirstOrDefault();
+
+                //if (ip != null)
+                //{
+                //    e.LocalIp = IPAddress.Parse(ip);
+                //    TryCreateDevice(e);
+                //}
             }
             catch (OperationCanceledException)
             {
@@ -184,36 +187,6 @@ namespace MediaBrowser.Dlna.Ssdp
 
         }
 
-        private void CreateNotifier(Socket socket)
-        {
-            Task.Factory.StartNew(async (o) =>
-            {
-                try
-                {
-                    var msg = new SsdpMessageBuilder().BuildRendererDiscoveryMessage();
-                    var request = Encoding.UTF8.GetBytes(msg);
-
-                    while (true)
-                    {
-                        socket.SendTo(request, new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
-
-                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
-
-                        await Task.Delay(delay).ConfigureAwait(false);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in notifier", ex);
-                }
-
-            }, _tokenSource.Token, TaskCreationOptions.LongRunning);
-
-        }
-
         private Socket GetMulticastSocket(int networkInterfaceIndex)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -223,7 +196,7 @@ namespace MediaBrowser.Dlna.Ssdp
             return socket;
         }
 
-        private  void TryCreateDevice(SsdpMessageEventArgs args)
+        private void TryCreateDevice(SsdpMessageEventArgs args)
         {
             string nts;
             args.Headers.TryGetValue("NTS", out nts);
@@ -262,7 +235,7 @@ namespace MediaBrowser.Dlna.Ssdp
         public void Dispose()
         {
             _ssdpHandler.MessageReceived -= _ssdpHandler_MessageReceived;
-            
+
             if (!_disposed)
             {
                 _disposed = true;

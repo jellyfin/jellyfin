@@ -26,16 +26,12 @@ namespace MediaBrowser.Model.Notifications
 
         public SendToUserType? SendToUserMode { get; set; }
 
-        public List<string> ExcludeUserIds { get; set; }
-
         public NotificationRequest()
         {
             UserIds = new List<string>();
             Date = DateTime.UtcNow;
 
             Variables = new Dictionary<string, string>();
-
-            ExcludeUserIds = new List<string>();
         }
     }
 }

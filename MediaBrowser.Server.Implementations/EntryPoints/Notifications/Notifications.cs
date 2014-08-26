@@ -195,19 +195,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             var user = e.Users.FirstOrDefault();
 
             var item = e.MediaInfo;
+            var themeMedia = item as IThemeMedia;
 
-            if (e.Item != null && e.Item.Parent == null)
+            if (themeMedia != null && themeMedia.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
-                // TODO: This will also cause movie specials to not be reported
                 return;
             }
 
             var notification = new NotificationRequest
             {
-                NotificationType = type,
-
-                ExcludeUserIds = e.Users.Select(i => i.Id.ToString("N")).ToList()
+                NotificationType = type
             };
 
             notification.Variables["ItemName"] = item.Name;

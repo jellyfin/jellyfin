@@ -24,7 +24,8 @@ namespace MediaBrowser.Controller.Entities
         IHasTags, 
         ISupportsPlaceHolders,
         IHasMediaSources,
-        IHasShortOverview
+        IHasShortOverview,
+        IThemeMedia
     {
         public bool IsMultiPart { get; set; }
         public bool HasLocalAlternateVersions { get; set; }
@@ -33,6 +34,8 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> AdditionalPartIds { get; set; }
         public List<Guid> LocalAlternateVersionIds { get; set; }
 
+        public bool IsThemeMedia { get; set; }
+        
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
