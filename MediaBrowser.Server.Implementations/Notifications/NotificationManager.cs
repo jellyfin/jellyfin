@@ -44,7 +44,6 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 GetConfiguration().GetOptions(notificationType);
 
             var users = GetUserIds(request, options)
-                .Except(request.ExcludeUserIds)
                 .Select(i => _userManager.GetUserById(new Guid(i)));
 
             var title = GetTitle(request, options);

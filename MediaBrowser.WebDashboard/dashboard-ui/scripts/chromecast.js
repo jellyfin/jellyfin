@@ -316,12 +316,19 @@
         var bitrateSetting = MediaPlayer.getBitrateSetting();
         bitrateSetting = Math.min(bitrateSetting, 10000000);
 
+        var receiverName = null;
+
+        if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.receiver.friendlyName) {
+            receiverName = castPlayer.session.receiver.friendlyName;
+        }
+
         message = $.extend(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
             serverAddress: ApiClient.serverAddress(),
-            maxBitrate: bitrateSetting
+            maxBitrate: bitrateSetting,
+            receiverName: receiverName
         });
 
         getEndpointInfo().done(function (endpoint) {

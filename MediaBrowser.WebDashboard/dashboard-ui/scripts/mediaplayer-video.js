@@ -200,6 +200,8 @@
 
         self.setCurrentTrackElement = function (index) {
 
+            var modes = ['disabled', 'showing', 'hidden'];
+
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle' && s.IsTextSubtitleStream;
             });
@@ -219,13 +221,26 @@
                 var mode;
 
                 if (trackIndex == i) {
-                    mode = "showing"; // show this track
+                    mode = 1; // show this track
                 } else {
-                    mode = "disabled"; // hide all other tracks
+                    mode = 0; // hide all other tracks
                 }
 
                 console.log('Setting track ' + i + ' mode to: ' + mode);
-                allTracks[i].mode = mode;
+
+                // Safari uses integers for the mode property
+                // http://www.jwplayer.com/html5/scripting/
+                var useNumericMode = false;
+
+                if (!isNaN(allTracks[i].mode)) {
+                    useNumericMode = true;
+                }
+
+                if (useNumericMode) {
+                    allTracks[i].mode = mode;
+                } else {
+                    allTracks[i].mode = modes[mode];
+                }
             }
         };
 

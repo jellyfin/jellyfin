@@ -157,14 +157,7 @@
 
         self.displayContent = function (options) {
 
-            sendCommandByName('DisplayContent', {
-
-                ItemName: options.itemName,
-                ItemType: options.itemType,
-                ItemId: options.itemId,
-                Context: options.context
-
-            });
+            sendCommandByName('DisplayContent', options);
         };
 
         self.getPlayerState = function () {
