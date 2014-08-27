@@ -4,11 +4,11 @@
 
         var val = enabled ? '1' : '';
 
-        store.setItem('displaymirror', val);
+        store.setItem('displaymirror-' + Dashboard.getCurrentUserId(), val);
 
     }
     function isMirrorModeEnabled() {
-        return (store.getItem('displaymirror') || '') == '1';
+        return (store.getItem('displaymirror-' + Dashboard.getCurrentUserId()) || '') == '1';
     }
 
     var currentDisplayInfo;

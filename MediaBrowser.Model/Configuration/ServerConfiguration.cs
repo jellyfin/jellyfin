@@ -176,10 +176,6 @@ namespace MediaBrowser.Model.Configuration
 
         public double DownMixAudioBoost { get; set; }
 
-        public NotificationOptions NotificationOptions { get; set; }
-
-        public SubtitleOptions SubtitleOptions { get; set; }
-
         public bool DefaultMetadataSettingsApplied { get; set; }
 
         public bool EnableTokenAuthentication { get; set; }

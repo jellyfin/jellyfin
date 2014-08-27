@@ -312,13 +312,6 @@ namespace MediaBrowser.ServerApplication
                 saveConfig = true;
             }
 
-            if (ServerConfigurationManager.Configuration.NotificationOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("notifications", ServerConfigurationManager.Configuration.NotificationOptions);
-                ServerConfigurationManager.Configuration.NotificationOptions = null;
-                saveConfig = true;
-            }
-
             if (ServerConfigurationManager.Configuration.LiveTvOptions != null)
             {
                 ServerConfigurationManager.SaveConfiguration("livetv", ServerConfigurationManager.Configuration.LiveTvOptions);
@@ -330,13 +323,6 @@ namespace MediaBrowser.ServerApplication
             {
                 ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });
                 ServerConfigurationManager.Configuration.TvFileOrganizationOptions = null;
-                saveConfig = true;
-            }
-
-            if (ServerConfigurationManager.Configuration.SubtitleOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("subtitles", ServerConfigurationManager.Configuration.SubtitleOptions);
-                ServerConfigurationManager.Configuration.SubtitleOptions = null;
                 saveConfig = true;
             }
 
