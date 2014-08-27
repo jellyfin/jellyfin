@@ -35,17 +35,7 @@ namespace MediaBrowser.Providers.FolderImages
             var playlist = item as Playlist;
             if (playlist != null)
             {
-                var url = GetImageUrl(null);
-
-                return Task.FromResult<IEnumerable<RemoteImageInfo>>(new List<RemoteImageInfo>
-                {
-                         new RemoteImageInfo
-                         {
-                              ProviderName = Name,
-                              Url = url,
-                              Type = ImageType.Primary
-                         }
-                 });
+                return GetImages(string.Empty, cancellationToken);
             }
 
             var view = item as UserView;
