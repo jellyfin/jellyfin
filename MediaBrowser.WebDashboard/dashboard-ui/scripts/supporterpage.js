@@ -32,6 +32,10 @@
         //change command back
         $('#ppCmd', page).val('_xclick');
     }
+    
+    function setItemNumber(page, itemNumber) {
+        $('#ppItemNo', page).val(itemNumber);
+    }
 
     function getDonationType(page) {
 
@@ -76,25 +80,29 @@
             if (donationType == 'once') {
                 $('.fldOneTimeDonationAmount', page).show();
                 removeRecurringFields(page);
-                // TODO: Update item_number ?
+                setItemNumber(page, 'MBDonation');
+                $('#oneTimeDescription').show();
             }
             else if (donationType == 'yearly') {
 
                 $('.fldOneTimeDonationAmount', page).hide();
                 addRecurringFields(page);
-                // TODO: Update item_number ?
+                setItemNumber(page, 'MBSClubYearly');
+                $('#oneTimeDescription').hide();
             }
             else if (donationType == 'monthly') {
 
                 $('.fldOneTimeDonationAmount', page).hide();
                 addRecurringFields(page);
-                // TODO: Update item_number ?
+                setItemNumber(page, 'MBSClubMonthly');
+                $('#oneTimeDescription').hide();
             }
             else {
                 // Lifetime
                 $('.fldOneTimeDonationAmount', page).hide();
                 removeRecurringFields(page);
-                // TODO: Update item_number ?
+                setItemNumber(page, 'MBSupporter');
+                $('#oneTimeDescription').hide();
             }
         });
 

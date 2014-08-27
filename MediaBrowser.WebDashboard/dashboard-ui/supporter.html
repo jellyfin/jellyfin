@@ -55,6 +55,7 @@
                             <label for="radioOneTimeDonation">
                                 ${OptionMakeOneTimeDonation}<br />
                             </label>
+                            <p id="oneTimeDescription" >${OptionOneTimeDescription}</p>
                         </fieldset>
 
                         <!--<span class="fieldDescription">${LabelAutomaticallyDonateHelp}</span>-->
@@ -83,7 +84,7 @@
                         <input type="hidden" name="business" value="donate@mediabrowser3.com">
                         <input type="hidden" name="currency_code" value="USD">
                         <input type="hidden" name="item_name" value="Media Browser Supporter">
-                        <input type="hidden" name="item_number" value="MBSupporter">
+                        <input type="hidden" name="item_number" id="ppItemNo" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
 
