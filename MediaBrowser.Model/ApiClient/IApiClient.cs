@@ -209,7 +209,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task&lt;QueryResult&lt;BaseItemDto&gt;&gt;.</returns>
-        Task<QueryResult<BaseItemDto>> GetLatestItems(LatestItemsQuery query);
+        Task<BaseItemDto[]> GetLatestItems(LatestItemsQuery query);
         
         /// <summary>
         /// Gets the intros async.
