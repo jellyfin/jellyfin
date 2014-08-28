@@ -1105,5 +1105,7 @@
     "OptionDirector": "Director",
     "OptionGuestStar": "Guest star",
     "OptionProducer": "Producer",
-    "OptionWriter": "Writer"
+    "OptionWriter": "Writer",
+    "LabelAirDays": "Air days:",
+    "LabelAirTime":  "Air time:"
 }

@@ -81,6 +81,7 @@
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
+    <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="FileOrganization\AutoOrganizeOptions.cs" />
     <Compile Include="FileOrganization\TvFileOrganizationOptions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />

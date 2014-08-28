@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 // Mono.Nat does never rise this event. The event is there however it is useless. 
                 // You could remove it with no risk. 
-                // NatUtility.DeviceLost += NatUtility_DeviceLost;
+                NatUtility.DeviceLost += NatUtility_DeviceLost;
 
 
                 // it is hard to say what one should do when an unhandled exception is raised
@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 _isStarted = true;
 
-                _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromHours(6), TimeSpan.FromHours(6));
+                _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
             }
         }
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             if (!_createdRules.Contains(address))
             {
                 _createdRules.Add(address);
-                
+
                 var info = _appHost.GetSystemInfo();
 
                 CreatePortMap(device, info.HttpServerPortNumber);
@@ -141,11 +141,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         }
 
         // As I said before, this method will be never invoked. You can remove it.
-        //void NatUtility_DeviceLost(object sender, DeviceEventArgs e)
-        //{
-        //    var device = e.Device;
-        //    _logger.Debug("NAT device lost: {0}", device.LocalAddress.ToString());
-        //}
+        void NatUtility_DeviceLost(object sender, DeviceEventArgs e)
+        {
+            var device = e.Device;
+            _logger.Debug("NAT device lost: {0}", device.LocalAddress.ToString());
+        }
 
         public void Dispose()
         {
@@ -167,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 // This is not a significant improvement
                 NatUtility.StopDiscovery();
                 NatUtility.DeviceFound -= NatUtility_DeviceFound;
-                //NatUtility.DeviceLost -= NatUtility_DeviceLost;
+                NatUtility.DeviceLost -= NatUtility_DeviceLost;
                 NatUtility.UnhandledException -= NatUtility_UnhandledException;
             }
             // Statements in try-block will no fail because StopDiscovery is a one-line 
