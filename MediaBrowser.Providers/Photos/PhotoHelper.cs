@@ -1,25 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Text;
 
 namespace MediaBrowser.Providers.Photos
 {
     public static class PhotoHelper
     {
-        public static List<BaseItem> ShuffleList(List<BaseItem> list)
-        {
-            var rnd = new Random(DateTime.Now.Second);
-            for (var i = 1; i < list.Count; i++)
-            {
-                var pos = rnd.Next(i + 1);
-                var x = list[i];
-                list[i] = list[pos];
-                list[pos] = x;
-            }
-            return list;
-        }
-
         public static string Dec2Frac(double dbl)
         {
             char neg = ' ';

@@ -56,6 +56,9 @@
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="policy.2.0.taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -64,6 +67,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -142,8 +149,6 @@
     <Compile Include="Music\MusicBrainzAlbumProvider.cs" />
     <Compile Include="People\PersonMetadataService.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
-    <Compile Include="Photos\ExifReader.cs" />
-    <Compile Include="Photos\ExifTags.cs" />
     <Compile Include="Photos\PhotoHelper.cs" />
     <Compile Include="Photos\PhotoMetadataService.cs" />
     <Compile Include="Photos\PhotoProvider.cs" />
