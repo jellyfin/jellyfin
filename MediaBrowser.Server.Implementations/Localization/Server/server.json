@@ -1093,8 +1093,8 @@
     "MessageLeaveEmptyToInherit": "Leave empty to inherit settings from a parent item, or the global default value.",
     "TabSupporterClub": "Supporter Club",
     "HeaderDonationType": "Donation type:",
-    "OptionMakeOneTimeDonation": "Make an additional donation",
-    "OptionOneTimeDescription": "This is an additional donation to the team to show extra support.  It does not have any additional benefits.",
+    "OptionMakeOneTimeDonation": "Make a separate donation",
+    "OptionOneTimeDescription": "This is an additional donation to the team to show your support. It does not have any additional benefits.",
     "OptionLifeTimeSupporterClubMembership": "Lifetime supporter club membership",
     "HeaderSupporterBenefit": "Becoming a supporter club member provides additional benefits such as access to premium plugins, internet channel content, and more.",
     "OptionNoTrailer": "No Trailer",
@@ -1108,5 +1108,7 @@
     "OptionProducer": "Producer",
     "OptionWriter": "Writer",
     "LabelAirDays": "Air days:",
-    "LabelAirTime":  "Air time:"
+    "LabelAirTime": "Air time:",
+    "HeaderMediaInfo": "Media Info",
+    "HeaderPhotoInfo": "Photo Info"
 }

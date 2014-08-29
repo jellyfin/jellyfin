@@ -357,6 +357,19 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             dto.SeriesName = item.SeriesName;
         }
+        private void SetPhotoProperties(BaseItemDto dto, Photo item)
+        {
+            dto.Width = item.Width;
+            dto.Height = item.Height;
+            dto.CameraMake = item.CameraMake;
+            dto.CameraModel = item.CameraModel;
+            dto.Software = item.Software;
+            dto.ExposureTime = item.ExposureTime;
+            dto.FocalLength = item.FocalLength;
+            dto.ImageOrientation = item.Orientation;
+            dto.Aperture = item.Aperture;
+            dto.ShutterSpeed = item.ShutterSpeed;
+        }
 
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
@@ -1187,21 +1200,24 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             var book = item as Book;
-
             if (book != null)
             {
                 SetBookProperties(dto, book);
             }
 
-            var tvChannel = item as LiveTvChannel;
+            var photo = item as Photo;
+            if (photo != null)
+            {
+                SetPhotoProperties(dto, photo);
+            }
 
+            var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
                 dto.MediaSources = tvChannel.GetMediaSources(true).ToList();
             }
 
             var channelItem = item as IChannelItem;
-
             if (channelItem != null)
             {
                 dto.ChannelId = channelItem.ChannelId;
