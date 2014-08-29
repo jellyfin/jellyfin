@@ -77,6 +77,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
         public override Folder LatestItemsIndexContainer
         {
             get
