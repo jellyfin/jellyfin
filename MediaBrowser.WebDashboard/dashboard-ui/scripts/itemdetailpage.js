@@ -1224,7 +1224,7 @@
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1000)) + ' kbps'));
+                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1024)) + ' kbps'));
             }
 
             if (stream.SampleRate) {

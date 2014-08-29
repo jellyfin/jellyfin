@@ -79,6 +79,14 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, file);
         }
 
+        protected override bool SupportsThrottling
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Called when [begin request].
         /// </summary>
