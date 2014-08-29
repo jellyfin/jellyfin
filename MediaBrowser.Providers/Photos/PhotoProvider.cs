@@ -29,7 +29,6 @@ namespace MediaBrowser.Providers.Photos
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
-            item.SetImagePath(ImageType.Backdrop, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
 
@@ -77,7 +76,7 @@ namespace MediaBrowser.Providers.Photos
                     }
                 }
 
-                item.CameraManufacturer = image.ImageTag.Make;
+                item.CameraMake = image.ImageTag.Make;
                 item.CameraModel = image.ImageTag.Model;
 
                 var rating = image.ImageTag.Rating;
@@ -105,18 +104,21 @@ namespace MediaBrowser.Providers.Photos
                     item.ProductionYear = dateTaken.Value.Year;
                 }
 
-                var size = _imageProcessor.GetImageSize(item.Path);
-                item.Height = Convert.ToInt32(size.Height);
-                item.Width = Convert.ToInt32(size.Width);
-
                 item.Genres = image.ImageTag.Genres.ToList();
                 item.Tags = image.ImageTag.Keywords.ToList();
                 item.Software = image.ImageTag.Software;
 
-                Model.Drawing.ImageOrientation orientation;
-                if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
+                if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
                 {
-                    item.Orientation = orientation;
+                    item.Orientation = null;
+                }
+                else
+                {
+                    Model.Drawing.ImageOrientation orientation;
+                    if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
+                    {
+                        item.Orientation = orientation;
+                    }
                 }
 
                 item.ExposureTime = image.ImageTag.ExposureTime;
@@ -126,6 +128,10 @@ namespace MediaBrowser.Providers.Photos
             {
                 _logger.ErrorException("Image Provider - Error reading image tag for {0}", e, item.Path);
             }
+
+            var size = _imageProcessor.GetImageSize(item.Path);
+            item.Height = Convert.ToInt32(size.Height);
+            item.Width = Convert.ToInt32(size.Width);
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
             return Task.FromResult(result);
@@ -138,6 +144,13 @@ namespace MediaBrowser.Providers.Photos
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
+            // Moved to plural AlbumArtists
+            if (date < new DateTime(2014, 8, 28))
+            {
+                // Revamped vaptured metadata
+                return true;
+            }
+            
             return item.DateModified > date;
         }
     }

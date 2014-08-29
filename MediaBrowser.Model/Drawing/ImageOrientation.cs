@@ -3,7 +3,6 @@ namespace MediaBrowser.Model.Drawing
 {
     public enum ImageOrientation
     {
-        None = 0,
         TopLeft = 1,
         TopRight = 2,
         BottomRight = 3,

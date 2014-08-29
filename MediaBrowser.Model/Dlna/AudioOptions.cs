@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -8,6 +8,11 @@ namespace MediaBrowser.Model.Dlna
     /// </summary>
     public class AudioOptions
     {
+        public AudioOptions()
+        {
+            Context = EncodingContext.Streaming;
+        }
+
         public string ItemId { get; set; }
         public List<MediaSourceInfo> MediaSources { get; set; }
         public DeviceProfile Profile { get; set; }

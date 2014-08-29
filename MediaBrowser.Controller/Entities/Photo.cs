@@ -24,14 +24,12 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Width { get; set; }
         public int? Height { get; set; }
-        public string CameraManufacturer { get; set; }
+        public string CameraMake { get; set; }
         public string CameraModel { get; set; }
         public string Software { get; set; }
         public double? ExposureTime { get; set; }
         public double? FocalLength { get; set; }
-
         public ImageOrientation? Orientation { get; set; }
-
         public double? Aperture { get; set; }
         public double? ShutterSpeed { get; set; }
     }

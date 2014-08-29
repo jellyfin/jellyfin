@@ -168,6 +168,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return true;
             }
 
+            if (item is Audio)
+            {
+                // Moved to plural AlbumArtists
+                if (date < new DateTime(2014, 8, 28))
+                {
+                    return true;
+                }
+            }
+
             if (item.SupportsLocalMetadata)
             {
                 var video = item as Video;

@@ -2067,7 +2067,7 @@
             var miscInfo = [];
             var text, date;
 
-            if (item.Type == "Episode") {
+            if (item.Type == "Episode" || item.MediaType == 'Photo') {
 
                 if (item.PremiereDate) {
 
@@ -2131,7 +2131,7 @@
                 }
             }
 
-            if (item.Type != "Series" && item.Type != "Episode") {
+            if (item.Type != "Series" && item.Type != "Episode" && item.MediaType != 'Photo') {
 
                 if (item.ProductionYear) {
 
@@ -2172,6 +2172,10 @@
 
             if (item.Video3DFormat) {
                 miscInfo.push("3D");
+            }
+
+            if (item.MediaType == 'Photo' && item.Width && item.Height) {
+                miscInfo.push(item.Width + "x" + item.Height);
             }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');

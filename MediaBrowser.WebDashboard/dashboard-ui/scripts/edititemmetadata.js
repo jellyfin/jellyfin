@@ -76,6 +76,12 @@
                 $('#btnEditSubtitles', page).hide();
             }
 
+            if (item.MediaType == 'Photo') {
+                $('#btnEditImages', page).hide();
+            } else {
+                $('#btnEditImages', page).show();
+            }
+
             if (item.MediaType == "Video" && item.Type != "Episode") {
                 $('#fldShortOverview', page).show();
             } else {
