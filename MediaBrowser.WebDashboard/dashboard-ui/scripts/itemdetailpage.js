@@ -507,7 +507,7 @@
 
         $('.lnkSibling', page).addClass('hide');
 
-        if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
+        if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio" && item.Type != "Photo")) {
             return;
         }
 
@@ -534,7 +534,8 @@
         } else {
             promise = ApiClient.getItems(Dashboard.getCurrentUserId(), {
                 AdjacentTo: item.Id,
-                ParentId: item.ParentId
+                ParentId: item.ParentId,
+                SortBy: 'SortName'
             });
         }
 
@@ -542,19 +543,20 @@
 
         promise.done(function (result) {
 
+            var foundExisting = false;
+
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 var curr = result.Items[i];
 
-                if (curr.IndexNumber == null) {
-                    continue;
+                if (curr.Id == item.Id) {
+                    foundExisting = true;
                 }
-
-                if (curr.IndexNumber < item.IndexNumber) {
+                else if (!foundExisting) {
 
                     $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }
-                else if (curr.IndexNumber > item.IndexNumber) {
+                else {
 
                     $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }

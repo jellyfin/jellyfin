@@ -670,5 +670,17 @@ namespace MediaBrowser.Api.Playback.Hls
                 return TranscodingJobType.Hls;
             }
         }
+
+        protected override string GetInputArgument(StreamState state)
+        {
+            if (state.InputProtocol == Model.MediaInfo.MediaProtocol.File &&
+                state.RunTimeTicks.HasValue &&
+                !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return "http://localhost:8096/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+            }
+
+            return base.GetInputArgument(state);
+        }
     }
 }
