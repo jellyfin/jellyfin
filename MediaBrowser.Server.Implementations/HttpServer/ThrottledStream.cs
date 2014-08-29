@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace MediaBrowser.Api.Playback
+namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class for streaming data with throttling support.
@@ -18,7 +19,7 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// The base stream.
         /// </summary>
-        private Stream _baseStream;
+        private readonly Stream _baseStream;
 
         /// <summary>
         /// The maximum bytes per second that can be transferred through the base stream.
@@ -143,18 +144,9 @@ namespace MediaBrowser.Api.Playback
         }
         #endregion
 
-        #region Ctor
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:ThrottledStream"/> class with an
-        /// infinite amount of bytes that can be processed.
-        /// </summary>
-        /// <param name="baseStream">The base stream.</param>
-        public ThrottledStream(Stream baseStream)
-            : this(baseStream, ThrottledStream.Infinite)
-        {
-            // Nothing todo.
-        }
+        public long MinThrottlePosition;
 
+        #region Ctor
         /// <summary>
         /// Initializes a new instance of the <see cref="T:ThrottledStream"/> class.
         /// </summary>
@@ -172,7 +164,7 @@ namespace MediaBrowser.Api.Playback
             if (maximumBytesPerSecond < 0)
             {
                 throw new ArgumentOutOfRangeException("maximumBytesPerSecond",
-                    maximumBytesPerSecond, "The maximum number of bytes per second can't be negatie.");
+                    maximumBytesPerSecond, "The maximum number of bytes per second can't be negative.");
             }
 
             _baseStream = baseStream;
@@ -242,6 +234,8 @@ namespace MediaBrowser.Api.Playback
             _baseStream.SetLength(value);
         }
 
+        private long _bytesWritten;
+
         /// <summary>
         /// Writes a sequence of bytes to the current stream and advances the current position within this stream by the number of bytes written.
         /// </summary>
@@ -259,6 +253,17 @@ namespace MediaBrowser.Api.Playback
             Throttle(count);
 
             _baseStream.Write(buffer, offset, count);
+
+            _bytesWritten += count;
+        }
+
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await ThrottleAsync(count, cancellationToken).ConfigureAwait(false);
+
+            await _baseStream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+
+            _bytesWritten += count;
         }
 
         /// <summary>
@@ -280,6 +285,11 @@ namespace MediaBrowser.Api.Playback
         /// <param name="bufferSizeInBytes">The buffer size in bytes.</param>
         protected void Throttle(int bufferSizeInBytes)
         {
+            if (_bytesWritten < MinThrottlePosition)
+            {
+                return;
+            }
+
             // Make sure the buffer isn't empty.
             if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
             {
@@ -312,6 +322,46 @@ namespace MediaBrowser.Api.Playback
                         {
                             // Eatup ThreadAbortException.
                         }
+
+                        // A sleep has been done, reset.
+                        Reset();
+                    }
+                }
+            }
+        }
+
+        protected async Task ThrottleAsync(int bufferSizeInBytes, CancellationToken cancellationToken)
+        {
+            if (_bytesWritten < MinThrottlePosition)
+            {
+                return;
+            }
+
+            // Make sure the buffer isn't empty.
+            if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
+            {
+                return;
+            }
+
+            _byteCount += bufferSizeInBytes;
+            long elapsedMilliseconds = CurrentMilliseconds - _start;
+
+            if (elapsedMilliseconds > 0)
+            {
+                // Calculate the current bps.
+                long bps = _byteCount * 1000L / elapsedMilliseconds;
+
+                // If the bps are more then the maximum bps, try to throttle.
+                if (bps > _maximumBytesPerSecond)
+                {
+                    // Calculate the time to sleep.
+                    long wakeElapsed = _byteCount * 1000L / _maximumBytesPerSecond;
+                    int toSleep = (int)(wakeElapsed - elapsedMilliseconds);
+
+                    if (toSleep > 1)
+                    {
+                        // The time to sleep is more then a millisecond, so sleep.
+                        await Task.Delay(toSleep, cancellationToken).ConfigureAwait(false);
 
                         // A sleep has been done, reset.
                         Reset();
