@@ -18,7 +18,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff}", TimeSpan.FromTicks(trackEvent.StartPositionTicks), TimeSpan.FromTicks(trackEvent.EndPositionTicks));
+                    TimeSpan startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks);
+                    TimeSpan endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks);
+
+                    // make sure the start and end times are different and seqential
+                    if (endTime.TotalMilliseconds <= startTime.TotalMilliseconds)
+                    {
+                        endTime = startTime.Add(TimeSpan.FromMilliseconds(1));
+                    }
+
+                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff}", startTime, endTime);
 
                     var text = trackEvent.Text;
 
