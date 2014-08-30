@@ -241,7 +241,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", id == "0" ? "1" :totalCount.ToString(_usCulture)),
+                new KeyValuePair<string,string>("TotalMatches", DidlBuilder.IsIdRoot(id) ? "1" :totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
         }
@@ -535,10 +535,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private BaseItem GetItemFromObjectId(string id, User user)
         {
-            return string.IsNullOrWhiteSpace(id) || string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
-
-                 // Samsung sometimes uses 1 as root
-                 || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase)
+            return DidlBuilder.IsIdRoot(id)
 
                  ? user.RootFolder
                  : ParseItemId(id, user);
