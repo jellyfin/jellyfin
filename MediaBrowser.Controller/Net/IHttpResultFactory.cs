@@ -109,14 +109,18 @@ namespace MediaBrowser.Controller.Net
         /// <param name="fileShare">The file share.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <param name="throttle">if set to <c>true</c> [throttle].</param>
+        /// <param name="throttleLimit">The throttle limit.</param>
         /// <returns>System.Object.</returns>
         object GetStaticFileResult(IRequest requestContext, 
             string path, 
             string contentType,
             TimeSpan? cacheCuration = null,
             FileShare fileShare = FileShare.Read, 
-            IDictionary<string, string> responseHeaders = null, 
-            bool isHeadRequest = false);
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false,
+            bool throttle = false,
+            long throttleLimit = 0);
         
         /// <summary>
         /// Gets the optimized serialized result using cache.

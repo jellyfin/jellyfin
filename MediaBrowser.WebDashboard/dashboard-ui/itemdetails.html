@@ -165,36 +165,7 @@
         <div data-role="content">
             <div class="detailPageContent">
 
-                <div id="detailsSection" class="detailSection hide">
-
-                    <div class="tabButtons" style="margin-top: .75em;"></div>
-
-                    <div class="detailSectionContent" style="padding: .25em .7em 0;">
-
-                        <div class="detailTab tabDetails">
-                            <p id="players"></p>
-                            <p id="seriesAirTime"></p>
-                            <p id="itemPremiereDate"></p>
-                            <p id="itemBudget"></p>
-                            <p id="itemRevenue"></p>
-                            <p class="itemExternalLinks"></p>
-                        </div>
-                        <div class="detailTab tabMediaInfo">
-
-                            <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
-                                <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
-                            </div>
-                            <div id="mediaInfoContent"></div>
-
-                        </div>
-                        <div class="detailTab tabTags">
-                            <p class="itemStudios"></p>
-                            <p class="itemKeywords"></p>
-                            <p class="itemTags"></p>
-                        </div>
-                    </div>
-                </div>
-
+                <br />
                 <div class="collectionItems"></div>
                 <div id="childrenCollapsible" class="hide detailSection">
                     <div class="detailSectionHeader">
@@ -214,6 +185,46 @@
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
                 </div>
+                <div class="detailSection detailCollapsibleSection detailsSection">
+                    <div data-role="collapsible" class="detailPageCollabsible" data-content-theme="false">
+                        <h2>${HeaderDetails}</h2>
+                        <div>
+                            <div class="tabDetails">
+                                <p id="players"></p>
+                                <p id="seriesAirTime"></p>
+                                <p id="itemBudget"></p>
+                                <p id="itemRevenue"></p>
+                                <p class="itemExternalLinks"></p>
+
+                                <p class="itemStudios"></p>
+                                <p class="itemKeywords"></p>
+                                <p class="itemTags"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailSection detailCollapsibleSection audioVideoMediaInfo">
+                    <div data-role="collapsible" class="detailPageCollabsible" data-content-theme="false">
+                        <h2>${HeaderMediaInfo}</h2>
+                        <div>
+                            <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
+                                <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
+                            </div>
+                            <div id="mediaInfoContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailSection photoInfo hide">
+                    <div class="detailSectionHeader">
+                        ${HeaderPhotoInfo}
+                    </div>
+                    <div class="detailSectionContent" style="padding:1em;">
+                        <div class="photoInfoContent"></div>
+                    </div>
+                </div>
+
                 <div id="specialsCollapsible" class="detailSection hide">
                     <div class="detailSectionHeader">
                         ${HeaderSpecialFeatures}

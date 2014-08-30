@@ -99,6 +99,7 @@
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\CollectionEvents.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
+    <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
     <Compile Include="Dlna\DlnaIconResponse.cs" />
@@ -150,10 +151,12 @@
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
+    <Compile Include="Entities\IThemeMedia.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Entities\Photo.cs" />
+    <Compile Include="Entities\PhotoAlbum.cs" />
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\DeleteOptions.cs" />

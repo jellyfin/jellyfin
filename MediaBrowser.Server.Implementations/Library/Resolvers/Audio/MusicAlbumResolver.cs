@@ -114,11 +114,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <returns><c>true</c> if the specified list contains music; otherwise, <c>false</c>.</returns>
-        private static bool ContainsMusic(IEnumerable<FileSystemInfo> list, 
+        private static bool ContainsMusic(IEnumerable<FileSystemInfo> list,
             bool isMusicMediaFolder,
-            bool allowSubfolders, 
-            IDirectoryService directoryService, 
-            ILogger logger, 
+            bool allowSubfolders,
+            IDirectoryService directoryService,
+            ILogger logger,
             IFileSystem fileSystem)
         {
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
@@ -154,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 }
                 else if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
                 else if (EntityResolutionHelper.IsVideoPlaceHolder(fullName)) return false;
-                
+
                 if (foundAudio >= 2)
                 {
                     return true;
@@ -179,10 +179,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             return false;
         }
 
-        private static bool IsMultiDiscFolder(string path)
+        public static bool IsMultiDiscFolder(string path)
         {
-            return false;
-            //return EntityResolutionHelper.IsMultiPartFolder(path);
+            return EntityResolutionHelper.IsMultiDiscAlbumFolder(path);
         }
 
         private static bool IsAdditionalSubfolderAllowed(FileSystemInfo directory)

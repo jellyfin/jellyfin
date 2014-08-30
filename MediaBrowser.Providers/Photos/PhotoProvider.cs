@@ -5,9 +5,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TagLib;
+using TagLib.IFD;
+using TagLib.IFD.Entries;
+using TagLib.IFD.Tags;
 
 namespace MediaBrowser.Providers.Photos
 {
@@ -25,102 +29,109 @@ namespace MediaBrowser.Providers.Photos
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             item.SetImagePath(ImageType.Primary, item.Path);
-            item.SetImagePath(ImageType.Backdrop, item.Path);
 
-            if (item.Path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || item.Path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+            // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
+
+            try
             {
-                try
+                var file = File.Create(item.Path);
+
+                var image = file as TagLib.Image.File;
+
+                var tag = file.GetTag(TagTypes.TiffIFD) as IFDTag;
+
+                if (tag != null)
                 {
-                    using (var reader = new ExifReader(item.Path))
+                    var structure = tag.Structure;
+
+                    if (structure != null)
                     {
-                        double aperture = 0;
-                        double shutterSpeed = 0;
+                        var exif = structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) as SubIFDEntry;
 
-                        DateTime dateTaken;
-
-                        string manufacturer;
-                        string model;
-
-                        reader.GetTagValue(ExifTags.FNumber, out aperture);
-                        reader.GetTagValue(ExifTags.ExposureTime, out shutterSpeed);
-                        reader.GetTagValue(ExifTags.DateTimeOriginal, out dateTaken);
-
-                        reader.GetTagValue(ExifTags.Make, out manufacturer);
-                        reader.GetTagValue(ExifTags.Model, out model);
-
-                        if (dateTaken > DateTime.MinValue)
+                        if (exif != null)
                         {
-                            item.DateCreated = dateTaken;
-                            item.PremiereDate = dateTaken;
-                            item.ProductionYear = dateTaken.Year;
+                            var exifStructure = exif.Structure;
+
+                            if (exifStructure != null)
+                            {
+                                var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
+
+                                if (entry != null)
+                                {
+                                    double val = entry.Value.Numerator;
+                                    val /= entry.Value.Denominator;
+                                    item.Aperture = val;
+                                }
+
+                                entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
+
+                                if (entry != null)
+                                {
+                                    double val = entry.Value.Numerator;
+                                    val /= entry.Value.Denominator;
+                                    item.ShutterSpeed = val;
+                                }
+                            }
                         }
-
-                        var cameraModel = manufacturer ?? string.Empty;
-                        cameraModel += " ";
-                        cameraModel += model ?? string.Empty;
-
-                        var size = _imageProcessor.GetImageSize(item.Path);
-                        var xResolution = size.Width;
-                        var yResolution = size.Height;
-
-                        item.Overview = "Taken " + dateTaken.ToString("F") + "\n" +
-                                        (!string.IsNullOrWhiteSpace(cameraModel) ? "With a " + cameraModel : "") +
-                                        (aperture > 0 && shutterSpeed > 0 ? " at f" + aperture.ToString(CultureInfo.InvariantCulture) + " and " + PhotoHelper.Dec2Frac(shutterSpeed) + "s" : "") + "\n"
-                                        + (xResolution > 0 ? "\n<br/>Resolution: " + xResolution + "x" + yResolution : "");
                     }
+                }
 
-                }
-                catch (Exception e)
+                item.CameraMake = image.ImageTag.Make;
+                item.CameraModel = image.ImageTag.Model;
+
+                var rating = image.ImageTag.Rating;
+                if (rating.HasValue)
                 {
-                    _logger.ErrorException("Image Provider - Error reading image tag for {0}", e, item.Path);
+                    item.CommunityRating = rating;
                 }
+                else
+                {
+                    item.CommunityRating = null;
+                }
+
+                item.Overview = image.ImageTag.Comment;
+
+                if (!string.IsNullOrWhiteSpace(image.ImageTag.Title))
+                {
+                    item.Name = image.ImageTag.Title;
+                }
+
+                var dateTaken = image.ImageTag.DateTime;
+                if (dateTaken.HasValue)
+                {
+                    item.DateCreated = dateTaken.Value;
+                    item.PremiereDate = dateTaken.Value;
+                    item.ProductionYear = dateTaken.Value.Year;
+                }
+
+                item.Genres = image.ImageTag.Genres.ToList();
+                item.Tags = image.ImageTag.Keywords.ToList();
+                item.Software = image.ImageTag.Software;
+
+                if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
+                {
+                    item.Orientation = null;
+                }
+                else
+                {
+                    Model.Drawing.ImageOrientation orientation;
+                    if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
+                    {
+                        item.Orientation = orientation;
+                    }
+                }
+
+                item.ExposureTime = image.ImageTag.ExposureTime;
+                item.FocalLength = image.ImageTag.FocalLength;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Image Provider - Error reading image tag for {0}", e, item.Path);
             }
 
-            //// Get additional tags from xmp
-            //try
-            //{
-            //    using (var fs = new FileStream(item.Path, FileMode.Open, FileAccess.Read))
-            //    {
-            //        var bf = BitmapFrame.Create(fs);
-
-            //        if (bf != null)
-            //        {
-            //            var data = (BitmapMetadata)bf.Metadata;
-            //            if (data != null)
-            //            {
-
-            //                DateTime dateTaken;
-            //                var cameraModel = "";
-
-            //                DateTime.TryParse(data.DateTaken, out dateTaken);
-            //                if (dateTaken > DateTime.MinValue) item.DateCreated = dateTaken;
-            //                cameraModel = data.CameraModel;
-
-            //                item.PremiereDate = dateTaken;
-            //                item.ProductionYear = dateTaken.Year;
-            //                item.Overview = "Taken " + dateTaken.ToString("F") + "\n" +
-            //                                (cameraModel != "" ? "With a " + cameraModel : "") +
-            //                                (aperture > 0 && shutterSpeed > 0 ? " at f" + aperture.ToString(CultureInfo.InvariantCulture) + " and " + PhotoHelper.Dec2Frac(shutterSpeed) + "s" : "") + "\n"
-            //                                + (bf.Width > 0 ? "\n<br/>Resolution: " + (int)bf.Width + "x" + (int)bf.Height : "");
-
-            //                var photo = item as Photo;
-            //                if (data.Keywords != null) item.Genres = photo.Tags = new List<string>(data.Keywords);
-            //                item.Name = !string.IsNullOrWhiteSpace(data.Title) ? data.Title : item.Name;
-            //                item.CommunityRating = data.Rating;
-            //                if (!string.IsNullOrWhiteSpace(data.Subject)) photo.AddTagline(data.Subject);
-            //            }
-            //        }
-
-            //    }
-            //}
-            //catch (NotSupportedException)
-            //{
-            //    // No problem - move on
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.ErrorException("Error trying to read extended data from {0}", e, item.Path);
-            //}
+            var size = _imageProcessor.GetImageSize(item.Path);
+            item.Height = Convert.ToInt32(size.Height);
+            item.Width = Convert.ToInt32(size.Width);
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
             return Task.FromResult(result);
@@ -133,6 +144,13 @@ namespace MediaBrowser.Providers.Photos
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
+            // Moved to plural AlbumArtists
+            if (date < new DateTime(2014, 8, 28))
+            {
+                // Revamped vaptured metadata
+                return true;
+            }
+            
             return item.DateModified > date;
         }
     }

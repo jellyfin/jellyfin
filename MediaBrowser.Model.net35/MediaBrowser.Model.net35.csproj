@@ -250,6 +250,9 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOrientation.cs">
+      <Link>Drawing\ImageOrientation.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
       <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
@@ -301,9 +304,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
-      <Link>Dto\StreamOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
     </Compile>
@@ -315,9 +315,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\UserItemDataDto.cs">
       <Link>Dto\UserItemDataDto.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\VideoStreamOptions.cs">
-      <Link>Dto\VideoStreamOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\BaseItemInfo.cs">
       <Link>Entities\BaseItemInfo.cs</Link>

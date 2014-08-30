@@ -345,7 +345,9 @@ h1 .imageLink {
     }
 
 .page > .ui-content {
-    padding-bottom: 120px;
+
+    /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
+    padding-bottom: 160px;
 }
 
 .dashboardPanelDivider {

@@ -95,6 +95,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
         public override Folder LatestItemsIndexContainer
         {
             get

@@ -749,7 +749,18 @@ namespace MediaBrowser.Controller.Entities
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
-            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newThemeVideos.Select(i =>
+            {
+                var subOptions = new MetadataRefreshOptions(options);
+
+                if (!i.IsThemeMedia)
+                {
+                    i.IsThemeMedia = true;
+                    subOptions.ForceSave = true;
+                }
+
+                return i.RefreshMetadata(subOptions, cancellationToken);
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -768,7 +779,18 @@ namespace MediaBrowser.Controller.Entities
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
-            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newThemeSongs.Select(i =>
+            {
+                var subOptions = new MetadataRefreshOptions(options);
+
+                if (!i.IsThemeMedia)
+                {
+                    i.IsThemeMedia = true;
+                    subOptions.ForceSave = true;
+                }
+
+                return i.RefreshMetadata(subOptions, cancellationToken);
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 

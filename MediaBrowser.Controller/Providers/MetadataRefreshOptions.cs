@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -22,6 +23,18 @@ namespace MediaBrowser.Controller.Providers
         public MetadataRefreshOptions()
         {
             MetadataRefreshMode = MetadataRefreshMode.Default;
+        }
+
+        public MetadataRefreshOptions(MetadataRefreshOptions copy)
+        {
+            MetadataRefreshMode = copy.MetadataRefreshMode;
+            ForceSave = copy.ForceSave;
+            ReplaceAllMetadata = copy.ReplaceAllMetadata;
+
+            ImageRefreshMode = copy.ImageRefreshMode;
+            DirectoryService = copy.DirectoryService;
+            ReplaceAllImages = copy.ReplaceAllImages;
+            ReplaceImages = copy.ReplaceImages.ToList();
         }
     }
 

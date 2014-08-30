@@ -144,7 +144,7 @@
 
     function renderImage(page, item, user) {
 
-        var imageHref = user.Configuration.IsAdministrator ? "edititemimages.html?id=" + item.Id : "";
+        var imageHref = user.Configuration.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
         $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
     }
@@ -365,13 +365,6 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
-        if (item.Type != "Episode" && item.Type != "Movie" && item.Type != "Series" && item.Type != "Season") {
-            var premiereDateElem = $('#itemPremiereDate', page).show();
-            LibraryBrowser.renderPremiereDate(premiereDateElem, item);
-        } else {
-            $('#itemPremiereDate', page).hide();
-        }
-
         LibraryBrowser.renderBudget($('#itemBudget', page), item);
         LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
         LibraryBrowser.renderAwardSummary($('#awardSummary', page), item);
@@ -410,67 +403,80 @@
             $('#artist', page).hide();
         }
 
+        if (item.MediaSources && item.MediaSources.length && item.Path) {
+            $('.audioVideoMediaInfo', page).removeClass('hide');
+        } else {
+            $('.audioVideoMediaInfo', page).addClass('hide');
+        }
+
+        if (item.MediaType == 'Photo') {
+            $('.photoInfo', page).removeClass('hide');
+            renderPhotoInfo(page, item);
+        } else {
+            $('.photoInfo', page).addClass('hide');
+        }
+
         renderTabButtons(page, item);
     }
 
-    function renderTabButtons(page, item) {
+    function renderPhotoInfo(page, item) {
 
-        var tabsHtml = '';
+        var html = '';
+
+        var attributes = [];
+
+        if (item.CameraMake) {
+            attributes.push(createAttribute("Camera make", item.CameraMake));
+        }
+
+        if (item.CameraModel) {
+            attributes.push(createAttribute("Camera model", item.CameraModel));
+        }
+
+        if (item.Software) {
+            attributes.push(createAttribute("Software", item.Software));
+        }
+
+        if (item.ExposureTime) {
+
+            var val = 1 / item.ExposureTime;
+
+            attributes.push(createAttribute("Exposure time", '1/' + val + ' s'));
+        }
+
+        if (item.FocalLength) {
+            attributes.push(createAttribute("Focal length", item.FocalLength.toFixed(1) + ' mm'));
+        }
+
+        if (item.Aperture) {
+            attributes.push(createAttribute("Aperture", 'F' + item.Aperture.toFixed(1)));
+        }
+
+        if (item.ShutterSpeed) {
+            attributes.push(createAttribute("ShutterSpeed", item.ShutterSpeed));
+        }
+
+        if (item.ImageOrientation) {
+            attributes.push(createAttribute("Orientation", item.ImageOrientation));
+        }
+
+        html += attributes.join('<br/>');
+
+        $('.photoInfoContent', page).html(html).trigger('create');
+    }
+
+    function renderTabButtons(page, item) {
 
         var elem = $('.tabDetails', page)[0];
         var text = elem.textContent || elem.innerText;
 
         if (text.trim()) {
-            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioDetails" value="tabDetails">';
-            tabsHtml += '<label for="radioDetails" class="lblDetailTab">Details</label>';
-        }
 
-        if (item.MediaSources && item.MediaSources.length && item.Path) {
-            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioMediaInfo" value="tabMediaInfo">';
-            tabsHtml += '<label for="radioMediaInfo" class="lblDetailTab">Media Info</label>';
-        }
-
-        elem = $('.tabTags', page)[0];
-        text = elem.textContent || elem.innerText;
-
-        if (text.trim()) {
-            tabsHtml += '<input type="radio" name="radioDetailTab" class="radioDetailTab" id="radioTags" value="tabTags">';
-            tabsHtml += '<label for="radioTags" class="lblDetailTab">Tags</label>';
-        }
-
-        if (tabsHtml) {
-
-            tabsHtml = '<div data-role="controlgroup" data-type="horizontal" data-mini="true" class="detailTabs">' + tabsHtml;
-            tabsHtml += '</div>';
-
-            $('.tabButtons', page).html(tabsHtml).trigger('create');
-
-            $('#detailsSection', page).removeClass('hide');
-
-
-            var elems = $('.radioDetailTab', page).on('change', function () {
-
-                $('.detailTab', page).hide();
-                $('.' + this.value, page).show();
-            });
-
-            elems[0].click();
-            $(elems[0]).trigger('change');
+            $('.detailsSection', page).removeClass('hide');
 
         } else {
-            $('#detailsSection', page).addClass('hide');
-
-            $('.tabButtons', page).empty();
+            $('.detailsSection', page).addClass('hide');
         }
-
-        //var elem = $('.detailSectionContent', detailsSection)[0];
-        //var text = elem.textContent || elem.innerText;
-
-        //if (!text.trim()) {
-        //    detailsSection.addClass('hide');
-        //} else {
-        //    detailsSection.removeClass('hide');
-        //}
     }
 
     function getArtistLinksHtml(artists, context) {
@@ -501,7 +507,7 @@
 
         $('.lnkSibling', page).addClass('hide');
 
-        if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio") || item.IndexNumber == null) {
+        if ((item.Type != "Episode" && item.Type != "Season" && item.Type != "Audio" && item.Type != "Photo")) {
             return;
         }
 
@@ -528,7 +534,8 @@
         } else {
             promise = ApiClient.getItems(Dashboard.getCurrentUserId(), {
                 AdjacentTo: item.Id,
-                ParentId: item.ParentId
+                ParentId: item.ParentId,
+                SortBy: 'SortName'
             });
         }
 
@@ -536,19 +543,20 @@
 
         promise.done(function (result) {
 
+            var foundExisting = false;
+
             for (var i = 0, length = result.Items.length; i < length; i++) {
 
                 var curr = result.Items[i];
 
-                if (curr.IndexNumber == null) {
-                    continue;
+                if (curr.Id == item.Id) {
+                    foundExisting = true;
                 }
-
-                if (curr.IndexNumber < item.IndexNumber) {
+                else if (!foundExisting) {
 
                     $('.lnkPreviousItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }
-                else if (curr.IndexNumber > item.IndexNumber) {
+                else {
 
                     $('.lnkNextItem', page).removeClass('hide').attr('href', 'itemdetails.html?id=' + curr.Id + '&context=' + context);
                 }
@@ -1216,7 +1224,7 @@
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1000)) + ' kbps'));
+                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1024)) + ' kbps'));
             }
 
             if (stream.SampleRate) {

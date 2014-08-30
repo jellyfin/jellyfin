@@ -230,7 +230,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (item.IsVideo && response.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
             {
                 var extension = response.ContentType.Split('/')
-                        .Last();
+                        .Last()
+                        .Replace("quicktime", "mov", StringComparison.OrdinalIgnoreCase);
 
                 destination += "." + extension;
             }

@@ -555,14 +555,7 @@
         self.displayContent = function (options) {
 
             // Handle it the same as a remote control command
-            Dashboard.onBrowseCommand({
-
-                ItemName: options.itemName,
-                ItemType: options.itemType,
-                ItemId: options.itemId,
-                Context: options.context
-
-            });
+            Dashboard.onBrowseCommand(options);
         };
 
         self.getItemsForPlayback = function (query) {

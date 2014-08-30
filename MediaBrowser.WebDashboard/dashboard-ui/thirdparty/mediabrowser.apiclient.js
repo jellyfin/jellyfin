@@ -2122,6 +2122,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        function supportsWebP() {
+
+            // TODO: Improve with http://webpjs.appspot.com/
+            return $.browser.chrome || $.browser.android;
+        }
+
         function normalizeImageOptions(options) {
 
             var ratio = window.devicePixelRatio || 1;
@@ -2147,6 +2153,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
+
+            if (supportsWebP()) {
+                options.format = 'webp';
+            }
         }
 
         /**
@@ -2219,6 +2229,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             // Don't put these on the query string
             delete options.type;
             delete options.index;
+
+            if (supportsWebP()) {
+                options.format = 'webp';
+            }
 
             return self.getUrl(url, options);
         };

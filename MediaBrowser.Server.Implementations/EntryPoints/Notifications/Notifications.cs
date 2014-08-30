@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -42,7 +43,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private Timer LibraryUpdateTimer { get; set; }
         private readonly object _libraryChangedSyncLock = new object();
 
-        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost)
+        private readonly IConfigurationManager _config;
+
+        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config)
         {
             _installationManager = installationManager;
             _userManager = userManager;
@@ -52,6 +55,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _appHost = appHost;
+            _config = config;
         }
 
         public void Run()
@@ -160,20 +164,25 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             await SendNotification(notification).ConfigureAwait(false);
         }
 
-         void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
-         {
-             var item = e.MediaInfo;
+        private NotificationOptions GetOptions()
+        {
+            return _config.GetConfiguration<NotificationOptions>("notifications");
+        }
 
-             if (item == null)
-             {
-                 _logger.Warn("PlaybackStart reported with null media info.");
-                 return;
-             }
+        void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        {
+            var item = e.MediaInfo;
 
-             var type = GetPlaybackNotificationType(item.MediaType);
+            if (item == null)
+            {
+                _logger.Warn("PlaybackStart reported with null media info.");
+                return;
+            }
 
-             SendPlaybackNotification(type, e);
-         }
+            var type = GetPlaybackNotificationType(item.MediaType);
+
+            SendPlaybackNotification(type, e);
+        }
 
         void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
@@ -194,20 +203,24 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var user = e.Users.FirstOrDefault();
 
-            var item = e.MediaInfo;
-
-            if (e.Item != null && e.Item.Parent == null)
+            if (user != null && !GetOptions().IsEnabledToMonitorUser(type, user.Id.ToString("N")))
             {
-                // Don't report theme song or local trailer playback
-                // TODO: This will also cause movie specials to not be reported
                 return;
             }
 
+            var item = e.MediaInfo;
+            var themeMedia = item as IThemeMedia;
+
+            if (themeMedia != null && themeMedia.IsThemeMedia)
+            {
+                // Don't report theme song or local trailer playback
+                return;
+            }
+
+
             var notification = new NotificationRequest
             {
-                NotificationType = type,
-
-                ExcludeUserIds = e.Users.Select(i => i.Id.ToString("N")).ToList()
+                NotificationType = type
             };
 
             notification.Variables["ItemName"] = item.Name;

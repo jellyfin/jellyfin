@@ -353,11 +353,9 @@ namespace MediaBrowser.Api.Playback
                 {
                     case EncodingQuality.HighSpeed:
                         crf = "12";
-                        profileScore = 2;
                         break;
                     case EncodingQuality.HighQuality:
                         crf = "8";
-                        profileScore = 1;
                         break;
                     case EncodingQuality.MaxQuality:
                         crf = "4";
@@ -369,10 +367,11 @@ namespace MediaBrowser.Api.Playback
                 if (isVc1)
                 {
                     profileScore++;
-                    // Max of 2
-                    profileScore = Math.Min(profileScore, 2);
                 }
 
+                // Max of 2
+                profileScore = Math.Min(profileScore, 2);
+                
                 // http://www.webmproject.org/docs/encoder-parameters/
                 param = string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1}",
                     profileScore.ToString(UsCulture),
@@ -771,13 +770,31 @@ namespace MediaBrowser.Api.Playback
             return "copy";
         }
 
+        protected virtual bool SupportsThrottling
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Gets the input argument.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected virtual string GetInputArgument(StreamState state)
+        protected string GetInputArgument(StreamState state)
         {
+            if (state.InputProtocol == MediaProtocol.File &&
+               state.RunTimeTicks.HasValue &&
+               state.VideoType == VideoType.VideoFile &&
+               !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
+                {
+                    var url = "http://localhost:8096/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+
+                    return string.Format("\"{0}\"", url);
+                }
+            }
+
             var protocol = state.InputProtocol;
 
             var inputPath = new[] { state.MediaPath };
@@ -1494,6 +1511,7 @@ namespace MediaBrowser.Api.Playback
                 state.MediaPath = mediaSource.Path;
                 state.RunTimeTicks = item.RunTimeTicks;
                 state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+                state.InputBitrate = mediaSource.Bitrate;
                 mediaStreams = mediaSource.MediaStreams;
             }
             else
@@ -1508,6 +1526,7 @@ namespace MediaBrowser.Api.Playback
                 state.MediaPath = mediaSource.Path;
                 state.InputProtocol = mediaSource.Protocol;
                 state.InputContainer = mediaSource.Container;
+                state.InputBitrate = mediaSource.Bitrate;
 
                 if (item is Video)
                 {

@@ -1430,7 +1430,7 @@ namespace MediaBrowser.Api.UserLibrary
                 nextId = list[index + 1].Id;
             }
 
-            return list.Where(i => i.Id == previousId || i.Id == nextId);
+            return list.Where(i => i.Id == previousId || i.Id == nextId || i.Id == adjacentToIdGuid);
         }
 
         /// <summary>

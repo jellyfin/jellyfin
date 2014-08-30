@@ -1,10 +1,10 @@
-﻿using System.Threading;
-using ServiceStack.Web;
+﻿using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -23,6 +23,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private long RangeEnd { get; set; }
         private long RangeLength { get; set; }
         private long TotalContentLength { get; set; }
+
+        public bool Throttle { get; set; }
+        public long ThrottleLimit { get; set; }
 
         /// <summary>
         /// The _options
@@ -159,6 +162,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
+            if (Throttle)
+            {
+                responseStream = new ThrottledStream(responseStream, ThrottleLimit)
+                {
+                    MinThrottlePosition = ThrottleLimit * 180
+                };
+            }
             var task = WriteToAsync(responseStream);
 
             Task.WaitAll(task);

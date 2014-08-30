@@ -35,7 +35,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140612";
+                            return "20140827";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
@@ -49,6 +49,21 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     if (PlatformDetection.IsMac)
                     {
                         if (PlatformDetection.IsX86_64)
+                        {
+                            switch (arg)
+                            {
+                                case "Version":
+                                    return "20140827";
+                                case "FFMpegFilename":
+                                    return "ffmpeg";
+                                case "FFProbeFilename":
+                                    return "ffprobe";
+                                case "ArchiveType":
+                                    return "gz";
+                            }
+                            break;
+                        }
+                        if (PlatformDetection.IsX86)
                         {
                             switch (arg)
                             {
@@ -111,10 +126,19 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             switch (pid)
             {
                 case PlatformID.Win32NT:
+                    if (PlatformDetection.IsX86_64)
+                    {
+                        return new[]
+                        {
+                            "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20140827-git-9e8ab36-win64-static.7z",
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140827-git-9e8ab36-win64-static.7z"
+                        };
+                    }
+
                     return new[]
                     {
-                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140612-git-3a1c895-win32-static.7z",
-                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140612-git-3a1c895-win32-static.7z"
+                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140827-git-9e8ab36-win32-static.7z",
+                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140827-git-9e8ab36-win32-static.7z"
                     };
 
                 case PlatformID.Unix:
@@ -130,7 +154,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                         return new[]
                         {
-                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffprobe-x64-2.2.4.7z"
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.3.3.7z"
                         };
                     }
 

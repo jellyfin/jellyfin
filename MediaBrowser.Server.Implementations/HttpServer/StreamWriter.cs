@@ -36,6 +36,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             get { return _options; }
         }
 
+        public bool Throttle { get; set; }
+        public long ThrottleLimit { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
@@ -77,6 +80,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
+            if (Throttle)
+            {
+                responseStream = new ThrottledStream(responseStream, ThrottleLimit)
+                {
+                    MinThrottlePosition = ThrottleLimit * 180
+                };
+            }
             var task = WriteToAsync(responseStream);
 
             Task.WaitAll(task);
@@ -98,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error streaming media", ex);
+                Logger.ErrorException("Error streaming data", ex);
 
                 throw;
             }
