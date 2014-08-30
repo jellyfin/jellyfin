@@ -362,7 +362,7 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
 
-        public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter)
+        public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter, string requestedId = null)
         {
             var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
             container.SetAttribute("restricted", "0");
@@ -378,6 +378,12 @@ namespace MediaBrowser.Dlna.Didl
             else
             {
                 container.SetAttribute("parentID", parent.Id.ToString("N"));
+            }
+
+            if (requestedId == "0")
+            {
+                container.SetAttribute("id","0");
+                container.SetAttribute("parentID", "-1");
             }
 
             AddCommonFields(folder, container, filter);
