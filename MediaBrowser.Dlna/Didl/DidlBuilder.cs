@@ -362,28 +362,46 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
 
+        public static bool IsIdRoot(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || 
+                
+                string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
+
+                // Samsung sometimes uses 1 as root
+                || string.Equals(id, "1", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter, string requestedId = null)
         {
             var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
             container.SetAttribute("restricted", "0");
             container.SetAttribute("searchable", "1");
             container.SetAttribute("childCount", childCount.ToString(_usCulture));
-            container.SetAttribute("id", folder.Id.ToString("N"));
 
-            var parent = folder.Parent;
-            if (parent == null)
+            if (string.Equals(requestedId, "0"))
             {
-                container.SetAttribute("parentID", "0");
+                container.SetAttribute("id", "0");
+                container.SetAttribute("parentID", "-1");
             }
             else
             {
-                container.SetAttribute("parentID", parent.Id.ToString("N"));
-            }
+                container.SetAttribute("id", folder.Id.ToString("N"));
 
-            if (requestedId == "0")
-            {
-                container.SetAttribute("id","0");
-                container.SetAttribute("parentID", "-1");
+                var parent = folder.Parent;
+                if (parent == null)
+                {
+                    container.SetAttribute("parentID", "0");
+                }
+                else
+                {
+                    container.SetAttribute("parentID", parent.Id.ToString("N"));
+                }
             }
 
             AddCommonFields(folder, container, filter);
