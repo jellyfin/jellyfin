@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Net;
 using ServiceStack;
 using System.Linq;
 
@@ -9,6 +10,7 @@ namespace MediaBrowser.Api.Library
     {
     }
 
+    [Authenticated]
     public class ChapterService : BaseApiService
     {
         private readonly IChapterManager _chapterManager;

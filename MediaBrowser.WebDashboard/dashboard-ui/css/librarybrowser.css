@@ -1,6 +1,6 @@
 ﻿/* Fixes the issue of jqm panels altering the page background. */
 .ui-panel-content-wrap {
-    background: none!important;
+    background: none !important;
 }
 
 .ui-panel fieldset + fieldset {
@@ -12,9 +12,17 @@
     margin-left: .5em;
 }
 
-.backdropPage {
-    background-color: rgba(15, 15,15, .92)!important;
+.libraryPage {
+    background-color: #202020;
 }
+
+.backdropPage {
+    background-color: rgba(15, 15,15, .86) !important;
+}
+
+    .backdropPage:not(.lightBackdropPage) {
+        background-color: rgba(15, 15,15, .94) !important;
+    }
 
 .backdropContainer {
     position: fixed;
@@ -33,7 +41,19 @@
 
 .libraryPage > .ui-content {
     padding-top: 10px;
-    padding-bottom: 120px;
+}
+
+@media all and (max-width: 1200px) {
+
+    .libraryPage > .ui-content {
+        padding-left: .4em !important;
+        padding-right: .4em !important;
+    }
+
+    .detailSection {
+        margin-left: .25em;
+        margin-right: .25em;
+    }
 }
 
 .libraryPage .currentUsername {
@@ -42,8 +62,8 @@
 
 .listHeader {
     margin-top: .7em;
-    margin-bottom: 0;
-    padding-left: 4px;
+    margin-bottom: .15em;
+    padding-left: 2px;
 }
 
 .firstListHeader {
@@ -51,20 +71,7 @@
 }
 
 .ehsContent {
-    padding: 0;
-    border-spacing: 0;
-    border-collapse: collapse;
     margin: 0 auto;
-    max-width: 650px;
-}
-
-    .ehsContent td {
-        padding: 0;
-        border-spacing: 0;
-    }
-
-.squareEhsContent {
-    max-width: 750px;
 }
 
 .homePageSection + .homePageSection {
@@ -78,66 +85,51 @@
     top: 8px;
 }
 
+.viewPanel {
+    width: 250px;
+}
+
+.viewPanelModelOpen {
+    right: 250px !important;
+}
+
+.viewPanelTabs {
+    margin-bottom: 2em;
+}
+
+@media all and (max-width: 800px) {
+
+    .hiddenSectionOnMobile {
+        display: none;
+    }
+}
+
 .firstListHeader + .sectionHeaderButton {
     top: 3px;
-}
-
-@media all and (min-width: 900px) {
-
-    .ehsContent {
-        max-width: 880px;
-    }
-
-    .squareEhsContent {
-        max-width: 750px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .ehsContent {
-        max-width: 905px;
-    }
-
-    .squareEhsContent {
-        max-width: 900px;
-    }
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        max-width: 925px;
-    }
-
-    .squareEhsContent {
-        max-width: 900px;
-    }
-}
-
-@media all and (min-width: 1400px) {
-
-    .ehsContent {
-        max-width: 1240px;
-    }
-
-    .squareEhsContent {
-        max-width: 1240px;
+        width: 1000px;
     }
 }
 
 @media all and (min-width: 1600px) {
 
-    .homeEhsContent {
-        max-width: 1540px;
-    }
-
-    .squareEhsContent {
-        max-width: 1420px;
+    .ehsContent {
+        width: 1280px;
     }
 }
 
-.detailPageContent {
+@media all and (min-width: 1600px) {
+
+    .ehsContent {
+        width: 1500px;
+    }
+}
+
+.detailPageContent, .detailPageContent > table {
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -160,11 +152,11 @@
 }
 
 .viewControls + .listTopPaging {
-    margin-left: .5em!important;
+    margin-left: .5em !important;
 }
 
 .labelPageSize {
-    margin-left: 1em!important;
+    margin-left: 1em !important;
     display: inline !important;
 }
 
@@ -174,7 +166,7 @@
 
 @media all and (max-width: 650px) {
     .pageSizeContainer {
-        display: none!important;
+        display: none !important;
     }
 }
 
@@ -184,9 +176,9 @@
 }
 
     .galleryImageContainer:hover {
-        -moz-box-shadow: 0 0 20px 3px #38c;
-        -webkit-box-shadow: 0 0 20px 3px #38c;
-        box-shadow: 0 0 20px 3px #38c;
+        -moz-box-shadow: 0 0 0 5px #38c;
+        -webkit-box-shadow: 0 0 0 5px #38c;
+        box-shadow: 0 0 0 5px #38c;
     }
 
 .galleryImage {
@@ -310,7 +302,7 @@
 }
 
 .criticRatingSummary {
-    color: #506A16!important;
+    color: #506A16 !important;
     background-color: #F2F0C4;
     background-image: -webkit-gradient(linear,left top,left bottom,from(#FFE37C),to(#F2F0C4));
     background-image: -webkit-linear-gradient(top,#FFE37C,#F2F0C4);
@@ -333,9 +325,9 @@
     padding: 5px 7px;
     font-size: 13px;
     margin: 0 5px 5px 0;
-    color: #fff!important;
+    color: #fff !important;
     text-decoration: none;
-    font-weight: normal!important;
+    font-weight: normal !important;
 }
 
 a.itemTag:hover {
@@ -378,7 +370,7 @@ a.itemTag:hover {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 570px;
+    height: 600px;
     position: relative;
 }
 
@@ -402,13 +394,13 @@ a.itemTag:hover {
     }
 
 .lnkSibling {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 105px;
     text-decoration: none;
-    font-weight: normal!important;
+    font-weight: normal !important;
     display: none;
     background-color: rgba(0,0,0,0.6);
-    color: #ddd!important;
+    color: #ddd !important;
     background-color: transparent;
     padding: 0;
 }
@@ -420,7 +412,7 @@ a.itemTag:hover {
 @media all and (max-width: 1000px) {
 
     .lnkSibling {
-        display: none!important;
+        display: none !important;
     }
 }
 
@@ -453,6 +445,11 @@ a.itemTag:hover {
     box-shadow: 0 0 20px 3px #38c;
 }
 
+.itemByNameImageContainer .itemDetailImage {
+    margin: 0 !important;
+    max-height: 220px;
+}
+
 .parentName {
     font-size: 14px;
     display: block;
@@ -469,18 +466,22 @@ a.itemTag:hover {
 
 .itemOverview {
     text-overflow: ellipsis;
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: .5em;
 }
 
 .desktopOverview {
     min-width: 500px;
-    max-height: 100px;
-    overflow-y: auto;
-    padding-right: 1em;
 }
 
 .mobileOverview {
     display: none;
     padding: 0 1em;
+}
+
+.empty {
+    margin: 0;
 }
 
 .mobileGenres {
@@ -516,35 +517,45 @@ a.itemTag:hover {
     margin-bottom: 2.5em;
 }
 
+.detailCollapsibleSection:not(.hide) + .detailCollapsibleSection {
+    margin-top: -2em;
+}
+
+.detailPageCollabsible {
+    margin-top: 0;
+}
+
+    .detailPageCollabsible .ui-collapsible-heading a {
+        background-color: #141414 !important;
+        font-size: 16px;
+        font-weight: 400 !important;
+        border-radius: 4px;
+        padding-top: .75em;
+        padding-bottom: .75em;
+    }
+
 .detailSectionHeader {
     background-clip: border-box;
-    background-color: rgb(20, 20, 20);
-    border-bottom-color: rgb(31, 31, 31);
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-left-color: rgb(31, 31, 31);
-    border-left-style: solid;
-    border-left-width: 1px;
-    border-right-color: rgb(31, 31, 31);
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-top-color: rgb(31, 31, 31);
-    border-top-style: solid;
-    border-top-width: 1px;
+    background-color: #141414;
     font-size: 16px;
     font-weight: 400;
-    padding: .7em 0 .7em 1em;
+    padding: .75em 0 .75em 1em;
     border-radius: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    position: relative;
+}
+
+.detailSectionHeaderButton {
+    position: absolute;
+    right: 0;
+    top: 7px;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .lblDetailTab {
-    font-size: 14px!important;
-    font-weight: 400!important;
-    font-family: 'Open Sans';
-    padding: .5em 1em;
     border-color: #1f1f1f !important;
 }
 
@@ -574,23 +585,7 @@ a.itemTag:hover {
     }
 
 .mediaBrowserAccent {
-    color: #52B54B!important;
-}
-
-.libraryPanelCollapsibleHeader a {
-    font-size: 16px;
-    font-weight: 300!important;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-}
-
-.selectedLibraryPanelLink {
-    background: #38c!important;
-}
-
-.libraryPanelLink {
-    font-size: 14px;
-    font-weight: 300!important;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    color: #52B54B !important;
 }
 
 .detailImageProgressContainer {
@@ -643,7 +638,7 @@ a.itemTag:hover {
         margin-top: 0;
     }
 
-    .mobileOverview, .mobileGenres, .mobileDetailButtons {
+    .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
         display: block;
     }
 
@@ -656,20 +651,16 @@ a.itemTag:hover {
     }
 
         .inlineItemName + .itemMiscInfo {
-            margin-left: 0!important;
+            margin-left: 0 !important;
             margin-top: 1em;
-            display: block!important;
+            display: block !important;
         }
 
-    .primaryDetailPageContent {
-        margin: 0 1em;
+    .primaryDetailPageContent .userDataIcons {
+        margin-left: 0 !important;
+        margin-top: 1em;
+        display: block;
     }
-
-        .primaryDetailPageContent .userDataIcons {
-            margin-left: 0!important;
-            margin-top: 1.5em;
-            display: block;
-        }
 }
 
 
@@ -684,39 +675,10 @@ a.itemTag:hover {
     }
 }
 
-@media all and (min-width: 1000px) {
-
-    .itemBackdrop {
-        background-size: 100% auto;
-    }
-}
-
 @media all and (min-width: 750px) {
     .detailPageContent {
         max-width: 900px;
         width: auto;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .detailPageContent {
-        max-width: 900px;
-    }
-
-    .primaryDetailPageContent {
-        max-width: 850px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .detailPageContent {
-        max-width: 930px;
-    }
-
-    .primaryDetailPageContent {
-        max-width: 850px;
     }
 }
 
@@ -782,7 +744,7 @@ a.itemTag:hover {
     background: rgba(248, 58, 34, .8);
 }
 
-.unplayedIndicator {
+.playedIndicator {
     display: block;
     position: absolute;
     top: 5px;
@@ -798,7 +760,7 @@ a.itemTag:hover {
     background: rgba(82, 181, 75, .8);
 }
 
-    .unplayedIndicator div:after {
+    .playedIndicator div:after {
         background-color: transparent !important;
     }
 
@@ -846,19 +808,19 @@ a.itemTag:hover {
 }
 
 .scenePosterViewItem img {
-    max-width: 150px!important;
+    max-width: 150px !important;
 }
 
 @media all and (min-width: 650px) {
     .libraryTabs .ui-btn-inner {
-        padding: .5em 15px!important;
+        padding: .5em 15px !important;
     }
 }
 
 @media all and (min-width: 1200px) {
 
     .scenePosterViewItem img {
-        max-width: 200px!important;
+        max-width: 200px !important;
     }
 }
 
@@ -959,7 +921,7 @@ a.itemTag:hover {
     width: 27px;
     z-index: 1000;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
     display: none;
     line-height: 1;
 }
@@ -968,17 +930,16 @@ a.itemTag:hover {
         display: block;
         text-decoration: none;
         padding: 1px 0;
-        color: #bbb!important;
+        font-weight: 500;
     }
 
-        .alphabetPicker a:hover:not(.selectedCharacter) {
-            background: #666!important;
-            color: #fff!important;
+        .alphabetPicker a:not(.selectedCharacter) {
+            color: #bbb !important;
         }
 
+
 .selectedCharacter {
-    color: #fff!important;
-    background: #4d90fe;
+    color: #4d90fe !important;
 }
 
 .itemOverlayContent {
@@ -1014,22 +975,6 @@ a.itemTag:hover {
         margin-right: auto;
     }
 
-.selectionCommandsControlGroup {
-    display: inline-block;
-    margin-left: .5em;
-}
-
-@media all and (min-width: 750px) {
-
-    .lnkSibling:not(.hide) {
-        display: block;
-    }
-
-    .itemBackdrop:not(.noBackdrop) {
-        border-bottom: 1px solid #111;
-    }
-}
-
 @media all and (min-height: 500px) {
 
     .alphabetPicker {
@@ -1037,7 +982,7 @@ a.itemTag:hover {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 15px;
+        margin-right: 20px;
     }
 }
 
@@ -1184,7 +1129,7 @@ a.itemTag:hover {
 @media all and (min-height: 1079px) and (min-width: 1400px) {
 
     .type-home {
-        overflow-x: visible!important;
+        overflow-x: visible !important;
     }
 }
 
@@ -1197,3 +1142,153 @@ a.itemTag:hover {
     .channelHeader a {
         text-decoration: none;
     }
+
+.groupingMenuScroller {
+    max-height: 200px;
+    min-width: 240px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+@media all and (min-width: 400px) {
+
+    .groupingMenuScroller {
+        min-width: 300px;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .groupingMenuScroller {
+        min-width: 400px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .groupingMenuScroller {
+        min-width: 500px;
+    }
+}
+
+@media all and (min-height: 400px) {
+
+    .groupingMenuScroller {
+        max-height: 300px;
+    }
+}
+
+@media all and (min-height: 500px) {
+
+    .groupingMenuScroller {
+        max-height: 400px;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .groupingMenuScroller {
+        max-height: 500px;
+    }
+}
+
+
+.itemsContainer:not(.fullWidthItemsContainer) .itemsListview {
+    max-width: 800px;
+}
+
+.itemsListview {
+    margin: 0 auto !important;
+}
+
+    .itemsListview .ui-li-aside {
+        right: 70px;
+        font-size: 13px;
+        top: 35%;
+        font-weight: 300 !important;
+    }
+
+    .itemsListview .ui-li-count {
+        right: 1em;
+        top: 70%;
+        background: rgba(82, 181, 75, .8);
+        border: 0;
+    }
+
+    .itemsListview .playedIndicator {
+        left: 55px;
+        top: 2px;
+        background: rgba(82, 181, 75, .8);
+    }
+
+.listviewImage {
+    width: 80px;
+    height: 80px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+.listviewIcon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: 70px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+}
+
+.ui-li-has-icon > .ui-btn {
+    padding-left: 5.25em !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+.listItem h3 {
+    font-weight: 400;
+}
+
+.listItem p {
+    font-weight: 300 !important;
+}
+
+.ui-li-has-icon h3 {
+    margin-bottom: 10px !important;
+}
+
+.listItem > .ui-btn + .ui-btn {
+    border: 0 !important;
+    width: 60px !important;
+    height: 90% !important;
+    top: 5% !important;
+    padding-left: 0 !important;
+}
+
+.listItem a:first-child {
+    margin-right: 0 !important;
+    background-color: transparent !important;
+    border-color: #282828 !important;
+}
+
+.listItem a + a {
+    background-color: transparent !important;
+    z-index: 1000;
+}
+
+.listItem:hover a {
+    background-color: #333 !important;
+}
+
+@media all and (max-width: 600px) {
+
+    .itemsListview .ui-li-aside {
+        display: none;
+    }
+}
+
+.tapHoldMenu li a, .playFlyout li a {
+    font-size: 14px;
+}

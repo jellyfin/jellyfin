@@ -1,20 +1,44 @@
-﻿$.ajaxSetup({
-    crossDomain: true,
+﻿(function () {
 
-    error: function (event) {
-        Dashboard.hideLoadingMsg();
+    function onAuthFailure(data, textStatus, xhr) {
 
-        if (!Dashboard.suppressAjaxErrors) {
-            setTimeout(function () {
+        var url = (this.url || '').toLowerCase();
 
+        // Bounce to the login screen, but not if a password entry fails, obviously
+        if (url.indexOf('/password') == -1 &&
+            url.indexOf('/authenticate') == -1 &&
+            !$($.mobile.activePage).is('.standalonePage')) {
 
-                var msg = event.getResponseHeader("X-Application-Error-Code") || Dashboard.defaultErrorMessage;
-
-                Dashboard.showError(msg);
-            }, 500);
+            Dashboard.logout(false);
         }
     }
-});
+
+    $.ajaxSetup({
+        crossDomain: true,
+
+        statusCode: {
+
+            401: onAuthFailure
+        },
+
+        error: function (event) {
+
+            Dashboard.hideLoadingMsg();
+
+            if (!Dashboard.suppressAjaxErrors) {
+                setTimeout(function () {
+
+                    var msg = event.getResponseHeader("X-Application-Error-Code") || Dashboard.defaultErrorMessage;
+                    Dashboard.showError(msg);
+
+                }, 500);
+            }
+        }
+    });
+
+
+
+})();
 
 if ($.browser.msie) {
 
@@ -42,7 +66,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        //$.mobile.popup.prototype.options.transition = "none";
+        $.mobile.popup.prototype.options.transition = "fade";
         $.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
     },
@@ -68,44 +92,48 @@ var Dashboard = {
         }
     },
 
+    getAccessToken: function () {
+
+        return store.getItem('token');
+    },
+
     getCurrentUserId: function () {
 
-        if (!window.localStorage) {
-            return null;
-        }
-
         var autoLoginUserId = getParameterByName('u');
-        var storedUserId = localStorage.getItem("userId");
-        var userId;
+
+        var storedUserId = store.getItem("userId");
 
         if (autoLoginUserId && autoLoginUserId != storedUserId) {
 
-            localStorage.setItem("userId", autoLoginUserId);
-            ApiClient.currentUserId(autoLoginUserId);
+            var token = getParameterByName('t');
+            Dashboard.setCurrentUser(autoLoginUserId, token);
         }
 
         return autoLoginUserId || storedUserId;
     },
 
-    setCurrentUser: function (userId) {
+    setCurrentUser: function (userId, token) {
 
-        if (window.localStorage) {
-            localStorage.setItem("userId", userId);
-        }
+        store.setItem("userId", userId);
+        store.setItem("token", token);
 
-        ApiClient.currentUserId(userId);
+        ApiClient.setCurrentUserId(userId, token);
         Dashboard.getUserPromise = null;
     },
 
-    logout: function () {
+    logout: function (logoutWithServer) {
 
-        if (window.localStorage) {
-            localStorage.removeItem("userId");
+        store.removeItem("userId");
+        store.removeItem("token");
+
+        if (logoutWithServer === false) {
+            window.location = "login.html";
+        } else {
+            ApiClient.logout().done(function () {
+                window.location = "login.html";
+            });
+
         }
-
-        Dashboard.getUserPromise = null;
-        ApiClient.currentUserId(null);
-        window.location = "login.html";
     },
 
     showError: function (message) {
@@ -140,13 +168,14 @@ var Dashboard = {
             return;
         }
 
-        Dashboard.confirmInternal(options.message, options.title || 'Alert', false, options.callback);
+        Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
     },
 
     updateSystemInfo: function (info) {
 
         Dashboard.lastSystemInfo = info;
-        Dashboard.ensureWebSocket(info);
+
+        Dashboard.ensureWebSocket();
 
         if (!Dashboard.initialServerVersion) {
             Dashboard.initialServerVersion = info.Version;
@@ -228,10 +257,10 @@ var Dashboard = {
 
     showServerRestartWarning: function (systemInfo) {
 
-        var html = '<span style="margin-right: 1em;">Please restart to finish updating.</span>';
+        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">Restart</button>';
+            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRestart') + '</button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -244,9 +273,9 @@ var Dashboard = {
 
     showDashboardVersionWarning: function () {
 
-        var html = '<span style="margin-right: 1em;">Please refresh this page to receive new updates from the server.</span>';
+        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
-        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">Refresh</button>';
+        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRefresh') + '</button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -288,7 +317,7 @@ var Dashboard = {
         var onclick = removeOnHide ? "$(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "$(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
 
         if (options.allowHide !== false) {
-            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>Hide</button></span>";
+            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>" + Globalize.translate('ButtonHide') + "</button></span>";
         }
 
         if (options.forceShow) {
@@ -357,17 +386,17 @@ var Dashboard = {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert("Settings saved.");
+        Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
     },
 
     confirmInternal: function (message, title, showCancel, callback) {
 
         $('.confirmFlyout').popup("close").remove();
 
-        var html = '<div data-role="popup" data-transition="slidefade" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
+        var html = '<div data-role="popup" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
 
         html += '<div class="ui-bar-a" style="text-align:center;">';
-        html += '<h3>' + title + '</h3>';
+        html += '<h3 style="padding: 0 1em;">' + title + '</h3>';
         html += '</div>';
 
         html += '<div style="padding: 1em;">';
@@ -376,10 +405,10 @@ var Dashboard = {
         html += message;
         html += '</div>';
 
-        html += '<p><button type="button" data-icon="check" onclick="$(\'.confirmFlyout\')[0].confirm=true;$(\'.confirmFlyout\').popup(\'close\');" data-theme="b">Ok</button></p>';
+        html += '<p><button type="button" data-icon="check" onclick="$(\'.confirmFlyout\')[0].confirm=true;$(\'.confirmFlyout\').popup(\'close\');" data-theme="b">' + Globalize.translate('ButtonOk') + '</button></p>';
 
         if (showCancel) {
-            html += '<p><button type="button" data-icon="delete" onclick="$(\'.confirmFlyout\').popup(\'close\');" data-theme="a">Cancel</button></p>';
+            html += '<p><button type="button" data-icon="delete" onclick="$(\'.confirmFlyout\').popup(\'close\');" data-theme="a">' + Globalize.translate('ButtonCancel') + '</button></p>';
         }
 
         html += '</div>';
@@ -403,10 +432,13 @@ var Dashboard = {
     },
 
     refreshSystemInfoFromServer: function () {
-        ApiClient.getSystemInfo().done(function (info) {
 
-            Dashboard.updateSystemInfo(info);
-        });
+        if (Dashboard.getAccessToken()) {
+            ApiClient.getSystemInfo().done(function (info) {
+
+                Dashboard.updateSystemInfo(info);
+            });
+        }
     },
 
     restartServer: function () {
@@ -428,7 +460,7 @@ var Dashboard = {
     reloadPageWhenServerAvailable: function (retryCount) {
 
         // Don't use apiclient method because we don't want it reporting authentication under the old version
-        $.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
+        ApiClient.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
@@ -460,7 +492,7 @@ var Dashboard = {
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="b">';
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
             html += '<h3>';
 
@@ -480,18 +512,18 @@ var Dashboard = {
 
             html += '<form>';
 
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">My Preferences</button></a>';
-            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">My Profile</button></a>';
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">Sign Out</button></p>';
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="useredit.html?userId=' + user.Id + '" data-icon="user">' + Globalize.translate('ButtonMyProfile') + '</button></a>';
+            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
             html += '</form>';
             html += '</div>';
 
             $(document.body).append(html);
 
-            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
-                $(this).off("panelafterclose").remove();
+                $(this).off("panelclose").remove();
             });
         });
     },
@@ -503,7 +535,7 @@ var Dashboard = {
             var deferred = $.Deferred();
 
             // Don't let this blow up the dashboard when it fails
-            $.ajax({
+            ApiClient.ajax({
                 type: "GET",
                 url: ApiClient.getUrl("Plugins/SecurityInfo"),
                 dataType: 'json',
@@ -568,11 +600,8 @@ var Dashboard = {
 
         if (!sidebar.length) {
 
-            var html = '<div class="content-secondary ui-bar-a toolsSidebar">';
+            var html = '<div class="content-secondary toolsSidebar">';
 
-            //html += '<p class="libraryPanelHeader" style="margin: 25px 0 20px 20px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" style="height:28px;" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
-            html += '<br/>';
-            
             html += '<div class="sidebarLinks">';
 
             var links = Dashboard.getToolsMenuLinks(page);
@@ -608,9 +637,9 @@ var Dashboard = {
             // content-secondary
             html += '</div>';
 
-            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
+            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="a">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
+            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
             for (i = 0, length = links.length; i < length; i++) {
 
@@ -637,7 +666,8 @@ var Dashboard = {
 
             html += '</div>';
 
-            $(page).append(html).trigger('create');
+            $('.content-primary', page).before(html);
+            $(page).trigger('create');
         }
     },
 
@@ -646,66 +676,52 @@ var Dashboard = {
         var pageElem = page[0];
 
         return [{
-            name: "Dashboard",
+            name: Globalize.translate('TabServer'),
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
-            name: "Library",
+            name: Globalize.translate('TabUsers'),
+            href: "userprofiles.html",
+            selected: page.hasClass("userProfilesPage")
+        }, {
+            name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
             selected: page.hasClass("mediaLibraryPage")
         }, {
-            name: "Metadata",
+            name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
             selected: page.hasClass('metadataConfigurationPage')
         }, {
-            name: "Auto-Organize",
+            name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")
         }, {
-            name: "Channels",
-            divider: true,
-            href: "channelsettings.html",
-            selected: page.hasClass("channelSettingsPage")
-        }, {
-            name: "DLNA",
+            name: Globalize.translate('TabDLNA'),
             href: "dlnasettings.html",
             selected: page.hasClass("dlnaPage")
         }, {
-            name: "Live TV",
+            name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage")
         }, {
-            name: "Plugins",
+            name: Globalize.translate('TabPlugins'),
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage")
         }, {
-            name: "Users",
-            divider: true,
-            href: "userprofiles.html",
-            selected: page.hasClass("userProfilesConfigurationPage") || (pageElem.id == "mediaLibraryPage" && getParameterByName('userId'))
-        }, {
-            name: "App Settings",
-            href: "appsplayback.html",
-            selected: page.hasClass("appsPage")
-        }, {
-            name: "Advanced",
+            name: Globalize.translate('TabAdvanced'),
             divider: true,
             href: "advanced.html",
             selected: page.hasClass("advancedConfigurationPage")
         }, {
-            name: "Scheduled Tasks",
-            href: "scheduledtasks.html",
-            selected: pageElem.id == "scheduledTasksPage" || pageElem.id == "scheduledTaskPage"
-        }, {
-            name: "Help",
+            name: Globalize.translate('TabHelp'),
             href: "support.html",
             selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage"
         }];
 
     },
 
-    ensureWebSocket: function (systemInfo) {
+    ensureWebSocket: function () {
 
         if (!("WebSocket" in window)) {
             // Not supported by the browser
@@ -716,20 +732,12 @@ var Dashboard = {
             return;
         }
 
-        systemInfo = systemInfo || Dashboard.lastSystemInfo;
-
         var location = window.location;
 
         var webSocketUrl = "ws://" + location.hostname;
 
-        if (systemInfo.HttpServerPortNumber == systemInfo.WebSocketPortNumber) {
-
-            if (location.port) {
-                webSocketUrl += ':' + location.port;
-            }
-
-        } else {
-            webSocketUrl += ':' + systemInfo.WebSocketPortNumber;
+        if (location.port) {
+            webSocketUrl += ':' + location.port;
         }
 
         ApiClient.openWebSocket(webSocketUrl);
@@ -778,7 +786,7 @@ var Dashboard = {
                         WebNotifications.show(notification);
                     }
                     else {
-                        Dashboard.showFooterNotification({ html: "<b>" + args.Header + ":&nbsp;&nbsp;&nbsp;</b>" + args.Text, timeout: args.TimeoutMs });
+                        Dashboard.showFooterNotification({ html: "<div><b>" + args.Header + "</b></div>" + args.Text, timeout: args.TimeoutMs });
                     }
 
                     break;
@@ -882,22 +890,22 @@ var Dashboard = {
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?genre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?musicgenre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?gamegenre=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?studio=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?person=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?musicartist=" + ApiClient.encodeName(cmd.ItemName);
+            url = "itembynamedetails.html?id=" + cmd.ItemId;
         }
 
         if (url) {
@@ -907,7 +915,7 @@ var Dashboard = {
 
         ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
 
-            Dashboard.navigate(LibraryBrowser.getHref(item));
+            Dashboard.navigate(LibraryBrowser.getHref(item, null, ''));
 
         });
 
@@ -933,16 +941,16 @@ var Dashboard = {
         html += '<span style="margin-right: 1em;">';
 
         if (status == 'completed') {
-            html += installation.Name + ' ' + installation.Version + ' installation completed';
+            html += Globalize.translate('LabelPackageInstallCompleted').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'cancelled') {
-            html += installation.Name + ' ' + installation.Version + ' installation was cancelled';
+            html += Globalize.translate('LabelPackageInstallCancelled').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'failed') {
-            html += installation.Name + ' ' + installation.Version + ' installation failed';
+            html += Globalize.translate('LabelPackageInstallFailed').replace('{0}', installation.Name + ' ' + installation.Version);
         }
         else if (status == 'progress') {
-            html += 'Installing ' + installation.Name + ' ' + installation.Version;
+            html += Globalize.translate('LabelInstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
         }
 
         html += '</span>';
@@ -957,7 +965,7 @@ var Dashboard = {
 
             if (percentComplete < 100) {
                 var btnId = "btnCancel" + installation.Id;
-                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">Cancel</button>';
+                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonCancel') + '</button>';
             }
         }
 
@@ -1087,54 +1095,6 @@ var Dashboard = {
         return parts.join(':');
     },
 
-    ratePackage: function (link) {
-        var id = link.getAttribute('data-id');
-        var name = link.getAttribute('data-name');
-        var rating = link.getAttribute('data-rating');
-
-        var dialog = new RatingDialog($.mobile.activePage);
-        dialog.show({
-            header: "Rate and review " + name,
-            id: id,
-            rating: rating,
-            callback: function (review) {
-                console.log(review);
-                dialog.close();
-
-                ApiClient.createPackageReview(review).done(function () {
-                    Dashboard.alert({
-                        message: "Thank you for your review",
-                        title: "Thank You"
-                    });
-                });
-            }
-        });
-    },
-
-    getStoreRatingHtml: function (rating, id, name, noLinks) {
-
-        var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block; vertical-align:middle;'>";
-        if (!rating) rating = 0;
-
-        for (var i = 1; i <= 5; i++) {
-            var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
-
-            html += noLinks ? "" : "<span data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='Dashboard.ratePackage(this);return false;' >";
-            if (rating <= i - 1) {
-                html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
-            } else if (rating < i) {
-                html += "<div class='storeStarRating halfStarRating' title='" + title + "'></div>";
-            } else {
-                html += "<div class='storeStarRating' title='" + title + "'></div>";
-            }
-            html += noLinks ? "" : "</span>";
-        }
-
-        html += "</div>";
-
-        return html;
-    },
-
     populateLanguages: function (select, languages) {
 
         var html = "";
@@ -1190,81 +1150,83 @@ var Dashboard = {
     }
 };
 
-if (!window.WebSocket) {
+(function () {
 
-    alert("This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
-}
+    if (!window.WebSocket) {
 
-else if (!IsStorageEnabled()) {
-    alert("This browser does not support local storage or is running in private mode. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.");
-}
+        alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
+    }
 
+    window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
 
-var ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
+    $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
+        .on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
-$(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened).on("websocketmessage", Dashboard.onWebSocketMessageReceived);
+    ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+
+})();
 
 
 $(function () {
 
-    ApiClient.currentUserId(Dashboard.getCurrentUserId());
-
     var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
-    videoPlayerHtml += '<div id="videoBackdrop">';
+    videoPlayerHtml += '<div class="videoBackdrop">';
     videoPlayerHtml += '<div id="videoPlayer">';
-    videoPlayerHtml += '<div id="videoElement">';
 
+    videoPlayerHtml += '<div id="videoElement">';
     videoPlayerHtml += '<div id="play" class="status"></div>';
     videoPlayerHtml += '<div id="pause" class="status"></div>';
-
     videoPlayerHtml += '</div>';
 
+    videoPlayerHtml += '<div class="videoTopControls hiddenOnIdle">';
+    videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
+    videoPlayerHtml += '<div class="videoAdvancedControls">';
+
+    videoPlayerHtml += '<button class="imageButton mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+
+    videoPlayerHtml += '<button class="imageButton mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonScenes') + '</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonQuality') + '</button>';
+    videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+
+    videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
+
+    videoPlayerHtml += '</div>'; // videoAdvancedControls
+    videoPlayerHtml += '</div>'; // videoTopControls
+
     // Create controls
-    videoPlayerHtml += '<div id="videoControls" class="videoControls">';
+    videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
+
+    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
+    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
+    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
+    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
 
     videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div id="video-basic-controls">';
+    videoPlayerHtml += '<div class="currentTime">--:--</div>';
 
-    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">Previous Track</button>';
-    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">Play</button>';
-    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">Pause</button>';
-
-    videoPlayerHtml += '<button id="video-stopButton" class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="stop" data-iconpos="notext" data-inline="true">Stop</button>';
-    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">Next Track</button>';
-
-    videoPlayerHtml += '<div class="currentTime"></div>';
+    videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
     videoPlayerHtml += '<div class="nowPlayingImage"></div>';
     videoPlayerHtml += '<div class="nowPlayingText"></div>';
+    videoPlayerHtml += '</div>'; // nowPlayingInfo
 
-    videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">Mute</button>';
-    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">Unmute</button>';
+    videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
+    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
 
     videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
     videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
     videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '</div>'; // video-basic-controls
-    videoPlayerHtml += '<div id="video-advanced-controls">';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showQualityFlyout();" id="video-qualityButton" class="mediaButton qualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">Quality</button>';
-    videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-qualityFlyout" style="display:none;" class="mediaPlayerFlyout"></div></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showAudioTracksFlyout();" id="video-audioTracksButton" class="imageButton mediaButton audioTracksButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">Audio Tracks</button>';
-    videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-audioTracksFlyout" style="display:none;" class="mediaPlayerFlyout audioTracksFlyout"></div></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showSubtitleMenu();" id="video-subtitleButton" class="imageButton mediaButton subtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">Subtitles</button>';
-    videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-subtitleFlyout" style="display:none;" class="mediaPlayerFlyout subtitleFlyout"></div></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.showChaptersFlyout();" id="video-chaptersButton" class="mediaButton chaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">Scenes</button>';
-    videoPlayerHtml += '<div class="mediaFlyoutContainer"><div id="video-chaptersFlyout" style="display:none;" class="mediaPlayerFlyout chaptersFlyout"></div></div>';
-
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">Fullscreen</button>';
-
-    videoPlayerHtml += '</div>'; // video-advanced-controls
+    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
 
     videoPlayerHtml += '</div>'; // videoControls
 
@@ -1296,6 +1258,14 @@ $(function () {
             ApiClient.closeWebSocket();
         }
     });
+
+    $(document).on('contextmenu', '.ui-popup-screen', function (e) {
+
+        $('.ui-popup').popup('close');
+
+        e.preventDefault();
+        return false;
+    });
 });
 
 Dashboard.jQueryMobileInit();
@@ -1304,15 +1274,13 @@ $(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 
-    var userId = Dashboard.getCurrentUserId();
-    ApiClient.currentUserId(userId);
-
-    if (userId) {
+    if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
 
         Dashboard.getCurrentUser().done(function (user) {
 
             if (!user.Configuration.IsAdministrator && page.hasClass('type-interior') && !page.hasClass('publicUserPage')) {
                 window.location.replace("index.html");
+                return;
             }
 
             Dashboard.ensureToolsMenu(page, user);

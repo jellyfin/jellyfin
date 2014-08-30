@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Thumb";
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'List');
 
     // The base query options
     var query = {
@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "SeriesInfo,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -29,12 +29,20 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
             if (view == "Thumb") {
-                
+
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
@@ -42,7 +50,7 @@
                     context: 'tv',
                     lazy: true
                 });
-                
+
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Banner") {
@@ -56,35 +64,32 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
-            else if (view == "Poster") {
+            else if (view == "List") {
 
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'tv',
+                    sortBy: query.SortBy
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else {
+
+                // Poster
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    showTitle: true,
+                    showTitle: false,
                     centerText: true,
                     lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
-            else if (view == "Timeline") {
-                
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
-                    timeline: true,
-                    showTitle: true,
-                    lazy: true
-                });
 
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
-            }
+            html += pagingHtml;
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
-
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -93,12 +98,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -163,6 +162,7 @@
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#tvShowsPage", function () {
@@ -341,6 +341,12 @@
             query.StartIndex = 0;
             query.IsYearMismatched = this.checked ? true : null;
 
+            reloadItems(page);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

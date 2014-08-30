@@ -98,7 +98,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.FormatName = mediaInfo.Format;
             audio.TotalBitrate = mediaInfo.TotalBitrate;
-            audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.Video);
+            audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.EmbeddedImage);
 
             if (data.streams != null)
             {

@@ -10,14 +10,37 @@
 
         }).checkboxradio('refresh');
         
-        $('#chkAllowUpscaling', page).checked(config.AllowVideoUpscaling).checkboxradio("refresh");
-
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
+        $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
 
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#encodingSettingsPage", function () {
+    $(document).on('pageinit', "#encodingSettingsPage", function () {
+
+        var page = this;
+
+        $('#btnSelectTranscodingTempPath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtTranscodingTempPath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: Globalize.translate('HeaderSelectTranscodingPath'),
+
+                instruction: Globalize.translate('HeaderSelectTranscodingPathHelp')
+            });
+        });
+
+    }).on('pageshow', "#encodingSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -40,10 +63,10 @@
 
             ApiClient.getServerConfiguration().done(function (config) {
 
-                config.AllowVideoUpscaling = $('#chkAllowUpscaling', form).checked();
                 config.EnableDebugEncodingLogging = $('#chkEnableDebugEncodingLogging', form).checked();
                 config.MediaEncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
+                config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

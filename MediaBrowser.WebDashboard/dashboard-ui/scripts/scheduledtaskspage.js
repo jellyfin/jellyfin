@@ -53,15 +53,15 @@
 
             if (task.State == "Idle") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play'>Start</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play'>" + Globalize.translate('ButtonStart') + "</a>";
             }
             else if (task.State == "Running") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='stop'>Stop</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='stop'>" + Globalize.translate('ButtonStop') + "</a>";
 
             } else {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play' style='display:none;'>Start</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play' style='display:none;'>" + Globalize.translate('ButtonStart') + "</a>";
             }
 
             html += "</a>";
@@ -143,19 +143,19 @@
 
         if (state == "Idle") {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", "Start");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", Globalize.translate('ButtonStart'));
 
             elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
         }
         else if (state == "Running") {
 
-            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", "Stop");
+            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", Globalize.translate('ButtonStop'));
 
             elem.removeClass('ui-icon-play').addClass('ui-icon-stop');
 
         } else {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", "Start");
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", Globalize.translate('ButtonStart'));
 
             elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
         }

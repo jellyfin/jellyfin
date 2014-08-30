@@ -58,7 +58,7 @@
 
     function loadPage(page, config) {
 
-        var tvOptions = config.TvFileOrganizationOptions;
+        var tvOptions = config.TvOptions;
 
         $('#chkEnableTvSorting', page).checked(tvOptions.IsEnabled).checkboxradio('refresh');
         $('#chkOverwriteExistingEpisodes', page).checked(tvOptions.OverwriteExistingEpisodes).checkboxradio('refresh');
@@ -124,7 +124,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
             loadPage(page, config);
         });
     });
@@ -135,9 +135,9 @@
 
             var form = this;
 
-            ApiClient.getServerConfiguration().done(function (config) {
+            ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
                 
-                var tvOptions = config.TvFileOrganizationOptions;
+                var tvOptions = config.TvOptions;
 
                 tvOptions.IsEnabled = $('#chkEnableTvSorting', form).checked();
                 tvOptions.OverwriteExistingEpisodes = $('#chkOverwriteExistingEpisodes', form).checked();
@@ -157,7 +157,7 @@
 
 				tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+				ApiClient.updateNamedConfiguration('autoorganize', config).done(Dashboard.processServerConfigurationUpdateResult);
             });
 
             return false;

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Model.Themes;
 using ServiceStack;
@@ -47,6 +48,7 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Authenticated]
     public class AppThemeService : BaseApiService
     {
         private readonly IAppThemeManager _themeManager;
@@ -92,7 +94,7 @@ namespace MediaBrowser.Api
 
             var contentType = MimeTypes.GetMimeType(info.Path);
 
-            return ToCachedResult(cacheGuid, info.DateModified, cacheDuration, () => _fileSystem.GetFileStream(info.Path, FileMode.Open, FileAccess.Read, FileShare.Read), contentType);
+            return ResultFactory.GetCachedResult(Request, cacheGuid, null, cacheDuration, () => _fileSystem.GetFileStream(info.Path, FileMode.Open, FileAccess.Read, FileShare.Read), contentType);
         }
     }
 }

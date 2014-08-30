@@ -52,7 +52,7 @@
 
         var url = 'Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + id;
 
-        $.ajax({
+        ApiClient.ajax({
 
             type: "POST",
             url: ApiClient.getUrl(url)
@@ -75,7 +75,7 @@
 
                 var url = 'Videos/' + currentItem.Id + '/Subtitles/' + index;
 
-                $.ajax({
+                ApiClient.ajax({
 
                     type: "DELETE",
                     url: ApiClient.getUrl(url)
@@ -257,7 +257,7 @@
 
         var url = ApiClient.getUrl('Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + language);
 
-        $.getJSON(url).done(function (results) {
+        ApiClient.getJSON(url).done(function (results) {
 
             renderSearchResults(page, results);
         });

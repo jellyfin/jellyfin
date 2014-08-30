@@ -1,19 +1,4 @@
-﻿function IsStorageEnabled() {
-
-    if (!window.localStorage) {
-        return false;
-    }
-    try {
-        window.localStorage.setItem("__test", "data");
-    } catch (err) {
-        if ((err.name).toUpperCase() == 'QUOTA_EXCEEDED_ERR') {
-            return false;
-        }
-    }
-    return true;
-}
-
-function htmlEncode(value) {
+﻿function htmlEncode(value) {
     //create a in-memory div, set it's inner text(which jQuery automatically encodes)
     //then grab the encoded contents back out.  The div never exists on the page.
     return $('<div/>').text(value).html();
@@ -110,7 +95,7 @@ var WebNotifications = {
                 });
             }
         }
-        
+
         else if (window.webkitNotifications) {
             if (!webkitNotifications.checkPermission()) {
                 var notif = webkitNotifications.createNotification(data.icon, data.title, data.body);
@@ -279,7 +264,7 @@ function replaceQueryString(url, param, value) {
     if (url.match(re))
         return url.replace(re, '$1' + param + "=" + value + '$2');
     else {
-        
+
         if (url.indexOf('?') == -1) {
             return url + '?' + param + "=" + value;
         }
@@ -345,7 +330,7 @@ function parseISO8601Date(s, options) {
     }
 
     return new Date(ms);
-};
+}
 
 // jqm.page.params.js - version 0.1
 // Copyright (c) 2011, Kin Blas
@@ -532,5 +517,45 @@ function ticks_to_human(str) {
 
         }
     };
+
+})(window);
+
+(function (window) {
+
+    function myStore(defaultObject) {
+
+        var self = this;
+        self.localData = {};
+
+        self.setItem = function (name, value) {
+
+            if (defaultObject) {
+                defaultObject.setItem(name, value);
+            } else {
+                self.localData[name] = value;
+            }
+        };
+
+        self.getItem = function (name) {
+
+            if (defaultObject) {
+                return defaultObject.getItem(name);
+            }
+
+            return self.localData[name];
+        };
+
+        self.removeItem = function (name) {
+
+            if (defaultObject) {
+                defaultObject.removeItem(name);
+            } else {
+                self.localData[name] = null;
+            }
+        };
+    }
+
+    window.store = new myStore(window.localStorage);
+    window.sessionStore = new myStore(window.sessionStorage);
 
 })(window);

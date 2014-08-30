@@ -37,11 +37,14 @@ namespace MediaBrowser.Api
 
         private readonly ISessionManager _sessionManager;
 
+        public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="appPaths">The application paths.</param>
+        /// <param name="sessionManager">The session manager.</param>
         public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths, ISessionManager sessionManager)
         {
             Logger = logger;
@@ -99,7 +102,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, true));
+            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, path => true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -119,14 +122,12 @@ namespace MediaBrowser.Api
         /// <param name="path">The path.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
-        /// <param name="startTimeTicks">The start time ticks.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="state">The state.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         public void OnTranscodeBeginning(string path,
             TranscodingJobType type,
             Process process,
-            long? startTimeTicks,
             string deviceId,
             StreamState state,
             CancellationTokenSource cancellationTokenSource)
@@ -139,7 +140,6 @@ namespace MediaBrowser.Api
                     Path = path,
                     Process = process,
                     ActiveRequestCount = 1,
-                    StartTimeTicks = startTimeTicks,
                     DeviceId = deviceId,
                     CancellationTokenSource = cancellationTokenSource
                 });
@@ -215,9 +215,14 @@ namespace MediaBrowser.Api
         /// <returns><c>true</c> if [has active transcoding job] [the specified path]; otherwise, <c>false</c>.</returns>
         public bool HasActiveTranscodingJob(string path, TranscodingJobType type)
         {
+            return GetTranscodingJob(path, type) != null;
+        }
+
+        public TranscodingJob GetTranscodingJob(string path, TranscodingJobType type)
+        {
             lock (_activeTranscodingJobs)
             {
-                return _activeTranscodingJobs.Any(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -290,34 +295,70 @@ namespace MediaBrowser.Api
         {
             var job = (TranscodingJob)state;
 
-            KillTranscodingJob(job, true);
+            KillTranscodingJob(job, path => true);
         }
 
         /// <summary>
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
-        /// <param name="deleteFiles">if set to <c>true</c> [delete files].</param>
+        /// <param name="deleteFiles">The delete files.</param>
+        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">deviceId</exception>
         /// <exception cref="System.ArgumentNullException">sourcePath</exception>
-        internal void KillTranscodingJobs(string deviceId, bool deleteFiles)
+        internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException("deviceId");
             }
 
+            return KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles, acquireLock);
+        }
+
+        /// <summary>
+        /// Kills the transcoding jobs.
+        /// </summary>
+        /// <param name="killJob">The kill job.</param>
+        /// <param name="deleteFiles">The delete files.</param>
+        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">deviceId</exception>
+        internal async Task KillTranscodingJobs(Func<TranscodingJob,bool> killJob, Func<string, bool> deleteFiles, bool acquireLock)
+        {
             var jobs = new List<TranscodingJob>();
 
             lock (_activeTranscodingJobs)
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs.AddRange(_activeTranscodingJobs.Where(i => string.Equals(deviceId, i.DeviceId, StringComparison.OrdinalIgnoreCase)));
+                jobs.AddRange(_activeTranscodingJobs.Where(killJob));
             }
 
-            foreach (var job in jobs)
+            if (jobs.Count == 0)
             {
-                KillTranscodingJob(job, deleteFiles);
+                return;
+            }
+
+            if (acquireLock)
+            {
+                await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+
+            try
+            {
+                foreach (var job in jobs)
+                {
+                    KillTranscodingJob(job, deleteFiles);
+                }
+            }
+            finally
+            {
+                if (acquireLock)
+                {
+                    TranscodingStartLock.Release();
+                }
             }
         }
 
@@ -325,8 +366,8 @@ namespace MediaBrowser.Api
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
-        /// <param name="deleteFiles">if set to <c>true</c> [delete files].</param>
-        private void KillTranscodingJob(TranscodingJob job, bool deleteFiles)
+        /// <param name="delete">The delete.</param>
+        private void KillTranscodingJob(TranscodingJob job, Func<string, bool> delete)
         {
             lock (_activeTranscodingJobs)
             {
@@ -378,7 +419,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            if (deleteFiles)
+            if (delete(job.Path))
             {
                 DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
             }
@@ -386,7 +427,7 @@ namespace MediaBrowser.Api
 
         private async void DeletePartialStreamFiles(string path, TranscodingJobType jobType, int retryCount, int delayMs)
         {
-            if (retryCount >= 8)
+            if (retryCount >= 10)
             {
                 return;
             }
@@ -440,6 +481,8 @@ namespace MediaBrowser.Api
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList();
 
+            Exception e = null;
+
             foreach (var file in filesToDelete)
             {
                 try
@@ -449,8 +492,14 @@ namespace MediaBrowser.Api
                 }
                 catch (IOException ex)
                 {
+                    e = ex;
                     Logger.ErrorException("Error deleting HLS file {0}", ex, file);
                 }
+            }
+
+            if (e != null)
+            {
+                throw e;
             }
         }
     }
@@ -486,12 +535,13 @@ namespace MediaBrowser.Api
         /// <value>The kill timer.</value>
         public Timer KillTimer { get; set; }
 
-        public long? StartTimeTicks { get; set; }
         public string DeviceId { get; set; }
 
         public CancellationTokenSource CancellationTokenSource { get; set; }
 
         public object ProcessLock = new object();
+
+        public bool HasExited { get; set; }
     }
 
     /// <summary>

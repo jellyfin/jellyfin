@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
 
     // The base query options
     var query = {
@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -29,7 +29,16 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                addSelectionButton: true
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -40,7 +49,8 @@
                     preferThumb: true,
                     context: 'movies',
                     selectionPanel: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -55,15 +65,25 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'movies',
+                    sortBy: query.SortBy
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    showTitle: true,
+                    showTitle: false,
                     centerText: true,
                     selectionPanel: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -81,9 +101,9 @@
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -92,12 +112,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -154,10 +168,10 @@
 
         $('#chkMissingImdbId', page).checked(query.HasImdbId == false).checkboxradio('refresh');
         $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false).checkboxradio('refresh');
-        $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#moviesPage", function () {
@@ -342,14 +356,6 @@
             reloadItems(page);
         });
 
-        $('#chkMissingOverview', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.HasOverview = this.checked ? false : null;
-
-            reloadItems(page);
-        });
-
         $('#chkYearMismatch', this).on('change', function () {
 
             query.StartIndex = 0;
@@ -362,6 +368,12 @@
 
             reloadItems(page);
 
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
         });
 
     }).on('pagebeforeshow', "#moviesPage", function () {

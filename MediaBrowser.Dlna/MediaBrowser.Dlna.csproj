@@ -51,13 +51,18 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Channels\DlnaChannelFactory.cs" />
+    <Compile Include="ConfigurationExtension.cs" />
     <Compile Include="ConnectionManager\ConnectionManager.cs" />
     <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />
     <Compile Include="ConnectionManager\ControlHandler.cs" />
     <Compile Include="ConnectionManager\ServiceActionListBuilder.cs" />
+    <Compile Include="ContentDirectory\ContentDirectoryBrowser.cs" />
+    <Compile Include="Didl\Filter.cs" />
     <Compile Include="DlnaManager.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Eventing\EventManager.cs" />
+    <Compile Include="Eventing\EventSubscription.cs" />
     <Compile Include="Main\DlnaEntryPoint.cs" />
     <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
     <Compile Include="PlayTo\Device.cs">
@@ -68,7 +73,9 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
-    <Compile Include="PlayTo\Extensions.cs" />
+    <Compile Include="Profiles\DirectTvProfile.cs" />
+    <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
+    <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
     <Compile Include="PlayTo\PlaybackStoppedEventArgs.cs" />
     <Compile Include="PlayTo\PlaylistItem.cs">
@@ -79,6 +86,7 @@
     <Compile Include="Common\ServiceAction.cs" />
     <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
     <Compile Include="PlayTo\uParserObject.cs" />
+    <Compile Include="Profiles\AndroidProfile.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
@@ -94,6 +102,7 @@
     <Compile Include="Service\ServiceXmlBuilder.cs" />
     <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
+    <Compile Include="Ssdp\DeviceDiscovery.cs" />
     <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="Common\StateVariable.cs" />
@@ -170,6 +179,18 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Android.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Windows 8 RT.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Windows Phone.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\logo240.jpg" />
+    <EmbeddedResource Include="Images\logo240.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

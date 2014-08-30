@@ -1,15 +1,26 @@
 ﻿using MediaBrowser.Model.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Common.Configuration
 {
     public interface IConfigurationManager
     {
         /// <summary>
+        /// Occurs when [configuration updating].
+        /// </summary>
+        event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdating;
+
+        /// <summary>
         /// Occurs when [configuration updated].
         /// </summary>
         event EventHandler<EventArgs> ConfigurationUpdated;
-        
+
+        /// <summary>
+        /// Occurs when [named configuration updated].
+        /// </summary>
+        event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
+
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -32,5 +43,40 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
         void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration);
+
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>System.Object.</returns>
+        object GetConfiguration(string key);
+
+        /// <summary>
+        /// Gets the type of the configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>Type.</returns>
+        Type GetConfigurationType(string key);
+
+        /// <summary>
+        /// Saves the configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="configuration">The configuration.</param>
+        void SaveConfiguration(string key, object configuration);
+
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        void AddParts(IEnumerable<IConfigurationFactory> factories);
+    }
+
+    public static class ConfigurationManagerExtensions
+    {
+        public static T GetConfiguration<T>(this IConfigurationManager manager, string key)
+        {
+            return (T)manager.GetConfiguration(key);
+        }
     }
 }

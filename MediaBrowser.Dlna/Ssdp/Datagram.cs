@@ -69,7 +69,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error sending Datagram: " + Message, ex);
+                _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
             }
             ++SendCount;
         }

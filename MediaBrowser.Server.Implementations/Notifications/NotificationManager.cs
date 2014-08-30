@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Notifications;
 using System;
@@ -30,16 +30,20 @@ namespace MediaBrowser.Server.Implementations.Notifications
             _logger = logManager.GetLogger(GetType().Name);
         }
 
+        private NotificationOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<NotificationOptions>("notifications");
+        }
+
         public Task SendNotification(NotificationRequest request, CancellationToken cancellationToken)
         {
             var notificationType = request.NotificationType;
 
             var options = string.IsNullOrWhiteSpace(notificationType) ?
                 null :
-                _config.Configuration.NotificationOptions.GetOptions(notificationType);
+                GetConfiguration().GetOptions(notificationType);
 
             var users = GetUserIds(request, options)
-                .Except(request.ExcludeUserIds)
                 .Select(i => _userManager.GetUserById(new Guid(i)));
 
             var title = GetTitle(request, options);
@@ -87,8 +91,11 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             if (options != null && !string.IsNullOrWhiteSpace(request.NotificationType))
             {
-                return _userManager.Users.Where(i => _config.Configuration.NotificationOptions.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
-                   .Select(i => i.Id.ToString("N"));
+                var config = GetConfiguration();
+
+                return _userManager.Users
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Configuration))
+                    .Select(i => i.Id.ToString("N"));
             }
 
             return request.UserIds;
@@ -223,7 +230,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
         private bool IsEnabled(INotificationService service, string notificationType)
         {
             return string.IsNullOrEmpty(notificationType) ||
-                _config.Configuration.NotificationOptions.IsServiceEnabled(service.Name, notificationType);
+                GetConfiguration().IsServiceEnabled(service.Name, notificationType);
         }
 
         public void AddParts(IEnumerable<INotificationService> services, IEnumerable<INotificationTypeFactory> notificationTypeFactories)
@@ -248,9 +255,11 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             }).SelectMany(i => i).ToList();
 
+            var config = GetConfiguration();
+
             foreach (var i in list)
             {
-                i.Enabled = _config.Configuration.NotificationOptions.IsEnabled(i.Type);
+                i.Enabled = config.IsEnabled(i.Type);
             }
 
             return list;

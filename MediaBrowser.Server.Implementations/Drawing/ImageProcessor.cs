@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using Imazen.WebP;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -118,26 +119,27 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
+            var file = await ProcessImage(options).ConfigureAwait(false);
+
+            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            {
+                await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
+            }
+        }
+
+        public async Task<string> ProcessImage(ImageProcessingOptions options)
+        {
             if (options == null)
             {
                 throw new ArgumentNullException("options");
             }
 
-            if (toStream == null)
-            {
-                throw new ArgumentNullException("toStream");
-            }
-
             var originalImagePath = options.Image.Path;
 
-            if (options.HasDefaultOptions() && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
+            if (options.HasDefaultOptions(originalImagePath) && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
                 // Just spit out the original file if all the options are default
-                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
-                {
-                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-                    return;
-                }
+                return originalImagePath;
             }
 
             var dateModified = options.Image.DateModified;
@@ -163,32 +165,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
 
-            if (options.HasDefaultOptionsWithoutSize() && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
+            if (options.HasDefaultOptionsWithoutSize(originalImagePath) && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
             {
                 // Just spit out the original file if the new size equals the old
-                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
-                {
-                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-                    return;
-                }
+                return originalImagePath;
             }
 
             var quality = options.Quality ?? 90;
 
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
-
-            try
-            {
-                using (var fileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
-                {
-                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-                    return;
-                }
-            }
-            catch (IOException)
-            {
-                // Cache file doesn't exist or is currently being written to
-            }
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -197,16 +182,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             // Check again in case of lock contention
             try
             {
-                using (var fileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                if (File.Exists(cacheFilePath))
                 {
-                    await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
                     semaphore.Release();
-                    return;
+                    return cacheFilePath;
                 }
-            }
-            catch (IOException)
-            {
-                // Cache file doesn't exist or is currently being written to
             }
             catch
             {
@@ -217,37 +197,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             try
             {
                 var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed.HasValue;
-
-                //if (!hasPostProcessing)
-                //{
-                //    using (var outputStream = await _mediaEncoder.EncodeImage(new ImageEncodingOptions
-                //    {
-                //        InputPath = originalImagePath,
-                //        MaxHeight = options.MaxHeight,
-                //        MaxWidth = options.MaxWidth,
-                //        Height = options.Height,
-                //        Width = options.Width,
-                //        Quality = options.Quality,
-                //        Format = options.OutputFormat == ImageOutputFormat.Original ? Path.GetExtension(originalImagePath).TrimStart('.') : options.OutputFormat.ToString().ToLower()
-
-                //    }, CancellationToken.None).ConfigureAwait(false))
-                //    {
-                //        using (var outputMemoryStream = new MemoryStream())
-                //        {
-                //            // Save to the memory stream
-                //            await outputStream.CopyToAsync(outputMemoryStream).ConfigureAwait(false);
-
-                //            var bytes = outputMemoryStream.ToArray();
-
-                //            await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-
-                //            // kick off a task to cache the result
-                //            await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
-                //        }
-
-                //        return;
-                //    }
-                //}
 
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
@@ -262,7 +211,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newHeight = Convert.ToInt32(newSize.Height);
 
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                            using (var thumbnail = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppPArgb))
+                            // Also, Webp only supports Format32bppArgb and Format32bppRgb
+                            var pixelFormat = options.OutputFormat == ImageOutputFormat.Webp
+                                ? PixelFormat.Format32bppArgb
+                                : PixelFormat.Format32bppPArgb;
+
+                            using (var thumbnail = new Bitmap(newWidth, newHeight, pixelFormat))
                             {
                                 // Mono throw an exeception if assign 0 to SetResolution
                                 if (originalImage.HorizontalResolution > 0 && originalImage.VerticalResolution > 0)
@@ -289,18 +243,23 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                     var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
 
-                                    using (var outputMemoryStream = new MemoryStream())
+                                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+
+                                    // Save to the cache location
+                                    using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                     {
-                                        // Save to the memory stream
-                                        thumbnail.Save(outputFormat, outputMemoryStream, quality);
-
-                                        var bytes = outputMemoryStream.ToArray();
-
-                                        await toStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-
-                                        // kick off a task to cache the result
-                                        await CacheResizedImage(cacheFilePath, bytes).ConfigureAwait(false);
+                                        if (options.OutputFormat == ImageOutputFormat.Webp)
+                                        {
+                                            new SimpleEncoder().Encode(thumbnail, cacheFileStream, quality, false);
+                                        }
+                                        else
+                                        {
+                                            // Save to the memory stream
+                                            thumbnail.Save(outputFormat, cacheFileStream, quality);
+                                        }
                                     }
+
+                                    return cacheFilePath;
                                 }
                             }
 
@@ -311,33 +270,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             finally
             {
                 semaphore.Release();
-            }
-        }
-
-        /// <summary>
-        /// Caches the resized image.
-        /// </summary>
-        /// <param name="cacheFilePath">The cache file path.</param>
-        /// <param name="bytes">The bytes.</param>
-        /// <returns>Task.</returns>
-        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
-        {
-            try
-            {
-                var parentPath = Path.GetDirectoryName(cacheFilePath);
-
-                Directory.CreateDirectory(parentPath);
-
-                // Save to the cache location
-                using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                {
-                    // Save to the filestream
-                    await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error writing to image cache file {0}", ex, cacheFilePath);
             }
         }
 

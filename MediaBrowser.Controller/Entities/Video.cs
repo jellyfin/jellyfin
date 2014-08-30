@@ -23,7 +23,9 @@ namespace MediaBrowser.Controller.Entities
         IHasAspectRatio, 
         IHasTags, 
         ISupportsPlaceHolders,
-        IHasMediaSources
+        IHasMediaSources,
+        IHasShortOverview,
+        IThemeMedia
     {
         public bool IsMultiPart { get; set; }
         public bool HasLocalAlternateVersions { get; set; }
@@ -32,10 +34,13 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> AdditionalPartIds { get; set; }
         public List<Guid> LocalAlternateVersionIds { get; set; }
 
+        public bool IsThemeMedia { get; set; }
+        
         public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
+        public string ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.
@@ -51,6 +56,12 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
             SubtitleFiles = new List<string>();
             LinkedAlternateVersions = new List<LinkedChild>();
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
         }
 
         [IgnoreDataMember]
@@ -228,6 +239,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
@@ -324,7 +336,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {
-                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName);
                     }
 
                     return false;

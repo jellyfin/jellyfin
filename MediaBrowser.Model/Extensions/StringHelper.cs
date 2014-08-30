@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Model.Extensions
 {
@@ -58,6 +59,40 @@ namespace MediaBrowser.Model.Extensions
         public static string ToStringCultureInvariant(double val)
         {
             return val.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Trims the start.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="c">The c.</param>
+        /// <returns>System.String.</returns>
+        public static string TrimStart(string str, char c)
+        {
+            return str.TrimStart(c);
+        }
+
+        /// <summary>
+        /// Splits the specified string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="term">The term.</param>
+        /// <returns>System.String[].</returns>
+        public static string[] RegexSplit(string str, string term)
+        {
+            return Regex.Split(str, term, RegexOptions.IgnoreCase);
+        }
+
+        /// <summary>
+        /// Splits the specified string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="term">The term.</param>
+        /// <param name="limit">The limit.</param>
+        /// <returns>System.String[].</returns>
+        public static string[] RegexSplit(string str, string term, int limit)
+        {
+            return new Regex(term).Split(str, limit);
         }
     }
 }

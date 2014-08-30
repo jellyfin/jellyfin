@@ -9,10 +9,12 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Activity;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -26,6 +28,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.News;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -33,14 +36,17 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.Themes;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
+using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -49,14 +55,17 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.Server.Implementations.Activity;
 using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
+using MediaBrowser.Server.Implementations.Connect;
 using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.EntryPoints;
 using MediaBrowser.Server.Implementations.FileOrganization;
 using MediaBrowser.Server.Implementations.HttpServer;
+using MediaBrowser.Server.Implementations.HttpServer.Security;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.LiveTv;
@@ -64,17 +73,18 @@ using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.MediaEncoder;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Implementations.Playlists;
 using MediaBrowser.Server.Implementations.Security;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
+using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
-using MediaBrowser.Server.Implementations.WebSocket;
-using MediaBrowser.ServerApplication.EntryPoints;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Networking;
 using MediaBrowser.WebDashboard.Api;
+using MediaBrowser.XbmcMetadata.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -176,6 +186,7 @@ namespace MediaBrowser.ServerApplication
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
 
+        private IConnectManager ConnectManager { get; set; }
         private ISessionManager SessionManager { get; set; }
 
         private ILiveTvManager LiveTvManager { get; set; }
@@ -184,6 +195,7 @@ namespace MediaBrowser.ServerApplication
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
+        private ISyncManager SyncManager { get; set; }
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -203,11 +215,15 @@ namespace MediaBrowser.ServerApplication
 
         private IUserViewManager UserViewManager { get; set; }
 
+        private IAuthenticationRepository AuthenticationRepository { get; set; }
+        private ISyncRepository SyncRepository { get; set; }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
+        /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
+        /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool isRunningAsService)
             : base(applicationPaths, logManager)
         {
@@ -271,11 +287,49 @@ namespace MediaBrowser.ServerApplication
             LogManager.RemoveConsoleOutput();
         }
 
-        public override Task Init(IProgress<double> progress)
+        public override async Task Init(IProgress<double> progress)
+        {
+            PerformVersionMigration();
+
+            await base.Init(progress).ConfigureAwait(false);
+
+            MigrateModularConfigurations();
+        }
+
+        private void PerformVersionMigration()
         {
             DeleteDeprecatedModules();
+        }
 
-            return base.Init(progress);
+        private void MigrateModularConfigurations()
+        {
+            var saveConfig = false;
+
+            if (ServerConfigurationManager.Configuration.DlnaOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("dlna", ServerConfigurationManager.Configuration.DlnaOptions);
+                ServerConfigurationManager.Configuration.DlnaOptions = null;
+                saveConfig = true;
+            }
+
+            if (ServerConfigurationManager.Configuration.LiveTvOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("livetv", ServerConfigurationManager.Configuration.LiveTvOptions);
+                ServerConfigurationManager.Configuration.LiveTvOptions = null;
+                saveConfig = true;
+            }
+
+            if (ServerConfigurationManager.Configuration.TvFileOrganizationOptions != null)
+            {
+                ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });
+                ServerConfigurationManager.Configuration.TvFileOrganizationOptions = null;
+                saveConfig = true;
+            }
+
+            if (saveConfig)
+            {
+                ServerConfigurationManager.SaveConfiguration();
+            }
         }
 
         private void DeleteDeprecatedModules()
@@ -297,116 +351,14 @@ namespace MediaBrowser.ServerApplication
                 // Not there, no big deal
             }
 
-            Task.Run(() =>
+            try
             {
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "remote-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "chapter-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-video-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "extracted-audio-images"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-tv"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-collections"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-movies"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-movies"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-music"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "fanart-tv"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tmdb-people"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-
-                try
-                {
-                    Directory.Delete(Path.Combine(ApplicationPaths.DataPath, "tvdb-v3"), true);
-                }
-                catch (IOException)
-                {
-                    // Not there, no big deal
-                }
-            });
+                File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MediaBrowser.Plugins.XbmcMetadata.dll"));
+            }
+            catch (IOException)
+            {
+                // Not there, no big deal
+            }
         }
 
         private void MigrateUserFolders()
@@ -440,8 +392,6 @@ namespace MediaBrowser.ServerApplication
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(LocalizationManager);
 
-            RegisterSingleInstance<IWebSocketServer>(() => new AlchemyServer(Logger));
-
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             UserDataManager = new UserDataManager(LogManager);
@@ -462,7 +412,13 @@ namespace MediaBrowser.ServerApplication
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
-            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer);
+            AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
+            RegisterSingleInstance(AuthenticationRepository);
+
+            //SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            //RegisterSingleInstance(SyncRepository);
+
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
@@ -482,7 +438,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "mediabrowser", "dashboard/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -498,10 +454,19 @@ namespace MediaBrowser.ServerApplication
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"));
+            RegisterSingleInstance(SyncManager);
+
+            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager);
             RegisterSingleInstance(DtoService);
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient);
+            var encryptionManager = new EncryptionManager();
+            RegisterSingleInstance<IEncryptionManager>(encryptionManager);
+
+            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager);
+            RegisterSingleInstance(ConnectManager);
+
+            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -521,25 +486,26 @@ namespace MediaBrowser.ServerApplication
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient);
-            RegisterSingleInstance<IContentDirectory>(contentDirectory);
-
             var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
-            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor);
+            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
             RegisterSingleInstance<ICollectionManager>(collectionManager);
 
-            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, JsonSerializer, LocalizationManager);
+            var playlistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
+            RegisterSingleInstance<IPlaylistManager>(playlistManager);
+
+            LiveTvManager = new LiveTvManager(ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths, playlistManager);
             RegisterSingleInstance(UserViewManager);
+
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, UserViewManager, ChannelManager);
+            RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
-
-            RegisterSingleInstance<IEncryptionManager>(new EncryptionManager());
 
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, ItemRepository);
             RegisterSingleInstance(SubtitleManager);
@@ -551,7 +517,16 @@ namespace MediaBrowser.ServerApplication
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
-            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder));
+            var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
+            RegisterSingleInstance(activityLogRepo);
+            RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo));
+
+            var authContext = new AuthorizationContext();
+            RegisterSingleInstance<IAuthorizationContext>(authContext);
+            RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
+            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext, ServerConfigurationManager));
+
+            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
             var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
             var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
@@ -570,9 +545,9 @@ namespace MediaBrowser.ServerApplication
             SetKernelProperties();
         }
 
-        protected override INetworkManager CreateNetworkManager()
+        protected override INetworkManager CreateNetworkManager(ILogger logger)
         {
-            return new NetworkManager();
+            return new NetworkManager(logger);
         }
 
         protected override IFileSystem CreateFileSystemManager()
@@ -588,7 +563,7 @@ namespace MediaBrowser.ServerApplication
         {
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(progress).ConfigureAwait(false);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), ApplicationPaths, JsonSerializer, info.EncoderPath, info.ProbePath, info.Version, FileSystemManager);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), JsonSerializer, info.EncoderPath, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);
         }
 
@@ -620,6 +595,33 @@ namespace MediaBrowser.ServerApplication
         private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
         {
             var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<IAuthenticationRepository> GetAuthenticationRepository()
+        {
+            var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<IActivityRepository> GetActivityLogRepository()
+        {
+            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
+
+            await repo.Initialize().ConfigureAwait(false);
+
+            return repo;
+        }
+
+        private async Task<ISyncRepository> GetSyncRepository()
+        {
+            var repo = new SyncRepository(LogManager.GetLogger("SyncRepository"), ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -695,6 +697,8 @@ namespace MediaBrowser.ServerApplication
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
             ChannelVideoItem.ChannelManager = ChannelManager;
+            BaseItem.LiveTvManager = LiveTvManager;
+            UserView.UserViewManager = UserViewManager;
         }
 
         /// <summary>
@@ -745,6 +749,7 @@ namespace MediaBrowser.ServerApplication
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
+            SyncManager.AddParts(GetExports<ISyncProvider>());
         }
 
         /// <summary>
@@ -755,7 +760,7 @@ namespace MediaBrowser.ServerApplication
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefixes, ServerConfigurationManager.Configuration.EnableHttpLevelLogging);
+                ServerManager.Start(HttpServerUrlPrefixes);
             }
             catch (Exception ex)
             {
@@ -772,8 +777,6 @@ namespace MediaBrowser.ServerApplication
                     throw;
                 }
             }
-
-            ServerManager.StartWebSocketServer();
         }
 
         /// <summary>
@@ -785,14 +788,7 @@ namespace MediaBrowser.ServerApplication
         {
             base.OnConfigurationUpdated(sender, e);
 
-            HttpServer.EnableHttpRequestLogging = ServerConfigurationManager.Configuration.EnableHttpLevelLogging;
-
             if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
-            {
-                NotifyPendingRestart();
-            }
-
-            else if (!ServerManager.SupportsNativeWebSocket && ServerManager.WebSocketPortNumber != ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber)
             {
                 NotifyPendingRestart();
             }
@@ -881,6 +877,12 @@ namespace MediaBrowser.ServerApplication
             // Dlna 
             list.Add(typeof(DlnaEntryPoint).Assembly);
 
+            // Local metadata 
+            list.Add(typeof(AlbumXmlProvider).Assembly);
+
+            // Xbmc 
+            list.Add(typeof(ArtistNfoProvider).Assembly);
+
             list.AddRange(Assemblies.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
@@ -910,6 +912,11 @@ namespace MediaBrowser.ServerApplication
 
         private readonly string _systemId = Environment.MachineName.GetMD5().ToString();
 
+        public string ServerId
+        {
+            get { return _systemId; }
+        }
+
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -921,12 +928,12 @@ namespace MediaBrowser.ServerApplication
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
                 IsNetworkDeployed = CanSelfUpdate,
-                WebSocketPortNumber = ServerManager.WebSocketPortNumber,
-                SupportsNativeWebSocket = ServerManager.SupportsNativeWebSocket,
+                WebSocketPortNumber = HttpServerPort,
+                SupportsNativeWebSocket = true,
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
-                Id = _systemId,
+                Id = ServerId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,
@@ -937,42 +944,57 @@ namespace MediaBrowser.ServerApplication
                 OperatingSystem = Environment.OSVersion.ToString(),
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
-                WanAddress = GetWanAddress(),
+                WanAddress = ConnectManager.WanApiAddress,
                 HasUpdateAvailable = HasUpdateAvailable,
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
-                ServerName = string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName) ? Environment.MachineName : ServerConfigurationManager.Configuration.ServerName
+                ServerName = FriendlyName,
+                LocalAddress = GetLocalIpAddress()
             };
+        }
+
+        /// <summary>
+        /// Gets the local ip address.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private string GetLocalIpAddress()
+        {
+            var localAddresses = NetworkManager.GetLocalIpAddresses().ToList();
+
+            // Cross-check the local ip addresses with addresses that have been received on with the http server
+            var matchedAddress = HttpServer.LocalEndPoints
+                .ToList()
+                .Select(i => i.Split(':').FirstOrDefault())
+                .Where(i => !string.IsNullOrEmpty(i))
+                .FirstOrDefault(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase));
+
+            // Return the first matched address, if found, or the first known local address
+            var address = matchedAddress ?? localAddresses.FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(address))
+            {
+                address = string.Format("http://{0}:{1}",
+                    address,
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(CultureInfo.InvariantCulture));
+            }
+
+            return address;
+        }
+
+        public string FriendlyName
+        {
+            get
+            {
+                return string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.ServerName)
+                    ? Environment.MachineName
+                    : ServerConfigurationManager.Configuration.ServerName;
+            }
         }
 
         public int HttpServerPort
         {
             get { return ServerConfigurationManager.Configuration.HttpServerPortNumber; }
-        }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private string GetWanAddress()
-        {
-            var ip = ServerConfigurationManager.Configuration.WanDdns;
-
-            if (string.IsNullOrWhiteSpace(ip))
-            {
-                ip = WanAddressEntryPoint.WanAddress;
-            }
-
-            if (!string.IsNullOrEmpty(ip))
-            {
-                if (!ip.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                    !ip.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                {
-                    ip = "http://" + ip;
-                }
-
-                return ip + ":" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(_usCulture);
-            }
-
-            return null;
         }
 
         /// <summary>
@@ -1021,7 +1043,6 @@ namespace MediaBrowser.ServerApplication
                 ServerAuthorization.AuthorizeServer(
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
                     HttpServerUrlPrefixes.First(),
-                    ServerConfigurationManager.Configuration.LegacyWebSocketPortNumber,
                     UdpServerEntryPoint.PortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }
@@ -1058,15 +1079,18 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+            var result = await NativeApp.CheckForApplicationUpdate(ApplicationVersion,
+                        ConfigurationManager.CommonConfiguration.SystemUpdateLevel, InstallationManager,
+                        cancellationToken, progress).ConfigureAwait(false);
 
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", null, ApplicationVersion,
-                                                           ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+            HasUpdateAvailable = result.IsUpdateAvailable;
 
-            HasUpdateAvailable = version != null && version.version >= ApplicationVersion;
+            if (result.IsUpdateAvailable)
+            {
+                Logger.Info("New application version is available: {0}", result.AvailableVersion);
+            }
 
-            return version != null ? new CheckForUpdateResult { AvailableVersion = version.version, IsUpdateAvailable = version.version > ApplicationVersion, Package = version } :
-                       new CheckForUpdateResult { AvailableVersion = ApplicationVersion, IsUpdateAvailable = false };
+            return result;
         }
 
         /// <summary>

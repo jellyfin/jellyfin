@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -31,6 +32,12 @@ namespace MediaBrowser.Providers.FolderImages
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
+            var playlist = item as Playlist;
+            if (playlist != null)
+            {
+                return GetImages(string.Empty, cancellationToken);
+            }
+
             var view = item as UserView;
 
             if (view != null)
@@ -111,7 +118,7 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            return item is UserView || item is ICollectionFolder;
+            return item is UserView || item is ICollectionFolder || item is Playlist;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

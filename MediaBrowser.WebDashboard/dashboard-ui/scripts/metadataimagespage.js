@@ -12,7 +12,7 @@
 
             var isChecked = i == 0 ? ' selected="selected"' : '';
 
-            html += '<option value="' + tab.type + '"' + isChecked + '>' + tab.name + '</option>';
+            html += '<option value="' + tab.type + '"' + isChecked + '>' + Globalize.translate(tab.name) + '</option>';
         }
 
         $('#selectItemType', page).html(html).selectmenu('refresh').trigger('change');
@@ -27,7 +27,7 @@
         currentType = type;
 
         var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = $.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
@@ -46,7 +46,7 @@
 
             } else {
 
-                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
 
 
                     config = defaultConfig;
@@ -150,7 +150,7 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Image Fetchers:</div>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelImageFetchers') + '</div>';
 
         html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
         html += '<div data-role="controlgroup" class="imageFetcherGroup">';
@@ -177,22 +177,22 @@
 
                 html += '<div style="margin:6px 0;">';
                 if (i == 0) {
-                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 } else if (i == (plugins.length - 1)) {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 }
                 else {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 }
                 html += '</div>';
             }
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred image fetchers in order of priority.</div>';
+        html += '<div class="fieldDescription" style="width:75%;">' + Globalize.translate('LabelImageFetchersHelp') + '</div>';
 
         var elem = $('.imageFetchers', page).html(html).show().trigger('create');
 
@@ -238,7 +238,7 @@
         }
 
         html += '<fieldset data-role="controlgroup">';
-        html += '<legend>Metadata Savers:</legend>';
+        html += '<legend>' + Globalize.translate('LabelMetadataSavers') + '</legend>';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
@@ -253,7 +253,7 @@
         }
 
         html += '</fieldset>';
-        html += '<div class="fieldDescription">Choose the file formats to save your metadata to.</div>';
+        html += '<div class="fieldDescription">' + Globalize.translate('LabelMetadataSaversHelp') + '</div>';
 
         $('.metadataSavers', page).html(html).show().trigger('create');
     }
@@ -273,7 +273,7 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Metadata Downloaders:</div>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
 
         html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
         html += '<div data-role="controlgroup" class="metadataFetcherGroup">';
@@ -300,22 +300,22 @@
 
                 html += '<div style="margin:6px 0;">';
                 if (i == 0) {
-                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 } else if (i == (plugins.length - 1)) {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 }
                 else {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Up</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">Down</button>';
+                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
+                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
                 }
                 html += '</div>';
             }
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:75%;">Enable and rank your preferred metadata downloaders in order of priority. Lower priority downloaders will only be used to fill in missing information.</div>';
+        html += '<div class="fieldDescription" style="width:75%;">' + Globalize.translate('LabelMetadataDownloadersHelp') + '</div>';
 
         var elem = $('.metadataFetchers', page).html(html).show().trigger('create');
 
@@ -360,42 +360,36 @@
             return;
         }
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">Preferred Local Metadata:</div>';
+        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelMetadataReaders') + '</div>';
         html += '<ul data-role="listview" data-inset="true" data-mini="true" style="margin-top:.5em;margin-bottom:.5em;">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
 
-            if (i > 0) {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+            html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
+            if (i > 0) {
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">Up</a>';
-
-                html += '</li>';
+                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
             }
             else if (plugins.length > 1) {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
                 html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">Down</a>';
-
-                html += '</li>';
+                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
             }
             else {
-                html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
                 html += plugin.Name;
 
-                html += '</li>';
             }
+            html += '</li>';
         }
 
         html += '</ul>';
-        html += '<div class="fieldDescription">Rank your preferred local metadata sources in order of priority. The first file found will be read.</div>';
+        html += '<div class="fieldDescription">' + Globalize.translate('LabelMetadataReadersHelp') + '</div>';
 
         $('.metadataReaders', page).html(html).show().trigger('create');
     }
@@ -404,26 +398,26 @@
 
         loadTabs(page, [
 
-            { name: 'Movies', type: 'Movie' },
-            { name: 'Trailers', type: 'Trailer' },
-            { name: 'Collections', type: 'BoxSet' },
-            { name: 'TV Series', type: 'Series' },
-            { name: 'TV Seasons', type: 'Season' },
-            { name: 'TV Episodes', type: 'Episode' },
-            { name: 'Games', type: 'Game' },
-            { name: 'Game Systems', type: 'GameSystem' },
-            { name: 'Game Genres', type: 'GameGenre' },
-            { name: 'Music Artists', type: 'MusicArtist' },
-            { name: 'Music Albums', type: 'MusicAlbum' },
-            { name: 'Music Videos', type: 'MusicVideo' },
-            { name: 'Music Genres', type: 'MusicGenre' },
-            { name: 'Songs', type: 'Audio' },
-            { name: 'Home Videos', type: 'Video' },
-            { name: 'Books', type: 'Book' },
-            { name: 'Adult Videos', type: 'AdultVideo' },
-            { name: 'People', type: 'Person' },
-            { name: 'Genres', type: 'Genre' },
-            { name: 'Studios', type: 'Studio' }
+            { name: 'OptionMovies', type: 'Movie' },
+            //{ name: 'Trailers', type: 'Trailer' },
+            { name: 'OptionCollections', type: 'BoxSet' },
+            { name: 'OptionSeries', type: 'Series' },
+            { name: 'OptionSeasons', type: 'Season' },
+            { name: 'OptionEpisodes', type: 'Episode' },
+            { name: 'OptionGames', type: 'Game' },
+            { name: 'OptionGameSystems', type: 'GameSystem' },
+            //{ name: 'Game Genres', type: 'GameGenre' },
+            { name: 'OptionMusicArtists', type: 'MusicArtist' },
+            { name: 'OptionMusicAlbums', type: 'MusicAlbum' },
+            { name: 'OptionMusicVideos', type: 'MusicVideo' },
+            //{ name: 'Music Genres', type: 'MusicGenre' },
+            { name: 'OptionSongs', type: 'Audio' },
+            { name: 'OptionHomeVideos', type: 'Video' },
+            { name: 'OptionBooks', type: 'Book' },
+            { name: 'OptionAdultVideos', type: 'AdultVideo' },
+            { name: 'OptionPeople', type: 'Person' }
+            //{ name: 'Genres', type: 'Genre' },
+            //{ name: 'Studios', type: 'Studio' }
         ]);
     }
 
@@ -510,7 +504,7 @@
 
             } else {
 
-                $.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
 
                     defaultOptions.ItemType = type;
                     config.MetadataOptions.push(defaultOptions);

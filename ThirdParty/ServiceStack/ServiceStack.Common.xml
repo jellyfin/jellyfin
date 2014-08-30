@@ -26,6 +26,11 @@
             </summary>        
             <returns>RsaKeyPair</returns>
         </member>
+        <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Return T[0] when enumerable is null, safe to use in enumerations like foreach
+            </summary>
+        </member>
         <member name="M:ServiceStack.EnumExtensions.ToDescription(System.Enum)">
             <summary>
             Gets the textual description of the enum if it has one. e.g.

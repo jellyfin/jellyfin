@@ -54,14 +54,25 @@
     src: local('Roboto Medium'), local('Roboto-Medium'), url(fonts/RobotoMedium.woff) format('woff');
 }
 
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Roboto Bold'), local('Roboto-Bold'), url(fonts/RobotoBold.woff) format('woff');
+}
+
 * {
-    text-shadow: none!important;
+    text-shadow: none !important;
 }
 
 body {
-    overflow-y: scroll!important;
+    overflow-y: scroll !important;
     font-size: 13px;
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: Roboto, Arial, Helvetica, sans-serif;
+}
+
+.bodyWithPopupOpen {
+    overflow-y: hidden !important;
 }
 
 .textlink {
@@ -73,14 +84,17 @@ body {
     }
 
 h1, h1 a {
-    font-weight: 100!important;
-    font-size: 28px;
-    font-family: Roboto;
+    font-weight: 300 !important;
+    font-size: 30px;
+}
+
+.libraryPage h1, .libraryPage h1 a {
+    font-weight: 100 !important;
 }
 
 .ui-loader h1 {
-    font-family: 'Open Sans';
-    font-weight: bold!important;
+    font-family: Roboto;
+    font-weight: 500 !important;
     font-size: 18px;
 }
 
@@ -101,16 +115,25 @@ h2 {
     font-weight: bold;
 }*/
 
+.ui-btn {
+    font-family: Roboto;
+    font-weight: 500 !important;
+}
+
 h1 a {
     text-decoration: none;
 }
 
 .libraryPage h1 a {
-    color: #fff!important;
+    color: #fff !important;
 }
 
 h1 a:hover {
     text-decoration: underline;
+}
+
+.ui-listview li h3 {
+    font-weight: 400;
 }
 
 pre, textarea.pre {
@@ -146,14 +169,6 @@ pre, textarea.pre {
 }
 
 /*
-    Page / Base styles
-    */
-.page:not(.libraryPage) {
-    background: #f2f2f2;
-    background-attachment: fixed;
-}
-
-/*
     Header
     */
 .header {
@@ -166,10 +181,8 @@ pre, textarea.pre {
 
 .imgLogoText {
     height: 45px;
-    display: none;
     margin-left: 5px;
 }
-
 
 .ui-popup-container {
     z-index: 99999;
@@ -215,7 +228,7 @@ h1 .imageLink {
 
 .pageTitle {
     margin-top: 0;
-    font-family: "Open Sans";
+    font-family: Roboto;
 }
 
 .imageButton {
@@ -230,7 +243,7 @@ h1 .imageLink {
     }
 
     .imageButton[disabled], .imageButton[disabled]:hover {
-        opacity: .3!important;
+        opacity: .3 !important;
         cursor: default;
     }
 
@@ -255,7 +268,7 @@ h1 .imageLink {
 }
 
 .ulForm {
-    margin-bottom: 20px!important;
+    margin-bottom: 20px !important;
 }
 
     .ulForm li:not(.ui-li-divider) {
@@ -265,7 +278,7 @@ h1 .imageLink {
     }
 
 .popup .ulForm {
-    margin-bottom: 0!important;
+    margin-bottom: 0 !important;
 }
 
 .content-primary {
@@ -274,12 +287,10 @@ h1 .imageLink {
 
 .content-secondary {
     z-index: 1000;
-    background: #333;
     border: 0;
-    border-right: 1px solid #ddd;
     display: none;
     text-align: left;
-    width: 25%;
+    width: 220px;
     position: fixed;
     top: 51px;
     left: 0;
@@ -287,46 +298,46 @@ h1 .imageLink {
     margin: 0;
 }
 
-    .content-secondary h1 {
-        margin: 0;
-        padding: 20px 0 25px 20px;
-        color: #fff;
-    }
-
-.sidebarLinks a {
-    display: block;
-    padding: .6em 20px .6em 20px;
-    text-decoration: none;
-    color: #eee!important;
-    text-shadow: none!important;
-    font-weight: 400!important;
-    font-size: 14px;
+.sidebarLinks {
+    margin-top: 2.75em;
+    margin-left: 1em;
 }
 
-    .sidebarLinks a:hover {
-        background: #f2f2f2;
-        color: #000!important;
+    .sidebarLinks a {
+        display: block;
+        padding: .6em 20px .6em 20px;
+        text-decoration: none;
+        color: #333 !important;
+        text-shadow: none !important;
+        font-weight: 500 !important;
+        font-size: 14px;
+        border-radius: 2px;
     }
 
-    .sidebarLinks a.selectedSidebarLink {
-        background: #38c!important;
-        color: #fff!important;
-        margin-right: 0;
-    }
+        .sidebarLinks a:hover {
+            background: #52B54B;
+            color: #fff !important;
+        }
+
+        .sidebarLinks a.selectedSidebarLink {
+            background: #38c !important;
+            color: #fff !important;
+            margin-right: 0;
+        }
 
 .sidebarDivider {
     height: 1px;
-    background: #444;
+    background: #ddd;
     margin: .25em 0;
 }
 
 .invalidEntry {
-    background-color: lightpink!important;
+    background-color: lightpink !important;
 }
 
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
-    margin-bottom: 40px!important;
+    margin-bottom: 40px !important;
 }
 
     .localnav + form {
@@ -334,39 +345,37 @@ h1 .imageLink {
     }
 
 .page > .ui-content {
-    padding-bottom: 100px;
+
+    /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
+    padding-bottom: 160px;
 }
 
 .dashboardPanelDivider {
     height: 1px;
-    background: #444;
+    background: #ddd;
     margin: .25em 0;
 }
 
 .dashboardPanelLink {
-    padding: .5em .5em .5em 1.25em;
+    padding: .7em .5em .7em 1.25em;
     display: block;
     text-decoration: none;
-    color: #fff!important;
+    color: #000 !important;
     font-weight: normal !important;
 }
 
     .dashboardPanelLink:hover {
-        background: #f2f2f2;
-        color: #000!important;
+        background: #52B54B;
+        color: #fff !important;
     }
 
 .selectedDashboardPanelLink {
     background: #38c;
-    color: #fff!important;
+    color: #fff !important;
 }
 
 .dashboardPanel .ui-panel-inner {
     padding: 0;
-}
-
-.dashboardPanel {
-    background: #262626!important;
 }
 
 .appLinks a {
@@ -406,7 +415,6 @@ h1 .imageLink {
 
     .imgLogoText {
         height: 50px;
-        display: inline;
     }
 
     .header {
@@ -426,10 +434,8 @@ h1 .imageLink {
     }
 
     .content-primary {
-        width: 65%;
-        float: right;
-        padding: 80px 6% 3em 0;
-        margin: 0;
+        padding: 80px 15px 3em 0;
+        margin: 0 0 0 260px;
     }
 
         .content-primary ul:first-child {
@@ -444,42 +450,6 @@ h1 .imageLink {
     }
 }
 
-@media all and (min-width: 1200px) {
-
-
-    .content-secondary {
-        width: 20%;
-    }
-
-    .content-primary {
-        width: 70%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-
-    .content-secondary {
-        width: 17%;
-    }
-
-    .content-primary {
-        width: 74%;
-    }
-}
-
-@media all and (min-width: 1920px) {
-
-
-    .content-secondary {
-        width: 20%;
-    }
-
-    .content-primary {
-        width: 71%;
-    }
-}
-
 /*
     Media Library Page
     */
@@ -488,19 +458,19 @@ h1 .imageLink {
 }
 
 .mediaFolderLocations {
-    margin: 1em .25em!important;
+    margin: 1em .25em !important;
 }
 
 .mediaLocationsHeader {
-    padding-top: .75em!important;
-    padding-bottom: .75em!important;
+    padding-top: .75em !important;
+    padding-bottom: .75em !important;
 }
 
     .mediaLocationsHeader .ui-btn {
         position: absolute;
         right: -6px;
-        margin-top: 0!important;
-        margin-bottom: 0!important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         top: 6px;
     }
 
@@ -546,12 +516,12 @@ h1 .imageLink {
 }
 
 .posterViewItemWithNoText {
-    padding-bottom: 0!important;
+    padding-bottom: 0 !important;
 }
 
 .posterViewItem a {
-    color: white!important;
-    font-weight: normal!important;
+    color: white !important;
+    font-weight: normal !important;
     text-decoration: none;
 }
 
@@ -598,9 +568,9 @@ h1 .imageLink {
 }
 
 .posterViewItem:hover, .userItem:hover, .tileItem:hover {
-    -moz-box-shadow: 0 0 20px 3px #38c;
-    -webkit-box-shadow: 0 0 20px 3px #38c;
-    box-shadow: 0 0 20px 3px #38c;
+    -moz-box-shadow: 0 0 0 5px #38c;
+    -webkit-box-shadow: 0 0 0 5px #38c;
+    box-shadow: 0 0 0 5px #38c;
 }
 
 @media all and (min-width: 750px) {
@@ -626,7 +596,7 @@ h1 .imageLink {
 @media all and (min-width: 1920px) {
 
     .posterViewItemText {
-        height: 25px!important;
+        height: 25px !important;
     }
 
     .posterViewItem {
@@ -681,9 +651,11 @@ h1 .imageLink {
     bottom: -2px;
     left: -2px;
     right: -2px;
-    z-index: 99997;
+    /* Above everything, except for the video player and popup overlays */
+    z-index: 1097;
     color: #fff;
     border: 0 !important;
+    background-color: #111;
 }
 
 .footerNotification {
@@ -769,9 +741,10 @@ progress {
     cursor: pointer;
     vertical-align: top;
 }
-.imgUserItemRating:last-child {
-    margin-right: 0;
-}
+
+    .imgUserItemRating:last-child {
+        margin-right: 0;
+    }
 
     .imgUserItemRating:hover {
         opacity: .5;
@@ -785,19 +758,13 @@ progress {
     height: 70px;
 }
 
-
-.latestNewsItems {
-    min-height: 100px;
-    min-width: 200px;
-}
-
 .newsItem {
     padding: 1em 0;
     border-bottom: 1px solid #ddd;
 }
 
 .newsItemDescription {
-    max-height: 50px;
+    max-height: 34px;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -815,46 +782,64 @@ progress {
 @media all and (max-width: 1440px) {
 
     .dashboardHomeRightColumn {
-        margin-top: 2em;
+        margin-top: 1em;
     }
 }
 
 .dashboardContent {
-    max-width: 1000px;
+    max-width: 1550px;
     margin-top: -10px;
+}
+
+.dashboardHomeRightColumn {
+    vertical-align: top;
 }
 
 @media all and (min-width: 1440px) {
 
     .dashboardHomeLeftColumn {
         width: 600px;
-        float: left;
-    }
-
-    .latestNewsItems {
-        max-width: 280px;
+        display: inline-block;
+        vertical-align: top;
     }
 
     .dashboardHomeRightColumn {
-        float: right;
+        vertical-align: top;
     }
+
+    .firstDashboardHomeRightColumn {
+        display: inline-block;
+        width: 440px;
+        margin-left: 2em;
+        min-width: 300px;
+    }
+
+        .firstDashboardHomeRightColumn .ui-collapsible-content {
+            height: 585px;
+        }
 }
 
-@media all and (min-width: 1500px) {
+@media all and (min-width: 1580px) {
 
-    .latestNewsItems {
-        max-width: 300px;
+    .dashboardHomeRightColumn {
+        display: inline-block;
+        margin-left: 1em;
+        width: 300px;
+        min-width: 300px;
     }
+
+        .dashboardHomeRightColumn .ui-collapsible-content {
+            height: auto;
+            min-height: 585px;
+        }
 }
 
-@media all and (min-width: 1600px) {
+@media all and (min-width: 1880px) {
 
-    .latestNewsItems {
-        max-width: 400px;
-    }
-
-    .dashboardContent {
-        max-width: 1100px;
+    .dashboardHomeRightColumn {
+        max-width: 440px;
+        margin-left: 2em;
+        min-width: 400px;
     }
 }
 
@@ -868,7 +853,7 @@ progress {
 }
 
 .btnShowStatusMessage {
-    font-weight: normal!important;
+    font-weight: normal !important;
     text-decoration: none;
 }
 
@@ -877,12 +862,13 @@ progress {
     }
 
 .activeSession {
-    display: inline-block;
-    position: relative;
-    margin: 4px;
-    width: 275px;
-    height: 154.6875px;
+    width: 50%;
 }
+
+    .activeSession .cardPadder {
+        padding-bottom: 56.25%;
+    }
+
 
 .sessionNowPlayingContent {
     background-size: cover;
@@ -958,7 +944,7 @@ progress {
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
-    padding: .25em!important;
+    padding: .25em !important;
 }
 
 .activeSession:not(.playingSession) .sessionNowPlayingContent {
@@ -973,12 +959,6 @@ progress {
 
 .activeSession:not(.playingSession) .sessionUserInfo, .activeSession:not(.playingSession) .sessionNowPlayingInfo {
     bottom: 0;
-}
-
-.activeSession:hover {
-    -moz-box-shadow: 0 0 20px 1px #38c;
-    -webkit-box-shadow: 0 0 20px 1px #38c;
-    box-shadow: 0 0 20px 1px #38c;
 }
 
 .sessionNowPlayingTime {
@@ -1020,38 +1000,25 @@ progress {
 /* Firefox */
 .transcodingProgress::-moz-progress-bar {
     border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Chrome */
 .transcodingProgress::-webkit-progress-value {
     border-radius: 5px;
-    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) )!important;
-    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) ) !important;
+    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Polyfill */
 .transcodingProgress[aria-valuenow]:before {
     border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
-    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
-    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% )!important;
-}
-
-@media all and (max-width: 1000px) {
-
-    .activeSession {
-        width: 230px;
-        height: 129.375px;
-    }
+    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
+    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
+    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 @media all and (max-width: 550px) {
-
-    .activeSession {
-        width: 210px;
-        height: 118.125px;
-    }
 
     .sessionAppName {
         max-width: 160px;
@@ -1060,20 +1027,11 @@ progress {
 
 @media all and (max-width: 500px) {
 
-    .activeSession {
-        width: 200px;
-        height: 112.5px;
-    }
-
     .sessionAppName {
         max-width: 150px;
     }
-}
-
-@media all and (max-width: 400px) {
 
     .activeSession {
-        width: 250px;
-        height: 140.625px;
+        width: 100%;
     }
 }

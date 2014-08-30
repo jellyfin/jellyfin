@@ -29,7 +29,6 @@ namespace MediaBrowser.ServerApplication
         private System.Windows.Forms.ToolStripMenuItem cmdLogWindow;
         private System.Windows.Forms.ToolStripMenuItem cmdCommunity;
         private System.Windows.Forms.ToolStripMenuItem cmdApiDocs;
-        private System.Windows.Forms.ToolStripMenuItem cmdStandardDocs;
         private System.Windows.Forms.ToolStripMenuItem cmdSwagger;
         private System.Windows.Forms.ToolStripMenuItem cmdGtihub;
 
@@ -90,7 +89,6 @@ namespace MediaBrowser.ServerApplication
             cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
             cmdBrowse = new System.Windows.Forms.ToolStripMenuItem();
             cmdApiDocs = new System.Windows.Forms.ToolStripMenuItem();
-            cmdStandardDocs = new System.Windows.Forms.ToolStripMenuItem();
             cmdSwagger = new System.Windows.Forms.ToolStripMenuItem();
             cmdGtihub = new System.Windows.Forms.ToolStripMenuItem();
             
@@ -169,16 +167,10 @@ namespace MediaBrowser.ServerApplication
             // cmdApiDocs
             // 
             cmdApiDocs.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            cmdStandardDocs,
             cmdSwagger,
             cmdGtihub});
             cmdApiDocs.Name = "cmdApiDocs";
             cmdApiDocs.Size = new System.Drawing.Size(208, 22);
-            // 
-            // cmdStandardDocs
-            // 
-            cmdStandardDocs.Name = "cmdStandardDocs";
-            cmdStandardDocs.Size = new System.Drawing.Size(136, 22);
             // 
             // cmdSwagger
             // 
@@ -199,7 +191,6 @@ namespace MediaBrowser.ServerApplication
             cmdLibraryExplorer.Click += cmdLibraryExplorer_Click;
 
             cmdSwagger.Click += cmdSwagger_Click;
-            cmdStandardDocs.Click += cmdStandardDocs_Click;
             cmdGtihub.Click += cmdGtihub_Click;
 
             LoadLogWindow(null, EventArgs.Empty);
@@ -224,7 +215,6 @@ namespace MediaBrowser.ServerApplication
             cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
             cmdGtihub.Text = _localization.GetLocalizedString("LabelGithubWiki");
             cmdSwagger.Text = _localization.GetLocalizedString("LabelSwagger");
-            cmdStandardDocs.Text = _localization.GetLocalizedString("LabelStandard");
             cmdApiDocs.Text = _localization.GetLocalizedString("LabelViewApiDocumentation");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
@@ -344,11 +334,6 @@ namespace MediaBrowser.ServerApplication
         void cmdGtihub_Click(object sender, EventArgs e)
         {
             BrowserLauncher.OpenGithub(_logger);
-        }
-
-        void cmdStandardDocs_Click(object sender, EventArgs e)
-        {
-            BrowserLauncher.OpenStandardApiDocumentation(_configurationManager, _appHost, _logger);
         }
 
         void cmdSwagger_Click(object sender, EventArgs e)

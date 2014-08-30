@@ -6,39 +6,11 @@
         IsAdult: false
     };
 
-    function getApps() {
-
-        var apps = [];
-
-        apps.push({
-            type: "UserInstalled",
-            name: "MBKinect",
-            category: "Voice Control",
-            isApp: true,
-            tileColor: "#050810",
-            thumbImage: "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/images/mbkinect/thumb.png",
-            externalUrl: "http://mediabrowser.tv/community/index.php?/topic/850-media-browser-kinect-sensor-plug-in-support/",
-            isPremium: false,
-            isExternal: true
-        });
-
-        return apps;
-    }
-
-    function getAppsPromise() {
-
-        var deferred = $.Deferred();
-
-        deferred.resolveWith(null, [[getApps()]]);
-
-        return deferred.promise();
-    }
-
     function reloadList(page) {
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = query.TargetSystems == "Apps" ? getAppsPromise() : ApiClient.getAvailablePlugins(query);
+        var promise1 = ApiClient.getAvailablePlugins(query);
 
         var promise2 = ApiClient.getInstalledPlugins();
 
@@ -87,12 +59,18 @@
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-            html += "<a class='backdropPosterItem posterItem' style='margin: .75em 5px 1em;' href='" + href + "' " + target + ">";
+            html += "<div class='card backdropCard alternateHover bottomPaddedCard'>";
 
+            html += '<div class="cardBox visualCardBox">';
+            html += '<div class="cardScalable">';
+
+            html += '<div class="cardPadder"></div>';
+
+            html += '<a class="cardContent" href="' + href + '"' + target + '>';
             if (plugin.thumbImage) {
-                html += '<div class="posterItemImage" style="background-image:url(\'' + plugin.thumbImage + '\');background-size:cover;">';
+                html += '<div class="cardImage" style="background-image:url(\'' + plugin.thumbImage + '\');">';
             } else {
-                html += '<div class="posterItemImage defaultPosterItemImage" style="background-image:url(\'css/images/items/list/collection.png\');">';
+                html += '<div class="cardImage" style="background-image:url(\'css/images/items/list/collection.png\');">';
             }
 
             if (plugin.isPremium) {
@@ -104,16 +82,22 @@
             }
             html += "</div>";
 
-            html += "<div class='posterItemText' style='color:#000;'>";
+            // cardContent
+            html += "</a>";
 
+            // cardScalable
+            html += "</div>";
+
+            html += '<div class="cardFooter">';
+
+            html += "<div class='cardText'>";
             html += plugin.name;
-
             html += "</div>";
 
             if (!plugin.isExternal) {
-                html += "<div class='posterItemText packageReviewText' style='color:#000;'>";
+                html += "<div class='cardText packageReviewText'>";
                 html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
-                html += Dashboard.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+                html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
 
                 html += "<span class='storeReviewCount'>";
                 html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
@@ -126,7 +110,7 @@
                 return ip.Name == plugin.name;
             })[0];
 
-            html += "<div class='posterItemText' style='color:#000;'>";
+            html += "<div class='cardText'>";
 
             if (installedPlugin) {
                 html += Globalize.translate('LabelVersionInstalled').replace("{0}", installedPlugin.Version);
@@ -135,7 +119,14 @@
             }
             html += "</div>";
 
-            html += "</a>";
+            // cardFooter
+            html += "</div>";
+
+            // cardBox
+            html += "</div>";
+
+            // card
+            html += "</div>";
 
             pluginhtml += html;
 

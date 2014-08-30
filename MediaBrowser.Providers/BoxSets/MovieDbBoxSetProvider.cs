@@ -216,12 +216,6 @@ namespace MediaBrowser.Providers.BoxSets
                     {
                         mainResult = _json.DeserializeFromStream<RootObject>(json);
                     }
-
-                    if (String.IsNullOrEmpty(mainResult.overview))
-                    {
-                        _logger.Error("Unable to find information for (id:" + id + ")");
-                        return null;
-                    }
                 }
             }
             return mainResult;

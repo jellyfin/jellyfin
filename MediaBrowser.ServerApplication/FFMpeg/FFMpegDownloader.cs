@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,10 +24,10 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
 
-        private readonly string[] _fontUrls = new[]
-            {
-                "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
-            };
+        private readonly string[] _fontUrls =
+        {
+            "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
+        };
 
         public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem)
         {
@@ -101,7 +99,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                          EncoderPath = encoder,
                          ProbePath = probe,
-                         Version = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(probe))
+                         Version = Path.GetFileName(Path.GetDirectoryName(probe))
                     };
                 }
             }
@@ -140,13 +138,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     ExtractFFMpeg(tempFile, directory);
                     return;
                 }
-                catch (HttpException ex)
-                {
-                    _logger.ErrorException("Error downloading {0}", ex, url);
-                }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error unpacking {0}", ex, url);
+                    _logger.ErrorException("Error downloading {0}", ex, url);
                 }
             }
 
@@ -251,6 +245,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     Task.Run(async () =>
                     {
                         await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
+                        
                         await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
                     });
                 }

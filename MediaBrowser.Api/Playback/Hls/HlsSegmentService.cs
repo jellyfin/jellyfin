@@ -74,7 +74,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public void Delete(StopEncodingProcess request)
         {
-            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, true);
+            var task = ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, path => true, true);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>

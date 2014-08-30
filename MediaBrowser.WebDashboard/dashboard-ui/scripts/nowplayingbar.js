@@ -20,12 +20,13 @@
 
         var html = '';
 
-        html += '<div id="nowPlayingBar" class="nowPlayingBar" style="display:none;">';
+        html += '<div class="nowPlayingBar" style="display:none;">';
         html += '<div style="display:inline-block;width:12px;"></div>';
-        html += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="' + Globalize.translate('ButtonPlaylist') + '">' + Globalize.translate('ButtonPlaylist') + '</a>';
-        html += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
 
         html += '<a class="mediaButton remoteControlButton" title="' + Globalize.translate('ButtonRemoteControl') + '" href="nowplaying.html" data-role="button" data-icon="remote" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonRemoteControl') + '</a>';
+
+        html += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="' + Globalize.translate('ButtonPlaylist') + '">' + Globalize.translate('ButtonPlaylist') + '</a>';
+        html += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
 
         html += '<button id="playButton" class="mediaButton unpauseButton" title="' + Globalize.translate('ButtonPlay') + '" type="button" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
         html += '<button id="pauseButton" class="mediaButton pauseButton" title="' + Globalize.translate('ButtonPause') + '" type="button" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
@@ -182,7 +183,7 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var supportedCommands = playerInfo.supportedCommands;
-        
+
         if (supportedCommands.indexOf('SetVolume') == -1) {
             volumeSlider.prop('disabled', 'disabled');
         } else {
@@ -271,7 +272,7 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        var nameHtml = MediaPlayer.getNowPlayingNameHtml(state);
+        var nameHtml = MediaPlayer.getNowPlayingNameHtml(state) || '';
 
         if (nameHtml.indexOf('<br/>') != -1) {
             nowPlayingTextElement.addClass('nowPlayingDoubleText');

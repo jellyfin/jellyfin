@@ -2,10 +2,9 @@
     background: #1e1e1e;
     padding: 10px 7px 5px;
     margin: 3px 0;
-    font-weight: normal!important;
+    font-weight: normal !important;
     display: block;
     position: relative;
-    border-radius: .3125em;
     -webkit-transition: all 500ms ease;
     -moz-transition: all 500ms ease;
     -o-transition: all 500ms ease;
@@ -399,4 +398,125 @@
         .squareTileItem .tileImage {
             height: 140px;
         }
+}
+
+
+.posterItem {
+    margin: 5px 5px;
+    text-shadow: none;
+    font-weight: normal !important;
+    display: inline-block;
+    position: relative;
+    color: #fff !important;
+    text-decoration: none;
+    text-align: left;
+    -webkit-transition: all 500ms ease;
+    -moz-transition: all 500ms ease;
+    -o-transition: all 500ms ease;
+    -ms-transition: all 500ms ease;
+    transition: all 500ms ease;
+}
+
+.posterItemText {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: none;
+    white-space: nowrap;
+    padding: 5px 4px 4px;
+    text-shadow: none;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.posterItemImage {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-color: #000;
+    position: relative;
+}
+
+.posterItemDefaultText {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.myLibraryPosterItem {
+    width: 42%;
+    min-width: 50px;
+}
+
+    .myLibraryPosterItem .posterItemImage {
+        height: 34px;
+        background-position: 9px center;
+        background-size: 14px 14px;
+        background-color: rgba(51, 136, 204, 0.7);
+        background-color: rgba(82, 181, 75, 0.7);
+    }
+
+    .myLibraryPosterItem .posterItemDefaultText {
+        top: 0;
+        left: 0;
+        line-height: 34px;
+        text-align: left;
+        padding: 0 0 0 34px;
+    }
+
+.moviesPosterItem .posterItemImage, .trailersPosterItem .posterItemImage {
+    background-color: rgba(176, 94, 81, 0.7);
+}
+
+.musicPosterItem .posterItemImage {
+    background-color: rgba(217, 145, 67, 0.7);
+}
+
+.tvshowsPosterItem .posterItemImage {
+    background-color: rgba(77, 88, 164, 0.7);
+}
+
+.gamesPosterItem .posterItemImage {
+    background-color: rgba(183, 202, 72, 0.7);
+}
+
+.channelsPosterItem .posterItemImage {
+    background-color: rgba(51, 136, 204, 0.7);
+}
+
+.livetvPosterItem .posterItemImage {
+    background-color: rgba(255, 233, 127, 0.7);
+}
+
+.homevideosPosterItem .posterItemImage {
+    background-color: rgba(110, 52, 32, 0.7);
+}
+
+.adultvideosPosterItem .posterItemImage {
+    background-color: rgba(184, 83, 116, 0.7);
+}
+
+.photosPosterItem .posterItemImage {
+    background-color: rgba(127, 0, 0, 0.7);
+}
+
+.musicvideosPosterItem .posterItemImage {
+    background-color: rgba(143, 54, 168, 0.7);
+}
+@media all and (min-width: 600px) {
+
+    .myLibraryPosterItem {
+        width: 31%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 160px;
+    }
+}
+@media all and (min-width: 1000px) {
+
+    .myLibraryPosterItem {
+        width: 24%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 220px;
+    }
 }

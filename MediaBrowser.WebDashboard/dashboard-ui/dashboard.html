@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${TitleDashboard}</title>
+    <title>${TitleServer}</title>
 </head>
 <body>
     <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage">
@@ -10,9 +10,10 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabHome}</a>
-                    <a href="dashboardgeneral.html" data-role="button">${TabGeneral}</a>
-                    <a href="dashboardinfopage.html" data-role="button">${TabInfo}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
+                    <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
+                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
+                    <!--<a href="dashboardsync.html" data-role="button">${TabSync}</a>-->
                 </div>
                 <div class="dashboardContent">
                     <div class="readOnlyContent dashboardHomeLeftColumn">
@@ -67,7 +68,7 @@
                             </div>
                         </div>
 
-                        <div id="runningTasksCollapsible" data-role="collapsible" data-collapsed="false" style="margin-top: 2em; display: none;">
+                        <div id="runningTasksCollapsible" data-role="collapsible" data-collapsed="false" style="margin-top: 1em; display: none;">
                             <h3>${HeaderRunningTasks}</h3>
                             <div>
                                 <div id="divRunningTasks">
@@ -75,35 +76,88 @@
                             </div>
                         </div>
 
-                        <div id="contribute" style="margin-top: 4em; display: none;">
+                        <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
+                            <h3>${HeaderLinks}</h3>
+                            <div>
+                                <p><a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a></p>
+                                <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
+                                <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible" data-collapsed="true">
+                            <h3>${HeaderSystemPaths}</h3>
+                            <div>
+                                <p>
+                                    <b>${LabelCache}</b><br />
+                                    <span id="cachePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelImagesByName}</b><br />
+                                    <span id="imagesByNamePath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelLogs}</b><br />
+                                    <span id="logPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelMetadata}</b><br />
+                                    <span id="metadataPath"></span>
+                                </p>
+                                <p>
+                                    <b>${LabelTranscodingTemporaryFiles}</b><br />
+                                    <span id="transcodingTemporaryPath"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="contribute" style="margin-top: 2em; display: none;">
                             <h2 style="margin: 0 0 .35em;">${HeaderHelpImproveMediaBrowser}</h2>
                             <div>
                                 <a data-role="button" data-icon="mail" data-mini="true" href="supporter.html">
-                                    <img src="css/images/supporter/donatepaypal.png" /></a>
+                                    <img src="css/images/supporter/donatepaypal.png" />
+                                </a>
                                 <a href="https://github.com/MediaBrowser/MediaBrowser/wiki" data-role="button" target="_blank" data-icon="user" data-mini="true">Join the Development Team</a>
 
                                 <p class="appLinks" style="padding-left: 5px;">
                                     <a href="http://www.amazon.com/Mark-Linton-Mediabrowser-Android-Client/dp/B00GVH9O0I" target="_blank">
-                                        <img src="css/images/clients/amazon.png" title="Android via Amazon App Store" /></a>
+                                        <img src="css/images/clients/amazon.png" title="Android via Amazon App Store" />
+                                    </a>
                                     <a href="https://play.google.com/store/apps/details?id=com.mb.android&hl=en" target="_blank">
-                                        <img src="css/images/clients/playstore.png" title="Android via Google Play Store" /></a>
+                                        <img src="css/images/clients/playstore.png" title="Android via Google Play Store" />
+                                    </a>
                                     <a href="https://itunes.apple.com/us/app/media-browser-for-ios/id705058087" target="_blank">
-                                        <img src="css/images/clients/ios.png" title="iOS" /></a>
+                                        <img src="css/images/clients/ios.png" title="iOS" />
+                                    </a>
                                     <a href="http://mediabrowser.tv/community/index.php?/topic/8001-media-browser-for-roku-beta-channel/" target="_blank">
-                                        <img src="css/images/clients/roku.jpg" title="Roku" /></a>
+                                        <img src="css/images/clients/roku.jpg" title="Roku" />
+                                    </a>
                                     <a href="http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86" target="_blank">
-                                        <img src="css/images/clients/windowsphone.png" title="Windows Phone" /></a>
+                                        <img src="css/images/clients/windowsphone.png" title="Windows Phone" />
+                                    </a>
                                     <a href="http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06" target="_blank">
-                                        <img src="css/images/clients/windowsrt.png" title="Windows 8.1" /></a>
+                                        <img src="css/images/clients/windowsrt.png" title="Windows 8.1" />
+                                    </a>
                                     <a href="http://mediabrowser.tv" target="_blank" title="Windows Media Center">
-                                        <img src="css/images/clients/mbc.png" /></a>
-                                    <a href="http://addons.xbmc.org/show/plugin.video.xbmb3c" target="_blank" title="XBMB3C">
-                                        <img src="css/images/clients/xbmc.png" /></a>
+                                        <img src="css/images/clients/mbc.png" />
+                                    </a>
+                                    <a href="http://mediabrowser.tv/download" target="_blank" title="XBMB3C">
+                                        <img src="css/images/clients/xbmc.png" />
+                                    </a>
                                     <a href="http://forum.team-mediaportal.com/threads/plugin-mediabrowser-for-mediaportal-v0-13-beta-2013-10-21.119513" target="_blank" title="Media Portal">
-                                        <img src="css/images/clients/mediaportal.png" /></a>
+                                        <img src="css/images/clients/mediaportal.png" />
+                                    </a>
                                 </p>
                                 <br />
 
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="readOnlyContent dashboardHomeRightColumn firstDashboardHomeRightColumn">
+                        <div data-role="collapsible" data-collapsed="false">
+                            <h3>${HeaderRecentActivity}</h3>
+                            <div class="activityItems">
                             </div>
                         </div>
                     </div>

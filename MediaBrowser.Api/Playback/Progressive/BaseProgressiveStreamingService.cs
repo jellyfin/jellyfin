@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using ServiceStack.Web;
@@ -26,7 +27,8 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected readonly IImageProcessor ImageProcessor;
         protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IImageProcessor imageProcessor, IHttpClient httpClient)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
         {
             ImageProcessor = imageProcessor;
             HttpClient = httpClient;
@@ -52,23 +54,23 @@ namespace MediaBrowser.Api.Playback.Progressive
             if (isVideoRequest)
             {
                 var videoCodec = state.VideoRequest.VideoCodec;
-                
-                    if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".ts";
-                    }
-                    if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".ogv";
-                    }
-                    if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".webm";
-                    }
-                    if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return ".asf";
-                    }
+
+                if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".ts";
+                }
+                if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".ogv";
+                }
+                if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".webm";
+                }
+                if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ".asf";
+                }
             }
 
             // Try to infer based on the desired audio codec
@@ -114,7 +116,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>Task.</returns>
         protected object ProcessRequest(StreamRequest request, bool isHeadRequest)
         {
-            var state = GetState(request, CancellationToken.None).Result;
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var state = GetState(request, cancellationTokenSource.Token).Result;
 
             var responseHeaders = new Dictionary<string, string>();
 
@@ -123,13 +127,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 AddDlnaHeaders(state, responseHeaders, true);
 
-                try
+                using (state)
                 {
-                    return GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest).Result;
-                }
-                finally
-                {
-                    state.Dispose();
+                    return GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest, cancellationTokenSource).Result;
                 }
             }
 
@@ -151,13 +151,24 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var contentType = state.GetMimeType(state.MediaPath);
 
-                try
+                using (state)
                 {
-                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
-                }
-                finally
-                {
-                    state.Dispose();
+                    var throttleLimit = state.InputBitrate.HasValue ? (state.InputBitrate.Value / 8) : 0;
+
+                    return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+                    {
+                        ResponseHeaders = responseHeaders,
+                        ContentType = contentType,
+                        IsHeadRequest = isHeadRequest,
+                        Path = state.MediaPath,
+                        Throttle = request.Throttle,
+
+                        // Pad by 20% to play it safe
+                        ThrottleLimit = Convert.ToInt64(1.2 * throttleLimit),
+
+                        // Three minutes
+                        MinThrottlePosition = throttleLimit * 180
+                    });
                 }
             }
 
@@ -168,7 +179,13 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 try
                 {
-                    return ResultFactory.GetStaticFileResult(Request, outputPath, contentType, FileShare.Read, responseHeaders, isHeadRequest);
+                    return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+                    {
+                        ResponseHeaders = responseHeaders,
+                        ContentType = contentType,
+                        IsHeadRequest = isHeadRequest,
+                        Path = outputPath
+                    });
                 }
                 finally
                 {
@@ -179,7 +196,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Need to start ffmpeg
             try
             {
-                return GetStreamResult(state, responseHeaders, isHeadRequest).Result;
+                return GetStreamResult(state, responseHeaders, isHeadRequest, cancellationTokenSource).Result;
             }
             catch
             {
@@ -195,8 +212,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest)
+        private async Task<object> GetStaticRemoteStreamResult(StreamState state, Dictionary<string, string> responseHeaders, bool isHeadRequest, CancellationTokenSource cancellationTokenSource)
         {
             string useragent = null;
             state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
@@ -205,7 +223,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 Url = state.MediaPath,
                 UserAgent = useragent,
-                BufferContent = false
+                BufferContent = false,
+                CancellationToken = cancellationTokenSource.Token
             };
 
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
@@ -246,8 +265,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="state">The state.</param>
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetStreamResult(StreamState state, IDictionary<string, string> responseHeaders, bool isHeadRequest)
+        private async Task<object> GetStreamResult(StreamState state, IDictionary<string, string> responseHeaders, bool isHeadRequest, CancellationTokenSource cancellationTokenSource)
         {
             // Use the command line args with a dummy playlist path
             var outputPath = state.OutputFilePath;
@@ -283,27 +303,36 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return streamResult;
             }
 
-            if (!File.Exists(outputPath))
+            await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            try
             {
-                await StartFfMpeg(state, outputPath, new CancellationTokenSource()).ConfigureAwait(false);
+                if (!File.Exists(outputPath))
+                {
+                    await StartFfMpeg(state, outputPath, cancellationTokenSource).ConfigureAwait(false);
+                }
+                else
+                {
+                    ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
+                    state.Dispose();
+                }
+
+                var job = ApiEntryPoint.Instance.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
+                var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem, job);
+
+                result.Options["Content-Type"] = contentType;
+
+                // Add the response headers to the result object
+                foreach (var item in responseHeaders)
+                {
+                    result.Options[item.Key] = item.Value;
+                }
+
+                return result;
             }
-            else
+            finally
             {
-                ApiEntryPoint.Instance.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
-                state.Dispose();
+                ApiEntryPoint.Instance.TranscodingStartLock.Release();
             }
-
-            var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem);
-
-            result.Options["Content-Type"] = contentType;
-
-            // Add the response headers to the result object
-            foreach (var item in responseHeaders)
-            {
-                result.Options[item.Key] = item.Value;
-            }
-
-            return result;
         }
 
         /// <summary>

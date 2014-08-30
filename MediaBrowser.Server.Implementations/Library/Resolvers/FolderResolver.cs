@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using System;
@@ -12,6 +13,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     /// </summary>
     public class FolderResolver : FolderResolver<Folder>
     {
+        private readonly IFileSystem _fileSystem;
+
+        public FolderResolver(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -69,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                     }
 
                 })
-                .Select(i => Path.GetFileNameWithoutExtension(i.FullName))
+                .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();
         }
     }

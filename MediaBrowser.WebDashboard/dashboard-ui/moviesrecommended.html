@@ -10,31 +10,28 @@
             <a href="movieslatest.html">${TabLatest}</a>
             <a href="#" class="ui-btn-active">${TabSuggested}</a>
             <a href="movies.html">${TabMovies}</a>
+            <a href="collections.html?context=movies">${TabCollections}</a>
             <a href="moviegenres.html">${TabGenres}</a>
             <a href="moviepeople.html">${TabPeople}</a>
             <a href="moviestudios.html">${TabStudios}</a>
         </div>
         <div data-role="content">
 
-            <table class="ehsContent">
-                <tr>
-                    <td>
-                        <div id="resumableSection" style="display: none;">
-                            <h1 class="listHeader">${HeaderResume}</h1>
+            <div class="ehsContent">
+                <div id="resumableSection" style="display: none;">
+                    <h1 class="listHeader">${HeaderResume}</h1>
 
-                            <div id="resumableItems">
-                            </div>
-                        </div>
+                    <div id="resumableItems">
+                    </div>
+                </div>
 
-                        <div class="recommendations">
-                        </div>
-                        <div class="noItemsMessage" style="display: none;">
-                            <br />
-                            <p>${MessageNoMovieSuggestionsAvailable}</p>
-                        </div>
-                    </td>
-                </tr>
-            </table>
+                <div class="recommendations">
+                </div>
+                <div class="noItemsMessage" style="display: none;">
+                    <br />
+                    <p>${MessageNoMovieSuggestionsAvailable}</p>
+                </div>
+            </div>
         </div>
     </div>
 </body>

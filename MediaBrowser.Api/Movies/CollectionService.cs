@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Collections;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -45,6 +47,7 @@ namespace MediaBrowser.Api.Movies
         public Guid Id { get; set; }
     }
 
+    [Authenticated]
     public class CollectionService : BaseApiService
     {
         private readonly ICollectionManager _collectionManager;
@@ -56,17 +59,16 @@ namespace MediaBrowser.Api.Movies
             _dtoService = dtoService;
         }
 
-        public object Post(CreateCollection request)
+        public async Task<object> Post(CreateCollection request)
         {
-            var task = _collectionManager.CreateCollection(new CollectionCreationOptions
+            var item = await _collectionManager.CreateCollection(new CollectionCreationOptions
             {
                 IsLocked = request.IsLocked,
                 Name = request.Name,
                 ParentId = request.ParentId,
                 ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList()
-            });
 
-            var item = task.Result;
+            }).ConfigureAwait(false);
 
             var dto = _dtoService.GetBaseItemDto(item, new List<ItemFields>());
 
@@ -89,10 +91,5 @@ namespace MediaBrowser.Api.Movies
 
             Task.WaitAll(task);
         }
-    }
-
-    public class CollectionCreationResult
-    {
-        public string Id { get; set; }
     }
 }

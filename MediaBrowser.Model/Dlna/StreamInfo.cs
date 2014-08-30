@@ -3,6 +3,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.Dlna
     {
         public string ItemId { get; set; }
 
-        public bool IsDirectStream { get; set; }
+        public PlayMethod PlayMethod { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
 
@@ -58,12 +59,20 @@ namespace MediaBrowser.Model.Dlna
 
         public MediaSourceInfo MediaSource { get; set; }
 
+        public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+        public string SubtitleFormat { get; set; }
+
         public string MediaSourceId
         {
             get
             {
                 return MediaSource == null ? null : MediaSource.Id;
             }
+        }
+
+        public bool IsDirectStream
+        {
+            get { return PlayMethod == PlayMethod.DirectStream; }
         }
 
         public string ToUrl(string baseUrl)
@@ -91,7 +100,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (StringHelper.EqualsIgnoreCase(Protocol, "hls"))
             {
-                return string.Format("{0}/videos/{1}/stream.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
+                return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
             }
 
             return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
@@ -108,7 +117,7 @@ namespace MediaBrowser.Model.Dlna
                 item.VideoCodec ?? string.Empty,
                 item.AudioCodec ?? string.Empty,
                 item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty,
-                item.SubtitleStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
+                item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
                 item.VideoBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoBitrate.Value) : string.Empty,
                 item.AudioBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioBitrate.Value) : string.Empty,
                 item.MaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxAudioChannels.Value) : string.Empty,
@@ -120,6 +129,56 @@ namespace MediaBrowser.Model.Dlna
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
+        }
+
+        public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException(baseUrl);
+            }
+
+            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+
+            if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
+            {
+                return list;
+            }
+
+            if (!SubtitleStreamIndex.HasValue)
+            {
+                return list;
+            }
+
+            // HLS will preserve timestamps so we can just grab the full subtitle stream
+            long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
+                ? 0
+                : StartPositionTicks;
+
+            string url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                baseUrl,
+                ItemId,
+                MediaSourceId,
+                StringHelper.ToStringCultureInvariant(SubtitleStreamIndex.Value),
+                StringHelper.ToStringCultureInvariant(startPositionTicks),
+                SubtitleFormat);
+
+            foreach (MediaStream stream in MediaSource.MediaStreams)
+            {
+                if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
+                {
+                    list.Add(new SubtitleStreamInfo
+                    {
+                        Url = url,
+                        IsForced = stream.IsForced,
+                        Language = stream.Language,
+                        Name = stream.Language ?? "Unknown",
+                        Format = SubtitleFormat
+                    });
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -135,7 +194,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         foreach (MediaStream i in MediaSource.MediaStreams)
                         {
-                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio) 
+                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio)
                                 return i;
                         }
                         return null;
@@ -270,7 +329,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return MaxAudioChannels.HasValue && !IsDirectStream
                     ? (streamChannels.HasValue ? Math.Min(MaxAudioChannels.Value, streamChannels.Value) : MaxAudioChannels.Value)
-                    : stream == null ? null : streamChannels;
+                    : streamChannels;
             }
         }
 
@@ -305,8 +364,14 @@ namespace MediaBrowser.Model.Dlna
                 {
                     int? totalBitrate = TargetTotalBitrate;
 
+                    double totalSeconds = RunTimeTicks.Value;
+                    // Convert to ms
+                    totalSeconds /= 10000;
+                    // Convert to seconds
+                    totalSeconds /= 1000;
+
                     return totalBitrate.HasValue ?
-                        Convert.ToInt64(totalBitrate.Value * TimeSpan.FromTicks(RunTimeTicks.Value).TotalSeconds) :
+                        Convert.ToInt64(totalBitrate.Value * totalSeconds) :
                         (long?)null;
                 }
 
@@ -375,11 +440,14 @@ namespace MediaBrowser.Model.Dlna
                         Height = videoStream.Height.Value
                     };
 
+                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
+                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+
                     ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
-                        MaxWidth,
-                        MaxHeight);
+                        maxWidth,
+                        maxHeight);
 
                     return Convert.ToInt32(newSize.Width);
                 }
@@ -402,11 +470,14 @@ namespace MediaBrowser.Model.Dlna
                         Height = videoStream.Height.Value
                     };
 
+                    double? maxWidth = MaxWidth.HasValue ? (double)MaxWidth.Value : (double?)null;
+                    double? maxHeight = MaxHeight.HasValue ? (double)MaxHeight.Value : (double?)null;
+
                     ImageSize newSize = DrawingUtils.Resize(size,
                         null,
                         null,
-                        MaxWidth,
-                        MaxHeight);
+                        maxWidth,
+                        maxHeight);
 
                     return Convert.ToInt32(newSize.Height);
                 }
@@ -414,5 +485,34 @@ namespace MediaBrowser.Model.Dlna
                 return MaxHeight;
             }
         }
+    }
+
+    public enum SubtitleDeliveryMethod
+    {
+        /// <summary>
+        /// The encode
+        /// </summary>
+        Encode = 0,
+        /// <summary>
+        /// The embed
+        /// </summary>
+        Embed = 1,
+        /// <summary>
+        /// The external
+        /// </summary>
+        External = 2,
+        /// <summary>
+        /// The HLS
+        /// </summary>
+        Hls = 3
+    }
+
+    public class SubtitleStreamInfo
+    {
+        public string Url { get; set; }
+        public string Language { get; set; }
+        public string Name { get; set; }
+        public bool IsForced { get; set; }
+        public string Format { get; set; }
     }
 }

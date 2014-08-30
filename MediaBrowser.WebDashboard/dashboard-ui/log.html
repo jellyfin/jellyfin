@@ -10,23 +10,16 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="support.html" data-role="button">${TabGeneral}</a>
-                    <a href="log.html" data-role="button" class="ui-btn-active">${TabLog}</a>
-                    <a href="supporter.html" data-role="button">${TabBecomeSupporter}</a>
+                    <a href="log.html" data-role="button" class="ui-btn-active">${TabLogs}</a>
+                    <a href="supporter.html" data-role="button">${TabSupporterClub}</a>
                     <a href="supporterkey.html" data-role="button">${TabSupporterKey}</a>
                     <a href="about.html" data-role="button">${TabAbout}</a>
                 </div>
-                <p>
-                    Log path: <span id="logPath"></span>
-                </p>
-                <p>
-                    <label for="chkAutoScroll">${ButtonAutoScroll}</label>
-                    <input type="checkbox" id="chkAutoScroll" onchange="LogPage.updateAutoScroll(this.checked);" name="chkAutoScroll" data-inline="true" />
-                </p>
-                <textarea id="logContents" class="pre" style="overflow-y: hidden;"></textarea>
-                <p>
-                    <label for="chkAutoScrollBottom">${ButtonAutoScroll}</label>
-                    <input type="checkbox" id="chkAutoScrollBottom" name="chkAutoScrollBottom" onchange="LogPage.updateAutoScroll(this.checked);" data-inline="true" />
-                </p>
+                
+                <p>${HeaderServerLogFiles}</p>
+                <div class="serverLogs readOnlyContent">
+                    
+                </div>
             </div>
         </div>
     </div>

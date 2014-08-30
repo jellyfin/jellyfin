@@ -9,7 +9,7 @@
             options = options || {};
 
             options.header = options.header || "Rate and Review";
-            
+
             var html = '<div data-role="popup" id="popupRatingDialog" class="popup" style="min-width:400px;">';
 
             html += '<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">';
@@ -43,11 +43,11 @@
 
             $(page).append(html);
 
-            var popup = $('#popupRatingDialog').popup().trigger('create').on("popupafteropen", function() {
+            var popup = $('#popupRatingDialog').popup().trigger('create').on("popupafteropen", function () {
 
                 $('#txtRatingDialogTitle', this).focus();
 
-            }).popup("open").on("popupafterclose", function() {
+            }).popup("open").on("popupafterclose", function () {
 
                 $('form', this).off("submit");
 
@@ -93,6 +93,57 @@
         self.close = function () {
             $('#popupRatingDialog', page).popup("close");
         };
+    };
+
+    window.RatingHelpers = {
+
+        ratePackage: function (link) {
+            var id = link.getAttribute('data-id');
+            var name = link.getAttribute('data-name');
+            var rating = link.getAttribute('data-rating');
+
+            var dialog = new RatingDialog($.mobile.activePage);
+            dialog.show({
+                header: "Rate and review " + name,
+                id: id,
+                rating: rating,
+                callback: function (review) {
+                    console.log(review);
+                    dialog.close();
+
+                    ApiClient.createPackageReview(review).done(function () {
+                        Dashboard.alert({
+                            message: "Thank you for your review",
+                            title: "Thank You"
+                        });
+                    });
+                }
+            });
+        },
+
+        getStoreRatingHtml: function (rating, id, name, noLinks) {
+
+            var html = "<div style='margin-left: 5px; margin-right: 5px; display: inline-block; vertical-align:middle;'>";
+            if (!rating) rating = 0;
+
+            for (var i = 1; i <= 5; i++) {
+                var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
+
+                html += noLinks ? "" : "<span data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='RatingHelpers.ratePackage(this);return false;' >";
+                if (rating <= i - 1) {
+                    html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
+                } else if (rating < i) {
+                    html += "<div class='storeStarRating halfStarRating' title='" + title + "'></div>";
+                } else {
+                    html += "<div class='storeStarRating' title='" + title + "'></div>";
+                }
+                html += noLinks ? "" : "</span>";
+            }
+
+            html += "</div>";
+
+            return html;
+        }
     };
 
 })(window, document, jQuery);

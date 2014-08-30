@@ -2,10 +2,12 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
@@ -51,11 +53,29 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsAddingToPlaylist
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         public bool IsInMixedFolder { get; set; }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsRemoteImageDownloading
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private string _name;
         /// <summary>
@@ -134,6 +154,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public virtual bool IsHiddenFromUser(User user)
+        {
+            return false;
+        }
+
         [IgnoreDataMember]
         public virtual bool IsOwnedItem
         {
@@ -168,6 +193,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
         public virtual bool SupportsLocalMetadata
         {
             get
@@ -213,6 +239,7 @@ namespace MediaBrowser.Controller.Entities
         public static IItemRepository ItemRepository { get; set; }
         public static IFileSystem FileSystem { get; set; }
         public static IUserDataManager UserDataManager { get; set; }
+        public static ILiveTvManager LiveTvManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -523,10 +550,10 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
-
+            
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => System.IO.Path.GetFileNameWithoutExtension(i.Name).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
+                .Where(i => FileSystem.GetFileNameWithoutExtension(i).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
@@ -558,7 +585,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => string.Equals(System.IO.Path.GetFileNameWithoutExtension(i.Name), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths<Audio.Audio>(files, directoryService, null).Select(audio =>
@@ -724,7 +751,18 @@ namespace MediaBrowser.Controller.Entities
 
             var themeVideosChanged = !item.ThemeVideoIds.SequenceEqual(newThemeVideoIds);
 
-            var tasks = newThemeVideos.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newThemeVideos.Select(i =>
+            {
+                var subOptions = new MetadataRefreshOptions(options);
+
+                if (!i.IsThemeMedia)
+                {
+                    i.IsThemeMedia = true;
+                    subOptions.ForceSave = true;
+                }
+
+                return i.RefreshMetadata(subOptions, cancellationToken);
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -743,7 +781,18 @@ namespace MediaBrowser.Controller.Entities
 
             var themeSongsChanged = !item.ThemeSongIds.SequenceEqual(newThemeSongIds);
 
-            var tasks = newThemeSongs.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newThemeSongs.Select(i =>
+            {
+                var subOptions = new MetadataRefreshOptions(options);
+
+                if (!i.IsThemeMedia)
+                {
+                    i.IsThemeMedia = true;
+                    subOptions.ForceSave = true;
+                }
+
+                return i.RefreshMetadata(subOptions, cancellationToken);
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -786,6 +835,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The index container.</value>
         [IgnoreDataMember]
         public virtual Folder IndexContainer
+        {
+            get { return null; }
+        }
+
+        [IgnoreDataMember]
+        public virtual Folder LatestItemsIndexContainer
         {
             get { return null; }
         }
@@ -994,6 +1049,18 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem FindLinkedChild(LinkedChild info)
         {
+            if (!string.IsNullOrWhiteSpace(info.ItemName))
+            {
+                if (string.Equals(info.ItemType, "musicgenre", StringComparison.OrdinalIgnoreCase))
+                {
+                    return LibraryManager.GetMusicGenre(info.ItemName);
+                }
+                if (string.Equals(info.ItemType, "musicartist", StringComparison.OrdinalIgnoreCase))
+                {
+                    return LibraryManager.GetArtist(info.ItemName);
+                }
+            }
+
             if (!string.IsNullOrEmpty(info.Path))
             {
                 var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
@@ -1016,7 +1083,10 @@ namespace MediaBrowser.Controller.Entities
                         {
                             if (info.ItemYear.HasValue)
                             {
-                                return info.ItemYear.Value == (i.ProductionYear ?? -1);
+                                if (info.ItemYear.Value != (i.ProductionYear ?? -1))
+                                {
+                                    return false;
+                                }
                             }
                             return true;
                         }
@@ -1514,6 +1584,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsUnplayed(User user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
             var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
 
             return userdata == null || !userdata.Played;
@@ -1547,7 +1622,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))
             {
-                Name = System.IO.Path.GetFileNameWithoutExtension(Path);
+                Name = FileSystem.GetFileNameWithoutExtension(Path);
                 hasChanges = true;
             }
 
@@ -1565,6 +1640,20 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return path;
+        }
+
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
+        {
+            if (RunTimeTicks.HasValue)
+            {
+                double pct = RunTimeTicks.Value;
+
+                if (pct > 0)
+                {
+                    pct = userData.PlaybackPositionTicks / pct;
+                    dto.PlayedPercentage = 100 * pct;
+                }
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
@@ -17,6 +16,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
+        
         /// <summary>
         /// Gets or sets the primary image tag.
         /// </summary>

@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -210,20 +211,23 @@ namespace MediaBrowser.Api.Library
     [Api(Description = "Gets all user media folders.")]
     public class GetMediaFolders : IReturn<ItemsResult>
     {
-
+        [ApiMember(Name = "IsHidden", Description = "Optional. Filter by folders that are marked hidden, or not.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? IsHidden { get; set; }
     }
 
+    [Route("/Library/Series/Added", "POST")]
     [Route("/Library/Series/Updated", "POST")]
     [Api(Description = "Reports that new episodes of a series have been added by an external source")]
     public class PostUpdatedSeries : IReturnVoid
     {
-        [ApiMember(Name = "TvdbId", Description = "Tvdb Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "TvdbId", Description = "Tvdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string TvdbId { get; set; }
     }
 
     /// <summary>
     /// Class LibraryService
     /// </summary>
+    [Authenticated]
     public class LibraryService : BaseApiService
     {
         /// <summary>
@@ -258,6 +262,13 @@ namespace MediaBrowser.Api.Library
         {
             var items = _libraryManager.GetUserRootFolder().Children.OrderBy(i => i.SortName).ToList();
 
+            if (request.IsHidden.HasValue)
+            {
+                var val = request.IsHidden.Value;
+
+                items = items.Where(i => i.IsHidden == val).ToList();
+            }
+
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
@@ -271,6 +282,11 @@ namespace MediaBrowser.Api.Library
             };
 
             return ToOptimizedResult(result);
+        }
+
+        public void Post(PostUpdatedSeries request)
+        {
+            Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
         }
 
         public object Get(GetFile request)
@@ -452,23 +468,11 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(DeleteItem request)
         {
-            var task = DeleteItem(request);
-
-            Task.WaitAll(task);
-        }
-
-        private Task DeleteItem(DeleteItem request)
-        {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var session = GetSession(_sessionManager);
+            var task = _libraryManager.DeleteItem(item);
 
-            if (!session.UserId.HasValue || !_userManager.GetUserById(session.UserId.Value).Configuration.EnableContentDeletion)
-            {
-                throw new UnauthorizedAccessException("This operation requires a logged in user with delete access.");
-            }
-
-            return _libraryManager.DeleteItem(item);
+            Task.WaitAll(task);
         }
 
         /// <summary>

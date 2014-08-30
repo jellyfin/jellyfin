@@ -1,11 +1,11 @@
-﻿using System.Net.Sockets;
-using System.Runtime.Serialization;
-using Funq;
+﻿using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.HttpServer.NetListener;
+using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Host;
@@ -14,11 +14,9 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +25,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : ServiceStackHost, IHttpServer
     {
-        private string ServerName { get; set; }
         private string HandlerPath { get; set; }
         private string DefaultRedirectPath { get; set; }
 
@@ -36,14 +33,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
 
-        private HttpListener Listener { get; set; }
-        protected bool IsStarted = false;
-
-        private readonly List<AutoResetEvent> _autoResetEvents = new List<AutoResetEvent>();
+        private IHttpListener _listener;
 
         private readonly ContainerAdapter _containerAdapter;
 
-        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
 
         /// <summary>
@@ -52,24 +45,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <value>The local end points.</value>
         public IEnumerable<string> LocalEndPoints
         {
-            get { return _localEndPoints.Keys.ToList(); }
+            get { return _listener == null ? new List<string>() : _listener.LocalEndPoints; }
         }
 
         public HttpListenerHost(IApplicationHost applicationHost, ILogManager logManager, string serviceName, string handlerPath, string defaultRedirectPath, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
-            ServerName = serviceName;
             HandlerPath = handlerPath;
 
             _logger = logManager.GetLogger("HttpServer");
 
             _containerAdapter = new ContainerAdapter(applicationHost);
-
-            for (var i = 0; i < 1; i++)
-            {
-                _autoResetEvents.Add(new AutoResetEvent(false));
-            }
         }
 
         public override void Configure(Container container)
@@ -81,7 +68,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (InvalidOperationException), 422},
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
-                {typeof (DirectoryNotFoundException), 404}
+                {typeof (DirectoryNotFoundException), 404},
+                {typeof (Implementations.Security.AuthenticationException), 401}
             };
 
             HostConfig.Instance.DebugMode = true;
@@ -95,7 +83,21 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.Add(new SwaggerFeature());
-            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization")); 
+            Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token"));
+
+            //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
+            //    new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
+            //}));
+
+            PreRequestFilters.Add((httpReq, httpRes) =>
+            {
+                //Handles Request and closes Responses after emitting global HTTP Headers
+                if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.EndRequest(); //add a 'using ServiceStack;'
+                }
+            });
+
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
@@ -154,213 +156,39 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private void StartListener()
         {
-            // *** Already running - just leave it in place
-            if (IsStarted)
-                return;
-
-            if (Listener == null)
-                Listener = new HttpListener();
-
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
-            foreach (var prefix in UrlPrefixes)
-            {
-                _logger.Info("Adding HttpListener prefix " + prefix);
-                Listener.Prefixes.Add(prefix);
-            }
+            _listener = NativeWebSocket.IsSupported
+                ? _listener = new HttpListenerServer(_logger)
+                //? _listener = new WebSocketSharpListener(_logger)
+                : _listener = new WebSocketSharpListener(_logger);
 
-            IsStarted = true;
-            _logger.Info("Starting HttpListner");
-            Listener.Start();
+            _listener.WebSocketHandler = WebSocketHandler;
+            _listener.ErrorHandler = ErrorHandler;
+            _listener.RequestHandler = RequestHandler;
 
-            for (var i = 0; i < _autoResetEvents.Count; i++)
+            _listener.Start(UrlPrefixes);
+        }
+
+        private void WebSocketHandler(WebSocketConnectEventArgs args)
+        {
+            if (WebSocketConnected != null)
             {
-                var index = i;
-                ThreadPool.QueueUserWorkItem(o => Listen(o, index));
+                WebSocketConnected(this, args);
             }
         }
 
-        private bool IsListening
+        private void ErrorHandler(Exception ex, IRequest httpReq)
         {
-            get { return this.IsStarted && this.Listener != null && this.Listener.IsListening; }
-        }
-
-        // Loop here to begin processing of new requests.
-        private void Listen(object state, int index)
-        {
-            while (IsListening)
+            try
             {
-                if (Listener == null) return;
+                var httpRes = httpReq.Response;
 
-                try
+                if (httpRes.IsClosed)
                 {
-                    Listener.BeginGetContext(c => ListenerCallback(c, index), Listener);
-
-                    _autoResetEvents[index].WaitOne();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Listen()", ex);
                     return;
                 }
-                if (Listener == null) return;
-            }
-        }
 
-        // Handle the processing of a request in here.
-        private void ListenerCallback(IAsyncResult asyncResult, int index)
-        {
-            var listener = asyncResult.AsyncState as HttpListener;
-            HttpListenerContext context = null;
-
-            if (listener == null) return;
-
-            try
-            {
-                if (!IsListening)
-                {
-                    _logger.Debug("Ignoring ListenerCallback() as HttpListener is no longer listening");
-                    return;
-                }
-                // The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
-                // blocks until there is a request to be processed or some type of data is available.
-                context = listener.EndGetContext(asyncResult);
-            }
-            catch (Exception ex)
-            {
-                // You will get an exception when httpListener.Stop() is called
-                // because there will be a thread stopped waiting on the .EndGetContext()
-                // method, and again, that is just the way most Begin/End asynchronous
-                // methods of the .NET Framework work.
-                var errMsg = ex + ": " + IsListening;
-                _logger.Warn(errMsg);
-                return;
-            }
-            finally
-            {
-                // Once we know we have a request (or exception), we signal the other thread
-                // so that it calls the BeginGetContext() (or possibly exits if we're not
-                // listening any more) method to start handling the next incoming request
-                // while we continue to process this request on a different thread.
-                _autoResetEvents[index].Set();
-            }
-
-            var date = DateTime.Now;
-
-            Task.Factory.StartNew(async () =>
-            {
-                try
-                {
-                    var request = context.Request;
-
-                    LogHttpRequest(request, index);
-
-                    if (request.IsWebSocketRequest)
-                    {
-                        await ProcessWebSocketRequest(context).ConfigureAwait(false);
-                        return;
-                    }
-
-                    var localPath = request.Url.LocalPath;
-
-                    if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.Response.Redirect(DefaultRedirectPath);
-                        context.Response.Close();
-                        return;
-                    }
-                    if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
-                        context.Response.Close();
-                        return;
-                    }
-                    if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.Response.Redirect("mediabrowser/" + DefaultRedirectPath);
-                        context.Response.Close();
-                        return;
-                    }
-                    if (string.IsNullOrEmpty(localPath))
-                    {
-                        context.Response.Redirect("/mediabrowser/" + DefaultRedirectPath);
-                        context.Response.Close();
-                        return;
-                    }
-
-                    var url = request.Url.ToString();
-                    var endPoint = request.RemoteEndPoint;
-
-                    await ProcessRequestAsync(context).ConfigureAwait(false);
-
-                    var duration = DateTime.Now - date;
-
-                    if (EnableHttpRequestLogging)
-                    {
-                        LoggerUtils.LogResponse(_logger, context.Response, url, endPoint, duration);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("ProcessRequest failure", ex);
-
-                    HandleError(ex, context, _logger);
-                }
-
-            });
-        }
-
-        /// <summary>
-        /// Logs the HTTP request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="index">The index.</param>
-        private void LogHttpRequest(HttpListenerRequest request, int index)
-        {
-            var endpoint = request.LocalEndPoint;
-
-            if (endpoint != null)
-            {
-                var address = endpoint.ToString();
-
-                _localEndPoints.GetOrAdd(address, address);
-            }
-
-            if (EnableHttpRequestLogging)
-            {
-                LoggerUtils.LogRequest(_logger, request, index);
-            }
-        }
-
-        /// <summary>
-        /// Processes the web socket request.
-        /// </summary>
-        /// <param name="ctx">The CTX.</param>
-        /// <returns>Task.</returns>
-        private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
-        {
-#if !__MonoCS__
-            try
-            {
-                var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
-                if (WebSocketConnected != null)
-                {
-                    WebSocketConnected(this, new WebSocketConnectEventArgs { WebSocket = new NativeWebSocket(webSocketContext.WebSocket, _logger), Endpoint = ctx.Request.RemoteEndPoint.ToString() });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("AcceptWebSocketAsync error", ex);
-                ctx.Response.StatusCode = 500;
-                ctx.Response.Close();
-            }
-#endif
-        }
-
-        public static void HandleError(Exception ex, HttpListenerContext context, ILogger logger)
-        {
-            try
-            {
                 var errorResponse = new ErrorResponse
                 {
                     ResponseStatus = new ResponseStatus
@@ -371,9 +199,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 };
 
-                var operationName = context.Request.GetOperationName();
-                var httpReq = GetRequest(context, operationName);
-                var httpRes = httpReq.Response;
                 var contentType = httpReq.ResponseContentType;
 
                 var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
@@ -402,15 +227,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                _logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }
-        }
-
-        private static ListenerRequest GetRequest(HttpListenerContext httpContext, string operationName)
-        {
-            var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None);
-            req.RequestAttributes = req.GetAttributes();
-            return req;
         }
 
         /// <summary>
@@ -418,31 +236,51 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         public void Stop()
         {
-            if (Listener != null)
+            if (_listener != null)
             {
-                foreach (var prefix in UrlPrefixes)
-                {
-                    Listener.Prefixes.Remove(prefix);
-                }
-
-                Listener.Close();
+                _listener.Stop();
             }
         }
 
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
-        /// <param name="context"></param>
-        protected Task ProcessRequestAsync(HttpListenerContext context)
+        /// <param name="httpReq">The HTTP req.</param>
+        /// <param name="url">The URL.</param>
+        /// <returns>Task.</returns>
+        protected Task RequestHandler(IHttpRequest httpReq, Uri url)
         {
-            if (string.IsNullOrEmpty(context.Request.RawUrl))
-                return ((object)null).AsTaskResult();
+            var date = DateTime.Now;
 
-            var operationName = context.Request.GetOperationName();
-
-            var httpReq = GetRequest(context, operationName);
             var httpRes = httpReq.Response;
+
+            var operationName = httpReq.OperationName;
+            var localPath = url.LocalPath;
+
+            if (string.Equals(localPath, "/" + HandlerPath + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl(DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+            if (string.Equals(localPath, "/" + HandlerPath, StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl(HandlerPath + "/" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+            if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl(HandlerPath + "/" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+            if (string.IsNullOrEmpty(localPath))
+            {
+                httpRes.RedirectToUrl("/" + HandlerPath + "/" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+
             var handler = HttpHandlerFactory.GetHandler(httpReq);
+
+            var remoteIp = httpReq.RemoteIp;
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)
@@ -454,20 +292,27 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                task.ContinueWith(x => httpRes.Close());
 
+                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                //Matches Exceptions handled in HttpListenerBase.InitTask()
+
+                var urlString = url.ToString();
+
+                task.ContinueWith(x =>
+                {
+                    var statusCode = httpRes.StatusCode;
+
+                    var duration = DateTime.Now - date;
+
+                    LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
+
+                }, TaskContinuationOptions.None);
                 return task;
             }
 
             return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
                 .AsTaskException();
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP request logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP request logging]; otherwise, <c>false</c>.</value>
-        public bool EnableHttpRequestLogging { get; set; }
 
         /// <summary>
         /// Adds the rest handlers.
@@ -483,6 +328,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             base.Init();
         }
+
+        //public override RouteAttribute[] GetRouteAttributes(System.Type requestType)
+        //{
+        //    var routes = base.GetRouteAttributes(requestType);
+        //    routes.Each(x => x.Path = "/api" + x.Path);
+        //    return routes;
+        //}
 
         /// <summary>
         /// Releases the specified instance.
@@ -524,11 +376,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             UrlPrefixes = urlPrefixes.ToList();
             Start(UrlPrefixes.First());
-        }
-
-        public bool SupportsWebSockets
-        {
-            get { return NativeWebSocket.IsSupported; }
         }
     }
 }

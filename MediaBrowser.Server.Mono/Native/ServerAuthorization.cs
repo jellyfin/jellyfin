@@ -18,7 +18,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="webSocketPort">The web socket port.</param>
         /// <param name="udpPort">The UDP port.</param>
         /// <param name="tempDirectory">The temp directory.</param>
-        public static void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int webSocketPort, int udpPort, string tempDirectory)
+        public static void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int udpPort, string tempDirectory)
         {
 
         }

@@ -3,30 +3,30 @@
     $(document).on('pagebeforeshow', "#moviesLatestPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
-
+        var userId = Dashboard.getCurrentUserId();
+        
         var screenWidth = $(window).width();
 
         var page = this;
 
         var options = {
 
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1920 ? 32 : (screenWidth >= 1440 ? 32 : (screenWidth >= 800 ? 28 : 18)),
-            Recursive: true,
+            Limit: screenWidth >= 1600 ? 28 : (screenWidth >= 1440 ? 30 : (screenWidth >= 800 ? 28 : 18)),
             Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed",
-            CollapseBoxSetItems: false,
-            ParentId: parentId
+            ParentId: parentId,
+            IsPlayed: false
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items
+                items: items,
+                lazy: true,
+                shape: 'homePagePortrait',
+                overlayText: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createCardMenus();
         });
 
     });

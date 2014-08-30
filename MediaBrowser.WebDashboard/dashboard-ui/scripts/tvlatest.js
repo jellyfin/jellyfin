@@ -3,6 +3,7 @@
     $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
 
         var screenWidth = $(window).width();
+        var userId = Dashboard.getCurrentUserId();
 
         var parentId = LibraryMenu.getTopParentId();
 
@@ -10,30 +11,29 @@
 
         var options = {
 
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
             IncludeItemTypes: "Episode",
-            Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1440 ? 16 : 15),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
-            Filters: "IsUnplayed",
-            ExcludeLocationTypes: "Virtual",
-            ParentId: parentId
+            Limit: screenWidth >= 1600 ? 24 : (screenWidth >= 1440 ? 16 : 15),
+            Fields: "PrimaryImageAspectRatio",
+            ParentId: parentId,
+            IsPlayed: false
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#latestEpisodes', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: screenWidth >= 600
+                items: items,
+                shape: "homePageBackdrop",
+                preferThumb: true,
+                inheritThumb: false,
+                showParentTitle: false,
+                showUnplayedIndicator: false,
+                showChildCountIndicator: true,
+                overlayText: screenWidth >= 600,
+                lazy: true
 
-            })).createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
-
     });
 
 

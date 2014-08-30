@@ -75,7 +75,7 @@
                 return '<option value="' + p + '">' + p + '</option>';
             });
 
-            $('#selectImageProvider', page).html('<option value="">All</option>' + providersHtml).val(provider).selectmenu('refresh');
+            $('#selectImageProvider', page).html('<option value="">' + Globalize.translate('LabelAll') + '</option>' + providersHtml).val(provider).selectmenu('refresh');
 
             Dashboard.hideLoadingMsg();
         });
@@ -215,7 +215,7 @@
             html += '</div>';
         }
 
-        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="arrow-d" data-mini="true">Download</button></div>';
+        html += '<div><button class="btnDownloadRemoteImage" data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" type="button" data-icon="arrow-d" data-mini="true">' + Globalize.translate('ButtonDownload') + '</button></div>';
 
         html += '</div>';
 
@@ -242,9 +242,9 @@
 
         if (showControls) {
             html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
-            html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+            html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
 
-            html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+            html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
             html += '</div>';
         }
 
@@ -275,7 +275,7 @@
                 $('#btnEditCollectionTitles', page).hide();
             }
 
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem") {
+            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
                 $('#btnEditSubtitles', page).show();
             } else {
                 $('#btnEditSubtitles', page).hide();
@@ -310,7 +310,7 @@
 
             html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="height:144px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: 144 }) + '\');"></div>';
+            html += '<div style="height:144px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { enableImageEnhancers: false, height: 144 }) + '\');"></div>';
 
             html += '<div>';
 
@@ -325,22 +325,22 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" style="margin-bottom:0;">Move left</button>';
+                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveLeft') + '</button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>Move left</button>';
+                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveLeft') + '</button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" style="margin-bottom:0;">Move right</button>';
+                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveRight') + '</button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>Move right</button>';
+                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveRight') + '</button>';
                 }
             }
 
-            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" style="margin-bottom:0;">Delete</button>';
+            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" style="margin-bottom:0;">' + Globalize.translate('Delete') + '</button>';
 
             if (imageProviders.length) {
-                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" style="margin-bottom:0;">Browse Online Images</button>';
+                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" style="margin-bottom:0;">' + Globalize.translate('ButtonBrowseOnlineImages') + '</button>';
             }
 
             html += '</p>';
@@ -407,15 +407,13 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError('File Not Found!');
-                break;
-            case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.showError('File is not readable');
+                Dashboard.showError(Globalize.translate('MessageFileNotFound'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError('An error occurred reading this file.');
+                Dashboard.showError(Globalize.translate('MessageFileReadError'));
+                break;
         };
     }
 
@@ -440,7 +438,7 @@
         };
         reader.onabort = function () {
             Dashboard.hideLoadingMsg();
-            Dashboard.showError('File read cancelled');
+            console.log('File read cancelled');
         };
 
         // Closure to capture the file information.
@@ -501,7 +499,7 @@
 
             var page = $.mobile.activePage;
 
-            Dashboard.confirm("Are you sure you wish to delete this image?", "Delete " + type + " Image", function (result) {
+            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('HeaderDeleteImage'), function (result) {
 
                 if (result) {
                     ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {

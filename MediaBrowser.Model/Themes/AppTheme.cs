@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Themes
 {
@@ -15,7 +14,7 @@ namespace MediaBrowser.Model.Themes
 
         public AppTheme()
         {
-            Options = new Dictionary<string, string>(StringComparer.Ordinal);
+            Options = new Dictionary<string, string>();
 
             Images = new List<ThemeImage>();
         }

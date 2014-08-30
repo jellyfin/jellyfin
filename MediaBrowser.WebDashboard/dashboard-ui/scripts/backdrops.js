@@ -22,7 +22,7 @@
 
         var deferred = $.Deferred();
 
-        var data = sessionStorage.getItem(key);
+        var data = sessionStore.getItem(key);
 
         if (data) {
 
@@ -51,7 +51,7 @@
                     };
                 });
 
-                sessionStorage.setItem(key, JSON.stringify(images));
+                sessionStore.setItem(key, JSON.stringify(images));
                 deferred.resolveWith(null, [images]);
             });
         }
@@ -98,17 +98,48 @@
         if ($.browser.msie) {
             return false;
         }
-        
-        // For bandwidth
-        if ($.browser.mobile) {
-            return false;
-        }
 
         var userId = Dashboard.getCurrentUserId();
 
-        var val = LocalSettings.val('enableBackdrops', userId);
+        var val = store.getItem('enableBackdrops-' + userId);
 
-        return val != '0';
+        // For bandwidth
+        return val == '1' || (val != '0' && !$.browser.mobile);
+    }
+
+    function setBackdrops(page, items) {
+
+        var images = items.filter(function (i) {
+
+            return i.BackdropImageTags.length > 0;
+
+        }).map(function (i) {
+            return {
+                id: i.Id,
+                tag: i.BackdropImageTags[0]
+            };
+        });
+
+        if (images.length) {
+            $(page).addClass('backdropPage');
+
+            var index = getRandom(0, images.length - 1);
+            var item = images[index];
+
+            var screenWidth = $(window).width();
+
+            var imgUrl = ApiClient.getScaledImageUrl(item.id, {
+                type: "Backdrop",
+                tag: item.tag,
+                maxWidth: screenWidth,
+                quality: 80
+            });
+
+            getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+
+        } else {
+            $(page).removeClass('backdropPage');
+        }
     }
 
     $(document).on('pagebeforeshow', ".page", function () {
@@ -131,5 +162,10 @@
         }
 
     });
+
+    window.Backdrops = {
+
+        setBackdrops: setBackdrops
+    };
 
 })(jQuery, document);

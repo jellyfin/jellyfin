@@ -1,5 +1,7 @@
 ﻿(function () {
 
+    var notificationsConfigurationKey = "notifications";
+    
     function fillItems(elem, items, cssClass, idPrefix, currentList, isEnabledList) {
 
         var html = '<div data-role="controlgroup">';
@@ -26,18 +28,18 @@
         var type = getParameterByName('type');
 
         var promise1 = ApiClient.getUsers();
-        var promise2 = ApiClient.getServerConfiguration();
-        var promise3 = $.getJSON(ApiClient.getUrl("Notifications/Types"));
-        var promise4 = $.getJSON(ApiClient.getUrl("Notifications/Services"));
+        var promise2 = ApiClient.getNamedConfiguration(notificationsConfigurationKey);
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
+        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Services"));
 
         $.when(promise1, promise2, promise3, promise4).done(function (response1, response2, response3, response4) {
 
             var users = response1[0];
-            var config = response2[0];
+            var notificationOptions = response2[0];
             var types = response3[0];
             var services = response4[0];
 
-            var notificationConfig = config.NotificationOptions.Options.filter(function (n) {
+            var notificationConfig = notificationOptions.Options.filter(function (n) {
 
                 return n.Type == type;
 
@@ -97,17 +99,15 @@
 
         var type = getParameterByName('type');
 
-        var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = $.getJSON(ApiClient.getUrl("Notifications/Types"));
+        var promise1 = ApiClient.getNamedConfiguration(notificationsConfigurationKey);
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
-            var config = response1[0];
+            var notificationOptions = response1[0];
             var types = response2[0];
 
-            var notificationOptions = config.NotificationOptions;
-
-            var notificationConfig = config.NotificationOptions.Options.filter(function (n) {
+            var notificationConfig = notificationOptions.Options.filter(function (n) {
 
                 return n.Type == type;
 
@@ -147,7 +147,7 @@
                 return c.getAttribute('data-itemid');
             });
 
-            ApiClient.updateServerConfiguration(config).done(function (r) {
+            ApiClient.updateNamedConfiguration(notificationsConfigurationKey, notificationOptions).done(function (r) {
 
                 Dashboard.navigate('notificationsettings.html');
             });

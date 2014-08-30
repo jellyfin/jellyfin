@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleMetadata}</title>
+</head>
+<body>
+    <div id="metadataXbmcPage" data-role="page" class="page type-interior metadataConfigurationPage">
+
+        <div data-role="content">
+
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="metadata.html" data-role="button">${TabBasics}</a>
+                    <a href="metadataimages.html" data-role="button">${TabServices}</a>
+                    <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
+                    <a href="#" class="ui-btn-active" data-role="button">${TabXbmcMetadata}</a>
+                    <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
+                </div>
+
+                <form class="metadataXbmcForm">
+
+                    <p>${HeaderXbmcMetadataHelp}</p>
+                    <br />
+                    <ul class="ulForm" data-role="listview">
+
+                        <li>
+                            <label for="selectUser">${LabelXbmcMetadataUser}</label>
+                            <select name="selectUser" id="selectUser" data-mini="true">
+                            </select>
+                            <div class="fieldDescription">${LabelXbmcMetadataUserHelp}</div>
+                        </li>
+
+                        <li>
+                            <label for="selectReleaseDateFormat">${LabelXbmcMetadataDateFormat}</label>
+                            <select name="selectReleaseDateFormat" id="selectReleaseDateFormat" data-mini="true">
+                                <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+                            </select>
+                            <div class="fieldDescription">${LabelXbmcMetadataDateFormatHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkSaveImagePaths">${LabelXbmcMetadataSaveImagePaths}</label>
+                            <input id="chkSaveImagePaths" type="checkbox" data-mini="true" />
+                            <div class="fieldDescription">${LabelXbmcMetadataSaveImagePathsHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkEnablePathSubstitution">${LabelXbmcMetadataEnablePathSubstitution}</label>
+                            <input id="chkEnablePathSubstitution" type="checkbox" data-mini="true" />
+                            <div class="fieldDescription">
+                                <div>${LabelXbmcMetadataEnablePathSubstitutionHelp}</div>
+                                <div style="margin-top: .5em;"><a href="librarypathmapping.html">${LabelXbmcMetadataEnablePathSubstitutionHelp2}</a></div>
+                            </div>
+                        </li>
+                        <li>
+                            <label for="chkEnableExtraThumbs">${LabelXbmcMetadataEnableExtraThumbs}</label>
+                            <input id="chkEnableExtraThumbs" type="checkbox" data-mini="true" />
+                            <div class="fieldDescription">${LabelXbmcMetadataEnableExtraThumbsHelp}</div>
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+            $('.metadataXbmcForm').off('submit', XbmcMetadataPage.onSubmit).on('submit', XbmcMetadataPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

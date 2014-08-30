@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Updates;
 using ServiceStack;
 using System;
@@ -121,6 +122,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PackageService
     /// </summary>
+    [Authenticated]
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;

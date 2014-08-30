@@ -5,12 +5,13 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, StartTime = {StartDate}, EndTime = {EndDate}")]
-    public class ProgramInfoDto : INotifyPropertyChanged, IItemDto
+    public class ProgramInfoDto : IHasPropertyChangedEvent, IItemDto
     {
         /// <summary>
         /// Id of the program.

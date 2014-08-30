@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
@@ -7,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "SeriesInfo,PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false
@@ -29,27 +31,43 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                addSelectionButton: true
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls();
 
-            var screenWidth = $(window).width();
+            if (view == "List") {
 
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: screenWidth >= 600,
-                selectionPanel: true,
-                lazy: true
-            });
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'tv',
+                    sortBy: query.SortBy
+                });
+            }
+            else if (view == "Poster") {
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: true,
+                    selectionPanel: true,
+                    lazy: true,
+                    context: 'tv'
+                });
+            }
 
-            $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            html += pagingHtml;
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
-
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -58,12 +76,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -107,6 +119,8 @@
 
         }).checkboxradio('refresh');
 
+        $('#selectView', page).val(view).selectmenu('refresh');
+
         $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
         $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
 
@@ -120,6 +134,7 @@
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#episodesPage", function () {
@@ -272,8 +287,24 @@
 
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#episodesPage", function () {
 
+        var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -284,7 +315,9 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
+
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
 
         var filters = getParameterByName('filters');
         if (filters) {
@@ -301,7 +334,14 @@
             query.SortOrder = sortorder;
         }
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#episodesPage", function () {
 

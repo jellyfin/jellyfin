@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, store, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -20,7 +20,7 @@
 
         self.isLocalPlayer = true;
         self.isDefaultPlayer = true;
-        
+
         self.name = 'Html5 Player';
 
         self.getTargets = function () {
@@ -46,25 +46,12 @@
 
             var playerTime = Math.floor(10000000 * (mediaElement || self.currentMediaElement).currentTime);
 
-            //if (!self.isCopyingTimestamps) {
-                playerTime += self.startTimeTicksOffset;
-            //}
+            playerTime += self.startTimeTicksOffset;
 
             return playerTime;
         };
 
-        self.clearPauseStop = function () {
-
-            if (self.pauseStop) {
-                console.log('clearing pause stop timer');
-                window.clearTimeout(self.pauseStop);
-                self.pauseStop = null;
-            }
-        };
-
         self.playNextAfterEnded = function () {
-
-            $(this).off('ended.playnext');
 
             self.nextTrack();
         };
@@ -95,7 +82,7 @@
             }
 
             // Chrome or IE with plugin installed
-            if (canPlayWebm()) {
+            if (self.canPlayWebm()) {
                 return '.webm';
             }
 
@@ -116,10 +103,12 @@
 
                 var currentSrc = element.currentSrc;
 
-                var transcodingExtension = self.getTranscodingExtension();
+                var transcodingExtension;
                 var isStatic;
 
                 if (self.currentItem.MediaType == "Video") {
+
+                    transcodingExtension = self.getTranscodingExtension();
 
                     if (params.AudioStreamIndex != null) {
                         currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
@@ -148,18 +137,24 @@
                     if (finalParams.isStatic) {
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
                     } else {
-                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension);
+                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension);
                     }
 
                     currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
                     currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
                     currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
                     isStatic = finalParams.isStatic;
+                } else {
+                    transcodingExtension = '.mp3';
                 }
 
-                if (isStatic || !ticks) {
+                var isSeekableMedia = self.currentMediaSource.RunTimeTicks;
+                var isClientSeekable = isStatic || (isSeekableMedia && transcodingExtension == '.m3u8');
+
+                if (isClientSeekable || !ticks || !isSeekableMedia) {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
-                } else {
+                }
+                else {
                     currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
                 }
 
@@ -169,7 +164,7 @@
 
                     self.updateCanClientSeek(this);
 
-                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded);
+                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
                     self.startProgressInterval();
                     sendProgressUpdate();
@@ -292,7 +287,7 @@
                 //return false;
             }
 
-            if (extension == 'm4v') {
+            if (extension == 'm4v' || extension == 'mkv') {
                 return $.browser.chrome;
             }
 
@@ -350,14 +345,10 @@
             var firstItem = items[0];
             var promise;
 
-            if (firstItem.IsFolder) {
+            if (firstItem.Type == "Playlist") {
 
                 promise = self.getItemsForPlayback({
                     ParentId: firstItem.Id,
-                    Filters: "IsNotFolder",
-                    Recursive: true,
-                    SortBy: "SortName",
-                    MediaTypes: "Audio,Video"
                 });
             }
             else if (firstItem.Type == "MusicArtist") {
@@ -381,6 +372,16 @@
                     MediaTypes: "Audio"
                 });
             }
+            else if (firstItem.IsFolder) {
+
+                promise = self.getItemsForPlayback({
+                    ParentId: firstItem.Id,
+                    Filters: "IsNotFolder",
+                    Recursive: true,
+                    SortBy: "SortName",
+                    MediaTypes: "Audio,Video"
+                });
+            }
 
             if (promise) {
                 promise.done(function (result) {
@@ -402,10 +403,7 @@
 
                     translateItemsForPlayback(options.items).done(function (items) {
 
-                        self.playInternal(items[0], options.startPositionTicks, user);
-
-                        self.playlist = items;
-                        currentPlaylistIndex = 0;
+                        self.playWithIntros(items, options, user);
                     });
 
                 } else {
@@ -418,10 +416,7 @@
 
                         translateItemsForPlayback(result.Items).done(function (items) {
 
-                            self.playInternal(items[0], options.startPositionTicks, user);
-
-                            self.playlist = items;
-                            currentPlaylistIndex = 0;
+                            self.playWithIntros(items, options, user);
                         });
 
                     });
@@ -431,8 +426,30 @@
 
         };
 
+        self.playWithIntros = function (items, options, user) {
+
+            var firstItem = items[0];
+
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
+                self.playInternal(firstItem, options.startPositionTicks, user);
+
+                self.playlist = items;
+                currentPlaylistIndex = 0;
+                return;
+            }
+
+            ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
+
+                items = intros.Items.concat(items);
+                self.playInternal(items[0], options.startPositionTicks, user);
+
+                self.playlist = items;
+                currentPlaylistIndex = 0;
+            });
+        };
+
         self.getBitrateSetting = function () {
-            return parseInt(localStorage.getItem('preferredVideoBitrate') || '') || 1500000;
+            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
         };
 
         function getOptimalMediaSource(mediaType, versions) {
@@ -487,7 +504,7 @@
 
                 self.currentItem = item;
                 self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
-                
+
                 mediaElement = playAudio(item, self.currentMediaSource, startPosition);
 
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
@@ -502,67 +519,6 @@
 
                 self.updateNowPlayingInfo(item);
             }
-        };
-
-        self.updateNowPlayingInfo = function (item) {
-
-            if (!item) {
-                throw new Error('item cannot be null');
-            }
-
-            var mediaControls = $("#videoControls");
-
-            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
-
-            var url = "";
-
-            if (state.NowPlayingItem.PrimaryImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
-                    type: "Primary",
-                    height: 40,
-                    tag: state.NowPlayingItem.PrimaryImageTag
-                });
-            }
-            else if (state.NowPlayingItem.BackdropImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
-                    type: "Backdrop",
-                    height: 40,
-                    tag: state.NowPlayingItem.BackdropImageTag,
-                    index: 0
-                });
-
-            } else if (state.NowPlayingItem.ThumbImageTag) {
-
-                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
-                    type: "Thumb",
-                    height: 40,
-                    tag: state.NowPlayingItem.ThumbImageTag
-                });
-            }
-
-            else if (item.Type == "TvChannel" || item.Type == "Recording") {
-                url = "css/images/items/detail/tv.png";
-            }
-            else if (item.MediaType == "Audio") {
-                url = "css/images/items/detail/audio.png";
-            }
-            else {
-                url = "css/images/items/detail/video.png";
-            }
-
-            var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
-            var nameHtml = self.getNowPlayingNameHtml(state);
-
-            if (nameHtml.indexOf('<br/>') != -1) {
-                nowPlayingTextElement.addClass('nowPlayingDoubleText');
-            } else {
-                nowPlayingTextElement.removeClass('nowPlayingDoubleText');
-            }
-
-            $('.nowPlayingImage', mediaControls).html('<img src="' + url + '" />');
-            nowPlayingTextElement.html(nameHtml);
         };
 
         self.getNowPlayingNameHtml = function (playerState) {
@@ -599,14 +555,7 @@
         self.displayContent = function (options) {
 
             // Handle it the same as a remote control command
-            Dashboard.onBrowseCommand({
-
-                ItemName: options.itemName,
-                ItemType: options.itemType,
-                ItemId: options.itemId,
-                Context: options.context
-
-            });
+            Dashboard.onBrowseCommand(options);
         };
 
         self.getItemsForPlayback = function (query) {
@@ -648,6 +597,9 @@
             var newItem = self.playlist[newIndex];
 
             if (newItem) {
+
+                console.log('playing next track');
+
                 Dashboard.getCurrentUser().done(function (user) {
 
                     self.playInternal(newItem, 0, user);
@@ -825,13 +777,13 @@
         self.saveVolume = function (val) {
 
             if (val) {
-                localStorage.setItem("volume", val);
+                store.setItem("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return localStorage.getItem("volume") || 0.5;
+            return store.getItem("volume") || 0.5;
         };
 
         self.shuffle = function (id) {
@@ -849,11 +801,7 @@
                     SortBy: "Random"
                 };
 
-                if (item.IsFolder) {
-                    query.ParentId = id;
-
-                }
-                else if (item.Type == "MusicArtist") {
+                if (item.Type == "MusicArtist") {
 
                     query.MediaTypes = "Audio";
                     query.Artists = item.Name;
@@ -864,7 +812,12 @@
                     query.MediaTypes = "Audio";
                     query.Genres = item.Name;
 
-                } else {
+                }
+                else if (item.IsFolder) {
+                    query.ParentId = id;
+
+                }
+                else {
                     return;
                 }
 
@@ -888,19 +841,21 @@
 
                 if (item.Type == "MusicArtist") {
 
-                    promise = ApiClient.getInstantMixFromArtist(name, {
+                    promise = ApiClient.getInstantMixFromArtist({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: 50,
+                        Id: id
                     });
 
                 }
                 else if (item.Type == "MusicGenre") {
 
-                    promise = ApiClient.getInstantMixFromMusicGenre(name, {
+                    promise = ApiClient.getInstantMixFromMusicGenre({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: 50,
+                        Id: id
                     });
 
                 }
@@ -940,26 +895,39 @@
 
             var elem = self.currentMediaElement;
 
-            elem.pause();
+            if (elem) {
 
-            var isVideo = self.currentItem.MediaType == "Video";
+                elem.pause();
 
-            $(elem).off("ended.playnext").one("ended", function () {
+                $(elem).off("ended.playnext").one("ended", function () {
 
-                $(this).off();
+                    $(this).off();
 
-                if (this.tagName.toLowerCase() != 'audio') {
-                    $(this).remove();
-                }
+                    if (this.tagName.toLowerCase() != 'audio') {
+                        $(this).remove();
+                    }
 
-                elem.src = "";
+                    elem.src = null;
+                    elem.src = "";
+                    self.currentMediaElement = null;
+                    self.currentItem = null;
+                    self.currentMediaSource = null;
+
+                    // When the browser regains focus it may start auto-playing the last video
+                    if ($.browser.safari) {
+                        elem.src = 'files/dummy.mp4';
+                        elem.play();
+                    }
+
+                }).trigger("ended");
+
+            } else {
                 self.currentMediaElement = null;
                 self.currentItem = null;
                 self.currentMediaSource = null;
+            }
 
-            }).trigger("ended");
-
-            if (isVideo) {
+            if (self.currentItem && self.currentItem.MediaType == "Video") {
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
@@ -1044,7 +1012,12 @@
 
                 var imageTags = item.ImageTags || {};
 
-                if (imageTags.Primary) {
+                if (item.SeriesPrimaryImageTag) {
+
+                    nowPlayingItem.PrimaryImageItemId = item.SeriesId;
+                    nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
+                }
+                else if (imageTags.Primary) {
 
                     nowPlayingItem.PrimaryImageItemId = item.Id;
                     nowPlayingItem.PrimaryImageTag = imageTags.Primary;
@@ -1070,6 +1043,17 @@
 
                     nowPlayingItem.ThumbItemId = item.Id;
                     nowPlayingItem.ThumbImageTag = imageTags.Thumb;
+                }
+
+                if (imageTags.Logo) {
+
+                    nowPlayingItem.LogoItemId = item.Id;
+                    nowPlayingItem.LogoImageTag = imageTags.Logo;
+                }
+                else if (item.ParentLogoImageTag) {
+
+                    nowPlayingItem.LogoItemId = item.ParentLogoItemId;
+                    nowPlayingItem.LogoImageTag = item.ParentLogoImageTag;
                 }
             }
 
@@ -1104,13 +1088,21 @@
             $(self).trigger('volumechange', [state]);
         };
 
+        self.cleanup = function () {
+
+        };
+
         self.onPlaybackStopped = function () {
 
-            self.clearPauseStop();
+            console.log('playback stopped');
+
+            $('body').removeClass('bodyWithPopupOpen');
 
             var playerElement = this;
 
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
+
+            self.cleanup(playerElement);
 
             clearProgressInterval();
 
@@ -1137,7 +1129,7 @@
             $(self).trigger('playstatechange', [state]);
         };
 
-        $(window).on("beforeunload popstate", function () {
+        $(window).on("beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
             if (self.currentItem && self.currentMediaElement && currentProgressInterval) {
@@ -1169,10 +1161,10 @@
             }
         }
 
-        function canPlayWebm() {
+        self.canPlayWebm = function() {
 
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
-        }
+        };
 
         self.canAutoPlayAudio = function () {
 
@@ -1265,19 +1257,30 @@
 
             }).on("volumechange.mediaplayerevent", function () {
 
+                console.log('audio element event: volumechange');
+
                 self.onVolumeChanged(this);
 
             }).one("playing.mediaplayerevent", function () {
 
+                console.log('audio element event: playing');
+
                 $('.mediaPlayerAudioContainer').hide();
+
+                // For some reason this is firing at the start, so don't bind until playback has begun
+                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 
             }).on("pause.mediaplayerevent", function () {
 
+                console.log('audio element event: pause');
+
                 self.onPlaystateChange(this);
 
             }).on("playing.mediaplayerevent", function () {
+
+                console.log('audio element event: playing');
 
                 self.onPlaystateChange(this);
 
@@ -1285,7 +1288,7 @@
 
                 self.setCurrentTime(self.getCurrentTicks(this));
 
-            }).on("ended.playbackstopped", self.onPlaybackStopped).on('ended.playnext', self.playNextAfterEnded)[0];
+            })[0];
         };
 
         function canPlayAudioStreamDirect(audioStream) {
@@ -1324,4 +1327,4 @@
     window.MediaController.setActivePlayer(window.MediaPlayer);
 
 
-})(document, setTimeout, clearTimeout, screen, localStorage, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, window.store, $, setInterval, window);

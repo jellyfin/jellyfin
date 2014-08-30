@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Defines the display preferences for any item that supports them (usually Folders)
     /// </summary>
-    public class DisplayPreferences : INotifyPropertyChanged
+    public class DisplayPreferences : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Occurs when [property changed].

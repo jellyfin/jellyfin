@@ -25,6 +25,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPages
     /// </summary>
     [Route("/dashboard/ConfigurationPages", "GET")]
+    [Route("/web/ConfigurationPages", "GET")]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
         /// <summary>
@@ -38,6 +39,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardConfigurationPage
     /// </summary>
     [Route("/dashboard/ConfigurationPage", "GET")]
+    [Route("/web/ConfigurationPage", "GET")]
     public class GetDashboardConfigurationPage
     {
         /// <summary>
@@ -50,6 +52,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
+    [Route("/web/{ResourceName*}", "GET")]
     [Route("/dashboard/{ResourceName*}", "GET")]
     public class GetDashboardResource
     {
@@ -218,6 +221,18 @@ namespace MediaBrowser.WebDashboard.Api
             var contentType = MimeTypes.GetMimeType(path);
 
             var isHtml = IsHtml(path);
+
+            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted)
+            {
+                if (path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    Request.Response.Redirect("wizardstart.html");
+                    return null;
+                }    
+            }
+
+            path = path.Replace("scripts/jquery.mobile-1.4.3.min.map", "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.map", StringComparison.OrdinalIgnoreCase);
+
             var localizationCulture = GetLocalizationCulture();
 
             // Don't cache if not configured to do so
@@ -400,7 +415,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.css",
+                                "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -423,9 +438,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js",
-                                "thirdparty/jquery.unveil-custom.js",
-                                "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js"
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
@@ -445,9 +458,17 @@ namespace MediaBrowser.WebDashboard.Api
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
             // jQuery + jQuery mobile
-            await AppendResource(memoryStream, "thirdparty/jquery-2.0.3.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.2/jquery.mobile-1.4.2.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
 
+            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
+
+            // This script produces errors in older versions of safari
+            if ((Request.UserAgent ?? string.Empty).IndexOf("chrome/", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+            }
+            
             await AppendLocalization(memoryStream).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
@@ -518,6 +539,8 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediacontroller.js",
                                 "chromecast.js",
                                 "backdrops.js",
+                                "sync.js",
+                                "playlistmanager.js",
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
@@ -526,15 +549,10 @@ namespace MediaBrowser.WebDashboard.Api
 
                                 "ratingdialog.js",
                                 "aboutpage.js",
-                                "allusersettings.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
                                 "advancedconfigurationpage.js",
-                                "advancedpaths.js",
-                                "advancedserversettings.js",
                                 "metadataadvanced.js",
-                                "appsplayback.js",
-                                "appsweather.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
                                 "channels.js",
@@ -542,8 +560,8 @@ namespace MediaBrowser.WebDashboard.Api
                                 "channelitems.js",
                                 "channelsettings.js",
                                 "dashboardgeneral.js",
-                                "dashboardinfo.js",
                                 "dashboardpage.js",
+                                "dashboardsync.js",
                                 "directorybrowser.js",
                                 "dlnaprofile.js",
                                 "dlnaprofiles.js",
@@ -585,15 +603,13 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvstatus.js",
                                 "livetvtimers.js",
 
-                                "localsettings.js",
-
                                 "loginpage.js",
                                 "logpage.js",
                                 "medialibrarypage.js",
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
-                                "metadatachapters.js",
+                                "metadataxbmc.js",
                                 "moviegenres.js",
                                 "moviecollections.js",
                                 "movies.js",
@@ -618,12 +634,16 @@ namespace MediaBrowser.WebDashboard.Api
                                 "notificationsetting.js",
                                 "notificationsettings.js",
                                 "playlist.js",
+                                "playlists.js",
+                                "playlistedit.js",
+
                                 "plugincatalogpage.js",
                                 "pluginspage.js",
                                 "remotecontrol.js",
                                 "scheduledtaskpage.js",
                                 "scheduledtaskspage.js",
                                 "search.js",
+                                "serversecurity.js",
                                 "songs.js",
                                 "supporterkeypage.js",
                                 "supporterpage.js",
@@ -642,7 +662,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",
                                 "wizardfinishpage.js",
-                                "wizardimagesettings.js",
                                 "wizardservice.js",
                                 "wizardstartpage.js",
                                 "wizardsettings.js",
@@ -668,13 +687,12 @@ namespace MediaBrowser.WebDashboard.Api
                                   {
                                       "site.css",
                                       "chromecast.css",
-                                      "contextmenu.css",
                                       "mediaplayer.css",
                                       "mediaplayer-video.css",
                                       "librarymenu.css",
                                       "librarybrowser.css",
                                       "detailtable.css",
-                                      "posteritem.css",
+                                      "card.css",
                                       "tileitem.css",
                                       "metadataeditor.css",
                                       "notifications.css",

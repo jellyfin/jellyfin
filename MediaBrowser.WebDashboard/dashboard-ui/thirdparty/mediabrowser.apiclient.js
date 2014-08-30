@@ -12,24 +12,24 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         keys.push((navigator.cpuClass || ""));
 
         var randomId = '';
-        
+
         if (localStorage) {
-            
+
             //  Since the above is not guaranteed to be unique per device, add a little more
             randomId = localStorage.getItem('randomId');
-            
+
             if (!randomId) {
 
                 randomId = new Date().getTime();
-                localStorage.setItem('randomId', randomId);
+
+                localStorage.setItem('randomId', randomId.toString());
             }
         }
 
         keys.push(randomId);
-
         return MediaBrowser.SHA1(keys.join('|'));
     }
-    
+
     /**
      * Creates a new api client instance
      * @param {String} serverAddress
@@ -46,6 +46,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var deviceName = "Web Browser";
         var deviceId = generateDeviceId();
         var currentUserId;
+        var accessToken;
         var webSocket;
 
         /**
@@ -56,16 +57,27 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return serverAddress;
         };
 
+        self.apiPrefix = function () {
+
+            return "/mediabrowser";
+        };
+
         /**
          * Gets or sets the current user id.
          */
-        self.currentUserId = function (val) {
+        self.getCurrentUserId = function () {
 
-            if (val !== undefined) {
-                currentUserId = val;
-            } else {
-                return currentUserId;
-            }
+            return currentUserId;
+        };
+
+        self.accessToken = function() {
+            return accessToken;
+        };
+
+        self.setCurrentUserId = function (userId, token) {
+
+            currentUserId = userId;
+            accessToken = token;
         };
 
         deviceName = (function () {
@@ -144,7 +156,20 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 };
             }
 
+            if (accessToken) {
+                request.headers['X-MediaBrowser-Token'] = accessToken;
+            }
+
             return $.ajax(request);
+        };
+
+        self.getJSON = function (url) {
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
         };
 
         /**
@@ -160,7 +185,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             var url = serverAddress;
 
-            url += "/mediabrowser/" + name;
+            url += self.apiPrefix() + "/" + name;
 
             if (params) {
                 url += "?" + $.param(params);
@@ -171,11 +196,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.openWebSocket = function (webSocketAddress) {
 
-            var url = webSocketAddress + "/mediabrowser";
+            var url = webSocketAddress + self.apiPrefix();
 
             webSocket = new WebSocket(url);
 
             webSocket.onmessage = function (msg) {
+
                 msg = JSON.parse(msg.data);
                 $(self).trigger("websocketmessage", [msg]);
             };
@@ -338,6 +364,26 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 type: "POST",
                 url: url
             });
+        };
+
+        self.logout = function () {
+
+            var done = function () {
+                self.setCurrentUserId(null, null);
+            };
+
+            if (accessToken) {
+                var url = self.getUrl("Sessions/Logout");
+
+                return self.ajax({
+                    type: "POST",
+                    url: url
+                }).done(done);
+            }
+
+            var deferred = $.Deferred();
+            deferred.resolveWith(null, []);
+            return deferred.promise().done(done);
         };
 
         function getRemoteImagePrefix(options) {
@@ -866,9 +912,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromArtist = function (name, options) {
+        self.getInstantMixFromArtist = function (options) {
 
-            var url = self.getUrl("Artists/" + self.encodeName(name) + "/InstantMix", options);
+            var url = self.getUrl("Artists/InstantMix", options);
 
             return self.ajax({
                 type: "GET",
@@ -877,9 +923,9 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        self.getInstantMixFromMusicGenre = function (name, options) {
+        self.getInstantMixFromMusicGenre = function (options) {
 
-            var url = self.getUrl("MusicGenres/" + self.encodeName(name) + "/InstantMix", options);
+            var url = self.getUrl("MusicGenres/InstantMix", options);
 
             return self.ajax({
                 type: "GET",
@@ -1303,6 +1349,17 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.getServerConfiguration = function () {
 
             var url = self.getUrl("System/Configuration");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getNamedConfiguration = function (name) {
+
+            var url = self.getUrl("System/Configuration/" + name);
 
             return self.ajax({
                 type: "GET",
@@ -2003,30 +2060,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         /**
-         * Gets a year
-         */
-        self.getYear = function (yea, userId) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            var options = {};
-
-            if (userId) {
-                options.userId = userId;
-            }
-
-            var url = self.getUrl("Years/" + self.encodeName(name), options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        /**
          * Gets a Person
          */
         self.getPerson = function (name, userId) {
@@ -2089,14 +2122,23 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
+        function supportsWebP() {
+
+            // TODO: Improve with http://webpjs.appspot.com/
+            return $.browser.chrome || $.browser.android;
+        }
+
         function normalizeImageOptions(options) {
 
-            var ratio = window.devicePixelRatio;
+            var ratio = window.devicePixelRatio || 1;
 
             if (ratio) {
 
-                if (options.width) {
+                if (options.minScale) {
+                    ratio = Math.max(options.minScale, ratio);
+                }
 
+                if (options.width) {
                     options.width = Math.round(options.width * ratio);
                 }
                 if (options.height) {
@@ -2111,6 +2153,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
+
+            if (supportsWebP()) {
+                options.format = 'webp';
+            }
         }
 
         /**
@@ -2136,43 +2182,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             };
 
             var url = "Users/" + userId + "/Images/" + options.type;
-
-            if (options.index != null) {
-                url += "/" + options.index;
-            }
-
-            normalizeImageOptions(options);
-
-            // Don't put these on the query string
-            delete options.type;
-            delete options.index;
-
-            return self.getUrl(url, options);
-        };
-
-        /**
-         * Constructs a url for a person image
-         * @param {String} name
-         * @param {Object} options
-         * Options supports the following properties:
-         * width - download the image at a fixed width
-         * height - download the image at a fixed height
-         * maxWidth - download the image at a maxWidth
-         * maxHeight - download the image at a maxHeight
-         * quality - A scale of 0-100. This should almost always be omitted as the default will suffice.
-         * For best results do not specify both width and height together, as aspect ratio might be altered.
-         */
-        self.getPersonImageUrl = function (name, options) {
-
-            if (!name) {
-                throw new Error("null name");
-            }
-
-            options = options || {
-
-            };
-
-            var url = "Persons/" + self.encodeName(name) + "/Images/" + options.type;
 
             if (options.index != null) {
                 url += "/" + options.index;
@@ -2221,6 +2230,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.type;
             delete options.index;
 
+            if (supportsWebP()) {
+                options.format = 'webp';
+            }
+
             return self.getUrl(url, options);
         };
 
@@ -2243,6 +2256,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             // Don't put these on the query string
             delete options.type;
             delete options.index;
+            delete options.minScale;
 
             return self.getUrl(url, options);
         };
@@ -2384,6 +2398,22 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             var url = self.getUrl("System/Configuration");
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(configuration),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateNamedConfiguration = function (name, configuration) {
+
+            if (!configuration) {
+                throw new Error("null configuration");
+            }
+
+            var url = self.getUrl("System/Configuration/" + name);
 
             return self.ajax({
                 type: "POST",
@@ -3440,7 +3470,7 @@ MediaBrowser.SHA1 = function (msg) {
     } else if (browser.webkit) {
         browser.safari = true;
     }
-    
+
     browser.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 
     jQuery.browser = browser;

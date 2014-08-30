@@ -46,12 +46,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         }
 
         /// <summary>
-        /// Gets or sets the external web socket server.
-        /// </summary>
-        /// <value>The external web socket server.</value>
-        private IWebSocketServer ExternalWebSocketServer { get; set; }
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -66,24 +60,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         /// <value>The configuration manager.</value>
         private IServerConfigurationManager ConfigurationManager { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether [supports web socket].
-        /// </summary>
-        /// <value><c>true</c> if [supports web socket]; otherwise, <c>false</c>.</value>
-        public bool SupportsNativeWebSocket
-        {
-            get { return HttpServer != null && HttpServer.SupportsWebSockets; }
-        }
-
-        /// <summary>
-        /// Gets the web socket port number.
-        /// </summary>
-        /// <value>The web socket port number.</value>
-        public int WebSocketPortNumber
-        {
-            get { return SupportsNativeWebSocket ? ConfigurationManager.Configuration.HttpServerPortNumber : ConfigurationManager.Configuration.LegacyWebSocketPortNumber; }
-        }
 
         /// <summary>
         /// Gets the web socket listeners.
@@ -123,43 +99,21 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start(IEnumerable<string> urlPrefixes, bool enableHttpLogging)
+        public void Start(IEnumerable<string> urlPrefixes)
         {
-            ReloadHttpServer(urlPrefixes, enableHttpLogging);
-        }
-
-        public void StartWebSocketServer()
-        {
-            if (!SupportsNativeWebSocket)
-            {
-                ReloadExternalWebSocketServer(ConfigurationManager.Configuration.LegacyWebSocketPortNumber);
-            }
-        }
-
-        /// <summary>
-        /// Starts the external web socket server.
-        /// </summary>
-        private void ReloadExternalWebSocketServer(int portNumber)
-        {
-            DisposeExternalWebSocketServer();
-
-            ExternalWebSocketServer = _applicationHost.Resolve<IWebSocketServer>();
-
-            ExternalWebSocketServer.Start(portNumber);
-            ExternalWebSocketServer.WebSocketConnected += HttpServer_WebSocketConnected;
+            ReloadHttpServer(urlPrefixes);
         }
 
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        private void ReloadHttpServer(IEnumerable<string> urlPrefixes, bool enableHttpLogging)
+        private void ReloadHttpServer(IEnumerable<string> urlPrefixes)
         {
             _logger.Info("Loading Http Server");
 
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.EnableHttpRequestLogging = enableHttpLogging;
                 HttpServer.StartServer(urlPrefixes);
             }
             catch (SocketException ex)
@@ -199,6 +153,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
+            //_logger.Debug("Websocket message received: {0}", result.MessageType);
+
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
             {
                 try
@@ -286,13 +242,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 _logger.Info("Sending web socket message {0}", messageType);
 
                 var message = new WebSocketMessage<T> { MessageType = messageType, Data = dataFunction() };
-                var bytes = _jsonSerializer.SerializeToBytes(message);
+                var json = _jsonSerializer.SerializeToString(message);
 
                 var tasks = connectionsList.Select(s => Task.Run(() =>
                 {
                     try
                     {
-                        s.SendAsync(bytes, cancellationToken);
+                        s.SendAsync(json, cancellationToken);
                     }
                     catch (OperationCanceledException)
                     {
@@ -302,7 +258,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                     {
                         _logger.ErrorException("Error sending web socket message {0} to {1}", ex, messageType, s.RemoteEndPoint);
                     }
-                }));
+
+                }, cancellationToken));
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
@@ -326,8 +283,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 HttpServer.WebSocketConnected -= HttpServer_WebSocketConnected;
                 HttpServer.Dispose();
             }
-
-            DisposeExternalWebSocketServer();
         }
 
         /// <summary>
@@ -348,18 +303,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             if (dispose)
             {
                 DisposeHttpServer();
-            }
-        }
-
-        /// <summary>
-        /// Disposes the external web socket server.
-        /// </summary>
-        private void DisposeExternalWebSocketServer()
-        {
-            if (ExternalWebSocketServer != null)
-            {
-                _logger.Info("Disposing {0}", ExternalWebSocketServer.GetType().Name);
-                ExternalWebSocketServer.Dispose();
             }
         }
 

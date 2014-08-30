@@ -267,13 +267,13 @@
                 html += '<div class="guideProgramTime">';
 
                 if (program.IsLive) {
-                    html += '<span class="liveTvProgram">LIVE&nbsp;&nbsp;</span>';
+                    html += '<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'&nbsp;&nbsp;</span>';
                 }
                 else if (program.IsPremiere) {
-                    html += '<span class="premiereTvProgram">PREMIERE&nbsp;&nbsp;</span>';
+                    html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
                 }
                 else if (program.IsSeries && !program.IsRepeat) {
-                    html += '<span class="newTvProgram">NEW&nbsp;&nbsp;</span>';
+                    html += '<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'&nbsp;&nbsp;</span>';
                 }
 
                 html += LiveTvHelpers.getDisplayTime(program.StartDateLocal);
@@ -396,6 +396,10 @@
         start.setHours(0, 0, 0, 0);
         end.setHours(0, 0, 0, 0);
 
+        if (start.getTime() >= end.getTime()) {
+            end.setDate(start.getDate() + 1);
+        }
+
         start = new Date(Math.max(today, start));
 
         var html = '';
@@ -417,7 +421,10 @@
 
         var val = elem.val();
         var date = new Date();
-        date.setTime(parseInt(val));
+
+        if (val) {
+            date.setTime(parseInt(val));
+        }
 
         changeDate(page, date);
     }

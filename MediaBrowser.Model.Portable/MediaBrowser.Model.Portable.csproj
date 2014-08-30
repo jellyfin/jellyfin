@@ -11,12 +11,32 @@
     <RootNamespace>MediaBrowser.Model</RootNamespace>
     <AssemblyName>MediaBrowser.Model</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile104</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Profile158</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <FodyPath>..\packages\Fody.1.19.1.0</FodyPath>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,28 +57,35 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="app.config" />
     <None Include="Fody.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Threading.Tasks">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.16\lib\portable-net40+sl4+win8+wp71\Microsoft.Threading.Tasks.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\portable-net40+sl4+win8+wp71+wpa81\Microsoft.Threading.Tasks.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Threading.Tasks.Extensions">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.16\lib\portable-net40+sl4+win8+wp71\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\portable-net40+sl4+win8+wp71+wpa81\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="PropertyChanged">
       <HintPath>..\packages\PropertyChanged.Fody.1.41.0.0\Lib\portable-net4+sl4+wp7+win8+MonoAndroid16+MonoTouch40\PropertyChanged.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.IO">
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\portable-net40+sl5+win8+wp8+wpa81\System.IO.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime">
-      <HintPath>..\packages\Microsoft.Bcl.1.0.19\lib\portable-net40+sl4+win8+wp71\System.Runtime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\portable-net40+sl5+win8+wp8+wpa81\System.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks">
-      <HintPath>..\packages\Microsoft.Bcl.1.0.19\lib\portable-net40+sl4+win8+wp71\System.Threading.Tasks.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\portable-net40+sl5+win8+wp8+wpa81\System.Threading.Tasks.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Model\Activity\ActivityLogEntry.cs">
+      <Link>Activity\ActivityLogEntry.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ApiClientExtensions.cs">
       <Link>ApiClient\ApiClientExtensions.cs</Link>
     </Compile>
@@ -74,8 +101,14 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
       <Link>ApiClient\IServerEvents.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ServerDiscoveryInfo.cs">
+      <Link>ApiClient\ServerDiscoveryInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Branding\BrandingOptions.cs">
+      <Link>Branding\BrandingOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelFeatures.cs">
       <Link>Channels\ChannelFeatures.cs</Link>
@@ -101,8 +134,17 @@
     <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterResult.cs">
       <Link>Chapters\RemoteChapterResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Collections\CollectionCreationResult.cs">
+      <Link>Collections\CollectionCreationResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChannelOptions.cs">
+      <Link>Configuration\ChannelOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\ChapterOptions.cs">
+      <Link>Configuration\ChapterOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\DlnaOptions.cs">
       <Link>Configuration\DlnaOptions.cs</Link>
@@ -116,9 +158,6 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\ImageSavingConvention.cs">
       <Link>Configuration\ImageSavingConvention.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\LiveTvOptions.cs">
-      <Link>Configuration\LiveTvOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataOptions.cs">
       <Link>Configuration\MetadataOptions.cs</Link>
     </Compile>
@@ -131,35 +170,23 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataPluginType.cs">
       <Link>Configuration\MetadataPluginType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationOption.cs">
-      <Link>Configuration\NotificationOption.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationOptions.cs">
-      <Link>Configuration\NotificationOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\NotificationType.cs">
-      <Link>Configuration\NotificationType.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\PathSubstitution.cs">
       <Link>Configuration\PathSubstitution.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\SendToUserType.cs">
-      <Link>Configuration\SendToUserType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\SubtitleOptions.cs">
-      <Link>Configuration\SubtitleOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TvFileOrganizationOptions.cs">
-      <Link>Configuration\TvFileOrganizationOptions.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
+      <Link>Configuration\SubtitlePlaybackMode.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UnratedItem.cs">
       <Link>Configuration\UnratedItem.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UserConfiguration.cs">
       <Link>Configuration\UserConfiguration.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
+      <Link>Configuration\XbmcMetadataOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\AudioOptions.cs">
       <Link>Dlna\AudioOptions.cs</Link>
@@ -203,12 +230,6 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaProfileType.cs">
       <Link>Dlna\DlnaProfileType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\EventSubscription.cs">
-      <Link>Dlna\EventSubscription.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\Filter.cs">
-      <Link>Dlna\Filter.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\HeaderMatchType.cs">
       <Link>Dlna\HeaderMatchType.cs</Link>
     </Compile>
@@ -248,6 +269,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
       <Link>Dlna\StreamInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleProfile.cs">
+      <Link>Dlna\SubtitleProfile.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\TranscodeSeekInfo.cs">
       <Link>Dlna\TranscodeSeekInfo.cs</Link>
     </Compile>
@@ -262,6 +286,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOrientation.cs">
+      <Link>Drawing\ImageOrientation.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
       <Link>Drawing\ImageOutputFormat.cs</Link>
@@ -314,9 +341,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
-      <Link>Dto\StreamOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
     </Compile>
@@ -328,9 +352,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\UserItemDataDto.cs">
       <Link>Dto\UserItemDataDto.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\VideoStreamOptions.cs">
-      <Link>Dto\VideoStreamOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\BaseItemInfo.cs">
       <Link>Entities\BaseItemInfo.cs</Link>
@@ -434,6 +455,9 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\DoubleHelper.cs">
       <Link>Extensions\DoubleHelper.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
+      <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>
     </Compile>
@@ -442,6 +466,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\StringHelper.cs">
       <Link>Extensions\StringHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\AutoOrganizeOptions.cs">
+      <Link>FileOrganization\AutoOrganizeOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\EpisodeFileOrganizationRequest.cs">
       <Link>FileOrganization\EpisodeFileOrganizationRequest.cs</Link>
@@ -457,6 +484,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\FileSortingStatus.cs">
       <Link>FileOrganization\FileSortingStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\TvFileOrganizationOptions.cs">
+      <Link>FileOrganization\TvFileOrganizationOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
       <Link>Games\GameSystem.cs</Link>
@@ -511,6 +541,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvInfo.cs">
       <Link>LiveTv\LiveTvInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvOptions.cs">
+      <Link>LiveTv\LiveTvOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\LiveTvServiceInfo.cs">
       <Link>LiveTv\LiveTvServiceInfo.cs</Link>
@@ -629,6 +662,12 @@
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationLevel.cs">
       <Link>Notifications\NotificationLevel.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationOption.cs">
+      <Link>Notifications\NotificationOption.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationOptions.cs">
+      <Link>Notifications\NotificationOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationQuery.cs">
       <Link>Notifications\NotificationQuery.cs</Link>
     </Compile>
@@ -644,8 +683,23 @@
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationsSummary.cs">
       <Link>Notifications\NotificationsSummary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\NotificationType.cs">
+      <Link>Notifications\NotificationType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Notifications\NotificationTypeInfo.cs">
       <Link>Notifications\NotificationTypeInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Notifications\SendToUserType.cs">
+      <Link>Notifications\SendToUserType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistCreationRequest.cs">
+      <Link>Playlists\PlaylistCreationRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistCreationResult.cs">
+      <Link>Playlists\PlaylistCreationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Playlists\PlaylistItemQuery.cs">
+      <Link>Playlists\PlaylistItemQuery.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Plugins\BasePluginConfiguration.cs">
       <Link>Plugins\BasePluginConfiguration.cs</Link>
@@ -677,6 +731,9 @@
     <Compile Include="..\MediaBrowser.Model\Providers\RemoteSubtitleInfo.cs">
       <Link>Providers\RemoteSubtitleInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\SubtitleOptions.cs">
+      <Link>Providers\SubtitleOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\AllThemeMediaResult.cs">
       <Link>Querying\AllThemeMediaResult.cs</Link>
     </Compile>
@@ -706,6 +763,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\ItemsResult.cs">
       <Link>Querying\ItemsResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\LatestItemsQuery.cs">
+      <Link>Querying\LatestItemsQuery.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\NextUpQuery.cs">
       <Link>Querying\NextUpQuery.cs</Link>
@@ -806,6 +866,33 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
+      <Link>Sync\SyncJob.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobCreationResult.cs">
+      <Link>Sync\SyncJobCreationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItem.cs">
+      <Link>Sync\SyncJobItem.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobQuery.cs">
+      <Link>Sync\SyncJobQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobRequest.cs">
+      <Link>Sync\SyncJobRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobStatus.cs">
+      <Link>Sync\SyncJobStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
+      <Link>Sync\SyncQuality.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncTarget.cs">
+      <Link>Sync\SyncTarget.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
+      <Link>System\LogFile.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\System\SystemInfo.cs">
       <Link>System\SystemInfo.cs</Link>
     </Compile>
@@ -871,7 +958,18 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
@@ -879,8 +977,12 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\portable\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.8\tools\Microsoft.Bcl.Build.targets" />
   <Import Project="Fody.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

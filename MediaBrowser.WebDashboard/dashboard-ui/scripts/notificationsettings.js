@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        $.getJSON(ApiClient.getUrl("Notifications/Types")).done(function (list) {
+        ApiClient.getJSON(ApiClient.getUrl("Notifications/Types")).done(function (list) {
 
             var html = '<ul data-role="listview" data-inset="true">';
 

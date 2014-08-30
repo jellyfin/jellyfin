@@ -65,7 +65,7 @@ namespace MediaBrowser.Api.Library
             var rootFolderPath = appPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            var shortcutFilename = Path.GetFileNameWithoutExtension(path);
+            var shortcutFilename = fileSystem.GetFileNameWithoutExtension(path);
 
             var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
 

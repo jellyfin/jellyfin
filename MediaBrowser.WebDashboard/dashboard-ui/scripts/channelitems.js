@@ -42,14 +42,14 @@
 
         var channelId = getParameterByName('id');
 
-        $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
 
             if (features.CanFilter) {
 
-                $('.btnFilter', page).show();
+                $('.filterControls', page).show();
 
             } else {
-                $('.btnFilter', page).hide();
+                $('.filterControls', page).hide();
             }
 
             if (features.SupportsSortOrderToggle) {
@@ -121,15 +121,22 @@
 
         query.folderId = folderId;
 
-        $.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, getPageSizes());
-            
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
+
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
@@ -146,7 +153,7 @@
 
             html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -155,12 +162,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -198,6 +199,7 @@
         }).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#channelItemsPage", function () {
@@ -244,6 +246,12 @@
 
             query.NameStartsWithOrGreater = '';
 
+            reloadItems(page);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

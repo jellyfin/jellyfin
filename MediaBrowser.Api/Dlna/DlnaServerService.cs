@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Configuration;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
@@ -76,11 +78,14 @@ namespace MediaBrowser.Api.Dlna
         private readonly IContentDirectory _contentDirectory;
         private readonly IConnectionManager _connectionManager;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager)
+        private readonly IConfigurationManager _config;
+
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IConfigurationManager config)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
             _connectionManager = connectionManager;
+            _config = config;
         }
 
         public object Get(GetDescriptionXml request)
@@ -104,16 +109,16 @@ namespace MediaBrowser.Api.Dlna
             return ResultFactory.GetResult(xml, "text/xml");
         }
 
-        public object Post(ProcessContentDirectoryControlRequest request)
+        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, _contentDirectory).Result;
+            var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }
 
-        public object Post(ProcessConnectionManagerControlRequest request)
+        public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, _connectionManager).Result;
+            var response = await PostAsync(request.RequestStream, _connectionManager).ConfigureAwait(false);
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }

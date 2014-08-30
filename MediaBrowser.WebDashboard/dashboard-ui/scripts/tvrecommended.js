@@ -11,29 +11,29 @@
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
-        
+        var context = '';
+
         if (query.ParentId) {
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
-            $('.homeEhsContent', page).css('text-align', 'left');
+            $('.ehsContent', page).css('text-align', 'left');
             $('.scopedContent', page).show();
+            context = 'tv';
 
             loadResume(page);
 
         } else {
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
-            $('.homeEhsContent', page).css('text-align', 'center');
+            $('.ehsContent', page).css('text-align', 'center');
             $('.scopedContent', page).hide();
         }
 
-        loadNextUp(page);
+        loadNextUp(page, context || 'home-nextup');
     }
 
-    function loadNextUp(page) {
-
-        var screenWidth = $(window).width();
+    function loadNextUp(page, context) {
 
         var query = {
 
@@ -49,13 +49,13 @@
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
-            $('.ehsContent', page).css('text-align', 'left').removeClass('homeEhsContent');
+            $('.ehsContent', page).css('text-align', 'left');
             $('.scopedContent', page).show();
 
         } else {
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
-            $('.ehsContent', page).css('text-align', 'center').addClass('homeEhsContent');
+            $('.ehsContent', page).css('text-align', 'center');
             $('.scopedContent', page).hide();
         }
 
@@ -69,14 +69,14 @@
 
             $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "backdrop",
+                shape: "homePageBackdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
-                context: 'home-nextup',
+                overlayText: true,
+                context: context,
                 lazy: true
 
-            })).trigger('create').createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
     }
@@ -93,7 +93,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : 4,
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1200 ? 6 : 4),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual",
@@ -112,12 +112,14 @@
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "backdrop",
+                shape: "homePageBackdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600
+                overlayText: true,
+                lazy: true,
+                context: 'tv'
 
-            })).createPosterItemMenus();
+            })).trigger('create').createCardMenus();
 
         });
     }

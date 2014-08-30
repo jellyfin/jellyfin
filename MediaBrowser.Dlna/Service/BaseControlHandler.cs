@@ -1,5 +1,4 @@
-﻿using System.Security;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
@@ -28,12 +27,19 @@ namespace MediaBrowser.Dlna.Service
         {
             try
             {
-                if (Config.Configuration.DlnaOptions.EnableDebugLogging)
+                if (Config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     LogRequest(request);
                 }
 
-                return ProcessControlRequestInternal(request);
+                var response = ProcessControlRequestInternal(request);
+
+                if (Config.GetDlnaConfiguration().EnableDebugLogging)
+                {
+                    LogResponse(response);
+                }
+
+                return response;
             }
             catch (Exception ex)
             {
@@ -112,6 +118,18 @@ namespace MediaBrowser.Dlna.Service
             builder.Append(request.InputXml);
 
             Logger.LogMultiline("Control request", LogSeverity.Debug, builder);
+        }
+
+        private void LogResponse(ControlResponse response)
+        {
+            var builder = new StringBuilder();
+
+            var headers = string.Join(", ", response.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
+            builder.AppendFormat("Headers: {0}", headers);
+            builder.AppendLine();
+            builder.Append(response.Xml);
+
+            Logger.LogMultiline("Control response", LogSeverity.Debug, builder);
         }
     }
 }

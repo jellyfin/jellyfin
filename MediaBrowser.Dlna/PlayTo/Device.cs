@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -289,7 +290,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, url, dictionary), header)
+            var post = AvCommands.BuildPost(command, service.ServiceType, url, dictionary);
+            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header)
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
@@ -313,31 +315,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 return String.Empty;
 
             return SecurityElement.Escape(value);
-        }
-
-        public async Task SetNextAvTransport(string value, string header, string metaData)
-        {
-            var command = AvCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetNextAVTransportURI");
-            if (command == null)
-                return;
-
-            var dictionary = new Dictionary<string, string>
-            {
-                {"NextURI", value},
-                {"NextURIMetaData", CreateDidlMeta(metaData)}
-            };
-
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
-
-            if (service == null)
-            {
-                throw new InvalidOperationException("Unable to find service");
-            }
-
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, value, dictionary), header)
-                .ConfigureAwait(false);
-
-            RestartTimer();
         }
 
         public async Task SetPlay()
@@ -393,6 +370,8 @@ namespace MediaBrowser.Dlna.PlayTo
             if (_disposed)
                 return;
 
+            const int maxSuccessiveStopReturns = 5;
+
             try
             {
                 var transportState = await GetTransportInfo().ConfigureAwait(false);
@@ -431,7 +410,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         _successiveStopCount++;
 
-                        if (_successiveStopCount >= 10)
+                        if (_successiveStopCount >= maxSuccessiveStopReturns)
                         {
                             RestartTimerInactive();
                         }
@@ -445,7 +424,14 @@ namespace MediaBrowser.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error updating device info", ex);
+                _logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
+
+                _successiveStopCount++;
+
+                if (_successiveStopCount >= maxSuccessiveStopReturns)
+                {
+                    RestartTimerInactive();
+                }
             }
         }
 
@@ -458,7 +444,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error updating device info", ex);
+                _logger.ErrorException("Error updating device volume info for {0}", ex, Properties.Name);
             }
         }
 
@@ -771,13 +757,17 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var deviceProperties = new DeviceInfo();
 
-            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
-            if (name != null)
-                deviceProperties.Name = name.Value;
+            var friendlyNames = new List<string>();
 
-            var name2 = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
-            if (name2 != null)
-                deviceProperties.Name = name2.Value;
+            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
+            if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+                friendlyNames.Add(name.Value);
+
+            var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
+            if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+                friendlyNames.Add(room.Value);
+
+            deviceProperties.Name = string.Join(" ", friendlyNames.ToArray());
 
             var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
             if (model != null)
@@ -829,12 +819,12 @@ namespace MediaBrowser.Dlna.PlayTo
             foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
             {
                 if (services == null)
-                    return null;
+                    continue;
 
                 var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
 
                 if (servicesList == null)
-                    return null;
+                    continue;
 
                 foreach (var element in servicesList)
                 {
@@ -851,17 +841,15 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
             }
 
+            var device = new Device(deviceProperties, httpClient, logger, config);
+
             if (isRenderer)
             {
-                var device = new Device(deviceProperties, httpClient, logger, config);
-
                 await device.GetRenderingProtocolAsync().ConfigureAwait(false);
                 await device.GetAVProtocolAsync().ConfigureAwait(false);
-
-                return device;
             }
 
-            return null;
+            return device;
         }
 
         #endregion

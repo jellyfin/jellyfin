@@ -55,7 +55,9 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Configuration\ConfigurationHelper.cs" />
+    <Compile Include="Configuration\ConfigurationUpdateEventArgs.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Configuration\IConfigurationFactory.cs" />
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Events\EventHelper.cs" />
     <Compile Include="Extensions\BaseExtensions.cs" />
@@ -76,7 +78,6 @@
     <Compile Include="Net\INetworkManager.cs" />
     <Compile Include="Net\IWebSocket.cs" />
     <Compile Include="Net\IWebSocketConnection.cs" />
-    <Compile Include="Net\IWebSocketServer.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Net\WebSocketMessageInfo.cs" />
@@ -115,7 +116,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(ConfigurationName)' != 'Release Mono' ">if '$(ConfigurationName)' == 'Release' (
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i

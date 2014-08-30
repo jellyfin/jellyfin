@@ -3,28 +3,27 @@
     function reload(page) {
 
         Dashboard.showLoadingMsg();
-        var screenWidth = $(window).width();
 
         apiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 12
+            limit: 10
 
         }).done(function (result) {
 
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "auto",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
+                overlayText: true,
                 coverImage: true
 
             });
 
-            $('.activeProgramItems', page).html(html).createPosterItemMenus();
+            $('.activeProgramItems', page).html(html).createCardMenus();
         });
 
         apiClient.getLiveTvRecommendedPrograms({
@@ -32,22 +31,22 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 12
+            limit: 10
 
         }).done(function (result) {
 
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "auto",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
+                overlayText: true,
                 coverImage: true
 
             });
 
-            $('.upcomingProgramItems', page).html(html).createPosterItemMenus();
+            $('.upcomingProgramItems', page).html(html).createCardMenus();
         });
     }
 

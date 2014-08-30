@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=casts,images,keywords,external_ids";
+        private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos";
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         internal static MovieDbSeriesProvider Current { get; private set; }
@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<Series> FetchMovieData(string tmdbId, string language, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -198,12 +198,12 @@ namespace MediaBrowser.Providers.TV
 
             var item = new Series();
 
-            ProcessMainInfo(item, preferredCountryCode, seriesInfo);
+            ProcessMainInfo(item, seriesInfo);
 
             return item;
         }
 
-        private void ProcessMainInfo(Series series, string countryCode, RootObject seriesInfo)
+        private void ProcessMainInfo(Series series, RootObject seriesInfo)
         {
             series.Name = seriesInfo.name;
             series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.id.ToString(_usCulture));
@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             series.HomePageUrl = seriesInfo.homepage;
-
+            
             series.RunTimeTicks = seriesInfo.episode_run_time.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
             if (string.Equals(seriesInfo.status, "Ended", StringComparison.OrdinalIgnoreCase))
@@ -349,7 +349,7 @@ namespace MediaBrowser.Providers.TV
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
                 {
                     return _cachedTask;
                 }
@@ -464,8 +464,35 @@ namespace MediaBrowser.Providers.TV
         public class Season
         {
             public string air_date { get; set; }
+            public int id { get; set; }
             public string poster_path { get; set; }
             public int season_number { get; set; }
+        }
+
+        public class Cast
+        {
+            public string character { get; set; }
+            public string credit_id { get; set; }
+            public int id { get; set; }
+            public string name { get; set; }
+            public string profile_path { get; set; }
+            public int order { get; set; }
+        }
+
+        public class Crew
+        {
+            public string credit_id { get; set; }
+            public string department { get; set; }
+            public int id { get; set; }
+            public string name { get; set; }
+            public string job { get; set; }
+            public string profile_path { get; set; }
+        }
+
+        public class Credits
+        {
+            public List<Cast> cast { get; set; }
+            public List<Crew> crew { get; set; }
         }
 
         public class Backdrop
@@ -484,6 +511,7 @@ namespace MediaBrowser.Providers.TV
             public double aspect_ratio { get; set; }
             public string file_path { get; set; }
             public int height { get; set; }
+            public string id { get; set; }
             public string iso_639_1 { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
@@ -496,6 +524,11 @@ namespace MediaBrowser.Providers.TV
             public List<Poster> posters { get; set; }
         }
 
+        public class Keywords
+        {
+            public List<object> results { get; set; }
+        }
+
         public class ExternalIds
         {
             public string imdb_id { get; set; }
@@ -503,6 +536,11 @@ namespace MediaBrowser.Providers.TV
             public string freebase_mid { get; set; }
             public int tvdb_id { get; set; }
             public int tvrage_id { get; set; }
+        }
+
+        public class Videos
+        {
+            public List<object> results { get; set; }
         }
 
         public class RootObject
@@ -530,8 +568,11 @@ namespace MediaBrowser.Providers.TV
             public string status { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
+            public Credits credits { get; set; }
             public Images images { get; set; }
+            public Keywords keywords { get; set; }
             public ExternalIds external_ids { get; set; }
+            public Videos videos { get; set; }
         }
 
         public int Order

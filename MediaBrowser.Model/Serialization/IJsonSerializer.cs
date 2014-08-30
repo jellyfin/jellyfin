@@ -83,13 +83,5 @@ namespace MediaBrowser.Model.Serialization
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
         string SerializeToString(object obj);
-
-        /// <summary>
-        /// Serializes to bytes.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns>System.Byte[][].</returns>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
-        byte[] SerializeToBytes(object obj);
     }
 }

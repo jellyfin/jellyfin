@@ -103,6 +103,19 @@ namespace MediaBrowser.Model.Dto
                 return null;
             }
         }
+
+        public MediaStream GetMediaStream(MediaStreamType type, int index)
+        {
+            foreach (MediaStream i in MediaStreams)
+            {
+                if (i.Type == type && i.Index == index)
+                {
+                    return i;
+                }
+            }
+
+            return null;
+        }
     }
 
     public enum MediaSourceType

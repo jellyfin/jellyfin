@@ -10,6 +10,7 @@
             <a href="#" class="ui-btn-active">${TabLatest}</a>
             <a href="moviesrecommended.html">${TabSuggested}</a>
             <a href="movies.html">${TabMovies}</a>
+            <a href="collections.html?context=movies">${TabCollections}</a>
             <a href="moviegenres.html">${TabGenres}</a>
             <a href="moviepeople.html">${TabPeople}</a>
             <a href="moviestudios.html">${TabStudios}</a>
@@ -17,16 +18,12 @@
 
         <div data-role="content">
 
-            <table class="ehsContent">
-                <tr>
-                    <td>
-                        <h1 class="listHeader">${HeaderLatestMovies}</h1>
+            <div class="ehsContent portraitEhsContent">
+                <h1 class="listHeader">${HeaderLatestMovies}</h1>
 
-                        <div id="recentlyAddedItems">
-                        </div>
-                    </td>
-                </tr>
-            </table>
+                <div id="recentlyAddedItems">
+                </div>
+            </div>
         </div>
     </div>
 </body>

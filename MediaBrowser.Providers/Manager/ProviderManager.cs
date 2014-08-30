@@ -188,14 +188,9 @@ namespace MediaBrowser.Providers.Manager
                 if (preferredLanguages.Count > 0)
                 {
                     result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase));
+                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase) ||
+                                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
                 }
-
-                //if (string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                //                               string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
-                //}
 
                 return result;
             }
@@ -347,14 +342,17 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
                     {
                         return false;
                     }
 
-                    if (Array.IndexOf(options.DisabledImageFetchers, provider.Name) != -1)
+                    if (provider is IRemoteImageProvider)
                     {
-                        return false;
+                        if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -545,18 +543,10 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
-            if (ConfigurationManager.Configuration.EnableInternetProviders)
-            {
-                // Fetchers
-                list.AddRange(imageProviders.Where(i => i is IRemoteImageProvider).Select(i => new MetadataPlugin
-                {
-                    Name = i.Name,
-                    Type = MetadataPluginType.ImageFetcher
-                }));
-            }
+            var enableInternet = ConfigurationManager.Configuration.EnableInternetProviders;
 
             // Fetchers
-            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider).Select(i => new MetadataPlugin
+            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (enableInternet && i is IRemoteImageProvider)).Select(i => new MetadataPlugin
             {
                 Name = i.Name,
                 Type = MetadataPluginType.ImageFetcher

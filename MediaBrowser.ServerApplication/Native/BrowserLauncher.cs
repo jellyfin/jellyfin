@@ -25,7 +25,7 @@ namespace MediaBrowser.ServerApplication.Native
         public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
         {
             var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      appHost.WebApplicationName + "/dashboard/" + page;
+                      appHost.WebApplicationName + "/web/" + page;
 
             OpenUrl(url, logger);
         }
@@ -84,18 +84,6 @@ namespace MediaBrowser.ServerApplication.Native
         {
             OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
                       appHost.WebApplicationName + "/swagger-ui/index.html", logger);
-        }
-
-        /// <summary>
-        /// Opens the standard API documentation.
-        /// </summary>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="logger">The logger.</param>
-        public static void OpenStandardApiDocumentation(IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
-        {
-            OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
-                      appHost.WebApplicationName + "/metadata", logger);
         }
 
         /// <summary>

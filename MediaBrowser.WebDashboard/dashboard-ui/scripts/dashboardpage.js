@@ -32,6 +32,31 @@
         DashboardPage.reloadSystemInfo(page);
         DashboardPage.reloadNews(page);
         DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
+
+        $('.activityItems', page).activityLogList();
+    },
+
+    onPageHide: function () {
+
+        var page = this;
+
+        $('.activityItems', page).activityLogList('destroy');
+
+        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        DashboardPage.stopInterval();
+
+        if (DashboardPage.sessionUpdateTimer) {
+            clearInterval(DashboardPage.sessionUpdateTimer);
+        }
+    },
+
+    renderPaths: function (page, systemInfo) {
+
+        $('#cachePath', page).html(systemInfo.CachePath);
+        $('#logPath', page).html(systemInfo.LogPath);
+        $('#imagesByNamePath', page).html(systemInfo.ItemsByNamePath);
+        $('#transcodingTemporaryPath', page).html(systemInfo.TranscodingTempPath);
+        $('#metadataPath', page).html(systemInfo.InternalMetadataPath);
     },
 
     refreshSessionsLocally: function () {
@@ -54,12 +79,7 @@
 
             var port = systemInfo.HttpServerPortNumber;
 
-            if (port == systemInfo.WebSocketPortNumber) {
-
-                $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
-            } else {
-                $('#ports', page).html(Globalize.translate('LabelRunningOnPorts').replace('{0}', '<b>' + port + '</b>').replace('{1}', '<b>' + systemInfo.WebSocketPortNumber + '</b>'));
-            }
+            $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
 
             if (systemInfo.CanSelfRestart) {
                 $('.btnRestartContainer', page).removeClass('hide');
@@ -78,6 +98,7 @@
                 $('#btnManualUpdateContainer', page).show();
             }
 
+            DashboardPage.renderPaths(page, systemInfo);
             DashboardPage.renderHasPendingRestart(page, systemInfo.HasPendingRestart);
         });
     },
@@ -101,7 +122,7 @@
                 var date = parseISO8601Date(item.Date, { toLocal: true });
                 itemHtml += '<div class="newsItemDate">' + date.toLocaleDateString() + '</div>';
 
-                itemHtml += '<div class="newsItemDescription">' + item.DescriptionHtml + '</div>';
+                itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
                 itemHtml += '</div>';
 
                 return itemHtml;
@@ -127,16 +148,6 @@
             });
         });
 
-    },
-
-    onPageHide: function () {
-
-        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
-        DashboardPage.stopInterval();
-
-        if (DashboardPage.sessionUpdateTimer) {
-            clearInterval(DashboardPage.sessionUpdateTimer);
-        }
     },
 
     startInterval: function () {
@@ -217,7 +228,7 @@
 
         var parentElement = $('.activeDevices', page);
 
-        $('.activeSession', parentElement).addClass('deadSession');
+        $('.card', parentElement).addClass('deadSession');
 
         for (var i = 0, length = sessions.length; i < length; i++) {
 
@@ -234,13 +245,19 @@
 
             var nowPlayingItem = session.NowPlayingItem;
 
-            var className = nowPlayingItem ? 'playingSession activeSession' : 'activeSession';
+            var className = nowPlayingItem ? 'card activeSession' : 'card activeSession';
 
             if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                 className += ' transcodingSession';
             }
 
             html += '<div class="' + className + '" id="' + rowId + '">';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
+
+            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardContent">';
 
             html += '<div class="sessionNowPlayingContent"';
 
@@ -311,7 +328,7 @@
 
             html += '</div>';
 
-            html += '<div class="posterItemOverlayTarget">';
+            html += '<div class="cardOverlayTarget">';
 
             html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
             html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
@@ -322,9 +339,17 @@
             } else {
                 html += '<div class="sessionTranscodingFramerate"></div>';
             }
+            html += '</div>';
 
             html += '</div>';
 
+            // cardScalable
+            html += '</div>';
+
+            // cardBox
+            html += '</div>';
+
+            // card
             html += '</div>';
 
         }
@@ -597,6 +622,10 @@
 
             return "<img src='css/images/clients/android.png' />";
         }
+        if (clientLowered == "nuvue") {
+
+            return "<img src='css/images/clients/nuvue.png' />";
+        }
         if (clientLowered == "roku") {
 
             return "<img src='css/images/clients/roku.jpg' />";
@@ -628,6 +657,11 @@
 
             return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' />";
         }
+        if (clientLowered == "chrome companion") {
+
+            return "<img src='css/images/clients/chrome_companion.png' />";
+        }
+
 
         return null;
     },
@@ -723,13 +757,9 @@
 
     renderUrls: function (page, systemInfo) {
 
-        var url = ApiClient.serverAddress() + "/mediabrowser";
-
-        $('#bookmarkUrl', page).html(url).attr("href", url);
-
         if (systemInfo.WanAddress) {
 
-            var externalUrl = systemInfo.WanAddress + "/mediabrowser";
+            var externalUrl = systemInfo.WanAddress + ApiClient.apiPrefix();
 
             var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl').replace('{0}', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
 
@@ -753,7 +783,7 @@
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
             text = "Please support Media Browser.";
-            
+
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
     },
@@ -958,7 +988,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             showOverlayTimeout = null;
         }
 
-        $('.posterItemOverlayTarget:visible', this).each(function () {
+        $('.cardOverlayTarget:visible', this).each(function () {
 
             var elem = this;
 
@@ -970,7 +1000,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         });
 
-        $('.posterItemOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
+        $('.cardOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
 
             $(this).hide();
 
@@ -985,7 +1015,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
                 return;
             }
 
-            var innerElem = $('.posterItemOverlayTarget', elem);
+            var innerElem = $('.cardOverlayTarget', elem);
 
             innerElem.show().each(function () {
 
@@ -1020,6 +1050,184 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.playingSession', onHoverIn)
             .on('mouseleave.sessionItemMenu', '.playingSession', onHoverOut);
+    };
+
+})(jQuery, document, window);
+
+
+(function ($, document, window) {
+
+    function getEntryHtml(entry) {
+
+        var html = '';
+
+        html += '<div class="newsItem" style="padding: .5em 0;">';
+
+        html += '<div class="notificationContent" style="display:block;">';
+
+        var date = parseISO8601Date(entry.Date, { toLocal: true });
+
+        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : 'green';
+
+        html += '<div style="margin: 0;color:' + color + ';">' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase() + '</div>';
+
+        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
+        html += entry.Name;
+        html += '</div>';
+
+        entry.ShortOverview = entry.ShortOverview || '&nbsp;';
+
+        if (entry.ShortOverview) {
+
+            html += '<div class="newsItemDescription" style="margin: .5em 0 0;">';
+
+            if (entry.Overview) {
+                html += '<a href="#" class="btnShowOverview" style="text-decoration:none;font-weight:500;">';
+            }
+            html += entry.ShortOverview;
+            if (entry.Overview) {
+                html += '</a>';
+            }
+
+            html += '</div>';
+
+            if (entry.Overview) {
+                html += '<div class="newsItemLongDescription" style="display:none;">' + entry.Overview + '</div>';
+            }
+        }
+
+        //if (notification.Url) {
+        //    html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
+        //}
+
+        html += '</div>';
+
+        html += '</div>';
+
+        return html;
+    }
+
+    function renderList(elem, result, startIndex, limit) {
+
+        var html = result.Items.map(getEntryHtml).join('');
+
+        if (result.TotalRecordCount > limit) {
+
+            var query = { StartIndex: startIndex, Limit: limit };
+
+            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, limit, false);
+        }
+
+        $(elem).html(html).trigger('create');
+
+        $('.btnNextPage', elem).on('click', function () {
+            reloadData(elem, startIndex + limit, limit);
+        });
+
+        $('.btnPreviousPage', elem).on('click', function () {
+            reloadData(elem, startIndex - limit, limit);
+        });
+
+        $('.btnShowOverview', elem).on('click', function () {
+
+            var item = $(this).parents('.newsItem');
+            var overview = $('.newsItemLongDescription', item).html();
+            var name = $('.notificationName', item).html();
+
+            Dashboard.alert({
+                message: '<div style="max-height:300px; overflow: auto;">' + overview + '</div>',
+                title: name
+            });
+        });
+    }
+
+    function reloadData(elem, startIndex, limit) {
+
+        if (startIndex == null) {
+            startIndex = parseInt(elem.getAttribute('data-activitystartindex') || '0');
+        }
+
+        limit = limit || parseInt(elem.getAttribute('data-activitylimit') || '7');
+
+        // Show last 24 hours
+        var minDate = new Date();
+        minDate.setTime(minDate.getTime() - 86400000);
+
+        ApiClient.getJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
+
+            startIndex: startIndex,
+            limit: limit,
+            minDate: minDate.toISOString()
+
+        })).done(function (result) {
+
+            elem.setAttribute('data-activitystartindex', startIndex);
+            elem.setAttribute('data-activitylimit', limit);
+
+            renderList(elem, result, startIndex, limit);
+        });
+    }
+
+    function createList(elem) {
+
+        elem.each(function () {
+
+            reloadData(this);
+        });
+
+        $(ApiClient).on('websocketmessage.activityloglistener', function (e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "ActivityLogEntry") {
+                elem.each(function () {
+
+                    reloadData(this);
+                });
+            }
+
+        }).on('websocketopen.activityloglistener', function (e, data) {
+
+            startListening();
+        });
+    }
+
+    function startListening() {
+        
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ActivityLogEntryStart", "0,1500");
+        }
+
+    }
+
+    function stopListening() {
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ActivityLogEntryStop", "0,1500");
+        }
+
+    }
+
+    function destroyList(elem) {
+
+        $(ApiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+
+        stopListening();
+
+        return this;
+    }
+
+    $.fn.activityLogList = function (action) {
+
+        if (action == 'destroy') {
+            destroyList(this);
+        } else {
+            createList(this);
+        }
+
+        startListening();
+
+        return this;
     };
 
 })(jQuery, document, window);

@@ -3,28 +3,28 @@
     $(document).on('pagebeforeshow', "#gamesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
+        var userId = Dashboard.getCurrentUserId();
 
         var page = this;
 
         var options = {
 
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            MediaTypes: "Game",
+            IncludeItemTypes: "Game",
             Limit: 8,
-            Recursive: true,
-            Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
+                items: items,
                 transparent: true,
                 borderless: true,
-                shape: 'auto'
-            }));
+                shape: 'auto',
+                lazy: true
+
+            })).trigger('create').createCardMenus();
 
         });
 
@@ -40,7 +40,7 @@
             ParentId: parentId
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(userId, options).done(function (result) {
 
             if (result.Items.length) {
                 $('#recentlyPlayedSection', page).show();
@@ -52,8 +52,10 @@
                 items: result.Items,
                 transparent: true,
                 borderless: true,
-                shape: 'auto'
-            }));
+                shape: 'auto',
+                lazy: true
+
+            })).trigger('create').createCardMenus();
 
         });
 

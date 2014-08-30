@@ -75,6 +75,11 @@ namespace MediaBrowser.Dlna
                 new LgTvProfile(),
                 new Foobar2000Profile(),
                 new MediaMonkeyProfile(),
+                new Windows81Profile(),
+                //new WindowsMediaCenterProfile(),
+                new WindowsPhoneProfile(),
+                new AndroidProfile(),
+                new DirectTvProfile(),
                 new DefaultProfile()
             };
 
@@ -368,7 +373,7 @@ namespace MediaBrowser.Dlna
                         Info = new DeviceProfileInfo
                         {
                             Id = i.FullName.ToLower().GetMD5().ToString("N"),
-                            Name = Path.GetFileNameWithoutExtension(i.FullName),
+                            Name = _fileSystem.GetFileNameWithoutExtension(i),
                             Type = type
                         }
                     })

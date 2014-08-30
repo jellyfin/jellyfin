@@ -11,15 +11,21 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasTags, IHasLookupInfo<AlbumInfo>
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
         public MusicAlbum()
         {
-            Artists = new List<string>();
             SoundtrackIds = new List<Guid>();
-            Tags = new List<string>();
+            Artists = new List<string>();
+            AlbumArtists = new List<string>();
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
         }
 
         [IgnoreDataMember]
@@ -36,7 +42,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                var list = AlbumArtists;
+                var list = AlbumArtists.ToList();
 
                 list.AddRange(Artists);
 
@@ -45,31 +51,30 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public List<string> AlbumArtists { get; set; }
+
         [IgnoreDataMember]
-        public List<string> AlbumArtists
+        public string AlbumArtist
         {
-            get
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(AlbumArtist))
-                {
-                    list.Add(AlbumArtist);
-                }
-
-                return list;
-            }
-            set
-            {
-                AlbumArtist = value.FirstOrDefault();
-            }
+            get { return AlbumArtists.FirstOrDefault(); }
         }
 
         /// <summary>
-        /// Gets or sets the tags.
+        /// Gets the tracks.
         /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
+        /// <value>The tracks.</value>
+        public IEnumerable<Audio> Tracks
+        {
+            get
+            {
+                return RecursiveChildren.OfType<Audio>();
+            }
+        }
+
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return Tracks;
+        }
 
         /// <summary>
         /// Songs will group into us so don't also include us in the index
@@ -124,8 +129,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return AllArtists.Contains(artist, StringComparer.OrdinalIgnoreCase);
         }
 
-        public string AlbumArtist { get; set; }
-
         public List<string> Artists { get; set; }
 
         /// <summary>
@@ -177,6 +180,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
     }
 
+    [Obsolete]
     public class MusicAlbumDisc : Folder
     {
 

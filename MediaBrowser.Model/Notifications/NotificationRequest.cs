@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -27,16 +26,12 @@ namespace MediaBrowser.Model.Notifications
 
         public SendToUserType? SendToUserMode { get; set; }
 
-        public List<string> ExcludeUserIds { get; set; }
-
         public NotificationRequest()
         {
             UserIds = new List<string>();
             Date = DateTime.UtcNow;
 
-            Variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            ExcludeUserIds = new List<string>();
+            Variables = new Dictionary<string, string>();
         }
     }
 }

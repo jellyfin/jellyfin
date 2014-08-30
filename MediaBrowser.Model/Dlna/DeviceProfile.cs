@@ -43,14 +43,18 @@ namespace MediaBrowser.Model.Dlna
 
         public string AlbumArtPn { get; set; }
 
-        public int? MaxAlbumArtWidth { get; set; }
-        public int? MaxAlbumArtHeight { get; set; }
+        public int MaxAlbumArtWidth { get; set; }
+        public int MaxAlbumArtHeight { get; set; }
 
         public int? MaxIconWidth { get; set; }
         public int? MaxIconHeight { get; set; }
 
-        public int? MaxBitrate { get; set; }
-        
+        public int? MaxStreamingBitrate { get; set; }
+        public int? MaxStaticBitrate { get; set; }
+
+        public int? MusicStreamingTranscodingBitrate { get; set; }
+        public int? MusicSyncBitrate { get; set; }
+
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
         /// </summary>
@@ -89,6 +93,8 @@ namespace MediaBrowser.Model.Dlna
         public CodecProfile[] CodecProfiles { get; set; }
         public ResponseProfile[] ResponseProfiles { get; set; }
 
+        public SubtitleProfile[] SubtitleProfiles { get; set; }
+      
         public DeviceProfile()
         {
             DirectPlayProfiles = new DirectPlayProfile[] { };
@@ -96,7 +102,8 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfiles = new ResponseProfile[] { };
             CodecProfiles = new CodecProfile[] { };
             ContainerProfiles = new ContainerProfile[] { };
-
+            SubtitleProfiles = new SubtitleProfile[] { };
+         
             XmlRootAttributes = new XmlAttribute[] { };
             
             SupportedMediaTypes = "Audio,Photo,Video";
@@ -115,7 +122,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
         {
-            container = (container ?? string.Empty).TrimStart('.');
+            container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -141,7 +148,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
         {
-            container = (container ?? string.Empty).TrimStart('.');
+            container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -172,7 +179,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate)
         {
-            container = (container ?? string.Empty).TrimStart('.');
+            container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
             foreach (var i in ResponseProfiles)
             {
@@ -217,7 +224,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
         {
-            container = (container ?? string.Empty).TrimStart('.');
+            container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
             foreach (var i in ResponseProfiles)
             {
@@ -270,7 +277,7 @@ namespace MediaBrowser.Model.Dlna
             TransportStreamTimestamp timestamp,
             bool? isAnamorphic)
         {
-            container = (container ?? string.Empty).TrimStart('.');
+            container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
             foreach (var i in ResponseProfiles)
             {

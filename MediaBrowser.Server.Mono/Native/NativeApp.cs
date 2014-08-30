@@ -1,4 +1,11 @@
 ﻿using MediaBrowser.Server.Mono;
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -55,6 +62,17 @@ namespace MediaBrowser.ServerApplication.Native
         public static void PreventSystemStandby()
         {
             
+        }
+
+        public static Task<CheckForUpdateResult> CheckForApplicationUpdate(Version currentVersion,
+            PackageVersionClass updateLevel,
+            IInstallationManager installationManager,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
+        {
+            var result = new CheckForUpdateResult { AvailableVersion = currentVersion.ToString(), IsUpdateAvailable = false };
+			
+			return Task.FromResult(result);
         }
     }
 }

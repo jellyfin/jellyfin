@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,25 +8,13 @@ using System.Diagnostics;
 namespace MediaBrowser.Model.Session
 {
     [DebuggerDisplay("Client = {Client}, Username = {UserName}")]
-    public class SessionInfoDto : INotifyPropertyChanged
+    public class SessionInfoDto : IHasPropertyChangedEvent
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can seek.
-        /// </summary>
-        /// <value><c>true</c> if this instance can seek; otherwise, <c>false</c>.</value>
-        public bool CanSeek { get; set; }
-
         /// <summary>
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
         public List<string> SupportedCommands { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the remote end point.
-        /// </summary>
-        /// <value>The remote end point.</value>
-        public string RemoteEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the queueable media types.
@@ -98,30 +87,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is paused.
-        /// </summary>
-        /// <value><c>true</c> if this instance is paused; otherwise, <c>false</c>.</value>
-        public bool IsPaused { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is muted.
-        /// </summary>
-        /// <value><c>true</c> if this instance is muted; otherwise, <c>false</c>.</value>
-        public bool IsMuted { get; set; }
         
         /// <summary>
         /// Gets or sets the now playing item.
         /// </summary>
         /// <value>The now playing item.</value>
         public BaseItemInfo NowPlayingItem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now playing position ticks.
-        /// </summary>
-        /// <value>The now playing position ticks.</value>
-        public long? NowPlayingPositionTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.

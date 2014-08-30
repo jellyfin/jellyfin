@@ -2,13 +2,13 @@
 
     function loadPage(page, config, languages) {
 
-        $('#chkSubtitlesMovies', page).checked(config.SubtitleOptions.DownloadMovieSubtitles).checkboxradio("refresh");
-        $('#chkSubtitlesEpisodes', page).checked(config.SubtitleOptions.DownloadEpisodeSubtitles).checkboxradio("refresh");
+        $('#chkSubtitlesMovies', page).checked(config.DownloadMovieSubtitles).checkboxradio("refresh");
+        $('#chkSubtitlesEpisodes', page).checked(config.DownloadEpisodeSubtitles).checkboxradio("refresh");
 
-        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SubtitleOptions.SkipIfGraphicalSubtitlesPresent).checkboxradio("refresh");
-        $('#chkSkipIfAudioTrackPresent', page).checked(config.SubtitleOptions.SkipIfAudioTrackMatches).checkboxradio("refresh");
+        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfGraphicalSubtitlesPresent).checkboxradio("refresh");
+        $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches).checkboxradio("refresh");
 
-        $('#txtOpenSubtitleUsername', page).val(config.SubtitleOptions.OpenSubtitlesUsername);
+        $('#txtOpenSubtitleUsername', page).val(config.OpenSubtitlesUsername);
         $('#txtOpenSubtitlePassword', page).val('');
 
         populateLanguages(page, config, languages);
@@ -34,7 +34,7 @@
 
         $('.downloadLanguages', page).html(html).trigger("create");
 
-        var langs = config.SubtitleOptions.DownloadLanguages || [];
+        var langs = config.DownloadLanguages || [];
 
         $('.chkLang', page).each(function () {
 
@@ -49,7 +49,7 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getServerConfiguration();
+        var promise1 = ApiClient.getNamedConfiguration("subtitles");
         var promise2 = ApiClient.getCultures();
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -69,29 +69,29 @@
 
             var form = this;
 
-            ApiClient.getServerConfiguration().done(function (config) {
+            ApiClient.getNamedConfiguration("subtitles").done(function (config) {
 
-                config.SubtitleOptions.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
-                config.SubtitleOptions.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
+                config.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
+                config.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
 
-                config.SubtitleOptions.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
-                config.SubtitleOptions.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
+                config.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
+                config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
 
-                config.SubtitleOptions.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
+                config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
 
                 var newPassword = $('#txtOpenSubtitlePassword', form).val();
                 
                 if (newPassword) {
-                    config.SubtitleOptions.OpenSubtitlesPasswordHash = newPassword;
+                    config.OpenSubtitlesPasswordHash = newPassword;
                 }
 
-                config.SubtitleOptions.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
+                config.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
 
                     return c.getAttribute('data-lang');
 
                 });
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateNamedConfiguration("subtitles", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
 
             // Disable default form submission

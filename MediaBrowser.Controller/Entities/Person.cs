@@ -96,5 +96,10 @@ namespace MediaBrowser.Controller.Entities
         {
             return Name;
         }
+
+        public bool IsType(string type)
+        {
+            return string.Equals(Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(Role, type, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

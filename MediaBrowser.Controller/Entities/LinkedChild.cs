@@ -13,11 +13,27 @@ namespace MediaBrowser.Controller.Entities
         public string ItemType { get; set; }
         public int? ItemYear { get; set; }
 
+        [IgnoreDataMember]
+        public string Id { get; set; }
+
         /// <summary>
         /// Serves as a cache
         /// </summary>
-        [IgnoreDataMember]
         public Guid? ItemId { get; set; }
+
+        public static LinkedChild Create(BaseItem item)
+        {
+            return new LinkedChild
+            {
+                Path = item.Path,
+                Type = LinkedChildType.Manual
+            };
+        }
+
+        public LinkedChild()
+        {
+            Id = Guid.NewGuid().ToString("N");
+        }
     }
 
     public enum LinkedChildType

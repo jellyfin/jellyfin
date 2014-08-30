@@ -1,12 +1,14 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
         SortBy: "SortName",
         SortOrder: "Ascending",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "PrimaryImageAspectRatio,SortName,DateCreated",
         StartIndex: 0
     };
 
@@ -26,23 +28,43 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                addSelectionButton: true
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "square",
-                context: 'music',
-                showTitle: true,
-                coverImage: true,
-                centerText: true,
-                lazy: true
-            });
+            if (view == "List") {
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'music',
+                    sortBy: query.SortBy
+                });
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "square",
+                    context: 'music',
+                    showTitle: true,
+                    coverImage: true,
+                    centerText: true,
+                    lazy: true,
+                    selectionPanel: true
+                });
+            }
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            html += pagingHtml;
+
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -51,12 +73,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -77,7 +93,10 @@
 
         }).checkboxradio('refresh');
 
+        $('#selectView', page).val(view).selectmenu('refresh');
+
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#musicAlbumArtistsPage", function () {
@@ -115,8 +134,24 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#musicAlbumArtistsPage", function () {
 
+        var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -127,9 +162,18 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#musicAlbumArtistsPage", function () {
 

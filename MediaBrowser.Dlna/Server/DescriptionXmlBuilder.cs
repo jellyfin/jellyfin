@@ -137,6 +137,24 @@ namespace MediaBrowser.Dlna.Server
             {
                 MimeType = "image/png",
                 Depth = "24",
+                Width = 240,
+                Height = 240,
+                Url = "/mediabrowser/dlna/icons/logo240.png"
+            });
+
+            list.Add(new DeviceIcon
+            {
+                MimeType = "image/jpeg",
+                Depth = "24",
+                Width = 240,
+                Height = 240,
+                Url = "/mediabrowser/dlna/icons/logo240.jpg"
+            });
+
+            list.Add(new DeviceIcon
+            {
+                MimeType = "image/png",
+                Depth = "24",
                 Width = 120,
                 Height = 120,
                 Url = "/mediabrowser/dlna/icons/logo120.png"

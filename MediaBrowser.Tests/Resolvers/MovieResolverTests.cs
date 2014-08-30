@@ -38,6 +38,8 @@ namespace MediaBrowser.Tests.Resolvers
         public void TestMultiPartFolders()
         {
             Assert.IsFalse(EntityResolutionHelper.IsMultiPartFolder(@"blah blah"));
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFolder(@"d:\\music\weezer\\03 Pinkerton"));
+            Assert.IsFalse(EntityResolutionHelper.IsMultiPartFolder(@"d:\\music\\michael jackson\\Bad (2012 Remaster)"));
 
             Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - cd1"));
             Assert.IsTrue(EntityResolutionHelper.IsMultiPartFolder(@"blah blah - disc1"));

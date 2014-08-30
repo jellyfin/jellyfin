@@ -197,9 +197,9 @@
 }
 
 .remoteImage:hover, .searchImageContainer:hover {
-    -moz-box-shadow: 0 0 12px 7px #38c;
-    -webkit-box-shadow: 0 0 12px 7px #38c;
-    box-shadow: 0 0 12px 7px #38c;
+    -moz-box-shadow: 0 0 0 5px #38c;
+    -webkit-box-shadow: 0 0 0 5px #38c;
+    box-shadow: 0 0 0 5px #38c;
 }
 
 .tblLibraryReport img {

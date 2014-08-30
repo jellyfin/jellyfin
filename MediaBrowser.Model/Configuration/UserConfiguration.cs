@@ -65,12 +65,20 @@ namespace MediaBrowser.Model.Configuration
         public string[] BlockedMediaFolders { get; set; }
         public string[] BlockedChannels { get; set; }
 
+        public string[] DisplayChannelsWithinViews { get; set; }
+        
         public string[] ExcludeFoldersFromGrouping { get; set; }
 
         public UnratedItem[] BlockUnratedItems { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
+        public bool DisplayCollectionsView { get; set; }
+        public bool DisplayFoldersView { get; set; }
 
+        public bool EnableLocalPassword { get; set; }
+
+        public string[] OrderedViews { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -84,19 +92,15 @@ namespace MediaBrowser.Model.Configuration
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
 
+            OrderedViews = new string[] { };
             BlockedMediaFolders = new string[] { };
+            DisplayChannelsWithinViews = new string[] { };
             BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
+            DisplayCollectionsView = true;
+            DisplayFoldersView = true;
         }
-    }
-
-    public enum SubtitlePlaybackMode
-    {
-        Default = 0,
-        Always = 1,
-        OnlyForced = 2,
-        None = 3
     }
 }

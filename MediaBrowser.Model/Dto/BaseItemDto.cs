@@ -1,12 +1,13 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
-    public class BaseItemDto : IHasProviderIds, INotifyPropertyChanged, IItemDto
+    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -29,6 +30,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The id.</value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the playlist item identifier.
+        /// </summary>
+        /// <value>The playlist item identifier.</value>
+        public string PlaylistItemId { get; set; }
+        
         /// <summary>
         /// Gets or sets the date created.
         /// </summary>
@@ -53,6 +60,8 @@ namespace MediaBrowser.Model.Dto
         public bool IsUnidentified { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
+
+        public bool? SupportsSync { get; set; }
         
         /// <summary>
         /// Gets or sets the DVD season number.
@@ -220,6 +229,12 @@ namespace MediaBrowser.Model.Dto
         public int? ProductionYear { get; set; }
 
         /// <summary>
+        /// Gets or sets the recursive unplayed item count.
+        /// </summary>
+        /// <value>The recursive unplayed item count.</value>
+        public int? RecursiveUnplayedItemCount { get; set; }
+        
+        /// <summary>
         /// Gets or sets the season count.
         /// </summary>
         /// <value>The season count.</value>
@@ -340,22 +355,10 @@ namespace MediaBrowser.Model.Dto
         public UserItemDataDto UserData { get; set; }
 
         /// <summary>
-        /// Gets or sets the played percentage.
-        /// </summary>
-        /// <value>The played percentage.</value>
-        public double? PlayedPercentage { get; set; }
-
-        /// <summary>
         /// Gets or sets the recursive item count.
         /// </summary>
         /// <value>The recursive item count.</value>
         public int? RecursiveItemCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        public int? RecursiveUnplayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the child count.
@@ -524,6 +527,12 @@ namespace MediaBrowser.Model.Dto
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports playlists].
+        /// </summary>
+        /// <value><c>true</c> if [supports playlists]; otherwise, <c>false</c>.</value>
+        public bool SupportsPlaylists { get; set; }
+
+        /// <summary>
         /// Determines whether the specified type is type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -592,7 +601,19 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The parent thumb image tag.</value>
         public string ParentThumbImageTag { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the parent primary image item identifier.
+        /// </summary>
+        /// <value>The parent primary image item identifier.</value>
+        public string ParentPrimaryImageItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent primary image tag.
+        /// </summary>
+        /// <value>The parent primary image tag.</value>
+        public string ParentPrimaryImageTag { get; set; }
+
         /// <summary>
         /// Gets or sets the chapters.
         /// </summary>
@@ -616,12 +637,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the media.</value>
         public string MediaType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the overview HTML.
-        /// </summary>
-        /// <value>The overview HTML.</value>
-        public string OverviewHtml { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -706,6 +721,21 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
         public bool? LockData { get; set; }
+
+        public int? Width { get; set; }
+        public int? Height { get; set; }
+        public string CameraMake { get; set; }
+        public string CameraModel { get; set; }
+        public string Software { get; set; }
+        public double? ExposureTime { get; set; }
+        public double? FocalLength { get; set; }
+        public ImageOrientation? ImageOrientation { get; set; }
+        public double? Aperture { get; set; }
+        public double? ShutterSpeed { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public double? Altitude { get; set; }
+        public int? IsoSpeedRating { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
@@ -844,7 +874,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsVideo
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Video); }
         }
 
         /// <summary>
@@ -854,7 +884,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsAudio
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Audio); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Audio); }
         }
 
         /// <summary>
@@ -864,7 +894,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsGame
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Game); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Game); }
         }
 
         /// <summary>

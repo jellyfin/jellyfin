@@ -8,7 +8,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -104,9 +103,6 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
-            // Identify item
-            TIdType id = null;
-
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -123,22 +119,18 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+                    var id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+
                     var result = await RefreshWithProviders(itemOfType, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
                     refreshResult.AddImageProvidersRefreshed(result.Providers);
+
+                    MergeIdentities(itemOfType, id);
                 }
             }
-
-            if (id == null)
-            {
-                id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
-            }
-
-            MergeIdentities(itemOfType, id);
 
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
@@ -296,11 +288,19 @@ namespace MediaBrowser.Providers.Manager
 
             var temp = CreateNew();
             temp.Path = item.Path;
+            var successfulProviderCount = 0;
+            var failedProviderCount = 0;
 
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                    .ConfigureAwait(false);
+                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.Status = remoteResult.Status;
+                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                successfulProviderCount += remoteResult.Successes;
+                failedProviderCount += remoteResult.Failures;
             }
 
             var hasLocalMetadata = false;
@@ -328,7 +328,7 @@ namespace MediaBrowser.Providers.Manager
 
                         // Only one local provider allowed per item
                         hasLocalMetadata = true;
-                        item.IsUnidentified = false;
+                        successfulProviderCount++;
                         break;
                     }
 
@@ -340,25 +340,48 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
+                    failedProviderCount++;
+                    
+                    Logger.ErrorException("Error in {0}", ex, provider.Name);
+                    
                     // If a local provider fails, consider that a failure
                     refreshResult.Status = ProviderRefreshStatus.Failure;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.ErrorException("Error in {0}", ex, provider.Name);
 
-                    // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
-                    return refreshResult;
+                    if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
+                    {
+                        // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
+                        return refreshResult;
+                    }
                 }
             }
 
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
-                await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), refreshResult, cancellationToken).ConfigureAwait(false);
+                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                    .ConfigureAwait(false);
+
+                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                if (remoteResult.Status != ProviderRefreshStatus.Success)
+                {
+                    refreshResult.Status = remoteResult.Status;
+                    refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                }
+                successfulProviderCount += remoteResult.Successes;
             }
 
             if (refreshResult.UpdateType > ItemUpdateType.None)
             {
                 MergeData(temp, item, item.LockedFields, true, true);
+            }
+
+            var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
+
+            if (item.IsUnidentified != isUnidentified)
+            {
+                item.IsUnidentified = isUnidentified;
+                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
             }
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
@@ -394,10 +417,9 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
-            var unidentifiedCount = 0;
-            var identifiedCount = 0;
+            var refreshResult = new RefreshResult();
 
             foreach (var provider in providers)
             {
@@ -419,11 +441,11 @@ namespace MediaBrowser.Providers.Manager
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
 
-                        identifiedCount++;
+                        refreshResult.Successes++;
                     }
                     else
                     {
-                        unidentifiedCount++; 
+                        refreshResult.Failures++;
                         Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
                     }
                 }
@@ -433,20 +455,24 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    unidentifiedCount++; 
+                    refreshResult.Failures++;
                     refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
             }
 
-            var isUnidentified = unidentifiedCount > 0 && identifiedCount == 0;
-
-            if (item.IsUnidentified != isUnidentified)
+            if (refreshResult.Successes > 0)
             {
-                item.IsUnidentified = isUnidentified;
-                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                AfterRemoteRefresh(temp);
             }
+
+            return refreshResult;
+        }
+
+        protected virtual void AfterRemoteRefresh(TItemType item)
+        {
+            
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
@@ -456,7 +482,14 @@ namespace MediaBrowser.Providers.Manager
             var hasIdentity = info as IHasIdentities<IItemIdentity>;
             if (hasIdentity != null)
             {
-                await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in identity providers", ex);
+                }
             }
 
             return info;
@@ -507,5 +540,7 @@ namespace MediaBrowser.Providers.Manager
         public ProviderRefreshStatus Status { get; set; }
         public string ErrorMessage { get; set; }
         public List<Guid> Providers { get; set; }
+        public int Successes { get; set; }
+        public int Failures { get; set; }
     }
 }

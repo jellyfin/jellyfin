@@ -143,6 +143,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "image/png";
             }
+            if (ext.Equals(".webp", StringComparison.OrdinalIgnoreCase))
+            {
+                return "image/webp";
+            }
             if (ext.Equals(".ico", StringComparison.OrdinalIgnoreCase))
             {
                 return "image/vnd.microsoft.icon";
@@ -199,6 +203,14 @@ namespace MediaBrowser.Common.Net
             {
                 return "application/x-javascript";
             }
+            if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return JsonMimeType;
+            }
+            if (ext.Equals(".map", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/x-javascript";
+            }
 
             if (ext.Equals(".woff", StringComparison.OrdinalIgnoreCase))
             {
@@ -226,6 +238,16 @@ namespace MediaBrowser.Common.Net
             if (ext.Equals(".vtt", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/vtt";
+            }
+
+            if (ext.Equals(".ttml", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/ttml+xml";
+            }
+
+            if (ext.Equals(".bif", StringComparison.OrdinalIgnoreCase))
+            {
+                return "application/octet-stream";
             }
 
             throw new ArgumentException("Argument not supported: " + path);

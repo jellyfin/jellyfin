@@ -12,8 +12,7 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="advanced.html" data-role="button">${TabGeneral}</a>
                     <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
-                    <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
-                    <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
+                    <a href="scheduledtasks.html" data-role="button">${TabScheduledTasks}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabTranscoding}</a>
                 </div>
 
@@ -24,32 +23,41 @@
                         <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioAuto" value="Auto">
                         <label for="radioAuto">
                             ${OptionAutomatic}<br />
-                            <span style="font-weight: normal;">${OptionAutomaticTranscodingHelp}</span></label>
+                            <span style="font-weight: normal;">${OptionAutomaticTranscodingHelp}</span>
+                        </label>
                         <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighSpeed" value="HighSpeed">
                         <label for="radioHighSpeed">
                             ${OptionHighSpeedTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionHighSpeedTranscodingHelp}</span></label>
+                            <span style="font-weight: normal;">${OptionHighSpeedTranscodingHelp}</span>
+                        </label>
                         <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighQuality" value="HighQuality">
                         <label for="radioHighQuality">
                             ${OptionHighQualityTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionHighQualityTranscodingHelp}</span></label>
+                            <span style="font-weight: normal;">${OptionHighQualityTranscodingHelp}</span>
+                        </label>
                         <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioMaxQuality" value="MaxQuality">
                         <label for="radioMaxQuality">
                             ${OptionMaxQualityTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionMaxQualityTranscodingHelp}</span></label>
+                            <span style="font-weight: normal;">${OptionMaxQualityTranscodingHelp}</span>
+                        </label>
                     </fieldset>
 
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="txtTranscodingTempPath">${LabelTranscodingTempPath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtTranscodingTempPath" name="txtTranscodingTempPath" data-mini="true" />
+                            </div>
+                            <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">
+                                ${LabelTranscodingTempPathHelp}
+                            </div>
+                        </li>
+                        <li>
                             <label for="txtDownMixAudioBoost">${LabelDownMixAudioScale}</label>
                             <input type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" data-mini="true" />
                             <div class="fieldDescription">${LabelDownMixAudioScaleHelp}</div>
-                        </li>
-                        <li style="display:none;">
-                            <input type="checkbox" id="chkAllowUpscaling" name="chkAllowUpscaling" data-mini="true" />
-                            <label for="chkAllowUpscaling">${OptionUpscaling}</label>
-                            <div class="fieldDescription">${OptionUpscalingHelp}</div>
                         </li>
                         <li>
                             <input type="checkbox" id="chkEnableDebugEncodingLogging" name="chkEnableDebugEncodingLogging" data-mini="true" />

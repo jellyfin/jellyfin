@@ -16,9 +16,11 @@
 
     loadScheduledTask: function (task) {
 
-        Dashboard.setPageTitle(task.Name);
+        var page = $.mobile.activePage;
 
-        $('#pTaskDescription', $.mobile.activePage).html(task.Description);
+        $('.taskName', page).html(task.Name);
+
+        $('#pTaskDescription', page).html(task.Description);
 
         ScheduledTaskPage.loadTaskTriggers(task);
 
@@ -41,7 +43,9 @@
             html += ScheduledTaskPage.getTriggerFriendlyName(trigger);
             html += '</a>';
 
-            html += '<a href="#" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');">Delete</a>';
+            html += '<a href="#" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');">';
+            html += Globalize.translate('Delete');
+            html += '</a>';
 
             html += '</li>';
         }

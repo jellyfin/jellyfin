@@ -50,7 +50,7 @@
 
     function navigateToNextPage() {
 
-        Dashboard.navigate('wizardimagesettings.html');
+        Dashboard.navigate('wizardservice.html');
     }
 
     $(document).on('pageshow', "#wizardSettingsPage", function () {

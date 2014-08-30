@@ -28,5 +28,15 @@ namespace MediaBrowser.Providers.TV
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
+
+        protected override void AfterRemoteRefresh(Season item)
+        {
+            base.AfterRemoteRefresh(item);
+
+            if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
+            {
+                item.Name = ServerConfigurationManager.Configuration.SeasonZeroDisplayName;
+            }
+        }
     }
 }

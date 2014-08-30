@@ -9,6 +9,8 @@ namespace MediaBrowser.Tests.Resolvers
         [TestMethod]
         public void TestGetEpisodeNumberFromFile()
         {
+            Assert.AreEqual(03, TVUtils.GetEpisodeNumberFromFile(@"Season 02\S02E03 blah.avi", true));
+
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\01x02 blah.avi", true));
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\S01x02 blah.avi", true));
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 1\S01E02 blah.avi", true));
@@ -31,6 +33,7 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(23, TVUtils.GetEpisodeNumberFromFile(@"Season 1\S01E23-E24-E26 - The Woman.mp4", true));
             Assert.AreEqual(9, TVUtils.GetEpisodeNumberFromFile(@"Season 25\The Simpsons.S25E09.Steal this episode.mp4", true));
             Assert.AreEqual(8, TVUtils.GetEpisodeNumberFromFile(@"The Simpsons\The Simpsons.S25E08.Steal this episode.mp4", false));
+            Assert.AreEqual(136, TVUtils.GetEpisodeNumberFromFile(@"Season 2\[HorribleSubs] Hunter X Hunter - 136 [720p].mkv",true));
 
             //Four Digits seasons
             Assert.AreEqual(02, TVUtils.GetEpisodeNumberFromFile(@"Season 2009\2009x02 blah.avi", true));
@@ -128,10 +131,20 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02 - blah 14 blah.avi"));
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\02 - blah-02 a.avi"));
             Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02.avi"));
+
+            Assert.AreEqual(3, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\02-03 - blah.avi"));
+            Assert.AreEqual(4, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02-04 - blah 14 blah.avi"));
+            Assert.AreEqual(5, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 1\02-05 - blah-02 a.avi"));
+            Assert.AreEqual(4, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\02-04.avi"));
+            Assert.AreEqual(null, TVUtils.GetEndingEpisodeNumberFromFile(@"Season 2\[HorribleSubs] Hunter X Hunter - 136 [720p].mkv"));
+
         }
 
         [TestMethod]
         public void TestGetSeasonNumberFromPath() {
+
+            Assert.AreEqual(02, TVUtils.GetSeasonNumberFromEpisodeFile(@"\Show\Season 02\S02E03 blah.avi"));
+            
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
@@ -153,6 +166,10 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
             Assert.AreEqual(1, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 1"));
 
+            Assert.AreEqual(2, TVUtils.GetSeasonNumberFromPath(@"\Drive\Seinfeld\S02"));
+            
+            Assert.AreEqual(2, TVUtils.GetSeasonNumberFromPath(@"\Drive\Seinfeld\2"));
+            
             //Four Digits seasons
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 2009"));
             Assert.AreEqual(2009, TVUtils.GetSeasonNumberFromPath(@"\Drive\Season 2009"));

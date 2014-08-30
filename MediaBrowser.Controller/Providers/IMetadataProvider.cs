@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Providers
 {

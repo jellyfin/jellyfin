@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace MediaBrowser.Api
         public string ItemId { get; set; }
     }
 
+    [Authenticated]
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -61,6 +63,11 @@ namespace MediaBrowser.Api
                     await child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
             }
+        }
+
+        private DateTime NormalizeDateTime(DateTime val)
+        {
+            return DateTime.SpecifyKind(val, DateTimeKind.Utc);
         }
 
         private void UpdateItem(BaseItemDto request, BaseItem item)
@@ -108,6 +115,12 @@ namespace MediaBrowser.Api
                 hasTags.Tags = request.Tags;
             }
 
+            var hasTaglines = item as IHasTaglines;
+            if (hasTaglines != null)
+            {
+                hasTaglines.Taglines = request.Taglines;
+            }
+
             var hasShortOverview = item as IHasShortOverview;
             if (hasShortOverview != null)
             {
@@ -132,11 +145,11 @@ namespace MediaBrowser.Api
 
             if (request.DateCreated.HasValue)
             {
-                item.DateCreated = request.DateCreated.Value.ToUniversalTime();
+                item.DateCreated = NormalizeDateTime(request.DateCreated.Value);
             }
 
-            item.EndDate = request.EndDate.HasValue ? request.EndDate.Value.ToUniversalTime() : (DateTime?)null;
-            item.PremiereDate = request.PremiereDate.HasValue ? request.PremiereDate.Value.ToUniversalTime() : (DateTime?)null;
+            item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : (DateTime?)null;
+            item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
             item.OfficialRating = request.OfficialRating;
             item.CustomRating = request.CustomRating;

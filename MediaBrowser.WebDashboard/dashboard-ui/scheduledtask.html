@@ -1,13 +1,22 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>${TitleAdvanced}</title>
 </head>
 <body>
-    <div id="scheduledTaskPage" data-role="page" class="page type-interior">
+    <div id="scheduledTaskPage" data-role="page" class="page type-interior advancedConfigurationPage">
         <div data-role="content">
             <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
+                    <a href="scheduledtasks.html" data-role="button" class="ui-btn-active">${TabScheduledTasks}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
                 <div class="readOnlyContent">
+                    <h2 class="taskName"></h2>
                     <p id="pTaskDescription"></p>
                     <p>
                         <button type="button" data-icon="plus" onclick="ScheduledTaskPage.showAddTriggerPopup();">

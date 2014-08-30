@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             return new ITaskTrigger[] 
             { 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(24)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(12)}
             };
         }
 

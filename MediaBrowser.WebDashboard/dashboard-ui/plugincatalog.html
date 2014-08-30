@@ -10,6 +10,7 @@
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                     <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabCatalog}</a>
+                    <a href="channelsettings.html" data-role="button">${TabChannels}</a>
                 </div>
 
                 <br />
@@ -21,8 +22,6 @@
                     <label for="radioClassic">${PluginTabMediaBrowserClassic}</label>
                     <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radopTheater" value="MBTheater" data-mini="true">
                     <label for="radopTheater">${PluginTabMediaBrowserTheater}</label>
-                    <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioOthers" value="Apps" data-mini="true">
-                    <label for="radioOthers">${TabOtherPlugins}</label>
                 </fieldset>
 
                 <p style="display: none;">
@@ -39,7 +38,7 @@
                     <div style="text-align: center; margin: 10px;">${MessageNoAvailablePlugins}</div>
                 </div>
 
-                <div id="pluginTiles"></div>
+                <div id="pluginTiles" class="itemsContainer" style="text-align:left;"></div>
 
             </div>
         </div>

@@ -9,11 +9,19 @@
         //html += '</a>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
-        html += '<img src="css/images/menu.png" />';
+        html += '<div class="barMenuInner">';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '</div>';
         html += '</button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
-        html += '<img src="css/images/menu.png" />';
+        html += '<div class="barMenuInner">';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '<span class="icon-bar"></span>';
+        html += '</div>';
         html += '</button>';
         
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
@@ -59,9 +67,9 @@
         $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
     }
 
-    function getItemHref(item) {
+    function getItemHref(item, context) {
 
-        return LibraryBrowser.getHref(item);
+        return LibraryBrowser.getHref(item, context);
     }
 
     function getViewsHtml() {
@@ -73,9 +81,9 @@
 
         html += '<div class="adminMenuOptions">';
         html += '<div class="libraryMenuDivider"></div>';
-        //html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">Dashboard</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">Metadata Manager</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">Reports</a>';
+        //html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">'+Globalize.translate('ButtonDashboard')+'</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">' + Globalize.translate('ButtonMetadataManager') + '</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
 
         return html;
@@ -128,6 +136,10 @@
                 else if (i.CollectionType == "livetv") {
                     itemId = "livetv";
                 }
+                
+                if (i.Type == 'Channel') {
+                    viewMenuCssClass = 'channelsViewMenu';
+                }
 
                 return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
 
@@ -166,7 +178,7 @@
 
             html += '<div style="margin: 0 -1em;">';
 
-            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="index.html">Home</a>';
+            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="index.html">' + Globalize.translate('ButtonHome') + '</a>';
             html += '<div class="libraryMenuDivider"></div>';
 
             html += getViewsHtml();
@@ -219,7 +231,7 @@
 
     function getTopParentId() {
 
-        return getParameterByName('topParentId') || sessionStorage.getItem('topParentId') || null;
+        return getParameterByName('topParentId') /*|| sessionStore.getItem('topParentId')*/ || null;
     }
 
     window.LibraryMenu = {
@@ -242,7 +254,8 @@
         } else {
 
             $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
-            $('.headerSelectedPlayer').html(info.deviceName || info.name);
+
+            $('.headerSelectedPlayer').html((info.deviceName || info.name));
         }
     }
 
@@ -259,7 +272,7 @@
             '' :
             getTopParentId() || '';
 
-        sessionStorage.setItem('topParentId', id);
+        sessionStore.setItem('topParentId', id);
 
         $('.lnkMediaFolder').each(function () {
 
@@ -286,18 +299,22 @@
 
         });
 
-        $('.scopedLibraryViewNav a', page).each(function () {
+        var context = getParameterByName('context');
 
-            var src = this.href;
+        if (context !== 'playlists') {
+            $('.scopedLibraryViewNav a', page).each(function () {
 
-            if (src.indexOf('#') != -1) {
-                return;
-            }
+                var src = this.href;
 
-            src = replaceQueryString(src, 'topParentId', id);
+                if (src.indexOf('#') != -1) {
+                    return;
+                }
 
-            this.href = src;
-        });
+                src = replaceQueryString(src, 'topParentId', id);
+
+                this.href = src;
+            });
+        }
     }
 
     function updateContextText(page) {
@@ -455,6 +472,8 @@ $.fn.createHoverTouch = function () {
 
         if (preventHover) {
             $(this).trigger('hovertouch');
+            stopTimer(this);
+            preventHover = false;
         }
     });
 

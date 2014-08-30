@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -16,6 +15,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +28,6 @@ namespace MediaBrowser.Server.Implementations.Channels
     {
         private IChannel[] _channels;
         private IChannelFactory[] _factories;
-        private List<Channel> _channelEntities = new List<Channel>();
 
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -63,13 +62,13 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             get
             {
-                return TimeSpan.FromDays(1);
+                return TimeSpan.FromHours(12);
             }
         }
 
         public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
         {
-            _channels = channels.ToArray();
+            _channels = channels.Where(i => !(i is IFactoryChannel)).ToArray();
             _factories = factories.ToArray();
         }
 
@@ -77,9 +76,11 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(_config.Configuration.ChannelOptions.DownloadPath))
+                var options = _config.GetChannelsConfiguration();
+
+                if (!string.IsNullOrWhiteSpace(options.DownloadPath))
                 {
-                    return _config.Configuration.ChannelOptions.DownloadPath;
+                    return options.DownloadPath;
                 }
 
                 return Path.Combine(_config.ApplicationPaths.ProgramDataPath, "channels");
@@ -105,13 +106,16 @@ namespace MediaBrowser.Server.Implementations.Channels
                 .OrderBy(i => i.Name);
         }
 
-        public Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        public Task<QueryResult<Channel>> GetChannelsInternal(ChannelQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var channels = _channelEntities.OrderBy(i => i.SortName).ToList();
+            var channels = GetAllChannels()
+                .Select(GetChannelEntity)
+                .OrderBy(i => i.SortName)
+                .ToList();
 
             if (query.SupportsLatestItems.HasValue)
             {
@@ -144,15 +148,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 all = all.Take(query.Limit.Value).ToList();
             }
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var returnItems = all.ToArray();
 
-            var returnItems = all.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
-                .ToArray();
-
-            var result = new QueryResult<BaseItemDto>
+            var result = new QueryResult<Channel>
             {
                 Items = returnItems,
                 TotalRecordCount = totalCount
@@ -161,11 +159,34 @@ namespace MediaBrowser.Server.Implementations.Channels
             return Task.FromResult(result);
         }
 
+        public async Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(new Guid(query.UserId));
+
+            var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnItems,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
+
+            return result;
+        }
+
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var allChannelsList = GetAllChannels().ToList();
-
-            var list = new List<Channel>();
 
             var numComplete = 0;
 
@@ -176,8 +197,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 try
                 {
                     var item = await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
-
-                    list.Add(item);
 
                     _libraryManager.RegisterItem(item);
                 }
@@ -197,16 +216,28 @@ namespace MediaBrowser.Server.Implementations.Channels
                 progress.Report(100 * percent);
             }
 
-            _channelEntities = list.ToList();
             progress.Report(100);
+        }
+
+        private Channel GetChannelEntity(IChannel channel)
+        {
+            var item = GetChannel(GetInternalChannelId(channel.Name).ToString("N"));
+
+            if (item == null)
+            {
+                item = GetChannel(channel, CancellationToken.None).Result;
+
+                _libraryManager.RegisterItem(item);
+            }
+
+            return item;
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken)
         {
             var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
 
-            var channelGuid = new Guid(item.ChannelId);
-            var channel = _channelEntities.First(i => i.Id == channelGuid);
+            var channel = GetChannel(item.ChannelId);
             var channelPlugin = GetChannelProvider(channel);
 
             var requiresCallback = channelPlugin as IRequiresMediaInfoCallback;
@@ -374,17 +405,23 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var list = channelMediaSources.ToList();
 
-            var width = _config.Configuration.ChannelOptions.PreferredStreamingWidth;
+            var options = _config.GetChannelsConfiguration();
+
+            var width = options.PreferredStreamingWidth;
 
             if (width.HasValue)
             {
                 var val = width.Value;
 
-                return list
-                    .OrderBy(i => i.Width.HasValue && i.Width.Value <= val)
-                    .ThenBy(i => Math.Abs(i.Width ?? 0 - val))
+                var res = list
+                    .OrderBy(i => (i.Width.HasValue && i.Width.Value <= val ? 0 : 1))
+                    .ThenBy(i => Math.Abs((i.Width ?? 0) - val))
                     .ThenByDescending(i => i.Width ?? 0)
-                    .ThenBy(list.IndexOf);
+                    .ThenBy(list.IndexOf)
+                    .ToList();
+
+
+                return res;
             }
 
             return list
@@ -476,7 +513,8 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
         {
-            return _channelEntities
+            return GetAllChannels()
+                .Select(GetChannelEntity)
                 .OrderBy(i => i.SortName)
                 .Select(i => GetChannelFeatures(i.Id.ToString("N")));
         }
@@ -529,7 +567,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var channels = _channels;
+            if (!string.IsNullOrWhiteSpace(query.UserId) && user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            var channels = GetAllChannels();
 
             if (query.ChannelIds.Length > 0)
             {
@@ -590,8 +633,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             var itemTasks = items.Select(i =>
             {
                 var channelProvider = i.Item1;
-                var channel = GetChannel(GetInternalChannelId(channelProvider.Name).ToString("N"));
-                return GetChannelItemEntity(i.Item2, channelProvider, channel, token);
+                var internalChannelId = GetInternalChannelId(channelProvider.Name);
+                return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
             });
 
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
@@ -683,7 +726,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(new Guid(query.UserId));
 
-            var channels = _channels;
+            var channels = GetAllChannels();
 
             if (query.ChannelIds.Length > 0)
             {
@@ -748,8 +791,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             var itemTasks = items.Select(i =>
             {
                 var channelProvider = i.Item1;
-                var channel = GetChannel(GetInternalChannelId(channelProvider.Name).ToString("N"));
-                return GetChannelItemEntity(i.Item2, channelProvider, channel, token);
+                var internalChannelId = GetInternalChannelId(channelProvider.Name);
+                return GetChannelItemEntity(i.Item2, channelProvider, internalChannelId, token);
             });
 
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
@@ -822,11 +865,10 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, CancellationToken cancellationToken)
         {
-            var queryChannelId = query.ChannelId;
             // Get the internal channel entity
-            var channel = _channelEntities.First(i => i.Id == new Guid(queryChannelId));
+            var channel = GetChannel(query.ChannelId);
 
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
@@ -845,6 +887,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                     throw new ArgumentException(string.Format("{0} channel only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
                 }
                 providerLimit = query.Limit;
+
+                // This will cause some providers to fail
+                if (providerLimit == 0)
+                {
+                    providerLimit = 1;
+                }
             }
 
             var user = string.IsNullOrWhiteSpace(query.UserId)
@@ -873,7 +921,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var providerTotalRecordCount = providerLimit.HasValue ? itemsResult.TotalRecordCount : null;
 
-            var tasks = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel, cancellationToken));
+            var tasks = itemsResult.Items.Select(i => GetChannelItemEntity(i, channelProvider, channel.Id, cancellationToken));
 
             var internalItems = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -888,6 +936,31 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             return await GetReturnItems(internalItems, providerTotalRecordCount, user, query, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(new Guid(query.UserId));
+
+            var internalResult = await GetChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnItems,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
+
+            return result;
         }
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
@@ -1031,7 +1104,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 filename + ".json");
         }
 
-        private async Task<QueryResult<BaseItemDto>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
+        private async Task<QueryResult<BaseItem>> GetReturnItems(IEnumerable<BaseItem> items, int? totalCountFromProvider, User user, ChannelItemQuery query, CancellationToken cancellationToken)
         {
             items = ApplyFilters(items, query.Filters, user);
 
@@ -1055,10 +1128,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             await RefreshIfNeeded(all, cancellationToken).ConfigureAwait(false);
 
-            var returnItemArray = all.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
-                .ToArray();
+            var returnItemArray = all.ToArray();
 
-            return new QueryResult<BaseItemDto>
+            return new QueryResult<BaseItem>
             {
                 Items = returnItemArray,
                 TotalRecordCount = totalCount
@@ -1073,7 +1145,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 (channelProvider.Name ?? string.Empty) + "16";
         }
 
-        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Channel internalChannel, CancellationToken cancellationToken)
+        private async Task<BaseItem> GetChannelItemEntity(ChannelItemInfo info, IChannel channelProvider, Guid internalChannelId, CancellationToken cancellationToken)
         {
             BaseItem item;
             Guid id;
@@ -1129,6 +1201,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.CommunityRating = info.CommunityRating;
                 item.OfficialRating = info.OfficialRating;
                 item.Overview = info.Overview;
+                item.IndexNumber = info.IndexNumber;
+                item.ParentIndexNumber = info.ParentIndexNumber;
                 item.People = info.People;
                 item.PremiereDate = info.PremiereDate;
                 item.ProductionYear = info.ProductionYear;
@@ -1143,7 +1217,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             channelItem.OriginalImageUrl = info.ImageUrl;
             channelItem.ExternalId = info.Id;
-            channelItem.ChannelId = internalChannel.Id.ToString("N");
+            channelItem.ChannelId = internalChannelId.ToString("N");
             channelItem.ChannelItemType = info.Type;
 
             if (isNew)
@@ -1155,13 +1229,14 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (channelMediaItem != null)
             {
-                channelMediaItem.IsInfiniteStream = info.IsInfiniteStream;
                 channelMediaItem.ContentType = info.ContentType;
                 channelMediaItem.ChannelMediaSources = info.MediaSources;
 
                 var mediaSource = info.MediaSources.FirstOrDefault();
 
                 item.Path = mediaSource == null ? null : mediaSource.Path;
+
+                item.DisplayMediaType = channelMediaItem.ContentType.ToString();
             }
 
             if (isNew)

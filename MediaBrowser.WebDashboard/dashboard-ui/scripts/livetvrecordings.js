@@ -60,7 +60,7 @@
             overlayText: screenWidth >= 600,
             coverImage: true
 
-        })).createPosterItemMenus();
+        })).createCardMenus();
     }
 
     function reload(page) {

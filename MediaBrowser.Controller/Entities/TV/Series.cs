@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasTags, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -36,8 +36,22 @@ namespace MediaBrowser.Controller.Entities.TV
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
-            Tags = new List<string>();
             DisplaySpecialsWithSeasons = true;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
+        public override bool IsPreSorted
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public bool DisplaySpecialsWithSeasons { get; set; }
@@ -51,12 +65,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         public string DisplayOrder { get; set; }
         
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-     
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

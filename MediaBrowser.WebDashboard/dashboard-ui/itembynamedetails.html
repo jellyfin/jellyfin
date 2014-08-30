@@ -4,12 +4,14 @@
     <title></title>
 </head>
 <body>
-    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b">
+
+    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b">
         <div id="movieGenreTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html" class="ui-btn-active">${TabGenres}</a>
                 <a href="moviepeople.html">${TabPeople}</a>
                 <a href="moviestudios.html">${TabStudios}</a>
@@ -20,6 +22,7 @@
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html">${TabGenres}</a>
                 <a href="moviepeople.html" class="ui-btn-active">${TabPeople}</a>
                 <a href="moviestudios.html">${TabStudios}</a>
@@ -30,6 +33,7 @@
                 <a href="movieslatest.html">${TabLatest}</a>
                 <a href="moviesrecommended.html">${TabSuggested}</a>
                 <a href="movies.html">${TabMovies}</a>
+                <a href="collections.html?context=movies">${TabCollections}</a>
                 <a href="moviegenres.html">${TabGenres}</a>
                 <a href="moviepeople.html">${TabPeople}</a>
                 <a href="moviestudios.html" class="ui-btn-active">${TabStudios}</a>
@@ -61,6 +65,7 @@
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="tvrecommended.html">${TabSuggested}</a>
                 <a href="tvlatest.html">${TabLatest}</a>
+                <a href="tvupcoming.html">${TabUpcoming}</a>
                 <a href="tvshows.html">${TabShows}</a>
                 <a href="episodes.html">${TabEpisodes}</a>
                 <a href="tvgenres.html">${TabGenres}</a>
@@ -109,50 +114,48 @@
             </div>
         </div>
 
-        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-            <div class="itemBackdropContent">
-                <table class="detailPageContent primaryDetailPageContent">
-                    <tr>
-                        <td style="vertical-align: top; padding: 0 1em 0 0;">
-                            <div id="itemImage" class="itemImageContainer"></div>
-                        </td>
-                        <td style="vertical-align: top; padding: 0;">
-                            <p><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
-                            <p>
-                                <span class="itemCommunityRating"></span>
-                                <span class="userDataIcons"></span>
-                            </p>
-                            <p class="itemGenres"></p>
-                            <p class="itemOverview desktopOverview"></p>
-                            <p id="itemBirthday"></p>
-                            <p id="itemBirthLocation"></p>
-                            <p id="itemDeathDate"></p>
+        <div style="padding: 1em 0;">
+            <table class="detailPageContent primaryDetailPageContent">
+                <tr>
+                    <td style="vertical-align: top; padding: 0 1em 0 0;">
+                        <div id="itemImage" class="itemImageContainer itemByNameImageContainer"></div>
+                    </td>
+                    <td style="vertical-align: top; padding: 0;">
+                        <p style="margin-top:0;"><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                        <p>
+                            <span class="itemCommunityRating"></span>
+                            <span class="userDataIcons"></span>
+                        </p>
+                        <p class="itemGenres"></p>
+                        <p class="itemOverview desktopOverview"></p>
+                        <p id="itemBirthday"></p>
+                        <p id="itemBirthLocation"></p>
+                        <p id="itemDeathDate"></p>
 
-                            <p id="itemLinks"></p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <p class="itemOverview mobileOverview"></p>
+                        <p id="itemLinks"></p>
+                        <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
+                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                            <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonMore}</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
-        <div class="detailButtonsContainer">
-            <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-            </span>
-            <span id="editButtonContainer" style="display: none;">
-                <a id="btnEdit" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
-            </span>
+        <p class="itemOverview mobileOverview"></p>
+        <div class="detailButtonsContainer mobileDetailButtons">
+            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+            <a class="btnEdit hide" data-role="button" data-icon="edit" data-inline="true" data-mini="true" href="#">${ButtonEdit}</a>
         </div>
-        <div data-role="content">
+        <div data-role="content" style="padding-top: 0;">
 
-            <div id="itemTabs" style="text-align: center; margin: 1em 0;"></div>
+            <div id="itemTabs" style="text-align: center; margin: 0 0 1em;"></div>
             <div class="viewSettings">
                 <div class="viewControls">
                 </div>
                 <div class="listTopPaging">
                 </div>
             </div>
-            <div id="items" class="itemsContainer" style="text-align: center;">
+            <div id="items" class="itemsContainer">
             </div>
         </div>
     </div>

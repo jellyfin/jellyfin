@@ -1,19 +1,40 @@
-﻿(function ($, window) {
+﻿(function ($, window, store) {
 
-    var enableMirrorMode;
+    function setMirrorModeEnabled(enabled) {
+
+        var val = enabled ? '1' : '';
+
+        store.setItem('displaymirror-' + Dashboard.getCurrentUserId(), val);
+
+    }
+    function isMirrorModeEnabled() {
+        return (store.getItem('displaymirror-' + Dashboard.getCurrentUserId()) || '') == '1';
+    }
+
     var currentDisplayInfo;
-
     function mirrorItem(info) {
 
         var item = info.item;
 
         MediaController.getCurrentPlayer().displayContent({
 
-            itemName: item.Name,
-            itemId: item.Id,
-            itemType: item.Type,
-            context: info.context
+            ItemName: item.Name,
+            ItemId: item.Id,
+            ItemType: item.Type,
+            Context: info.context
         });
+    }
+
+    function mirrorIfEnabled(info) {
+
+        if (isMirrorModeEnabled()) {
+
+            var player = MediaController.getPlayerInfo();
+
+            if (!player.isLocalPlayer && player.supportedCommands.indexOf('DisplayContent') != -1) {
+                mirrorItem(info);
+            }
+        }
     }
 
     function monitorPlayer(player) {
@@ -94,6 +115,8 @@
 
             currentPlayer = player;
             currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
+
+            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
             $(self).trigger('playerchange');
         };
@@ -188,22 +211,31 @@
 
         self.canPlay = function (item) {
 
-            if (item.PlayAccess != 'Full') {
+            return self.canPlayByAttributes(item.Type, item.MediaType, item.PlayAccess, item.LocationType, item.IsPlaceHolder);
+        };
+
+        self.canPlayByAttributes = function (itemType, mediaType, playAccess, locationType, isPlaceHolder) {
+
+            if (playAccess != 'Full') {
                 return false;
             }
 
-            if (item.LocationType == "Virtual" || item.IsPlaceHolder) {
+            if (locationType == "Virtual" || isPlaceHolder) {
                 return false;
             }
 
-            if (item.IsFolder || item.Type == "MusicGenre") {
+            if (itemType == "MusicGenre" || itemType == "Season" || itemType == "Series" || itemType == "BoxSet" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "Playlist") {
                 return true;
             }
 
-            return self.getPlayerInfo().playableMediaTypes.indexOf(item.MediaType) != -1;
+            return self.getPlayerInfo().playableMediaTypes.indexOf(mediaType) != -1;
         };
 
-        self.canQueueMediaType = function (mediaType) {
+        self.canQueueMediaType = function (mediaType, itemType) {
+
+            if (itemType == 'MusicAlbum' || itemType == 'MusicArtist' || itemType == 'MusicGenre') {
+                mediaType = 'Audio';
+            }
 
             return currentPlayer.canQueueMediaType(mediaType);
         };
@@ -414,7 +446,7 @@
         var html = '';
         html += '<form>';
 
-        html += '<form><h3>Select Player:</h3>';
+        html += '<h3>' + Globalize.translate('HeaderSelectPlayer') + '</h3>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
 
         var checkedHtml;
@@ -430,11 +462,11 @@
 
             var mirror = (!target.isLocalPlayer && target.supportedCommands.indexOf('DisplayContent') != -1) ? 'true' : 'false';
 
-            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-commands="' + target.supportedCommands.join(',') + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" data-devicename="' + target.deviceName + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
+            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-commands="' + target.supportedCommands.join(',') + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" data-devicename="' + (target.deviceName || '') + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
             html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
 
-            if (target.appName) {
-                html += '<br/><span style="color:#bbb;">' + target.appName + '</span>';
+            if (target.appName && target.appName != target.name) {
+                html += '<br/><span>' + target.appName + '</span>';
             }
 
             html += '</label>';
@@ -444,7 +476,7 @@
 
         html += '<p class="fieldDescription">' + Globalize.translate('LabelAllPlaysSentToPlayer') + '</p>';
 
-        checkedHtml = enableMirrorMode ? ' checked="checked"' : '';
+        checkedHtml = isMirrorModeEnabled() ? ' checked="checked"' : '';
         html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
 
         html += '</form>';
@@ -456,20 +488,20 @@
 
         var promise = MediaController.getTargets();
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="b">';
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="a">';
 
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-role="button" data-mini="true" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
+        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
 
         html += '</div>';
 
         $(document.body).append(html);
 
-        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelafterclose", function () {
+        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
-            $(this).off("panelafterclose").remove();
+            $(this).off("panelclose").remove();
         });
 
         promise.done(function (targets) {
@@ -477,7 +509,7 @@
             $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
 
             $('.chkEnableMirrorMode', elem).on().on('change', function () {
-                enableMirrorMode = this.checked;
+                setMirrorModeEnabled(this.checked);
 
                 if (this.checked && currentDisplayInfo) {
 
@@ -495,7 +527,6 @@
                     $('.fldMirrorMode', elem).show();
                 } else {
                     $('.fldMirrorMode', elem).hide();
-                    $('.chkEnableMirrorMode', elem).checked(false).trigger('change').checkboxradio('refresh');
                 }
 
             }).each(function () {
@@ -521,6 +552,12 @@
                     deviceName: deviceName
 
                 });
+
+                if (currentDisplayInfo) {
+
+                    mirrorIfEnabled(currentDisplayInfo);
+                }
+
             });
         });
     }
@@ -599,9 +636,7 @@
 
         currentDisplayInfo = info;
 
-        if (enableMirrorMode) {
-            mirrorItem(info);
-        }
+        mirrorIfEnabled(info);
     });
 
-})(jQuery, window);
+})(jQuery, window, window.store);

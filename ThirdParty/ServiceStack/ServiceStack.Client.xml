@@ -194,7 +194,7 @@
             Specifies if cookies should be stored
             </summary>
         </member>
-        <member name="M:ServiceStack.StreamExtensions.Compress(System.String,System.String)">
+        <member name="M:ServiceStack.StreamExt.Compress(System.String,System.String)">
             <summary>
             Compresses the specified text using the default compression method: Deflate
             </summary>
@@ -202,7 +202,7 @@
             <param name="compressionType">Type of the compression.</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.StreamExtensions.Decompress(System.Byte[],System.String)">
+        <member name="M:ServiceStack.StreamExt.Decompress(System.Byte[],System.String)">
             <summary>
             Decompresses the specified gz buffer using the default compression method: Inflate
             </summary>

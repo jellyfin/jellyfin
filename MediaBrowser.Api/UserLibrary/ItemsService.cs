@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -246,6 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class ItemsService
     /// </summary>
+    [Authenticated]
     public class ItemsService : BaseApiService
     {
         /// <summary>
@@ -1428,7 +1430,7 @@ namespace MediaBrowser.Api.UserLibrary
                 nextId = list[index + 1].Id;
             }
 
-            return list.Where(i => i.Id == previousId || i.Id == nextId);
+            return list.Where(i => i.Id == previousId || i.Id == nextId || i.Id == adjacentToIdGuid);
         }
 
         /// <summary>

@@ -168,6 +168,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return true;
             }
 
+            if (item is Audio)
+            {
+                // Moved to plural AlbumArtists
+                if (date < new DateTime(2014, 8, 28))
+                {
+                    return true;
+                }
+            }
+
             if (item.SupportsLocalMetadata)
             {
                 var video = item as Video;
@@ -175,7 +184,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (video != null && !video.IsPlaceHolder)
                 {
                     return !video.SubtitleFiles
-                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, false)
+                        .SequenceEqual(SubtitleResolver.GetSubtitleFiles(video, directoryService, _fileSystem, false)
                         .Select(i => i.FullName)
                         .OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
                 }

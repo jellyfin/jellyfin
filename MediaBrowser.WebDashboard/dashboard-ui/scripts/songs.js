@@ -33,6 +33,7 @@
             this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     function reloadItems(page) {
@@ -46,22 +47,27 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false)).trigger('create');
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false
+            });
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
             
-            html += LibraryBrowser.getSongTableHtml(result.Items, {
-                showAlbum: true,
-                showArtist: true,
-                showAlbumArtist: true,
-                enableColumnSorting: true,
-                sortBy: query.SortBy,
-                sortOrder: query.SortOrder
+            html += LibraryBrowser.getListViewHtml({
+                items: result.Items,
+                smallIcon: true,
+                showIndex: true,
+                defaultAction: 'play'
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false);
+            html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -70,12 +76,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -143,6 +143,12 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
+            reloadItems(page);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
             reloadItems(page);
         });
 

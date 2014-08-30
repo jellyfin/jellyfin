@@ -54,13 +54,13 @@
 
                         <fieldset data-role="controlgroup">
                             <legend>${LabelSupportedMediaTypes}</legend>
-                            <input type="checkbox" data-mini="true" id="chkAudio" data-value="Audio" class="chkMediaType" />
+                            <input type="checkbox" id="chkAudio" data-value="Audio" class="chkMediaType" />
                             <label for="chkAudio">${OptionProfileAudio}</label>
 
-                            <input type="checkbox" data-mini="true" id="chkPhoto" data-value="Photo" class="chkMediaType" />
+                            <input type="checkbox" id="chkPhoto" data-value="Photo" class="chkMediaType" />
                             <label for="chkPhoto">${OptionProfilePhoto}</label>
 
-                            <input type="checkbox" data-mini="true" id="chkVideo" data-value="Video" class="chkMediaType" />
+                            <input type="checkbox" id="chkVideo" data-value="Video" class="chkMediaType" />
                             <label for="chkVideo">${OptionProfileVideo}</label>
                         </fieldset>
 
@@ -130,9 +130,24 @@
                                 <br />
                                 <ul data-role="listview" class="ulForm">
                                     <li>
-                                        <label for="txtMaxAllowedBitrate">${LabelMaxBitrate}</label>
+                                        <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
                                         <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">${LabelMaxBitrateHelp}</div>
+                                        <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtMaxStaticBitrate">${LabelMaxStaticBitrate}</label>
+                                        <input type="number" id="txtMaxStaticBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">${LabelMaxStaticBitrateHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
+                                        <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtMusicStaticBitrate">${LabelMusicStaticBitrate}</label>
+                                        <input type="number" id="txtMusicStaticBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <div class="fieldDescription">${LabelMusicStaticBitrateHelp}</div>
                                     </li>
                                     <li>
                                         <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
@@ -179,6 +194,11 @@
                                     <li>
                                         <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
                                         <input type="text" id="txtInfoSerialNumber" data-mini="true" />
+                                    </li>
+                                    <li>
+                                        <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
+                                        <input type="text" id="txtProtocolInfo" data-mini="true" />
+                                        <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
@@ -252,6 +272,11 @@
                             </li>
                         </ul>
 
+                        <h2>
+                            <span style="vertical-align:middle;">${HeaderHttpHeaders}</span>
+                            <button class="btnAddIdentificationHttpHeader" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
+                        </h2>
+                        <div class="httpHeaderIdentificationList"></div>
                     </div>
 
                     <div class="tabContent tabDirectPlayProfiles">
@@ -300,7 +325,7 @@
 
             </div>
         </div>
-        <div data-role="popup" data-transition="slidefade" id="popupEditDirectPlayProfile" class="popup">
+        <div data-role="popup" id="popupEditDirectPlayProfile" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderDirectPlayProfile}</h3>
@@ -348,7 +373,7 @@
             </div>
 
         </div>
-        <div data-role="popup" data-transition="slidefade" id="transcodingProfilePopup" class="popup">
+        <div data-role="popup" id="transcodingProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderTranscodingProfile}</h3>
@@ -371,6 +396,22 @@
                                 <option value="Audio">${OptionProfileAudio}</option>
                                 <option value="Photo">${OptionProfilePhoto}</option>
                                 <option value="Video">${OptionProfileVideo}</option>
+                            </select>
+                        </div>
+
+                        <div style="margin: 1em 0;">
+                            <label for="selectTranscodingContext">${LabelContext}</label>
+                            <select id="selectTranscodingContext" data-mini="true">
+                                <option value="Streaming">${OptionContextStreaming}</option>
+                                <option value="Static">${OptionContextStatic}</option>
+                            </select>
+                        </div>
+
+                        <div id="fldTranscodingProtocol" style="margin: 1em 0;">
+                            <label for="selectTranscodingProtocol">${LabelProtocol}</label>
+                            <select id="selectTranscodingProtocol" data-mini="true">
+                                <option value="Http">${OptionProtocolHttp}</option>
+                                <option value="Hls">${OptionProtocolHls}</option>
                             </select>
                         </div>
 
@@ -426,7 +467,7 @@
             </div>
 
         </div>
-        <div data-role="popup" data-transition="slidefade" id="containerProfilePopup" class="popup">
+        <div data-role="popup" id="containerProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderContainerProfile}</h3>
@@ -476,7 +517,7 @@
             </div>
 
         </div>
-        <div data-role="popup" data-transition="slidefade" id="codecProfilePopup" class="popup">
+        <div data-role="popup" id="codecProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderCodecProfile}</h3>
@@ -514,7 +555,7 @@
             </div>
 
         </div>
-        <div data-role="popup" data-transition="slidefade" id="responseProfilePopup" class="popup">
+        <div data-role="popup" id="responseProfilePopup" class="popup">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderResponseProfile}</h3>
@@ -562,6 +603,46 @@
             </div>
 
         </div>
+        <div data-role="popup" id="identificationHeaderPopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>${HeaderIdentificationHeader}</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="identificationHeaderForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtIdentificationHeaderName">${LabelName}</label>
+                        <input type="text" id="txtIdentificationHeaderName" data-mini="true" required="required" />
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtIdentificationHeaderValue">${LabelValue}</label>
+                        <input type="text" id="txtIdentificationHeaderValue" data-mini="true" required="required" />
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectMatchType">${LabelMatchType}</label>
+                        <select id="selectMatchType" data-mini="true">
+                            <option value="Equals">${OptionEquals}</option>
+                            <option value="Regex">${OptionRegex}</option>
+                            <option value="Substring">${OptionSubstring}</option>
+                        </select>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            ${ButtonCancel}
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
@@ -569,6 +650,7 @@
             $('.containerProfileForm').off('submit', DlnaProfilePage.onContainerProfileFormSubmit).on('submit', DlnaProfilePage.onContainerProfileFormSubmit);
             $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
             $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
+            $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
         </script>
     </div>
 </body>

@@ -16,46 +16,32 @@
 
                 <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
+                <p>
+                    <button type="submit" data-icon="check">
+                        ${ButtonSignIn}
+                    </button>
+                </p>
 
                 <p>
-                    <button type="submit" data-theme="b" data-icon="check">
-                        ${ButtonSignIn}
+                    <button type="button" data-icon="delete" onclick="LoginPage.cancelLogin();" class="btnCancel">
+                        ${ButtonCancel}
                     </button>
                 </p>
             </form>
 
             <div class="visualLoginForm" style="display: none; text-align: center;">
-                <div id="divUsers"></div>
+                <div id="divUsers" class="itemsContainer"></div>
 
                 <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
-                <p style="text-align: center;"><a onclick="$('.manualLoginForm').show();$('.visualLoginForm').hide();$('#txtManualName').focus();" href="#">${ButtonManualLogin}</a></p>
+                
+                <p><a href="#" class="lnkManualLogin" onclick="LoginPage.showManualForm($.mobile.activePage, true);">${ButtonManualLogin}</a></p>
 
             </div>
-        </div>
 
-        <div data-role="popup" id="popupLogin" class="popup" data-dismissible="false">
-            <form class="loginForm">
-                <div class="ui-bar-a" style="text-align: center;">
-                    <h3>${HeaderPleaseSignIn}</h3>
-                </div>
-                <div data-role="content">
-                    <label for="pw" class="ui-hidden-accessible">${LabelPassword}</label>
-                    <input type="password" name="pw" id="pw" value="" placeholder="password" />
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check">
-                            ${ButtonSignIn}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </div>
-            </form>
+            <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
         </div>
 
         <script type="text/javascript">
-            $('.loginForm').on('submit', LoginPage.onSubmit);
             $('#manualLoginForm').on('submit', LoginPage.onManualSubmit);
         </script>
     </div>

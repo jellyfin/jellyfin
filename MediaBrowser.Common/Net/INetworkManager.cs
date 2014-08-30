@@ -44,5 +44,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="endpointstring">The endpointstring.</param>
         /// <returns>IPEndPoint.</returns>
         IPEndPoint Parse(string endpointstring);
+
+        /// <summary>
+        /// Determines whether [is in local network] [the specified endpoint].
+        /// </summary>
+        /// <param name="endpoint">The endpoint.</param>
+        /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
+        bool IsInLocalNetwork(string endpoint);
     }
 }

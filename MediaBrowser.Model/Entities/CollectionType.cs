@@ -1,5 +1,4 @@
-﻿
-namespace MediaBrowser.Model.Entities
+﻿namespace MediaBrowser.Model.Entities
 {
     public static class CollectionType
     {
@@ -24,5 +23,10 @@ namespace MediaBrowser.Model.Entities
         public const string Games = "games";
         public const string Channels = "channels";
         public const string LiveTv = "livetv";
+        public const string Playlists = "playlists";
+        public const string Folders = "folders";
+
+        public const string LiveTvChannels = "LiveTvChannels";
+        public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
     }
 }

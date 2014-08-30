@@ -65,8 +65,7 @@ namespace MediaBrowser.Providers.TV
             var season = (Season)item;
             var series = season.Series;
 
-            var identity = season.Identities.OfType<SeasonIdentity>().FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString());
-            var seriesId = identity != null ? identity.SeriesId : null;
+            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
 
             if (!string.IsNullOrEmpty(seriesId) && season.IndexNumber.HasValue)
             {
@@ -77,9 +76,18 @@ namespace MediaBrowser.Providers.TV
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 
+                var identity = season.Identities.OfType<SeasonIdentity>()
+                    .FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString());
+
+                var seasonNumber = season.IndexNumber.Value;
+
+                if (identity != null)
+                {
+                    seasonNumber = AdjustForSeriesOffset(series, identity.SeasonIndex);
+                }
+                
                 try
                 {
-                    int seasonNumber = AdjustForSeriesOffset(series, identity.SeasonIndex);
                     return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
                 }
                 catch (FileNotFoundException)
@@ -95,7 +103,7 @@ namespace MediaBrowser.Providers.TV
         {
             var offset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
             if (offset != null)
-                return (int) (seasonNumber + offset);
+                return (seasonNumber + offset.Value);
 
             return seasonNumber;
         }

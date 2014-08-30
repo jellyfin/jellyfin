@@ -1,11 +1,12 @@
-﻿using System.Globalization;
-using System.IO;
-using MediaBrowser.Common.Implementations.Networking;
+﻿using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -16,6 +17,11 @@ namespace MediaBrowser.ServerApplication.Networking
     /// </summary>
     public class NetworkManager : BaseNetworkManager, INetworkManager
     {
+        public NetworkManager(ILogger logger)
+            : base(logger)
+        {
+        }
+
         /// <summary>
         /// Gets the network shares.
         /// </summary>

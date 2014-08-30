@@ -192,6 +192,15 @@ namespace MediaBrowser.Dlna.Profiles
                    }
                }
            };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External
+                }
+            };
         }
     }
 }

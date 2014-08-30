@@ -44,7 +44,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>Media Folders</legend>';
+        html += '<legend>' + Globalize.translate('HeaderMediaFolders') + '</legend>';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
@@ -54,7 +54,7 @@
 
             var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -69,7 +69,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>Channels</legend>';
+        html += '<legend>' + Globalize.translate('HeaderChannels') + '</legend>';
 
         for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -79,7 +79,7 @@
 
             var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -97,23 +97,23 @@
     function loadUnratedItems(page, user) {
 
         var items = [
-            { name: 'Books', value: 'Book' },
-            { name: 'Games', value: 'Game' },
-            { name: 'Internet Channel Content', value: 'ChannelContent' },
-            { name: 'Live TV Channels', value: 'LiveTvChannel' },
-            { name: 'Live TV Programs', value: 'LiveTvProgram' },
-            { name: 'Movies', value: 'Movie' },
-            { name: 'Music', value: 'Music' },
-            { name: 'Trailers', value: 'Trailer' },
-            { name: 'TV Shows', value: 'Series' },
-            { name: 'Others', value: 'Other' }
+            { name: Globalize.translate('OptionBlockBooks'), value: 'Book' },
+            { name: Globalize.translate('OptionBlockGames'), value: 'Game' },
+            { name: Globalize.translate('OptionBlockChannelContent'), value: 'ChannelContent' },
+            { name: Globalize.translate('OptionBlockLiveTvChannels'), value: 'LiveTvChannel' },
+            { name: Globalize.translate('OptionBlockLiveTvPrograms'), value: 'LiveTvProgram' },
+            { name: Globalize.translate('OptionBlockMovies'), value: 'Movie' },
+            { name: Globalize.translate('OptionBlockMusic'), value: 'Music' },
+            { name: Globalize.translate('OptionBlockTrailers'), value: 'Trailer' },
+            { name: Globalize.translate('OptionBlockTvShows'), value: 'Series' },
+            { name: Globalize.translate('OptionBlockOthers'), value: 'Other' }
         ];
 
         var html = '';
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>Block items with no rating information:</legend>';
+        html += '<legend>' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</legend>';
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -123,7 +123,7 @@
 
             var checkedAttribute = user.Configuration.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox" data-mini="true" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + item.name + '</label>';
         }
 
@@ -242,9 +242,9 @@
 
         var promise3 = ApiClient.getParentalRatings();
 
-        var promise4 = $.getJSON(ApiClient.getUrl("Library/MediaFolders"));
+        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false }));
 
-        var promise5 = $.getJSON(ApiClient.getUrl("Channels"));
+        var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
 
         $.when(promise1, promise2, promise3, promise4, promise5).done(function (response1, response2, response3, response4, response5) {
 

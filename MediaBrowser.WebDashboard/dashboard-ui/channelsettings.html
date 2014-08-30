@@ -1,20 +1,26 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${TitleChannels}</title>
+    <title>${PluginsTitle}</title>
 </head>
 <body>
-    <div id="channelSettingsPage" data-role="page" class="page type-interior channelSettingsPage">
+    <div id="channelSettingsPage" data-role="page" class="page type-interior pluginConfigurationPage">
 
         <div data-role="content">
             <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
+                    <a href="plugincatalog.html" data-role="button">${TabCatalog}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabChannels}</a>
+                </div>
+
                 <form class="channelSettingsForm">
                     <p class="noChannelsHeader" style="display: none;">${ChannelSettingsFormHelp}</p>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectChannelResolution">${LabelChannelStreamQuality}</label>
-                            <select id="selectChannelResolution">
+                            <select id="selectChannelResolution" data-mini="true">
                                 <option value="">${OptionBestAvailableStreamQuality}</option>
                                 <option value="1920">1080p</option>
                                 <option value="1280">720p</option>
@@ -40,6 +46,11 @@
                                 </div>
                                 <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                                 <div class="fieldDescription">${LabelChannelDownloadPathHelp}</div>
+                            </li>
+                            <li>
+                                <label for="txtDownloadSizeLimit">${LabelChannelDownloadSizeLimit}</label>
+                                <input type="number" id="txtDownloadSizeLimit" pattern="[0-9]*" min="0.1" step=".1" data-mini="true" />
+                                <div class="fieldDescription">${LabelChannelDownloadSizeLimitHelp}</div>
                             </li>
                             <li>
                                 <label for="txtDownloadAge">${LabelChannelDownloadAge}</label>

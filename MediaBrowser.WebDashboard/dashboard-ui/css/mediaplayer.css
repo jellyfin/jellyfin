@@ -1,7 +1,8 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
     padding: 6px 0 14px 0;
-    border-top: 1px solid green;
+    border-top: 2px solid green;
+    text-align: center;
 }
 
 .nowPlayingBarImage {
@@ -76,7 +77,7 @@
     width: 130px;
 }
 
-#nowPlayingBar .sliderContainer {
+.nowPlayingBar .sliderContainer {
     margin-top: 14px;
 }
 
@@ -123,40 +124,34 @@ input[type="range"]::-ms-fill-upper {
     display: none; /* display and visibility only */
 }
 
-.remoteControlButton {
-    float: right;
-}
-
 @media all and (max-width: 800px) {
 
-    #nowPlayingBar .mediaButton {
+    .nowPlayingBar .mediaButton {
         margin-top: 0;
         margin-bottom: 0;
     }
 
-        #nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
+        .nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
             display: none;
         }
 
-    #nowPlayingBar #playButton, #nowPlayingBar #pauseButton {
+    .remoteControlButton {
         float: right;
     }
 
-    #nowPlayingBar .currentTime, #nowPlayingBar .positionSliderContainer, #nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
+    .nowPlayingBar #playButton, .nowPlayingBar #pauseButton {
+        float: right;
+    }
+
+    .nowPlayingBar .currentTime, .nowPlayingBar .positionSliderContainer, .nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
         display: none !important;
     }
 
     .nowPlayingBar {
         padding: 10px 5px 10px 0;
+        text-align: left;
     }
 }
-
-/*@media all and (min-width: 800px) {
-
-    .nowPlayingBar {
-        text-align: center;
-    }
-}*/
 
 @media (min-width: 1440px) {
     #nowPlayingBar .positionSliderContainer {

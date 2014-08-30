@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
@@ -7,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "BoxSet",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
 
@@ -20,36 +22,66 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+        var promise2 = Dashboard.getCurrentUser();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var result = response1[0];
+            var user = response2[0];
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            var addiontalButtonsHtml = user.Configuration.IsAdministrator ?
+                ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
+                '';
+
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                viewButton: true,
+                showLimit: false,
+                additionalButtonsHtml: addiontalButtonsHtml
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
             if (result.TotalRecordCount) {
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'movies',
-                    showTitle: true,
-                    centerText: true,
-                    lazy: true
-                });
+                if (view == "List") {
 
-                html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+                    html = LibraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        context: 'movies',
+                        sortBy: query.SortBy
+                    });
+                }
+                else if (view == "Poster") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'movies',
+                        showTitle: false,
+                        centerText: true,
+                        lazy: true
+                    });
+                }
+
+                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
+
             } else {
 
                 $('.noItemsMessage', page).show();
             }
 
-            $('#items', page).html(html).trigger('create').createPosterItemMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -58,12 +90,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
                 reloadItems(page);
             });
 
@@ -97,11 +123,15 @@
 
         }).checkboxradio('refresh');
 
+        $('#selectView', page).val(view).selectmenu('refresh');
+
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+
+        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#boxsetsPage", function () {
@@ -173,7 +203,34 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            reloadItems(page);
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
+        $('#selectPageSize', page).on('change', function () {
+            query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
     }).on('pagebeforeshow', "#boxsetsPage", function () {
+
+        var page = this;
+
+        var context = getParameterByName('context');
+
+        if (context == 'movies') {
+            $('.collectionTabs', page).hide();
+            $('.movieTabs', page).show();
+        } else {
+            $('.collectionTabs', page).show();
+            $('.movieTabs', page).hide();
+        }
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -185,9 +242,18 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#boxsetsPage", function () {
 
@@ -246,9 +312,13 @@
 
         var page = this;
 
-        $('.btnNewCollection', page).on('click', function () {
+        $('.itemsContainer', page).on('itemsrendered', function () {
 
-            showNewCollectionPanel(page, []);
+            $('.btnNewCollection', page).off('click.newcollectionpanel').on('click.newcollectionpanel', function () {
+
+                showNewCollectionPanel(page, []);
+            });
+
         });
 
         $('#selectCollectionToAddTo', page).on('change', function () {
@@ -261,21 +331,18 @@
                 $('#txtNewCollectionName', page).attr('required', 'required');
             }
         });
+    });
 
-    }).on('pagebeforeshow', ".collectionEditorPage", function () {
+    function redirectToCollection(id) {
 
-        var page = this;
+        var context = getParameterByName('context');
 
-        Dashboard.getCurrentUser().done(function (user) {
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
 
-            if (user.Configuration.IsAdministrator) {
-                $('.btnNewCollection', page).removeClass('hide');
-            } else {
-                $('.btnNewCollection', page).addClass('hide');
-            }
+            Dashboard.navigate(LibraryBrowser.getHref(item, context));
 
         });
-    });
+    }
 
     function createCollection(page) {
 
@@ -289,7 +356,7 @@
 
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: url,
             dataType: "json"
@@ -299,16 +366,9 @@
             Dashboard.hideLoadingMsg();
 
             var id = result.Id;
-            var destination = 'itemdetails.html?id=' + id;
-
-            var context = getParameterByName('context');
-
-            if (context) {
-                destination += "&context=" + context;
-            }
 
             $('.newCollectionPanel', page).panel('toggle');
-            Dashboard.navigate(destination);
+            redirectToCollection(id);
 
         });
     }
@@ -320,7 +380,7 @@
             Ids: $('.fldSelectedItemIds', page).val() || ''
         });
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: url
 
@@ -328,19 +388,10 @@
 
             Dashboard.hideLoadingMsg();
 
-            var destination = 'itemdetails.html?id=' + id;
-
-            var context = getParameterByName('context');
-
-            if (context) {
-                destination += "&context=" + context;
-            }
-
             $('.newCollectionPanel', page).panel('toggle');
-            Dashboard.navigate(destination);
+            redirectToCollection(id);
 
         });
-
     }
 
     window.BoxSetEditor = {

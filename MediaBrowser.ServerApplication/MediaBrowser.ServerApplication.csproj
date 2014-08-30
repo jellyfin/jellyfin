@@ -61,14 +61,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MediaBrowser.IsoMounter">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.68\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=3.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog, Version=3.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.3.0.0.0\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="pfmclrapi">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.68\lib\net45\pfmclrapi.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
@@ -100,7 +100,6 @@
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="EntryPoints\WanAddressEntryPoint.cs" />
     <Compile Include="FFMpeg\FFMpegDownloader.cs" />
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
@@ -198,6 +197,10 @@
       <Project>{734098eb-6dc1-4dd0-a1ca-3140dcd2737c}</Project>
       <Name>MediaBrowser.Dlna</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
+      <Project>{7ef9f3e0-697d-42f3-a08f-19deb5f84392}</Project>
+      <Name>MediaBrowser.LocalMetadata</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
       <Project>{0bd82fa6-eb8a-4452-8af5-74f9c3849451}</Project>
       <Name>MediaBrowser.MediaEncoding</Name>
@@ -217,6 +220,10 @@
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>
       <Name>MediaBrowser.WebDashboard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
+      <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
+      <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

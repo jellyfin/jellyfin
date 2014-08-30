@@ -77,7 +77,7 @@
                         html += "<div>";
                         html += "<span class='storeItemReviewText'>";
                         html += new Date(review.timestamp).toDateString();
-                        html += " " + Dashboard.getStoreRatingHtml(review.rating, review.id, review.name, true);
+                        html += " " + RatingHelpers.getStoreRatingHtml(review.rating, review.id, review.name, true);
                         html += " " + review.title;
                         html += "</span>";
                         if (review.review) {
@@ -110,7 +110,7 @@
                         html += "<div>";
                         html += "<span class='storeItemReviewText'>";
                         html += new Date(review.timestamp).toDateString();
-                        html += " " + Dashboard.getStoreRatingHtml(review.rating, review.id, review.name, true);
+                        html += " " + RatingHelpers.getStoreRatingHtml(review.rating, review.id, review.name, true);
                         html += " " + review.title;
                         html += "</span>";
                         if (review.review) {
@@ -148,7 +148,7 @@
         populateHistory(pkg, page);
         if (pkg.totalRatings > 0) populateReviews(pkg.id, page);
 
-        Dashboard.setPageTitle(pkg.name);
+        $('.pluginName', page).html(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
             $("#btnInstallDiv", page).show();
@@ -241,7 +241,7 @@
         }
 
         //Ratings and Reviews
-        var ratingHtml = "<strong>Overall </strong>" + Dashboard.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
+        var ratingHtml = "<strong>Overall </strong>" + RatingHelpers.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
         ratingHtml += "<span class='storeReviewCount'>";
         ratingHtml += " " + pkg.totalRatings + " Reviews";
         ratingHtml += "</span>";

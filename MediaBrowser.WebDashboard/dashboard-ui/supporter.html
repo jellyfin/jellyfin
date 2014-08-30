@@ -9,39 +9,94 @@
         <div data-role="content">
             <div class="content-primary">
                 <div class="readOnlyContent">
+
                     <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                         <a href="support.html" data-role="button">${TabGeneral}</a>
-                        <a href="log.html" data-role="button">${TabLog}</a>
-                        <a href="supporter.html" data-role="button" class="ui-btn-active">${TabBecomeSupporter}</a>
+                        <a href="log.html" data-role="button">${TabLogs}</a>
+                        <a href="supporter.html" data-role="button" class="ui-btn-active">${TabSupporterClub}</a>
                         <a href="supporterkey.html" data-role="button">${TabSupporterKey}</a>
                         <a href="about.html" data-role="button">${TabAbout}</a>
                     </div>
+
                     <h3>${HeaderSupportTheTeam}</h3>
                     <p>${HeaderSupportTheTeamHelp}</p>
 
-                    <br />
-                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr"
-                        method="post">
-                        <label for="donateAmt">${LabelSupportAmount}</label>
-                        <select id="donateAmt" name="amount">
-                            <option value="15" selected="selected">$15</option>
-                            <option value="20">$20</option>
-                            <option value="30">$30</option>
-                            <option value="50">$50</option>
-                        </select>
+                    <p>${HeaderSupporterBenefit}</p>
 
-                        <input type="hidden" name="cmd" value="_xclick">
+                    <form style="margin-top:2em;" name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalForm" method="post">
+
+                        <fieldset data-role="controlgroup">
+                            <legend>${HeaderDonationType}</legend>
+                            <div class="fldLifetime">
+                                <input type="radio" class="radioDonationType" name="radioDonationType" id="radioLifetimeSupporter" value="lifetime" checked="checked">
+                                <label for="radioLifetimeSupporter">
+                                    ${OptionLifeTimeSupporterClubMembership}<br />
+                                    <span class="lifetimeAmount"></span>
+                                </label>
+                            </div>
+                            <!--<div class="fldYearly">
+                                <input type="radio" class="radioDonationType" name="radioDonationType" id="radioYearlySupporter" value="yearly">
+                                <label for="radioYearlySupporter">
+                                    Yearly supporter club membership<br />
+                                    <span class="yearlyAmount"></span>
+                                </label>
+                            </div>
+                            <div class="fldMonthly">
+                                <input type="radio" class="radioDonationType" name="radioDonationType" id="radioMonthlySupporter" value="monthly">
+                                <label for="radioMonthlySupporter">
+                                    Monthly supporter club membership<br />
+                                    <span class="monthlyAmount"></span>
+                                </label>
+                            </div>-->
+                        </fieldset>
+
+                        <fieldset data-role="controlgroup" style="margin-top:1em;">
+                            <input type="radio" class="radioDonationType" name="radioDonationType" id="radioOneTimeDonation" value="once">
+                            <label for="radioOneTimeDonation">
+                                ${OptionMakeOneTimeDonation}<br />
+                            </label>
+                            <p id="oneTimeDescription" >${OptionOneTimeDescription}</p>
+                        </fieldset>
+
+                        <!--<span class="fieldDescription">${LabelAutomaticallyDonateHelp}</span>-->
+
+                        <div class="fldOneTimeDonationAmount">
+                            <br />
+                            <label for="selectOneTimeDonationAmount">${LabelOneTimeDonationAmount}</label>
+                            <select id="selectOneTimeDonationAmount">
+                                <option value="5">$5</option>
+                                <option value="10" selected="selected">$10</option>
+                                <option value="20">$20</option>
+                                <option value="30">$30</option>
+                                <option value="40">$40</option>
+                                <option value="50">$50</option>
+                                <option value="100">$100</option>
+                                <option value="200">$200</option>
+                                <option value="300">$300</option>
+                                <option value="400">$400</option>
+                                <option value="500">$500</option>
+                            </select>
+                        </div>
+
+                        <br />
+
+                        <input type="hidden" name="cmd" id="ppCmd" value="_xclick">
                         <input type="hidden" name="business" value="donate@mediabrowser3.com">
                         <input type="hidden" name="currency_code" value="USD">
                         <input type="hidden" name="item_name" value="Media Browser Supporter">
-                        <input type="hidden" name="item_number" value="MBSupporter">
+                        <input type="hidden" name="item_number" id="ppItemNo" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+
                         <a data-role="button" data-icon="arrow-r" data-iconpos="right" onclick="$(this).parents('form')[0].submit();">
-                            <img src="css/images/supporter/donatepaypal.png" /></a>
+                            <img src="css/images/supporter/donatepaypal.png" />
+                        </a>
+
+                        <input type="hidden" id="donateAmt" name="amount" />
+
                     </form>
                     <p>${DonationNextStep}</p>
-                    <p><a href="supporterkey.html">Enter supporter key</a></p>
+                    <p><a href="supporterkey.html">${ButtonEnterSupporterKey}</a></p>
                 </div>
             </div>
         </div>

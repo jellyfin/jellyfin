@@ -12,8 +12,7 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
                     <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
-                    <a href="advancedpaths.html" data-role="button">${TabPaths}</a>
-                    <a href="advancedserversettings.html" data-role="button">${TabServer}</a>
+                    <a href="scheduledtasks.html" data-role="button">${TabScheduledTasks}</a>
                     <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
                 </div>
                 <form id="advancedConfigurationForm">
@@ -23,7 +22,7 @@
                             <input type="checkbox" id="chkRunAtStartup" name="chkRunAtStartup" data-mini="true" />
                             <label for="chkRunAtStartup">${LabelRunServerAtStartup}</label>
                             <div id="windowsStartupDescription" class="fieldDescription warningFieldDescription" style="display: none;">
-                                ${LabelRunServerAtStartupHelp}                    
+                                ${LabelRunServerAtStartupHelp}
                             </div>
                         </li>
                         <li>
@@ -31,34 +30,69 @@
                             <label for="chkDebugLog">${LabelEnableDebugLogging}</label>
                         </li>
                     </ul>
-                    <h2>Updates</h2>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
-                            <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel" data-mini="true">
-                                <option value="Release">${OptionRelease}</option>
-                                <option value="Beta">${OptionBeta}</option>
-                                <option value="Dev">${OptionDev}</option>
-                            </select>
-                            <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
-                                ${DevBuildWarning}
-                            </div>
-                        </li>
-                        <li id="fldEnableAutomaticRestart" style="display: none;">
-                            <input type="checkbox" id="chkEnableAutomaticRestart" name="chkEnableAutomaticRestart" data-mini="true" />
-                            <label for="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</label>
-                            <div class="fieldDescription">
-                                ${LabelAllowServerAutoRestartHelp}                   
-                            </div>
-                        </li>
-                    </ul>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderAutomaticUpdates}</h2>
+                        <div>
+                            <br />   
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
+                                    <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
+                                        <option value="Release">${OptionRelease}</option>
+                                        <option value="Beta">${OptionBeta}</option>
+                                        <option value="Dev">${OptionDev}</option>
+                                    </select>
+                                    <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
+                                        ${DevBuildWarning}
+                                    </div>
+                                </li>
+                                <li id="fldEnableAutomaticRestart" style="display: none;">
+                                    <input type="checkbox" id="chkEnableAutomaticRestart" name="chkEnableAutomaticRestart" data-mini="true" />
+                                    <label for="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</label>
+                                    <div class="fieldDescription">
+                                        ${LabelAllowServerAutoRestartHelp}
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderResumeSettings}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtMinResumePct">${LabelMinResumePercentage}</label>
+                                    <input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required="required" min="0" max="100" />
+                                    <div class="fieldDescription">
+                                        ${LabelMinResumePercentageHelp}
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtMaxResumePct">${LabelMaxResumePercentage}</label>
+                                    <input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required="required" min="1" max="100" />
+                                    <div class="fieldDescription">
+                                        ${LabelMaxResumePercentageHelp}
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtMinResumeDuration">${LabelMinResumeDuration}</label>
+                                    <input type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required="required" min="0" />
+                                    <div class="fieldDescription">
+                                        ${LabelMinResumeDurationHelp}
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
                                 ${ButtonCancel}
                             </button>
                         </li>

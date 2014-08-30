@@ -14,43 +14,145 @@
         return deferred.promise();
     }
 
+    function createMediaLinks(options) {
+
+        var html = "";
+
+        var items = options.items;
+
+        // "My Library" backgrounds
+        for (var i = 0, length = items.length; i < length; i++) {
+
+            var item = items[i];
+
+            var imgUrl;
+
+            switch (item.CollectionType) {
+                case "movies":
+                    imgUrl = "css/images/items/folders/movies.png";
+                    break;
+                case "music":
+                    imgUrl = "css/images/items/folders/music.png";
+                    break;
+                case "photos":
+                    imgUrl = "css/images/items/folders/photos.png";
+                    break;
+                case "livetv":
+                case "tvshows":
+                    imgUrl = "css/images/items/folders/tv.png";
+                    break;
+                case "games":
+                    imgUrl = "css/images/items/folders/games.png";
+                    break;
+                case "trailers":
+                    imgUrl = "css/images/items/folders/movies.png";
+                    break;
+                case "adultvideos":
+                case "homevideos":
+                    imgUrl = "css/images/items/folders/homevideos.png";
+                    break;
+                case "musicvideos":
+                    imgUrl = "css/images/items/folders/musicvideos.png";
+                    break;
+                case "books":
+                    imgUrl = "css/images/items/folders/books.png";
+                    break;
+                case "channels":
+                    imgUrl = "css/images/items/folders/channels.png";
+                    break;
+                default:
+                    imgUrl = "css/images/items/folders/folder.png";
+                    break;
+            }
+
+            var cssClass = "posterItem";
+            cssClass += ' ' + options.shape + 'PosterItem';
+
+            if (item.CollectionType) {
+                cssClass += ' ' + item.CollectionType + 'PosterItem';
+            }
+
+            var href = item.url || LibraryBrowser.getHref(item, options.context);
+
+            html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
+
+            var style = "";
+
+            if (imgUrl) {
+                style += 'background-image:url(\'' + imgUrl + '\');';
+            }
+
+            var imageCssClass = 'posterItemImage';
+
+            html += '<div class="' + imageCssClass + '" style="' + style + '">';
+            html += '</div>';
+
+            html += "<div class='posterItemDefaultText posterItemText'>";
+            html += item.Name;
+            html += "</div>";
+
+            html += "</a>";
+        }
+
+        return html;
+    }
+
+    function loadlibraryButtons(elem, userId, index) {
+
+        getUserViews(userId).done(function (items) {
+
+            var html = '<br/>';
+
+            if (index) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyViews') + '</h1>';
+            }
+            html += '<div>';
+            html += createMediaLinks({
+                items: items,
+                shape: 'myLibrary',
+                showTitle: true,
+                centerText: true
+
+            });
+            html += '</div>';
+
+            $(elem).html(html);
+
+            handleLibraryLinkNavigations(elem);
+        });
+    }
+
     function loadRecentlyAdded(elem, userId) {
 
         var screenWidth = $(window).width();
-
+        
         var options = {
 
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            Limit: screenWidth >= 2400 ? 30 : (screenWidth >= 1920 ? 15 : (screenWidth >= 1440 ? 10 : (screenWidth >= 800 ? 9 : 8))),
-            Recursive: true,
+            Limit: screenWidth >= 2400 ? 24 : (screenWidth >= 1600 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
             Fields: "PrimaryImageAspectRatio",
-            Filters: "IsUnplayed,IsNotFolder",
-            CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual,Remote"
+            IsPlayed: false
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             var html = '';
 
-            if (result.Items.length) {
+            if (items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
+                    items: items,
                     preferThumb: true,
-                    shape: 'backdrop',
-                    showTitle: true,
-                    centerText: true,
+                    shape: 'homePageBackdrop',
                     context: 'home',
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
                     lazy: true
                 });
                 html += '</div>';
             }
 
-
-            $(elem).html(html).trigger('create').createPosterItemMenus();
+            $(elem).html(html).trigger('create').createCardMenus();
         });
     }
 
@@ -60,13 +162,13 @@
 
         var options = {
 
-            Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 7 : 6))),
+            Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1600 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 7 : 6))),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: userId
         };
 
-        $.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
 
             var html = '';
 
@@ -76,21 +178,26 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'autosmall',
+                    shape: 'auto',
                     showTitle: true,
                     centerText: true,
-                    context: 'home',
                     lazy: true
                 });
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createPosterItemMenus();
+            $(elem).html(html).trigger('create').createCardMenus();
         });
     }
 
-    function loadLibraryTiles(elem, userId, shape, index) {
+    function loadLibraryTiles(elem, userId, shape, index, autoHideOnMobile) {
 
+        if (autoHideOnMobile) {
+            $(elem).addClass('hiddenSectionOnMobile');
+        } else {
+            $(elem).removeClass('hiddenSectionOnMobile');
+        }
+        
         getUserViews(userId).done(function (items) {
 
             var html = '';
@@ -110,13 +217,15 @@
                     shape: shape,
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    autoThumb: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }
 
 
-            $(elem).html(html).trigger('create').createPosterItemMenus();
+            $(elem).html(html).trigger('create').createCardMenus();
 
             handleLibraryLinkNavigations(elem);
         });
@@ -152,7 +261,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createPosterItemMenus();
+            $(elem).html(html).trigger('create').createCardMenus();
 
             handleLibraryLinkNavigations(elem);
         });
@@ -168,7 +277,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
+            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio",
             CollapseBoxSetItems: false,
@@ -185,7 +294,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferBackdrop: true,
-                    shape: 'backdrop',
+                    shape: 'homePageBackdrop',
                     overlayText: screenWidth >= 600,
                     showTitle: true,
                     showParentTitle: true,
@@ -195,7 +304,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createPosterItemMenus();
+            $(elem).html(html).trigger('create').createCardMenus();
         });
     }
 
@@ -217,7 +326,7 @@
             SupportsLatestItems: true
         });
 
-        $.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
 
             var channels = result.Items;
 
@@ -245,14 +354,14 @@
 
         var options = {
 
-            Limit: screenWidth >= 1920 ? 7 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
+            Limit: screenWidth >= 1600 ? 5 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
             Fields: "PrimaryImageAspectRatio",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
             ChannelIds: channel.Id
         };
 
-        $.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
 
             var html = '';
 
@@ -268,7 +377,7 @@
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: 'autosmall',
+                shape: 'autohome',
                 defaultShape: 'square',
                 showTitle: true,
                 centerText: true,
@@ -276,7 +385,7 @@
                 lazy: true
             });
 
-            $('#channel' + channel.Id + '', page).html(html).trigger('create').createPosterItemMenus();
+            $('#channel' + channel.Id + '', page).html(html).trigger('create').createCardMenus();
         });
     }
 
@@ -285,7 +394,7 @@
         ApiClient.getLiveTvRecordings({
 
             userId: userId,
-            limit: 9,
+            limit: 5,
             IsInProgress: false
 
         }).done(function (result) {
@@ -306,7 +415,7 @@
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "autosmall",
+                shape: "autohome",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,
@@ -314,7 +423,7 @@
                 lazy: true
             });
 
-            elem.html(html).trigger('create').createPosterItemMenus();
+            elem.html(html).trigger('create').createCardMenus();
 
         });
     }
@@ -326,7 +435,8 @@
         loadLibraryFolders: loadLibraryFolders,
         loadResume: loadResume,
         loadLatestChannelItems: loadLatestChannelItems,
-        loadLatestLiveTvRecordings: loadLatestLiveTvRecordings
+        loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
+        loadlibraryButtons: loadlibraryButtons
     };
 
 })(jQuery, document, ApiClient);
@@ -338,11 +448,11 @@
         switch (index) {
 
             case 0:
-                return 'smalllibrarytiles';
+                return 'smalllibrarytiles-automobile';
             case 1:
                 return 'resume';
             case 2:
-                return '';
+                return 'latestmedia';
             case 3:
                 return '';
             default:
@@ -361,10 +471,16 @@
             Sections.loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'backdrop', index);
+            Sections.loadLibraryTiles(elem, userId, 'homePageBackdrop', index);
         }
-        else if (section == 'smalllibrarytiles' || section == 'librarybuttons') {
-            Sections.loadLibraryTiles(elem, userId, 'smallBackdrop', index);
+        else if (section == 'smalllibrarytiles') {
+            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index);
+        }
+        else if (section == 'smalllibrarytiles-automobile') {
+            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, true);
+        }
+        else if (section == 'librarybuttons') {
+            Sections.loadlibraryButtons(elem, userId, index);
         }
         else if (section == 'resume') {
             Sections.loadResume(elem, userId);
@@ -375,7 +491,7 @@
         }
 
         else if (section == 'folders') {
-            Sections.loadLibraryFolders(elem, userId, 'smallBackdrop', index);
+            Sections.loadLibraryFolders(elem, userId, 'homePageBackdrop', index);
 
         } else if (section == 'latestchannelmedia') {
             Sections.loadLatestChannelMedia(elem, userId);

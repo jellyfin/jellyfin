@@ -108,6 +108,25 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 item.Video3DFormat = Video3DFormat.HalfTopAndBottom;
             }
+            else
+            {
+                // Support Xbmc conventions:
+                // http://wiki.xbmc.org/index.php?title=3D
+                var name = Path.GetFileName(item.Path);
+
+                name = name.Replace('.', ' ').Replace('_', ' ').Replace('-', ' ');
+
+                if (name.IndexOf(" 3d hsbs ", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    name.IndexOf(" 3d sbs ", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    item.Video3DFormat = Video3DFormat.HalfSideBySide;
+                }
+                else if (name.IndexOf(" 3d htab ", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    name.IndexOf(" 3d tab ", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    item.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                }
+            }
         }
     }
 }

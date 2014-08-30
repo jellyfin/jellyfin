@@ -1,4 +1,4 @@
-﻿(function (document, $, localStorage) {
+﻿(function (document, $) {
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -43,10 +43,11 @@
     function enabled() {
 
         var userId = Dashboard.getCurrentUserId();
-        
-        var val = LocalSettings.val('enableThemeSongs', userId);
 
-        return val == '1';
+        var val = store.getItem('enableThemeSongs-' + userId);
+
+        // For bandwidth
+        return val == '1' || (val != '0' && !$.browser.mobile);
     }
 
     function getPlayer() {
@@ -66,4 +67,4 @@
         }
     });
 
-})(document, jQuery, window.localStorage);
+})(document, jQuery);

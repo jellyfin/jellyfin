@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class PersonsService
     /// </summary>
+    [Authenticated]
     public class PersonsService : BaseItemsByNameService<Person>
     {
         /// <summary>
@@ -93,10 +95,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetItemByNameDto(item, fields.ToList(), user);
+                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
             }
 
-            return DtoService.GetItemByNameDto(item, fields.ToList());
+            return DtoService.GetBaseItemDto(item, fields.ToList());
         }
 
         /// <summary>

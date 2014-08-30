@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public interface ILiveTvRecording : IHasImages, IHasMediaSources
+    public interface ILiveTvRecording : IHasImages, IHasMediaSources, IHasUserData
     {
         string ServiceName { get; set; }
 
@@ -19,8 +19,6 @@ namespace MediaBrowser.Controller.LiveTv
         long? RunTimeTicks { get; set; }
 
         string GetClientTypeName();
-
-        string GetUserDataKey();
 
         bool IsParentalAllowed(User user);
 

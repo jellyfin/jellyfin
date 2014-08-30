@@ -6,4 +6,9 @@ namespace MediaBrowser.Controller.Channels
     {
         IEnumerable<IChannel> GetChannels();
     }
+
+    public interface IFactoryChannel
+    {
+        
+    }
 }

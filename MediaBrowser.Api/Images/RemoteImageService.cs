@@ -199,35 +199,33 @@ namespace MediaBrowser.Api.Images
             return _providerManager.GetRemoteImageProviderInfo(item).ToList();
         }
 
-        public object Get(GetRemoteImages request)
+        public async Task<object> Get(GetRemoteImages request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var result = GetRemoteImageResult(item, request);
-
-            return ToOptimizedSerializedResultUsingCache(result);
+            return await GetRemoteImageResult(item, request).ConfigureAwait(false);
         }
 
-        public object Get(GetItemByNameRemoteImages request)
+        public async Task<object> Get(GetItemByNameRemoteImages request)
         {
             var pathInfo = PathInfo.Parse(Request.PathInfo);
             var type = pathInfo.GetArgumentValue<string>(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
-            return GetRemoteImageResult(item, request);
+            return await GetRemoteImageResult(item, request).ConfigureAwait(false);
         }
 
-        private RemoteImageResult GetRemoteImageResult(BaseItem item, BaseRemoteImageRequest request)
+        private async Task<RemoteImageResult> GetRemoteImageResult(BaseItem item, BaseRemoteImageRequest request)
         {
-            var images = _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
             {
                 ProviderName = request.ProviderName,
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
                 ImageType = request.Type
 
-            }, CancellationToken.None).Result;
+            }, CancellationToken.None).ConfigureAwait(false);
 
             var imagesList = images.ToList();
 
@@ -308,17 +306,10 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetRemoteImage request)
         {
-            var task = GetRemoteImage(request);
-
-            return task.Result;
+            return GetAsync(request).Result;
         }
 
-        /// <summary>
-        /// Gets the remote image.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task{System.Object}.</returns>
-        private async Task<object> GetRemoteImage(GetRemoteImage request)
+        public async Task<object> GetAsync(GetRemoteImage request)
         {
             var urlHash = request.ImageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
@@ -356,7 +347,7 @@ namespace MediaBrowser.Api.Images
 
             return ToStaticFileResult(contentPath);
         }
-
+        
         /// <summary>
         /// Downloads the image.
         /// </summary>

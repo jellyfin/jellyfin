@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = _dtoService.GetUserDto(e.Argument);
+            var dto = _userManager.GetUserDto(e.Argument);
 
             _serverManager.SendWebSocketMessage("UserConfigurationUpdated", dto);
         }
@@ -145,8 +145,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
-            var dto = _dtoService.GetUserDto(e.Argument);
-
+            var dto = _userManager.GetUserDto(e.Argument);
+            
             _serverManager.SendWebSocketMessage("UserUpdated", dto);
         }
 

@@ -3,54 +3,29 @@
     $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
 
         var screenWidth = $(window).width();
+        var userId = Dashboard.getCurrentUserId();
 
         var page = this;
 
         var parentId = LibraryMenu.getTopParentId();
 
         var options = {
-
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            IncludeItemTypes: "MusicAlbum",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Recursive: true,
+            IncludeItemTypes: "Audio",
+            Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1600 ? 21 : (screenWidth >= 1200 ? 21 : 12)),
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            $('#recentlyAddedAlbums', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                showUnplayedIndicator: false,
-                shape: "square",
-                showTitle: true,
-                showParentTitle: true
-            })).createPosterItemMenus();
-
-        });
-
-        options = {
-
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo",
-            ParentId: parentId
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
+                items: items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                showChildCountIndicator: true,
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 
@@ -59,7 +34,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1440 ? 8 : 6),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 6)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
@@ -77,10 +52,10 @@
             $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 
@@ -89,7 +64,7 @@
             SortBy: "PlayCount",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 16 : (screenWidth >= 1440 ? 16 : 12),
+            Limit: screenWidth >= 1920 ? 16 : (screenWidth >= 1600 ? 14 : (screenWidth >= 1200 ? 14 : 12)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
@@ -107,10 +82,10 @@
             $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: "homePageSquare",
                 showTitle: true,
                 showParentTitle: true
-            })).createPosterItemMenus();
+            })).createCardMenus();
 
         });
 

@@ -44,20 +44,14 @@
             var languages = response2[0];
             var countries = response3[0];
 
-            $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+            ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
                 loadExternalIds(page, item, idList);
             });
 
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
 
-            if (item.LocationType == "Offline") {
-                $('.saveButtonContainer', page).hide();
-            } else {
-                $('.saveButtonContainer', page).show();
-            }
-
-            $('#btnRefresh', page).buttonEnabled(true);
+            $('.btnRefresh', page).buttonEnabled(true);
             $('#btnDelete', page).buttonEnabled(true);
             $('.btnSave', page).buttonEnabled(true);
 
@@ -76,15 +70,36 @@
                 $('#btnEditCollectionTitles', page).hide();
             }
 
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem") {
+            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
                 $('#btnEditSubtitles', page).show();
             } else {
                 $('#btnEditSubtitles', page).hide();
             }
 
+            if (item.MediaType == 'Photo') {
+                $('#btnEditImages', page).hide();
+            } else {
+                $('#btnEditImages', page).show();
+            }
+
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldShortOverview', page).show();
+            } else {
+                $('#fldShortOverview', page).hide();
+            }
+
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldTagline', page).show();
+            } else {
+                $('#fldTagline', page).hide();
+            }
+
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.EnableContentDeletion &&
+                if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
+                    $('#fldDelete', page).show();
+                }
+                else if (user.Configuration.EnableContentDeletion &&
                     item.Type != "TvChannel" &&
                     item.Type != "Genre" &&
                     item.Type != "Studio" &&
@@ -131,7 +146,8 @@
             var formatString = idInfo.UrlFormatString || '';
 
             html += '<div data-role="fieldcontain">';
-            html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+            var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            html += '<label for="' + id + '">' + idLabel + '</label>';
 
             html += '<div style="display: inline-block; width: 250px;">';
 
@@ -259,7 +275,6 @@
             $('#fldCommunityRating', page).hide();
             $('#fldCommunityVoteCount', page).hide();
             $('#genresCollapsible', page).hide();
-            $('#countriesCollapsible', page).hide();
             $('#peopleCollapsible', page).hide();
             $('#studiosCollapsible', page).hide();
 
@@ -274,10 +289,15 @@
             $('#fldCommunityVoteCount', page).show();
             $('#genresCollapsible', page).show();
             $('#peopleCollapsible', page).show();
-            $('#countriesCollapsible', page).show();
             $('#studiosCollapsible', page).show();
             $('#fldOfficialRating', page).show();
             $('#fldCustomRating', page).show();
+        }
+
+        if (item.Type == "Movie" || item.Type == "AdultVideo" || item.Type == "Trailer" || item.Type == "MusicArtist") {
+            $('#countriesCollapsible', page).show();
+        } else {
+            $('#countriesCollapsible', page).hide();
         }
 
         if (item.Type == "TvChannel") {
@@ -325,14 +345,14 @@
         }
 
         if (item.Type == "Person") {
-            $('#lblPremiereDate', page).html('Date of birth');
-            $('#lblYear', page).html('Birth year');
-            $('#lblEndDate', page).html('Death date');
+            $('#lblPremiereDate', page).html(Globalize.translate('LabelBirthDate'));
+            $('#lblYear', page).html(Globalize.translate('LabelBirthYear'));
+            $('#lblEndDate', page).html(Globalize.translate('LabelDeathDate'));
             $('#fldPlaceOfBirth', page).show();
         } else {
-            $('#lblPremiereDate', page).html('Release date');
-            $('#lblYear', page).html('Year');
-            $('#lblEndDate', page).html('End date');
+            $('#lblPremiereDate', page).html(Globalize.translate('LabelReleaseDate'));
+            $('#lblYear', page).html(Globalize.translate('LabelYear'));
+            $('#lblEndDate', page).html(Globalize.translate('LabelEndDate'));
             $('#fldPlaceOfBirth', page).hide();
         }
 
@@ -346,13 +366,13 @@
             $('#fldIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblIndexNumber', page).html('Episode number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                $('#lblIndexNumber', page).html('Season number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                $('#lblIndexNumber', page).html('Track number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelTrackNumber'));
             } else {
-                $('#lblIndexNumber', page).html('Number');
+                $('#lblIndexNumber', page).html(Globalize.translate('LabelNumber'));
             }
         } else {
             $('#fldIndexNumber', page).hide();
@@ -362,11 +382,11 @@
             $('#fldParentIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblParentIndexNumber', page).html('Season number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                $('#lblParentIndexNumber', page).html('Disc number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelDiscNumber'));
             } else {
-                $('#lblParentIndexNumber', page).html('Parent number');
+                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelParentNumber'));
             }
         } else {
             $('#fldParentIndexNumber', page).hide();
@@ -381,8 +401,8 @@
         if (item.Type == "BoxSet") {
             $('#fldDisplayOrder', page).show();
 
-            $('#labelDisplayOrder', page).html('Title display order:');
-            $('#selectDisplayOrder', page).html('<option value="SortName">Sort Name</option><option value="PremiereDate">Release Date</option>').selectmenu('refresh');
+            $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
+            $('#selectDisplayOrder', page).html('<option value="SortName">'+Globalize.translate('OptionSortName')+'</option><option value="PremiereDate">'+Globalize.translate('OptionReleaseDate')+'</option>').selectmenu('refresh');
         } else {
             $('#selectDisplayOrder', page).html('').selectmenu('refresh');
             $('#fldDisplayOrder', page).hide();
@@ -406,16 +426,17 @@
 
             var select = $('#selectOfficialRating', page);
 
-            populateRatings(result, select);
+            populateRatings(result, select, item.OfficialRating);
 
             select.val(item.OfficialRating || "").selectmenu('refresh');
 
             select = $('#selectCustomRating', page);
 
-            populateRatings(result, select);
+            populateRatings(result, select, item.CustomRating);
 
             select.val(item.CustomRating || "").selectmenu('refresh');
         });
+
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
         selectStatus.val(item.Status || "").selectmenu('refresh');
@@ -451,6 +472,8 @@
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
         $('#txtOverview', page).val(item.Overview || "");
+        $('#txtShortOverview', page).val(item.ShortOverview || "");
+        $('#txtTagline', page).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
         $('#txtSortName', page).val(item.ForcedSortName || "");
         $('#txtDisplayMediaType', page).val(item.DisplayMediaType || "");
         $('#txtCommunityRating', page).val(item.CommunityRating || "");
@@ -524,7 +547,7 @@
         }
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
-        $('#txtAirTime', page).val(convertTo24HourFormat(item.AirTime || ""));
+        $('#txtAirTime', page).val(item.AirTime || "");
 
         var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
         $('#txtPlaceOfBirth', page).val(placeofBirth);
@@ -555,7 +578,7 @@
 
             var person = people[i];
 
-            var type = person.Type || 'Person';
+            var type = person.Type || Globalize.translate('PersonTypePerson');
 
             if (type != lastType) {
                 html += '<li data-role="list-divider">' + type + '</li>';
@@ -564,14 +587,14 @@
 
             html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
 
-            html += '<h3>' + (person.Name || 'Unknown name') + '</h3>';
+            html += '<h3>' + (person.Name || '') + '</h3>';
 
             if (person.Role && person.Role != lastType) {
                 html += '<p>' + (person.Role) + '</p>';
             }
             html += '</a>';
 
-            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">Delete</a>';
+            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">' + Globalize.translate('Delete') + '</a>';
 
             html += '</li>';
         }
@@ -640,47 +663,7 @@
         populatePeople(page, currentItem.People);
     }
 
-    function convertTo24HourFormat(time) {
-        if (time == "")
-            return time;
-        var match = time.match(/^(\d+):(\d+)(.*)$/);
-        if (match) {
-            var hours = Number(match[1]);
-            var minutes = Number(match[2]);
-            var ampm = $.trim(match[3]);
-            ampm = ampm.toUpperCase();
-            if (ampm == "PM" && hours < 12) hours = hours + 12;
-            if (ampm == "AM" && hours == 12) hours = 0;
-            var sHours = hours.toString();
-            var sMinutes = minutes.toString();
-            if (hours < 10) sHours = "0" + sHours;
-            if (minutes < 10) sMinutes = "0" + sMinutes;
-            return sHours + ":" + sMinutes;
-        } else {
-            return time;
-        }
-    }
-
-    function convertTo12HourFormat(time) {
-        if (time == "")
-            return time;
-        var hours = Number(time.match(/^(\d+)/)[1]);
-        var minutes = Number(time.match(/:(\d+)/)[1]);
-        var ampm = "AM";
-        if (hours >= 12) {
-            ampm = "PM";
-            hours = hours - 12;
-            hours = hours == 0 ? 12 : hours;
-        }
-        hours = hours == 0 ? 12 : hours;
-        var sHours = hours.toString();
-        var sMinutes = minutes.toString();
-        if (hours < 10) sHours = "0" + sHours;
-        if (minutes < 10) sMinutes = "0" + sMinutes;
-        return sHours + ":" + sMinutes + " " + ampm;
-    }
-
-    function populateRatings(allParentalRatings, select) {
+    function populateRatings(allParentalRatings, select, currentValue) {
 
         var html = "";
 
@@ -689,11 +672,21 @@
         var ratings = [];
         var i, length, rating;
 
+        var currentValueFound = false;
+
         for (i = 0, length = allParentalRatings.length; i < length; i++) {
 
             rating = allParentalRatings[i];
 
             ratings.push({ Name: rating.Name, Value: rating.Name });
+
+            if (rating.Name == currentValue) {
+                currentValueFound = true;
+            }
+        }
+
+        if (currentValue && !currentValueFound) {
+            ratings.push({ Name: currentValue, Value: currentValue });
         }
 
         for (i = 0, length = ratings.length; i < length; i++) {
@@ -710,8 +703,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>Continuing</option>";
-        html += "<option value='Ended'>Ended</option>";
+        html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
         select.html(html).selectmenu("refresh");
     }
 
@@ -740,12 +733,11 @@
             var field = fields[i];
             var name = field.name;
             var value = field.value || field.name;
-            var fieldTitle = $.trim(name.replace(/([A-Z])/g, ' $1'));
             html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + value + '">' + fieldTitle + ':</label>';
+            html += '<label for="lock' + value + '">' + name + '</label>';
             html += '<select class="selectLockedField" id="lock' + value + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + value + '">Off</option>';
-            html += '<option value="" selected="selected">On</option>';
+            html += '<option value="' + value + '">' + Globalize.translate('OptionOff') + '</option>';
+            html += '<option value="" selected="selected">' + Globalize.translate('OptionOn') + '</option>';
             html += '</select>';
             html += '</div>';
         }
@@ -757,37 +749,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: "Name" },
-            { name: "Overview" },
-            { name: "Genres" },
-            { name: "Parental Rating", value: "OfficialRating" },
-            { name: "People", value: "Cast" }
+            { name: Globalize.translate('OptionName'), value: "Name" },
+            { name: Globalize.translate('OptionOverview'), value: "Overview" },
+            { name: Globalize.translate('OptionGenres'), value: "Genres" },
+            { name: Globalize.translate('OptionParentalRating'), value: "OfficialRating" },
+            { name: Globalize.translate('OptionPeople'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: "Birth location", value: "ProductionLocations" });
+            metadatafields.push({ name: Globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: "Production Locations", value: "ProductionLocations" });
+            metadatafields.push({ name: Globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: "Runtime" });
+            metadatafields.push({ name: Globalize.translate('OptionRuntime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: "Studios" });
-        metadatafields.push({ name: "Tags" });
-        metadatafields.push({ name: "Keywords" });
-        metadatafields.push({ name: "Images" });
-        metadatafields.push({ name: "Backdrops" });
+        metadatafields.push({ name: Globalize.translate('OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: Globalize.translate('OptionTags'), value: "Tags" });
+        metadatafields.push({ name: Globalize.translate('OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: Globalize.translate('OptionImages'), value: "Images" });
+        metadatafields.push({ name: Globalize.translate('OptionBackdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: "Screenshots" });
+            metadatafields.push({ name: Globalize.translate('OptionScreenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>Fields</h1>";
-        html += "<p>Slide a field to 'off' to lock it and prevent it's data from being changed.</p>";
+        html += "<h1>" + Globalize.translate('HeaderFields') + "</h1>";
+        html += "<p>" + Globalize.translate('HeaderFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, 'Fields');
         container.html(html).trigger('create');
         for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
@@ -805,7 +797,7 @@
     function performDelete(page) {
 
         $('#btnDelete', page).buttonEnabled(false);
-        $('#btnRefresh', page).buttonEnabled(false);
+        $('.btnRefresh', page).buttonEnabled(false);
         $('.btnSave', page).buttonEnabled(false);
 
         $('#refreshLoading', page).show();
@@ -858,9 +850,10 @@
                 Metascore: $('#txtMetascore', form).val(),
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),
+                ShortOverview: $('#txtShortOverview', form).val(),
                 Status: $('#selectStatus', form).val(),
                 AirDays: getSelectedAirDays(form),
-                AirTime: convertTo12HourFormat($('#txtAirTime', form).val()),
+                AirTime: $('#txtAirTime', form).val(),
                 Genres: editableListViewValues($("#listGenres", form)),
                 ProductionLocations: editableListViewValues($("#listCountries", form)),
                 Tags: editableListViewValues($("#listTags", form)),
@@ -910,9 +903,12 @@
                 item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
             }
 
+            var tagline = $('#txtTagline', form).val();
+            item.Taglines = tagline ? [tagline] : [];
+
             ApiClient.updateItem(item).done(function () {
 
-                Dashboard.alert('Item saved.');
+                Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
                     $(form).parents('.page').trigger('itemsaved', [i]);
@@ -953,7 +949,7 @@
             var page = $(this).parents('.page');
 
             if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
-                Dashboard.alert('The value entered is not correct. Please try again.');
+                Dashboard.alert(Globalize.translate('MessageValueNotCorrect'));
             } else {
                 performDelete(page);
             }
@@ -966,6 +962,13 @@
             var page = $(this).parents('.page');
 
             searchForIdentificationResults(page);
+            return false;
+        };
+
+        self.onRefreshFormSubmit = function () {
+            var page = $(this).parents('.page');
+
+            refreshFromPopupOptions(page);
             return false;
         };
 
@@ -984,7 +987,7 @@
 
         var item = currentItem;
 
-        $.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
 
             var html = '';
 
@@ -997,7 +1000,9 @@
                 var id = "txtLookup" + idInfo.Key;
 
                 html += '<div data-role="fieldcontain">';
-                html += '<label for="' + id + '">' + idInfo.Name + ' Id:</label>';
+				
+				var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+                html += '<label for="' + id + '">' + idLabel + '</label>';
 
                 var value = providerIds[idInfo.Key] || '';
 
@@ -1020,9 +1025,7 @@
 
             $('.identifyProviderIds', page).html(html).trigger('create');
 
-            var friendlyName = item.Type == "BoxSet" ? "Collection" : item.Type == "MusicArtist" ? "Artist" : item.Type == "MusicAlbum" ? "Album" : item.Type;
-
-            $('.identificationHeader', page).html('Identify ' + friendlyName);
+            $('.identificationHeader', page).html(Globalize.translate('HeaderIdentify'));
 
             $('.popupIdentifyForm', page).show();
             $('.identificationSearchResults', page).hide();
@@ -1067,7 +1070,7 @@
         });
 
         if (!hasId && !lookupInfo.Name) {
-            Dashboard.alert('Please enter a name or an external Id.');
+            Dashboard.alert(Globalize.translate('MessagePleaseEnterNameOrId'));
             return;
         }
 
@@ -1082,7 +1085,7 @@
 
         Dashboard.showLoadingMsg();
 
-        $.ajax({
+        ApiClient.ajax({
             type: "POST",
             url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
             data: JSON.stringify(lookupInfo),
@@ -1162,7 +1165,7 @@
 
             var currentResult = results[index];
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id),
                 data: JSON.stringify(currentResult),
@@ -1179,31 +1182,63 @@
         });
     }
 
+    function performAdvancedRefresh(page) {
+
+        $('.popupAdvancedRefresh', page).popup('open');
+
+        $('#selectMetadataRefreshMode', page).val('all').selectmenu('refresh');
+        $('#selectImageRefreshMode', page).val('missing').selectmenu('refresh');
+    }
+
+    function refreshFromPopupOptions(page) {
+
+        var metadataRefreshMode = $('#selectMetadataRefreshMode', page).val();
+        var imageRefreshMode = $('#selectImageRefreshMode', page).val();
+
+        refreshWithOptions(page, {
+
+            Recursive: true,
+            ImageRefreshMode: imageRefreshMode == 'none' ? 'None' : 'FullRefresh',
+            MetadataRefreshMode: metadataRefreshMode == 'none' ? 'None' : (metadataRefreshMode == 'local' ? 'ValidationOnly' : 'FullRefresh'),
+            ReplaceAllImages: imageRefreshMode == 'all',
+            ReplaceAllMetadata: metadataRefreshMode == 'all'
+        });
+
+        $('.popupAdvancedRefresh', page).popup('close');
+    }
+
+    function refreshWithOptions(page, options) {
+        $('#refreshLoading', page).show();
+
+        $('#btnDelete', page).buttonEnabled(false);
+        $('.btnRefresh', page).buttonEnabled(false);
+        $('.btnSave', page).buttonEnabled(false);
+
+        ApiClient.refreshItem(currentItem.Id, options).done(function () {
+
+            reload(page);
+        });
+    }
+
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 
-        $('#btnRefresh', this).on('click', function () {
+        $('.btnRefreshBasic', this).on('click', function () {
 
-            $('#btnDelete', page).buttonEnabled(false);
-            $('#btnRefresh', page).buttonEnabled(false);
-            $('.btnSave', page).buttonEnabled(false);
+            refreshWithOptions(page, {
 
-            $('#refreshLoading', page).show();
-
-            var mode = $('#selectRefreshMode', page).val();
-
-            ApiClient.refreshItem(currentItem.Id, {
-
-                forced: mode == 'allandimages' || mode == 'all',
-                recursive: true,
-                replaceAllImages: mode == 'allandimages'
-
-            }).done(function () {
-
-                reload(page);
-
+                Recursive: true,
+                ImageRefreshMode: 'FullRefresh',
+                MetadataRefreshMode: 'FullRefresh',
+                ReplaceAllImages: false,
+                ReplaceAllMetadata: true
             });
+        });
+
+        $('.btnRefreshAdvanced', this).on('click', function () {
+
+            performAdvancedRefresh(page);
         });
 
         $('#btnIdentify', page).on('click', function () {
@@ -1241,9 +1276,9 @@
 
             } else {
 
-                var msg = "<p>Are you sure you wish to delete this item from your library?</p>";
+                var msg = "<p>" + Globalize.translate('ConfirmDeleteItem') + "</p>";
 
-                Dashboard.confirm(msg, "Confirm Deletion", function (result) {
+                Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
 
                     if (result) {
 

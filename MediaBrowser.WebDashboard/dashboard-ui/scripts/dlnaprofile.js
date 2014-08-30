@@ -5,6 +5,8 @@
     var currentSubProfile;
     var isSubProfileNew;
 
+    var allText = Globalize.translate('LabelAll');
+
     function loadProfile(page) {
 
         Dashboard.showLoadingMsg();
@@ -29,7 +31,7 @@
         var url = id ? 'Dlna/Profiles/' + id :
             'Dlna/Profiles/Default';
 
-        return $.getJSON(ApiClient.getUrl(url));
+        return ApiClient.getJSON(ApiClient.getUrl(url));
     }
 
     function renderProfile(page, profile, users) {
@@ -44,6 +46,8 @@
         $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl).checkboxradio('refresh');
 
         var idInfo = profile.Identification || {};
+
+        renderIdentificationHeaders(page, idInfo.Headers || []);
 
         $('#txtInfoFriendlyName', page).val(profile.FriendlyName || '');
         $('#txtInfoModelName', page).val(profile.ModelName || '');
@@ -71,11 +75,16 @@
         $('#txtIconMaxHeight', page).val(profile.MaxIconHeight || '');
 
         $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests).checkboxradio('refresh');
-        $('#txtMaxAllowedBitrate', page).val(profile.MaxBitrate || '');
+        $('#txtMaxAllowedBitrate', page).val(profile.MaxStreamingBitrate || '');
+        $('#txtMaxStaticBitrate', page).val(profile.MaxStaticBitrate || '');
+
+        $('#txtMusicStreamingTranscodingBitrate', page).val(profile.MusicStreamingTranscodingBitrate || '');
+        $('#txtMusicStaticBitrate', page).val(profile.MusicSyncBitrate || '');
 
         $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
         $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
 
+        $('#txtProtocolInfo', page).val(profile.ProtocolInfo || '');
         $('#txtXDlnaCap', page).val(profile.XDlnaCap || '');
         $('#txtXDlnaDoc', page).val(profile.XDlnaDoc || '');
         $('#txtSonyAggregationFlags', page).val(profile.SonyAggregationFlags || '');
@@ -85,13 +94,83 @@
         profile.ContainerProfiles = (profile.ContainerProfiles || []);
         profile.CodecProfiles = (profile.CodecProfiles || []);
         profile.ResponseProfiles = (profile.ResponseProfiles || []);
-        
+
         var usersHtml = '<option></option>' + users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
         $('#selectUser', page).html(usersHtml).val(profile.UserId || '').selectmenu("refresh");
 
         renderSubProfiles(page, profile);
+    }
+
+    function renderIdentificationHeaders(page, headers) {
+
+        var index = 0;
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + headers.map(function (h) {
+
+            var li = '<li>';
+
+            li += '<a href="#">';
+
+            li += '<div style="font-weight:normal;">' + h.Name + ': ' + (h.Value || '') + '</div>';
+            li += '<div style="font-weight:normal;">' + (h.Match || '') + '</div>';
+
+            li += '</a>';
+
+            li += '<a class="btnDeleteIdentificationHeader" href="#" data-index="' + index + '"></a>';
+
+            li += '</li>';
+
+            index++;
+
+            return li;
+
+        }).join('') + '</ul>';
+
+        var elem = $('.httpHeaderIdentificationList', page).html(html).trigger('create');
+
+        $('.btnDeleteIdentificationHeader', elem).on('click', function () {
+
+            var itemIndex = parseInt(this.getAttribute('data-index'));
+
+            currentProfile.Identification.Headers.splice(itemIndex, 1);
+
+            renderIdentificationHeaders(page, currentProfile.Identification.Headers);
+        });
+    }
+
+    function editIdentificationHeader(page, header) {
+
+        isSubProfileNew = header == null;
+        header = header || {};
+        currentSubProfile = header;
+
+        var popup = $('#identificationHeaderPopup', page);
+
+        $('#txtIdentificationHeaderName', popup).val(header.Name || '');
+        $('#txtIdentificationHeaderValue', popup).val(header.Value || '');
+        $('#selectMatchType', popup).val(header.Match || 'Equals').selectmenu('refresh');
+
+        popup.popup('open');
+    }
+
+    function saveIdentificationHeader(page) {
+
+        currentSubProfile.Name = $('#txtIdentificationHeaderName', page).val();
+        currentSubProfile.Value = $('#txtIdentificationHeaderValue', page).val();
+        currentSubProfile.Match = $('#selectMatchType', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.Identification.Headers.push(currentSubProfile);
+        }
+
+        renderIdentificationHeaders(page, currentProfile.Identification.Headers);
+
+        currentSubProfile = null;
+
+        $('#identificationHeaderPopup', page).popup('close');
     }
 
     function renderSubProfiles(page, profile) {
@@ -143,13 +222,15 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
+
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             html += '</a>';
@@ -197,7 +278,7 @@
         $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
         $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
         $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
-        
+
         popup.popup('open');
     }
 
@@ -223,13 +304,13 @@
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
             html += '<p>Protocol: ' + (profile.Protocol || 'Http') + '</p>';
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             html += '</a>';
@@ -269,6 +350,8 @@
         $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
         $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
+        $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http').selectmenu('refresh');
+        $('#selectTranscodingContext', popup).val(transcodingProfile.Context || 'Streaming').selectmenu('refresh');
 
         $('#txtTranscodingVideoProfile', popup).val(transcodingProfile.VideoProfile || '');
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
@@ -276,7 +359,7 @@
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -294,6 +377,8 @@
         currentSubProfile.Container = $('#txtTranscodingContainer', page).val();
         currentSubProfile.AudioCodec = $('#txtTranscodingAudioCodec', page).val();
         currentSubProfile.VideoCodec = $('#txtTranscodingVideoCodec', page).val();
+        currentSubProfile.Protocol = $('#selectTranscodingProtocol', page).val();
+        currentSubProfile.Context = $('#selectTranscodingContext', page).val();
 
         currentSubProfile.VideoProfile = $('#txtTranscodingVideoProfile', page).val();
         currentSubProfile.EnableMpegtsM2TsMode = $('#chkEnableMpegtsM2TsMode', page).checked();
@@ -333,14 +418,16 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -376,7 +463,7 @@
         renderContainerProfiles(page, currentProfile.ContainerProfiles);
 
     }
-    
+
     function editContainerProfile(page, containerProfile) {
 
         isSubProfileNew = containerProfile == null;
@@ -389,7 +476,7 @@
         $('#txtContainerProfileContainer', popup).val(containerProfile.Container || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -433,14 +520,16 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Codec: ' + (profile.Codec || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.Codec || allText)) + '</p>';
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -489,7 +578,7 @@
         $('#txtCodecProfileCodec', popup).val(codecProfile.Codec || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
-        
+
         popup.popup('open');
     }
 
@@ -531,21 +620,23 @@
             html += '<li>';
             html += '<a data-profileindex="' + i + '" class="lnkEditSubProfile" href="#">';
 
-            html += '<p>Container: ' + (profile.Container || 'All') + '</p>';
+            html += '<p>' + Globalize.translate('ValueContainer').replace('{0}', (profile.Container || allText)) + '</p>';
 
             if (profile.Type == 'Video') {
-                html += '<p>Video Codec: ' + (profile.VideoCodec || 'All') + '</p>';
-                html += '<p>Audio Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueVideoCodec').replace('{0}', (profile.VideoCodec || allText)) + '</p>';
+                html += '<p>' + Globalize.translate('ValueAudioCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             } else if (profile.Type == 'Audio') {
-                html += '<p>Codec: ' + (profile.AudioCodec || 'All') + '</p>';
+                html += '<p>' + Globalize.translate('ValueCodec').replace('{0}', (profile.AudioCodec || allText)) + '</p>';
             }
 
             if (profile.Conditions && profile.Conditions.length) {
 
-                html += '<p>Conditions: ';
-                html += profile.Conditions.map(function (c) {
+                html += '<p>';
+
+                html += Globalize.translate('ValueConditions').replace('{0}', profile.Conditions.map(function (c) {
                     return c.Property;
-                }).join(', ');
+                }).join(', '));
+
                 html += '</p>';
             }
 
@@ -569,7 +660,7 @@
         $('.lnkEditSubProfile', elem).on('click', function () {
 
             var index = parseInt(this.getAttribute('data-profileindex'));
-            
+
             editResponseProfile(page, currentProfile.ResponseProfiles[index]);
         });
     }
@@ -626,7 +717,7 @@
 
         if (id) {
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Dlna/Profiles/" + id),
                 data: JSON.stringify(profile),
@@ -638,7 +729,7 @@
 
         } else {
 
-            $.ajax({
+            ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl("Dlna/Profiles"),
                 data: JSON.stringify(profile),
@@ -694,8 +785,13 @@
         profile.RequiresPlainVideoItems = $('#chkRequiresPlainVideoItems', page).checked();
 
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
-        profile.MaxBitrate = $('#txtMaxAllowedBitrate', page).val();
+        profile.MaxStreamingBitrate = $('#txtMaxAllowedBitrate', page).val();
+        profile.MaxStaticBitrate = $('#txtMaxStaticBitrate', page).val();
 
+        profile.MusicStreamingTranscodingBitrate = $('#txtMusicStreamingTranscodingBitrate', page).val();
+        profile.MusicSyncBitrate = $('#txtMusicStaticBitrate', page).val();
+
+        profile.ProtocolInfo = $('#txtProtocolInfo', page).val();
         profile.XDlnaCap = $('#txtXDlnaCap', page).val();
         profile.XDlnaDoc = $('#txtXDlnaDoc', page).val();
         profile.SonyAggregationFlags = $('#txtSonyAggregationFlags', page).val();
@@ -735,10 +831,12 @@
 
             if (this.value == 'Video') {
                 $('#fldTranscodingVideoCodec', page).show();
+                $('#fldTranscodingProtocol', page).show();
                 $('#fldEnableMpegtsM2TsMode', page).show();
                 $('#fldVideoProfile', page).show();
             } else {
                 $('#fldTranscodingVideoCodec', page).hide();
+                $('#fldTranscodingProtocol', page).hide();
                 $('#fldEnableMpegtsM2TsMode', page).hide();
                 $('#fldVideoProfile', page).hide();
             }
@@ -785,13 +883,13 @@
             editTranscodingProfile(page);
 
         });
-        
+
         $('.btnAddContainerProfile', page).on('click', function () {
 
             editContainerProfile(page);
 
         });
-        
+
         $('.btnAddCodecProfile', page).on('click', function () {
 
             editCodecProfile(page);
@@ -802,6 +900,11 @@
 
             editResponseProfile(page);
 
+        });
+
+        $('.btnAddIdentificationHttpHeader', page).on('click', function () {
+
+            editIdentificationHeader(page);
         });
 
     }).on('pageshow', "#dlnaProfilePage", function () {
@@ -852,8 +955,8 @@
             return false;
 
         },
-        
-        onContainerProfileFormSubmit: function() {
+
+        onContainerProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
@@ -862,8 +965,8 @@
             return false;
 
         },
-        
-        onCodecProfileFormSubmit: function() {
+
+        onCodecProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
@@ -871,12 +974,22 @@
 
             return false;
         },
-        
-        onResponseProfileFormSubmit: function() {
+
+        onResponseProfileFormSubmit: function () {
             var form = this;
             var page = $(form).parents('.page');
 
             saveResponseProfile(page);
+
+            return false;
+        },
+
+        onIdentificationHeaderFormSubmit: function() {
+            
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveIdentificationHeader(page);
 
             return false;
         }

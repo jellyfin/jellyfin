@@ -29,14 +29,10 @@
 
         self.remoteFullscreen = function () {
 
-            var videoControls = $("#videoControls");
-
             if (remoteFullscreen) {
                 exitFullScreenToWindow();
-                videoControls.removeClass("inactive");
             } else {
                 enterFullScreen();
-                videoControls.addClass("inactive");
             }
 
             remoteFullscreen = !remoteFullscreen;
@@ -65,9 +61,8 @@
         self.resetEnhancements = function () {
             $("#mediaPlayer").hide();
             $('#videoPlayer').removeClass('fullscreenVideo');
-            $("#videoControls").removeClass("inactive");
+            $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
-            $("html").css("cursor", "default");
         };
 
         self.exitFullScreen = function () {
@@ -88,53 +83,60 @@
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
         };
 
+        function onFlyoutClose() {
+            $('.itemVideo').css('visibility', 'visible');
+        }
+
+        function onPopupOpen(elem) {
+            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
+
+            if ($.browser.safari) {
+                $('.itemVideo').css('visibility', 'hidden');
+            }
+        }
+
         self.showSubtitleMenu = function () {
 
-            var flyout = $('#video-subtitleFlyout');
+            var elem = $('.videoSubtitlePopup').html(getSubtitleTracksHtml())
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoSubtitleButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            if (!flyout.is(':visible')) {
-
-                flyout.html(getSubtitleTracksHtml()).trigger('create').scrollTop(0);
-                toggleFlyout(flyout, '#video-subtitleButton');
-
-            } else {
-                toggleFlyout(flyout, '#video-subtitleButton');
-            }
+            onPopupOpen(elem);
         };
 
         self.showQualityFlyout = function () {
 
-            var flyout = $('#video-qualityFlyout');
+            var elem = $('.videoQualityPopup').html(getQualityFlyoutHtml())
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoQualityButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            if (!flyout.is(':visible')) {
-                flyout.html(getQualityFlyoutHtml()).scrollTop(0);
-            }
-
-            toggleFlyout(flyout, '#video-qualityButton');
+            onPopupOpen(elem);
         };
 
         self.showChaptersFlyout = function () {
 
-            var flyout = $('#video-chaptersFlyout');
+            var elem = $('.videoChaptersPopup').html(getChaptersFlyoutHtml())
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoChaptersButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            if (!flyout.is(':visible')) {
-                flyout.html(getChaptersFlyoutHtml()).scrollTop(0);
-            }
-
-            toggleFlyout(flyout, '#video-chaptersButton');
+            onPopupOpen(elem);
         };
 
         self.showAudioTracksFlyout = function () {
 
-            var flyout = $('#video-audioTracksFlyout');
+            var elem = $('.videoAudioPopup').html(getAudioTracksHtml())
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoAudioButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
 
-            if (!flyout.is(':visible')) {
-
-                flyout.html(getAudioTracksHtml()).trigger('create').scrollTop(0);
-                toggleFlyout(flyout, '#video-audioTracksButton');
-            } else {
-                toggleFlyout(flyout, '#video-audioTracksButton');
-            }
+            onPopupOpen(elem);
         };
 
         self.setAudioStreamIndex = function (index) {
@@ -144,6 +146,7 @@
         self.setSubtitleStreamIndex = function (index) {
 
             if (!self.supportsTextTracks()) {
+
                 self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
                 self.currentSubtitleStreamIndex = index;
                 return;
@@ -191,25 +194,52 @@
             }
 
             self.setCurrentTrackElement(selectedTrackElementIndex);
+
             self.currentSubtitleStreamIndex = index;
         };
 
         self.setCurrentTrackElement = function (index) {
 
+            var modes = ['disabled', 'showing', 'hidden'];
+
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle' && s.IsTextSubtitleStream;
             });
+
+            var newStream = textStreams.filter(function (s) {
+                return s.Index == index;
+            })[0];
+
+            var trackIndex = newStream ? textStreams.indexOf(newStream) : -1;
+
+            console.log('Setting new text track index to: ' + trackIndex);
 
             var allTracks = self.currentMediaElement.textTracks; // get list of tracks
 
             for (var i = 0; i < allTracks.length; i++) {
 
-                var trackIndex = textStreams[i].Index;
+                var mode;
 
-                if (trackIndex == index) {
-                    allTracks[i].mode = "showing"; // show this track
+                if (trackIndex == i) {
+                    mode = 1; // show this track
                 } else {
-                    allTracks[i].mode = "disabled"; // hide all other tracks
+                    mode = 0; // hide all other tracks
+                }
+
+                console.log('Setting track ' + i + ' mode to: ' + mode);
+
+                // Safari uses integers for the mode property
+                // http://www.jwplayer.com/html5/scripting/
+                var useNumericMode = false;
+
+                if (!isNaN(allTracks[i].mode)) {
+                    useNumericMode = true;
+                }
+
+                if (useNumericMode) {
+                    allTracks[i].mode = mode;
+                } else {
+                    allTracks[i].mode = modes[mode];
                 }
             }
         };
@@ -248,6 +278,84 @@
             });
         };
 
+        self.updateNowPlayingInfo = function (item) {
+
+            if (!item) {
+                throw new Error('item cannot be null');
+            }
+
+            var mediaControls = $("#videoPlayer");
+
+            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
+
+            var url = "";
+
+            if (state.NowPlayingItem.PrimaryImageTag) {
+
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
+                    type: "Primary",
+                    width: 150,
+                    tag: state.NowPlayingItem.PrimaryImageTag
+                });
+            }
+            else if (state.NowPlayingItem.PrimaryImageTag) {
+
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
+                    type: "Primary",
+                    width: 150,
+                    tag: state.NowPlayingItem.PrimaryImageTag
+                });
+            }
+            else if (state.NowPlayingItem.BackdropImageTag) {
+
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
+                    type: "Backdrop",
+                    height: 300,
+                    tag: state.NowPlayingItem.BackdropImageTag,
+                    index: 0
+                });
+
+            }
+            else if (state.NowPlayingItem.ThumbImageTag) {
+
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
+                    type: "Thumb",
+                    height: 300,
+                    tag: state.NowPlayingItem.ThumbImageTag
+                });
+            }
+
+            var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
+            var nameHtml = self.getNowPlayingNameHtml(state);
+
+            if (nameHtml.indexOf('<br/>') != -1) {
+                nowPlayingTextElement.addClass('nowPlayingDoubleText');
+            } else {
+                nowPlayingTextElement.removeClass('nowPlayingDoubleText');
+            }
+
+            if (url) {
+                $('.nowPlayingImage', mediaControls).html('<img src="' + url + '" />');
+            } else {
+                $('.nowPlayingImage', mediaControls).html('');
+            }
+
+            if (state.NowPlayingItem.LogoItemId) {
+
+                url = ApiClient.getScaledImageUrl(state.NowPlayingItem.LogoItemId, {
+                    type: "Logo",
+                    height: 42,
+                    tag: state.NowPlayingItem.LogoImageTag
+                });
+
+                $('.videoTopControlsLogo', mediaControls).html('<img src="' + url + '" />');
+            } else {
+                $('.videoTopControlsLogo', mediaControls).html('');
+            }
+
+            nowPlayingTextElement.html(nameHtml);
+        };
+
         function onPositionSliderChange() {
 
             isPositionSliderActive = false;
@@ -280,45 +388,46 @@
                 self.setVolume(vol * 100);
             });
 
-            $('#video-chaptersFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('.videoChaptersPopup').on('click', '.mediaPopupOption', function () {
 
                 var ticks = parseInt(this.getAttribute('data-positionticks'));
 
                 self.changeStream(ticks);
 
-                hideFlyout($('#video-chaptersFlyout'));
+                $('.videoChaptersPopup').popup('close');
             });
 
-            $('#video-audioTracksFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('.videoAudioPopup').on('click', '.mediaPopupOption', function () {
 
-                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                if (!$(this).hasClass('selectedMediaPopupOption')) {
                     var index = parseInt(this.getAttribute('data-index'));
 
                     self.setAudioStreamIndex(index);
                 }
 
-                hideFlyout($('#video-audioTracksFlyout'));
+                $('.videoAudioPopup').popup('close');
             });
 
-            $('#video-subtitleFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('.videoSubtitlePopup').on('click', '.mediaPopupOption', function () {
 
-                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                $('.videoSubtitlePopup').popup('close');
+
+                if (!$(this).hasClass('selectedMediaPopupOption')) {
+
                     var index = parseInt(this.getAttribute('data-index'));
 
                     self.setSubtitleStreamIndex(index);
                 }
-
-                hideFlyout($('#video-subtitleFlyout'));
             });
 
-            $('#video-qualityFlyout').on('click', '.mediaFlyoutOption', function () {
+            $('.videoQualityPopup').on('click', '.mediaPopupOption', function () {
 
-                if (!$(this).hasClass('selectedMediaFlyoutOption')) {
+                if (!$(this).hasClass('selectedMediaPopupOption')) {
 
                     var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
                     var bitrate = parseInt(this.getAttribute('data-bitrate'));
 
-                    localStorage.setItem('preferredVideoBitrate', bitrate);
+                    store.setItem('preferredVideoBitrate', bitrate);
 
                     self.changeStream(self.getCurrentTicks(), {
 
@@ -327,14 +436,14 @@
                     });
                 }
 
-                hideFlyout($('#video-qualityFlyout'));
+                $('.videoQualityPopup').popup('close');
             });
 
             var trackChange = false;
 
             var tooltip = $('<div id="slider-tooltip"></div>');
 
-            $("#videoControls .positionSliderContainer .slider").on("change", function (e) {
+            $(".videoControls .positionSliderContainer .slider").on("change", function (e) {
                 if (!trackChange) return;
 
                 var pct = $(this).val();
@@ -350,7 +459,7 @@
             }).on("slidestart", function (e) {
                 trackChange = true;
 
-                var handle = $("#videoControls .positionSliderContainer .ui-slider-handle");
+                var handle = $(".videoControls .positionSliderContainer .ui-slider-handle");
 
                 handle.after(tooltip);
             }).on("slidestop", function (e) {
@@ -359,35 +468,42 @@
                 tooltip.remove();
             });
 
-            $(".mediaFlyoutContainer").on("click", "a", function (e) {
-                if (confirm("This option will close the video player. Proceed?")) {
-                    self.stop();
-                } else {
-                    e.preventDefault();
-                }
+            $('.videoSubtitleButton').on('click', function () {
+
+                self.showSubtitleMenu();
+            });
+
+            $('.videoQualityButton').on('click', function () {
+
+                self.showQualityFlyout();
+            });
+
+            $('.videoAudioButton').on('click', function () {
+
+                self.showAudioTracksFlyout();
+            });
+
+            $('.videoChaptersButton').on('click', function () {
+
+                self.showChaptersFlyout();
             });
         });
 
         function idleHandler() {
-
-            var video = $(".itemVideo");
-            var videoControls = $("#videoControls");
 
             if (timeout) {
                 window.clearTimeout(timeout);
             }
 
             if (idleState == true) {
-                video.removeClass("cursor-inactive");
-                videoControls.removeClass("inactive").addClass("active");
+                $('.hiddenOnIdle').removeClass("inactive");
             }
 
             idleState = false;
 
             timeout = window.setTimeout(function () {
                 idleState = true;
-                video.addClass("cursor-inactive");
-                videoControls.removeClass("active").addClass("inactive");
+                $('.hiddenOnIdle').addClass("inactive");
             }, 4000);
         }
 
@@ -435,99 +551,76 @@
 
         }
 
-        function toggleFlyout(flyout, button) {
-
-            $(document.body).off("mousedown.mediaflyout").on("mousedown.mediaflyout", function (e) {
-
-                var elem = $(e.target);
-
-                var flyoutId = flyout[0].id;
-                var safeItems = button + ',#' + flyoutId;
-
-                if (!elem.is(safeItems) && !elem.parents(safeItems).length) {
-
-                    hideFlyout(flyout);
-                }
-
-            });
-
-            var visible = $(flyout).is(":visible");
-
-            if (!visible) {
-
-                flyout.slideDown();
-
-            } else {
-
-                $(button).blur();
-
-                hideFlyout(flyout);
-            }
-        }
-
-        function hideFlyout(flyout) {
-
-            flyout.slideUp().empty();
-
-            $(document.body).off("mousedown.hidesearchhints");
-        }
-
-
         function getChaptersFlyoutHtml() {
 
-            var html = '';
-
+            var item = self.currentItem;
             var currentTicks = self.getCurrentTicks();
+            var chapters = item.Chapters || [];
 
-            var chapters = self.currentItem.Chapters || [];
+            var html = '';
+            html += '<div class="videoPlayerPopupContent">';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderScenes') + '</li>';
+            html += '</ul>';
 
-            for (var i = 0, length = chapters.length; i < length; i++) {
+            html += '<div class="videoPlayerPopupScroller">';
+            html += '<ul data-role="listview" data-inset="true">';
 
-                var chapter = chapters[i];
+            var index = 0;
 
-                var isSelected = false;
+            html += chapters.map(function (chapter) {
+
+                var cssClass = "mediaPopupOption";
+
+                var selected = false;
 
                 if (currentTicks >= chapter.StartPositionTicks) {
-
-                    var nextChapter = chapters[i + 1];
-
-                    isSelected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
+                    var nextChapter = chapters[index + 1];
+                    selected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
                 }
 
-                if (isSelected) {
-                    html += '<div data-positionticks="' + chapter.StartPositionTicks + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
-                } else {
-                    html += '<div data-positionticks="' + chapter.StartPositionTicks + '" class="mediaFlyoutOption">';
-                }
+                var optionHtml = '<li><a data-positionticks="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
 
-                var imgUrl;
+                var imgUrl = "css/images/media/chapterflyout.png";
 
                 if (chapter.ImageTag) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(self.currentItem.Id, {
-                        maxWidth: 100,
+                    optionHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        width: 160,
                         tag: chapter.ImageTag,
                         type: "Chapter",
-                        index: i
+                        index: index
                     });
+                    optionHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
 
                 } else {
-                    imgUrl = "css/images/media/chapterflyout.png";
+                    optionHtml += '<img src="' + imgUrl + '" />';
                 }
 
-                html += '<img class="mediaFlyoutOptionImage" src="' + imgUrl + '" />';
+                // TODO: Add some indicator if selected = true
 
-                html += '<div class="mediaFlyoutOptionContent">';
+                optionHtml += '<p style="margin:12px 0 0;">';
 
-                var name = chapter.Name || "Chapter " + (i + 1);
+                var textLines = [];
+                textLines.push(chapter.Name);
+                textLines.push(Dashboard.getDisplayTime(chapter.StartPositionTicks));
 
-                html += '<div class="mediaFlyoutOptionName">' + name + '</div>';
-                html += '<div class="mediaFlyoutOptionSecondaryText">' + Dashboard.getDisplayTime(chapter.StartPositionTicks) + '</div>';
+                optionHtml += textLines.join('<br/>');
 
-                html += '</div>';
+                optionHtml += '</p>';
 
-                html += "</div>";
-            }
+                optionHtml += '</a></li>';
+
+                index++;
+
+                return optionHtml;
+
+            }).join('');
+
+            html += '</ul>';
+            html += '</div>';
+
+            html += '</div>';
 
             return html;
         }
@@ -541,61 +634,73 @@
             var currentIndex = getParameterByName('AudioStreamIndex', self.currentMediaElement.currentSrc);
 
             var html = '';
+            html += '<div class="videoPlayerPopupContent">';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderAudioTracks') + '</li>';
+            html += '</ul>';
 
-            for (var i = 0, length = streams.length; i < length; i++) {
+            html += '<div class="videoPlayerPopupScroller">';
+            html += '<ul data-role="listview" data-inset="true">';
 
-                var stream = streams[i];
+            html += streams.map(function (stream) {
 
-                if (stream.Index == currentIndex) {
-                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
-                } else {
-                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
+                var cssClass = "mediaPopupOption";
+
+                var selected = stream.Index == currentIndex;
+
+                if (selected) {
+                    cssClass += ' selectedMediaPopupOption';
                 }
 
-                html += '<img class="mediaFlyoutOptionImage" src="css/images/media/audioflyout.png" />';
+                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
-                html += '<div class="mediaFlyoutOptionContent">';
+                optionHtml += '<p style="margin:0;">';
 
-                html += '<div class="mediaFlyoutOptionName">' + (stream.Language || 'Unknown language') + '</div>';
+                if (selected) {
+                    optionHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:middle;" />';
+                }
 
-                var options = [];
+                var textLines = [];
+                textLines.push(stream.Language || Globalize.translate('LabelUnknownLanguage'));
+
+                var attributes = [];
 
                 if (stream.Codec) {
-                    options.push(stream.Codec);
+                    attributes.push(stream.Codec);
                 }
                 if (stream.Profile) {
-                    options.push(stream.Profile);
+                    attributes.push(stream.Profile);
                 }
 
                 if (stream.BitRate) {
-                    options.push((Math.floor(stream.BitRate / 1000)) + ' kbps');
+                    attributes.push((Math.floor(stream.BitRate / 1000)) + ' kbps');
                 }
 
                 if (stream.Channels) {
-                    options.push(stream.Channels + ' ch');
+                    attributes.push(stream.Channels + ' ch');
                 }
-
-                if (options.length) {
-                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
-                }
-
-                options = [];
 
                 if (stream.IsDefault) {
-                    options.push('Default');
-                }
-                if (stream.IsForced) {
-                    options.push('Forced');
+                    attributes.push('(D)');
                 }
 
-                if (options.length) {
-                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                if (attributes.length) {
+                    textLines.push(attributes.join('&nbsp;&#149;&nbsp;'));
                 }
 
-                html += "</div>";
+                optionHtml += textLines.join('<br/>');
 
-                html += "</div>";
-            }
+                optionHtml += '</p>';
+
+                optionHtml += '</a></li>';
+
+                return optionHtml;
+
+            }).join('');
+
+            html += '</ul>';
+            html += '</div>';
+
+            html += '</div>';
 
             return html;
         }
@@ -608,74 +713,79 @@
 
             var currentIndex = self.currentSubtitleStreamIndex || -1;
 
-            var html = '';
-
             streams.unshift({
                 Index: -1,
                 Language: "Off"
             });
 
-            for (var i = 0, length = streams.length; i < length; i++) {
+            var html = '';
+            html += '<div class="videoPlayerPopupContent">';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderSubtitles') + '</li>';
+            html += '</ul>';
 
-                var stream = streams[i];
+            html += '<div class="videoPlayerPopupScroller">';
+            html += '<ul data-role="listview" data-inset="true">';
 
-                if (stream.Index == currentIndex) {
-                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption selectedMediaFlyoutOption">';
-                } else {
-                    html += '<div data-index="' + stream.Index + '" class="mediaFlyoutOption">';
+            html += streams.map(function (stream) {
+
+                var cssClass = "mediaPopupOption";
+
+                var selected = stream.Index == currentIndex;
+
+                if (selected) {
+                    cssClass += ' selectedMediaPopupOption';
                 }
 
-                if (stream.Index != -1) {
-                    html += '<img class="mediaFlyoutOptionImage" src="css/images/media/subtitleflyout.png" />';
-                } else {
-                    html += '<div class="mediaFlyoutOptionImage"></div>';
+                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
+
+                optionHtml += '<p style="margin:0;">';
+
+                if (selected) {
+                    optionHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:middle;" />';
                 }
 
-                html += '<div class="mediaFlyoutOptionContent">';
-
-                var options = [];
-
-                if (stream.Language == "Off") {
-                    options.push('&nbsp;');
-                }
-
-                html += '<div class="mediaFlyoutOptionName">' + (stream.Language || 'Unknown language') + '</div>';
+                var textLines = [];
+                textLines.push(stream.Language || Globalize.translate('LabelUnknownLanguage'));
 
                 if (stream.Codec) {
-                    options.push(stream.Codec);
+                    textLines.push(stream.Codec);
                 }
 
-                if (options.length) {
-                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
-                }
-
-                options = [];
+                var attributes = [];
 
                 if (stream.IsDefault) {
-                    options.push('Default');
+                    attributes.push('Default');
                 }
                 if (stream.IsForced) {
-                    options.push('Forced');
+                    attributes.push('Forced');
                 }
                 if (stream.IsExternal) {
-                    options.push('External');
+                    attributes.push('External');
                 }
 
-                if (options.length) {
-                    html += '<div class="mediaFlyoutOptionSecondaryText">' + options.join('&nbsp;&#149;&nbsp;') + '</div>';
+                if (attributes.length) {
+                    textLines.push(attributes.join('&nbsp;&#149;&nbsp;'));
                 }
 
-                html += "</div>";
+                optionHtml += textLines.join('<br/>');
 
-                html += "</div>";
-            }
+                optionHtml += '</p>';
+
+                optionHtml += '</a></li>';
+
+                return optionHtml;
+
+            }).join('');
+
+            html += '</ul>';
+            html += '</div>';
+
+            html += '</div>';
 
             return html;
         }
 
         function getQualityFlyoutHtml() {
-
-            var html = '';
 
             var currentSrc = self.currentMediaElement.currentSrc.toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
@@ -690,26 +800,45 @@
                 options[0].name = "Direct";
             }
 
-            for (var i = 0, length = options.length; i < length; i++) {
+            var html = '';
 
-                var option = options[i];
+            html += '<div class="videoPlayerPopupContent">';
+            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderVideoQuality') + '</li>';
+            html += '</ul>';
 
-                var cssClass = "mediaFlyoutOption";
+            html += '<div class="videoPlayerPopupScroller">';
+            html += '<ul data-role="listview" data-inset="true">';
+
+            html += options.map(function (option) {
+
+                var cssClass = "mediaPopupOption";
 
                 if (option.selected) {
-                    cssClass += " selectedMediaFlyoutOption";
+                    cssClass += ' selectedMediaPopupOption';
                 }
 
-                html += '<div data-maxwidth="' + option.maxWidth + '" data-bitrate="' + option.bitrate + '" class="' + cssClass + '">';
+                var optionHtml = '<li><a data-maxwidth="' + option.maxWidth + '" data-bitrate="' + option.bitrate + '" class="' + cssClass + '" href="#">';
 
-                html += '<div class="mediaFlyoutOptionContent">';
+                optionHtml += '<p style="margin:0;">';
 
-                html += '<div class="mediaFlyoutOptionName" style="padding:.5em;">' + option.name + '</div>';
+                if (option.selected) {
+                    optionHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:middle;" />';
+                }
 
-                html += "</div>";
+                optionHtml += option.name;
 
-                html += "</div>";
-            }
+                optionHtml += '</p>';
+
+                optionHtml += '</a></li>';
+
+                return optionHtml;
+
+            }).join('');
+
+            html += '</ul>';
+            html += '</div>';
+
+            html += '</div>';
 
             return html;
         }
@@ -733,7 +862,7 @@
             }
 
             // Some 1080- videos are reported as 1912?
-            if (maxAllowedWidth >= 1910) {
+            if (maxAllowedWidth >= 1900) {
                 options.push({ name: '1080p - 30Mbps', maxWidth: 1920, bitrate: 30000000 });
                 options.push({ name: '1080p - 25Mbps', maxWidth: 1920, bitrate: 25000000 });
                 options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
@@ -743,13 +872,13 @@
                 options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
                 options.push({ name: '1080p - 5Mbps', maxWidth: 1920, bitrate: 5000000 });
             }
-            else if (maxAllowedWidth >= 1270) {
+            else if (maxAllowedWidth >= 1260) {
                 options.push({ name: '720p - 10Mbps', maxWidth: 1280, bitrate: 10000000 });
                 options.push({ name: '720p - 8Mbps', maxWidth: 1280, bitrate: 8000000 });
                 options.push({ name: '720p - 6Mbps', maxWidth: 1280, bitrate: 6000000 });
                 options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
             }
-            else if (maxAllowedWidth >= 470) {
+            else if (maxAllowedWidth >= 460) {
                 options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
                 options.push({ name: '480p - 3.5Mbps', maxWidth: 720, bitrate: 3500000 });
                 options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
@@ -758,7 +887,7 @@
                 options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
             }
 
-            if (maxAllowedWidth >= 1270) {
+            if (maxAllowedWidth >= 1260) {
                 options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
                 options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
                 options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
@@ -796,17 +925,20 @@
 
         function bindEventsForPlayback() {
 
-            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
+            var hideElementsOnIdle = !$.browser.mobile;
 
+            if (hideElementsOnIdle) {
                 $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler);
+                $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
+            }
+
+            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
 
                 if (self.isFullScreen()) {
                     enterFullScreen();
                     idleState = true;
-                    $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
 
                 } else {
-                    $('#videoControls').removeClass("active inactive");
                     exitFullScreenToWindow();
                 }
 
@@ -835,10 +967,12 @@
                 return;
             });
 
-            $(document.body).on("mousemove.videplayer", "#videoPlayer.fullscreenVideo #itemVideo", function () {
+            if (hideElementsOnIdle) {
+                $(document.body).on("mousemove.videplayer", "#itemVideo", function () {
 
-                idleHandler(this);
-            });
+                    idleHandler(this);
+                });
+            }
         }
 
         function unbindEventsForPlayback() {
@@ -848,10 +982,29 @@
             // Stop playback on browser back button nav
             $(window).off("popstate.videoplayer");
 
-            $(document.body).off("mousemove.videplayer", "#videoPlayer.fullscreenVideo #itemVideo");
+            $(document.body).off("mousemove.videplayer");
 
             $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer');
         }
+
+        self.canAutoPlayVideo = function () {
+
+            if ($.browser.msie || $.browser.mobile) {
+                return false;
+            }
+
+            return true;
+        };
+
+        // Replace audio version
+        self.cleanup = function (playerElement) {
+
+            if (playerElement.tagName.toLowerCase() == 'video') {
+                currentTimeElement.html('--:--');
+
+                unbindEventsForPlayback();
+            }
+        };
 
         self.playVideo = function (item, mediaSource, startPosition) {
 
@@ -898,7 +1051,8 @@
 
             self.startTimeTicksOffset = isStatic ? 0 : startPosition || 0;
 
-            var seekParam = isStatic && startPosition ? '#t=' + (startPosition / 10000000) : '';
+            var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
+            var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
 
             var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
                 Static: isStatic,
@@ -912,7 +1066,9 @@
 
                 // None of the browsers seem to like this
                 EnableAutoStreamCopy: false
-            })) + seekParam;
+            }));
+
+            if (isStatic) mp4VideoUrl += seekParam;
 
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 VideoCodec: 'vpx',
@@ -921,36 +1077,30 @@
                 videoBitrate: webmQuality.videoBitrate,
                 audioBitrate: webmQuality.audioBitrate,
                 EnableAutoStreamCopy: false
-            })) + seekParam;
+            }));
 
-            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.m3u8', $.extend({}, baseParams, {
-                timeStampOffsetMs: 0,
+            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
                 maxWidth: m3U8Quality.maxWidth,
                 videoBitrate: m3U8Quality.videoBitrate,
                 audioBitrate: m3U8Quality.audioBitrate,
                 VideoCodec: m3U8Quality.videoCodec,
                 AudioCodec: m3U8Quality.audioCodec,
                 profile: 'baseline',
-                level: '3'
+                level: '3',
+                StartTimeTicks: 0
+
             })) + seekParam;
 
             //======================================================================================>
 
-            // Show loading animation
-            $("html").css("cursor", "wait");
-
             // Create video player
             var html = '';
 
-            var requiresControls = $.browser.msie || $.browser.android || ($.browser.webkit && !$.browser.chrome);
+            var requiresNativeControls = !self.canAutoPlayVideo();
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresControls) {
-                if ($.browser.msie) {
-                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls">';
-                } else {
-                    html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay controls>';
-                }
+            if (requiresNativeControls) {
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls">';
             } else {
 
                 // Chrome 35 won't play with preload none
@@ -992,10 +1142,9 @@
             html += '</video>';
 
             var mediaPlayerContainer = $("#mediaPlayer").show();
-            var videoControls = $('#videoControls', mediaPlayerContainer);
+            var videoControls = $('.videoControls', mediaPlayerContainer);
 
             //show stop button
-            $('#video-stopButton', videoControls).show();
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
             $('#video-previousTrackButton', videoControls).hide();
@@ -1003,33 +1152,48 @@
 
             var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
 
-            $('#video-qualityButton', videoControls).show();
+            $('.videoQualityButton', videoControls).show();
 
             if (mediaStreams.filter(function (s) {
                 return s.Type == "Audio";
             }).length) {
-                $('#video-audioTracksButton', videoControls).show();
+                $('.videoAudioButton').show();
             } else {
-                $('#video-audioTracksButton', videoControls).hide();
+                $('.videoAudioButton').hide();
             }
 
             if (subtitleStreams.length) {
-                $('#video-subtitleButton', videoControls).show().prop("disabled", false);
+                $('.videoSubtitleButton').show();
             } else {
-                $('#video-subtitleButton', videoControls).hide().prop("disabled", true);
-                ;
+                $('.videoSubtitleButton').hide();
             }
 
             if (item.Chapters && item.Chapters.length) {
-                $('#video-chaptersButton', videoControls).show();
+                $('.videoChaptersButton').show();
             } else {
-                $('#video-chaptersButton', videoControls).hide();
+                $('.videoChaptersButton').hide();
             }
 
-            if (requiresControls) {
+            if (requiresNativeControls) {
                 $('#video-fullscreenButton', videoControls).hide();
             } else {
                 $('#video-fullscreenButton', videoControls).show();
+            }
+
+            if ($.browser.mobile) {
+                $('.volumeSliderContainer', videoControls).addClass('hide');
+                $('.muteButton', videoControls).addClass('hide');
+                $('.unmuteButton', videoControls).addClass('hide');
+            } else {
+                $('.volumeSliderContainer', videoControls).removeClass('hide');
+                $('.muteButton', videoControls).removeClass('hide');
+                $('.unmuteButton', videoControls).removeClass('hide');
+            }
+
+            if (requiresNativeControls) {
+                videoControls.addClass('hide');
+            } else {
+                videoControls.removeClass('hide');
             }
 
             var video = $("video", videoElement);
@@ -1043,13 +1207,24 @@
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.on("volumechange.mediaplayerevent", function (e) {
+            video.one("loadedmetadata.mediaplayerevent", function (e) {
+
+                // Appending #t=xxx to the query string doesn't seem to work with HLS
+                if (startPositionInSeekParam && this.currentSrc && this.currentSrc.toLowerCase().indexOf('.m3u8') != -1) {
+                    this.currentTime = startPositionInSeekParam;
+                }
+
+            }).on("volumechange.mediaplayerevent", function (e) {
 
                 var vol = this.volume;
 
                 updateVolumeButtons(vol);
 
             }).one("playing.mediaplayerevent", function () {
+
+
+                // For some reason this is firing at the start, so don't bind until playback has begun
+                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 
@@ -1062,11 +1237,6 @@
                     $("#pause", videoElement).hide().removeClass("fadeOut");
                 }, 300);
 
-                // Pause stop timer
-                self.pauseStop = setTimeout(function () {
-                    self.stop();
-                }, 5 * 60 * 1000); // 5 minutes
-
             }).on("playing.mediaplayerevent", function (e) {
 
                 $('#video-playButton', videoControls).hide();
@@ -1075,9 +1245,6 @@
                 setTimeout(function () {
                     $("#play", videoElement).hide().removeClass("fadeOut");
                 }, 300);
-
-                // Remove pause setop timer
-                self.clearPauseStop();
 
             }).on("timeupdate.mediaplayerevent", function () {
 
@@ -1088,24 +1255,32 @@
 
             }).on("error.mediaplayerevent", function () {
 
-                self.clearPauseStop();
-
-                $("html").css("cursor", "default");
-                self.resetEnhancements();
+                self.stop();
 
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
 
-                var errorMsg = 'There was an error playing the video.';
+                var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
                 if (item.Type == "TvChannel") {
-                    errorMsg += " Please ensure there is an open tuner availalble.";
+                    errorMsg += '<p>';
+                    errorMsg += Globalize.translate('MessageEnsureOpenTuner');
+                    errorMsg += '</p>';
+                }
+
+                if ($.browser.msie && !$.browser.mobile && !self.canPlayWebm()) {
+                    errorMsg += '<p>';
+                    errorMsg += '<a href="https://tools.google.com/dlpage/webmmf/" target="_blank">';
+                    errorMsg += Globalize.translate('MessageInternetExplorerWebm');
+                    errorMsg += '</a>';
+                    errorMsg += '</p>';
                 }
 
                 Dashboard.alert({
-                    title: 'Video Error',
+                    title: Globalize.translate('HeaderVideoError'),
                     message: errorMsg
                 });
+
 
             }).on("click.mediaplayerevent", function (e) {
 
@@ -1119,31 +1294,7 @@
 
                 self.toggleFullscreen();
 
-            }).on("seeking.mediaplayerevent", function (e) {
-
-                $("html").css("cursor", "wait");
-
-            }).on("seeked.mediaplayerevent", function (e) {
-
-                $("html").css("cursor", "default");
-
-            }).on("loadstart.mediaplayerevent", function () {
-
-                $("html").css("cursor", "progress");
-
-            }).on("canplay.mediaplayerevent", function () {
-
-                $("html").css("cursor", "default");
-
-            }).on("ended.playbackstopped", function () {
-
-                currentTimeElement.empty();
-
-                self.onPlaybackStopped.call(this);
-
-                unbindEventsForPlayback();
-
-            }).on('ended.playnext', self.playNextAfterEnded);
+            });
 
             bindEventsForPlayback();
 
@@ -1152,6 +1303,8 @@
             fullscreenExited = false;
 
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
+
+            $('body').addClass('bodyWithPopupOpen');
 
             return video[0];
         };

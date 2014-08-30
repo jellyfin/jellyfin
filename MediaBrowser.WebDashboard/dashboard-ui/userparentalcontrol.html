@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesConfigurationPage">
+    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -49,9 +49,9 @@
                             <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
-                            <button type="button" onclick="history.back();" data-icon="delete">
+                            <a data-role="button" href="userprofiles.html" data-icon="delete" style="text-align:center;">
                                 ${ButtonCancel}
-                            </button>
+                            </a>
                         </li>
                     </ul>
                 </form>

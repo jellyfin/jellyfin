@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using OpenSubtitlesHandler;
@@ -29,6 +29,15 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IServerConfigurationManager _config;
         private readonly IEncryptionManager _encryption;
 
+        private Timer _dailyTimer;
+
+        // This is limited to 200 per day
+        private int _dailyDownloadCount;
+
+        // It's 200 but this will be in-exact so buffer a little
+        // And the user may restart the server
+        private const int MaxDownloadsPerDay = 150;
+
         public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption)
         {
             _logger = logManager.GetLogger(GetType().Name);
@@ -36,13 +45,21 @@ namespace MediaBrowser.Providers.Subtitles
             _config = config;
             _encryption = encryption;
 
-            _config.ConfigurationUpdating += _config_ConfigurationUpdating;
+            _config.NamedConfigurationUpdating += _config_NamedConfigurationUpdating;
+
+            // Reset the count every 24 hours
+            _dailyTimer = new Timer(state => _dailyDownloadCount = 0, null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
         }
 
         private const string PasswordHashPrefix = "h:";
-        void _config_ConfigurationUpdating(object sender, GenericEventArgs<ServerConfiguration> e)
+        void _config_NamedConfigurationUpdating(object sender, ConfigurationUpdateEventArgs e)
         {
-            var options = e.Argument.SubtitleOptions;
+            if (!string.Equals(e.Key, "subtitles", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var options = (SubtitleOptions)e.NewConfiguration;
 
             if (options != null &&
                 !string.IsNullOrWhiteSpace(options.OpenSubtitlesPasswordHash) &&
@@ -73,12 +90,19 @@ namespace MediaBrowser.Providers.Subtitles
             get { return "Open Subtitles"; }
         }
 
+        private SubtitleOptions GetOptions()
+        {
+            return _config.GetSubtitleConfiguration();
+        }
+
         public IEnumerable<VideoContentType> SupportedMediaTypes
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesUsername) ||
-                    string.IsNullOrWhiteSpace(_config.Configuration.SubtitleOptions.OpenSubtitlesPasswordHash))
+                var options = GetOptions();
+
+                if (string.IsNullOrWhiteSpace(options.OpenSubtitlesUsername) ||
+                    string.IsNullOrWhiteSpace(options.OpenSubtitlesPasswordHash))
                 {
                     return new VideoContentType[] { };
                 }
@@ -89,15 +113,22 @@ namespace MediaBrowser.Providers.Subtitles
 
         public Task<SubtitleResponse> GetSubtitles(string id, CancellationToken cancellationToken)
         {
-            return GetSubtitlesInternal(id, cancellationToken);
+            return GetSubtitlesInternal(id, GetOptions(), cancellationToken);
         }
 
         private async Task<SubtitleResponse> GetSubtitlesInternal(string id,
+            SubtitleOptions options,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 throw new ArgumentNullException("id");
+            }
+
+            if (_dailyDownloadCount >= MaxDownloadsPerDay &&
+                !options.IsOpenSubtitleVipAccount)
+            {
+                throw new InvalidOperationException("Open Subtitle's daily download limit has been exceeded. Please try again tomorrow.");
             }
 
             var idParts = id.Split(new[] { '-' }, 3);
@@ -149,7 +180,7 @@ namespace MediaBrowser.Providers.Subtitles
                 return;
             }
 
-            var options = _config.Configuration.SubtitleOptions ?? new SubtitleOptions();
+            var options = GetOptions();
 
             var user = options.OpenSubtitlesUsername ?? string.Empty;
             var password = DecryptPassword(options.OpenSubtitlesPasswordHash);
@@ -247,7 +278,7 @@ namespace MediaBrowser.Providers.Subtitles
             var hasCopy = hash;
 
             return results.Where(x => x.SubBad == "0" && mediaFilter(x))
-                    .OrderBy(x => x.MovieHash == hash)
+                    .OrderBy(x => (x.MovieHash == hash ? 0 : 1))
                     .ThenBy(x => Math.Abs(long.Parse(x.MovieByteSize, _usCulture) - movieByteSize))
                     .ThenByDescending(x => int.Parse(x.SubDownloadsCnt, _usCulture))
                     .ThenByDescending(x => double.Parse(x.SubRating, _usCulture))
@@ -271,7 +302,13 @@ namespace MediaBrowser.Providers.Subtitles
 
         public void Dispose()
         {
-            _config.ConfigurationUpdating -= _config_ConfigurationUpdating;
+            _config.NamedConfigurationUpdating -= _config_NamedConfigurationUpdating;
+
+            if (_dailyTimer != null)
+            {
+                _dailyTimer.Dispose();
+                _dailyTimer = null;
+            }
         }
     }
 }

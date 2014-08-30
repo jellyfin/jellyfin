@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -100,13 +101,16 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageByNameService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        public ImageByNameService(IServerApplicationPaths appPaths)
+        public ImageByNameService(IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public object Get(GetMediaInfoImages request)
@@ -133,7 +137,7 @@ namespace MediaBrowser.Api.Images
                     .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.Ordinal))
                     .Select(i => new ImageByNameInfo
                     {
-                        Name = Path.GetFileNameWithoutExtension(i.FullName),
+                        Name = _fileSystem.GetFileNameWithoutExtension(i),
                         FileLength = i.Length,
 
                         // For themeable images, use the Theme property
