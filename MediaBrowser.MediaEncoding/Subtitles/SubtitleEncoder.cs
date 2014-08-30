@@ -201,7 +201,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 // Extract    
                 var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, "." + extractedFormat);
 
-                await ExtractTextSubtitle(inputFiles, protocol, subtitleStream.Index, false, outputPath, cancellationToken)
+                await ExtractTextSubtitle(inputFiles, protocol, subtitleStream.Index, "srt", outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
                 return new Tuple<string, string>(outputPath, extractedFormat);
@@ -477,13 +477,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
+        /// <param name="outputCodec">The output codec.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentException">Must use inputPath list overload</exception>
         private async Task ExtractTextSubtitle(string[] inputFiles, MediaProtocol protocol, int subtitleStreamIndex,
-            bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
+            string outputCodec, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -494,7 +494,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 if (!File.Exists(outputPath))
                 {
                     await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex,
-                            copySubtitleStream, outputPath, cancellationToken).ConfigureAwait(false);
+                            outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -503,23 +503,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        /// <summary>
-        /// Extracts the text subtitle.
-        /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
-        /// <param name="copySubtitleStream">if set to true, copy stream instead of converting.</param>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">inputPath
-        /// or
-        /// outputPath
-        /// or
-        /// cancellationToken</exception>
-        /// <exception cref="System.ApplicationException"></exception>
         private async Task ExtractTextSubtitleInternal(string inputPath, int subtitleStreamIndex,
-            bool copySubtitleStream, string outputPath, CancellationToken cancellationToken)
+            string outputCodec, string outputPath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -533,14 +518,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s srt \"{2}\"", inputPath,
-                subtitleStreamIndex, outputPath);
-
-            if (copySubtitleStream)
-            {
-                processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s copy \"{2}\"", inputPath,
-                    subtitleStreamIndex, outputPath);
-            }
+            var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s {2} \"{3}\"", inputPath,
+                subtitleStreamIndex, outputCodec, outputPath);
 
             var process = new Process
             {

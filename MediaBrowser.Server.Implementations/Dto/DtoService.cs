@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -369,6 +368,19 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.ImageOrientation = item.Orientation;
             dto.Aperture = item.Aperture;
             dto.ShutterSpeed = item.ShutterSpeed;
+
+            dto.Latitude = item.Latitude;
+            dto.Longitude = item.Longitude;
+            dto.Altitude = item.Altitude;
+            dto.IsoSpeedRating = item.IsoSpeedRating;
+            
+            var album = item.Album;
+
+            if (album != null)
+            {
+                dto.Album = item.Name;
+                dto.AlbumId = item.Id.ToString("N");
+            }
         }
 
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)

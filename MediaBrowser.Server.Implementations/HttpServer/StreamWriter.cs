@@ -38,7 +38,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public bool Throttle { get; set; }
         public long ThrottleLimit { get; set; }
-        
+        public long MinThrottlePosition;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
         /// </summary>
@@ -84,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 responseStream = new ThrottledStream(responseStream, ThrottleLimit)
                 {
-                    MinThrottlePosition = ThrottleLimit * 180
+                    MinThrottlePosition = MinThrottlePosition
                 };
             }
             var task = WriteToAsync(responseStream);

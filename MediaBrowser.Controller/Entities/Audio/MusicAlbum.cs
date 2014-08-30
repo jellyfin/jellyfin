@@ -22,6 +22,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             AlbumArtists = new List<string>();
         }
 
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return true; }

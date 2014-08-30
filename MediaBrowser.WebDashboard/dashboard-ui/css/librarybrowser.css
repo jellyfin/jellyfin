@@ -1194,7 +1194,7 @@ a.itemTag:hover {
 }
 
 
-.itemsContainer .itemsListview {
+.itemsContainer:not(.fullWidthItemsContainer) .itemsListview {
     max-width: 800px;
 }
 

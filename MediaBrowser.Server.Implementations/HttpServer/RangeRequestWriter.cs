@@ -26,6 +26,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public bool Throttle { get; set; }
         public long ThrottleLimit { get; set; }
+        public long MinThrottlePosition;
 
         /// <summary>
         /// The _options
@@ -166,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 responseStream = new ThrottledStream(responseStream, ThrottleLimit)
                 {
-                    MinThrottlePosition = ThrottleLimit * 180
+                    MinThrottlePosition = MinThrottlePosition
                 };
             }
             var task = WriteToAsync(responseStream);

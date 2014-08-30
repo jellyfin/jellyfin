@@ -723,6 +723,28 @@
         PlaylistManager.showPanel(selection);
     }
 
+    function onItemWithActionClick() {
+
+        var elem = this;
+        var action = elem.getAttribute('data-action');
+        var itemId = elem.parentNode.getAttribute('data-itemid');
+
+        if (action == 'play') {
+            MediaController.play(itemId);
+        }
+        else if (action == 'playallfromhere') {
+
+            var index = elem.parentNode.getAttribute('data-index');
+            var itemsContainer = $(elem).parents('.itemsContainer');
+
+            closeContextMenu();
+
+            itemsContainer.trigger('playallfromhere', [index]);
+        }
+
+        return false;
+    }
+
     $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
@@ -762,6 +784,7 @@
                 toggleSelections(page);
             });
 
+            $('.itemWithAction', this).on('click', onItemWithActionClick);
         });
 
     }).on('pagebeforeshow', ".libraryPage", function () {

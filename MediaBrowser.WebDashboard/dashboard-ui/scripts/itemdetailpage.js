@@ -433,8 +433,12 @@
             attributes.push(createAttribute("Camera model", item.CameraModel));
         }
 
-        if (item.Software) {
-            attributes.push(createAttribute("Software", item.Software));
+        if (item.Altitude) {
+            attributes.push(createAttribute("Altitude", item.Altitude.toFixed(1)));
+        }
+
+        if (item.Aperture) {
+            attributes.push(createAttribute("Aperture", 'F' + item.Aperture.toFixed(1)));
         }
 
         if (item.ExposureTime) {
@@ -448,16 +452,28 @@
             attributes.push(createAttribute("Focal length", item.FocalLength.toFixed(1) + ' mm'));
         }
 
-        if (item.Aperture) {
-            attributes.push(createAttribute("Aperture", 'F' + item.Aperture.toFixed(1)));
+        if (item.ImageOrientation) {
+            attributes.push(createAttribute("Orientation", item.ImageOrientation));
+        }
+
+        if (item.IsoSpeedRating) {
+            attributes.push(createAttribute("Iso Speed Rating", item.IsoSpeedRating));
+        }
+
+        if (item.Latitude) {
+            attributes.push(createAttribute("Latitude", item.Latitude.toFixed(1)));
+        }
+
+        if (item.Longitude) {
+            attributes.push(createAttribute("Longitude", item.Longitude.toFixed(1)));
         }
 
         if (item.ShutterSpeed) {
             attributes.push(createAttribute("ShutterSpeed", item.ShutterSpeed));
         }
 
-        if (item.ImageOrientation) {
-            attributes.push(createAttribute("Orientation", item.ImageOrientation));
+        if (item.Software) {
+            attributes.push(createAttribute("Software", item.Software));
         }
 
         html += attributes.join('<br/>');
@@ -691,7 +707,10 @@
         }
     }
 
+    var _childrenItemsQuery = null;
     function renderChildren(page, item, user, context) {
+
+        _childrenItemsQuery = null;
 
         var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio";
 
@@ -726,69 +745,69 @@
             });
         }
 
+        _childrenItemsQuery = query;
         promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
         promise.done(function (result) {
 
+            var html = '';
+
             if (item.Type == "MusicAlbum") {
 
-                $('#childrenContent', page).html(LibraryBrowser.getListViewHtml({
+                html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     smallIcon: true,
                     showIndex: true,
                     index: 'disc',
-                    showIndexNumber: true
+                    showIndexNumber: true,
+                    playFromHere: true,
+                    defaultAction: 'playallfromhere'
+                });
 
-                })).trigger('create').createCardMenus();
+            }
+            else if (item.Type == "Series") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "detailPagePortrait",
+                    showTitle: false,
+                    centerText: true,
+                    context: context,
+                    overlayText: true
+                });
+            }
+            else if (item.Type == "Season") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "detailPage169",
+                    showTitle: true,
+                    displayAsSpecial: item.Type == "Season" && item.IndexNumber,
+                    context: context,
+                    overlayText: true
+                });
+            }
+            else if (item.Type == "GameSystem") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    showTitle: true,
+                    centerText: true,
+                    context: context
+                });
+            }
 
-            } else {
+            $('.childrenItemsContainer', page).html(html).trigger('create').createCardMenus();
 
-                var html = '';
+            if (item.Type == "BoxSet") {
 
-                if (item.Type == "Series") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "detailPagePortrait",
-                        showTitle: false,
-                        centerText: true,
-                        context: context,
-                        overlayText: true
-                    });
-                }
-                else if (item.Type == "Season") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "detailPage169",
-                        showTitle: true,
-                        displayAsSpecial: item.Type == "Season" && item.IndexNumber,
-                        context: context,
-                        overlayText: true
-                    });
-                }
-                else if (item.Type == "GameSystem") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "auto",
-                        showTitle: true,
-                        centerText: true,
-                        context: context
-                    });
-                }
+                var collectionItemTypes = [
+                    { name: 'Movies', type: 'Movie' },
+                    { name: 'Series', type: 'Series' },
+                    { name: 'Albums', type: 'MusicAlbum' },
+                    { name: 'Games', type: 'Game' },
+                    { name: 'Books', type: 'Book' }
+                ];
 
-                $('#childrenContent', page).html(html).trigger('create').createCardMenus();
-
-                if (item.Type == "BoxSet") {
-
-                    var collectionItemTypes = [
-                        { name: 'Movies', type: 'Movie' },
-                        { name: 'Series', type: 'Series' },
-                        { name: 'Albums', type: 'MusicAlbum' },
-                        { name: 'Games', type: 'Game' },
-                        { name: 'Books', type: 'Book' }
-                    ];
-
-                    renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
-                }
+                renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
             }
         });
 
@@ -1519,6 +1538,16 @@
 
                 LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
             });
+        });
+
+        $('.childrenItemsContainer', page).on('playallfromhere', function (e, index) {
+
+            LibraryBrowser.playAllFromHere(_childrenItemsQuery, index);
+
+        }).on('queueallfromhere', function (e, index) {
+
+            LibraryBrowser.queueAllFromHere(_childrenItemsQuery, index);
+
         });
 
     }).on('pageshow', "#itemDetailPage", function () {

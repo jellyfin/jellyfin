@@ -214,6 +214,7 @@
     <Compile Include="Net\IRestfulService.cs" />
     <Compile Include="Net\ISessionContext.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />
+    <Compile Include="Net\StaticResultOptions.cs" />
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationManager.cs" />
     <Compile Include="Notifications\INotificationService.cs" />

@@ -94,7 +94,7 @@ namespace MediaBrowser.Api
 
             var contentType = MimeTypes.GetMimeType(info.Path);
 
-            return ToCachedResult(cacheGuid, info.DateModified, cacheDuration, () => _fileSystem.GetFileStream(info.Path, FileMode.Open, FileAccess.Read, FileShare.Read), contentType);
+            return ResultFactory.GetCachedResult(Request, cacheGuid, null, cacheDuration, () => _fileSystem.GetFileStream(info.Path, FileMode.Open, FileAccess.Read, FileShare.Read), contentType);
         }
     }
 }

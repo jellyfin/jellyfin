@@ -61,7 +61,8 @@
             html += LibraryBrowser.getListViewHtml({
                 items: result.Items,
                 smallIcon: true,
-                showIndex: true
+                showIndex: true,
+                defaultAction: 'play'
             });
 
             html += pagingHtml;

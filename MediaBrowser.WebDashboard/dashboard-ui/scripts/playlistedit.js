@@ -76,7 +76,8 @@
                         title: item.Name,
                         showRemoveFromPlaylist: true,
                         smallIcon: true,
-                        playFromHere: true
+                        playFromHere: true,
+                        defaultAction: 'playallfromhere'
                     });
                 }
 

@@ -732,7 +732,11 @@ namespace MediaBrowser.Model.Dto
         public ImageOrientation? ImageOrientation { get; set; }
         public double? Aperture { get; set; }
         public double? ShutterSpeed { get; set; }
-        
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public double? Altitude { get; set; }
+        public int? IsoSpeedRating { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether this instance can resume.
         /// </summary>

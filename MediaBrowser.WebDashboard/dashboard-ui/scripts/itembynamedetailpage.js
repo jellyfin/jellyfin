@@ -424,7 +424,8 @@
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     smallIcon: true,
-                    playFromHere: true
+                    playFromHere: true,
+                    defaultAction: 'playallfromhere'
                 });
 
             }

@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             Tags = new List<string>();
         }
 
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
@@ -118,6 +119,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [IgnoreDataMember]
         public override string MediaType
         {
             get

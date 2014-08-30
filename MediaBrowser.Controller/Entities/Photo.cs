@@ -17,6 +17,7 @@ namespace MediaBrowser.Controller.Entities
             Taglines = new List<string>();
         }
 
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get
@@ -25,6 +26,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
@@ -35,6 +37,16 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public override Folder LatestItemsIndexContainer
+        {
+            get
+            {
+                return Album;
+            }
+        }
+
+
+        [IgnoreDataMember]
+        public PhotoAlbum Album
         {
             get
             {
@@ -53,6 +65,11 @@ namespace MediaBrowser.Controller.Entities
         public double? Aperture { get; set; }
         public double? ShutterSpeed { get; set; }
 
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public double? Altitude { get; set; }
+        public int? IsoSpeedRating { get; set; }
+        
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Other);

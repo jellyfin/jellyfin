@@ -348,14 +348,16 @@ namespace MediaBrowser.Api.Playback
                 var profileScore = 0;
 
                 string crf;
+                var qmin = "0";
+                var qmax = "50";
 
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        crf = "12";
+                        crf = "10";
                         break;
                     case EncodingQuality.HighQuality:
-                        crf = "8";
+                        crf = "6";
                         break;
                     case EncodingQuality.MaxQuality:
                         crf = "4";
@@ -371,11 +373,13 @@ namespace MediaBrowser.Api.Playback
 
                 // Max of 2
                 profileScore = Math.Min(profileScore, 2);
-                
+
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param = string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1}",
+                param = string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
                     profileScore.ToString(UsCulture),
-                    crf);
+                    crf,
+                    qmin,
+                    qmax);
             }
 
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase))
@@ -789,7 +793,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
-                    var url = "http://localhost:8096/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+                    var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
 
                     return string.Format("\"{0}\"", url);
                 }
