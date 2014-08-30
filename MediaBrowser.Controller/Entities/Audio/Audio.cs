@@ -20,7 +20,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
         IHasTags,
-        IHasMediaSources
+        IHasMediaSources,
+        IThemeMedia
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
@@ -28,9 +29,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         public int? TotalBitrate { get; set; }
         public List<string> Tags { get; set; }
 
+        public bool IsThemeMedia { get; set; }
+
         public Audio()
         {
             Artists = new List<string>();
+            AlbumArtists = new List<string>();
             Tags = new List<string>();
         }
 
@@ -73,6 +77,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
         public override Folder LatestItemsIndexContainer
         {
             get
@@ -87,12 +92,14 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <value>The artist.</value>
         public List<string> Artists { get; set; }
 
+        public List<string> AlbumArtists { get; set; }
+        
         [IgnoreDataMember]
         public List<string> AllArtists
         {
             get
             {
-                var list = AlbumArtists;
+                var list = AlbumArtists.ToList();
 
                 list.AddRange(Artists);
 
@@ -101,36 +108,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        [IgnoreDataMember]
-        public List<string> AlbumArtists
-        {
-            get
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(AlbumArtist))
-                {
-                    list.Add(AlbumArtist);
-                }
-
-                return list;
-            }
-            set
-            {
-                AlbumArtist = value.FirstOrDefault();
-            }
-        }
-
         /// <summary>
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
-        /// <summary>
-        /// Gets or sets the album artist.
-        /// </summary>
-        /// <value>The album artist.</value>
-        public string AlbumArtist { get; set; }
 
         /// <summary>
         /// Gets the type of the media.

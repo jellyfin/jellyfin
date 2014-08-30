@@ -70,7 +70,10 @@ namespace MediaBrowser.Providers.Music
 
         private void ProcessResult(MusicAlbum item, Album result)
         {
-            item.AlbumArtist = result.strArtist;
+            if (!string.IsNullOrWhiteSpace(result.strArtist))
+            {
+                item.AlbumArtists = new List<string> { result.strArtist };
+            }
 
             if (!string.IsNullOrEmpty(result.intYearReleased))
             {

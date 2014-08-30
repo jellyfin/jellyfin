@@ -151,7 +151,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, null, FileShare.Read, responseHeaders, isHeadRequest);
+                    var throttleLimit = state.InputBitrate.HasValue ? (state.InputBitrate.Value / 8) : 0;
+
+                    return ResultFactory.GetStaticFileResult(Request, state.MediaPath, contentType, null, FileShare.Read, responseHeaders, isHeadRequest, request.Throttle, throttleLimit);
                 }
             }
 

@@ -45,6 +45,10 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Imazen.WebP, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\libwebp\Imazen.WebP.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Nat.1.2.21.0\lib\net40\Mono.Nat.dll</HintPath>
@@ -112,6 +116,9 @@
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\ManualCollectionsFolder.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
+    <Compile Include="Connect\ConnectData.cs" />
+    <Compile Include="Connect\ConnectManager.cs" />
+    <Compile Include="Connect\ServerRegistrationResponse.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
@@ -127,7 +134,7 @@
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
-    <Compile Include="EntryPoints\WanAddressEntryPoint.cs" />
+    <Compile Include="Connect\ConnectEntryPoint.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\Extensions.cs" />
     <Compile Include="FileOrganization\FileOrganizationService.cs" />
@@ -163,10 +170,12 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
+    <Compile Include="HttpServer\ThrottledStream.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
+    <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
     <Compile Include="Library\Resolvers\PlaylistResolver.cs" />
     <Compile Include="Library\SearchEngine.cs" />
@@ -386,6 +395,10 @@
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\libwebp\windows\x86\libwebp.dll">
+      <Link>libwebp.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\highlight.default.css">
       <Link>swagger-ui\css\highlight.default.css</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

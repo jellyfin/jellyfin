@@ -117,6 +117,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
+            var themeMedia = item as IThemeMedia;
+            if (themeMedia != null && themeMedia.IsThemeMedia)
+            {
+                // Don't report theme song or local trailer playback
+                return;
+            } 
+
             if (e.Users.Count == 0)
             {
                 return;
@@ -142,6 +149,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
+            var themeMedia = item as IThemeMedia;
+            if (themeMedia != null && themeMedia.IsThemeMedia)
+            {
+                // Don't report theme song or local trailer playback
+                return;
+            } 
+            
             if (e.Users.Count == 0)
             {
                 return;

@@ -298,8 +298,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
+        /// <exception cref="ArgumentNullException">path</exception>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        public object GetStaticFileResult(IRequest requestContext,
+            string path,
+            FileShare fileShare = FileShare.Read,
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -309,13 +314,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return GetStaticFileResult(requestContext, path, MimeTypes.GetMimeType(path), null, fileShare, responseHeaders, isHeadRequest);
         }
 
-        public object GetStaticFileResult(IRequest requestContext, 
-            string path, 
+        public object GetStaticFileResult(IRequest requestContext,
+            string path,
             string contentType,
             TimeSpan? cacheCuration = null,
-            FileShare fileShare = FileShare.Read, 
+            FileShare fileShare = FileShare.Read,
             IDictionary<string, string> responseHeaders = null,
-            bool isHeadRequest = false)
+            bool isHeadRequest = false,
+            bool throttle = false,
+            long throttleLimit = 0)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -331,7 +338,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var cacheKey = path + dateModified.Ticks;
 
-            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, cacheCuration, contentType, () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest);
+            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, cacheCuration, contentType, () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest, throttle, throttleLimit);
         }
 
         /// <summary>
@@ -360,7 +367,29 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <exception cref="System.ArgumentNullException">cacheKey
         /// or
         /// factoryFn</exception>
-        public object GetStaticResult(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
+        public object GetStaticResult(IRequest requestContext,
+            Guid cacheKey,
+            DateTime? lastDateModified,
+            TimeSpan? cacheDuration,
+            string contentType,
+            Func<Task<Stream>> factoryFn,
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false)
+        {
+            return GetStaticResult(requestContext, cacheKey, lastDateModified, cacheDuration, contentType, factoryFn,
+                responseHeaders, isHeadRequest, false, 0);
+        }
+
+        public object GetStaticResult(IRequest requestContext,
+            Guid cacheKey,
+            DateTime? lastDateModified,
+            TimeSpan? cacheDuration,
+            string contentType,
+            Func<Task<Stream>> factoryFn,
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false,
+            bool throttle = false,
+            long throttleLimit = 0)
         {
             if (cacheKey == Guid.Empty)
             {
@@ -386,15 +415,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return result;
             }
 
-            return GetNonCachedResult(requestContext, contentType, factoryFn, responseHeaders, isHeadRequest);
-        }
-
-        private async Task<IHasOptions> GetNonCachedResult(IRequest requestContext, string contentType, Func<Task<Stream>> factoryFn, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false)
-        {
             var compress = ShouldCompressResponse(requestContext, contentType);
-
-            var hasOptions = await GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest).ConfigureAwait(false);
-
+            var hasOptions = GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest, throttle, throttleLimit).Result;
             AddResponseHeaders(hasOptions, responseHeaders);
 
             return hasOptions;
@@ -460,8 +482,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="factoryFn">The factory fn.</param>
         /// <param name="compress">if set to <c>true</c> [compress].</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <param name="throttle">if set to <c>true</c> [throttle].</param>
+        /// <param name="throttleLimit">The throttle limit.</param>
         /// <returns>Task{IHasOptions}.</returns>
-        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, IDictionary<string, string> responseHeaders, string contentType, Func<Task<Stream>> factoryFn, bool compress, bool isHeadRequest)
+        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, IDictionary<string, string> responseHeaders, string contentType, Func<Task<Stream>> factoryFn, bool compress, bool isHeadRequest, bool throttle, long throttleLimit = 0)
         {
             var requestedCompressionType = requestContext.GetCompressionType();
 
@@ -473,7 +497,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (!string.IsNullOrEmpty(rangeHeader))
                 {
-                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest);
+                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest)
+                    {
+                        Throttle = throttle,
+                        ThrottleLimit = throttleLimit
+                    };
                 }
 
                 responseHeaders["Content-Length"] = stream.Length.ToString(UsCulture);
@@ -485,7 +513,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     return GetHttpResult(new byte[] { }, contentType);
                 }
 
-                return new StreamWriter(stream, contentType, _logger);
+                return new StreamWriter(stream, contentType, _logger)
+                {
+                    Throttle = throttle,
+                    ThrottleLimit = throttleLimit
+                };
             }
 
             string content;

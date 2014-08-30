@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using System;
@@ -186,6 +187,44 @@ namespace MediaBrowser.Controller.Resolvers
             var extension = Path.GetExtension(path);
 
             return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether [is multi disc album folder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is multi disc album folder] [the specified path]; otherwise, <c>false</c>.</returns>
+        public static bool IsMultiDiscAlbumFolder(string path)
+        {
+            var filename = Path.GetFileName(path);
+
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                return false;
+            }
+
+            // Normalize
+            // Remove whitespace
+            filename = filename.Replace("-", string.Empty);
+            filename = Regex.Replace(filename, @"\s+", "");
+
+            var prefixes = new[] { "disc", "cd", "disk" };
+
+            foreach (var prefix in prefixes)
+            {
+                if (filename.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    var tmp = filename.Substring(prefix.Length);
+
+                    int val;
+                    if (int.TryParse(tmp, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

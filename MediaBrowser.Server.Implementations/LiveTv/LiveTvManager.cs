@@ -475,13 +475,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             item.ChannelType = channelInfo.ChannelType;
-            item.ProviderImageUrl = channelInfo.ImageUrl;
-            item.HasProviderImage = channelInfo.HasImage;
-            item.ProviderImagePath = channelInfo.ImagePath;
             item.ExternalId = channelInfo.Id;
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
 
+            var replaceImages = new List<ImageType>();
+
+            if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                isNew = true;
+                replaceImages.Add(ImageType.Primary);
+            }
+            if (!string.Equals(item.ProviderImagePath, channelInfo.ImagePath, StringComparison.OrdinalIgnoreCase))
+            {
+                isNew = true;
+                replaceImages.Add(ImageType.Primary);
+            }
+
+            item.ProviderImageUrl = channelInfo.ImageUrl;
+            item.HasProviderImage = channelInfo.HasImage;
+            item.ProviderImagePath = channelInfo.ImagePath;
+            
             if (string.IsNullOrEmpty(item.Name))
             {
                 item.Name = channelInfo.Name;
@@ -489,7 +503,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(new MetadataRefreshOptions
             {
-                ForceSave = isNew
+                ForceSave = isNew,
+                ReplaceImages = replaceImages.Distinct().ToList()
 
             }, cancellationToken);
 

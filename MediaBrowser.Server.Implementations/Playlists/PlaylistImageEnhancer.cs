@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public bool Supports(IHasImages item, ImageType imageType)
         {
-            return imageType == ImageType.Primary && item is Playlist;
+            return (imageType == ImageType.Primary || imageType == ImageType.Thumb) && item is Playlist;
         }
 
         public MetadataProviderPriority Priority
@@ -102,7 +102,9 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return GetConfigurationCacheKey(items);
         }
 
-        private const int ImageSize = 800;
+        private const int SquareImageSize = 800;
+        private const int ThumbImageWidth = 1600;
+        private const int ThumbImageHeight = 900;
 
         public ImageSize GetEnhancedImageSize(IHasImages item, ImageType imageType, int imageIndex, ImageSize originalImageSize)
         {
@@ -113,10 +115,19 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 return originalImageSize;
             }
 
+            if (imageType == ImageType.Thumb)
+            {
+                return new ImageSize
+                {
+                    Height = ThumbImageHeight,
+                    Width = ThumbImageWidth
+                };
+            }
+
             return new ImageSize
             {
-                Height = ImageSize,
-                Width = ImageSize
+                Height = SquareImageSize,
+                Width = SquareImageSize
             };
         }
 
@@ -129,7 +140,9 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 return originalImage;
             }
 
-            var img = await GetCollage(items).ConfigureAwait(false);
+            var img = imageType == ImageType.Thumb  ?
+                await GetThumbCollage(items).ConfigureAwait(false) :
+                await GetSquareCollage(items).ConfigureAwait(false);
 
             using (originalImage)
             {
@@ -137,12 +150,74 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }
         }
 
-        private Task<Image> GetCollage(List<BaseItem> items)
+        private Task<Image> GetThumbCollage(List<BaseItem> items)
         {
-            return GetCollage(items.Select(i => i.GetImagePath(ImageType.Primary)).ToList());
+            return GetThumbCollage(items.Select(i => i.GetImagePath(ImageType.Primary)).ToList());
         }
 
-        private async Task<Image> GetCollage(List<string> files)
+        private Task<Image> GetSquareCollage(List<BaseItem> items)
+        {
+            return GetSquareCollage(items.Select(i => i.GetImagePath(ImageType.Primary)).ToList());
+        }
+
+        private async Task<Image> GetThumbCollage(List<string> files)
+        {
+            if (files.Count < 3)
+            {
+                return await GetSingleImage(files).ConfigureAwait(false);
+            }
+
+            const int rows = 1;
+            const int cols = 3;
+
+            const int cellWidth = 2 * (ThumbImageWidth / 3);
+            const int cellHeight = ThumbImageHeight;
+            var index = 0;
+
+            var img = new Bitmap(ThumbImageWidth, ThumbImageHeight, PixelFormat.Format32bppPArgb);
+
+            using (var graphics = Graphics.FromImage(img))
+            {
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+
+                for (var row = 0; row < rows; row++)
+                {
+                    for (var col = 0; col < cols; col++)
+                    {
+                        var x = col * (cellWidth / 2);
+                        var y = row * cellHeight;
+
+                        if (files.Count > index)
+                        {
+                            using (var fileStream = _fileSystem.GetFileStream(files[index], FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                            {
+                                using (var memoryStream = new MemoryStream())
+                                {
+                                    await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                                    memoryStream.Position = 0;
+
+                                    using (var imgtemp = Image.FromStream(memoryStream, true, false))
+                                    {
+                                        graphics.DrawImage(imgtemp, x, y, cellWidth, cellHeight);
+                                    }
+                                }
+                            }
+                        }
+
+                        index++;
+                    }
+                }
+            }
+
+            return img;
+        }
+
+        private async Task<Image> GetSquareCollage(List<string> files)
         {
             if (files.Count < 4)
             {
@@ -152,10 +227,10 @@ namespace MediaBrowser.Server.Implementations.Playlists
             const int rows = 2;
             const int cols = 2;
 
-            const int singleSize = ImageSize / 2;
+            const int singleSize = SquareImageSize / 2;
             var index = 0;
 
-            var img = new Bitmap(ImageSize, ImageSize, PixelFormat.Format32bppPArgb);
+            var img = new Bitmap(SquareImageSize, SquareImageSize, PixelFormat.Format32bppPArgb);
 
             using (var graphics = Graphics.FromImage(img))
             {

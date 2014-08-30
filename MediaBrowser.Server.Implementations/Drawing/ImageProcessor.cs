@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using Imazen.WebP;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -210,7 +211,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newHeight = Convert.ToInt32(newSize.Height);
 
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                            using (var thumbnail = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppPArgb))
+                            // Also, Webp only supports Format32bppArgb and Format32bppRgb
+                            var pixelFormat = options.OutputFormat == ImageOutputFormat.Webp
+                                ? PixelFormat.Format32bppArgb
+                                : PixelFormat.Format32bppPArgb;
+
+                            using (var thumbnail = new Bitmap(newWidth, newHeight, pixelFormat))
                             {
                                 // Mono throw an exeception if assign 0 to SetResolution
                                 if (originalImage.HorizontalResolution > 0 && originalImage.VerticalResolution > 0)
@@ -242,8 +248,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
                                     // Save to the cache location
                                     using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                     {
-                                        // Save to the memory stream
-                                        thumbnail.Save(outputFormat, cacheFileStream, quality);
+                                        if (options.OutputFormat == ImageOutputFormat.Webp)
+                                        {
+                                            new SimpleEncoder().Encode(thumbnail, cacheFileStream, quality, false);
+                                        }
+                                        else
+                                        {
+                                            // Save to the memory stream
+                                            thumbnail.Save(outputFormat, cacheFileStream, quality);
+                                        }
                                     }
 
                                     return cacheFilePath;
@@ -257,31 +270,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             finally
             {
                 semaphore.Release();
-            }
-        }
-
-        /// <summary>
-        /// Caches the resized image.
-        /// </summary>
-        /// <param name="cacheFilePath">The cache file path.</param>
-        /// <param name="bytes">The bytes.</param>
-        /// <returns>Task.</returns>
-        private async Task CacheResizedImage(string cacheFilePath, byte[] bytes)
-        {
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-
-                // Save to the cache location
-                using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                {
-                    // Save to the filestream
-                    await cacheFileStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error writing to image cache file {0}", ex, cacheFilePath);
             }
         }
 

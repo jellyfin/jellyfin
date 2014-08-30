@@ -145,6 +145,14 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
+      <Link>libwebp\linux\lib\libwebp.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\libwebp\linux\x86_64\libwebp.so">
+      <Link>libwebp\linux\lib64\libwebp.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\SQLite3\windows\x86\3.8.2\sqlite3.dll">
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -163,6 +171,10 @@
     </Content>
     <Content Include="System.Data.SQLite.dll.config">
       <Link>System.Data.SQLite.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Imazen.WebP.dll.config">
+      <Link>Imazen.WebP.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
