@@ -194,17 +194,38 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            const string extractedFormat = "srt";
-
             if (!subtitleStream.IsExternal)
             {
-                // Extract    
-                var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, "." + extractedFormat);
+                string outputFormat;
+                string outputCodec;
 
-                await ExtractTextSubtitle(inputFiles, protocol, subtitleStream.Index, "srt", outputPath, cancellationToken)
+                if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Extract    
+                    outputCodec = "copy";
+                    outputFormat = "ass";
+                }
+                else if (string.Equals(subtitleStream.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(subtitleStream.Codec, "srt", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Extract    
+                    outputCodec = "copy";
+                    outputFormat = "srt";
+                }
+                else
+                {
+                    // Extract    
+                    outputCodec = "srt";
+                    outputFormat = "srt";
+                }
+
+                // Extract    
+                var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, "." + outputFormat);
+
+                await ExtractTextSubtitle(inputFiles, protocol, subtitleStream.Index, outputCodec, outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new Tuple<string, string>(outputPath, extractedFormat);
+                return new Tuple<string, string>(outputPath, outputFormat);
             }
 
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
@@ -213,12 +234,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (GetReader(currentFormat, false) == null)
             {
                 // Convert    
-                var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, "." + extractedFormat);
+                var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, ".srt");
 
                 await ConvertTextSubtitleToSrt(subtitleStream.Path, outputPath, subtitleStream.Language, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new Tuple<string, string>(outputPath, extractedFormat);
+                return new Tuple<string, string>(outputPath, "srt");
             }
 
             return new Tuple<string, string>(subtitleStream.Path, currentFormat);
