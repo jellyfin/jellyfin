@@ -361,7 +361,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetItemImage request)
         {
-            var item = string.IsNullOrEmpty(request.Id) ? 
+            var item = string.IsNullOrEmpty(request.Id) ?
                 _libraryManager.RootFolder :
                 _libraryManager.GetItemById(request.Id);
 
@@ -542,24 +542,24 @@ namespace MediaBrowser.Api.Images
                 {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
             };
 
-            return GetImageResult(item, 
-                request, 
-                imageInfo, 
-                supportedImageEnhancers, 
-                contentType, 
+            return GetImageResult(item,
+                request,
+                imageInfo,
+                supportedImageEnhancers,
+                contentType,
                 cacheDuration,
                 responseHeaders,
                 isHeadRequest)
                 .Result;
         }
 
-        private async Task<object> GetImageResult(IHasImages item, 
+        private async Task<object> GetImageResult(IHasImages item,
             ImageRequest request,
             ItemImageInfo image,
             List<IImageEnhancer> enhancers,
             string contentType,
             TimeSpan? cacheDuration,
-            IDictionary<string,string> headers,
+            IDictionary<string, string> headers,
             bool isHeadRequest)
         {
             var cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
@@ -590,7 +590,14 @@ namespace MediaBrowser.Api.Images
 
             var file = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
-            return ResultFactory.GetStaticFileResult(Request, file, contentType, cacheDuration, FileShare.Read, headers, isHeadRequest);
+            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                CacheDuration = cacheDuration,
+                ResponseHeaders = headers,
+                ContentType = contentType,
+                IsHeadRequest = isHeadRequest,
+                Path = file
+            });
         }
 
         private string GetMimeType(ImageOutputFormat format, string path)

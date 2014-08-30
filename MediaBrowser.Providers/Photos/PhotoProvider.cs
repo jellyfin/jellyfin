@@ -123,6 +123,19 @@ namespace MediaBrowser.Providers.Photos
 
                 item.ExposureTime = image.ImageTag.ExposureTime;
                 item.FocalLength = image.ImageTag.FocalLength;
+
+                item.Latitude = image.ImageTag.Latitude;
+                item.Longitude = image.ImageTag.Longitude;
+                item.Altitude = image.ImageTag.Altitude;
+
+                if (image.ImageTag.ISOSpeedRatings.HasValue)
+                {
+                    item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
+                }
+                else
+                {
+                    item.IsoSpeedRating = null;
+                }
             }
             catch (Exception e)
             {
@@ -145,7 +158,7 @@ namespace MediaBrowser.Providers.Photos
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             // Moved to plural AlbumArtists
-            if (date < new DateTime(2014, 8, 28))
+            if (date < new DateTime(2014, 8, 29))
             {
                 // Revamped vaptured metadata
                 return true;

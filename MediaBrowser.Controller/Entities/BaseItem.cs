@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        [IgnoreDataMember]
         public virtual bool SupportsAddingToPlaylist
         {
             get
@@ -192,6 +193,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
         public virtual bool SupportsLocalMetadata
         {
             get

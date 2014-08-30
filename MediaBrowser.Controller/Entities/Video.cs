@@ -58,6 +58,7 @@ namespace MediaBrowser.Controller.Entities
             LinkedAlternateVersions = new List<LinkedChild>();
         }
 
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
@@ -238,6 +239,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [IgnoreDataMember]
         public override string MediaType
         {
             get

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Progress;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -26,6 +27,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return true; }

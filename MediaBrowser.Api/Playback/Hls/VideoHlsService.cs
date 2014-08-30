@@ -10,7 +10,6 @@ using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -77,14 +76,6 @@ namespace MediaBrowser.Api.Playback.Hls
             OnBeginRequest(request.PlaylistId);
 
             return ResultFactory.GetStaticFileResult(Request, file);
-        }
-
-        protected override bool SupportsThrottling
-        {
-            get
-            {
-                return false;
-            }
         }
 
         /// <summary>

@@ -289,41 +289,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return null;
         }
 
-        /// <summary>
-        /// Gets the static file result.
-        /// </summary>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="fileShare">The file share.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        /// <returns>System.Object.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
-        /// <exception cref="System.ArgumentNullException">path</exception>
         public object GetStaticFileResult(IRequest requestContext,
             string path,
-            FileShare fileShare = FileShare.Read,
-            IDictionary<string, string> responseHeaders = null,
-            bool isHeadRequest = false)
+            FileShare fileShare = FileShare.Read)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            return GetStaticFileResult(requestContext, path, MimeTypes.GetMimeType(path), null, fileShare, responseHeaders, isHeadRequest);
+            return GetStaticFileResult(requestContext, new StaticFileResultOptions
+            {
+                Path = path,
+                FileShare = fileShare
+            });
         }
 
         public object GetStaticFileResult(IRequest requestContext,
-            string path,
-            string contentType,
-            TimeSpan? cacheCuration = null,
-            FileShare fileShare = FileShare.Read,
-            IDictionary<string, string> responseHeaders = null,
-            bool isHeadRequest = false,
-            bool throttle = false,
-            long throttleLimit = 0)
+            StaticFileResultOptions options)
         {
+            var path = options.Path;
+            var fileShare = options.FileShare;
+
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
@@ -334,11 +321,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentException("FileShare must be either Read or ReadWrite");
             }
 
-            var dateModified = _fileSystem.GetLastWriteTimeUtc(path);
+            if (string.IsNullOrWhiteSpace(options.ContentType))
+            {
+                options.ContentType = MimeTypes.GetMimeType(path);
+            }
 
-            var cacheKey = path + dateModified.Ticks;
+            options.DateLastModified = _fileSystem.GetLastWriteTimeUtc(path);
+            var cacheKey = path + options.DateLastModified.Value.Ticks;
 
-            return GetStaticResult(requestContext, cacheKey.GetMD5(), dateModified, cacheCuration, contentType, () => Task.FromResult(GetFileStream(path, fileShare)), responseHeaders, isHeadRequest, throttle, throttleLimit);
+            options.CacheKey = cacheKey.GetMD5();
+            options.ContentFactory = () => Task.FromResult(GetFileStream(path, fileShare));
+
+            return GetStaticResult(requestContext, options);
         }
 
         /// <summary>
@@ -352,21 +346,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare, true);
         }
 
-        /// <summary>
-        /// Gets the static result.
-        /// </summary>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="factoryFn">The factory fn.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">cacheKey
-        /// or
-        /// factoryFn</exception>
         public object GetStaticResult(IRequest requestContext,
             Guid cacheKey,
             DateTime? lastDateModified,
@@ -376,39 +355,37 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             IDictionary<string, string> responseHeaders = null,
             bool isHeadRequest = false)
         {
-            return GetStaticResult(requestContext, cacheKey, lastDateModified, cacheDuration, contentType, factoryFn,
-                responseHeaders, isHeadRequest, false, 0);
+            return GetStaticResult(requestContext, new StaticResultOptions
+            {
+                CacheDuration = cacheDuration,
+                CacheKey = cacheKey,
+                ContentFactory = factoryFn,
+                ContentType = contentType,
+                DateLastModified = lastDateModified,
+                IsHeadRequest = isHeadRequest,
+                ResponseHeaders = responseHeaders
+            });
         }
 
-        public object GetStaticResult(IRequest requestContext,
-            Guid cacheKey,
-            DateTime? lastDateModified,
-            TimeSpan? cacheDuration,
-            string contentType,
-            Func<Task<Stream>> factoryFn,
-            IDictionary<string, string> responseHeaders = null,
-            bool isHeadRequest = false,
-            bool throttle = false,
-            long throttleLimit = 0)
+        public object GetStaticResult(IRequest requestContext, StaticResultOptions options)
         {
+            var cacheKey = options.CacheKey;
+            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>();
+            var contentType = options.ContentType;
+
             if (cacheKey == Guid.Empty)
             {
                 throw new ArgumentNullException("cacheKey");
             }
-            if (factoryFn == null)
+            if (options.ContentFactory == null)
             {
                 throw new ArgumentNullException("factoryFn");
             }
 
             var key = cacheKey.ToString("N");
 
-            if (responseHeaders == null)
-            {
-                responseHeaders = new Dictionary<string, string>();
-            }
-
             // See if the result is already cached in the browser
-            var result = GetCachedResult(requestContext, responseHeaders, cacheKey, key, lastDateModified, cacheDuration, contentType);
+            var result = GetCachedResult(requestContext, options.ResponseHeaders, cacheKey, key, options.DateLastModified, options.CacheDuration, contentType);
 
             if (result != null)
             {
@@ -416,8 +393,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             var compress = ShouldCompressResponse(requestContext, contentType);
-            var hasOptions = GetStaticResult(requestContext, responseHeaders, contentType, factoryFn, compress, isHeadRequest, throttle, throttleLimit).Result;
-            AddResponseHeaders(hasOptions, responseHeaders);
+            var hasOptions = GetStaticResult(requestContext, options, compress).Result;
+            AddResponseHeaders(hasOptions, options.ResponseHeaders);
 
             return hasOptions;
         }
@@ -473,20 +450,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Gets the static result.
-        /// </summary>
-        /// <param name="requestContext">The request context.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="factoryFn">The factory fn.</param>
-        /// <param name="compress">if set to <c>true</c> [compress].</param>
-        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        /// <param name="throttle">if set to <c>true</c> [throttle].</param>
-        /// <param name="throttleLimit">The throttle limit.</param>
-        /// <returns>Task{IHasOptions}.</returns>
-        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, IDictionary<string, string> responseHeaders, string contentType, Func<Task<Stream>> factoryFn, bool compress, bool isHeadRequest, bool throttle, long throttleLimit = 0)
+        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, StaticResultOptions options, bool compress)
         {
+            var isHeadRequest = options.IsHeadRequest;
+            var factoryFn = options.ContentFactory;
+            var contentType = options.ContentType;
+            var responseHeaders = options.ResponseHeaders;
+
             var requestedCompressionType = requestContext.GetCompressionType();
 
             if (!compress || string.IsNullOrEmpty(requestedCompressionType))
@@ -499,8 +469,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest)
                     {
-                        Throttle = throttle,
-                        ThrottleLimit = throttleLimit
+                        Throttle = options.Throttle,
+                        ThrottleLimit = options.ThrottleLimit,
+                        MinThrottlePosition = options.MinThrottlePosition
                     };
                 }
 
@@ -515,8 +486,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 return new StreamWriter(stream, contentType, _logger)
                 {
-                    Throttle = throttle,
-                    ThrottleLimit = throttleLimit
+                    Throttle = options.Throttle,
+                    ThrottleLimit = options.ThrottleLimit,
+                    MinThrottlePosition = options.MinThrottlePosition
                 };
             }
 
@@ -745,15 +717,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             throw error;
-        }
-
-        public object GetOptimizedSerializedResultUsingCache<T>(IRequest request, T result)
-           where T : class
-        {
-            var json = _jsonSerializer.SerializeToString(result);
-            var cacheKey = json.GetMD5();
-
-            return GetOptimizedResultUsingCache(request, cacheKey, null, null, () => result);
         }
     }
 }
