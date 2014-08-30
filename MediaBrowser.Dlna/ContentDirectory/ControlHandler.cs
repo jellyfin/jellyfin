@@ -190,6 +190,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
+
+
                 var folder = item as Folder;
 
                 if (folder == null)
@@ -198,10 +200,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
                 else
                 {
+
+
                     var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
                     totalCount = childrenResult.TotalRecordCount;
 
-                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter, id));
                 }
                 provided++;
             }
@@ -237,7 +241,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
+                new KeyValuePair<string,string>("TotalMatches", id == "0" ? "1" :totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
         }
