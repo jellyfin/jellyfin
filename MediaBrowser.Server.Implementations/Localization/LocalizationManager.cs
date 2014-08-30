@@ -235,7 +235,9 @@ namespace MediaBrowser.Server.Implementations.Localization
             .Where(i => i != null)
             .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
-            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-').Last();
+            var countryCode = _fileSystem.GetFileNameWithoutExtension(file)
+                .Split('-')
+                .Last();
 
             _allParentalRatings.TryAdd(countryCode, dict);
         }
@@ -371,12 +373,14 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Italian", Value="it"},
                 new LocalizatonOption{ Name="Kazakh", Value="kk"},
                 new LocalizatonOption{ Name="Norwegian Bokmål", Value="nb"},
+                new LocalizatonOption{ Name="Polish", Value="pl"},
                 new LocalizatonOption{ Name="Portuguese (Brazil)", Value="pt-BR"},
                 new LocalizatonOption{ Name="Portuguese (Portugal)", Value="pt-PT"},
                 new LocalizatonOption{ Name="Russian", Value="ru"},
-                new LocalizatonOption{ Name="Spanish", Value="es"},
+                new LocalizatonOption{ Name="Spanish", Value="es-ES"},
                 new LocalizatonOption{ Name="Spanish (Mexico)", Value="es-MX"},
                 new LocalizatonOption{ Name="Swedish", Value="sv"},
+                new LocalizatonOption{ Name="Turkish", Value="tr"},
                 new LocalizatonOption{ Name="Vietnamese", Value="vi"}
 
             }.OrderBy(i => i.Name);

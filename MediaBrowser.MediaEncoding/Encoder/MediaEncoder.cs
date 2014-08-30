@@ -1,5 +1,3 @@
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -11,7 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,11 +23,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
 
         /// <summary>
         /// Gets the json serializer.
@@ -53,23 +45,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         private readonly SemaphoreSlim _ffProbeResourcePool = new SemaphoreSlim(2, 2);
 
-        private readonly IFileSystem _fileSystem;
-
         public string FFMpegPath { get; private set; }
 
         public string FFProbePath { get; private set; }
 
         public string Version { get; private set; }
 
-        public MediaEncoder(ILogger logger, IApplicationPaths appPaths,
-            IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version,
-            IFileSystem fileSystem)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version)
         {
             _logger = logger;
-            _appPaths = appPaths;
             _jsonSerializer = jsonSerializer;
             Version = version;
-            _fileSystem = fileSystem;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -81,22 +67,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string EncoderPath
         {
             get { return FFMpegPath; }
-        }
-
-        /// <summary>
-        /// The _semaphoreLocks
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>
@@ -166,7 +136,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     RedirectStandardError = true,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
-                        probeSizeArgument, inputPath).Trim(),
+                    probeSizeArgument, inputPath).Trim(),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
@@ -200,8 +170,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 process.BeginErrorReadLine();
 
-                result =
-                    _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
             }
             catch
             {
@@ -263,30 +232,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ((Process)sender).Dispose();
         }
 
-        private const int FastSeekOffsetSeconds = 1;
-
-        protected string GetFastSeekCommandLineParameter(TimeSpan offset)
-        {
-            var seconds = offset.TotalSeconds - FastSeekOffsetSeconds;
-
-            if (seconds > 0)
-            {
-                return string.Format("-ss {0} ", seconds.ToString(UsCulture));
-            }
-
-            return string.Empty;
-        }
-
-        protected string GetSlowSeekCommandLineParameter(TimeSpan offset)
-        {
-            if (offset.TotalSeconds - FastSeekOffsetSeconds > 0)
-            {
-                return string.Format(" -ss {0}", FastSeekOffsetSeconds.ToString(UsCulture));
-            }
-
-            return string.Empty;
-        }
-
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
         {
             return ExtractImage(new[] { path }, MediaProtocol.File, true, null, null, cancellationToken);
@@ -330,7 +275,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
             var vf = "scale=600:trunc(600/dar/2)*2";
-            //crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,scale=600:(600/dar),thumbnail" -f image2
 
             if (threedFormat.HasValue)
             {
@@ -368,7 +312,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (offset.HasValue)
             {
-                args = string.Format("-ss {0} ", Convert.ToInt32(offset.Value.TotalSeconds)).ToString(UsCulture) + args;
+                args = string.Format("-ss {0} ", GetTimeParameter(offset.Value)) + args;
             }
 
             var process = new Process
@@ -382,7 +326,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true
                 }
             };
 
@@ -408,7 +353,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     _logger.Info("Killing ffmpeg process");
 
-                    process.Kill();
+                    process.StandardInput.WriteLine("q");
 
                     process.WaitForExit(1000);
                 }
@@ -461,6 +406,106 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (dispose)
             {
                 _videoImageResourcePool.Dispose();
+            }
+        }
+
+        public string GetTimeParameter(long ticks)
+        {
+            var time = TimeSpan.FromTicks(ticks);
+
+            return GetTimeParameter(time);
+        }
+
+        public string GetTimeParameter(TimeSpan time)
+        {
+            return time.ToString(@"hh\:mm\:ss\.fff", UsCulture);
+        }
+
+        public async Task ExtractVideoImagesOnInterval(string[] inputFiles,
+            MediaProtocol protocol,
+            Video3DFormat? threedFormat,
+            TimeSpan interval,
+            string targetDirectory,
+            string filenamePrefix,
+            int? maxWidth,
+            CancellationToken cancellationToken)
+        {
+            var resourcePool = _videoImageResourcePool;
+
+            var inputArgument = GetInputArgument(inputFiles, protocol);
+
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(UsCulture);
+
+            if (maxWidth.HasValue)
+            {
+                var maxWidthParam = maxWidth.Value.ToString(UsCulture);
+
+                vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
+            }
+
+            Directory.CreateDirectory(targetDirectory);
+            var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
+
+            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+
+            var probeSize = GetProbeSizeArgument(new[] { inputArgument }, protocol);
+
+            if (!string.IsNullOrEmpty(probeSize))
+            {
+                args = probeSize + " " + args;
+            }
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = FFMpegPath,
+                    Arguments = args,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                    RedirectStandardInput = true
+                }
+            };
+
+            _logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            
+            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            process.Start();
+
+            var ranToCompletion = process.WaitForExit(120000);
+
+            if (!ranToCompletion)
+            {
+                try
+                {
+                    _logger.Info("Killing ffmpeg process");
+
+                    process.StandardInput.WriteLine("q");
+
+                    process.WaitForExit(1000);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error killing process", ex);
+                }
+            }
+
+            resourcePool.Release();
+
+            var exitCode = ranToCompletion ? process.ExitCode : -1;
+
+            process.Dispose();
+
+            if (exitCode == -1)
+            {
+                var msg = string.Format("ffmpeg image extraction failed for {0}", inputArgument);
+
+                _logger.Error(msg);
+
+                throw new ApplicationException(msg);
             }
         }
     }

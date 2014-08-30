@@ -13,10 +13,12 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -234,7 +236,7 @@ namespace MediaBrowser.Providers.MediaInfo
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
-                options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata)
+                options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
                 try
                 {
@@ -255,16 +257,37 @@ namespace MediaBrowser.Providers.MediaInfo
                     AddDummyChapters(video, chapters);
                 }
 
+                NormalizeChapterNames(chapters);
+
                 await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
                 {
                     Chapters = chapters,
                     Video = video,
-                    ExtractImages = false,
+                    ExtractImages = true,
                     SaveChapters = false
 
                 }, cancellationToken).ConfigureAwait(false);
 
                 await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private void NormalizeChapterNames(List<ChapterInfo> chapters)
+        {
+            var index = 1;
+
+            foreach (var chapter in chapters)
+            {
+                TimeSpan time;
+
+                // Check if the name is empty and/or if the name is a time
+                // Some ripping programs do that.
+                if (string.IsNullOrWhiteSpace(chapter.Name) ||
+                    TimeSpan.TryParse(chapter.Name, out time))
+                {
+                    chapter.Name = string.Format(_localization.GetLocalizedString("LabelChapterName"), index.ToString(CultureInfo.InvariantCulture));
+                }
+                index++;
             }
         }
 
@@ -443,6 +466,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        private SubtitleOptions GetOptions()
+        {
+            return _config.GetConfiguration<SubtitleOptions>("subtitles");
+        }
+
         /// <summary>
         /// Adds the external subtitles.
         /// </summary>
@@ -456,16 +484,18 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization);
+            var subtitleResolver = new SubtitleResolver(_localization, _fileSystem);
 
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, currentStreams.Count, options.DirectoryService, false).ToList();
 
-            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.EnsureMetadata ||
+            var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (enableSubtitleDownloading && (_config.Configuration.SubtitleOptions.DownloadEpisodeSubtitles &&
+            var subtitleOptions = GetOptions();
+
+            if (enableSubtitleDownloading && (subtitleOptions.DownloadEpisodeSubtitles &&
                 video is Episode) ||
-                (_config.Configuration.SubtitleOptions.DownloadMovieSubtitles &&
+                (subtitleOptions.DownloadMovieSubtitles &&
                 video is Movie))
             {
                 var downloadedLanguages = await new SubtitleDownloader(_logger,
@@ -473,9 +503,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     .DownloadSubtitles(video,
                     currentStreams,
                     externalSubtitleStreams,
-                    _config.Configuration.SubtitleOptions.SkipIfGraphicalSubtitlesPresent,
-                    _config.Configuration.SubtitleOptions.SkipIfAudioTrackMatches,
-                    _config.Configuration.SubtitleOptions.DownloadLanguages,
+                    subtitleOptions.SkipIfGraphicalSubtitlesPresent,
+                    subtitleOptions.SkipIfAudioTrackMatches,
+                    subtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
                 // Rescan
@@ -492,9 +522,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, CancellationToken cancellationToken)
         {
-            if ((_config.Configuration.ChapterOptions.DownloadEpisodeChapters &&
+            var options = _chapterManager.GetConfiguration();
+
+            if ((options.DownloadEpisodeChapters &&
                  video is Episode) ||
-                (_config.Configuration.ChapterOptions.DownloadMovieChapters &&
+                (options.DownloadMovieChapters &&
                  video is Movie))
             {
                 var results = await _chapterManager.Search(video, cancellationToken).ConfigureAwait(false);
@@ -568,7 +600,6 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 chapters.Add(new ChapterInfo
                 {
-                    Name = "Chapter " + index,
                     StartPositionTicks = currentChapterTicks
                 });
 
@@ -768,7 +799,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
             if (files.Count > 0)
             {
-                var parts = Path.GetFileNameWithoutExtension(files[0].FullName).Split('_');
+                var parts = _fileSystem.GetFileNameWithoutExtension(files[0]).Split('_');
 
                 if (parts.Length == 3)
                 {
@@ -776,7 +807,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     files = files.TakeWhile(f =>
                     {
-                        var fileParts = Path.GetFileNameWithoutExtension(f.FullName).Split('_');
+                        var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
+using System;
 using System.ComponentModel;
 
 namespace MediaBrowser.Model.Dto
@@ -6,13 +7,25 @@ namespace MediaBrowser.Model.Dto
     /// <summary>
     /// Class UserItemDataDto
     /// </summary>
-    public class UserItemDataDto : INotifyPropertyChanged
+    public class UserItemDataDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets the rating.
         /// </summary>
         /// <value>The rating.</value>
         public double? Rating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the played percentage.
+        /// </summary>
+        /// <value>The played percentage.</value>
+        public double? PlayedPercentage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unplayed item count.
+        /// </summary>
+        /// <value>The unplayed item count.</value>
+        public int? UnplayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the playback position ticks.

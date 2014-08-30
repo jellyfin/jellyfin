@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using ServiceStack;
 using ServiceStack.Text.Controller;
@@ -18,6 +20,7 @@ namespace MediaBrowser.Api
     /// Class GetUsers
     /// </summary>
     [Route("/Users", "GET", Summary = "Gets a list of users")]
+    [Authenticated]
     public class GetUsers : IReturn<List<UserDto>>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter by IsHidden=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
@@ -36,6 +39,7 @@ namespace MediaBrowser.Api
     /// Class GetUser
     /// </summary>
     [Route("/Users/{Id}", "GET", Summary = "Gets a user by Id")]
+    [Authenticated]
     public class GetUser : IReturn<UserDto>
     {
         /// <summary>
@@ -50,6 +54,7 @@ namespace MediaBrowser.Api
     /// Class DeleteUser
     /// </summary>
     [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
+    [Authenticated]
     public class DeleteUser : IReturnVoid
     {
         /// <summary>
@@ -106,6 +111,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUserPassword
     /// </summary>
     [Route("/Users/{Id}/Password", "POST", Summary = "Updates a user's password")]
+    [Authenticated]
     public class UpdateUserPassword : IReturnVoid
     {
         /// <summary>
@@ -137,6 +143,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
+    [Authenticated]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
@@ -145,6 +152,7 @@ namespace MediaBrowser.Api
     /// Class CreateUser
     /// </summary>
     [Route("/Users", "POST", Summary = "Creates a user")]
+    [Authenticated]
     public class CreateUser : UserDto, IReturn<UserDto>
     {
     }
@@ -152,48 +160,68 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UsersService
     /// </summary>
-    public class UserService : BaseApiService
+    public class UserService : BaseApiService, IHasAuthorization
     {
-        /// <summary>
-        /// The _XML serializer
-        /// </summary>
-        private readonly IXmlSerializer _xmlSerializer;
-
         /// <summary>
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
         private readonly ISessionManager _sessionMananger;
+        private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;
+
+        public IAuthorizationContext AuthorizationContext { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService" /> class.
         /// </summary>
-        /// <param name="xmlSerializer">The XML serializer.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
+        /// <param name="sessionMananger">The session mananger.</param>
         /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
-        public UserService(IXmlSerializer xmlSerializer, IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger)
-            : base()
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
         {
-            if (xmlSerializer == null)
-            {
-                throw new ArgumentNullException("xmlSerializer");
-            }
-
-            _xmlSerializer = xmlSerializer;
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
+            _config = config;
+            _networkManager = networkManager;
         }
 
         public object Get(GetPublicUsers request)
         {
+            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+            var isDashboard = string.Equals(authInfo.Client, "Dashboard", StringComparison.OrdinalIgnoreCase);
+
+            if ((Request.IsLocal && isDashboard) ||
+                !_config.Configuration.IsStartupWizardCompleted)
+            {
+                return Get(new GetUsers
+                {
+                    IsDisabled = false
+                });
+            }
+
+            // TODO: Uncomment this once all clients can handle an empty user list.
             return Get(new GetUsers
             {
                 IsHidden = false,
                 IsDisabled = false
             });
+
+            //// TODO: Add or is authenticated
+            //if (Request.IsLocal || IsInLocalNetwork(Request.RemoteIp))
+            //{
+            //    return Get(new GetUsers
+            //    {
+            //        IsHidden = false,
+            //        IsDisabled = false
+            //    });
+            //}
+
+            //// Return empty when external
+            //return ToOptimizedResult(new List<UserDto>());
         }
 
         /// <summary>
@@ -217,7 +245,7 @@ namespace MediaBrowser.Api
 
             var result = users
                 .OrderBy(u => u.Name)
-                .Select(_dtoService.GetUserDto)
+                .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -237,7 +265,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var result = _dtoService.GetUserDto(user);
+            var result = _userManager.GetUserDto(user, Request.RemoteIp);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -248,6 +276,13 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(DeleteUser request)
         {
+            var task = DeleteAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task DeleteAsync(DeleteUser request)
+        {
             var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
@@ -255,9 +290,8 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var task = _userManager.DeleteUser(user);
-
-            Task.WaitAll(task);
+            await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+            await _userManager.DeleteUser(user).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -266,28 +300,6 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Post(AuthenticateUser request)
         {
-            // No response needed. Will throw an exception on failure.
-            var result = AuthenticateUser(request).Result;
-
-            return result;
-        }
-
-        public object Post(AuthenticateUserByName request)
-        {
-            var user = _userManager.Users.FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (user == null)
-            {
-                throw new ArgumentException(string.Format("User {0} not found.", request.Username));
-            }
-
-            var result = AuthenticateUser(new AuthenticateUser { Id = user.Id, Password = request.Password }).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        private async Task<AuthenticationResult> AuthenticateUser(AuthenticateUser request)
-        {
             var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
@@ -295,38 +307,47 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
-
-            // Login in the old way if the header is missing
-            if (string.IsNullOrEmpty(auth.Client) ||
-                string.IsNullOrEmpty(auth.Device) ||
-                string.IsNullOrEmpty(auth.DeviceId) ||
-                string.IsNullOrEmpty(auth.Version))
+            return Post(new AuthenticateUserByName
             {
-                var success = await _userManager.AuthenticateUser(user, request.Password).ConfigureAwait(false);
+                Username = user.Name,
+                Password = request.Password
+            });
+        }
 
-                if (!success)
-                {
-                    // Unauthorized
-                    throw new UnauthorizedAccessException("Invalid user or password entered.");
-                }
+        public async Task<object> Post(AuthenticateUserByName request)
+        {
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
-                return new AuthenticationResult
-                {
-                    User = _dtoService.GetUserDto(user)
-                };
+            if (string.IsNullOrWhiteSpace(auth.Client))
+            {
+                auth.Client = "Unknown app";
+            }
+            if (string.IsNullOrWhiteSpace(auth.Device))
+            {
+                auth.Device = "Unknown device";
+            }
+            if (string.IsNullOrWhiteSpace(auth.Version))
+            {
+                auth.Version = "Unknown version";
+            }
+            if (string.IsNullOrWhiteSpace(auth.DeviceId))
+            {
+                auth.DeviceId = "Unknown device id";
             }
 
-            var session = await _sessionMananger.AuthenticateNewSession(user, request.Password, auth.Client, auth.Version,
-                        auth.DeviceId, auth.Device, Request.RemoteIp).ConfigureAwait(false);
-
-            var result = new AuthenticationResult
+            var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
             {
-                User = _dtoService.GetUserDto(user),
-                SessionInfo = _sessionMananger.GetSessionInfoDto(session)
-            };
+                App = auth.Client,
+                AppVersion = auth.Version,
+                DeviceId = auth.DeviceId,
+                DeviceName = auth.Device,
+                Password = request.Password,
+                RemoteEndPoint = Request.RemoteIp,
+                Username = request.Username
 
-            return result;
+            }, Request.IsLocal).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -334,6 +355,12 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         public void Post(UpdateUserPassword request)
+        {
+            var task = PostAsync(request);
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(UpdateUserPassword request)
         {
             var user = _userManager.GetUserById(request.Id);
 
@@ -344,30 +371,33 @@ namespace MediaBrowser.Api
 
             if (request.ResetPassword)
             {
-                var task = _userManager.ResetPassword(user);
-
-                Task.WaitAll(task);
+                await _userManager.ResetPassword(user).ConfigureAwait(false);
             }
             else
             {
-                var success = _userManager.AuthenticateUser(user, request.CurrentPassword).Result;
+                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPassword, Request.RemoteIp).ConfigureAwait(false);
 
                 if (!success)
                 {
-                    throw new UnauthorizedAccessException("Invalid user or password entered.");
+                    throw new ArgumentException("Invalid user or password entered.");
                 }
 
-                var task = _userManager.ChangePassword(user, request.NewPassword);
-
-                Task.WaitAll(task);
+                await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
             }
         }
-
+        
         /// <summary>
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
         public void Post(UpdateUser request)
+        {
+            var task = PostAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(UpdateUser request)
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
@@ -400,11 +430,15 @@ namespace MediaBrowser.Api
                 {
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
+
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
             }
 
-            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ? _userManager.UpdateUser(user) : _userManager.RenameUser(user, dtoUser.Name);
+            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
+                _userManager.UpdateUser(user) :
+                _userManager.RenameUser(user, dtoUser.Name);
 
-            Task.WaitAll(task);
+            await task.ConfigureAwait(false);
 
             user.UpdateConfiguration(dtoUser.Configuration);
         }
@@ -422,7 +456,7 @@ namespace MediaBrowser.Api
 
             newUser.UpdateConfiguration(dtoUser.Configuration);
 
-            var result = _dtoService.GetUserDto(newUser);
+            var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
 
             return ToOptimizedResult(result);
         }

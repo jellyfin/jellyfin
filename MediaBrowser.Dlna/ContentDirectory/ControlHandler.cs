@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -6,11 +7,14 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
@@ -19,6 +23,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace MediaBrowser.Dlna.ContentDirectory
@@ -40,14 +45,18 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly DidlBuilder _didlBuilder;
 
         private readonly DeviceProfile _profile;
+        private readonly IUserViewManager _userViewManager;
+        private readonly IChannelManager _channelManager;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, IUserViewManager userViewManager, IChannelManager channelManager)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
+            _userViewManager = userViewManager;
+            _channelManager = channelManager;
             _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress);
@@ -69,7 +78,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 return HandleGetSystemUpdateID();
 
             if (string.Equals(methodName, "Browse", StringComparison.OrdinalIgnoreCase))
-                return HandleBrowse(methodParams, user, deviceId);
+                return HandleBrowse(methodParams, user, deviceId).Result;
 
             if (string.Equals(methodName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
                 return HandleXGetFeatureList();
@@ -78,7 +87,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 return HandleXSetBookmark(methodParams, user);
 
             if (string.Equals(methodName, "Search", StringComparison.OrdinalIgnoreCase))
-                return HandleSearch(methodParams, user, deviceId);
+                return HandleSearch(methodParams, user, deviceId).Result;
 
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
@@ -103,12 +112,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSearchCapabilities()
         {
-            return new Headers(true) { { "SearchCaps", "upnp:class,dc:title,upnp:artist" } };
+            return new Headers(true) { { "SearchCaps", "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords" } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortCapabilities()
         {
-            return new Headers(true) { { "SortCaps", string.Empty } };
+            return new Headers(true) { { "SortCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" } };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
@@ -141,7 +150,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return builder.ToString();
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleBrowse(Headers sparams, User user, string deviceId)
+        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleBrowse(Headers sparams, User user, string deviceId)
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
@@ -149,16 +158,20 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
 
             var provided = 0;
-            var requested = 0;
-            var start = 0;
 
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requested) && requested <= 0)
+            int? requested = 0;
+            int? start = 0;
+
+            int requestedVal;
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
             {
-                requested = 0;
+                requested = requestedVal;
             }
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out start) && start <= 0)
+
+            int startVal;
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
             {
-                start = 0;
+                start = startVal;
             }
 
             //var root = GetItem(id) as IMediaFolder;
@@ -171,36 +184,43 @@ namespace MediaBrowser.Dlna.ContentDirectory
             //didl.SetAttribute("xmlns:sec", NS_SEC);
             result.AppendChild(didl);
 
-            var folder = (Folder)GetItemFromObjectId(id, user);
+            var item = GetItemFromObjectId(id, user);
 
-            var children = GetChildrenSorted(folder, user, sortCriteria).ToList();
-
-            var totalCount = children.Count;
+            var totalCount = 0;
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
-                result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, children.Count, filter));
+                var folder = item as Folder;
+
+                if (folder == null)
+                {
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, item, deviceId, filter));
+                }
+                else
+                {
+                    var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                    totalCount = childrenResult.TotalRecordCount;
+
+                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter));
+                }
                 provided++;
             }
             else
             {
-                if (start > 0)
-                {
-                    children = children.Skip(start).ToList();
-                }
-                if (requested > 0)
-                {
-                    children = children.Take(requested).ToList();
-                }
+                var folder = (Folder)item;
 
-                provided = children.Count;
+                var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                totalCount = childrenResult.TotalRecordCount;
 
-                foreach (var i in children)
+                provided = childrenResult.Items.Length;
+
+                foreach (var i in childrenResult.Items)
                 {
                     if (i.IsFolder)
                     {
                         var f = (Folder)i;
-                        var childCount = GetChildrenSorted(f, user, sortCriteria).Count();
+                        var childCount = (await GetChildrenSorted(f, user, sortCriteria, null, 0).ConfigureAwait(false))
+                            .TotalRecordCount;
 
                         result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, f, childCount, filter));
                     }
@@ -222,7 +242,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             };
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleSearch(Headers sparams, User user, string deviceId)
+        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(Headers sparams, User user, string deviceId)
         {
             var searchCriteria = new SearchCriteria(sparams.GetValueOrDefault("SearchCriteria", ""));
             var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
@@ -230,16 +250,19 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             // sort example: dc:title, dc:date
 
-            var requested = 0;
-            var start = 0;
+            int? requested = 0;
+            int? start = 0;
 
-            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requested) && requested <= 0)
+            int requestedVal;
+            if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
             {
-                requested = 0;
+                requested = requestedVal;
             }
-            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out start) && start <= 0)
+
+            int startVal;
+            if (sparams.ContainsKey("StartingIndex") && int.TryParse(sparams["StartingIndex"], out startVal) && startVal > 0)
             {
-                start = 0;
+                start = startVal;
             }
 
             //var root = GetItem(id) as IMediaFolder;
@@ -259,27 +282,19 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var folder = (Folder)GetItemFromObjectId(sparams["ContainerID"], user);
 
-            var children = GetChildrenSorted(folder, user, searchCriteria, sortCriteria).ToList();
+            var childrenResult = (await GetChildrenSorted(folder, user, searchCriteria, sortCriteria, start, requested).ConfigureAwait(false));
 
-            var totalCount = children.Count;
+            var totalCount = childrenResult.TotalRecordCount;
 
-            if (start > 0)
-            {
-                children = children.Skip(start).ToList();
-            }
-            if (requested > 0)
-            {
-                children = children.Take(requested).ToList();
-            }
+            var provided = childrenResult.Items.Length;
 
-            var provided = children.Count;
-
-            foreach (var i in children)
+            foreach (var i in childrenResult.Items)
             {
                 if (i.IsFolder)
                 {
                     var f = (Folder)i;
-                    var childCount = GetChildrenSorted(f, user, searchCriteria, sortCriteria).Count();
+                    var childCount = (await GetChildrenSorted(f, user, searchCriteria, sortCriteria, null, 0).ConfigureAwait(false))
+                        .TotalRecordCount;
 
                     result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, f, childCount, filter));
                 }
@@ -300,15 +315,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
             };
         }
 
-        private IEnumerable<BaseItem> GetChildrenSorted(Folder folder, User user, SearchCriteria search, SortCriteria sort)
+        private async Task<QueryResult<BaseItem>> GetChildrenSorted(Folder folder, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
-            if (search.SearchType == SearchType.Unknown)
-            {
-                return GetChildrenSorted(folder, user, sort);
-            }
+            // TODO: Make a recursive version of GetChildrenSorted (although sorting isn't needed)
+            var result = folder.GetRecursiveChildren(user, true);
 
-            var items = folder.GetRecursiveChildren(user);
-            items = FilterUnsupportedContent(items);
+            var items = FilterUnsupportedContent(result);
 
             if (search.SearchType == SearchType.Audio)
             {
@@ -324,18 +336,161 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }
             else if (search.SearchType == SearchType.Playlist)
             {
+                items = items.OfType<Playlist>();
+            }
+            else if (search.SearchType == SearchType.MusicAlbum)
+            {
+                items = items.OfType<MusicAlbum>();
             }
 
-            return SortItems(items, user, sort);
+            items = SortItems(items, user, sort);
+
+            return ToResult(items, startIndex, limit);
         }
 
-        private IEnumerable<BaseItem> GetChildrenSorted(Folder folder, User user, SortCriteria sort)
+        private async Task<QueryResult<BaseItem>> GetChildrenSorted(Folder folder, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            if (folder is UserRootFolder)
+            {
+                var result = await _userViewManager.GetUserViews(new UserViewQuery
+                {
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None).ConfigureAwait(false);
+
+                return ToResult(result, startIndex, limit);
+            }
+
+            var view = folder as UserView;
+
+            if (view != null)
+            {
+                var result = await GetUserViewChildren(view, user, sort).ConfigureAwait(false);
+
+                return ToResult(result, startIndex, limit);
+            }
+
+            var channel = folder as Channel;
+
+            if (channel != null)
+            {
+                try
+                {
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    {
+                        ChannelId = channel.Id.ToString("N"),
+                        Limit = limit,
+                        StartIndex = startIndex,
+                        UserId = user.Id.ToString("N")
+
+                    }, CancellationToken.None);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                }
+            }
+
+            var channelFolderItem = folder as ChannelFolderItem;
+
+            if (channelFolderItem != null)
+            {
+                try
+                {
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    {
+                        ChannelId = channelFolderItem.ChannelId,
+                        FolderId = channelFolderItem.Id.ToString("N"),
+                        Limit = limit,
+                        StartIndex = startIndex,
+                        UserId = user.Id.ToString("N")
+
+                    }, CancellationToken.None);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                }
+            }
+
+            return ToResult(GetPlainFolderChildrenSorted(folder, user, sort), startIndex, limit);
+        }
+
+        private QueryResult<BaseItem> ToResult(IEnumerable<BaseItem> items, int? startIndex, int? limit)
+        {
+            var list = items.ToArray();
+            var totalCount = list.Length;
+
+            if (startIndex.HasValue)
+            {
+                list = list.Skip(startIndex.Value).ToArray();
+            }
+
+            if (limit.HasValue)
+            {
+                list = list.Take(limit.Value).ToArray();
+            }
+
+            return new QueryResult<BaseItem>
+            {
+                Items = list,
+                TotalRecordCount = totalCount
+            };
+        }
+
+        private async Task<IEnumerable<BaseItem>> GetUserViewChildren(UserView folder, User user, SortCriteria sort)
+        {
+            if (string.Equals(folder.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
+            {
+                var result = await _channelManager.GetChannelsInternal(new ChannelQuery()
+                {
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None).ConfigureAwait(false);
+
+                return result.Items;
+            }
+            if (string.Equals(folder.ViewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true).OfType<Series>(), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetRecursiveChildren(user, true).OfType<Movie>(), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true).OfType<MusicArtist>(), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTvRecordingGroups, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+            if (string.Equals(folder.ViewType, CollectionType.LiveTvChannels, StringComparison.OrdinalIgnoreCase))
+            {
+                return SortItems(folder.GetChildren(user, true), user, sort);
+            }
+
+            return GetPlainFolderChildrenSorted(folder, user, sort);
+        }
+
+        private IEnumerable<BaseItem> GetPlainFolderChildrenSorted(Folder folder, User user, SortCriteria sort)
         {
             var items = folder.GetChildren(user, true);
 
             items = FilterUnsupportedContent(items);
 
-            if (folder is Series || folder is Season || folder is BoxSet)
+            if (folder.IsPreSorted)
             {
                 return items;
             }
@@ -345,7 +500,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<BaseItem> SortItems(IEnumerable<BaseItem> items, User user, SortCriteria sort)
         {
-            return _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+            return _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, sort.SortOrder);
         }
 
         private IEnumerable<BaseItem> FilterUnsupportedContent(IEnumerable<BaseItem> items)
@@ -353,22 +508,18 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return items.Where(i =>
             {
                 // Unplayable
-                // TODO: Display and prevent playback with restricted flag?
-                if (i.LocationType == LocationType.Virtual)
+                if (i.LocationType == LocationType.Virtual && !i.IsFolder)
                 {
                     return false;
                 }
 
                 // Unplayable
-                // TODO: Display and prevent playback with restricted flag?
                 var supportsPlaceHolder = i as ISupportsPlaceHolders;
                 if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
                 {
                     return false;
                 }
 
-                // Upnp renderers won't understand these
-                // TODO: Display and prevent playback with restricted flag?
                 if (i is Game || i is Book)
                 {
                     return false;

@@ -26,16 +26,13 @@ namespace MediaBrowser.Common.Implementations.Security
 
             var mac = _networkManager.GetMacAddress();
 
-            var plugins = string.Join("|", _applicationHost.Plugins.Select(i => i.Name).ToArray());
-
             var data = new Dictionary<string, string>
             {
                 { "feature", _applicationHost.Name }, 
                 { "mac", mac }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
                 { "platform", Environment.OSVersion.VersionString }, 
-                { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}, 
-                { "plugins", plugins}
+                { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
             };
 
             return _httpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);

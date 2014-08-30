@@ -1,7 +1,7 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Dto
     /// Class ChapterInfo
     /// </summary>
     [DebuggerDisplay("Name = {Name}")]
-    public class ChapterInfoDto : INotifyPropertyChanged
+    public class ChapterInfoDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets the start position ticks.

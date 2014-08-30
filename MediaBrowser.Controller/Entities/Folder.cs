@@ -4,8 +4,8 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MoreLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,18 +14,20 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem, IHasThemeMedia
+    public class Folder : BaseItem, IHasThemeMedia, IHasTags
     {
         public static IUserManager UserManager { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
+        public List<string> Tags { get; set; }
 
         public Folder()
         {
@@ -33,6 +35,13 @@ namespace MediaBrowser.Controller.Entities
 
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
+            Tags = new List<string>();
+        }
+
+        [IgnoreDataMember]
+        public virtual bool IsPreSorted
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -264,7 +273,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> Children
         {
-            get { return ActualChildren.Where(i => !i.IsHidden); }
+            get { return ActualChildren; }
         }
 
         /// <summary>
@@ -444,11 +453,6 @@ namespace MediaBrowser.Controller.Entities
                 var newItems = new List<BaseItem>();
 
                 cancellationToken.ThrowIfCancellationRequested();
-
-                if (this is UserRootFolder)
-                {
-                    var b = true;
-                }
 
                 foreach (var child in nonCachedChildren)
                 {
@@ -775,6 +779,11 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
+            return GetChildren(user, includeLinkedChildren, false);
+        }
+
+        internal IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, bool includeHidden)
+        {
             if (user == null)
             {
                 throw new ArgumentNullException();
@@ -785,7 +794,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false, null);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, includeHidden, false);
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
@@ -801,10 +810,10 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <param name="list">The list.</param>
+        /// <param name="includeHidden">if set to <c>true</c> [include hidden].</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="filter">The filter.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool recursive, Func<BaseItem, bool> filter)
+        private bool AddChildrenToList(User user, bool includeLinkedChildren, List<BaseItem> list, bool includeHidden, bool recursive)
         {
             var hasLinkedChildren = false;
 
@@ -812,7 +821,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (child.IsVisible(user))
                 {
-                    if (filter == null || filter(child))
+                    if (includeHidden || !child.IsHiddenFromUser(user))
                     {
                         list.Add(child);
                     }
@@ -821,7 +830,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var folder = (Folder)child;
 
-                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, true, filter))
+                        if (folder.AddChildrenToList(user, includeLinkedChildren, list, includeHidden, true))
                         {
                             hasLinkedChildren = true;
                         }
@@ -831,13 +840,8 @@ namespace MediaBrowser.Controller.Entities
 
             if (includeLinkedChildren)
             {
-                foreach (var child in GetLinkedChildren())
+                foreach (var child in GetLinkedChildren(user))
                 {
-                    if (filter != null && !filter(child))
-                    {
-                        continue;
-                    }
-
                     if (child.IsVisible(user))
                     {
                         hasLinkedChildren = true;
@@ -857,20 +861,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
-        {
-            return GetRecursiveChildren(user, null, includeLinkedChildren);
-        }
-
-        /// <summary>
-        /// Gets the recursive children.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="filter">The filter.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IList{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public IList<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter, bool includeLinkedChildren = true)
+        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
             if (user == null)
             {
@@ -879,7 +870,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, true, filter);
+            var hasLinkedChildren = AddChildrenToList(user, includeLinkedChildren, list, false, true);
 
             return hasLinkedChildren ? list.DistinctBy(i => i.Id).ToList() : list;
         }
@@ -890,19 +881,9 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IList{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren()
         {
-            return GetRecursiveChildren(i => true);
-        }
-
-        /// <summary>
-        /// Gets the recursive children.
-        /// </summary>
-        /// <param name="filter">The filter.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
-        {
             var list = new List<BaseItem>();
 
-            AddChildrenToList(list, true, filter);
+            AddChildrenToList(list, true, null);
 
             return list;
         }
@@ -941,6 +922,74 @@ namespace MediaBrowser.Controller.Entities
             return LinkedChildren
                 .Select(GetLinkedChild)
                 .Where(i => i != null);
+        }
+
+        protected virtual bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public IEnumerable<BaseItem> GetLinkedChildren(User user)
+        {
+            if (!FilterLinkedChildrenPerUser || user == null)
+            {
+                return GetLinkedChildren();
+            }
+
+            var locations = user.RootFolder
+                .GetChildren(user, true)
+                .OfType<CollectionFolder>()
+                .SelectMany(i => i.PhysicalLocations)
+                .ToList();
+            
+            return LinkedChildren
+                .Select(i =>
+                {
+                    var requiresPostFilter = true;
+
+                    if (!string.IsNullOrWhiteSpace(i.Path))
+                    {
+                        requiresPostFilter = false;
+
+                        if (!locations.Any(l => FileSystem.ContainsSubPath(l, i.Path)))
+                        {
+                            return null;
+                        }
+                    }
+
+                    var child = GetLinkedChild(i);
+
+                    if (requiresPostFilter && child != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(child.Path))
+                        {
+                            Logger.Debug("Found LinkedChild with null path: {0}", child.Name);
+                            return child;
+                        }
+
+                        if (!locations.Any(l => FileSystem.ContainsSubPath(l, child.Path)))
+                        {
+                            return null;
+                        }
+                    }
+
+                    return child;
+                })
+                .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Gets the linked children.
+        /// </summary>
+        /// <returns>IEnumerable{BaseItem}.</returns>
+        public IEnumerable<Tuple<LinkedChild,BaseItem>> GetLinkedChildrenInfos()
+        {
+            return LinkedChildren
+                .Select(i => new Tuple<LinkedChild,BaseItem>(i, GetLinkedChild(i)))
+                .Where(i => i.Item2 != null);
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
@@ -1104,9 +1153,67 @@ namespace MediaBrowser.Controller.Entities
                 .All(i => i.IsUnplayed(user));
         }
 
-        public IEnumerable<BaseItem> GetHiddenChildren()
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
         {
-            return ActualChildren.Where(i => i.IsHidden);
+            var recursiveItemCount = 0;
+            var unplayed = 0;
+
+            double totalPercentPlayed = 0;
+
+            IEnumerable<BaseItem> children;
+            var folder = this;
+
+            var season = folder as Season;
+
+            if (season != null)
+            {
+                children = season.GetEpisodes(user).Where(i => i.LocationType != LocationType.Virtual);
+            }
+            else
+            {
+                children = folder.GetRecursiveChildren(user)
+                    .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual);
+            }
+
+            // Loop through each recursive child
+            foreach (var child in children)
+            {
+                recursiveItemCount++;
+
+                var isUnplayed = true;
+
+                var itemUserData = UserDataManager.GetUserData(user.Id, child.GetUserDataKey());
+                
+                // Incrememt totalPercentPlayed
+                if (itemUserData != null)
+                {
+                    if (itemUserData.Played)
+                    {
+                        totalPercentPlayed += 100;
+
+                        isUnplayed = false;
+                    }
+                    else if (itemUserData.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
+                    {
+                        double itemPercent = itemUserData.PlaybackPositionTicks;
+                        itemPercent /= child.RunTimeTicks.Value;
+                        totalPercentPlayed += itemPercent;
+                    }
+                }
+
+                if (isUnplayed)
+                {
+                    unplayed++;
+                }
+            }
+
+            dto.UnplayedItemCount = unplayed;
+
+            if (recursiveItemCount > 0)
+            {
+                dto.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
+                dto.Played = dto.PlayedPercentage.Value >= 100;
+            }
         }
     }
 }

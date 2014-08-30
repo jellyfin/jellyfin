@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -136,10 +135,13 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type != MediaStreamType.Subtitle) return false;
 
-                var codec = Codec ?? string.Empty;
+                string codec = Codec ?? string.Empty;
+
+                // sub = external .sub file
 
                 return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
-                       StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1;
+                       StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
+                       !StringHelper.EqualsIgnoreCase(codec, "sub");
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using ServiceStack;
+﻿using MediaBrowser.Model.Dlna;
+using ServiceStack;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Api.Playback
         /// <value>The start time ticks.</value>
         [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public long? StartTimeTicks { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the audio bit rate.
         /// </summary>
@@ -69,6 +70,8 @@ namespace MediaBrowser.Api.Playback
         public string DeviceProfileId { get; set; }
 
         public string Params { get; set; }
+
+        public bool Throttle { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest
@@ -160,6 +163,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "Level", Description = "Optional. Specify a level for the h264 profile, e.g. 3, 3.1.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Level { get; set; }
 
+        [ApiMember(Name = "SubtitleDeliveryMethod", Description = "Optional. Specify the subtitle delivery method.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SubtitleDeliveryMethod SubtitleMethod { get; set; }
+        
         /// <summary>
         /// Gets a value indicating whether this instance has fixed resolution.
         /// </summary>

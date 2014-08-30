@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Session
         public List<string> SupportedCommands { get; set; }
 
         public TranscodingInfo TranscodingInfo { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance is active.
         /// </summary>
@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.Session
 
         public bool ContainsUser(Guid userId)
         {
-            return (UserId ?? Guid.Empty) == UserId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
+            return (UserId ?? Guid.Empty) == userId || AdditionalUsers.Any(i => userId == new Guid(i.UserId));
         }
     }
 }

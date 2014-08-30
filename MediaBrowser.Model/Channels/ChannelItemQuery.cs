@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Channels
 {
@@ -39,13 +38,13 @@ namespace MediaBrowser.Model.Channels
         public SortOrder? SortOrder { get; set; }
         public string[] SortBy { get; set; }
         public ItemFilter[] Filters { get; set; }
-        public List<ItemFields> Fields { get; set; }
+        public ItemFields[] Fields { get; set; }
 
         public ChannelItemQuery()
         {
             Filters = new ItemFilter[] { };
             SortBy = new string[] { };
-            Fields = new List<ItemFields>();
+            Fields = new ItemFields[] { };
         }
     }
 

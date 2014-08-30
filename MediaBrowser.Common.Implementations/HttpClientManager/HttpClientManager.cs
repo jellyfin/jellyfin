@@ -107,7 +107,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return client;
         }
 
-        private PropertyInfo _httpBehaviorPropertyInfo;
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
             var request = (HttpWebRequest)WebRequest.Create(options.Url);
@@ -118,7 +117,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
 
-            request.KeepAlive = options.EnableKeepAlive;
+            if (options.EnableKeepAlive)
+            {
+                request.KeepAlive = true;
+            }
+
             request.Method = method;
             request.Pipelined = true;
             request.Timeout = 20000;
@@ -132,21 +135,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 request.Referer = options.Referer;
             }
-
-#if !__MonoCS__
-            if (options.EnableKeepAlive)
-            {
-                // This is a hack to prevent KeepAlive from getting disabled internally by the HttpWebRequest
-                // May need to remove this for mono
-                var sp = request.ServicePoint;
-                if (_httpBehaviorPropertyInfo == null)
-                {
-                    _httpBehaviorPropertyInfo = sp.GetType().GetProperty("HttpBehaviour", BindingFlags.Instance | BindingFlags.NonPublic);
-                }
-
-                _httpBehaviorPropertyInfo.SetValue(sp, (byte)0, null);
-            }
-#endif
 
             return request;
         }

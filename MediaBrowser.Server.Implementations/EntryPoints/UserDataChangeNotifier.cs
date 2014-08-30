@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,21 +18,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
     {
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
-        private readonly IDtoService _dtoService;
         private readonly IUserDataManager _userDataManager;
+        private readonly IUserManager _userManager;
 
         private readonly object _syncLock = new object();
         private Timer UpdateTimer { get; set; }
         private const int UpdateDuration = 500;
 
-        private readonly Dictionary<Guid, List<string>> _changedKeys = new Dictionary<Guid, List<string>>();
+        private readonly Dictionary<Guid, List<IHasUserData>> _changedItems = new Dictionary<Guid, List<IHasUserData>>();
 
-        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IDtoService dtoService, ILogger logger)
+        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager)
         {
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
-            _dtoService = dtoService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         public void Run()
@@ -58,15 +59,28 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                     UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
-                List<string> keys;
+                List<IHasUserData> keys;
 
-                if (!_changedKeys.TryGetValue(e.UserId, out keys))
+                if (!_changedItems.TryGetValue(e.UserId, out keys))
                 {
-                    keys = new List<string>();
-                    _changedKeys[e.UserId] = keys;
+                    keys = new List<IHasUserData>();
+                    _changedItems[e.UserId] = keys;
                 }
 
-                keys.Add(e.Key);
+                keys.Add(e.Item);
+                
+                var baseItem = e.Item as BaseItem;
+
+                // Go up one level for indicators
+                if (baseItem != null)
+                {
+                    var parent = baseItem.Parent;
+
+                    if (parent != null)
+                    {
+                        keys.Add(parent);
+                    }
+                }
             }
         }
 
@@ -75,8 +89,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             lock (_syncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                var changes = _changedKeys.ToList();
-                _changedKeys.Clear();
+                var changes = _changedItems.ToList();
+                _changedItems.Clear();
 
                 SendNotifications(changes, CancellationToken.None);
 
@@ -88,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
         }
 
-        private async Task SendNotifications(IEnumerable<KeyValuePair<Guid, List<string>>> changes, CancellationToken cancellationToken)
+        private async Task SendNotifications(IEnumerable<KeyValuePair<Guid, List<IHasUserData>>> changes, CancellationToken cancellationToken)
         {
             foreach (var pair in changes)
             {
@@ -99,8 +113,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 if (userSessions.Count > 0)
                 {
+                    var user = _userManager.GetUserById(userId);
+
                     var dtoList = pair.Value
-                        .Select(i => _dtoService.GetUserItemDataDto(_userDataManager.GetUserData(userId, i)))
+                        .DistinctBy(i => i.Id)
+                        .Select(i => _userDataManager.GetUserDataDto(i, user))
                         .ToList();
 
                     var info = new UserDataChangeInfo

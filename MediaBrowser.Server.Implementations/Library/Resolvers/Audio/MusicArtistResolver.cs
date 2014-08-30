@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,6 +17,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+
+        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem)
+        {
+            _logger = logger;
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -51,9 +62,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             var collectionType = args.GetCollectionType();
 
+            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music,
+                StringComparison.OrdinalIgnoreCase);
+
             // If there's a collection type and it's not music, it can't be a series
-            if (!string.IsNullOrEmpty(collectionType) &&
-                !string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+            if (!isMusicMediaFolder)
             {
                 return null;
             }
@@ -61,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             var directoryService = args.DirectoryService;
             
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName, directoryService)) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName, isMusicMediaFolder, directoryService, _logger, _fileSystem)) ? new MusicArtist() : null;
         }
 
     }

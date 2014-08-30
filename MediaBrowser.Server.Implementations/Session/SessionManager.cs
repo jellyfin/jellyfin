@@ -11,12 +11,16 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
+using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -59,6 +63,8 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
 
+        private readonly IAuthenticationRepository _authRepo;
+
         /// <summary>
         /// Gets or sets the configuration manager.
         /// </summary>
@@ -71,6 +77,10 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
             new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
 
+        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
+
+        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
+        
         /// <summary>
         /// Occurs when [playback start].
         /// </summary>
@@ -101,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -116,6 +126,7 @@ namespace MediaBrowser.Server.Implementations.Session
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _httpClient = httpClient;
+            _authRepo = authRepo;
         }
 
         /// <summary>
@@ -201,7 +212,12 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
         /// <exception cref="System.UnauthorizedAccessException"></exception>
-        public async Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
+        public async Task<SessionInfo> LogSessionActivity(string clientType,
+            string appVersion,
+            string deviceId,
+            string deviceName,
+            string remoteEndPoint,
+            User user)
         {
             if (string.IsNullOrEmpty(clientType))
             {
@@ -222,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (user != null && user.Configuration.IsDisabled)
             {
-                throw new UnauthorizedAccessException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
+                throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
             var activityDate = DateTime.UtcNow;
@@ -356,7 +372,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private string GetSessionKey(string clientType, string appVersion, string deviceId)
         {
-            return clientType + deviceId + appVersion;
+            return clientType + deviceId;
         }
 
         /// <summary>
@@ -387,6 +403,11 @@ namespace MediaBrowser.Server.Implementations.Session
                         ApplicationVersion = appVersion,
                         Id = Guid.NewGuid().ToString("N")
                     };
+
+                    sessionInfo.DeviceName = deviceName;
+                    sessionInfo.UserId = userId;
+                    sessionInfo.UserName = username;
+                    sessionInfo.RemoteEndPoint = remoteEndPoint;
 
                     OnSessionStarted(sessionInfo);
 
@@ -611,6 +632,20 @@ namespace MediaBrowser.Server.Implementations.Session
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
                 info.MediaSourceId = info.ItemId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
+            {
+                var current = session.NowPlayingItem;
+
+                if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Item = GetItemInfo(libraryItem, libraryItem, info.MediaSourceId);
+                }
+                else
+                {
+                    info.Item = current;
+                }
             }
 
             RemoveNowPlayingItem(session);
@@ -1087,12 +1122,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
-            if (!session.UserId.HasValue)
-            {
-                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
-            }
-
-            if (session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == userId)
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
@@ -1120,12 +1150,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var session = GetSession(sessionId);
 
-            if (!session.UserId.HasValue)
-            {
-                throw new UnauthorizedAccessException("Cannot modify additional users without authenticating first.");
-            }
-
-            if (session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == userId)
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
@@ -1138,28 +1163,175 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        public void ValidateSecurityToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new AuthenticationException();
+            }
+
+            var result = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                AccessToken = token
+            });
+
+            var info = result.Items.FirstOrDefault();
+
+            if (info == null)
+            {
+                throw new AuthenticationException();
+            }
+
+            if (!info.IsActive)
+            {
+                throw new AuthenticationException("Access token has expired.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.UserId))
+            {
+                var user = _userManager.GetUserById(new Guid(info.UserId));
+
+                if (user == null || user.Configuration.IsDisabled)
+                {
+                    throw new AuthenticationException("User account has been disabled.");
+                }
+            }
+        }
+
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="appVersion">The application version.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
-        /// <exception cref="UnauthorizedAccessException"></exception>
-        public async Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint)
+        /// <exception cref="AuthenticationException">Invalid user or password entered.</exception>
+        /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
+        /// <exception cref="UnauthorizedAccessException">Invalid user or password entered.</exception>
+        public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request,
+            bool isLocal)
         {
-            var result = await _userManager.AuthenticateUser(user, password).ConfigureAwait(false);
+            var result = (isLocal && string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
+                await _userManager.AuthenticateUser(request.Username, request.Password, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)
             {
-                throw new UnauthorizedAccessException("Invalid user or password entered.");
+                EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+
+                throw new AuthenticationException("Invalid user or password entered.");
             }
 
-            return await LogSessionActivity(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+            var user = _userManager.Users
+                .First(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+
+            var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+            
+            var session = await LogSessionActivity(request.App,
+                request.AppVersion,
+                request.DeviceId,
+                request.DeviceName,
+                request.RemoteEndPoint,
+                user)
+                .ConfigureAwait(false);
+            
+            return new AuthenticationResult
+            {
+                User = _userManager.GetUserDto(user, request.RemoteEndPoint),
+                SessionInfo = GetSessionInfoDto(session),
+                AccessToken = token,
+                ServerId = _appHost.ServerId
+            };
+        }
+
+        private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string deviceName)
+        {
+            var existing = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                DeviceId = deviceId,
+                IsActive = true,
+                UserId = userId,
+                Limit = 1
+            });
+
+            if (existing.Items.Length > 0)
+            {
+                _logger.Debug("Reissuing access token");
+                return existing.Items[0].AccessToken;
+            }
+
+            var newToken = new AuthenticationInfo
+            {
+                AppName = app,
+                DateCreated = DateTime.UtcNow,
+                DeviceId = deviceId,
+                DeviceName = deviceName,
+                UserId = userId,
+                IsActive = true,
+                AccessToken = Guid.NewGuid().ToString("N")
+            };
+
+            _logger.Debug("Creating new access token for user {0}", userId);
+            await _authRepo.Create(newToken, CancellationToken.None).ConfigureAwait(false);
+
+            return newToken.AccessToken;
+        }
+
+        public async Task Logout(string accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentNullException("accessToken");
+            }
+
+            var existing = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                Limit = 1,
+                AccessToken = accessToken
+
+            }).Items.FirstOrDefault();
+
+            if (existing != null)
+            {
+                existing.IsActive = false;
+
+                await _authRepo.Update(existing, CancellationToken.None).ConfigureAwait(false);
+
+                var sessions = Sessions
+                    .Where(i => string.Equals(i.DeviceId, existing.DeviceId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var session in sessions)
+                {
+                    try
+                    {
+                        ReportSessionEnded(session.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error reporting session ended", ex);
+                    }
+                }
+            }
+        }
+
+        public async Task RevokeUserTokens(string userId)
+        {
+            var existing = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                IsActive = true,
+                UserId = userId
+            });
+
+            foreach (var info in existing.Items)
+            {
+                await Logout(info.AccessToken).ConfigureAwait(false);
+            }
+        }
+
+        public Task RevokeToken(string token)
+        {
+            return Logout(token);
         }
 
         /// <summary>
@@ -1260,15 +1432,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 DeviceName = session.DeviceName,
                 Id = session.Id,
                 LastActivityDate = session.LastActivityDate,
-                NowPlayingPositionTicks = session.PlayState.PositionTicks,
-                IsPaused = session.PlayState.IsPaused,
-                IsMuted = session.PlayState.IsMuted,
                 NowViewingItem = session.NowViewingItem,
                 ApplicationVersion = session.ApplicationVersion,
-                CanSeek = session.PlayState.CanSeek,
                 QueueableMediaTypes = session.QueueableMediaTypes,
                 PlayableMediaTypes = session.PlayableMediaTypes,
-                RemoteEndPoint = session.RemoteEndPoint,
                 AdditionalUsers = session.AdditionalUsers,
                 SupportedCommands = session.SupportedCommands,
                 UserName = session.UserName,
@@ -1515,6 +1682,12 @@ namespace MediaBrowser.Server.Implementations.Session
         public void ClearTranscodingInfo(string deviceId)
         {
             ReportTranscodingInfo(deviceId, null);
+        }
+
+        public SessionInfo GetSession(string deviceId, string client, string version)
+        {
+            return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
+                string.Equals(i.Client, client));
         }
     }
 }

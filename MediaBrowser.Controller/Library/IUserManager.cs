@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace MediaBrowser.Controller.Library
 
         event EventHandler<GenericEventArgs<User>> UserCreated;
         event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+        event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
         /// <summary>
         /// Updates the configuration.
@@ -50,12 +52,13 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<bool> AuthenticateUser(User user, string password);
-
+        Task<bool> AuthenticateUser(string username, string password, string remoteEndPoint);
+        
         /// <summary>
         /// Refreshes metadata for each user
         /// </summary>
@@ -113,5 +116,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="newPassword">The new password.</param>
         /// <returns>Task.</returns>
         Task ChangePassword(User user, string newPassword);
+
+        /// <summary>
+        /// Gets the user dto.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <returns>UserDto.</returns>
+        UserDto GetUserDto(User user, string remoteEndPoint = null);
     }
 }

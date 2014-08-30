@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Events;
-using System;
 
 namespace MediaBrowser.Controller.Configuration
 {
@@ -10,11 +8,6 @@ namespace MediaBrowser.Controller.Configuration
     /// </summary>
     public interface IServerConfigurationManager : IConfigurationManager
     {
-        /// <summary>
-        /// Occurs when [configuration updating].
-        /// </summary>
-        event EventHandler<GenericEventArgs<ServerConfiguration>> ConfigurationUpdating;
-        
         /// <summary>
         /// Gets the application paths.
         /// </summary>
@@ -26,5 +19,11 @@ namespace MediaBrowser.Controller.Configuration
         /// </summary>
         /// <value>The configuration.</value>
         ServerConfiguration Configuration { get; }
+
+        /// <summary>
+        /// Sets the preferred metadata service.
+        /// </summary>
+        /// <param name="service">The service.</param>
+        void DisableMetadataService(string service);
     }
 }

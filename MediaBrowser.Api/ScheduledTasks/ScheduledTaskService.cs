@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Tasks;
 using ServiceStack;
 using ServiceStack.Text.Controller;
@@ -78,6 +79,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class ScheduledTasksService
     /// </summary>
+    [Authenticated]
     public class ScheduledTaskService : BaseApiService
     {
         /// <summary>

@@ -91,7 +91,16 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return FindParent<Season>();
+                return Season;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override Folder LatestItemsIndexContainer
+        {
+            get
+            {
+                return Series;
             }
         }
 
@@ -178,6 +187,20 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return false;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsRemoteImageDownloading
+        {
+            get
+            {
+                if (IsMissingEpisode)
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         [IgnoreDataMember]

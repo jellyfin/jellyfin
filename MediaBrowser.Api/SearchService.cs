@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
 using ServiceStack;
@@ -79,6 +80,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class SearchService
     /// </summary>
+    [Authenticated]
     public class SearchService : BaseApiService
     {
         /// <summary>
@@ -109,9 +111,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSearchHints request)
+        public async Task<object> Get(GetSearchHints request)
         {
-            var result = GetSearchHintsAsync(request).Result;
+            var result = await GetSearchHintsAsync(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -192,14 +194,14 @@ namespace MediaBrowser.Api
             {
                 result.Series = season.Series.Name;
 
-                result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
+                result.EpisodeCount = season.GetRecursiveChildren().Count(i => i is Episode);
             }
 
             var series = item as Series;
 
             if (series != null)
             {
-                result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
+                result.EpisodeCount = series.GetRecursiveChildren().Count(i => i is Episode);
             }
 
             var album = item as MusicAlbum;

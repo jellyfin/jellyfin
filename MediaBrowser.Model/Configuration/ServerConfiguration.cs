@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Model.Weather;
-using System;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.FileOrganization;
+using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Notifications;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -9,24 +11,6 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class ServerConfiguration : BaseApplicationConfiguration
     {
-        /// <summary>
-        /// Gets or sets the zip code to use when displaying weather
-        /// </summary>
-        /// <value>The weather location.</value>
-        public string WeatherLocation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the weather unit to use when displaying weather
-        /// </summary>
-        /// <value>The weather unit.</value>
-        public WeatherUnits WeatherUnit { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTP level logging].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTP level logging]; otherwise, <c>false</c>.</value>
-        public bool EnableHttpLevelLogging { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
         /// </summary>
@@ -38,12 +22,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The HTTP server port number.</value>
         public int HttpServerPortNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the legacy web socket port number.
-        /// </summary>
-        /// <value>The legacy web socket port number.</value>
-        public int LegacyWebSocketPortNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
@@ -70,22 +48,10 @@ namespace MediaBrowser.Model.Configuration
         public string SeasonZeroDisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the metadata refresh days.
-        /// </summary>
-        /// <value>The metadata refresh days.</value>
-        public int MetadataRefreshDays { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [save local meta].
         /// </summary>
         /// <value><c>true</c> if [save local meta]; otherwise, <c>false</c>.</value>
         public bool SaveLocalMeta { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [refresh item images].
-        /// </summary>
-        /// <value><c>true</c> if [refresh item images]; otherwise, <c>false</c>.</value>
-        public bool RefreshItemImages { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -170,9 +136,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableTmdbUpdates { get; set; }
         public bool EnableFanArtUpdates { get; set; }
 
-        public bool RequireMobileManualLogin { get; set; }
-        public bool RequireNonMobileManualLogin { get; set; }
-
         /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
@@ -190,8 +153,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The encoding quality.</value>
         public EncodingQuality MediaEncodingQuality { get; set; }
-
-        public bool AllowVideoUpscaling { get; set; }
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
@@ -215,15 +176,10 @@ namespace MediaBrowser.Model.Configuration
 
         public double DownMixAudioBoost { get; set; }
 
-        public NotificationOptions NotificationOptions { get; set; }
+        public bool DefaultMetadataSettingsApplied { get; set; }
 
-        public SubtitleOptions SubtitleOptions { get; set; }
-
-        [Obsolete]
-        public string[] ManualLoginClients { get; set; }
-
-        public ChannelOptions ChannelOptions { get; set; }
-        public ChapterOptions ChapterOptions { get; set; }
+        public bool EnableTokenAuthentication { get; set; }
+        public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -234,8 +190,6 @@ namespace MediaBrowser.Model.Configuration
             MediaEncodingQuality = EncodingQuality.Auto;
             ImageSavingConvention = ImageSavingConvention.Compatible;
             HttpServerPortNumber = 8096;
-            LegacyWebSocketPortNumber = 8945;
-            EnableHttpLevelLogging = true;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
@@ -256,7 +210,6 @@ namespace MediaBrowser.Model.Configuration
 
             PathSubstitutions = new PathSubstitution[] { };
 
-            MetadataRefreshDays = 30;
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
 
@@ -264,77 +217,88 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
-            ManualLoginClients = new string[] { };
-
             SeasonZeroDisplayName = "Specials";
-
-            LiveTvOptions = new LiveTvOptions();
-
-            TvFileOrganizationOptions = new TvFileOrganizationOptions();
 
             EnableRealtimeMonitor = true;
 
-            List<MetadataOptions> options = new List<MetadataOptions>
-            {
-                new MetadataOptions(1, 1280) {ItemType = "Book"},
-                new MetadataOptions(1, 1280) {ItemType = "MusicAlbum"},
-                new MetadataOptions(1, 1280) {ItemType = "MusicArtist"},
-                new MetadataOptions(0, 1280) {ItemType = "Season"}
-            };
-
-            MetadataOptions = options.ToArray();
-
-            DlnaOptions = new DlnaOptions();
-
             UICulture = "en-us";
 
-            NotificationOptions = new NotificationOptions();
+            PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            SubtitleOptions = new SubtitleOptions();
+            MetadataOptions = new[]
+            {
+                new MetadataOptions(1, 1280) {ItemType = "Book"},
 
-            ChannelOptions = new ChannelOptions();
-            ChapterOptions = new ChapterOptions();
+                new MetadataOptions(1, 1280)
+                {
+                    ItemType = "MusicAlbum",
+                    ImageOptions = new []
+                    {
+                        new ImageOption
+                        {
+                            Limit = 1,
+                            MinWidth = 1280,
+                            Type = ImageType.Backdrop
+                        },
+
+                        // Don't download this by default as it's rarely used.
+                        new ImageOption
+                        {
+                            Limit = 0,
+                            Type = ImageType.Disc
+                        }
+                    }
+                },
+
+                new MetadataOptions(1, 1280)
+                {
+                    ItemType = "MusicArtist",
+                    ImageOptions = new []
+                    {
+                        new ImageOption
+                        {
+                            Limit = 1,
+                            MinWidth = 1280,
+                            Type = ImageType.Backdrop
+                        },
+
+                        // Don't download this by default
+                        // They do look great, but most artists won't have them, which means a banner view isn't really possible
+                        new ImageOption
+                        {
+                            Limit = 0,
+                            Type = ImageType.Banner
+                        },
+
+                        // Don't download this by default
+                        // Generally not used
+                        new ImageOption
+                        {
+                            Limit = 0,
+                            Type = ImageType.Art
+                        }
+                    }
+                },
+
+                new MetadataOptions(0, 1280) {ItemType = "Season"}
+            };
         }
     }
 
-    public class ChannelOptions
+    public class PeopleMetadataOptions
     {
-        public int? PreferredStreamingWidth { get; set; }
+        public bool DownloadActorMetadata { get; set; }
+        public bool DownloadDirectorMetadata { get; set; }
+        public bool DownloadProducerMetadata { get; set; }
+        public bool DownloadWriterMetadata { get; set; }
+        public bool DownloadComposerMetadata { get; set; }
+        public bool DownloadOtherPeopleMetadata { get; set; }
+        public bool DownloadGuestStarMetadata { get; set; }
 
-        public string DownloadPath { get; set; }
-        public int? MaxDownloadAge { get; set; }
-
-        public string[] DownloadingChannels { get; set; }
-
-        public ChannelOptions()
+        public PeopleMetadataOptions()
         {
-            DownloadingChannels = new string[] { };
-            MaxDownloadAge = 30;
-        }
-    }
-
-    public class ChapterOptions
-    {
-        public bool EnableMovieChapterImageExtraction { get; set; }
-        public bool EnableEpisodeChapterImageExtraction { get; set; }
-        public bool EnableOtherVideoChapterImageExtraction { get; set; }
-
-        public bool DownloadMovieChapters { get; set; }
-        public bool DownloadEpisodeChapters { get; set; }
-
-        public string[] FetcherOrder { get; set; }
-        public string[] DisabledFetchers { get; set; }
-
-        public ChapterOptions()
-        {
-            EnableMovieChapterImageExtraction = true;
-            EnableEpisodeChapterImageExtraction = false;
-            EnableOtherVideoChapterImageExtraction = false;
-
-            DownloadMovieChapters = true;
-
-            DisabledFetchers = new string[] { };
-            FetcherOrder = new string[] { };
+            DownloadActorMetadata = true;
+            DownloadDirectorMetadata = true;
         }
     }
 }

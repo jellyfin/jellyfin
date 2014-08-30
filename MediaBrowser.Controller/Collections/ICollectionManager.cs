@@ -9,6 +9,21 @@ namespace MediaBrowser.Controller.Collections
     public interface ICollectionManager
     {
         /// <summary>
+        /// Occurs when [collection created].
+        /// </summary>
+        event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+
+        /// <summary>
+        /// Occurs when [items added to collection].
+        /// </summary>
+        event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+
+        /// <summary>
+        /// Occurs when [items removed from collection].
+        /// </summary>
+        event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+
+        /// <summary>
         /// Creates the collection.
         /// </summary>
         /// <param name="options">The options.</param>
@@ -38,5 +53,12 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user);
+
+        /// <summary>
+        /// Gets the collections folder.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Folder.</returns>
+        Folder GetCollectionsFolder(string userId);
     }
 }

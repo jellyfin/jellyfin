@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,38 +23,15 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
-        private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public AudioImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
+        public AudioImageProvider(IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
         {
-            _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
             _fileSystem = fileSystem;
-        }
-
-        /// <summary>
-        /// The null mount task result
-        /// </summary>
-        protected readonly Task<IIsoMount> NullMountTaskResult = Task.FromResult<IIsoMount>(null);
-
-        /// <summary>
-        /// Mounts the iso if needed.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IIsoMount}.</returns>
-        protected Task<IIsoMount> MountIsoIfNeeded(Video item, CancellationToken cancellationToken)
-        {
-            if (item.VideoType == VideoType.Iso)
-            {
-                return _isoManager.Mount(item.Path, cancellationToken);
-            }
-
-            return NullMountTaskResult;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -156,7 +132,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool Supports(IHasImages item)
         {
-            return item.LocationType == LocationType.FileSystem && item is Audio;
+            return item is Audio;
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)

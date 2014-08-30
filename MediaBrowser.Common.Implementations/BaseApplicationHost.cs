@@ -211,6 +211,8 @@ namespace MediaBrowser.Common.Implementations
             JsonSerializer = CreateJsonSerializer();
 
             Logger = LogManager.GetLogger("App");
+            OnLoggerLoaded(true);
+            LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
 
             IsFirstRun = !ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted;
             progress.Report(2);
@@ -219,15 +221,10 @@ namespace MediaBrowser.Common.Implementations
                                          ? LogSeverity.Debug
                                          : LogSeverity.Info;
 
-            // Put the app config in the log for troubleshooting purposes
-            Logger.LogMultiline("Application Configuration:", LogSeverity.Info, new StringBuilder(JsonSerializer.SerializeToString(ConfigurationManager.CommonConfiguration)));
-
             progress.Report(3);
 
             DiscoverTypes();
             progress.Report(14);
-
-            Logger.Info("Version {0} initializing", ApplicationVersion);
 
             SetHttpLimit();
             progress.Report(15);
@@ -243,6 +240,47 @@ namespace MediaBrowser.Common.Implementations
             await InstallIsoMounters(CancellationToken.None).ConfigureAwait(false);
 
             progress.Report(100);
+        }
+
+        protected virtual void OnLoggerLoaded(bool isFirstLoad)
+        {
+            Logger.Info("Application version: {0}", ApplicationVersion);
+
+            if (!isFirstLoad)
+            {
+                LogEnvironmentInfo(Logger, ApplicationPaths);
+            }
+
+            // Put the app config in the log for troubleshooting purposes
+            Logger.LogMultiline("Application configuration:", LogSeverity.Info, new StringBuilder(JsonSerializer.SerializeToString(ConfigurationManager.CommonConfiguration)));
+
+            if (Plugins != null)
+            {
+                var pluginBuilder = new StringBuilder();
+
+                foreach (var plugin in Plugins)
+                {
+                    pluginBuilder.AppendLine(string.Format("{0} {1}", plugin.Name, plugin.Version));
+                }
+
+                Logger.LogMultiline("Plugins:", LogSeverity.Info, pluginBuilder);
+            }
+        }
+
+        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
+        {
+            logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
+
+            logger.Info("Server: {0}", Environment.MachineName);
+            logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
+            logger.Info("Processor count: {0}", Environment.ProcessorCount);
+            logger.Info("64-Bit OS: {0}", Environment.Is64BitOperatingSystem);
+            logger.Info("64-Bit Process: {0}", Environment.Is64BitProcess);
+            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
+
+            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
+
+            logger.Info("*** When reporting issues please include the entire log file. ***".ToUpper());
         }
 
         protected virtual IJsonSerializer CreateJsonSerializer()
@@ -342,6 +380,7 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
+            ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>();
         }
 
@@ -393,7 +432,7 @@ namespace MediaBrowser.Common.Implementations
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
                 RegisterSingleInstance(HttpClient);
 
-                NetworkManager = CreateNetworkManager();
+                NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
                 RegisterSingleInstance(NetworkManager);
 
                 SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager, LogManager);
@@ -461,7 +500,7 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
-        protected abstract INetworkManager CreateNetworkManager();
+        protected abstract INetworkManager CreateNetworkManager(ILogger logger);
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies
@@ -631,6 +670,7 @@ namespace MediaBrowser.Common.Implementations
             return parts;
         }
 
+        private Version _version;
         /// <summary>
         /// Gets the current application version
         /// </summary>
@@ -639,7 +679,7 @@ namespace MediaBrowser.Common.Implementations
         {
             get
             {
-                return GetType().Assembly.GetName().Version;
+                return _version ?? (_version = GetType().Assembly.GetName().Version);
             }
         }
 

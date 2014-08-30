@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Movies
         private readonly ILocalizationManager _localization;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization)
         {
             _jsonSerializer = jsonSerializer;
@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Movies
                         remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
                     }
                 }
-                
+
                 remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.id.ToString(_usCulture));
 
                 if (!string.IsNullOrWhiteSpace(obj.imdb_id))
@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.Movies
             var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
             var filename = string.Format("all-{0}.json",
-                preferredLanguage ?? string.Empty);
+                preferredLanguage);
 
             return Path.Combine(path, filename);
         }
@@ -286,8 +286,9 @@ namespace MediaBrowser.Providers.Movies
                 url += string.Format("&language={0}", language);
             }
 
+            var includeImageLanguageParam = string.Join(",", imageLanguages.ToArray());
             // Get images in english and with no language
-            url += "&include_image_language=" + string.Join(",", imageLanguages.ToArray());
+            url += "&include_image_language=" + includeImageLanguageParam;
 
             CompleteMovieData mainResult;
 
@@ -312,7 +313,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                    url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=en,null&language=en";
+                    url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
 
                     using (var json = await GetMovieDbResponse(new HttpRequestOptions
                     {
@@ -324,14 +325,9 @@ namespace MediaBrowser.Providers.Movies
                     {
                         mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
                     }
-
-                    if (String.IsNullOrEmpty(mainResult.overview))
-                    {
-                        _logger.Error("MovieDbProvider - Unable to find information for (id:" + id + ")");
-                        return null;
-                    }
                 }
             }
+
             return mainResult;
         }
 

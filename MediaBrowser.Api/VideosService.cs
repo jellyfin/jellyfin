@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
@@ -41,6 +42,7 @@ namespace MediaBrowser.Api
         public string Ids { get; set; }
     }
 
+    [Authenticated]
     public class VideosService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -97,12 +99,12 @@ namespace MediaBrowser.Api
 
         public void Delete(DeleteAlternateSources request)
         {
-            var task = RemoveAlternateVersions(request);
+            var task = DeleteAsync(request);
 
             Task.WaitAll(task);
         }
 
-        private async Task RemoveAlternateVersions(DeleteAlternateSources request)
+        public async Task DeleteAsync(DeleteAlternateSources request)
         {
             var video = (Video)_libraryManager.GetItemById(request.Id);
 
@@ -119,12 +121,12 @@ namespace MediaBrowser.Api
 
         public void Post(MergeVersions request)
         {
-            var task = MergeVersions(request);
+            var task = PostAsync(request);
 
             Task.WaitAll(task);
         }
 
-        private async Task MergeVersions(MergeVersions request)
+        public async Task PostAsync(MergeVersions request)
         {
             var items = request.Ids.Split(',')
                 .Select(i => new Guid(i))
@@ -170,12 +172,12 @@ namespace MediaBrowser.Api
                     return 0;
                 })
                     .ThenByDescending(i =>
-                {
-                    var stream = i.GetDefaultVideoStream();
+                    {
+                        var stream = i.GetDefaultVideoStream();
 
-                    return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+                        return stream == null || stream.Width == null ? 0 : stream.Width.Value;
 
-                }).First();
+                    }).First();
             }
 
             foreach (var item in videos.Where(i => i.Id != primaryVersion.Id))

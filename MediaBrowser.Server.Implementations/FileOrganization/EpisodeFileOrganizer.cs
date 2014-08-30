@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
 
-            await OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, _config.Configuration.TvFileOrganizationOptions, true, result, cancellationToken).ConfigureAwait(false);
+            await OrganizeEpisode(result.OriginalPath, series, request.SeasonNumber, request.EpisodeNumber, request.EndingEpisodeNumber, options, true, result, cancellationToken).ConfigureAwait(false);
 
             await _organizationService.SaveResult(result, CancellationToken.None).ConfigureAwait(false);
 
@@ -248,12 +248,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 .ToList();
 
             var folder = Path.GetDirectoryName(targetPath);
-            var targetFileNameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
-
+            var targetFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(targetPath);
+            
             try
             {
                 var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
-                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(Path.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(_fileSystem.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
 
                 episodePaths.AddRange(filesOfOtherExtensions);
             }

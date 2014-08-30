@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -16,6 +17,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override string GetUserDataKey()
         {
             return "MusicGenre-" + Name;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsAddingToPlaylist
+        {
+            get { return true; }
         }
 
         /// <summary>

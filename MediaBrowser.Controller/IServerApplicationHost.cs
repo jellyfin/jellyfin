@@ -40,5 +40,17 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         bool HasUpdateAvailable { get; }
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        string ServerId { get; }
+
+        /// <summary>
+        /// Gets the name of the friendly.
+        /// </summary>
+        /// <value>The name of the friendly.</value>
+        string FriendlyName { get; }
     }
 }

@@ -112,5 +112,19 @@ namespace MediaBrowser.Common.IO
         /// <param name="to">To.</param>
         /// <returns>System.String.</returns>
         string SubstitutePath(string path, string from, string to);
+
+        /// <summary>
+        /// Gets the file name without extension.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>System.String.</returns>
+        string GetFileNameWithoutExtension(FileSystemInfo info);
+
+        /// <summary>
+        /// Gets the file name without extension.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
+        string GetFileNameWithoutExtension(string path);
     }
 }

@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             get
             {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
+                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 20;
             }
         }
 
@@ -157,10 +157,10 @@ namespace MediaBrowser.Server.Implementations.Session
                     throw new ArgumentException("SeekPositionTicks cannot be null");
                 }
 
-                args["StartPositionTicks"] = command.SeekPositionTicks.Value.ToString(CultureInfo.InvariantCulture);
+                args["SeekPositionTicks"] = command.SeekPositionTicks.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            return SendMessage(command.Command.ToString(), cancellationToken);
+            return SendMessage(command.Command.ToString(), args, cancellationToken);
         }
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)

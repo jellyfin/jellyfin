@@ -10,7 +10,6 @@ using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -32,6 +31,12 @@ namespace MediaBrowser.Api.Playback.Hls
         public int TimeStampOffsetMs { get; set; }
     }
 
+    [Route("/Videos/{Id}/live.m3u8", "GET")]
+    [Api(Description = "Gets a video stream using HTTP live streaming.")]
+    public class GetLiveHlsStream : VideoStreamRequest
+    {
+    }
+    
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
@@ -105,7 +110,12 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.Object.</returns>
         public object Get(GetHlsVideoStream request)
         {
-            return ProcessRequest(request);
+            return ProcessRequest(request, false);
+        }
+
+        public object Get(GetLiveHlsStream request)
+        {
+            return ProcessRequest(request, true);
         }
 
         /// <summary>
@@ -159,9 +169,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
-            var keyFrameArg = state.ReadInputAtNativeFramerate ?
-                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+1))" : 
-                " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
+            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                state.SegmentLength.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
@@ -170,13 +179,13 @@ namespace MediaBrowser.Api.Playback.Hls
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, CancellationToken.None);
+                args += GetOutputSizeParam(state, codec);
             }
 
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetInternalGraphicalSubtitleParam(state, codec);
+                args += GetGraphicalSubtitleParam(state, codec);
             }
 
             return args;

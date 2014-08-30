@@ -8,24 +8,26 @@ namespace MediaBrowser.Server.Implementations.Collections
         public ManualCollectionsFolder()
         {
             Name = "Collections";
+            DisplayMediaType = "CollectionFolder";
         }
 
         public override bool IsVisible(User user)
         {
-            if (!GetChildren(user, true).Any())
-            {
-                return false;
-            }
-
-            return base.IsVisible(user);
+            return GetChildren(user, true).Any() && 
+                base.IsVisible(user);
         }
 
         public override bool IsHidden
         {
             get
             {
-                return !ActualChildren.Any() || base.IsHidden;
+                return true;
             }
+        }
+
+        public override bool IsHiddenFromUser(User user)
+        {
+            return !user.Configuration.DisplayCollectionsView;
         }
 
         public override string CollectionType

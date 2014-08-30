@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -100,6 +101,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PluginsService
     /// </summary>
+    [Authenticated]
     public class PluginService : BaseApiService
     {
         /// <summary>

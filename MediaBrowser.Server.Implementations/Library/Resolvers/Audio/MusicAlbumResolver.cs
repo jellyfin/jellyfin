@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +19,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class MusicAlbumResolver : ItemResolver<MusicAlbum>
     {
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+
+        public MusicAlbumResolver(ILogger logger, IFileSystem fileSystem)
+        {
+            _logger = logger;
+            _fileSystem = fileSystem;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -45,17 +56,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             {
                 return null;
             }
-            
+
             var collectionType = args.GetCollectionType();
 
+            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music,
+                StringComparison.OrdinalIgnoreCase);
+
             // If there's a collection type and it's not music, don't allow it.
-            if (!string.IsNullOrEmpty(collectionType) &&
-                !string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+            if (!isMusicMediaFolder)
             {
                 return null;
             }
-            
-            return IsMusicAlbum(args) ? new MusicAlbum() : null;
+
+            return IsMusicAlbum(args, isMusicMediaFolder) ? new MusicAlbum() : null;
         }
 
 
@@ -63,50 +76,29 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// Determine if the supplied file data points to a music album
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="isMusicMediaFolder">if set to <c>true</c> [is music media folder].</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <returns><c>true</c> if [is music album] [the specified data]; otherwise, <c>false</c>.</returns>
-        public static bool IsMusicAlbum(string path, IDirectoryService directoryService)
+        public static bool IsMusicAlbum(string path, bool isMusicMediaFolder, IDirectoryService directoryService, ILogger logger, IFileSystem fileSystem)
         {
-            // If list contains at least 2 audio files or at least one and no video files consider it to contain music
-            var foundAudio = 0;
-
-            foreach (var file in directoryService.GetFiles(path))
-            {
-                var fullName = file.FullName;
-
-                if (EntityResolutionHelper.IsAudioFile(fullName))
-                {
-                    // Don't resolve these into audio files
-                    if (string.Equals(Path.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(fullName))
-                    {
-                        continue;
-                    }
-
-                    foundAudio++;
-                }
-                if (foundAudio >= 2)
-                {
-                    return true;
-                }
-                if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
-            }
-
-            //  or a single audio file and no video files
-            return foundAudio > 0;
+            return ContainsMusic(directoryService.GetFileSystemEntries(path), isMusicMediaFolder, true, directoryService, logger, fileSystem);
         }
 
         /// <summary>
         /// Determine if the supplied resolve args should be considered a music album
         /// </summary>
         /// <param name="args">The args.</param>
+        /// <param name="isMusicMediaFolder">if set to <c>true</c> [is music media folder].</param>
         /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
-        public static bool IsMusicAlbum(ItemResolveArgs args)
+        private bool IsMusicAlbum(ItemResolveArgs args, bool isMusicMediaFolder)
         {
             // Args points to an album if parent is an Artist folder or it directly contains music
             if (args.IsDirectory)
             {
                 //if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
-                if (ContainsMusic(args.FileSystemChildren)) return true;
+                if (ContainsMusic(args.FileSystemChildren, isMusicMediaFolder, true, args.DirectoryService, _logger, _fileSystem)) return true;
             }
 
             return false;
@@ -116,27 +108,86 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// Determine if the supplied list contains what we should consider music
         /// </summary>
         /// <param name="list">The list.</param>
+        /// <param name="isMusicMediaFolder">if set to <c>true</c> [is music media folder].</param>
+        /// <param name="allowSubfolders">if set to <c>true</c> [allow subfolders].</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <returns><c>true</c> if the specified list contains music; otherwise, <c>false</c>.</returns>
-        private static bool ContainsMusic(IEnumerable<FileSystemInfo> list)
+        private static bool ContainsMusic(IEnumerable<FileSystemInfo> list,
+            bool isMusicMediaFolder,
+            bool allowSubfolders,
+            IDirectoryService directoryService,
+            ILogger logger,
+            IFileSystem fileSystem)
         {
             // If list contains at least 2 audio files or at least one and no video files consider it to contain music
             var foundAudio = 0;
 
-            foreach (var file in list)
-            {
-                var fullName = file.FullName;
+            var discSubfolderCount = 0;
 
-                if (EntityResolutionHelper.IsAudioFile(fullName)) foundAudio++;
+            foreach (var fileSystemInfo in list)
+            {
+                if ((fileSystemInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    if (isMusicMediaFolder && allowSubfolders && IsAlbumSubfolder(fileSystemInfo, true, directoryService, logger, fileSystem))
+                    {
+                        discSubfolderCount++;
+                    }
+                    if (!IsAdditionalSubfolderAllowed(fileSystemInfo))
+                    {
+                        return false;
+                    }
+                }
+
+                var fullName = fileSystemInfo.FullName;
+
+                if (EntityResolutionHelper.IsAudioFile(fullName))
+                {
+                    // Don't resolve these into audio files
+                    if (string.Equals(fileSystem.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename))
+                    {
+                        continue;
+                    }
+
+                    foundAudio++;
+                }
+                else if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
+                else if (EntityResolutionHelper.IsVideoPlaceHolder(fullName)) return false;
+
                 if (foundAudio >= 2)
                 {
                     return true;
                 }
-                if (EntityResolutionHelper.IsVideoFile(fullName)) return false;
-                if (EntityResolutionHelper.IsVideoPlaceHolder(fullName)) return false;
             }
 
             //  or a single audio file and no video files
-            return foundAudio > 0;
+            return foundAudio > 0 || discSubfolderCount > 0;
+        }
+
+        private static bool IsAlbumSubfolder(FileSystemInfo directory, bool isMusicMediaFolder, IDirectoryService directoryService, ILogger logger, IFileSystem fileSystem)
+        {
+            var path = directory.FullName;
+
+            if (IsMultiDiscFolder(path))
+            {
+                logger.Debug("Found multi-disc folder: " + path);
+
+                return ContainsMusic(directoryService.GetFileSystemEntries(path), isMusicMediaFolder, false, directoryService, logger, fileSystem);
+            }
+
+            return false;
+        }
+
+        public static bool IsMultiDiscFolder(string path)
+        {
+            return EntityResolutionHelper.IsMultiDiscAlbumFolder(path);
+        }
+
+        private static bool IsAdditionalSubfolderAllowed(FileSystemInfo directory)
+        {
+            // Resolver will ignore them based on rules engine
+            return true;
         }
     }
 }

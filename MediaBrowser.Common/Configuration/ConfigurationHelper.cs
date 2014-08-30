@@ -36,21 +36,25 @@ namespace MediaBrowser.Common.Configuration
                 configuration = Activator.CreateInstance(type);
             }
 
-            // Take the object we just got and serialize it back to bytes
-            var newBytes = xmlSerializer.SerializeToBytes(configuration);
-
-            // If the file didn't exist before, or if something has changed, re-save
-            if (buffer == null || !buffer.SequenceEqual(newBytes))
+            using (var stream = new MemoryStream())
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                
-                // Save it after load in case we got new items
-                File.WriteAllBytes(path, newBytes);
+                xmlSerializer.SerializeToStream(configuration, stream);
+
+                // Take the object we just got and serialize it back to bytes
+                var newBytes = stream.ToArray();
+
+                // If the file didn't exist before, or if something has changed, re-save
+                if (buffer == null || !buffer.SequenceEqual(newBytes))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                    // Save it after load in case we got new items
+                    File.WriteAllBytes(path, newBytes);
+                }
+
+                return configuration;
             }
-
-            return configuration;
         }
-
 
         /// <summary>
         /// Reads an xml configuration file from the file system

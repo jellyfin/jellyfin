@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -8,6 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Chapters;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -192,8 +194,10 @@ namespace MediaBrowser.Providers.Chapters
 
             if (!includeDisabledProviders)
             {
+                var options = GetConfiguration();
+
                 providers = providers
-                    .Where(i => !_config.Configuration.ChapterOptions.DisabledFetchers.Contains(i.Name))
+                    .Where(i => !options.DisabledFetchers.Contains(i.Name))
                     .ToArray();
             }
 
@@ -224,8 +228,10 @@ namespace MediaBrowser.Providers.Chapters
 
         private int GetConfiguredOrder(IChapterProvider provider)
         {
+            var options = GetConfiguration();
+            
             // See if there's a user-defined order
-            var index = Array.IndexOf(_config.Configuration.ChapterOptions.FetcherOrder, provider.Name);
+            var index = Array.IndexOf(options.FetcherOrder, provider.Name);
 
             if (index != -1)
             {
@@ -256,6 +262,26 @@ namespace MediaBrowser.Providers.Chapters
         public Task SaveChapters(string itemId, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
         {
             return _itemRepo.SaveChapters(new Guid(itemId), chapters, cancellationToken);
+        }
+
+        public ChapterOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<ChapterOptions>("chapters");
+        }
+    }
+
+    public class ChapterConfigurationStore : IConfigurationFactory
+    {
+        public IEnumerable<ConfigurationStore> GetConfigurations()
+        {
+            return new List<ConfigurationStore>
+            {
+                new ConfigurationStore
+                {
+                    Key = "chapters",
+                    ConfigurationType = typeof (ChapterOptions)
+                }
+            };
         }
     }
 }

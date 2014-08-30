@@ -188,9 +188,11 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            if (item.LocationType != LocationType.Virtual)
+            var episode = (Episode)item;
+            
+            if (!episode.IsVirtualUnaired)
             {
-                // For non-virtual items, only enable if configured
+                // For non-unaired items, only enable if configured
                 if (!_config.Configuration.EnableTvDbUpdates)
                 {
                     return false;
@@ -199,7 +201,6 @@ namespace MediaBrowser.Providers.TV
 
             if (!item.HasImage(ImageType.Primary))
             {
-                var episode = (Episode)item;
                 var series = episode.Series;
 
                 var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;

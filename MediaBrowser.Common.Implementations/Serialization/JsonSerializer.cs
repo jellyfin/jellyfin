@@ -210,25 +210,5 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
             return ServiceStack.Text.JsonSerializer.SerializeToString(obj, obj.GetType());
         }
-
-        /// <summary>
-        /// Serializes to bytes.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns>System.Byte[][].</returns>
-        /// <exception cref="System.ArgumentNullException">obj</exception>
-        public byte[] SerializeToBytes(object obj)
-        {
-            if (obj == null)
-            {
-                throw new ArgumentNullException("obj");
-            }
-
-            using (var stream = new MemoryStream())
-            {
-                SerializeToStream(obj, stream);
-                return stream.ToArray();
-            }
-        }
     }
 }

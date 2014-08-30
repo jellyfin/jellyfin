@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -124,6 +125,42 @@ namespace MediaBrowser.Server.Implementations.Library
         private string GetCacheKey(Guid userId, string key)
         {
             return userId + key;
+        }
+
+        public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
+        {
+            var userData = GetUserData(user.Id, item.GetUserDataKey());
+            var dto = GetUserItemDataDto(userData);
+
+            item.FillUserDataDtoValues(dto, userData, user);
+
+            return dto;
+        }
+
+        /// <summary>
+        /// Converts a UserItemData to a DTOUserItemData
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns>DtoUserItemData.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        private UserItemDataDto GetUserItemDataDto(UserItemData data)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
+            return new UserItemDataDto
+            {
+                IsFavorite = data.IsFavorite,
+                Likes = data.Likes,
+                PlaybackPositionTicks = data.PlaybackPositionTicks,
+                PlayCount = data.PlayCount,
+                Rating = data.Rating,
+                Played = data.Played,
+                LastPlayedDate = data.LastPlayedDate,
+                Key = data.Key
+            };
         }
     }
 }

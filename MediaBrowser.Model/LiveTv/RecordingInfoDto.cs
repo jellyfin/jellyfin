@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Runtime.Serialization;
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, ChannelName = {ChannelName}")]
-    public class RecordingInfoDto : INotifyPropertyChanged, IItemDto
+    public class RecordingInfoDto : IHasPropertyChangedEvent, IItemDto
     {
         /// <summary>
         /// Id of the recording.

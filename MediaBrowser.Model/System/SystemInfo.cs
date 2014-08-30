@@ -6,14 +6,8 @@ namespace MediaBrowser.Model.System
     /// <summary>
     /// Class SystemInfo
     /// </summary>
-    public class SystemInfo
+    public class SystemInfo : PublicSystemInfo
     {
-        /// <summary>
-        /// Gets or sets the version.
-        /// </summary>
-        /// <value>The version.</value>
-        public string Version { get; set; }
-
         /// <summary>
         /// Gets or sets the operating sytem.
         /// </summary>
@@ -32,6 +26,12 @@ namespace MediaBrowser.Model.System
         /// <value>The mac address.</value>
         public string MacAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the local address.
+        /// </summary>
+        /// <value>The local address.</value>
+        public string LocalAddress { get; set; }
+        
         /// <summary>
         /// Gets or sets a value indicating whether this instance has pending restart.
         /// </summary>
@@ -85,12 +85,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The failed assembly loads.</value>
         public List<string> FailedPluginAssemblies { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -153,12 +147,6 @@ namespace MediaBrowser.Model.System
         public bool SupportsAutoRunAtStartup { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the server.
-        /// </summary>
-        /// <value>The name of the server.</value>
-        public string ServerName { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>
         public SystemInfo()
@@ -169,5 +157,26 @@ namespace MediaBrowser.Model.System
 
             FailedPluginAssemblies = new List<string>();
         }
+    }
+
+    public class PublicSystemInfo
+    {
+        /// <summary>
+        /// Gets or sets the name of the server.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        public string ServerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version.
+        /// </summary>
+        /// <value>The version.</value>
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
     }
 }

@@ -32,6 +32,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("videoProfile")]
         public string VideoProfile { get; set; }
 
+        [XmlAttribute("context")]
+        public EncodingContext Context { get; set; }
+
         public List<string> GetAudioCodecs()
         {
             List<string> list = new List<string>();
@@ -41,5 +44,11 @@ namespace MediaBrowser.Model.Dlna
             }
             return list;
         }
+    }
+
+    public enum EncodingContext
+    {
+        Streaming = 0,
+        Static = 1
     }
 }

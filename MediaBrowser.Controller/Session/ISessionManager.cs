@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -45,6 +47,16 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
+
+        /// <summary>
+        /// Occurs when [authentication failed].
+        /// </summary>
+        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
+
+        /// <summary>
+        /// Occurs when [authentication succeeded].
+        /// </summary>
+        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
         
         /// <summary>
         /// Gets the sessions.
@@ -206,19 +218,14 @@ namespace MediaBrowser.Controller.Session
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="item">The item.</param>
         void ReportNowViewingItem(string sessionId, BaseItemInfo item);
-        
+
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="appVersion">The application version.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="deviceName">Name of the device.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
-        Task<SessionInfo> AuthenticateNewSession(User user, string password, string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint);
+        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request, bool isLocal);
 
         /// <summary>
         /// Reports the capabilities.
@@ -239,5 +246,41 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         void ClearTranscodingInfo(string deviceId);
+
+        /// <summary>
+        /// Gets the session.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="client">The client.</param>
+        /// <param name="version">The version.</param>
+        /// <returns>SessionInfo.</returns>
+        SessionInfo GetSession(string deviceId, string client, string version);
+
+        /// <summary>
+        /// Validates the security token.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        void ValidateSecurityToken(string accessToken);
+
+        /// <summary>
+        /// Logouts the specified access token.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <returns>Task.</returns>
+        Task Logout(string accessToken);
+
+        /// <summary>
+        /// Revokes the user tokens.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>Task.</returns>
+        Task RevokeUserTokens(string userId);
+
+        /// <summary>
+        /// Revokes the token.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task RevokeToken(string id);
     }
 }

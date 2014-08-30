@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
@@ -195,13 +194,7 @@ namespace MediaBrowser.ServerApplication
         private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
             logger.Info("Media Browser Server started");
-            logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
-
-            logger.Info("Server: {0}", Environment.MachineName);
-            logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
-            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
-
-            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
+            ApplicationHost.LogEnvironmentInfo(logger, appPaths);
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -227,14 +220,9 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
+
             var task = _appHost.Init(initProgress);
-            Task.WaitAll(task);
-
-            task = _appHost.RunStartupTasks();
-            Task.WaitAll(task);
-
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
 
             if (runService)
             {
@@ -242,6 +230,11 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                Task.WaitAll(task);
+
+                SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+   
                 HideSplashScreen();
 
                 ShowTrayIcon();

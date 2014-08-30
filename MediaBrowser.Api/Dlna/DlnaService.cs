@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using ServiceStack;
 using System.Collections.Generic;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Api.Dlna
     {
     }
 
+    [Authenticated]
     public class DlnaService : BaseApiService
     {
         private readonly IDlnaManager _dlnaManager;

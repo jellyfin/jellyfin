@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -7,7 +8,7 @@ namespace MediaBrowser.Model.LiveTv
     /// Class RecordingGroupDto.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Count = {RecordingCount}")]
-    public class RecordingGroupDto : INotifyPropertyChanged
+    public class RecordingGroupDto : IHasPropertyChangedEvent
     {
         /// <summary>
         /// Gets or sets the name.

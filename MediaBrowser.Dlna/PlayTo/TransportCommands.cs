@@ -3,6 +3,7 @@ using MediaBrowser.Dlna.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using MediaBrowser.Dlna.Ssdp;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -146,34 +147,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        public string BuildSearchPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
-        {
-            var stateString = string.Empty;
-
-            foreach (var arg in action.ArgumentList)
-            {
-                if (arg.Direction == "out")
-                    continue;
-
-                if (arg.Name == "ObjectID")
-                    stateString += BuildArgumentXml(arg, value.ToString());
-                else if (arg.Name == "Filter")
-                    stateString += BuildArgumentXml(arg, "*");
-                else if (arg.Name == "StartingIndex")
-                    stateString += BuildArgumentXml(arg, "0");
-                else if (arg.Name == "RequestedCount")
-                    stateString += BuildArgumentXml(arg, "200");
-                else if (arg.Name == "BrowseFlag")
-                    stateString += BuildArgumentXml(arg, null, "BrowseDirectChildren");
-                else if (arg.Name == "SortCriteria")
-                    stateString += BuildArgumentXml(arg, "");
-                else
-                    stateString += BuildArgumentXml(arg, value.ToString(), commandParameter);
-            }
-
-            return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
-        }
-
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
         {
             var stateString = string.Empty;
@@ -193,12 +166,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
         {
-            var state = StateVariables.FirstOrDefault(a => a.Name == argument.RelatedStateVariable);
+            var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 
             if (state != null)
             {
-                var sendValue = (state.AllowedValues.FirstOrDefault(a => a == commandParameter) ??
-                                 state.AllowedValues.FirstOrDefault()) ?? 
+                var sendValue = state.AllowedValues.FirstOrDefault(a => string.Equals(a, commandParameter, StringComparison.OrdinalIgnoreCase)) ??
+                                 state.AllowedValues.FirstOrDefault() ?? 
                                  value;
 
                 return string.Format("<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);

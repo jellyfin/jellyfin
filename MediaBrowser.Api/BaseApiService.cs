@@ -14,8 +14,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    [AuthorizationRequestFilter]
-    public class BaseApiService : IHasResultFactory, IRestfulService
+    public class BaseApiService : IHasResultFactory, IRestfulService, IHasSession
     {
         /// <summary>
         /// Gets or sets the logger.
@@ -34,6 +33,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The request context.</value>
         public IRequest Request { get; set; }
+
+        public ISessionContext SessionContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -82,33 +83,18 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets the session.
         /// </summary>
-        /// <param name="sessionManager">The session manager.</param>
         /// <returns>SessionInfo.</returns>
-        protected SessionInfo GetSession(ISessionManager sessionManager)
+        /// <exception cref="System.ArgumentException">Session not found.</exception>
+        protected SessionInfo GetSession()
         {
-            var auth = AuthorizationRequestFilterAttribute.GetAuthorization(Request);
+            var session = SessionContext.GetSession(Request);
 
-            return sessionManager.Sessions.First(i => string.Equals(i.DeviceId, auth.DeviceId) &&
-                string.Equals(i.Client, auth.Client) &&
-                string.Equals(i.ApplicationVersion, auth.Version));
-        }
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found.");
+            }
 
-        /// <summary>
-        /// To the cached result.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="factoryFn">The factory fn.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">cacheKey</exception>
-        protected object ToCachedResult<T>(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn, string contentType, IDictionary<string,string> responseHeaders = null)
-          where T : class
-        {
-            return ResultFactory.GetCachedResult(Request, cacheKey, lastDateModified, cacheDuration, factoryFn, contentType, responseHeaders);
+            return session;
         }
 
         /// <summary>
@@ -121,7 +107,7 @@ namespace MediaBrowser.Api
             return ResultFactory.GetStaticFileResult(Request, path);
         }
 
-        private readonly char[] _dashReplaceChars = new[] { '?', '/' };
+        private readonly char[] _dashReplaceChars = { '?', '/' };
         private const char SlugChar = '-';
 
         protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)
@@ -154,7 +140,7 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
+        protected IEnumerable<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
         {
             if (!string.IsNullOrEmpty(parentId))
             {
@@ -164,7 +150,12 @@ namespace MediaBrowser.Api
                 {
                     var user = userManager.GetUserById(userId.Value);
 
-                    return folder.GetRecursiveChildren(user).ToList();
+                    if (user == null)
+                    {
+                        throw new ArgumentException("User not found");
+                    }
+
+                    return folder.GetRecursiveChildren(user);
                 }
 
                 return folder.GetRecursiveChildren();
@@ -173,7 +164,12 @@ namespace MediaBrowser.Api
             {
                 var user = userManager.GetUserById(userId.Value);
 
-                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user, null);
+                if (user == null)
+                {
+                    throw new ArgumentException("User not found");
+                }
+
+                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
             }
 
             return libraryManager.RootFolder.GetRecursiveChildren();
@@ -234,7 +230,8 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren(i => i is Game)
+            return libraryManager.RootFolder.GetRecursiveChildren()
+                .OfType<Game>()
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>

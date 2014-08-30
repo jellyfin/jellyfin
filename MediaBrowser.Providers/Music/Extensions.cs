@@ -8,15 +8,15 @@ namespace MediaBrowser.Providers.Music
     {
         public static string GetAlbumArtist(this AlbumInfo info)
         {
-            var id = info.AlbumArtists.FirstOrDefault();
-
-            if (string.IsNullOrEmpty(id))
-            {
-                return info.SongInfos.SelectMany(i => i.AlbumArtists)
+            var id = info.SongInfos.SelectMany(i => i.AlbumArtists)
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                return id;
             }
 
-            return id;
+            return info.AlbumArtists.FirstOrDefault();
         }
 
         public static string GetReleaseGroupId(this AlbumInfo info)

@@ -48,6 +48,9 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -57,9 +60,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
@@ -68,6 +68,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\IActivityManager.cs" />
+    <Compile Include="Activity\IActivityRepository.cs" />
     <Compile Include="Channels\ChannelFolderItem.cs" />
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\ChannelItemResult.cs" />
@@ -95,7 +97,9 @@
     <Compile Include="Chapters\IChapterProvider.cs" />
     <Compile Include="Chapters\ChapterResponse.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
+    <Compile Include="Collections\CollectionEvents.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
+    <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
     <Compile Include="Dlna\DlnaIconResponse.cs" />
@@ -147,10 +151,12 @@
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
+    <Compile Include="Entities\IThemeMedia.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Entities\Photo.cs" />
+    <Compile Include="Entities\PhotoAlbum.cs" />
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
@@ -165,6 +171,7 @@
     <Compile Include="Library\LibraryManagerExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
+    <Compile Include="LiveTv\RecordingGroup.cs" />
     <Compile Include="LiveTv\RecordingStatusChangedEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
     <Compile Include="LiveTv\LiveStreamInfo.cs" />
@@ -195,10 +202,19 @@
     <Compile Include="MediaEncoding\ISubtitleEncoder.cs" />
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="MediaEncoding\VideoEncodingOptions.cs" />
+    <Compile Include="Net\AuthenticatedAttribute.cs" />
+    <Compile Include="Net\AuthorizationInfo.cs" />
+    <Compile Include="Net\IAuthorizationContext.cs" />
+    <Compile Include="Net\IAuthService.cs" />
+    <Compile Include="Net\IHasAuthorization.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
+    <Compile Include="Net\IHasSession.cs" />
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\IRestfulService.cs" />
+    <Compile Include="Net\ISessionContext.cs" />
+    <Compile Include="Net\LoggedAttribute.cs" />
+    <Compile Include="Net\StaticResultOptions.cs" />
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationManager.cs" />
     <Compile Include="Notifications\INotificationService.cs" />
@@ -208,6 +224,8 @@
     <Compile Include="Notifications\UserNotification.cs" />
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
+    <Compile Include="Playlists\IPlaylistManager.cs" />
+    <Compile Include="Playlists\Playlist.cs" />
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\ICustomMetadataProvider.cs" />
     <Compile Include="Providers\IExternalId.cs" />
@@ -224,7 +242,12 @@
     <Compile Include="Providers\IMetadataService.cs" />
     <Compile Include="Providers\IRemoteMetadataProvider.cs" />
     <Compile Include="Providers\VideoContentType.cs" />
+    <Compile Include="RelatedMedia\IRelatedMediaProvider.cs" />
+    <Compile Include="Security\AuthenticationInfo.cs" />
+    <Compile Include="Security\AuthenticationInfoQuery.cs" />
+    <Compile Include="Security\IAuthenticationRepository.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
+    <Compile Include="Session\AuthenticationRequest.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemIdentifier.cs" />
@@ -304,8 +327,13 @@
     <Compile Include="Sorting\IUserBaseItemComparer.cs" />
     <Compile Include="Providers\BaseItemXmlParser.cs" />
     <Compile Include="Sorting\SortExtensions.cs" />
+    <Compile Include="Subtitles\SubtitleDownloadEventArgs.cs" />
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
+    <Compile Include="Sync\ICloudSyncProvider.cs" />
+    <Compile Include="Sync\ISyncManager.cs" />
+    <Compile Include="Sync\ISyncProvider.cs" />
+    <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
   </ItemGroup>
@@ -332,7 +360,7 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

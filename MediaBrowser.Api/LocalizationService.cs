@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using ServiceStack;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CulturesService
     /// </summary>
+    [Authenticated]
     public class LocalizationService : BaseApiService
     {
         /// <summary>

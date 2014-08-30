@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -15,7 +14,6 @@ namespace MediaBrowser.Controller.Channels
         public ChannelFolderType ChannelFolderType { get; set; }
 
         public string OriginalImageUrl { get; set; }
-        public List<string> Tags { get; set; }
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)
         {
@@ -29,11 +27,6 @@ namespace MediaBrowser.Controller.Channels
             {
                 return false;
             }
-        }
-
-        public ChannelFolderItem()
-        {
-            Tags = new List<string>();
         }
 
         public override string GetUserDataKey()

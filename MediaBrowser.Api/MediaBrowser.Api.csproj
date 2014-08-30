@@ -49,6 +49,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,27 +68,25 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="Library\ChapterService.cs" />
-    <Compile Include="Library\SubtitleService.cs" />
+    <Compile Include="PlaylistService.cs" />
+    <Compile Include="Subtitles\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
     <Compile Include="AppThemeService.cs" />
     <Compile Include="BaseApiService.cs" />
     <Compile Include="ConfigurationService.cs" />
-    <Compile Include="DefaultTheme\DefaultThemeService.cs" />
-    <Compile Include="DefaultTheme\Models.cs" />
     <Compile Include="DisplayPreferencesService.cs" />
     <Compile Include="EnvironmentService.cs" />
-    <Compile Include="AuthorizationRequestFilterAttribute.cs" />
     <Compile Include="GamesService.cs" />
     <Compile Include="IHasItemFields.cs" />
     <Compile Include="Images\ImageByNameService.cs" />
     <Compile Include="Images\ImageRequest.cs" />
     <Compile Include="Images\ImageService.cs" />
-    <Compile Include="Images\ImageWriter.cs" />
     <Compile Include="Music\InstantMixService.cs" />
     <Compile Include="ItemLookupService.cs" />
     <Compile Include="ItemRefreshService.cs" />
@@ -101,7 +102,7 @@
     <Compile Include="NotificationsService.cs" />
     <Compile Include="PackageReviewService.cs" />
     <Compile Include="PackageService.cs" />
-    <Compile Include="Playback\EndlessStreamCopy.cs" />
+    <Compile Include="Playback\BifService.cs" />
     <Compile Include="Playback\Hls\BaseHlsService.cs" />
     <Compile Include="Playback\Hls\DynamicHlsService.cs" />
     <Compile Include="Playback\Hls\HlsSegmentService.cs" />
@@ -120,9 +121,12 @@
     <Compile Include="ScheduledTasks\ScheduledTasksWebSocketListener.cs" />
     <Compile Include="ApiEntryPoint.cs" />
     <Compile Include="SearchService.cs" />
-    <Compile Include="SessionsService.cs" />
+    <Compile Include="Session\SessionsService.cs" />
     <Compile Include="SimilarItemsHelper.cs" />
-    <Compile Include="SystemService.cs" />
+    <Compile Include="Sync\SyncService.cs" />
+    <Compile Include="System\ActivityLogService.cs" />
+    <Compile Include="System\ActivityLogWebSocketListener.cs" />
+    <Compile Include="System\SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
@@ -133,15 +137,15 @@
     <Compile Include="UserLibrary\ItemsService.cs" />
     <Compile Include="UserLibrary\MusicGenresService.cs" />
     <Compile Include="UserLibrary\PersonsService.cs" />
+    <Compile Include="UserLibrary\PlaystateService.cs" />
     <Compile Include="UserLibrary\StudiosService.cs" />
     <Compile Include="UserLibrary\UserLibraryService.cs" />
     <Compile Include="UserLibrary\YearsService.cs" />
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideosService.cs" />
-    <Compile Include="WebSocket\LogFileWebSocketListener.cs" />
-    <Compile Include="WebSocket\SessionInfoWebSocketListener.cs" />
-    <Compile Include="WebSocket\SystemInfoWebSocketListener.cs" />
+    <Compile Include="Session\SessionInfoWebSocketListener.cs" />
+    <Compile Include="System\SystemInfoWebSocketListener.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
@@ -160,13 +164,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

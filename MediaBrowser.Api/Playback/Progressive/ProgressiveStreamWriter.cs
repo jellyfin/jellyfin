@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -13,6 +13,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         private string Path { get; set; }
         private ILogger Logger { get; set; }
         private readonly IFileSystem _fileSystem;
+        private readonly TranscodingJob _job;
 
         /// <summary>
         /// The _options
@@ -33,11 +34,12 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="path">The path.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProgressiveStreamWriter(string path, ILogger logger, IFileSystem fileSystem)
+        public ProgressiveStreamWriter(string path, ILogger logger, IFileSystem fileSystem, TranscodingJob job)
         {
             Path = path;
             Logger = logger;
             _fileSystem = fileSystem;
+            _job = job;
         }
 
         /// <summary>
@@ -60,11 +62,12 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             try
             {
-                await StreamFile(Path, responseStream).ConfigureAwait(false);
+                await new ProgressiveFileCopier(_fileSystem, _job)
+                    .StreamFile(Path, responseStream).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.Error("Error streaming media. The client has most likely disconnected or transcoding has failed.");
+                Logger.ErrorException("Error streaming media. The client has most likely disconnected or transcoding has failed.", ex);
 
                 throw;
             }
@@ -73,14 +76,20 @@ namespace MediaBrowser.Api.Playback.Progressive
                 ApiEntryPoint.Instance.OnTranscodeEndRequest(Path, TranscodingJobType.Progressive);
             }
         }
+    }
 
-        /// <summary>
-        /// Streams the file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="outputStream">The output stream.</param>
-        /// <returns>Task{System.Boolean}.</returns>
-        private async Task StreamFile(string path, Stream outputStream)
+    public class ProgressiveFileCopier
+    {
+        private readonly IFileSystem _fileSystem;
+        private readonly TranscodingJob _job;
+
+        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job)
+        {
+            _fileSystem = fileSystem;
+            _job = job;
+        }
+
+        public async Task StreamFile(string path, Stream outputStream)
         {
             var eofCount = 0;
             long position = 0;
@@ -99,7 +108,10 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                     if (bytesRead == 0)
                     {
-                        eofCount++;
+                        if (_job == null || _job.HasExited)
+                        {
+                            eofCount++;
+                        }
                         await Task.Delay(100).ConfigureAwait(false);
                     }
                     else

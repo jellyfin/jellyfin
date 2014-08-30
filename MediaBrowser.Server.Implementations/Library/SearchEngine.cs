@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var user = _userManager.GetUserById(new Guid(query.UserId));
 
-                inputItems = user.RootFolder.GetRecursiveChildren(user, null);
+                inputItems = user.RootFolder.GetRecursiveChildren(user, true);
             }
 
 

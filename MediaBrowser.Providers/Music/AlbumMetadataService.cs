@@ -9,8 +9,6 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -104,17 +102,15 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = ItemUpdateType.None;
             
-            var albumArtist = songs
+            var albumArtists = songs
                 .SelectMany(i => i.AlbumArtists)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
-            if (!string.IsNullOrEmpty(albumArtist))
+            if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
             {
-                if (!string.Equals(item.AlbumArtist, albumArtist, StringComparison.Ordinal))
-                {
-                    item.AlbumArtist = albumArtist;
-                    updateType = updateType | ItemUpdateType.MetadataDownload;
-                }
+                item.AlbumArtists = albumArtists;
+                updateType = updateType | ItemUpdateType.MetadataDownload;
             }
 
             return updateType;

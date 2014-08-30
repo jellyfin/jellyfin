@@ -175,6 +175,35 @@ namespace MediaBrowser.Model.Dlna
 
             return false;
         }
+
+        private bool IsConditionSatisfied(ProfileCondition condition, float? currentValue)
+        {
+            if (!currentValue.HasValue)
+            {
+                // If the value is unknown, it satisfies if not marked as required
+                return !condition.IsRequired;
+            }
+
+            float expected;
+            if (FloatHelper.TryParseCultureInvariant(condition.Value, out expected))
+            {
+                switch (condition.Condition)
+                {
+                    case ProfileConditionType.Equals:
+                        return currentValue.Value.Equals(expected);
+                    case ProfileConditionType.GreaterThanEqual:
+                        return currentValue.Value >= expected;
+                    case ProfileConditionType.LessThanEqual:
+                        return currentValue.Value <= expected;
+                    case ProfileConditionType.NotEquals:
+                        return !currentValue.Value.Equals(expected);
+                    default:
+                        throw new InvalidOperationException("Unexpected ProfileConditionType");
+                }
+            }
+
+            return false;
+        }
         
         private bool IsConditionSatisfied(ProfileCondition condition, double? currentValue)
         {

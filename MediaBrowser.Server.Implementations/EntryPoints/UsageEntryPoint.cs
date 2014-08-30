@@ -26,7 +26,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private Timer _timer;
         private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
 
-        private const string DefaultDeviceVersion = "Unknown version";
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
 
         public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, ISessionManager sessionManager)

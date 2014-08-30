@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dto
@@ -16,6 +17,7 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>UserDto.</returns>
+        [Obsolete]
         UserDto GetUserDto(User user);
 
         /// <summary>
@@ -24,13 +26,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
         string GetDtoId(BaseItem item);
-
-        /// <summary>
-        /// Gets the user item data dto.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns>UserItemDataDto.</returns>
-        UserItemDataDto GetUserItemDataDto(UserItemData data);
 
         /// <summary>
         /// Attaches the primary image aspect ratio.
@@ -50,22 +45,19 @@ namespace MediaBrowser.Controller.Dto
         BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
 
         /// <summary>
-        /// Gets the item by name dto.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, User user = null)
-            where T : BaseItem, IItemByName;
-
-        /// <summary>
         /// Gets the chapter information dto.
         /// </summary>
         /// <param name="chapterInfo">The chapter information.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfoDto.</returns>
         ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item);
+
+        /// <summary>
+        /// Gets the user item data dto.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns>UserItemDataDto.</returns>
+        UserItemDataDto GetUserItemDataDto(UserItemData data);
 
         /// <summary>
         /// Gets the item by name dto.

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using ServiceStack.Web;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -80,9 +80,21 @@ namespace MediaBrowser.Controller.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticResult(IRequest requestContext, Guid cacheKey, DateTime? lastDateModified,
-                               TimeSpan? cacheDuration, string contentType, Func<Task<Stream>> factoryFn,
-                               IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticResult(IRequest requestContext, 
+            Guid cacheKey, 
+            DateTime? lastDateModified,
+            TimeSpan? cacheDuration, 
+            string contentType, Func<Task<Stream>> factoryFn,
+            IDictionary<string, string> responseHeaders = null,
+            bool isHeadRequest = false);
+
+        /// <summary>
+        /// Gets the static result.
+        /// </summary>
+        /// <param name="requestContext">The request context.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>System.Object.</returns>
+        object GetStaticResult(IRequest requestContext, StaticResultOptions options);
 
         /// <summary>
         /// Gets the static file result.
@@ -90,31 +102,16 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <param name="path">The path.</param>
         /// <param name="fileShare">The file share.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
+        object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read);
 
         /// <summary>
         /// Gets the static file result.
         /// </summary>
         /// <param name="requestContext">The request context.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="fileShare">The file share.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
+        /// <param name="options">The options.</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequest requestContext, string path, string contentType, FileShare fileShare = FileShare.Read, IDictionary<string, string> responseHeaders = null, bool isHeadRequest = false);
-        
-        /// <summary>
-        /// Gets the optimized serialized result using cache.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request">The request.</param>
-        /// <param name="result">The result.</param>
-        /// <returns>System.Object.</returns>
-        object GetOptimizedSerializedResultUsingCache<T>(IRequest request, T result)
-            where T : class;
+        object GetStaticFileResult(IRequest requestContext, 
+            StaticFileResultOptions options);
     }
 }

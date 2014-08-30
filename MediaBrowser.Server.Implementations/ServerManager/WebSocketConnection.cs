@@ -194,9 +194,9 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 throw new ArgumentNullException("message");
             }
 
-            var bytes = _jsonSerializer.SerializeToBytes(message);
+            var json = _jsonSerializer.SerializeToString(message);
 
-            return SendAsync(bytes, cancellationToken);
+            return SendAsync(json, cancellationToken);
         }
 
         /// <summary>
@@ -205,20 +205,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="buffer">The buffer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
-        {
-            return SendAsync(buffer, WebSocketMessageType.Text, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <param name="buffer">The buffer.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">buffer</exception>
-        public async Task SendAsync(byte[] buffer, WebSocketMessageType type, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             if (buffer == null)
             {
@@ -233,7 +220,42 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             try
             {
-                await _socket.SendAsync(buffer, type, true, cancellationToken);
+                await _socket.SendAsync(buffer, true, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Info("WebSocket message to {0} was cancelled", RemoteEndPoint);
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending WebSocket message {0}", ex, RemoteEndPoint);
+
+                throw;
+            }
+            finally
+            {
+                _sendSemaphore.Release();
+            }
+        }
+
+        public async Task SendAsync(string text, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException("text");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Per msdn docs, attempting to send simultaneous messages will result in one failing.
+            // This should help us workaround that and ensure all messages get sent
+            await _sendSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await _socket.SendAsync(text, true, cancellationToken);
             }
             catch (OperationCanceledException)
             {

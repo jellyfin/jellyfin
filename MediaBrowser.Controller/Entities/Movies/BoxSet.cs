@@ -6,6 +6,7 @@ using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,16 +15,23 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasTags, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
+    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
     {
         public BoxSet()
         {
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
-            Tags = new List<string>();
 
             DisplayOrder = ItemSortBy.PremiereDate;
             Keywords = new List<string>();
+        }
+
+        protected override bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
@@ -38,7 +46,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
         public List<string> Keywords { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
@@ -60,6 +67,15 @@ namespace MediaBrowser.Controller.Entities.Movies
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
+        [IgnoreDataMember]
+        public override bool IsPreSorted
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             var children = base.GetChildren(user, includeLinkedChildren);
@@ -75,7 +91,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 // Sort by release date
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
             }
-            
+
             // Default sorting
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending);
         }
@@ -94,17 +110,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             var totalItems = items.Count;
             var percentages = new Dictionary<Guid, double>(totalItems);
 
-            var tasks = new List<Task>();
-
             // Refresh songs
             foreach (var item in items)
             {
-                if (tasks.Count >= 3)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
                 var innerProgress = new ActionableProgress<double>();
 
@@ -124,12 +132,8 @@ namespace MediaBrowser.Controller.Entities.Movies
                 });
 
                 // Avoid implicitly captured closure
-                var taskChild = item;
-                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                await RefreshItem(item, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            tasks.Clear();
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);

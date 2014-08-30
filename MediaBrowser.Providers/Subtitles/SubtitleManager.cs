@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -27,6 +28,9 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly ILibraryMonitor _monitor;
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
+
+        public event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
+        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, ILibraryManager libraryManager, IItemRepository itemRepo)
         {
@@ -100,35 +104,63 @@ namespace MediaBrowser.Providers.Subtitles
             string subtitleId,
             CancellationToken cancellationToken)
         {
-            var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
+            var parts = subtitleId.Split(new[] { '_' }, 2);
+            var provider = GetProvider(parts.First());
 
-            using (var stream = response.Stream)
+            try
             {
-                var savePath = Path.Combine(Path.GetDirectoryName(video.Path),
-                    Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
+                var response = await GetRemoteSubtitles(subtitleId, cancellationToken).ConfigureAwait(false);
 
-                if (response.IsForced)
+                using (var stream = response.Stream)
                 {
-                    savePath += ".forced";
-                }
+                    var savePath = Path.Combine(Path.GetDirectoryName(video.Path),
+                        _fileSystem.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLower());
 
-                savePath += "." + response.Format.ToLower();
-
-                _logger.Info("Saving subtitles to {0}", savePath);
-
-                _monitor.ReportFileSystemChangeBeginning(savePath);
-
-                try
-                {
-                    using (var fs = _fileSystem.GetFileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    if (response.IsForced)
                     {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        savePath += ".forced";
+                    }
+
+                    savePath += "." + response.Format.ToLower();
+
+                    _logger.Info("Saving subtitles to {0}", savePath);
+
+                    _monitor.ReportFileSystemChangeBeginning(savePath);
+
+                    try
+                    {
+                        using (var fs = _fileSystem.GetFileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                        {
+                            await stream.CopyToAsync(fs).ConfigureAwait(false);
+                        }
+
+                        EventHelper.FireEventIfNotNull(SubtitlesDownloaded, this, new SubtitleDownloadEventArgs
+                        {
+                            Item = video,
+                            Format = response.Format,
+                            Language = response.Language,
+                            IsForced = response.IsForced,
+                            Provider = provider.Name
+
+                        }, _logger);
+                    }
+                    finally
+                    {
+                        _monitor.ReportFileSystemChangeComplete(savePath, false);
                     }
                 }
-                finally
+            }
+            catch (Exception ex)
+            {
+                EventHelper.FireEventIfNotNull(SubtitleDownloadFailure, this, new SubtitleDownloadFailureEventArgs
                 {
-                    _monitor.ReportFileSystemChangeComplete(savePath, false);
-                }
+                    Item = video,
+                    Exception = ex,
+                    Provider = provider.Name
+
+                }, _logger);
+                
+                throw;
             }
         }
 
@@ -267,5 +299,6 @@ namespace MediaBrowser.Providers.Subtitles
                 Id = GetProviderId(i.Name)
             });
         }
+
     }
 }

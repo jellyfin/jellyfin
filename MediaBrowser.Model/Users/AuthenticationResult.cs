@@ -16,5 +16,17 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value>The session information.</value>
         public SessionInfoDto SessionInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication token.
+        /// </summary>
+        /// <value>The authentication token.</value>
+        public string AccessToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
     }
 }

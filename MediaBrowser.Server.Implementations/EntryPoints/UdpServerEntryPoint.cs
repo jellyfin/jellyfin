@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Udp;
 using System.Net.Sockets;
 
@@ -27,30 +27,24 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// The _network manager
         /// </summary>
         private readonly INetworkManager _networkManager;
-        /// <summary>
-        /// The _server configuration manager
-        /// </summary>
-        private readonly IServerConfigurationManager _serverConfigurationManager;
-        /// <summary>
-        /// The _HTTP server
-        /// </summary>
-        private readonly IHttpServer _httpServer;
+        private readonly IServerApplicationHost _appHost;
+        private readonly IJsonSerializer _json;
 
         public const int PortNumber = 7359;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UdpServerEntryPoint"/> class.
+        /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="networkManager">The network manager.</param>
-        /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        /// <param name="httpServer">The HTTP server.</param>
-        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager, IHttpServer httpServer)
+        /// <param name="appHost">The application host.</param>
+        /// <param name="json">The json.</param>
+        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerApplicationHost appHost, IJsonSerializer json)
         {
             _logger = logger;
             _networkManager = networkManager;
-            _serverConfigurationManager = serverConfigurationManager;
-            _httpServer = httpServer;
+            _appHost = appHost;
+            _json = json;
         }
 
         /// <summary>
@@ -58,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            var udpServer = new UdpServer(_logger, _networkManager, _serverConfigurationManager, _httpServer);
+            var udpServer = new UdpServer(_logger, _networkManager, _appHost, _json);
 
             try
             {

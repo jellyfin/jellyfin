@@ -45,15 +45,16 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Alchemy">
-      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Nat, Version=1.2.13.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Imazen.WebP, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Nat.1.2.13.0\lib\net40\Mono.Nat.dll</HintPath>
+      <HintPath>..\ThirdParty\libwebp\Imazen.WebP.dll</HintPath>
     </Reference>
-    <Reference Include="Nowin">
-      <HintPath>..\ThirdParty\Nowin\Nowin.dll</HintPath>
+    <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Mono.Nat.1.2.21.0\lib\net40\Mono.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
@@ -70,9 +71,6 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
     <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll</HintPath>
@@ -96,11 +94,19 @@
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
+    <Reference Include="websocket-sharp, Version=1.0.2.508, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\WebsocketSharp\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\ActivityManager.cs" />
+    <Compile Include="Activity\ActivityRepository.cs" />
+    <Compile Include="Branding\BrandingConfigurationFactory.cs" />
+    <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDownloadScheduledTask.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
     <Compile Include="Channels\ChannelItemImageProvider.cs" />
@@ -110,11 +116,15 @@
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\ManualCollectionsFolder.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
+    <Compile Include="Connect\ConnectData.cs" />
+    <Compile Include="Connect\ConnectManager.cs" />
+    <Compile Include="Connect\ServerRegistrationResponse.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
     <Compile Include="Drawing\UnplayedCountIndicator.cs" />
     <Compile Include="Dto\DtoService.cs" />
+    <Compile Include="EntryPoints\ActivityLogEntryPoint.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
@@ -124,7 +134,9 @@
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
+    <Compile Include="Connect\ConnectEntryPoint.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
+    <Compile Include="FileOrganization\Extensions.cs" />
     <Compile Include="FileOrganization\FileOrganizationService.cs" />
     <Compile Include="FileOrganization\NameUtils.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
@@ -132,6 +144,9 @@
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
+    <Compile Include="HttpServer\NetListener\HttpListenerServer.cs" />
+    <Compile Include="HttpServer\IHttpListener.cs" />
+    <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
@@ -140,17 +155,29 @@
     <Compile Include="HttpServer\NativeWebSocket.cs" />
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
+    <Compile Include="HttpServer\Security\AuthService.cs" />
+    <Compile Include="HttpServer\Security\SessionAuthProvider.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
+    <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
+    <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
+    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
+    <Compile Include="HttpServer\ThrottledStream.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
+    <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
+    <Compile Include="Library\Resolvers\PlaylistResolver.cs" />
     <Compile Include="Library\SearchEngine.cs" />
     <Compile Include="Library\ResolverHelper.cs" />
     <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />
@@ -184,6 +211,7 @@
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="LiveTv\LiveTvConfigurationFactory.cs" />
     <Compile Include="LiveTv\LiveTvDtoService.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
@@ -195,6 +223,7 @@
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
     <Compile Include="Notifications\InternalNotificationService.cs" />
+    <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
@@ -204,11 +233,16 @@
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
     <Compile Include="Persistence\SqliteShrinkMemoryTimer.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
+    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
+    <Compile Include="Playlists\PlaylistImageEnhancer.cs" />
+    <Compile Include="Playlists\PlaylistManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
+    <Compile Include="Security\AuthenticationException.cs" />
+    <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
@@ -253,11 +287,14 @@
     <Compile Include="Persistence\SqliteUserRepository.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
+    <Compile Include="Sync\AppSyncProvider.cs" />
+    <Compile Include="Sync\CloudSyncProvider.cs" />
+    <Compile Include="Sync\MockSyncProvider.cs" />
+    <Compile Include="Sync\SyncManager.cs" />
+    <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="WebSocket\AlchemyServer.cs" />
-    <Compile Include="WebSocket\AlchemyWebSocket.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
@@ -344,12 +381,24 @@
     <EmbeddedResource Include="Localization\JavaScript\vi.json" />
     <EmbeddedResource Include="Localization\Server\da.json" />
     <EmbeddedResource Include="Localization\Server\vi.json" />
+    <EmbeddedResource Include="Localization\JavaScript\pl.json" />
+    <EmbeddedResource Include="Localization\Server\pl.json" />
+    <EmbeddedResource Include="Localization\JavaScript\es_ES.json" />
+    <EmbeddedResource Include="Localization\Server\es_ES.json" />
+    <EmbeddedResource Include="Localization\Server\ko.json" />
+    <EmbeddedResource Include="Localization\JavaScript\en_GB.json" />
+    <EmbeddedResource Include="Localization\JavaScript\tr.json" />
+    <EmbeddedResource Include="Localization\Server\tr.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\libwebp\windows\x86\libwebp.dll">
+      <Link>libwebp.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\highlight.default.css">
       <Link>swagger-ui\css\highlight.default.css</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -451,7 +500,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

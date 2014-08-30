@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
@@ -9,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace MediaBrowser.Dlna.Ssdp
@@ -42,20 +45,38 @@ namespace MediaBrowser.Dlna.Ssdp
             _config = config;
             _serverSignature = serverSignature;
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+            _config.NamedConfigurationUpdated += _config_ConfigurationUpdated;
         }
 
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        void _config_ConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
-            ReloadAliveNotifier();
+            if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
+            {
+                ReloadAliveNotifier();
+            }
         }
 
         public event EventHandler<SsdpMessageEventArgs> MessageReceived;
 
-        private void OnMessageReceived(SsdpMessageEventArgs args)
+        private async void OnMessageReceived(SsdpMessageEventArgs args)
         {
             if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
+                string mx = null;
+                args.Headers.TryGetValue("mx", out mx);
+                int delaySeconds;
+                if (!string.IsNullOrWhiteSpace(mx) && 
+                    int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
+                    && delaySeconds > 0)
+                {
+                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
+                    {
+                        _logger.Debug("Delaying search response by {0} seconds", delaySeconds);
+                    }
+
+                    await Task.Delay(delaySeconds * 1000).ConfigureAwait(false);
+                }
+
                 RespondToSearch(args.EndPoint, args.Headers["st"]);
             }
 
@@ -80,20 +101,20 @@ namespace MediaBrowser.Dlna.Ssdp
             ReloadAliveNotifier();
         }
 
-        public void SendRendererSearchMessage(IPEndPoint localIp)
-        {
-            SendSearchMessage("urn:schemas-upnp-org:device:MediaRenderer:1", "3", localIp);
-        }
-
-        public void SendSearchMessage(string deviceSearchType, string mx, IPEndPoint localIp)
+        public void SendSearchMessage(IPEndPoint localIp)
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            values["ST"] = deviceSearchType;
+
             values["MAN"] = "\"ssdp:discover\"";
-            values["MX"] = mx;
+
+            // Search target
+            values["ST"] = "ssdp:all";
+
+            // Seconds to delay response
+            values["MX"] = "3";
 
             SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
         }
@@ -125,24 +146,9 @@ namespace MediaBrowser.Dlna.Ssdp
             StartQueueTimer();
         }
 
-        public void SendDatagramFromDevices(string header,
-            Dictionary<string, string> values,
-            IPEndPoint endpoint,
-            string deviceType)
-        {
-            foreach (var d in RegisteredDevices)
-            {
-                if (string.Equals(deviceType, "ssdp:all", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(deviceType, d.Type, StringComparison.OrdinalIgnoreCase))
-                {
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
-                }
-            }
-        }
-
         private void RespondToSearch(IPEndPoint endpoint, string deviceType)
         {
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("RespondToSearch");
             }
@@ -164,9 +170,9 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
 
-                    if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {
                         _logger.Debug("{1} - Responded to a {0} request to {2}", d.Type, endpoint, d.Address.ToString());
                     }
@@ -255,19 +261,19 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 var received = (byte[])result.AsyncState;
 
-                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     _logger.Debug(Encoding.ASCII.GetString(received));
                 }
 
                 var args = SsdpHelper.ParseSsdpResponse(received, (IPEndPoint)endpoint);
 
-                if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                     var headerText = string.Join(",", headerTexts.ToArray());
 
-                    _logger.Debug("{0} message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
+                    _logger.Debug("{0} message received from {1} on {3}. Headers: {2}", args.Method, args.EndPoint, headerText, _socket.LocalEndPoint);
                 }
 
                 OnMessageReceived(args);
@@ -285,7 +291,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Dispose()
         {
-            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
+            _config.NamedConfigurationUpdated -= _config_ConfigurationUpdated;
 
             _isDisposed = true;
             while (_messageQueue.Count != 0)
@@ -337,7 +343,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void NotifyAll()
         {
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("Sending alive notifications");
             }
@@ -362,7 +368,7 @@ namespace MediaBrowser.Dlna.Ssdp
             values["NT"] = dev.Type;
             values["USN"] = dev.USN;
 
-            if (_config.Configuration.DlnaOptions.EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
@@ -406,13 +412,13 @@ namespace MediaBrowser.Dlna.Ssdp
         private int _aliveNotifierIntervalMs;
         private void ReloadAliveNotifier()
         {
-            if (!_config.Configuration.DlnaOptions.BlastAliveMessages)
+            if (!_config.GetDlnaConfiguration().BlastAliveMessages)
             {
                 DisposeNotificationTimer();
                 return;
             }
 
-            var intervalMs = _config.Configuration.DlnaOptions.BlastAliveMessageIntervalSeconds * 1000;
+            var intervalMs = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds * 1000;
 
             if (_notificationTimer == null || _aliveNotifierIntervalMs != intervalMs)
             {

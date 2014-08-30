@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -10,7 +11,7 @@ namespace MediaBrowser.Model.Dto
     /// Class UserDto
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, HasPassword = {HasPassword}")]
-    public class UserDto : INotifyPropertyChanged, IItemDto
+    public class UserDto : IHasPropertyChangedEvent, IItemDto
     {
         /// <summary>
         /// Gets or sets the name.
@@ -36,6 +37,8 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if this instance has password; otherwise, <c>false</c>.</value>
         public bool HasPassword { get; set; }
 
+        public bool HasConfiguredPassword { get; set; }
+        
         /// <summary>
         /// Gets or sets the last login date.
         /// </summary>

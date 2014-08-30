@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
@@ -34,7 +33,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IImageProcessor _imageProcessor;
 
-        private readonly SsdpHandler _ssdpHandler;
+        private readonly DeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
 
         public bool IsSessionActive
@@ -52,7 +51,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, SsdpHandler ssdpHandler, string serverAddress)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -61,8 +60,8 @@ namespace MediaBrowser.Dlna.PlayTo
             _dlnaManager = dlnaManager;
             _userManager = userManager;
             _imageProcessor = imageProcessor;
-            _ssdpHandler = ssdpHandler;
             _serverAddress = serverAddress;
+            _deviceDiscovery = deviceDiscovery;
             _logger = logger;
         }
 
@@ -75,12 +74,41 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.MediaChanged += _device_MediaChanged;
             _device.Start();
 
-            _ssdpHandler.MessageReceived += _SsdpHandler_MessageReceived;
+            _deviceDiscovery.DeviceLeft += _deviceDiscovery_DeviceLeft;
 
             _updateTimer = new Timer(updateTimer_Elapsed, null, 60000, 60000);
         }
 
-        private async void updateTimer_Elapsed(object state)
+        void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
+        {
+            string nts;
+            e.Headers.TryGetValue("NTS", out nts);
+
+            string usn;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
+
+            string nt;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
+
+            if ( usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
+                !_disposed)
+            {
+                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    try
+                    {
+                        _sessionManager.ReportSessionEnded(_session.Id);
+                    }
+                    catch
+                    {
+                        // Could throw if the session is already gone
+                    }
+                }
+            }
+        }
+
+        private void updateTimer_Elapsed(object state)
         {
             if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(120))
             {
@@ -99,37 +127,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private string GetServerAddress()
         {
             return _serverAddress;
-        }
-
-        void _SsdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
-        {
-            string nts;
-            e.Headers.TryGetValue("NTS", out nts);
-
-            string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
-
-            string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
-
-            if (String.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
-                String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
-                usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
-                !_disposed)
-            {
-                if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    try
-                    {
-                        _sessionManager.ReportSessionEnded(_session.Id);
-                    }
-                    catch
-                    {
-                        // Could throw if the session is already gone
-                    }
-                }
-            }
         }
 
         async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
@@ -504,7 +501,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                return new ContentFeatureBuilder(profile)
+                var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
                     streamInfo.VideoCodec,
                     streamInfo.AudioCodec,
@@ -523,6 +520,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic);
+
+                return list.FirstOrDefault();
             }
 
             return null;
@@ -540,7 +539,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate,
+                        MaxBitrate = profile.MaxStreamingBitrate,
                         MediaSourceId = mediaSourceId,
                         AudioStreamIndex = audioStreamIndex,
                         SubtitleStreamIndex = subtitleStreamIndex
@@ -560,7 +559,7 @@ namespace MediaBrowser.Dlna.PlayTo
                         MediaSources = mediaSources,
                         Profile = profile,
                         DeviceId = deviceId,
-                        MaxBitrate = profile.MaxBitrate,
+                        MaxBitrate = profile.MaxStreamingBitrate,
                         MediaSourceId = mediaSourceId
                     }),
 
@@ -603,9 +602,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _currentPlaylistIndex = index;
             var currentitem = Playlist[index];
 
-            var dlnaheaders = GetDlnaHeaders(currentitem);
-
-            await _device.SetAvTransport(currentitem.StreamUrl, dlnaheaders, currentitem.Didl);
+            await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && streamInfo.IsDirectStream)
@@ -626,7 +623,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _device.MediaChanged -= _device_MediaChanged;
-                _ssdpHandler.MessageReceived -= _SsdpHandler_MessageReceived;
+                _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
 
                 DisposeUpdateTimer();
 
@@ -734,7 +731,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
                 var progress = GetProgressInfo(media, info);
 
-                if (info.Item != null && !info.IsDirectStream)
+                if (info.Item != null)
                 {
                     var newPosition = progress.PositionTicks ?? 0;
 
@@ -760,7 +757,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
                 var progress = GetProgressInfo(media, info);
 
-                if (info.Item != null && !info.IsDirectStream)
+                if (info.Item != null)
                 {
                     var newPosition = progress.PositionTicks ?? 0;
 

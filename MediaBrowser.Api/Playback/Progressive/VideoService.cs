@@ -11,7 +11,6 @@ using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
 using System.IO;
-using System.Threading;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -144,7 +143,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                 return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
             }
 
-            const string keyFrameArg = " -force_key_frames expr:if(isnan(prev_forced_t),gte(t,.1),gte(t,prev_forced_t+5))";
+            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                5.ToString(UsCulture));
 
             args += keyFrameArg;
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec, CancellationToken.None);
+                args += GetOutputSizeParam(state, codec);
             }
 
             var qualityParam = GetVideoQualityParam(state, codec, false);
@@ -166,7 +166,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetInternalGraphicalSubtitleParam(state, codec);
+                args += GetGraphicalSubtitleParam(state, codec);
             }
 
             return args;
@@ -210,7 +210,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -ab " + bitrate.Value.ToString(UsCulture);
             }
 
-            args += " " + GetAudioFilterParam(state, true);
+            args += " " + GetAudioFilterParam(state, false);
 
             return args;
         }

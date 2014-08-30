@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Mono
 			#endif
 			
 			// Allow this to be specified on the command line.
-			var customProgramDataPath = ParseCommandLine();
+			var customProgramDataPath = ParseProgramDataPathFromCommandLine();
 
 			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Mono
 			}
 		}
 		
-		private static string ParseCommandLine()
+		private static string ParseProgramDataPathFromCommandLine()
 		{
 			var commandArgs = Environment.GetCommandLineArgs().ToList();
 			

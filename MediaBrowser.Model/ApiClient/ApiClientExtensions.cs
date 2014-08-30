@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,11 @@ namespace MediaBrowser.Model.ApiClient
         public static Task<UserDto[]> GetPublicUsersAsync(this IApiClient apiClient)
         {
             return apiClient.GetPublicUsersAsync(CancellationToken.None);
+        }
+
+        public static Task<ItemsResult> GetItemsAsync(this IApiClient apiClient, ItemQuery query)
+        {
+            return apiClient.GetItemsAsync(query, CancellationToken.None);
         }
     }
 }
