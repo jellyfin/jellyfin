@@ -170,7 +170,10 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
+                    // Commenting this out because binding to the local ipendpoint often throws an error
+                    //SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
+
+                    SendDatagram(header, values, endpoint, null);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {
