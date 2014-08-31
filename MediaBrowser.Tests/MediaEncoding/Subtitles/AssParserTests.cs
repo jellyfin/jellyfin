@@ -1,14 +1,13 @@
-﻿using System;
+﻿using MediaBrowser.MediaEncoding.Subtitles;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using MediaBrowser.MediaEncoding.Subtitles;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
 
     [TestClass]
-    public class SsaParserTests {
+    public class AssParserTests {
 
         [TestMethod]
         public void TestParse() {
@@ -21,7 +20,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                                                     StartPositionTicks = 24000000,
                                                                                                                     EndPositionTicks = 72000000,
                                                                                                                     Text =
-                                                                                                                        "Senator, we're <br />making our final <br />approach into Coruscant."
+                                                                                                                        "Senator, we're "+ParserValues.NewLine+"making our final "+ParserValues.NewLine+"approach into Coruscant."
                                                                                                                 },
                                                                                          new SubtitleTrackEvent {
                                                                                                                     Id = "2",
@@ -34,14 +33,14 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                                                     Id = "3",
                                                                                                                     StartPositionTicks = 150400000,
                                                                                                                     EndPositionTicks = 180400000,
-                                                                                                                    Text = "It's <br />a <br />trap!"
+                                                                                                                    Text = "It's "+ParserValues.NewLine+"a "+ParserValues.NewLine+"trap!"
                                                                                                                 }
                                                                                      }
                                       };
 
             var sut = new AssParser();
 
-            var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\data.ssa");
+            var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\data.ass");
 
             var result = sut.Parse(stream, CancellationToken.None);
 
