@@ -250,7 +250,9 @@
                 return false;
             }
 
-            if ((videoStream.Codec || '').toLowerCase().indexOf('h264') == -1) {
+            var isH264 = (videoStream.Codec || '').toLowerCase().indexOf('h264') != -1;
+
+            if (!isH264) {
                 console.log('Transcoding because the content is not h264');
                 return false;
             }
@@ -282,9 +284,11 @@
 
             var extension = (mediaSource.Container || '').toLowerCase();
 
-            // m4v's and mp4's with high profile failing in chrome
-            if (videoStream && videoStream.Profile == 'High') {
-                //return false;
+            var profile = (videoStream ? (videoStream.Profile || '') : '').toLowerCase();
+
+            // only support high, baseline variants and main variants
+            if (isH264 && profile != 'high' && profile.indexOf('baseline') == -1 && profile.indexOf('main') == -1) {
+                return false;
             }
 
             if (extension == 'm4v' || extension == 'mkv') {

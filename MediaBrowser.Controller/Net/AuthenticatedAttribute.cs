@@ -8,6 +8,12 @@ namespace MediaBrowser.Controller.Net
         public IAuthService AuthService { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to allow local unauthenticated access.
+        /// </summary>
+        /// <value><c>true</c> if [allow local]; otherwise, <c>false</c>.</value>
+        public bool AllowLocal { get; set; }
+
+        /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
         /// <param name="request">The http request wrapper</param>
@@ -15,7 +21,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            AuthService.Authenticate(request, response, requestDto);
+            AuthService.Authenticate(request, response, requestDto, AllowLocal);
         }
 
         /// <summary>

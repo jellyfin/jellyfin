@@ -58,84 +58,42 @@
     }
 
     function populateReviews(id, page) {
-        // Get the latest positive and negative reviews
-        var promise1 = ApiClient.getPackageReviews(id, 4, null, 3, true);
-        var promise2 = ApiClient.getPackageReviews(id, null, 2, 3, true);
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-            //positive
-            var html = '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
-            html += '<h3>Latest Outstanding Reviews</h3>';
+        ApiClient.getPackageReviews(id, null, null, 3).done(function (positive) {
 
-            var positive = response1[0];
-            var hasReviews = false;
+            var html = '';
+
             if (positive && positive.length > 0) {
+
+                html += '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
+                html += '<h3>' + Globalize.translate('HeaderLatestReviews') + '</h3>';
+
+                html += "<div><br/>";
+
                 for (var i = 0; i < positive.length; i++) {
                     var review = positive[i];
-                    if (review.title) {
-                        hasReviews = true;
-                        html += "<div>";
-                        html += "<span class='storeItemReviewText'>";
-                        html += new Date(review.timestamp).toDateString();
-                        html += " " + RatingHelpers.getStoreRatingHtml(review.rating, review.id, review.name, true);
-                        html += " " + review.title;
-                        html += "</span>";
-                        if (review.review) {
-                            html += "<p class='storeItemReviewText'>";
-                            html += review.review;
-                            html += "</p>";
-                        }
 
-                        html += "</div>";
-                        html += "<hr/>";
+                    html += "<div>";
+                    html += "<span class='storeItemReviewText'>";
+                    html += new Date(review.timestamp).toDateString();
+                    html += " " + RatingHelpers.getStoreRatingHtml(review.rating, review.id, review.name, true);
+                    html += " " + review.title;
+                    html += "</span>";
+                    if (review.review) {
+                        html += "<p class='storeItemReviewText'>";
+                        html += review.review;
+                        html += "</p>";
                     }
+
+                    html += "</div>";
+                    html += "<hr/>";
                 }
+                html += "</div>";
+                html += "</div>";
             }
-            if (!hasReviews) {
-                html += "<p>No Outstanding Reviews with additional information</p>";
-            }
-
-            html += "</div>";
-
-            //negative
-            html += '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
-            html += '<h3>Latest Negative Reviews</h3>';
-            var negative = response2[0];
-            hasReviews = false;
-            if (negative && negative.length > 0) {
-                for (var i = 0; i < negative.length; i++) {
-                    review = negative[i];
-                    if (review.title) {
-                        hasReviews = true;
-                        html += "<div>";
-                        html += "<span class='storeItemReviewText'>";
-                        html += new Date(review.timestamp).toDateString();
-                        html += " " + RatingHelpers.getStoreRatingHtml(review.rating, review.id, review.name, true);
-                        html += " " + review.title;
-                        html += "</span>";
-                        if (review.review) {
-                            html += "<p class='storeItemReviewText'>";
-                            html += review.review;
-                            html += "</p>";
-                        }
-
-                        html += "</div>";
-                        html += "<hr/>";
-                    }
-                }
-            }
-
-            if (!hasReviews) {
-                html += "<p>No Negative Reviews with additional information</p>";
-            }
-
-            html += "</div>";
-
 
             $('#latestReviews', page).html(html).trigger('create');
-
         });
-
     }
 
     function renderPackage(pkg, installedPlugins, pluginSecurityInfo, page) {
@@ -157,7 +115,8 @@
         } else {
             $("#btnInstallDiv", page).hide();
             $("#pSelectVersion", page).hide();
-            var msg = "This plug-in must be installed from " + pkg.targetSystem;
+
+            var msg = Globalize.translate('MessageInstallPluginFromApp');
             $("#nonServerMsg", page).html(msg).show();
         }
 
@@ -178,14 +137,15 @@
             // Fill in registration info
             var regStatus = "<strong>";
             if (pkg.isRegistered) {
-                regStatus += "You are currently registered for this feature";
             } else {
+
                 if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
                 } else {
                     if (new Date(pkg.expDate).getTime() <= new Date().getTime()) {
-                        regStatus += "The trial period for this feature has expired";
+                        regStatus += Globalize.translate('MessageTrialExpired');
                     } else {
-                        regStatus += "The trial period for this feature will expire in " + Math.round((new Date(pkg.expDate).getTime() - new Date().getTime()) / (86400000)) + " day(s)";
+
+                        regStatus += Globalize.translate('MessageTrialWillExpireIn').replace('{0}', Math.round((new Date(pkg.expDate).getTime() - new Date().getTime()) / (86400000)));
                     }
                 }
             }
@@ -205,15 +165,17 @@
                     $('#featureId', page).val(pkg.featureId);
                     $('#featureName', page).val(pkg.name);
                     $('#amount', page).val(pkg.price);
-                    $('#regPrice', page).html("<h2>Price: $" + pkg.price.toFixed(2) + " (USD)</h2>");
+
+                    $('#regPrice', page).html("<h3>" + Globalize.translate('ValuePriceUSD').replace('{0}', "$" + pkg.price.toFixed(2)) + "</h3>");
+
                     var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
+
                     $.getJSON(url).done(function (dev) {
                         if (dev.payPalEmail) {
                             $('#payPalEmail', page).val(dev.payPalEmail);
 
                         } else {
                             $('#ppButton', page).hide();
-                            $('#noEmail', page).show();
                         }
                     });
                 } else {
@@ -241,9 +203,9 @@
         }
 
         //Ratings and Reviews
-        var ratingHtml = "<strong>Overall </strong>" + RatingHelpers.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
+        var ratingHtml = RatingHelpers.getStoreRatingHtml(pkg.avgRating, pkg.id, pkg.name);
         ratingHtml += "<span class='storeReviewCount'>";
-        ratingHtml += " " + pkg.totalRatings + " Reviews";
+        ratingHtml += " " + Globalize.translate('ValueReviewCount').replace('{0}', pkg.totalRatings);
         ratingHtml += "</span>";
 
         $('#ratingLine', page).html(ratingHtml);
@@ -265,7 +227,9 @@
         }
 
         if (installedPlugin) {
-            $('#pCurrentVersion', page).show().html("You currently have version <strong>" + installedPlugin.Version + "</strong> installed.");
+
+            var currentVersionText = Globalize.translate('MessageYouHaveVersionInstalled').replace('{0}', '<strong>' + installedPlugin.Version + '</strong>');
+            $('#pCurrentVersion', page).show().html(currentVersionText);
 
         } else {
             $('#pCurrentVersion', page).hide().html("");
@@ -332,16 +296,9 @@
 
                     Dashboard.hideLoadingMsg();
 
-                    Dashboard.confirm("Are you sure you wish to reinstall the same version you already have? In most cases this will not have any effect.", "Plugin Reinstallation", function (confirmResult) {
-
-                        if (confirmResult) {
-
-                            Dashboard.showLoadingMsg();
-                            performInstallation(name, guid, vals[1], version);
-                        } else {
-                            $('#btnInstall', page).buttonEnabled(true);
-                        }
-
+                    Dashboard.alert({
+                        message: Globalize.translate('MessageAlreadyInstalled'),
+                        title: Globalize.translate('HeaderPluginInstallation')
                     });
                 } else {
                     performInstallation(name, guid, vals[1], version);

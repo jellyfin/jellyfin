@@ -305,20 +305,6 @@ namespace MediaBrowser.ServerApplication
         {
             var saveConfig = false;
 
-            if (ServerConfigurationManager.Configuration.DlnaOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("dlna", ServerConfigurationManager.Configuration.DlnaOptions);
-                ServerConfigurationManager.Configuration.DlnaOptions = null;
-                saveConfig = true;
-            }
-
-            if (ServerConfigurationManager.Configuration.LiveTvOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("livetv", ServerConfigurationManager.Configuration.LiveTvOptions);
-                ServerConfigurationManager.Configuration.LiveTvOptions = null;
-                saveConfig = true;
-            }
-
             if (ServerConfigurationManager.Configuration.TvFileOrganizationOptions != null)
             {
                 ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });

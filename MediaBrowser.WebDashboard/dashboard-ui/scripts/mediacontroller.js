@@ -2,13 +2,13 @@
 
     function setMirrorModeEnabled(enabled) {
 
-        var val = enabled ? '1' : '';
+        var val = enabled ? '1' : '0';
 
         store.setItem('displaymirror-' + Dashboard.getCurrentUserId(), val);
 
     }
     function isMirrorModeEnabled() {
-        return (store.getItem('displaymirror-' + Dashboard.getCurrentUserId()) || '') == '1';
+        return (store.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
     }
 
     var currentDisplayInfo;

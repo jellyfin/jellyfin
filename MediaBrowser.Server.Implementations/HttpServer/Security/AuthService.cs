@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         public string HtmlRedirect { get; set; }
 
-        public void Authenticate(IRequest req, IResponse res, object requestDto)
+        public void Authenticate(IRequest req, IResponse res, object requestDto, bool allowLocal)
         {
             if (HostContext.HasValidAuthSecret(req))
                 return;
@@ -50,13 +50,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             //ExecuteBasic(req, res, requestDto); //first check if session is authenticated
             //if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            ValidateUser(req);
+            ValidateUser(req, allowLocal);
         }
 
         // TODO: Remove this when all clients have supported the new sescurity
-        private readonly List<string> _updatedClients = new List<string>(){"Dashboard"}; 
+        private readonly List<string> _updatedClients = new List<string>() { "Dashboard", "Chromecast" };
 
-        private void ValidateUser(IRequest req)
+        private void ValidateUser(IRequest req, bool allowLocal)
         {
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
@@ -65,7 +65,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 || _config.Configuration.EnableTokenAuthentication
                 || _updatedClients.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
-                SessionManager.ValidateSecurityToken(auth.Token);
+                if (!allowLocal || !req.IsLocal)
+                {
+                    SessionManager.ValidateSecurityToken(auth.Token);
+                }
             }
 
             var user = string.IsNullOrWhiteSpace(auth.UserId)
@@ -93,35 +96,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     auth.Device,
                     req.RemoteIp,
                     user);
-            }
-        }
-
-        private void ExecuteBasic(IRequest req, IResponse res, object requestDto)
-        {
-            if (AuthenticateService.AuthProviders == null)
-                throw new InvalidOperationException(
-                    "The AuthService must be initialized by calling AuthService.Init to use an authenticate attribute");
-
-            var matchingOAuthConfigs = AuthenticateService.AuthProviders.Where(x =>
-                this.Provider.IsNullOrEmpty()
-                || x.Provider == this.Provider).ToList();
-
-            if (matchingOAuthConfigs.Count == 0)
-            {
-                res.WriteError(req, requestDto, "No OAuth Configs found matching {0} provider"
-                    .Fmt(this.Provider ?? "any"));
-                res.EndRequest();
-            }
-
-            matchingOAuthConfigs.OfType<IAuthWithRequest>()
-                .Each(x => x.PreAuthenticate(req, res));
-
-            var session = req.GetSession();
-            if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
-            {
-                if (this.DoHtmlRedirectIfConfigured(req, res, true)) return;
-
-                AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
         }
 

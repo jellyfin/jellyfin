@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.System;
 using ServiceStack;
 using System;
@@ -42,6 +44,7 @@ namespace MediaBrowser.Api.System
     /// This is currently not authenticated because the uninstaller needs to be able to shutdown the server.
     /// </summary>
     [Route("/System/Shutdown", "POST", Summary = "Shuts down the application")]
+    [Authenticated(AllowLocal = true)]
     public class ShutdownApplication
     {
     }
@@ -66,6 +69,12 @@ namespace MediaBrowser.Api.System
         public string Name { get; set; }
     }
 
+    [Route("/System/SupporterInfo", "GET")]
+    [Authenticated]
+    public class GetSupporterInfo : IReturn<SupporterInfo>
+    {
+    }
+
     /// <summary>
     /// Class SystemInfoService
     /// </summary>
@@ -80,6 +89,8 @@ namespace MediaBrowser.Api.System
 
         private readonly INetworkManager _network;
 
+        private readonly ISecurityManager _security;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
@@ -87,12 +98,20 @@ namespace MediaBrowser.Api.System
         /// <param name="appPaths">The application paths.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <exception cref="ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IServerApplicationHost appHost, IApplicationPaths appPaths, IFileSystem fileSystem, INetworkManager network)
+        public SystemService(IServerApplicationHost appHost, IApplicationPaths appPaths, IFileSystem fileSystem, INetworkManager network, ISecurityManager security)
         {
             _appHost = appHost;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _network = network;
+            _security = security;
+        }
+
+        public async Task<object> Get(GetSupporterInfo request)
+        {
+            var result = await _security.GetSupporterInfo().ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public object Get(GetServerLogs request)

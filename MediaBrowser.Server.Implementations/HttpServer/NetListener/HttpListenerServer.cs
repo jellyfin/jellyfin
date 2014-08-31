@@ -4,7 +4,6 @@ using ServiceStack;
 using ServiceStack.Host.HttpListener;
 using ServiceStack.Web;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,26 +19,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         private HttpListener _listener;
         private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
 
-        public System.Action<Exception, IRequest> ErrorHandler { get; set; }
+        public Action<Exception, IRequest> ErrorHandler { get; set; }
         public Action<WebSocketConnectEventArgs> WebSocketHandler { get; set; }
-        public System.Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
+        public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
 
-        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Action<string> _endpointListener;
         
-        public HttpListenerServer(ILogger logger)
+        public HttpListenerServer(ILogger logger, Action<string> endpointListener)
         {
             _logger = logger;
+            _endpointListener = endpointListener;
         }
 
-        /// <summary>
-        /// Gets the local end points.
-        /// </summary>
-        /// <value>The local end points.</value>
-        public IEnumerable<string> LocalEndPoints
-        {
-            get { return _localEndPoints.Keys.ToList(); }
-        }
-        
         private List<string> UrlPrefixes { get; set; }
 
         public void Start(IEnumerable<string> urlPrefixes)
@@ -47,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
             UrlPrefixes = urlPrefixes.ToList();
 
             if (_listener == null)
-                _listener = new System.Net.HttpListener();
+                _listener = new HttpListener();
 
             //HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
@@ -229,7 +220,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
             {
                 var address = endpoint.ToString();
 
-                _localEndPoints.GetOrAdd(address, address);
+                _endpointListener(address);
             }
 
             LogRequest(_logger, request);

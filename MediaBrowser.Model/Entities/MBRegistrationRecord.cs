@@ -5,25 +5,21 @@ namespace MediaBrowser.Model.Entities
     public class MBRegistrationRecord
     {
         public DateTime ExpirationDate { get; set; }
-        public bool IsRegistered { get; set;}
+        public bool IsRegistered { get; set; }
         public bool RegChecked { get; set; }
         public bool RegError { get; set; }
-        private bool? _isInTrial;
-        public bool TrialVersion
-        {
-            get
-            {
-                if (_isInTrial == null)
-                {
-                    if (!RegChecked) return false; //don't set this until we've successfully obtained exp date
-                    _isInTrial = ExpirationDate > DateTime.Now;
-                }
-                return (_isInTrial.Value && !IsRegistered);
-            }
-        }
-        public bool IsValid
-        {
-            get { return !RegChecked || (IsRegistered || TrialVersion); }
-        }
+        public bool TrialVersion { get; set; }
+        public bool IsValid { get; set; }
+    }
+
+    public class SupporterInfo
+    {
+        public string Email { get; set; }
+        public string SupporterKey { get; set; }
+        public DateTime? ExpirationDate { get; set; }
+        public DateTime RegistrationDate { get; set; }
+        public string PlanType { get; set; }
+        public bool IsActiveSupporter { get; set; }
+        public bool IsExpiredSupporter { get; set; }
     }
 }

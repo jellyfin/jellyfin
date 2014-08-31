@@ -23,7 +23,11 @@
 
                     <p>${HeaderSupporterBenefit}</p>
 
-                    <form style="margin-top:2em;" name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalForm" method="post">
+                    <div class="currentPlanInfo" style="display:none;margin-top:1.5em;">
+                        <p class="planSummary"></p>
+                    </div>
+
+                    <form style="margin-top:1.5em;" name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalSupporterForm" method="post">
 
                         <fieldset data-role="controlgroup">
                             <legend>${HeaderDonationType}</legend>
@@ -34,7 +38,7 @@
                                     <span class="lifetimeAmount"></span>
                                 </label>
                             </div>
-                            <!--<div class="fldYearly">
+                            <div class="fldYearly">
                                 <input type="radio" class="radioDonationType" name="radioDonationType" id="radioYearlySupporter" value="yearly">
                                 <label for="radioYearlySupporter">
                                     Yearly supporter club membership<br />
@@ -47,18 +51,17 @@
                                     Monthly supporter club membership<br />
                                     <span class="monthlyAmount"></span>
                                 </label>
-                            </div>-->
+                            </div>
                         </fieldset>
+                        <div class="fieldDescription">${LabelRecurringDonationCanBeCancelledHelp}</div>
 
-                        <fieldset data-role="controlgroup" style="margin-top:1em;">
+                        <fieldset data-role="controlgroup" style="margin-top:1.5em;">
                             <input type="radio" class="radioDonationType" name="radioDonationType" id="radioOneTimeDonation" value="once">
                             <label for="radioOneTimeDonation">
                                 ${OptionMakeOneTimeDonation}<br />
                             </label>
-                            <p id="oneTimeDescription" >${OptionOneTimeDescription}</p>
                         </fieldset>
-
-                        <!--<span class="fieldDescription">${LabelAutomaticallyDonateHelp}</span>-->
+                        <div id="oneTimeDescription" class="fieldDescription" style="display:none;">${OptionOneTimeDescription}</div>
 
                         <div class="fldOneTimeDonationAmount">
                             <br />
@@ -88,18 +91,27 @@
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
 
-                        <a data-role="button" data-icon="arrow-r" data-iconpos="right" onclick="$(this).parents('form')[0].submit();">
+                        <button type="submit" data-icon="arrow-r" data-iconpos="right">
                             <img src="css/images/supporter/donatepaypal.png" />
-                        </a>
+                        </button>
 
                         <input type="hidden" id="donateAmt" name="amount" />
 
                     </form>
                     <p>${DonationNextStep}</p>
                     <p><a href="supporterkey.html">${ButtonEnterSupporterKey}</a></p>
+
+                    <!-- Used only for instructional message box -->
+                    <input type="hidden" class="hfPlanType" />
+                    <input type="hidden" class="hfIsActive" />
+
                 </div>
             </div>
         </div>
+
+        <script type="text/javascript">
+            $('#payPalSupporterForm').off('submit', SupporterPage.onSubmit).on('submit', SupporterPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

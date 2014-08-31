@@ -1110,5 +1110,15 @@
     "LabelAirDays": "Air days:",
     "LabelAirTime": "Air time:",
     "HeaderMediaInfo": "Media Info",
-    "HeaderPhotoInfo": "Photo Info"
+    "HeaderPhotoInfo": "Photo Info",
+    "HeaderInstall": "Install",
+    "LabelSelectVersionToInstall": "Select version to install:",
+    "LinkSupporterMembership": "Learn about the Supporter Membership",
+    "MessageSupporterPluginRequiresMembership": "This plugin will require an active supporter membership after the 14 day free trial.",
+    "MessagePremiumPluginRequiresMembership": "This plugin will require an active supporter membership in order to purchase after the 14 day free trial.",
+    "HeaderReviews": "Reviews",
+    "HeaderDeveloperInfo": "Developer Info",
+    "HeaderRevisionHistory": "Revision History",
+    "ButtonViewWebsite": "View website",
+    "LabelRecurringDonationCanBeCancelledHelp":  "Recurring donations can be cancelled at any time from within your PayPal account."
 }

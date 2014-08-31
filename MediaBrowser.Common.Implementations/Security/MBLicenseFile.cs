@@ -1,7 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -19,7 +22,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 if (value != _regKey)
                 {
                     //if key is changed - clear out our saved validations
-                    UpdateRecords.Clear();
+                    _updateRecords.Clear();
                     _regKey = value;
                 }
             }
@@ -33,24 +36,30 @@ namespace MediaBrowser.Common.Implementations.Security
             }
         }
 
-        public string LegacyKey { get; set; }
-        private Dictionary<Guid, DateTime> UpdateRecords { get; set; }
-        private readonly object _lck = new object();
+        private readonly ConcurrentDictionary<Guid, DateTime> _updateRecords = new ConcurrentDictionary<Guid, DateTime>();
+        private readonly object _fileLock = new object();
         private string _regKey;
 
         public MBLicenseFile(IApplicationPaths appPaths)
         {
             _appPaths = appPaths;
 
-            UpdateRecords = new Dictionary<Guid, DateTime>();
             Load();
+        }
+
+        private void SetUpdateRecord(Guid key, DateTime value)
+        {
+            _updateRecords.AddOrUpdate(key, value, (k, v) => value);
         }
 
         public void AddRegCheck(string featureId)
         {
             using (var provider = new MD5CryptoServiceProvider())
             {
-                UpdateRecords[new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId)))] = DateTime.UtcNow;
+                var key = new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId)));
+                var value = DateTime.UtcNow;
+
+                SetUpdateRecord(key, value);
                 Save();
             }
 
@@ -60,7 +69,11 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             using (var provider = new MD5CryptoServiceProvider())
             {
-                UpdateRecords.Remove(new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId))));
+                var key = new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId)));
+                DateTime val;
+
+                _updateRecords.TryRemove(key, out val);
+
                 Save();
             }
 
@@ -71,8 +84,10 @@ namespace MediaBrowser.Common.Implementations.Security
             using (var provider = new MD5CryptoServiceProvider())
             {
                 DateTime last;
-                lock(_lck) UpdateRecords.TryGetValue(new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId))), out last);
-                return last < DateTime.UtcNow ? last : DateTime.MinValue;  // guard agains people just putting a large number in the file
+                _updateRecords.TryGetValue(new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId))), out last);
+
+                // guard agains people just putting a large number in the file
+                return last < DateTime.UtcNow ? last : DateTime.MinValue;  
             }
         }
 
@@ -80,7 +95,7 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             string[] contents = null;
             var licenseFile = Filename;
-            lock (_lck)
+            lock (_fileLock)
             {
                 try
                 {
@@ -95,13 +110,19 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 //first line is reg key
                 RegKey = contents[0];
+
                 //next is legacy key
-                if (contents.Length > 1) LegacyKey = contents[1];
+                if (contents.Length > 1)
+                {
+                    // Don't need this anymore
+                }
+
                 //the rest of the lines should be pairs of features and timestamps
                 for (var i = 2; i < contents.Length; i = i + 2)
                 {
                     var feat = Guid.Parse(contents[i]);
-                    UpdateRecords[feat] = new DateTime(Convert.ToInt64(contents[i + 1]));
+
+                    SetUpdateRecord(feat, new DateTime(Convert.ToInt64(contents[i + 1])));
                 }
             }
         }
@@ -109,16 +130,24 @@ namespace MediaBrowser.Common.Implementations.Security
         public void Save()
         {
             //build our array
-            var lines = new List<string> {RegKey, LegacyKey};
-            foreach (var pair in UpdateRecords)
+            var lines = new List<string>
+            {
+                RegKey, 
+
+                // Legacy key
+                string.Empty
+            };
+
+            foreach (var pair in _updateRecords
+                .ToList())
             {
                 lines.Add(pair.Key.ToString());
-                lines.Add(pair.Value.Ticks.ToString());
+                lines.Add(pair.Value.Ticks.ToString(CultureInfo.InvariantCulture));
             }
 
             var licenseFile = Filename;
             Directory.CreateDirectory(Path.GetDirectoryName(licenseFile));
-            lock (_lck) File.WriteAllLines(licenseFile, lines);
+            lock (_fileLock) File.WriteAllLines(licenseFile, lines);
         }
     }
 }

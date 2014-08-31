@@ -13,70 +13,79 @@
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
                     <a href="channelsettings.html" data-role="button">${TabChannels}</a>
                 </div>
-                <form class="addPluginForm">
+
+                <div class="readOnlyContent">
 
                     <h2 class="pluginName"></h2>
                     <p id="tagline" style="font-style: italic;"></p>
-                    <p id="pPreviewImage" style="text-align: center; margin: 2em 0;"></p>
+                    <p id="pPreviewImage" style="text-align: center;"></p>
 
                     <p id="overview"></p>
 
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>Install</h3>
-                        <p id="pCurrentVersion"></p>
-                        <p id="pSelectVersion" class="hide">
-                            <label for="selectVersion">Select version to install:</label>
-                            <select id="selectVersion" name="selectVersion"></select>
-                        </p>
+                        <h3>${HeaderInstall}</h3>
 
-                        <p id="btnInstallDiv" class="hide">
-                            <button id="btnInstall" type="submit" data-icon="arrow-d" data-theme="b">Install</button>
-                        </p>
-                        <p id="nonServerMsg"></p>
-                    </div>
-                </form>
+                        <div>
+                            <form class="addPluginForm">
+                                <p id="pCurrentVersion"></p>
+                                <p id="pSelectVersion" class="hide">
+                                    <label for="selectVersion">${LabelSelectVersionToInstall}</label>
+                                    <select id="selectVersion" name="selectVersion"></select>
+                                </p>
 
-                <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-                    <div class="premiumPackage" data-role="collapsible" data-collapsed="false" style="margin-top: 2em; display: none">
-                        <h3>Registration</h3>
-                        <p id="regStatus">
-                        </p>
-                        <p id="regInfo">
-                        </p>
-                        <p class="supporterDescription">
-                            This is a <a data-rel="popup" href="#supporterPlugins">supporter-only</a> plugin.<br />
-                            <br />
-                            It will require a <a href="supporter.html">supporter key</a> in order to register after the <strong>14-day free trial</strong>.
-                        </p>
-                        <p class="premiumDescription">
-                            This is a <a data-rel="popup" href="#premiumPlugins">premium</a> plugin.<br />
-                            <br />
-                            It will require a <a href="supporter.html">supporter key</a> in order to purchase and register after the <strong>14-day free trial</strong>.
-                        </p>
-                        <div class="premiumHasPrice" style="display: none">
-                            <p id="regPrice">
-                            </p>
-                            <input type="hidden" name="cmd" value="_xclick">
-                            <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
-                            <input type="hidden" name="currency_code" value="USD">
-                            <input type="hidden" id="featureName" name="item_name" value="MBSupporter">
-                            <input type="hidden" id="amount" name="amount" value="10">
-                            <input type="hidden" id="featureId" name="item_number" value="MBSupporter">
-                            <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
-                            <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                            <a data-role="button" id="ppButton" onclick="$(this).parents('form')[0].submit();">
-                                <img src="css/images/supporter/registerpaypal.png" /></a>
-                            <p id="noEmail" style="display: none">
-                                <strong>This developer has not provided a PayPal email. Please see their
-                                                                      website for registration information.</strong>
-                            </p>
+                                <p id="btnInstallDiv" class="hide">
+                                    <button id="btnInstall" type="submit" data-icon="arrow-d" data-theme="b">Install</button>
+                                </p>
+                                <p id="nonServerMsg"></p>
+                            </form>
 
+                            <div class="premiumPackage" style="display: none; margin-top: 1.5em;">
+                                <div>
+                                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+                                        <p id="regStatus">
+                                        </p>
+                                        <p id="regInfo">
+                                        </p>
+                                        <div class="supporterDescription">
+
+                                            <p>${MessageSupporterPluginRequiresMembership}</p>
+
+                                            <p><a href="supporter.html">${LinkSupporterMembership}</a></p>
+
+                                        </div>
+                                        <div class="premiumDescription">
+
+                                            <p>${MessagePremiumPluginRequiresMembership}</p>
+
+                                            <p><a href="supporter.html">${LinkSupporterMembership}</a></p>
+                                        </div>
+                                        <div class="premiumHasPrice" style="display: none">
+                                            <p id="regPrice">
+                                            </p>
+                                            <input type="hidden" name="cmd" value="_xclick">
+                                            <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
+                                            <input type="hidden" name="currency_code" value="USD">
+                                            <input type="hidden" id="featureName" name="item_name" value="">
+                                            <input type="hidden" id="amount" name="amount" value="10">
+                                            <input type="hidden" id="featureId" name="item_number" value="">
+                                            <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
+                                            <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+                                            <a data-role="button" id="ppButton" onclick="$(this).parents('form')[0].submit();">
+                                                <img src="css/images/supporter/registerpaypal.png" />
+                                            </a>
+
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
                         </div>
-
                     </div>
+                </div>
 
+                <div class="readOnlyContent">
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>Rating and Reviews</h3>
+                        <h3>${HeaderReviews}</h3>
                         <div>
                             <br />
                             <div id="ratingLine"></div>
@@ -85,39 +94,17 @@
                     </div>
 
                     <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>Developer Info</h3>
+                        <h3>${HeaderDeveloperInfo}</h3>
                         <p id="developer"></p>
                         <p id="pViewWebsite" style="display: none;">
-                            <a href="#" data-rel="external" target="_blank">View Website</a>
+                            <a href="#" data-rel="external" target="_blank">${ButtonViewWebsite}</a>
                         </p>
                     </div>
 
                     <div data-role="collapsible" style="margin-top: 2em;">
-                        <h3>Revision History</h3>
+                        <h3>${HeaderRevisionHistory}</h3>
                         <div id="revisionHistory"></div>
                     </div>
-                </form>
-
-                <div data-role="popup" class="ui-content" id="supporterPlugins" style="max-width: 250px;">
-                    <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-                    <p>Supporter-Only plug-ins are free for anyone who is an <strong>MB3 Supporter</strong> (with a valid MB3 key who has donated the minimum amount to the overall project).</p>
-                    <p>
-                        Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.<p>
-                    <p>These plug-ins will appear in the catalog with a "Supporter" banner.</p>
-                </div>
-
-                <div data-role="popup" class="ui-content" id="premiumPlugins" style="max-width: 250px;">
-                    <a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-                    <p>
-                        Premium plug-ins are developed by third-parties and require that you be an <strong>MB3 Supporter <em>and</em> also register the plug-in with its creator.</strong>
-                        The cost of registering these plug-ins is set for each one by its creator and all revenues go to that person.
-                    </p>
-                    <p>Anyone can install them and enjoy a free trial period of 14 days in most instances.  The trial period may commence as soon as you install the plug-in.</p>
-                    <p>
-                        You should install premium plug-ins without registering them first to take advantage of this trial period.  Then, if you find the functionality useful,
-                                                                                                                                                                         you can register it via its detail page here in the catalog.
-                    </p>
-                    <p>These plug-ins will appear in the catalog with a "Premium" banner.</p>
                 </div>
             </div>
         </div>

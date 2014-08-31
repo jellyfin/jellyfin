@@ -62,6 +62,14 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
+        protected override bool SupportsThrottling
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>

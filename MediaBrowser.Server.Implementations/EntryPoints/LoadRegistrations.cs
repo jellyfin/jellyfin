@@ -2,6 +2,8 @@
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -20,6 +22,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ILogger _logger;
 
+        private Timer _timer;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LoadRegistrations" /> class.
         /// </summary>
@@ -35,7 +39,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <summary>
         /// Runs this instance.
         /// </summary>
-        public async void Run()
+        public void Run()
+        {
+            _timer = new Timer(s => LoadAllRegistrations(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(24));
+        }
+
+        private async Task LoadAllRegistrations()
         {
             try
             {
@@ -52,6 +61,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Dispose()
         {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+                _timer = null;
+            }
         }
     }
 }

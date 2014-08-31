@@ -39,5 +39,11 @@ namespace MediaBrowser.Common.Security
         /// </summary>
         /// <returns></returns>
         Task LoadAllRegistrationInfo();
+
+        /// <summary>
+        /// Gets the supporter information.
+        /// </summary>
+        /// <returns>Task&lt;SupporterInfo&gt;.</returns>
+        Task<SupporterInfo> GetSupporterInfo();
     }
 }
