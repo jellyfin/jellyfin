@@ -241,7 +241,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 new KeyValuePair<string,string>("Result", resXML),
                 new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", DidlBuilder.IsIdRoot(id) ? "1" :totalCount.ToString(_usCulture)),
+                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
         }
