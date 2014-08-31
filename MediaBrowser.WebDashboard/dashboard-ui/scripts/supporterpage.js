@@ -157,6 +157,7 @@
                 $('.fldOneTimeDonationAmount', page).hide();
                 removeRecurringFields(page);
                 setItemNumber(page, 'MBSupporter');
+                $('#oneTimeDescription').hide();
             }
         });
 
