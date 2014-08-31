@@ -5,17 +5,21 @@ using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
+namespace MediaBrowser.Tests.MediaEncoding.Subtitles
+{
 
     [TestClass]
-    public class SrtParserTests {
+    public class SrtParserTests
+    {
 
         [TestMethod]
-        public void TestParse() {
+        public void TestParse()
+        {
 
             var expectedSubs =
-                new SubtitleTrackInfo {
-                                          TrackEvents = new List<SubtitleTrackEvent> {
+                new SubtitleTrackInfo
+                {
+                    TrackEvents = new List<SubtitleTrackEvent> {
                                                                                          new SubtitleTrackEvent {
                                                                                                                     Id = "1",
                                                                                                                     StartPositionTicks = 24000000,
@@ -28,7 +32,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                                                     StartPositionTicks = 157120000,
                                                                                                                     EndPositionTicks = 173990000,
                                                                                                                     Text =
-                                                                                                                        "Oh my god, Watch out!<br />It's coming!!"
+                                                                                                                        "Oh my god, Watch out!"+ParserValues.NewLine+"It's coming!!"
                                                                                                                 },
                                                                                          new SubtitleTrackEvent {
                                                                                                                     Id = "3",
@@ -48,7 +52,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                                                     StartPositionTicks = 320000000,
                                                                                                                     EndPositionTicks = 329990000,
                                                                                                                     Text =
-                                                                                                                        "This is a<br />new line, as is<br />this"
+                                                                                                                        "This is a"+ParserValues.NewLine+"new line, as is"+ParserValues.NewLine+"this"
                                                                                                                 },
                                                                                          new SubtitleTrackEvent {
                                                                                                                     Id = "6",
@@ -86,7 +90,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                                                                                                                         "Greater than (&lt;) and less than (&gt;) are shown"
                                                                                                                 }
                                                                                      }
-                                      };
+                };
 
             var sut = new SrtParser();
 
@@ -95,7 +99,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
             var result = sut.Parse(stream, CancellationToken.None);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(expectedSubs.TrackEvents.Count,result.TrackEvents.Count);
+            Assert.AreEqual(expectedSubs.TrackEvents.Count, result.TrackEvents.Count);
             for (int i = 0; i < expectedSubs.TrackEvents.Count; i++)
             {
                 Assert.AreEqual(expectedSubs.TrackEvents[i].Id, result.TrackEvents[i].Id);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Common.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -42,6 +43,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     subEvent.StartPositionTicks = GetTicks(sections[headers["Start"]]);
                     subEvent.EndPositionTicks = GetTicks(sections[headers["End"]]);
                     subEvent.Text = string.Join(",", sections.Skip(headers["Text"]));
+                    subEvent.Text = subEvent.Text.Replace(@"\N", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
 
                     trackInfo.TrackEvents.Add(subEvent);

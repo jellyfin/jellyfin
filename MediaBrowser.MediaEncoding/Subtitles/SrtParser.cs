@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -48,7 +49,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         }
                         multiline.Add(line);
                     }
-                    subEvent.Text = string.Join(@"\n", multiline);
+                    subEvent.Text = string.Join(ParserValues.NewLine, multiline);
+                    subEvent.Text = subEvent.Text.Replace(@"\N", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, "<", "&lt;", RegexOptions.IgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, ">", "&gt;", RegexOptions.IgnoreCase);
