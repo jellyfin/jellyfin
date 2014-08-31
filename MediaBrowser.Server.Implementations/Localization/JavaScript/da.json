@@ -429,5 +429,14 @@
     "TabMusicVideos": "Musik Videoer",
     "BirthPlaceValue": "Birth place: {0}",
     "DeathDateValue": "Died: {0}",
-    "BirthDateValue": "Born: {0}"
+    "BirthDateValue": "Born: {0}",
+    "HeaderLatestReviews": "Latest Reviews",
+    "HeaderPluginInstallation": "Plugin Installation",
+    "MessageAlreadyInstalled": "This version is already installed.",
+    "ValueReviewCount": "{0} Reviews",
+    "MessageYouHaveVersionInstalled": "You currently have version {0} installed.",
+    "MessageTrialExpired": "The trial period for this feature has expired",
+    "MessageTrialWillExpireIn": "The trial period for this feature will expire in {0} day(s)",
+    "MessageInstallPluginFromApp": "This plugin must be installed from with in the app you intend to use it in.",
+    "ValuePriceUSD": "Price: {0} (USD)"
 }

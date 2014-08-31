@@ -429,5 +429,14 @@
     "TabMusicVideos": "\u039c\u03bf\u03c5\u03c3\u03b9\u03ba\u03ac \u03b2\u03af\u03bd\u03c4\u03b5\u03bf",
     "BirthPlaceValue": "Birth place: {0}",
     "DeathDateValue": "Died: {0}",
-    "BirthDateValue": "Born: {0}"
+    "BirthDateValue": "Born: {0}",
+    "HeaderLatestReviews": "Latest Reviews",
+    "HeaderPluginInstallation": "Plugin Installation",
+    "MessageAlreadyInstalled": "This version is already installed.",
+    "ValueReviewCount": "{0} Reviews",
+    "MessageYouHaveVersionInstalled": "You currently have version {0} installed.",
+    "MessageTrialExpired": "The trial period for this feature has expired",
+    "MessageTrialWillExpireIn": "The trial period for this feature will expire in {0} day(s)",
+    "MessageInstallPluginFromApp": "This plugin must be installed from with in the app you intend to use it in.",
+    "ValuePriceUSD": "Price: {0} (USD)"
 }

@@ -8,8 +8,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 {
     public interface IHttpListener : IDisposable
     {
-        IEnumerable<string> LocalEndPoints { get; }
-
         /// <summary>
         /// Gets or sets the error handler.
         /// </summary>

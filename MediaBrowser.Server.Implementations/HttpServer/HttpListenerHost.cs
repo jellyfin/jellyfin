@@ -14,6 +14,7 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,13 +40,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
 
+        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
         /// <summary>
         /// Gets the local end points.
         /// </summary>
         /// <value>The local end points.</value>
         public IEnumerable<string> LocalEndPoints
         {
-            get { return _listener == null ? new List<string>() : _listener.LocalEndPoints; }
+            get { return _listener == null ? new List<string>() : _localEndPoints.Keys.ToList(); }
         }
 
         public HttpListenerHost(IApplicationHost applicationHost, ILogManager logManager, string serviceName, string handlerPath, string defaultRedirectPath, params Assembly[] assembliesWithServices)
@@ -151,6 +154,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return this;
         }
 
+        private void OnRequestReceived(string localEndPoint)
+        {
+            _localEndPoints.GetOrAdd(localEndPoint, localEndPoint);
+        }
+
         /// <summary>
         /// Starts the Web Service
         /// </summary>
@@ -159,9 +167,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = NativeWebSocket.IsSupported
-                ? _listener = new HttpListenerServer(_logger)
+                ? _listener = new HttpListenerServer(_logger, OnRequestReceived)
                 //? _listener = new WebSocketSharpListener(_logger)
-                : _listener = new WebSocketSharpListener(_logger);
+                : _listener = new WebSocketSharpListener(_logger, OnRequestReceived);
 
             _listener.WebSocketHandler = WebSocketHandler;
             _listener.ErrorHandler = ErrorHandler;

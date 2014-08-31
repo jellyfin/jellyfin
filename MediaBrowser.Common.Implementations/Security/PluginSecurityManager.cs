@@ -18,7 +18,7 @@ namespace MediaBrowser.Common.Implementations.Security
     public class PluginSecurityManager : ISecurityManager
     {
         private const string MBValidateUrl = Constants.Constants.MbAdminUrl + "service/registration/validate";
-        
+
         /// <summary>
         /// The _is MB supporter
         /// </summary>
@@ -45,12 +45,12 @@ namespace MediaBrowser.Common.Implementations.Security
             }
         }
 
-        private  MBLicenseFile _licenseFile;
-        private  MBLicenseFile LicenseFile
+        private MBLicenseFile _licenseFile;
+        private MBLicenseFile LicenseFile
         {
             get { return _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths)); }
         }
-        
+
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationHost _appHost;
@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Implementations.Security
             return GetRegistrationStatusInternal(feature, mb2Equivalent, version);
         }
 
-        public Task<MBRegistrationRecord> GetSupporterRegistrationStatus()
+        private Task<MBRegistrationRecord> GetSupporterRegistrationStatus()
         {
             return GetRegistrationStatusInternal("MBSupporter", null, _appHost.ApplicationVersion.ToString());
         }
@@ -142,12 +142,46 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 if (value != LicenseFile.RegKey)
                 {
-                    LicenseFile.RegKey = value; 
-                    LicenseFile.Save();                    
-                    
+                    LicenseFile.RegKey = value;
+                    LicenseFile.Save();
+
                     // re-load registration info
                     Task.Run(() => LoadAllRegistrationInfo());
                 }
+            }
+        }
+
+        public async Task<SupporterInfo> GetSupporterInfo()
+        {
+            var key = SupporterKey;
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return new SupporterInfo();
+            }
+
+            var url = Constants.Constants.MbAdminUrl + "/service/supporter/retrieve?key=" + key;
+
+            using (var stream = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
+            {
+                var response = _jsonSerializer.DeserializeFromStream<SuppporterInfoResponse>(stream);
+
+
+                var info = new SupporterInfo
+                {
+                    Email = response.email,
+                    PlanType = response.planType,
+                    SupporterKey = response.supporterKey,
+                    ExpirationDate = string.IsNullOrWhiteSpace(response.expDate) ? (DateTime?)null : DateTime.Parse(response.expDate),
+                    RegistrationDate = DateTime.Parse(response.regDate),
+                    IsActiveSupporter = IsMBSupporter
+                };
+
+                info.IsExpiredSupporter = info.ExpirationDate.HasValue && info.ExpirationDate < DateTime.UtcNow && !string.IsNullOrWhiteSpace(info.SupporterKey);
+
+                // TODO: Now that we've pulled this down, might as well update the cached suppoter registrationinfo?
+
+                return info;
             }
         }
 
@@ -158,7 +192,7 @@ namespace MediaBrowser.Common.Implementations.Security
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
             var reg = new RegRecord
             {
-                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-15)
+                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-7)
             };
 
             var success = reg.registered;
@@ -201,15 +235,33 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
             }
 
-            return new MBRegistrationRecord
+            var record = new MBRegistrationRecord
             {
                 IsRegistered = reg.registered,
                 ExpirationDate = reg.expDate,
                 RegChecked = true,
                 RegError = !success
             };
+
+            record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
+            record.IsValid = !record.RegChecked || (record.IsRegistered || record.TrialVersion);
+
+            return record;
         }
-        
+
+        private bool IsInTrial(DateTime expirationDate, bool regChecked, bool isRegistered)
+        {
+            //don't set this until we've successfully obtained exp date
+            if (!regChecked)
+            {
+                return false;
+            }
+
+            var isInTrial = expirationDate > DateTime.UtcNow;
+
+            return (isInTrial && !isRegistered);
+        }
+
         /// <summary>
         /// Resets the supporter info.
         /// </summary>

@@ -4,6 +4,6 @@ namespace MediaBrowser.Controller.Net
 {
     public interface IAuthService
     {
-        void Authenticate(IRequest request, IResponse response, object requestDto);
+        void Authenticate(IRequest request, IResponse response, object requestDto, bool allowLocal);
     }
 }

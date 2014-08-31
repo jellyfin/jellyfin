@@ -3,7 +3,6 @@ using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Web;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,20 +14,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
-        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private WebSocketSharp.Net.HttpListener _listener;
         private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
 
         private readonly ILogger _logger;
+        private readonly Action<string> _endpointListener;
 
-        public WebSocketSharpListener(ILogger logger)
+        public WebSocketSharpListener(ILogger logger, Action<string> endpointListener)
         {
             _logger = logger;
-        }
-
-        public IEnumerable<string> LocalEndPoints
-        {
-            get { return _localEndPoints.Keys.ToList(); }
+            _endpointListener = endpointListener;
         }
 
         public Action<Exception, IRequest> ErrorHandler { get; set; }
@@ -170,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 var address = endpoint.ToString();
 
-                _localEndPoints.GetOrAdd(address, address);
+                _endpointListener(address);
             }
 
             LogRequest(_logger, request);
