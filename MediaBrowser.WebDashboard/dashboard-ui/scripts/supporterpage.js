@@ -1,28 +1,29 @@
 ﻿(function () {
 
-    function addRecurringFields(page) {
+    function addRecurringFields(period, page) {
 
         // Add recurring fields to form
         $("<input type='hidden' name='a3' class='pprecurring' />")
             .attr('value', $('#donateAmt', page).val())
-            .appendTo("#payPalForm", page);
+            .appendTo("#payPalSupporterForm", page);
 
         $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-            .appendTo("#payPalForm", page);
+            .appendTo("#payPalSupporterForm", page);
 
-        $("<input type='hidden' name='t3' value='M' class='pprecurring' />")
-            .appendTo("#payPalForm", page);
+        $("<input type='hidden' name='t3' value='"+period+"' class='pprecurring' />")
+            .appendTo("#payPalSupporterForm", page);
 
         $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-            .appendTo("#payPalForm", page);
+            .appendTo("#payPalSupporterForm", page);
 
         $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-            .appendTo("#payPalForm", page);
+            .appendTo("#payPalSupporterForm", page);
 
         //change command for subscriptions
         $('#ppCmd', page).val('_xclick-subscriptions');
 
-        $('#payPalForm', page).trigger('create');
+        $('#payPalSupporterForm', page).trigger('create');
+        console.log($('#payPalSupporterForm', page).html());
     }
 
     function removeRecurringFields(page) {
@@ -141,14 +142,14 @@
             else if (donationType == 'yearly') {
 
                 $('.fldOneTimeDonationAmount', page).hide();
-                addRecurringFields(page);
+                addRecurringFields('Y', page);
                 setItemNumber(page, 'MBSClubYearly');
                 $('#oneTimeDescription').hide();
             }
             else if (donationType == 'monthly') {
 
                 $('.fldOneTimeDonationAmount', page).hide();
-                addRecurringFields(page);
+                addRecurringFields('M', page);
                 setItemNumber(page, 'MBSClubMonthly');
                 $('#oneTimeDescription').hide();
             }

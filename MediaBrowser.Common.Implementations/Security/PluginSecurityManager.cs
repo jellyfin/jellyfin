@@ -179,8 +179,6 @@ namespace MediaBrowser.Common.Implementations.Security
 
                 info.IsExpiredSupporter = info.ExpirationDate.HasValue && info.ExpirationDate < DateTime.UtcNow && !string.IsNullOrWhiteSpace(info.SupporterKey);
 
-                // TODO: Now that we've pulled this down, might as well update the cached suppoter registrationinfo?
-
                 return info;
             }
         }
