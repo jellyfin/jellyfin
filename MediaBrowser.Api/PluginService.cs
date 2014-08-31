@@ -7,12 +7,12 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
+using ServiceStack.Text.Controller;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ServiceStack.Text.Controller;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Api
 {
@@ -190,8 +190,7 @@ namespace MediaBrowser.Api
             var result = new PluginSecurityInfo
             {
                 IsMBSupporter = _securityManager.IsMBSupporter,
-                SupporterKey = _securityManager.SupporterKey,
-                LegacyKey = _securityManager.LegacyKey
+                SupporterKey = _securityManager.SupporterKey
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -206,7 +205,6 @@ namespace MediaBrowser.Api
             var info = request;
 
             _securityManager.SupporterKey = info.SupporterKey;
-            _securityManager.LegacyKey = info.LegacyKey;
         }
 
         /// <summary>

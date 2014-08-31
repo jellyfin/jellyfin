@@ -13,12 +13,6 @@ namespace MediaBrowser.Model.Entities
         public string SupporterKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the legacy supporter key.
-        /// </summary>
-        /// <value><c>The legacy supporter key</value>
-        public string LegacyKey { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is MB supporter.
         /// </summary>
         /// <value><c>true</c> if this instance is MB supporter; otherwise, <c>false</c>.</value>
