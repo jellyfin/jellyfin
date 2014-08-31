@@ -17,6 +17,8 @@ namespace MediaBrowser.Common.Implementations.Security
     /// </summary>
     public class PluginSecurityManager : ISecurityManager
     {
+        private const string MBValidateUrl = Constants.Constants.MbAdminUrl + "service/registration/validate";
+        
         /// <summary>
         /// The _is MB supporter
         /// </summary>
@@ -38,16 +40,23 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetRegistrationStatus("MBSupporter", null, _appHost.ApplicationVersion.ToString()).Result.IsRegistered);
+                LazyInitializer.EnsureInitialized(ref _isMbSupporter, ref _isMbSupporterInitialized, ref _isMbSupporterSyncLock, () => GetSupporterRegistrationStatus().Result.IsRegistered);
                 return _isMbSupporter.Value;
             }
         }
 
+        private  MBLicenseFile _licenseFile;
+        private  MBLicenseFile LicenseFile
+        {
+            get { return _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths)); }
+        }
+        
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationHost _appHost;
-        private readonly IApplicationPaths _applciationPaths;
+        private readonly ILogger _logger;
         private readonly INetworkManager _networkManager;
+        private readonly IApplicationPaths _appPaths;
 
         private IEnumerable<IRequiresRegistration> _registeredEntities;
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
@@ -69,12 +78,12 @@ namespace MediaBrowser.Common.Implementations.Security
                 throw new ArgumentNullException("httpClient");
             }
 
-            _applciationPaths = appPaths;
-            _networkManager = networkManager;
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            MBRegistration.Init(_applciationPaths, _networkManager, logManager, _appHost);
+            _networkManager = networkManager;
+            _appPaths = appPaths;
+            _logger = logManager.GetLogger("SecurityManager");
         }
 
         /// <summary>
@@ -97,9 +106,9 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <param name="feature">The feature.</param>
         /// <param name="mb2Equivalent">The MB2 equivalent.</param>
         /// <returns>Task{MBRegistrationRecord}.</returns>
-        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
+        public Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent = null)
         {
-            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent).ConfigureAwait(false);
+            return GetRegistrationStatusInternal(feature, mb2Equivalent);
         }
 
         /// <summary>
@@ -109,9 +118,14 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <param name="mb2Equivalent">The MB2 equivalent.</param>
         /// <param name="version">The version of this feature</param>
         /// <returns>Task{MBRegistrationRecord}.</returns>
-        public async Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent, string version)
+        public Task<MBRegistrationRecord> GetRegistrationStatus(string feature, string mb2Equivalent, string version)
         {
-            return await MBRegistration.GetRegistrationStatus(_httpClient, _jsonSerializer, feature, mb2Equivalent, version).ConfigureAwait(false);
+            return GetRegistrationStatusInternal(feature, mb2Equivalent, version);
+        }
+
+        public Task<MBRegistrationRecord> GetSupporterRegistrationStatus()
+        {
+            return GetRegistrationStatusInternal("MBSupporter", null, _appHost.ApplicationVersion.ToString());
         }
 
         /// <summary>
@@ -122,40 +136,80 @@ namespace MediaBrowser.Common.Implementations.Security
         {
             get
             {
-                return MBRegistration.SupporterKey;
+                return LicenseFile.RegKey;
             }
             set
             {
-                if (value != MBRegistration.SupporterKey)
+                if (value != LicenseFile.RegKey)
                 {
-                    MBRegistration.SupporterKey = value;
+                    LicenseFile.RegKey = value; 
+                    LicenseFile.Save();                    
+                    
                     // re-load registration info
                     Task.Run(() => LoadAllRegistrationInfo());
                 }
             }
         }
 
-        /// <summary>
-        /// Gets or sets the legacy key.
-        /// </summary>
-        /// <value>The legacy key.</value>
-        public string LegacyKey
+        private async Task<MBRegistrationRecord> GetRegistrationStatusInternal(string feature,
+            string mb2Equivalent = null,
+            string version = null)
         {
-            get
+            //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
+            var reg = new RegRecord
             {
-                return MBRegistration.LegacyKey;
-            }
-            set
+                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-15)
+            };
+
+            var success = reg.registered;
+
+            if (!reg.registered)
             {
-                if (value != MBRegistration.LegacyKey)
+                var mac = _networkManager.GetMacAddress();
+                var data = new Dictionary<string, string>
                 {
-                    MBRegistration.LegacyKey = value;
-                    // re-load registration info
-                    Task.Run(() => LoadAllRegistrationInfo());
+                    { "feature", feature }, 
+                    { "key", SupporterKey }, 
+                    { "mac", mac }, 
+                    { "mb2equiv", mb2Equivalent }, 
+                    { "ver", version }, 
+                    { "platform", Environment.OSVersion.VersionString }, 
+                    { "isservice", _appHost.IsRunningAsService.ToString().ToLower() }
+                };
+
+                try
+                {
+                    using (var json = await _httpClient.Post(MBValidateUrl, data, CancellationToken.None).ConfigureAwait(false))
+                    {
+                        reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
+                        success = true;
+                    }
+
+                    if (reg.registered)
+                    {
+                        LicenseFile.AddRegCheck(feature);
+                    }
+                    else
+                    {
+                        LicenseFile.RemoveRegCheck(feature);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorException("Error checking registration status of {0}", e, feature);
                 }
             }
-        }
 
+            return new MBRegistrationRecord
+            {
+                IsRegistered = reg.registered,
+                ExpirationDate = reg.expDate,
+                RegChecked = true,
+                RegError = !success
+            };
+        }
+        
         /// <summary>
         /// Resets the supporter info.
         /// </summary>

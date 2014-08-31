@@ -99,7 +99,6 @@
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\SystemUpdateTask.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
-    <Compile Include="Security\MBRegistration.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
