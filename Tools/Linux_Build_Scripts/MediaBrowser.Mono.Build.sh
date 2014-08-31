@@ -23,15 +23,18 @@ echo ""
 vercomp () {
     if [[ $1 == $2 ]]
     then
-        return 0
+        echo 0
     fi
+
     local IFS=.
     local i ver1=($1) ver2=($2)
+
     # fill empty fields in ver1 with zeros
     for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
     do
         ver1[i]=0
     done
+
     for ((i=0; i<${#ver1[@]}; i++))
     do
         if [[ -z ${ver2[i]} ]]
@@ -39,16 +42,17 @@ vercomp () {
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
+
         if ((10#${ver1[i]} > 10#${ver2[i]}))
         then
-            return 1 # Greater than
+            echo 1 # Greater than
         fi
         if ((10#${ver1[i]} < 10#${ver2[i]}))
         then
-            return 2 # Less than
+            echo 2 # Less than
         fi
     done
-    return 0 # Equal
+    echo 0 # Equal
 }
 
 echo "Checking for git"
@@ -75,8 +79,8 @@ if ! type -P mono &>/dev/null; then
     exit
 else
     MONOVERSION=$(mono --version | awk '$1 == "Mono" {print $5 }')
-    vercomp $MONOVERSION "3.2.7"
-    if [ $? -eq 2 ]; then
+    compResult=$(vercomp $MONOVERSION "3.2.7")
+    if [ $compResult -eq 2 ]; then
         echo "Require Mono version 3.2.7 and higher."
         exit
     fi
@@ -91,6 +95,12 @@ fi
 echo "Checking for xbuild"
 if ! type -P xbuild &>/dev/null; then
     echo "Xbuild not found. Please install."
+    exit
+fi
+
+echo "Checking for monodis"
+if ! type -P monodis &>/dev/null; then
+    echo "Monodis not found. Please install. (mono-utils package on ubuntu!)"
     exit
 fi
 
@@ -161,8 +171,8 @@ echo "Importing trusted root certificates from Mozilla LXR"
 mozroots --import --sync > "$LOGPATH/mozroots_stdout_$LOGDATE.log" 2> "$LOGPATH/mozroots_stderr_$LOGDATE.log"
 echo "Updating NuGet to the latest version"
 mono .nuget/NuGet.exe update -self > "$LOGPATH/nugetupdate_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetupdate_stderr_$LOGDATE.log"
-echo "Restoring NuGet package"
-mono .nuget/NuGet.exe restore MediaBrowser.Mono.sln > "$LOGPATH/nugetrestore_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetrestore_stderr_$LOGDATE.log"
+# echo "Restoring NuGet package"
+# mono .nuget/NuGet.exe restore MediaBrowser.Mono.sln > "$LOGPATH/nugetrestore_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetrestore_stderr_$LOGDATE.log"
 
 
 echo ""
