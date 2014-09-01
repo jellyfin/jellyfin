@@ -157,7 +157,9 @@
     <Compile Include="Entities\IHasAwards.cs" />
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="Entities\PhotoAlbum.cs" />
+    <Compile Include="Entities\UserItemsQuery.cs" />
     <Compile Include="Entities\UserView.cs" />
+    <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
@@ -336,6 +338,7 @@
     <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
+    <Compile Include="TV\ITVSeriesManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
@@ -360,7 +363,7 @@ xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\" /y /d /r /i
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition=" '$(ConfigurationName)' != 'Release Mono' " />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

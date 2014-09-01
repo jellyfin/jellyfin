@@ -1,12 +1,9 @@
-﻿using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
@@ -14,71 +11,42 @@ namespace MediaBrowser.Controller.Entities
     public class UserView : Folder
     {
         public string ViewType { get; set; }
-        public static IUserViewManager UserViewManager { get; set; }
+        public Guid ParentId { get; set; }
+
+        public static ITVSeriesManager TVSeriesManager;
+
+        public override Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        {
+            return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager)
+                .GetUserItems(this, ViewType, query);
+        }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            var mediaFolders = GetMediaFolders(user);
-
-            switch (ViewType)
+            var result = GetUserItems(new UserItemsQuery
             {
-                case CollectionType.LiveTvChannels:
-                    return LiveTvManager.GetInternalChannels(new LiveTvChannelQuery
-                    {
-                        UserId = user.Id.ToString("N")
+                User = user
 
-                    }, CancellationToken.None).Result.Items;
-                case CollectionType.LiveTvRecordingGroups:
-                    return LiveTvManager.GetInternalRecordings(new RecordingQuery
-                    {
-                        UserId = user.Id.ToString("N"),
-                        Status = RecordingStatus.Completed
+            }).Result;
 
-                    }, CancellationToken.None).Result.Items;
-                case CollectionType.LiveTv:
-                    return GetLiveTvFolders(user).Result;
-                case CollectionType.Folders:
-                    return user.RootFolder.GetChildren(user, includeLinkedChildren);
-                case CollectionType.Games:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
-                        .OfType<GameSystem>();
-                case CollectionType.BoxSets:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
-                        .OfType<BoxSet>();
-                case CollectionType.TvShows:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
-                        .OfType<Series>();
-                case CollectionType.Trailers:
-                    return mediaFolders.SelectMany(i => i.GetRecursiveChildren(user, includeLinkedChildren))
-                        .OfType<Trailer>();
-                default:
-                    return mediaFolders.SelectMany(i => i.GetChildren(user, includeLinkedChildren));
-            }
+            return result.Items;
         }
 
-        private async Task<IEnumerable<BaseItem>> GetLiveTvFolders(User user)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
         {
-            var list = new List<BaseItem>();
+            var result = GetUserItems(new UserItemsQuery
+            {
+                User = user,
+                Recursive = true
 
-            list.Add(await UserViewManager.GetUserView(CollectionType.LiveTvChannels, user, string.Empty, CancellationToken.None).ConfigureAwait(false));
-            list.Add(await UserViewManager.GetUserView(CollectionType.LiveTvRecordingGroups, user, string.Empty, CancellationToken.None).ConfigureAwait(false));
+            }).Result;
 
-            return list;
+            return result.Items;
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return GetChildren(user, false);
-        }
-
-        private IEnumerable<Folder> GetMediaFolders(User user)
-        {
-            var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
-
-            return user.RootFolder
-                .GetChildren(user, true, true)
-                .OfType<Folder>()
-                .Where(i => !excludeFolderIds.Contains(i.Id) && !IsExcludedFromGrouping(i));
         }
 
         public static bool IsExcludedFromGrouping(Folder folder)

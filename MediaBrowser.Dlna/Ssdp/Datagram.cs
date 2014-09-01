@@ -22,6 +22,8 @@ namespace MediaBrowser.Dlna.Ssdp
         /// </summary>
         public int SendCount { get; private set; }
 
+        public bool HandleBindError { get; set; }
+
         private readonly ILogger _logger;
 
         public Datagram(IPEndPoint toEndPoint, IPEndPoint fromEndPoint, ILogger logger, string message, int totalSendCount)
@@ -42,7 +44,17 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 if (FromEndPoint != null)
                 {
-                    client.Bind(FromEndPoint);
+                    try
+                    {
+                        client.Bind(FromEndPoint);
+                    }
+                    catch
+                    {
+                        if (!HandleBindError)
+                        {
+                            throw;
+                        }
+                    }
                 }
 
                 client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>

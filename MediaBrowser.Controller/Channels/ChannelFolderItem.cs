@@ -1,6 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Querying;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -32,6 +35,33 @@ namespace MediaBrowser.Controller.Channels
         public override string GetUserDataKey()
         {
             return ExternalId;
+        }
+
+        public override async Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        {
+            try
+            {
+                // Don't blow up here because it could cause parent screens with other content to fail
+                return await ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
+                {
+                    ChannelId = ChannelId,
+                    FolderId = Id.ToString("N"),
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    UserId = query.User.Id.ToString("N"),
+                    SortBy = query.SortBy,
+                    SortOrder = query.SortOrder
+
+                }, CancellationToken.None);
+            }
+            catch
+            {
+                // Already logged at lower levels
+                return new QueryResult<BaseItem>
+                {
+
+                };
+            }
         }
     }
 }

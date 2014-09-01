@@ -34,14 +34,15 @@ namespace MediaBrowser.Dlna.Main
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IImageProcessor _imageProcessor;
-        
+        private readonly IUserDataManager _userDataManager;
+
         private SsdpHandler _ssdpHandler;
         private DeviceDiscovery _deviceDiscovery;
 
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager)
         {
             _config = config;
             _appHost = appHost;
@@ -53,6 +54,7 @@ namespace MediaBrowser.Dlna.Main
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _imageProcessor = imageProcessor;
+            _userDataManager = userDataManager;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -218,7 +220,8 @@ namespace MediaBrowser.Dlna.Main
                         _imageProcessor,
                         _deviceDiscovery,
                         _httpClient,
-                        _config);
+                        _config,
+                        _userDataManager);
 
                     _manager.Start();
                 }

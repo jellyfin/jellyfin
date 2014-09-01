@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -240,6 +241,7 @@ namespace MediaBrowser.Controller.Entities
         public static IFileSystem FileSystem { get; set; }
         public static IUserDataManager UserDataManager { get; set; }
         public static ILiveTvManager LiveTvManager { get; set; }
+        public static IChannelManager ChannelManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

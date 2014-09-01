@@ -38,6 +38,7 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.Themes;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
@@ -79,6 +80,7 @@ using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
+using MediaBrowser.Server.Implementations.TV;
 using MediaBrowser.ServerApplication.FFMpeg;
 using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
@@ -213,10 +215,11 @@ namespace MediaBrowser.ServerApplication
         private ISubtitleManager SubtitleManager { get; set; }
         private IChapterManager ChapterManager { get; set; }
 
-        private IUserViewManager UserViewManager { get; set; }
+        internal IUserViewManager UserViewManager { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
         private ISyncRepository SyncRepository { get; set; }
+        private ITVSeriesManager TVSeriesManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -466,6 +469,9 @@ namespace MediaBrowser.ServerApplication
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager);
             RegisterSingleInstance(ChannelManager);
 
+            TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
+            RegisterSingleInstance(TVSeriesManager);
+
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
@@ -487,7 +493,7 @@ namespace MediaBrowser.ServerApplication
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths, playlistManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, UserViewManager, ChannelManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
@@ -682,9 +688,10 @@ namespace MediaBrowser.ServerApplication
             Folder.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
-            ChannelVideoItem.ChannelManager = ChannelManager;
+            BaseItem.ChannelManager = ChannelManager;
             BaseItem.LiveTvManager = LiveTvManager;
-            UserView.UserViewManager = UserViewManager;
+            Folder.UserViewManager = UserViewManager;
+            UserView.TVSeriesManager = TVSeriesManager;
         }
 
         /// <summary>

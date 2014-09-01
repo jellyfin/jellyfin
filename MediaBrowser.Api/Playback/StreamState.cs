@@ -69,6 +69,7 @@ namespace MediaBrowser.Api.Playback
         public long? RunTimeTicks;
 
         public long? InputBitrate { get; set; }
+        public long? InputFileSize { get; set; }
 
         public string OutputAudioSync = "1";
         public string OutputVideoSync = "vfr";

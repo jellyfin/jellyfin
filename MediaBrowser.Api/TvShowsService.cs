@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
@@ -26,7 +27,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
@@ -195,6 +196,7 @@ namespace MediaBrowser.Api
 
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
+        private readonly ITVSeriesManager _tvSeriesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvShowsService" /> class.
@@ -202,13 +204,14 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataManager">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TvShowsService(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public TvShowsService(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, ITVSeriesManager tvSeriesManager)
         {
             _userManager = userManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _tvSeriesManager = tvSeriesManager;
         }
 
         /// <summary>
@@ -270,129 +273,26 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetNextUpEpisodes request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var result = _tvSeriesManager.GetNextUp(new NextUpQuery
+            {
+                Limit = request.Limit,
+                ParentId = request.ParentId,
+                SeriesId = request.SeriesId,
+                StartIndex = request.StartIndex,
+                UserId = request.UserId
+            });
 
-            var itemsList = GetNextUpEpisodes(request)
-                .ToList();
-
-            var pagedItems = ApplyPaging(itemsList, request.StartIndex, request.Limit);
+            var user = _userManager.GetUserById(new Guid(request.UserId));
 
             var fields = request.GetItemFields().ToList();
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+            var returnItems = result.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
 
-            var result = new ItemsResult
+            return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
-                TotalRecordCount = itemsList.Count,
+                TotalRecordCount = result.TotalRecordCount,
                 Items = returnItems
-            };
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        public IEnumerable<Episode> GetNextUpEpisodes(GetNextUpEpisodes request)
-        {
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OfType<Series>();
-
-            // Avoid implicitly captured closure
-            return GetNextUpEpisodes(request, items);
-        }
-
-        public IEnumerable<Episode> GetNextUpEpisodes(GetNextUpEpisodes request, IEnumerable<Series> series)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            // Avoid implicitly captured closure
-            var currentUser = user;
-
-            return FilterSeries(request, series)
-                .AsParallel()
-                .Select(i => GetNextUp(i, currentUser))
-                .Where(i => i.Item1 != null)
-                .OrderByDescending(i =>
-                {
-                    var episode = i.Item1;
-
-                    var seriesUserData = _userDataManager.GetUserData(user.Id, episode.Series.GetUserDataKey());
-
-                    if (seriesUserData.IsFavorite)
-                    {
-                        return 2;
-                    }
-
-                    if (seriesUserData.Likes.HasValue)
-                    {
-                        return seriesUserData.Likes.Value ? 1 : -1;
-                    }
-
-                    return 0;
-                })
-                .ThenByDescending(i => i.Item2)
-                .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
-                .Select(i => i.Item1);
-        }
-
-        /// <summary>
-        /// Gets the next up.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
-        {
-            // Get them in display order, then reverse
-            var allEpisodes = series.GetSeasons(user, true, true)
-                .SelectMany(i => i.GetEpisodes(user, true, true))
-                .Reverse()
-                .ToList();
-
-            Episode lastWatched = null;
-            var lastWatchedDate = DateTime.MinValue;
-            Episode nextUp = null;
-
-            // Go back starting with the most recent episodes
-            foreach (var episode in allEpisodes)
-            {
-                var userData = _userDataManager.GetUserData(user.Id, episode.GetUserDataKey());
-
-                if (userData.Played)
-                {
-                    if (lastWatched != null || nextUp == null)
-                    {
-                        break;
-                    }
-
-                    lastWatched = episode;
-                    lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
-                }
-                else
-                {
-                    if (episode.LocationType != LocationType.Virtual)
-                    {
-                        nextUp = episode;
-                    }
-                }
-            }
-
-            if (lastWatched != null)
-            {
-                return new Tuple<Episode, DateTime>(nextUp, lastWatchedDate);
-            }
-
-            return new Tuple<Episode, DateTime>(null, lastWatchedDate);
-        }
-
-        private IEnumerable<Series> FilterSeries(GetNextUpEpisodes request, IEnumerable<Series> items)
-        {
-            if (!string.IsNullOrWhiteSpace(request.SeriesId))
-            {
-                var id = new Guid(request.SeriesId);
-
-                items = items.Where(i => i.Id == id);
-            }
-
-            return items;
+            });
         }
 
         /// <summary>

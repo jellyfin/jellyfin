@@ -39,7 +39,7 @@ namespace MediaBrowser.ServerApplication
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IItemRepository _itemRepository;
+        private readonly IUserViewManager _userViewManager;
         private readonly ILocalizationManager _localization;
         private LogForm _logForm;
 
@@ -61,11 +61,11 @@ namespace MediaBrowser.ServerApplication
             IServerConfigurationManager configurationManager, 
             IUserManager userManager, ILibraryManager libraryManager, 
             IJsonSerializer jsonSerializer, 
-            IItemRepository itemRepo, ILocalizationManager localization)
+            ILocalizationManager localization, IUserViewManager userViewManager)
         {
             _logger = logManager.GetLogger("MainWindow");
-            _itemRepository = itemRepo;
             _localization = localization;
+            _userViewManager = userViewManager;
             _appHost = appHost;
             _logManager = logManager;
             _configurationManager = configurationManager;
@@ -318,7 +318,7 @@ namespace MediaBrowser.ServerApplication
 
         void cmdLibraryExplorer_Click(object sender, EventArgs e)
         {
-            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _itemRepository).Show();
+            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _userViewManager).Show();
         }
 
         void cmdRestart_Click(object sender, EventArgs e)

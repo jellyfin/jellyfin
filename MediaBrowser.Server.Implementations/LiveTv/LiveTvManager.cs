@@ -726,7 +726,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken)
         {
             IEnumerable<LiveTvProgram> programs = _programs.Values;
 
@@ -771,7 +771,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await RefreshIfNeeded(programList, cancellationToken).ConfigureAwait(false);
 
-            var returnArray = programList
+            var returnArray = programList.ToArray();
+
+            var result = new QueryResult<LiveTvProgram>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
+
+            return result;
+        }
+
+        public async Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        {
+            var internalResult = await GetRecommendedProgramsInternal(query, cancellationToken).ConfigureAwait(false);
+
+            var user = _userManager.GetUserById(new Guid(query.UserId));
+
+            var returnArray = internalResult.Items
                 .Select(i =>
                 {
                     var channel = GetChannel(i);
@@ -785,7 +802,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var result = new QueryResult<ProgramInfoDto>
             {
                 Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                TotalRecordCount = internalResult.TotalRecordCount
             };
 
             return result;

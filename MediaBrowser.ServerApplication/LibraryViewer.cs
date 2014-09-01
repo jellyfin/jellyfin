@@ -1,6 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -16,17 +19,17 @@ namespace MediaBrowser.ServerApplication
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILibraryManager _libraryManager;
-        private readonly IItemRepository _itemRepository;
+        private readonly IUserViewManager _userViewManager;
 
         private User _currentUser;
 
-        public LibraryViewer(IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public LibraryViewer(IJsonSerializer jsonSerializer, IUserManager userManager, ILibraryManager libraryManager, IUserViewManager userViewManager)
         {
             InitializeComponent();
 
             _jsonSerializer = jsonSerializer;
             _libraryManager = libraryManager;
-            _itemRepository = itemRepo;
+            _userViewManager = userViewManager;
 
             foreach (var user in userManager.Users)
                 selectUser.Items.Add(user);
@@ -72,23 +75,50 @@ namespace MediaBrowser.ServerApplication
                 LoadTree();
         }
 
+        private IEnumerable<BaseItem> GetItems(Folder parent, User user)
+        {
+            if (parent == null)
+            {
+                var task = _userViewManager.GetUserViews(new UserViewQuery
+                {
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None);
+
+                task.RunSynchronously();
+
+                return task.Result;
+            }
+            else
+            {
+                var task = parent.GetUserItems(new UserItemsQuery
+                {
+                    User = user,
+                    SortBy = new[] { ItemSortBy.SortName }
+
+                });
+
+                task.RunSynchronously();
+
+                return task.Result.Items;
+            }
+        }
+
         private void LoadTree()
         {
             treeView1.Nodes.Clear();
 
             var isPhysical = _currentUser.Name == "Physical";
-            IEnumerable<BaseItem> children = isPhysical ? new[] { _libraryManager.RootFolder } : _libraryManager.RootFolder.GetChildren(_currentUser, true);
-            children = OrderByName(children, _currentUser);
+            IEnumerable<BaseItem> children = isPhysical ? new[] { _libraryManager.RootFolder } : GetItems(null, _currentUser);
 
-            foreach (Folder folder in children)
+            foreach (var folder in children.OfType<Folder>())
             {
-
                 var currentFolder = folder;
 
                 var node = new TreeNode { Tag = currentFolder };
 
-                var subChildren = isPhysical ? currentFolder.Children : currentFolder.GetChildren(_currentUser, true);
-                subChildren = OrderByName(subChildren, _currentUser);
+                var subChildren = isPhysical ? currentFolder.Children.OrderBy(i => i.SortName) : GetItems(currentFolder, _currentUser);
+
                 AddChildren(node, subChildren, _currentUser, isPhysical);
                 node.Text = currentFolder.Name + " (" +
                             node.Nodes.Count + ")";
@@ -111,9 +141,9 @@ namespace MediaBrowser.ServerApplication
                 var subFolder = item as Folder;
                 if (subFolder != null)
                 {
-                    var subChildren = isPhysical ? subFolder.Children : subFolder.GetChildren(_currentUser, true);
+                    var subChildren = isPhysical ? subFolder.Children.OrderBy(i => i.SortName) : GetItems(subFolder, _currentUser);
 
-                    AddChildren(node, OrderBy(subChildren, user, ItemSortBy.SortName), user, isPhysical);
+                    AddChildren(node, subChildren, user, isPhysical);
                     node.Text = item.Name + " (" + node.Nodes.Count + ")";
                 }
                 else
@@ -122,28 +152,6 @@ namespace MediaBrowser.ServerApplication
                 }
                 parent.Nodes.Add(node);
             }
-        }
-
-        /// <summary>
-        /// Orders the name of the by.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> OrderByName(IEnumerable<BaseItem> items, User user)
-        {
-            return OrderBy(items, user, ItemSortBy.SortName);
-        }
-
-        /// <summary>
-        /// Orders the name of the by.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private IEnumerable<BaseItem> OrderBy(IEnumerable<BaseItem> items, User user, string order)
-        {
-            return _libraryManager.Sort(items, user, new[] { order }, SortOrder.Ascending);
         }
 
         /// <summary>

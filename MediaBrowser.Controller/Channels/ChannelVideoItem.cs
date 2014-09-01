@@ -11,8 +11,6 @@ namespace MediaBrowser.Controller.Channels
 {
     public class ChannelVideoItem : Video, IChannelMediaItem
     {
-        public static IChannelManager ChannelManager { get; set; }
-
         public string ExternalId { get; set; }
 
         public string ChannelId { get; set; }

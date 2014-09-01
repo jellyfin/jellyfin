@@ -1,26 +1,18 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,21 +37,17 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly DidlBuilder _didlBuilder;
 
         private readonly DeviceProfile _profile;
-        private readonly IUserViewManager _userViewManager;
-        private readonly IChannelManager _channelManager;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, IUserViewManager userViewManager, IChannelManager channelManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
-            _userViewManager = userViewManager;
-            _channelManager = channelManager;
             _profile = profile;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, userDataManager);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -202,7 +190,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 {
 
 
-                    var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                    var childrenResult = (await GetUserItems(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
                     totalCount = childrenResult.TotalRecordCount;
 
                     result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, folder, totalCount, filter, id));
@@ -213,7 +201,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 var folder = (Folder)item;
 
-                var childrenResult = (await GetChildrenSorted(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
+                var childrenResult = (await GetUserItems(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
                 totalCount = childrenResult.TotalRecordCount;
 
                 provided = childrenResult.Items.Length;
@@ -223,7 +211,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                     if (i.IsFolder)
                     {
                         var f = (Folder)i;
-                        var childCount = (await GetChildrenSorted(f, user, sortCriteria, null, 0).ConfigureAwait(false))
+                        var childCount = (await GetUserItems(f, user, sortCriteria, null, 0).ConfigureAwait(false))
                             .TotalRecordCount;
 
                         result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, f, childCount, filter));
@@ -321,216 +309,97 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<QueryResult<BaseItem>> GetChildrenSorted(Folder folder, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
-            // TODO: Make a recursive version of GetChildrenSorted (although sorting isn't needed)
-            var result = folder.GetRecursiveChildren(user, true);
+            var sortOrders = new List<string>();
+            if (!folder.IsPreSorted)
+            {
+                sortOrders.Add(ItemSortBy.SortName);
+            }
 
-            var items = FilterUnsupportedContent(result);
+            var mediaTypes = new List<string>();
+            bool? isFolder = null;
 
             if (search.SearchType == SearchType.Audio)
             {
-                items = items.OfType<Audio>();
+                mediaTypes.Add(MediaType.Audio);
+                isFolder = false;
             }
             else if (search.SearchType == SearchType.Video)
             {
-                items = items.OfType<Video>();
+                mediaTypes.Add(MediaType.Video);
+                isFolder = false;
             }
             else if (search.SearchType == SearchType.Image)
             {
-                items = items.OfType<Photo>();
+                mediaTypes.Add(MediaType.Photo);
+                isFolder = false;
             }
             else if (search.SearchType == SearchType.Playlist)
             {
-                items = items.OfType<Playlist>();
+                //items = items.OfType<Playlist>();
+                isFolder = true;
             }
             else if (search.SearchType == SearchType.MusicAlbum)
             {
-                items = items.OfType<MusicAlbum>();
+                //items = items.OfType<MusicAlbum>();
+                isFolder = true;
             }
+            
+            return await folder.GetUserItems(new UserItemsQuery
+            {
+                Limit = limit,
+                StartIndex = startIndex,
+                SortBy = sortOrders.ToArray(),
+                SortOrder = sort.SortOrder,
+                User = user,
+                Recursive = true,
+                Filter = FilterUnsupportedContent,
+                IsFolder = isFolder,
+                MediaTypes = mediaTypes.ToArray()
 
-            items = SortItems(items, user, sort);
-
-            return ToResult(items, startIndex, limit);
+            }).ConfigureAwait(false);
         }
 
-        private async Task<QueryResult<BaseItem>> GetChildrenSorted(Folder folder, User user, SortCriteria sort, int? startIndex, int? limit)
+        private async Task<QueryResult<BaseItem>> GetUserItems(Folder folder, User user, SortCriteria sort, int? startIndex, int? limit)
         {
-            if (folder is UserRootFolder)
+            var sortOrders = new List<string>();
+            if (!folder.IsPreSorted)
             {
-                var result = await _userViewManager.GetUserViews(new UserViewQuery
-                {
-                    UserId = user.Id.ToString("N")
-
-                }, CancellationToken.None).ConfigureAwait(false);
-
-                return ToResult(result, startIndex, limit);
+                sortOrders.Add(ItemSortBy.SortName);
             }
 
-            var view = folder as UserView;
-
-            if (view != null)
+            return await folder.GetUserItems(new UserItemsQuery
             {
-                var result = await GetUserViewChildren(view, user, sort).ConfigureAwait(false);
+                Limit = limit,
+                StartIndex = startIndex,
+                SortBy = sortOrders.ToArray(),
+                SortOrder = sort.SortOrder,
+                User = user,
+                Filter = FilterUnsupportedContent
 
-                return ToResult(result, startIndex, limit);
-            }
-
-            var channel = folder as Channel;
-
-            if (channel != null)
-            {
-                try
-                {
-                    // Don't blow up here because it could cause parent screens with other content to fail
-                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
-                    {
-                        ChannelId = channel.Id.ToString("N"),
-                        Limit = limit,
-                        StartIndex = startIndex,
-                        UserId = user.Id.ToString("N")
-
-                    }, CancellationToken.None);
-                }
-                catch
-                {
-                    // Already logged at lower levels
-                }
-            }
-
-            var channelFolderItem = folder as ChannelFolderItem;
-
-            if (channelFolderItem != null)
-            {
-                try
-                {
-                    // Don't blow up here because it could cause parent screens with other content to fail
-                    return await _channelManager.GetChannelItemsInternal(new ChannelItemQuery
-                    {
-                        ChannelId = channelFolderItem.ChannelId,
-                        FolderId = channelFolderItem.Id.ToString("N"),
-                        Limit = limit,
-                        StartIndex = startIndex,
-                        UserId = user.Id.ToString("N")
-
-                    }, CancellationToken.None);
-                }
-                catch
-                {
-                    // Already logged at lower levels
-                }
-            }
-
-            return ToResult(GetPlainFolderChildrenSorted(folder, user, sort), startIndex, limit);
+            }).ConfigureAwait(false);
         }
 
-        private QueryResult<BaseItem> ToResult(IEnumerable<BaseItem> items, int? startIndex, int? limit)
+        private bool FilterUnsupportedContent(BaseItem i, User user)
         {
-            var list = items.ToArray();
-            var totalCount = list.Length;
-
-            if (startIndex.HasValue)
+            // Unplayable
+            if (i.LocationType == LocationType.Virtual && !i.IsFolder)
             {
-                list = list.Skip(startIndex.Value).ToArray();
+                return false;
             }
 
-            if (limit.HasValue)
+            // Unplayable
+            var supportsPlaceHolder = i as ISupportsPlaceHolders;
+            if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
             {
-                list = list.Take(limit.Value).ToArray();
+                return false;
             }
 
-            return new QueryResult<BaseItem>
+            if (i is Game || i is Book)
             {
-                Items = list,
-                TotalRecordCount = totalCount
-            };
-        }
-
-        private async Task<IEnumerable<BaseItem>> GetUserViewChildren(UserView folder, User user, SortCriteria sort)
-        {
-            if (string.Equals(folder.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
-            {
-                var result = await _channelManager.GetChannelsInternal(new ChannelQuery()
-                {
-                    UserId = user.Id.ToString("N")
-
-                }, CancellationToken.None).ConfigureAwait(false);
-
-                return result.Items;
-            }
-            if (string.Equals(folder.ViewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true).OfType<Series>(), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetRecursiveChildren(user, true).OfType<Movie>(), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true).OfType<MusicArtist>(), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.LiveTvRecordingGroups, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true), user, sort);
-            }
-            if (string.Equals(folder.ViewType, CollectionType.LiveTvChannels, StringComparison.OrdinalIgnoreCase))
-            {
-                return SortItems(folder.GetChildren(user, true), user, sort);
+                //return false;
             }
 
-            return GetPlainFolderChildrenSorted(folder, user, sort);
-        }
-
-        private IEnumerable<BaseItem> GetPlainFolderChildrenSorted(Folder folder, User user, SortCriteria sort)
-        {
-            var items = folder.GetChildren(user, true);
-
-            items = FilterUnsupportedContent(items);
-
-            if (folder.IsPreSorted)
-            {
-                return items;
-            }
-
-            return SortItems(items, user, sort);
-        }
-
-        private IEnumerable<BaseItem> SortItems(IEnumerable<BaseItem> items, User user, SortCriteria sort)
-        {
-            return _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, sort.SortOrder);
-        }
-
-        private IEnumerable<BaseItem> FilterUnsupportedContent(IEnumerable<BaseItem> items)
-        {
-            return items.Where(i =>
-            {
-                // Unplayable
-                if (i.LocationType == LocationType.Virtual && !i.IsFolder)
-                {
-                    return false;
-                }
-
-                // Unplayable
-                var supportsPlaceHolder = i as ISupportsPlaceHolders;
-                if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
-                {
-                    return false;
-                }
-
-                if (i is Game || i is Book)
-                {
-                    return false;
-                }
-
-                return true;
-            });
+            return true;
         }
 
         private BaseItem GetItemFromObjectId(string id, User user)

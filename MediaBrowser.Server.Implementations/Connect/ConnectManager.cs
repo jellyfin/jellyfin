@@ -198,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private string GetConnectUrl(string handler)
         {
-            return "http://mb3admin.com/admin/connect/" + handler;
+            return "http://mediabrowser.tv:8095/" + handler;
         }
     }
 }
