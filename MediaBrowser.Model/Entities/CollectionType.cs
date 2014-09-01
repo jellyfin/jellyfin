@@ -26,7 +26,28 @@
         public const string Playlists = "playlists";
         public const string Folders = "folders";
 
+        public const string LiveTvNowPlaying = "LiveTvNowPlaying";
         public const string LiveTvChannels = "LiveTvChannels";
         public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
+
+        public const string TvSeries = "TvSeries";
+        public const string TvGenres = "TvGenres";
+        public const string TvLatest = "TvLatest";
+        public const string TvNextUp = "TvNextUp";
+        public const string TvResume = "TvResume";
+        public const string TvFavorites = "TvFavorites";
+
+        public const string MovieLatest = "MovieLatest";
+        public const string MovieResume = "MovieResume";
+        public const string MovieMovies = "MovieMovies";
+        public const string MovieCollections = "MovieCollections";
+        public const string MovieFavorites = "MovieFavorites";
+        public const string MovieGenres = "MovieGenres";
+        
+        public const string LatestGames = "LatestGames";
+        public const string RecentlyPlayedGames = "RecentlyPlayedGames";
+        public const string GameSystems = "GameSystems";
+        public const string GameGenres = "GameGenres";
+        public const string GameFavorites = "GameFavorites";
     }
 }

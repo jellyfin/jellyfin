@@ -727,14 +727,16 @@
 
         var elem = this;
         var action = elem.getAttribute('data-action');
-        var itemId = elem.parentNode.getAttribute('data-itemid');
+        var elemWithAttributes = elem.getAttribute('data-itemid') ? elem : elem.parentNode;
+
+        var itemId = elemWithAttributes.getAttribute('data-itemid');
 
         if (action == 'play') {
             MediaController.play(itemId);
         }
         else if (action == 'playallfromhere') {
 
-            var index = elem.parentNode.getAttribute('data-index');
+            var index = elemWithAttributes.getAttribute('data-index');
             var itemsContainer = $(elem).parents('.itemsContainer');
 
             closeContextMenu();

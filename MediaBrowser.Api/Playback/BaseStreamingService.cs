@@ -1516,6 +1516,7 @@ namespace MediaBrowser.Api.Playback
                 state.RunTimeTicks = item.RunTimeTicks;
                 state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
                 state.InputBitrate = mediaSource.Bitrate;
+                state.InputFileSize = mediaSource.Size;
                 mediaStreams = mediaSource.MediaStreams;
             }
             else
@@ -1530,6 +1531,7 @@ namespace MediaBrowser.Api.Playback
                 state.MediaPath = mediaSource.Path;
                 state.InputProtocol = mediaSource.Protocol;
                 state.InputContainer = mediaSource.Container;
+                state.InputFileSize = mediaSource.Size;
                 state.InputBitrate = mediaSource.Bitrate;
 
                 if (item is Video)

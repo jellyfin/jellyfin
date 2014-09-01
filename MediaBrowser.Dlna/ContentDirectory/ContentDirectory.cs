@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -22,8 +21,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IDlnaManager _dlna;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
-        private readonly IUserViewManager _userViewManager;
-        private readonly IChannelManager _channelManager;
 
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -32,7 +29,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger logger,
-            IHttpClient httpClient, IUserViewManager userViewManager, IChannelManager channelManager)
+            IHttpClient httpClient)
             : base(logger, httpClient)
         {
             _dlna = dlna;
@@ -41,8 +38,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _libraryManager = libraryManager;
             _config = config;
             _userManager = userManager;
-            _userViewManager = userViewManager;
-            _channelManager = channelManager;
         }
 
         private int SystemUpdateId
@@ -78,9 +73,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 _userDataManager,
                 user,
                 SystemUpdateId,
-                _config,
-                _userViewManager,
-                _channelManager)
+                _config)
                 .ProcessControlRequest(request);
         }
 

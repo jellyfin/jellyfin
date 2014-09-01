@@ -39,8 +39,8 @@ namespace MediaBrowser.Api.Images
 
     [Route("/Items/{Id}/Images/{Type}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}", "GET")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}", "HEAD")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "GET")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "HEAD")]
     [Api(Description = "Gets an item image")]
     public class GetItemImage : ImageRequest
     {
@@ -583,7 +583,7 @@ namespace MediaBrowser.Api.Images
                 Width = request.Width,
                 OutputFormat = request.Format,
                 AddPlayedIndicator = request.AddPlayedIndicator,
-                PercentPlayed = request.PercentPlayed,
+                PercentPlayed = request.PercentPlayed ?? 0,
                 UnplayedCount = request.UnplayedCount,
                 BackgroundColor = request.BackgroundColor
             };

@@ -54,7 +54,9 @@
                 showUnplayedIndicator: false,
                 shape: "homePageSquare",
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                defaultAction: 'play'
+
             })).createCardMenus();
 
         });
@@ -84,7 +86,9 @@
                 showUnplayedIndicator: false,
                 shape: "homePageSquare",
                 showTitle: true,
-                showParentTitle: true
+                showParentTitle: true,
+                defaultAction: 'play'
+
             })).createCardMenus();
 
         });

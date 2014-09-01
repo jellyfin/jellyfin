@@ -32,6 +32,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IUserManager _userManager;
         private readonly IImageProcessor _imageProcessor;
+        private readonly IUserDataManager _userDataManager;
 
         private readonly DeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
@@ -51,7 +52,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -62,6 +63,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
             _deviceDiscovery = deviceDiscovery;
+            _userDataManager = userDataManager;
             _logger = logger;
         }
 
@@ -474,7 +476,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress).GetItemDidl(item, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress, _userDataManager).GetItemDidl(item, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 

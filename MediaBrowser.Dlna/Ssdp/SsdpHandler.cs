@@ -65,7 +65,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 string mx = null;
                 args.Headers.TryGetValue("mx", out mx);
                 int delaySeconds;
-                if (!string.IsNullOrWhiteSpace(mx) && 
+                if (!string.IsNullOrWhiteSpace(mx) &&
                     int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
                     && delaySeconds > 0)
                 {
@@ -124,18 +124,23 @@ namespace MediaBrowser.Dlna.Ssdp
             IPEndPoint localAddress,
             int sendCount = 1)
         {
-            SendDatagram(header, values, _ssdpEndp, localAddress, sendCount);
+            SendDatagram(header, values, _ssdpEndp, localAddress, false, sendCount);
         }
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             IPEndPoint endpoint,
             IPEndPoint localAddress,
+            bool handleBindError,
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount);
+            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount)
+            {
+                HandleBindError = handleBindError
+            };
+
             if (_messageQueue.Count == 0)
             {
                 dgram.Send();
@@ -170,10 +175,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    // Commenting this out because binding to the local ipendpoint often throws an error
-                    //SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
-
-                    SendDatagram(header, values, endpoint, null);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {

@@ -29,10 +29,11 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IImageProcessor _imageProcessor;
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
+        private readonly IUserDataManager _userDataManager;
 
         private readonly DeviceDiscovery _deviceDiscovery;
         
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -45,6 +46,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _deviceDiscovery = deviceDiscovery;
             _httpClient = httpClient;
             _config = config;
+            _userDataManager = userDataManager;
         }
 
         public void Start()
@@ -103,7 +105,8 @@ namespace MediaBrowser.Dlna.PlayTo
                             _userManager,
                             _imageProcessor,
                             serverAddress,
-                            _deviceDiscovery);
+                            _deviceDiscovery,
+                            _userDataManager);
 
                         controller.Init(device);
 

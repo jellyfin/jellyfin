@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +16,17 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
+        public override async Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        {
+            var result = await UserViewManager.GetUserViews(new UserViewQuery
+            {
+                UserId = query.User.Id.ToString("N")
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            return SortAndFilter(result, query);
+        }
+
         /// <summary>
         /// Get the children of this folder from the actual file system
         /// </summary>

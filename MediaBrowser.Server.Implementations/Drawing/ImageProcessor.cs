@@ -196,7 +196,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed.HasValue;
+                var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
 
                 using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                 {
@@ -308,7 +308,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="options">The options.</param>
         private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
-            if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && !options.PercentPlayed.HasValue)
+            if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && options.PercentPlayed.Equals(0))
             {
                 return;
             }
@@ -328,11 +328,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     new UnplayedCountIndicator().DrawUnplayedCountIndicator(graphics, currentImageSize, options.UnplayedCount.Value);
                 }
 
-                if (options.PercentPlayed.HasValue)
+                if (options.PercentPlayed >= 0)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 
-                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed.Value);
+                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed);
                 }
             }
             catch (Exception ex)
@@ -437,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, bool addPlayedIndicator, double? percentPlayed, int? unwatchedCount, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageOutputFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -462,9 +462,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 hasIndicator = true;
             }
 
-            if (percentPlayed.HasValue)
+            if (percentPlayed > 0)
             {
-                filename += "p=" + percentPlayed.Value;
+                filename += "p=" + percentPlayed;
                 hasIndicator = true;
             }
 

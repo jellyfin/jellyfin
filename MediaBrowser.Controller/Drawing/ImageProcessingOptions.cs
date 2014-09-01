@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public int? UnplayedCount { get; set; }
 
-        public double? PercentPlayed { get; set; }
+        public double PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
 
@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Drawing
             return (!Quality.HasValue || Quality.Value == 100) &&
                 IsOutputFormatDefault(originalImagePath) &&
                 !AddPlayedIndicator &&
-                !PercentPlayed.HasValue &&
+                PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 string.IsNullOrEmpty(BackgroundColor);
         }

@@ -557,7 +557,7 @@
         },
 
         getUserDataCssClass: function (key) {
-            return 'libraryItemUserData' + key;
+            return 'libraryItemUserData' + key.replace(new RegExp(' ', 'g'), '');
         },
 
         getListViewHtml: function (options) {
@@ -605,8 +605,8 @@
                 var href = LibraryBrowser.getHref(item, options.context);
                 html += '<li class="' + cssClass + '"' + dataAttributes + ' data-index="' + index + '" data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '">';
 
-                var onclick = options.defaultAction ? (' data-action="' + options.defaultAction + '" class="itemWithAction"') : '';
-                html += '<a' + onclick + ' href="' + href + '">';
+                var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '" class="itemWithAction"') : '';
+                html += '<a' + defaultActionAttribute + ' href="' + href + '">';
 
                 var imgUrl;
 
@@ -1089,7 +1089,13 @@
 
                 var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
 
-                html += '<a' + dataAttributes + ' class="' + cssClass + '" href="' + href + '">';
+                var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '"') : '';
+
+                if (options.defaultAction) {
+                    cssClass += ' itemWithAction';
+                }
+
+                html += '<a' + dataAttributes + ' class="' + cssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
 
                 var style = "";
 

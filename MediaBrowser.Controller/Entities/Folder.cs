@@ -6,6 +6,8 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+using MoreLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +16,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -24,6 +25,7 @@ namespace MediaBrowser.Controller.Entities
     public class Folder : BaseItem, IHasThemeMedia, IHasTags
     {
         public static IUserManager UserManager { get; set; }
+        public static IUserViewManager UserViewManager { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
@@ -770,6 +772,24 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
+        public virtual Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        {
+            var user = query.User;
+
+            var items = query.Recursive
+                ? GetRecursiveChildren(user)
+                : GetChildren(user, true);
+
+            var result = SortAndFilter(items, query);
+
+            return Task.FromResult(result);
+        }
+
+        protected QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items, UserItemsQuery query)
+        {
+            return UserViewBuilder.SortAndFilter(items, null, query, LibraryManager, UserDataManager);
+        }
+
         /// <summary>
         /// Gets allowed children of an item
         /// </summary>
@@ -944,7 +964,7 @@ namespace MediaBrowser.Controller.Entities
                 .OfType<CollectionFolder>()
                 .SelectMany(i => i.PhysicalLocations)
                 .ToList();
-            
+
             return LinkedChildren
                 .Select(i =>
                 {
@@ -985,10 +1005,10 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the linked children.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<Tuple<LinkedChild,BaseItem>> GetLinkedChildrenInfos()
+        public IEnumerable<Tuple<LinkedChild, BaseItem>> GetLinkedChildrenInfos()
         {
             return LinkedChildren
-                .Select(i => new Tuple<LinkedChild,BaseItem>(i, GetLinkedChild(i)))
+                .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
                 .Where(i => i.Item2 != null);
         }
 
@@ -1183,7 +1203,7 @@ namespace MediaBrowser.Controller.Entities
                 var isUnplayed = true;
 
                 var itemUserData = UserDataManager.GetUserData(user.Id, child.GetUserDataKey());
-                
+
                 // Incrememt totalPercentPlayed
                 if (itemUserData != null)
                 {

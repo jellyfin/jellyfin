@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Linq;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -153,7 +154,25 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    var throttleLimit = state.InputBitrate.HasValue ? (state.InputBitrate.Value / 8) : 0;
+                    var limits = new List<long>();
+                    if (state.InputBitrate.HasValue)
+                    {
+                        // Bytes per second
+                        limits.Add((state.InputBitrate.Value / 8));
+                    }
+                    if (state.InputFileSize.HasValue && state.RunTimeTicks.HasValue)
+                    {
+                        var totalSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds;
+
+                        if (totalSeconds > 1)
+                        {
+                            var timeBasedLimit = state.InputFileSize.Value / totalSeconds;
+                            limits.Add(Convert.ToInt64(timeBasedLimit));
+                        }
+                    }
+
+                    // Take the greater of the above to methods, just to be safe
+                    var throttleLimit = limits.Count > 0 ? limits.Max() : 0;
 
                     return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
@@ -166,8 +185,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                         // Pad by 20% to play it safe
                         ThrottleLimit = Convert.ToInt64(1.2 * throttleLimit),
 
-                        // Three minutes
-                        MinThrottlePosition = throttleLimit * 180
+                        // 3.5 minutes
+                        MinThrottlePosition = throttleLimit * 210
                     });
                 }
             }
