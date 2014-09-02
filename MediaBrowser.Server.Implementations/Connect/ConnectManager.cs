@@ -96,11 +96,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (hasExistingRecord)
                 {
-                    //await UpdateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                    await UpdateServerRegistration(wanApiAddress).ConfigureAwait(false);
                 }
                 else
                 {
-                    //await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                    await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -113,10 +113,9 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var url = "Servers";
             url = GetConnectUrl(url);
-            url += "?Name=" + WebUtility.UrlEncode(_appHost.FriendlyName);
-            url += "&Url=" + WebUtility.UrlEncode(wanApiAddress);
+            var postData = new Dictionary<string, string> {{"name", _appHost.FriendlyName}, {"url", wanApiAddress}};
 
-            using (var stream = await _httpClient.Post(url, new Dictionary<string, string>(), CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
             {
                 var data = _json.DeserializeFromStream<ServerRegistrationResponse>(stream);
 
@@ -129,15 +128,15 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task UpdateServerRegistration(string wanApiAddress)
         {
-            var url = "Servers/" + ConnectServerId;
+            var url = "Servers";
             url = GetConnectUrl(url);
-            url += "?Name=" + WebUtility.UrlEncode(_appHost.FriendlyName);
-            url += "&Url=" + WebUtility.UrlEncode(wanApiAddress);
+            url += "?id=" + ConnectServerId;
+            var postData = new Dictionary<string, string> {{"name", _appHost.FriendlyName}, {"url", wanApiAddress}};
 
-            // TODO: Add AccessKey http request header
+            // TODO: Add Access-Key http request header
 
             // No need to examine the response
-            using (var stream = await _httpClient.Post(url, new Dictionary<string, string>(), CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
             {
             }
         }
@@ -198,7 +197,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private string GetConnectUrl(string handler)
         {
-            return "http://mediabrowser.tv:8095/" + handler;
+            return "http://mb3admin.com/test/connect/" + handler;
         }
     }
 }
