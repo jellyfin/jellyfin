@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace MediaBrowser.Common.Net
@@ -110,6 +111,15 @@ namespace MediaBrowser.Common.Net
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             LogRequest = true;
+        }
+
+        public void SetPostData(IDictionary<string,string> values)
+        {
+            var strings = values.Keys.Select(key => string.Format("{0}={1}", key, values[key]));
+            var postContent = string.Join("&", strings.ToArray());
+
+            RequestContent = postContent;
+            RequestContentType = "application/x-www-form-urlencoded";
         }
     }
 }

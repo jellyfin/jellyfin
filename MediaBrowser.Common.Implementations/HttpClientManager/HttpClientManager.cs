@@ -399,11 +399,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>stream on success, null on failure</returns>
         public async Task<Stream> Post(HttpRequestOptions options, Dictionary<string, string> postData)
         {
-            var strings = postData.Keys.Select(key => string.Format("{0}={1}", key, postData[key]));
-            var postContent = string.Join("&", strings.ToArray());
-
-            options.RequestContent = postContent;
-            options.RequestContentType = "application/x-www-form-urlencoded";
+            options.SetPostData(postData);
 
             var response = await Post(options).ConfigureAwait(false);
 
