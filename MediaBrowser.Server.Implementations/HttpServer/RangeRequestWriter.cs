@@ -27,6 +27,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public bool Throttle { get; set; }
         public long ThrottleLimit { get; set; }
         public long MinThrottlePosition;
+        public Func<long, long, long> ThrottleCallback { get; set; }
+        public Action OnComplete { get; set; }
 
         /// <summary>
         /// The _options
@@ -167,7 +169,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 responseStream = new ThrottledStream(responseStream, ThrottleLimit)
                 {
-                    MinThrottlePosition = MinThrottlePosition
+                    MinThrottlePosition = MinThrottlePosition,
+                    ThrottleCallback = ThrottleCallback
                 };
             }
             var task = WriteToAsync(responseStream);
@@ -182,22 +185,32 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Task.</returns>
         private async Task WriteToAsync(Stream responseStream)
         {
-            // Headers only
-            if (IsHeadRequest)
+            try
             {
-                return;
-            }
-
-            using (var source = SourceStream)
-            {
-                // If the requested range is "0-", we can optimize by just doing a stream copy
-                if (RangeEnd >= TotalContentLength - 1)
+                // Headers only
+                if (IsHeadRequest)
                 {
-                    await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                    return;
                 }
-                else
+
+                using (var source = SourceStream)
                 {
-                    await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
+                    // If the requested range is "0-", we can optimize by just doing a stream copy
+                    if (RangeEnd >= TotalContentLength - 1)
+                    {
+                        await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+            }
+            finally
+            {
+                if (OnComplete != null)
+                {
+                    OnComplete();
                 }
             }
         }

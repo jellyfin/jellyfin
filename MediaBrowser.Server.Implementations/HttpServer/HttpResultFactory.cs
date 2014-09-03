@@ -102,14 +102,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return result;
         }
 
-        private bool SupportsCompression
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         /// <summary>
         /// Gets the optimized result.
         /// </summary>
@@ -127,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
 
-            var optimizedResult = SupportsCompression ? requestContext.ToOptimizedResult(result) : result;
+            var optimizedResult = requestContext.ToOptimizedResult(result);
 
             if (responseHeaders != null)
             {
@@ -471,7 +463,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     {
                         Throttle = options.Throttle,
                         ThrottleLimit = options.ThrottleLimit,
-                        MinThrottlePosition = options.MinThrottlePosition
+                        MinThrottlePosition = options.MinThrottlePosition,
+                        ThrottleCallback = options.ThrottleCallback,
+                        OnComplete = options.OnComplete
                     };
                 }
 
@@ -488,39 +482,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     Throttle = options.Throttle,
                     ThrottleLimit = options.ThrottleLimit,
-                    MinThrottlePosition = options.MinThrottlePosition
+                    MinThrottlePosition = options.MinThrottlePosition,
+                    ThrottleCallback = options.ThrottleCallback,
+                    OnComplete = options.OnComplete
                 };
             }
 
             string content;
-            long originalContentLength = 0;
 
             using (var stream = await factoryFn().ConfigureAwait(false))
             {
-                using (var memoryStream = new MemoryStream())
+                using (var reader = new StreamReader(stream))
                 {
-                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                    memoryStream.Position = 0;
-
-                    originalContentLength = memoryStream.Length;
-
-                    using (var reader = new StreamReader(memoryStream))
-                    {
-                        content = await reader.ReadToEndAsync().ConfigureAwait(false);
-                    }
+                    content = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
-            }
-
-            if (!SupportsCompression)
-            {
-                responseHeaders["Content-Length"] = originalContentLength.ToString(UsCulture);
-
-                if (isHeadRequest)
-                {
-                    return GetHttpResult(new byte[] { }, contentType);
-                }
-
-                return new HttpResult(content, contentType);
             }
 
             var contents = content.Compress(requestedCompressionType);

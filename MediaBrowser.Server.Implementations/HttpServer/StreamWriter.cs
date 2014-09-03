@@ -39,6 +39,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public bool Throttle { get; set; }
         public long ThrottleLimit { get; set; }
         public long MinThrottlePosition;
+        public Func<long, long, long> ThrottleCallback { get; set; }
+        public Action OnComplete { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
@@ -85,7 +87,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 responseStream = new ThrottledStream(responseStream, ThrottleLimit)
                 {
-                    MinThrottlePosition = MinThrottlePosition
+                    MinThrottlePosition = MinThrottlePosition,
+                    ThrottleCallback = ThrottleCallback
                 };
             }
             var task = WriteToAsync(responseStream);
@@ -112,6 +115,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 Logger.ErrorException("Error streaming data", ex);
 
                 throw;
+            }
+            finally
+            {
+                if (OnComplete != null)
+                {
+                    OnComplete();
+                }
             }
         }
     }

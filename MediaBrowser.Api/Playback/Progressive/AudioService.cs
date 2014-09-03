@@ -55,15 +55,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             return ProcessRequest(request, true);
         }
 
-        /// <summary>
-        /// Gets the command line arguments.
-        /// </summary>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.InvalidOperationException">Only aac and mp3 audio codecs are supported.</exception>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
         {
             var audioTranscodeParams = new List<string>();
 
@@ -92,7 +84,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             return string.Format("{0} -i {1} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1 -y \"{5}\"",
                 inputModifier,
-                GetInputArgument(state),
+                GetInputArgument(transcodingJobId, state),
                 threads,
                 vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),

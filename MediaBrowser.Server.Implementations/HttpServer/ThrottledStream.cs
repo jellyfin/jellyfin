@@ -15,6 +15,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         public const long Infinite = 0;
 
+        public Func<long, long, long> ThrottleCallback { get; set; }
+        
         #region Private members
         /// <summary>
         /// The base stream.
@@ -278,6 +280,32 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
         #endregion
 
+        private bool ThrottleCheck(int bufferSizeInBytes)
+        {
+            if (_bytesWritten < MinThrottlePosition)
+            {
+                return false;
+            }
+
+            // Make sure the buffer isn't empty.
+            if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
+            {
+                return false;
+            }
+
+            if (ThrottleCallback != null)
+            {
+                var val = ThrottleCallback(_maximumBytesPerSecond, _bytesWritten);
+
+                if (val == 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         #region Protected methods
         /// <summary>
         /// Throttles for the specified buffer size in bytes.
@@ -285,15 +313,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="bufferSizeInBytes">The buffer size in bytes.</param>
         protected void Throttle(int bufferSizeInBytes)
         {
-            if (_bytesWritten < MinThrottlePosition)
+            if (!ThrottleCheck(bufferSizeInBytes))
             {
-                return;
-            }
-
-            // Make sure the buffer isn't empty.
-            if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
-            {
-                return;
+                return ;
             }
 
             _byteCount += bufferSizeInBytes;
@@ -332,13 +354,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         protected async Task ThrottleAsync(int bufferSizeInBytes, CancellationToken cancellationToken)
         {
-            if (_bytesWritten < MinThrottlePosition)
-            {
-                return;
-            }
-
-            // Make sure the buffer isn't empty.
-            if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
+            if (!ThrottleCheck(bufferSizeInBytes))
             {
                 return;
             }
