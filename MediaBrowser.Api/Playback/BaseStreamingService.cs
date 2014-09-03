@@ -90,10 +90,11 @@ namespace MediaBrowser.Api.Playback
         /// Gets the command line arguments.
         /// </summary>
         /// <param name="outputPath">The output path.</param>
+        /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="state">The state.</param>
         /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
         /// <returns>System.String.</returns>
-        protected abstract string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding);
+        protected abstract string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding);
 
         /// <summary>
         /// Gets the type of the transcoding job.
@@ -122,7 +123,7 @@ namespace MediaBrowser.Api.Playback
 
             var outputFileExtension = GetOutputFileExtension(state);
 
-            var data = GetCommandLineArguments("dummy\\dummy", state, false);
+            var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
 
@@ -782,9 +783,10 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the input argument.
         /// </summary>
+        /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetInputArgument(StreamState state)
+        protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
             if (state.InputProtocol == MediaProtocol.File &&
                state.RunTimeTicks.HasValue &&
@@ -794,6 +796,8 @@ namespace MediaBrowser.Api.Playback
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
                     var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+
+                    url += "&transcodingJobId=" + transcodingJobId;
 
                     return string.Format("\"{0}\"", url);
                 }
@@ -897,7 +901,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.InvalidOperationException">ffmpeg was not found at  + MediaEncoder.EncoderPath</exception>
-        protected async Task StartFfMpeg(StreamState state, string outputPath, CancellationTokenSource cancellationTokenSource)
+        protected async Task<TranscodingJob> StartFfMpeg(StreamState state, string outputPath, CancellationTokenSource cancellationTokenSource)
         {
             if (!File.Exists(MediaEncoder.EncoderPath))
             {
@@ -908,7 +912,8 @@ namespace MediaBrowser.Api.Playback
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
-            var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
+            var transcodingId = Guid.NewGuid().ToString("N");
+            var commandLineArgs = GetCommandLineArguments(outputPath, transcodingId, state, true);
 
             if (ServerConfigurationManager.Configuration.EnableDebugEncodingLogging)
             {
@@ -938,7 +943,8 @@ namespace MediaBrowser.Api.Playback
                 EnableRaisingEvents = true
             };
 
-            ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
+            var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
+                transcodingId,
                 TranscodingJobType,
                 process,
                 state.Request.DeviceId,
@@ -957,7 +963,7 @@ namespace MediaBrowser.Api.Playback
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, state, outputPath);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);
 
             try
             {
@@ -976,16 +982,18 @@ namespace MediaBrowser.Api.Playback
             process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(state, process.StandardError.BaseStream, state.LogFileStream);
+            StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
 
             // Wait for the file to exist before proceeeding
             while (!File.Exists(outputPath))
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
+
+            return transcodingJob;
         }
 
-        private async void StartStreamingLog(StreamState state, Stream source, Stream target)
+        private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)
         {
             try
             {
@@ -995,7 +1003,7 @@ namespace MediaBrowser.Api.Playback
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        ParseLogLine(line, state);
+                        ParseLogLine(line, transcodingJob, state);
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
@@ -1009,10 +1017,12 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void ParseLogLine(string line, StreamState state)
+        private void ParseLogLine(string line, TranscodingJob transcodingJob, StreamState state)
         {
             float? framerate = null;
             double? percent = null;
+            TimeSpan? transcodingPosition = null;
+            long? bytesTranscoded = null;
 
             var parts = line.Split(' ');
 
@@ -1051,13 +1061,36 @@ namespace MediaBrowser.Api.Playback
 
                         var percentVal = currentMs / totalMs;
                         percent = 100 * percentVal;
+
+                        transcodingPosition = val;
+                    }
+                }
+                else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var size = part.Split(new[] { '=' }, 2).Last();
+
+                    int? scale = null;
+                    if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        scale = 1024;
+                        size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (scale.HasValue)
+                    {
+                        long val;
+                        
+                        if (long.TryParse(size, NumberStyles.Any, UsCulture, out val))
+                        {
+                            bytesTranscoded = val * scale.Value;
+                        }
                     }
                 }
             }
 
             if (framerate.HasValue || percent.HasValue)
             {
-                ApiEntryPoint.Instance.ReportTranscodingProgress(state, framerate, percent);
+                ApiEntryPoint.Instance.ReportTranscodingProgress(transcodingJob, state, transcodingPosition, framerate, percent, bytesTranscoded);
             }
         }
 
@@ -1170,12 +1203,10 @@ namespace MediaBrowser.Api.Playback
         /// Processes the exited.
         /// </summary>
         /// <param name="process">The process.</param>
+        /// <param name="job">The job.</param>
         /// <param name="state">The state.</param>
-        /// <param name="outputPath">The output path.</param>
-        private void OnFfMpegProcessExited(Process process, StreamState state, string outputPath)
+        private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
         {
-            var job = ApiEntryPoint.Instance.GetTranscodingJob(outputPath, TranscodingJobType);
-
             if (job != null)
             {
                 job.HasExited = true;

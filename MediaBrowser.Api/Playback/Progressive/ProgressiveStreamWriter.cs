@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Threading;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -73,7 +74,10 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
             finally
             {
-                ApiEntryPoint.Instance.OnTranscodeEndRequest(Path, TranscodingJobType.Progressive);
+                if (_job != null)
+                {
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(_job);
+                }
             }
         }
     }
@@ -82,6 +86,8 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
         private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
+
+        private long _bytesWritten = 0;
 
         public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job)
         {
@@ -98,7 +104,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 while (eofCount < 15)
                 {
-                    await fs.CopyToAsync(outputStream).ConfigureAwait(false);
+                    await CopyToAsyncInternal(fs, outputStream, 81920, CancellationToken.None).ConfigureAwait(false);
 
                     var fsPosition = fs.Position;
 
@@ -120,6 +126,23 @@ namespace MediaBrowser.Api.Playback.Progressive
                     }
 
                     position = fsPosition;
+                }
+            }
+        }
+
+        private async Task CopyToAsyncInternal(Stream source, Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            byte[] array = new byte[bufferSize];
+            int count;
+            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(array, 0, count, cancellationToken).ConfigureAwait(false);
+
+                _bytesWritten += count;
+
+                if (_job != null)
+                {
+                    _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
                 }
             }
         }

@@ -2125,7 +2125,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         function supportsWebP() {
 
             // TODO: Improve with http://webpjs.appspot.com/
-            return $.browser.chrome || $.browser.android;
+            return $.browser.chrome;
         }
 
         function normalizeImageOptions(options) {

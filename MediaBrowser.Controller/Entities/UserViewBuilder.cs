@@ -205,7 +205,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(CollectionType.MovieMovies, user, "2", parent).ConfigureAwait(false));
             list.Add(await GetUserView(CollectionType.MovieCollections, user, "3", parent).ConfigureAwait(false));
             list.Add(await GetUserView(CollectionType.MovieFavorites, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(CollectionType.MovieGenres, user, "5", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(CollectionType.MovieGenres, user, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, query);
         }
@@ -283,7 +283,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(CollectionType.TvLatest, user, "2", parent).ConfigureAwait(false));
             list.Add(await GetUserView(CollectionType.TvSeries, user, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.TvFavorites, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(CollectionType.TvGenres, user, "5", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(CollectionType.TvGenres, user, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, query);
         }
@@ -301,7 +301,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(CollectionType.RecentlyPlayedGames, user, "1", parent).ConfigureAwait(false));
             list.Add(await GetUserView(CollectionType.GameFavorites, user, "2", parent).ConfigureAwait(false));
             list.Add(await GetUserView(CollectionType.GameSystems, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(CollectionType.GameGenres, user, "4", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(CollectionType.GameGenres, user, "4", parent).ConfigureAwait(false));
 
             return GetResult(list, query);
         }

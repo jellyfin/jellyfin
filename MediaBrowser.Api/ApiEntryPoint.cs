@@ -120,12 +120,15 @@ namespace MediaBrowser.Api
         /// Called when [transcode beginning].
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="state">The state.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
-        public void OnTranscodeBeginning(string path,
+        /// <returns>TranscodingJob.</returns>
+        public TranscodingJob OnTranscodeBeginning(string path,
+            string transcodingJobId,
             TranscodingJobType type,
             Process process,
             string deviceId,
@@ -134,22 +137,37 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                _activeTranscodingJobs.Add(new TranscodingJob
+                var job = new TranscodingJob
                 {
                     Type = type,
                     Path = path,
                     Process = process,
                     ActiveRequestCount = 1,
                     DeviceId = deviceId,
-                    CancellationTokenSource = cancellationTokenSource
-                });
+                    CancellationTokenSource = cancellationTokenSource,
+                    Id = transcodingJobId
+                };
 
-                ReportTranscodingProgress(state, null, null);
+                _activeTranscodingJobs.Add(job);
+
+                ReportTranscodingProgress(job, state, null, null, null, null);
+
+                return job;
             }
         }
 
-        public void ReportTranscodingProgress(StreamState state, float? framerate, double? percentComplete)
+        public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded)
         {
+            var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
+
+            if (job != null)
+            {
+                job.Framerate = framerate;
+                job.CompletionPercentage = percentComplete;
+                job.TranscodingPositionTicks = ticks;
+                job.BytesTranscoded = bytesTranscoded;
+            }
+
             var deviceId = state.Request.DeviceId;
 
             if (!string.IsNullOrWhiteSpace(deviceId))
@@ -226,12 +244,20 @@ namespace MediaBrowser.Api
             }
         }
 
+        public TranscodingJob GetTranscodingJob(string id)
+        {
+            lock (_activeTranscodingJobs)
+            {
+                return _activeTranscodingJobs.FirstOrDefault(j => j.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
         /// <summary>
         /// Called when [transcode begin request].
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="type">The type.</param>
-        public void OnTranscodeBeginRequest(string path, TranscodingJobType type)
+        public TranscodingJob OnTranscodeBeginRequest(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
@@ -239,7 +265,7 @@ namespace MediaBrowser.Api
 
                 if (job == null)
                 {
-                    return;
+                    return null;
                 }
 
                 job.ActiveRequestCount++;
@@ -249,40 +275,27 @@ namespace MediaBrowser.Api
                     job.KillTimer.Dispose();
                     job.KillTimer = null;
                 }
+
+                return job;
             }
         }
 
-        /// <summary>
-        /// Called when [transcode end request].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="type">The type.</param>
-        public void OnTranscodeEndRequest(string path, TranscodingJobType type)
+        public void OnTranscodeEndRequest(TranscodingJob job)
         {
-            lock (_activeTranscodingJobs)
+            job.ActiveRequestCount--;
+
+            if (job.ActiveRequestCount == 0)
             {
-                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                // The HLS kill timer is long - 1/2 hr. clients should use the manual kill command when stopping.
+                var timerDuration = job.Type == TranscodingJobType.Progressive ? 1000 : 1800000;
 
-                if (job == null)
+                if (job.KillTimer == null)
                 {
-                    return;
+                    job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
                 }
-
-                job.ActiveRequestCount--;
-
-                if (job.ActiveRequestCount == 0)
+                else
                 {
-                    // The HLS kill timer is long - 1/2 hr. clients should use the manual kill command when stopping.
-                    var timerDuration = type == TranscodingJobType.Progressive ? 1000 : 1800000;
-
-                    if (job.KillTimer == null)
-                    {
-                        job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
-                    }
-                    else
-                    {
-                        job.KillTimer.Change(timerDuration, Timeout.Infinite);
-                    }
+                    job.KillTimer.Change(timerDuration, Timeout.Infinite);
                 }
             }
         }
@@ -306,7 +319,6 @@ namespace MediaBrowser.Api
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">deviceId</exception>
-        /// <exception cref="System.ArgumentNullException">sourcePath</exception>
         internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles, bool acquireLock)
         {
             if (string.IsNullOrEmpty(deviceId))
@@ -324,8 +336,7 @@ namespace MediaBrowser.Api
         /// <param name="deleteFiles">The delete files.</param>
         /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">deviceId</exception>
-        internal async Task KillTranscodingJobs(Func<TranscodingJob,bool> killJob, Func<string, bool> deleteFiles, bool acquireLock)
+        internal async Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles, bool acquireLock)
         {
             var jobs = new List<TranscodingJob>();
 
@@ -542,6 +553,17 @@ namespace MediaBrowser.Api
         public object ProcessLock = new object();
 
         public bool HasExited { get; set; }
+
+        public string Id { get; set; }
+
+        public float? Framerate { get; set; }
+        public double? CompletionPercentage { get; set; }
+
+        public long? BytesDownloaded { get; set; }
+        public long? BytesTranscoded { get; set; }
+        
+        public long? TranscodingPositionTicks { get; set; }
+        public long? DownloadPositionTicks { get; set; }
     }
 
     /// <summary>

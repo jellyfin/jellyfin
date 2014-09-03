@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -107,11 +108,14 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
             var segmentPath = GetSegmentPath(playlistPath, index);
+            var segmentLength = state.SegmentLength;
+
+            TranscodingJob job = null;
 
             if (File.Exists(segmentPath))
             {
-                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
-                return await GetSegmentResult(playlistPath, segmentPath, index, cancellationToken).ConfigureAwait(false);
+                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
             await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -119,8 +123,8 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (File.Exists(segmentPath))
                 {
-                    ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
-                    return await GetSegmentResult(playlistPath, segmentPath, index, cancellationToken).ConfigureAwait(false);
+                    job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                    return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -141,7 +145,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             var startSeconds = index * state.SegmentLength;
                             request.StartTimeTicks = TimeSpan.FromSeconds(startSeconds).Ticks;
 
-                            await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
+                            job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -165,7 +169,8 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             Logger.Info("returning {0}", segmentPath);
-            return await GetSegmentResult(playlistPath, segmentPath, index, cancellationToken).ConfigureAwait(false);
+            job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType.Hls);
+            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
         }
 
         public int? GetCurrentTranscodingIndex(string playlist)
@@ -258,12 +263,17 @@ namespace MediaBrowser.Api.Playback.Hls
             return Path.Combine(folder, filename + index.ToString(UsCulture) + ".ts");
         }
 
-        private async Task<object> GetSegmentResult(string playlistPath, string segmentPath, int segmentIndex, CancellationToken cancellationToken)
+        private async Task<object> GetSegmentResult(string playlistPath,
+            string segmentPath,
+            int segmentIndex,
+            int segmentLength,
+            TranscodingJob transcodingJob,
+            CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
             if (!IsTranscoding(playlistPath))
             {
-                return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+                return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
 
             var segmentFilename = Path.GetFileName(segmentPath);
@@ -277,7 +287,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     // If it appears in the playlist, it's done
                     if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
                     }
                 }
             }
@@ -286,7 +296,7 @@ namespace MediaBrowser.Api.Playback.Hls
             //var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath);
             //if (currentTranscodingIndex > segmentIndex)
             //{
-            //    return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+            //return GetSegmentResult(segmentPath, segmentIndex);
             //}
 
             // Wait for the file to stop being written to, then stream it
@@ -317,7 +327,27 @@ namespace MediaBrowser.Api.Playback.Hls
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
 
-            return ResultFactory.GetStaticFileResult(Request, segmentPath, FileShare.ReadWrite);
+            return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+        }
+
+        private object GetSegmentResult(string segmentPath, int index, int segmentLength, TranscodingJob transcodingJob)
+        {
+            var segmentEndingSeconds = (1 + index) * segmentLength;
+            var segmentEndingPositionTicks = TimeSpan.FromSeconds(segmentEndingSeconds).Ticks;
+
+            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                Path = segmentPath,
+                FileShare = FileShare.ReadWrite,
+                OnComplete = () =>
+                {
+                    if (transcodingJob != null)
+                    {
+                        transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
+                    }
+
+                }
+            });
         }
 
         private bool IsTranscoding(string playlistPath)
@@ -621,14 +651,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        /// <summary>
-        /// Gets the command line arguments.
-        /// </summary>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
-        /// <returns>System.String.</returns>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
         {
             var threads = GetNumberOfThreads(state, false);
 
@@ -639,7 +662,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                 inputModifier,
-                GetInputArgument(state),
+                GetInputArgument(transcodingJobId, state),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state),

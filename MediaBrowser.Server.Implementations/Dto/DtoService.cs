@@ -378,8 +378,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (album != null)
             {
-                dto.Album = item.Name;
-                dto.AlbumId = item.Id.ToString("N");
+                dto.Album = album.Name;
+                dto.AlbumId = album.Id.ToString("N");
             }
         }
 

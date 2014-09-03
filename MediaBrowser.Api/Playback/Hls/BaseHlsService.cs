@@ -88,10 +88,11 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var playlist = state.OutputFilePath;
+            TranscodingJob job;
 
             if (File.Exists(playlist))
             {
-                ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
             }
             else
             {
@@ -100,14 +101,14 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     if (File.Exists(playlist))
                     {
-                        ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+                        job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
                     }
                     else
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
+                            job = await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -137,7 +138,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
                 finally
                 {
-                    ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
+                    if (job != null)
+                    {
+                        ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
+                    }
                 }
             }
 
@@ -162,7 +166,10 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             finally
             {
-                ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
+                if (job != null)
+                {
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
+                }
             }
         }
 
@@ -241,14 +248,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        /// <summary>
-        /// Gets the command line arguments.
-        /// </summary>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="state">The state.</param>
-        /// <param name="isEncoding">if set to <c>true</c> [is encoding].</param>
-        /// <returns>System.String.</returns>
-        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
         {
             var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
 
@@ -276,7 +276,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
-                GetInputArgument(state),
+                GetInputArgument(transcodingJobId, state),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state),

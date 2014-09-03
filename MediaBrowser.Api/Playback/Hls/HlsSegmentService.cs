@@ -63,7 +63,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetHlsPlaylist request)
         {
-            OnBeginRequest(request.PlaylistId);
+            var normalizedPlaylistId = request.PlaylistId.Replace("-low", string.Empty);
+
+            foreach (var playlist in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*.m3u8")
+                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList())
+            {
+                if (!string.IsNullOrEmpty(playlist))
+                {
+                    ExtendPlaylistTimer(playlist);
+                }
+            }
 
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
 
@@ -93,32 +103,16 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
 
-        /// <summary>
-        /// Called when [begin request].
-        /// </summary>
-        /// <param name="playlistId">The playlist id.</param>
-        protected void OnBeginRequest(string playlistId)
-        {
-            var normalizedPlaylistId = playlistId.Replace("-low", string.Empty);
-
-            foreach (var playlist in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*.m3u8")
-                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList())
-            {
-                if (!string.IsNullOrEmpty(playlist))
-                {
-                    ExtendPlaylistTimer(playlist);
-                }
-            }
-        }
-
         private async void ExtendPlaylistTimer(string playlist)
         {
-            ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
+            var job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
 
             await Task.Delay(20000).ConfigureAwait(false);
 
-            ApiEntryPoint.Instance.OnTranscodeEndRequest(playlist, TranscodingJobType.Hls);
+            if (job != null)
+            {
+                ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
+            }
         }
     }
 }
