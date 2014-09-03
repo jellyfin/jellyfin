@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +112,12 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var url = "Servers";
             url = GetConnectUrl(url);
-            var postData = new Dictionary<string, string> {{"name", _appHost.FriendlyName}, {"url", wanApiAddress}};
+
+            var postData = new Dictionary<string, string>
+            {
+                {"name", _appHost.FriendlyName}, 
+                {"url", wanApiAddress}
+            };
 
             using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
             {
@@ -131,12 +135,24 @@ namespace MediaBrowser.Server.Implementations.Connect
             var url = "Servers";
             url = GetConnectUrl(url);
             url += "?id=" + ConnectServerId;
-            var postData = new Dictionary<string, string> {{"name", _appHost.FriendlyName}, {"url", wanApiAddress}};
 
             // TODO: Add Access-Key http request header
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            options.SetPostData(new Dictionary<string, string>
+            {
+                {"name", _appHost.FriendlyName}, 
+                {"url", wanApiAddress}
+            });
+
+            options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
 
             // No need to examine the response
-            using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
             {
             }
         }
