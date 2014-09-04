@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -93,11 +95,26 @@ namespace MediaBrowser.Server.Implementations.Connect
                 var hasExistingRecord = !string.IsNullOrWhiteSpace(ConnectServerId) &&
                                   !string.IsNullOrWhiteSpace(ConnectAccessKey);
 
+                var createNewRegistration = !hasExistingRecord;
+
                 if (hasExistingRecord)
                 {
-                    await UpdateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                    try
+                    {
+                        await UpdateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound || ex.StatusCode.Value != HttpStatusCode.Unauthorized)
+                        {
+                            throw;
+                        }
+
+                        createNewRegistration = true;
+                    }
                 }
-                else
+
+                if (createNewRegistration)
                 {
                     await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
                 }
@@ -136,7 +153,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             url = GetConnectUrl(url);
             url += "?id=" + ConnectServerId;
 
-            // TODO: Add Access-Key http request header
             var options = new HttpRequestOptions
             {
                 Url = url,

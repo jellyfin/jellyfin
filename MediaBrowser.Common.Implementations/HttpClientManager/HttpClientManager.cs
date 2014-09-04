@@ -123,7 +123,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             request.Method = method;
-            request.Pipelined = true;
             request.Timeout = 20000;
 
             if (!string.IsNullOrEmpty(options.Host))

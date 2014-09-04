@@ -162,6 +162,7 @@
     <Compile Include="HttpServer\ServerLogger.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
+    <Compile Include="HttpServer\SocketSharp\SocketSharpLogger.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />

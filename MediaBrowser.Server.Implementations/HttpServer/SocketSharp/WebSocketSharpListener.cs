@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new WebSocketSharp.Net.HttpListener();
+                _listener = new HttpListener(new SocketSharpLogger(_logger));
 
             foreach (var prefix in urlPrefixes)
             {

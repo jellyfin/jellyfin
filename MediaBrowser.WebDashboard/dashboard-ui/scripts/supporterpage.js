@@ -44,6 +44,7 @@
     }
 
     var lifeTimeAmount = 30;
+    var dailyAmount = 1;
     var monthlyAmount = 3;
     var yearlyAmount = 20;
     function getDonationAmount(page) {
@@ -58,6 +59,9 @@
         }
         if (type == 'monthly') {
             return monthlyAmount;
+        }
+        if (type == 'daily') {
+            return dailyAmount;
         }
 
         // lifetime
@@ -153,6 +157,13 @@
                 setItemNumber(page, 'MBSClubMonthly');
                 $('#oneTimeDescription').hide();
             }
+            else if (donationType == 'daily') {
+
+                $('.fldOneTimeDonationAmount', page).hide();
+                addRecurringFields('D', page);
+                setItemNumber(page, 'MBSClubDaily');
+                $('#oneTimeDescription').hide();
+            }
             else {
                 // Lifetime
                 $('.fldOneTimeDonationAmount', page).hide();
@@ -173,6 +184,7 @@
 
         $('.lifetimeAmount', page).html('$' + lifeTimeAmount);
         $('.monthlyAmount', page).html('$' + monthlyAmount);
+        $('.dailyAmount', page).html('$' + dailyAmount);
         $('.yearlyAmount', page).html('$' + yearlyAmount);
 
         $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
