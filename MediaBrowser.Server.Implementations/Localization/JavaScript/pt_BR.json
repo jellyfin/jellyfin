@@ -430,13 +430,13 @@
     "BirthPlaceValue": "Local de nascimento: {0}",
     "DeathDateValue": "Morte: {0}",
     "BirthDateValue": "Nascimento: {0}",
-    "HeaderLatestReviews": "Latest Reviews",
-    "HeaderPluginInstallation": "Plugin Installation",
-    "MessageAlreadyInstalled": "This version is already installed.",
-    "ValueReviewCount": "{0} Reviews",
-    "MessageYouHaveVersionInstalled": "You currently have version {0} installed.",
-    "MessageTrialExpired": "The trial period for this feature has expired",
-    "MessageTrialWillExpireIn": "The trial period for this feature will expire in {0} day(s)",
-    "MessageInstallPluginFromApp": "This plugin must be installed from with in the app you intend to use it in.",
-    "ValuePriceUSD": "Price: {0} (USD)"
+    "HeaderLatestReviews": "\u00daltimas Avalia\u00e7\u00f5es",
+    "HeaderPluginInstallation": "Instala\u00e7\u00e3o do plugin",
+    "MessageAlreadyInstalled": "Esta vers\u00e3o j\u00e1 est\u00e1 instalada.",
+    "ValueReviewCount": "{0} Avalia\u00e7\u00f5es",
+    "MessageYouHaveVersionInstalled": "Voc\u00ea possui a vers\u00e3o {0} instalada.",
+    "MessageTrialExpired": "O per\u00edodo de testes terminou",
+    "MessageTrialWillExpireIn": "O per\u00edodo de testes expirar\u00e1 em {0} dia(s)",
+    "MessageInstallPluginFromApp": "Este plugin deve ser instalado de dentro da app em que deseja us\u00e1-lo.",
+    "ValuePriceUSD": "Pre\u00e7o: {0} (USD)"
 }
