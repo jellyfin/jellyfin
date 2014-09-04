@@ -349,6 +349,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (diff > 0)
                 {
+                    _logger.Debug("Throttling MovieDb by {0} ms", diff);
                     await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
                 }
 

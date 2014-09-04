@@ -168,7 +168,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             _listener = NativeWebSocket.IsSupported
                 ? _listener = new HttpListenerServer(_logger, OnRequestReceived)
-                //? _listener = new WebSocketSharpListener(_logger)
+                //? _listener = new WebSocketSharpListener(_logger, OnRequestReceived)
                 : _listener = new WebSocketSharpListener(_logger, OnRequestReceived);
 
             _listener.WebSocketHandler = WebSocketHandler;

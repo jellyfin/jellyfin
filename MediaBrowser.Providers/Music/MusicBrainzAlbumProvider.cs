@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -22,11 +23,13 @@ namespace MediaBrowser.Providers.Music
 
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
+        private readonly ILogger _logger;
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost)
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger)
         {
             _httpClient = httpClient;
             _appHost = appHost;
+            _logger = logger;
             Current = this;
         }
 
@@ -285,10 +288,9 @@ namespace MediaBrowser.Providers.Music
 
                 if (diff > 0)
                 {
+                    _logger.Debug("Throttling musicbrainz by {0} ms", diff);
                     await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
                 }
-
-                _lastRequestDate = DateTime.Now;
 
                 var doc = new XmlDocument();
 
