@@ -88,7 +88,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         }
 
         private ConfigurationStore[] _configurationStores = {};
-        private IConfigurationFactory[] _configurationFactories;
+        private IConfigurationFactory[] _configurationFactories = {};
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.

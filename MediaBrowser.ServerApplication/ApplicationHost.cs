@@ -4,6 +4,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
+using MediaBrowser.Common.Implementations.Devices;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -903,11 +904,18 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private readonly string _systemId = Environment.MachineName.GetMD5().ToString();
-
+        private DeviceId _serverId;
         public string ServerId
         {
-            get { return _systemId; }
+            get
+            {
+                if (_serverId == null)
+                {
+                    _serverId = new DeviceId(ApplicationPaths, LogManager.GetLogger("ServerId"));
+                }
+
+                return _serverId.Value;
+            }
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
@@ -16,7 +15,6 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,43 +146,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ThenBy(i => i.SortName);
         }
 
-        public Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserView(string category, string type, User user, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
-            return _libraryManager.GetNamedView(name, type, sortName, cancellationToken);
+            return _libraryManager.GetNamedView(name, category, type, sortName, cancellationToken);
         }
 
-        public async Task<SpecialFolder> GetSpecialFolder(string name, SpecialFolderType type, string itemType, CancellationToken cancellationToken)
+        public Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_appPaths.ItemsByNamePath,
-                "specialfolders",
-                _fileSystem.GetValidFilename(name));
-
-            var id = (path + "_specialfolder_" + name).GetMBId(typeof(SpecialFolder));
-
-            var item = _libraryManager.GetItemById(id) as SpecialFolder;
-
-            if (item == null)
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-                item = new SpecialFolder
-                {
-                    Path = path,
-                    Id = id,
-                    DateCreated = DateTime.UtcNow,
-                    Name = name,
-                    SpecialFolderType = type,
-                    ItemTypeName = itemType
-                };
-
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
-
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-            }
-
-            return item;
+            return GetUserView(null, type, user, sortName, cancellationToken);
         }
     }
 }

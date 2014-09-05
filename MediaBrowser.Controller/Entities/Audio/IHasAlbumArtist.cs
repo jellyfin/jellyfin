@@ -12,5 +12,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         bool HasArtist(string name);
 
         List<string> AllArtists { get; }
+
+        List<string> Artists { get; }
     }
 }

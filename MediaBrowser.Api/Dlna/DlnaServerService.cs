@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Configuration;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;

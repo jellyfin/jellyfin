@@ -42,6 +42,23 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public List<string> Artists
+        {
+            get
+            {
+                var list = new List<string>();
+
+                if (!string.IsNullOrEmpty(Artist))
+                {
+                    list.Add(Artist);
+                }
+
+                return list;
+
+            }
+        }
+
+        [IgnoreDataMember]
         public List<string> AllArtists
         {
             get

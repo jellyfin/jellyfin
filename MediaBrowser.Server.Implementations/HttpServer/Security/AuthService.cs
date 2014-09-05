@@ -53,17 +53,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             ValidateUser(req, allowLocal);
         }
 
-        // TODO: Remove this when all clients have supported the new sescurity
-        private readonly List<string> _updatedClients = new List<string>() { "Dashboard", "Chromecast" };
-
         private void ValidateUser(IRequest req, bool allowLocal)
         {
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
             if (!string.IsNullOrWhiteSpace(auth.Token)
-                || _config.Configuration.EnableTokenAuthentication
-                || _updatedClients.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                || _config.Configuration.SecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 if (!allowLocal || !req.IsLocal)
                 {

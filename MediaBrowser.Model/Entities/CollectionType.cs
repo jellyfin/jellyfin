@@ -49,5 +49,11 @@
         public const string GameSystems = "GameSystems";
         public const string GameGenres = "GameGenres";
         public const string GameFavorites = "GameFavorites";
+
+        public const string MusicArtists = "MusicArtists";
+        public const string MusicAlbumArtists = "MusicAlbumArtists";
+        public const string MusicAlbums = "MusicAlbums";
+        public const string MusicGenres = "MusicGenres";
+        public const string MusicLatest = "MusicLatest";
     }
 }

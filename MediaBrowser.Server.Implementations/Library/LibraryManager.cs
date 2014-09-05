@@ -1484,16 +1484,27 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Distinct(StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
+        {
+            return GetNamedView(name, null, type, sortName, cancellationToken);
+        }
+
+        public async Task<UserView> GetNamedView(string name, string category, string type, string sortName, CancellationToken cancellationToken)
         {
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
-                "views",
-                _fileSystem.GetValidFilename(type));
+                "views");
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                path = Path.Combine(path, _fileSystem.GetValidFilename(category));
+            }
+
+            path = Path.Combine(path, _fileSystem.GetValidFilename(type));
 
             var id = (path + "_namedview_" + name).GetMBId(typeof(UserView));
 
             var item = GetItemById(id) as UserView;
-            
+
             if (item == null)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));

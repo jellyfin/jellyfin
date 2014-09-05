@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Notifications;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -178,8 +176,9 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DefaultMetadataSettingsApplied { get; set; }
 
-        public bool EnableTokenAuthentication { get; set; }
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
+
+        public string[] SecureApps { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -224,6 +223,17 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
+
+            SecureApps = new[]
+            {
+                "Dashboard",
+                "Chrome Companion",
+                "MBKinect",
+                "NuVue",
+                "Media Browser Theater",
+
+                //"MB-Classic"
+            };
 
             MetadataOptions = new[]
             {
