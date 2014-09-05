@@ -104,15 +104,15 @@
             if (info.IsActiveSupporter && info.PlanType == 'Lifetime') {
 
                 $('.planSummary', page)
-                    .html('You have a lifetime supporter club membership. You can provide additional donations on a one-time or recurring basis using the options below. Thank you for supporting Media Browser.')
-                    .css('color', 'green');
+                    .html('You have a lifetime supporter membership. You can provide additional donations on a one-time or recurring basis using the options below. Thank you for supporting Media Browser.')
+                    .css('color', 'blue');
 
             }
             else if (info.IsActiveSupporter) {
 
                 $('.planSummary', page)
                     .html('You have an active ' + info.PlanType + ' membership. You can upgrade your plan using the options below.')
-                    .css('color', 'green');
+                    .css('color', 'blue');
 
             }
             else if (info.IsExpiredSupporter) {

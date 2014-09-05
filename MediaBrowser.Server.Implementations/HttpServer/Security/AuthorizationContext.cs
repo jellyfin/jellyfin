@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static AuthorizationInfo GetAuthorization(IRequest httpReq)
+        private AuthorizationInfo GetAuthorization(IRequest httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
 
@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
+        private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
         {
             var auth = httpReq.Headers["Authorization"];
 
@@ -71,14 +71,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string> GetAuthorization(string authorizationHeader)
+        private Dictionary<string, string> GetAuthorization(string authorizationHeader)
         {
             if (authorizationHeader == null) return null;
 
-            var parts = authorizationHeader.Split(' ');
+            var parts = authorizationHeader.Split(new[] { ' ' }, 2);
 
             // There should be at least to parts
-            if (parts.Length < 2) return null;
+            if (parts.Length != 2) return null;
 
             // It has to be a digest request
             if (!string.Equals(parts[0], "MediaBrowser", StringComparison.OrdinalIgnoreCase))
@@ -87,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             }
 
             // Remove uptil the first space
-            authorizationHeader = authorizationHeader.Substring(authorizationHeader.IndexOf(' '));
+            authorizationHeader = parts[1];
             parts = authorizationHeader.Split(',');
 
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -95,7 +95,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             foreach (var item in parts)
             {
                 var param = item.Trim().Split(new[] { '=' }, 2);
-                result.Add(param[0], param[1].Trim(new[] { '"' }));
+
+                if (param.Length == 2)
+                {
+                    result.Add(param[0], param[1].Trim(new[] { '"' }));
+                }
             }
 
             return result;

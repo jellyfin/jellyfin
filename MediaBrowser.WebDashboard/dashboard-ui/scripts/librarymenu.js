@@ -141,7 +141,7 @@
                     viewMenuCssClass = 'channelsViewMenu';
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i) + '">' + i.Name + '</a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i, i.CollectionType) + '">' + i.Name + '</a>';
 
             }).join('');
 

@@ -11,5 +11,7 @@ namespace MediaBrowser.Controller.Library
         Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken);
 
         Task<UserView> GetUserView(string type, User user, string sortName, CancellationToken cancellationToken);
+
+        Task<UserView> GetUserView(string category, string type, User user, string sortName, CancellationToken cancellationToken);
     }
 }

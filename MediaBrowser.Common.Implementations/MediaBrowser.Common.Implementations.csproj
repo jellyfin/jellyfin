@@ -82,6 +82,7 @@
     <Compile Include="BaseApplicationHost.cs" />
     <Compile Include="BaseApplicationPaths.cs" />
     <Compile Include="Configuration\BaseConfigurationManager.cs" />
+    <Compile Include="Devices\DeviceId.cs" />
     <Compile Include="HttpClientManager\HttpClientInfo.cs" />
     <Compile Include="HttpClientManager\HttpClientManager.cs" />
     <Compile Include="IO\CommonFileSystem.cs" />

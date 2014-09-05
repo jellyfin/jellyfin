@@ -84,7 +84,7 @@
 
 /* Fixes button running outside of list */
 .btnRemoveFromEditorList .ui-btn-inner {
-    padding-right: 0!important;
+    padding-right: 0 !important;
 }
 
 
@@ -266,7 +266,7 @@
         left: 0;
         width: 30%;
         overflow-y: scroll;
-        overflow-x: auto!important;
+        overflow-x: auto !important;
         display: block;
         border-right: 1px solid #555;
     }

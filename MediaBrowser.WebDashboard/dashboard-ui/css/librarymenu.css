@@ -350,6 +350,14 @@
     }
 }
 
+@media all and (max-width: 800px) {
+
+    /* The sidebar isn't visible at this size, so there's no way to navigate within the editor */
+    .editorViewMenu {
+        display: none;
+    }
+}
+
 .libraryDocument .dashboardMenuButton {
     display: none;
 }

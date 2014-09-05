@@ -336,10 +336,21 @@ namespace MediaBrowser.Controller.Library
         /// Gets the named folder.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="category">The category.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Folder}.</returns>
+        Task<UserView> GetNamedView(string name, string category, string viewType, string sortName, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the named view.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <param name="sortName">Name of the sort.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;UserView&gt;.</returns>
         Task<UserView> GetNamedView(string name, string viewType, string sortName, CancellationToken cancellationToken);
     }
 }

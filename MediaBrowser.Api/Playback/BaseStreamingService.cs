@@ -788,7 +788,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
-            if (state.InputProtocol == MediaProtocol.File &&
+            if (SupportsThrottling && state.InputProtocol == MediaProtocol.File &&
                state.RunTimeTicks.HasValue &&
                state.VideoType == VideoType.VideoFile &&
                !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
