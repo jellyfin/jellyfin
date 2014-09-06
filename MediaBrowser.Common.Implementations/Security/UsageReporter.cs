@@ -30,7 +30,8 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 { "feature", _applicationHost.Name }, 
                 { "mac", mac }, 
-                { "systemid", _applicationHost.SystemId }, 
+                { "serverid", _applicationHost.SystemId }, 
+                { "deviceid", _applicationHost.SystemId }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
                 { "platform", Environment.OSVersion.VersionString }, 
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
@@ -51,7 +52,8 @@ namespace MediaBrowser.Common.Implementations.Security
             var data = new Dictionary<string, string>
             {
                 { "feature", app.AppName ?? "Unknown App" }, 
-                { "systemid", _applicationHost.SystemId }, 
+                { "serverid", _applicationHost.SystemId }, 
+                { "deviceid", app.DeviceId }, 
                 { "mac", app.DeviceId }, 
                 { "ver", app.AppVersion ?? "Unknown" }, 
                 { "platform", app.DeviceName }, 
