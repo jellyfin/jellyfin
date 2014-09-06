@@ -119,6 +119,9 @@
 
                     var maxWidth = params.MaxWidth || getParameterByName('MaxWidth', currentSrc);
                     var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
+                    if (typeof (audioStreamIndex) == 'string') {
+                        audioStreamIndex = parseInt(audioStreamIndex);
+                    }
                     var subtitleStreamIndex = self.currentSubtitleStreamIndex;
                     var videoBitrate = parseInt(getParameterByName('VideoBitrate', currentSrc) || '0');
                     var audioBitrate = parseInt(getParameterByName('AudioBitrate', currentSrc) || '0');
