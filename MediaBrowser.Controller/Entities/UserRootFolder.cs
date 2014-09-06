@@ -27,6 +27,14 @@ namespace MediaBrowser.Controller.Entities
             return SortAndFilter(result, query);
         }
 
+        public override bool IsPreSorted
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Get the children of this folder from the actual file system
         /// </summary>
