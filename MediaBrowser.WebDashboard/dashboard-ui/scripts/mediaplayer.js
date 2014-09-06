@@ -1165,7 +1165,7 @@
             }
         }
 
-        self.canPlayWebm = function() {
+        self.canPlayWebm = function () {
 
             return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
         };
@@ -1206,6 +1206,7 @@
         }
 
         var supportsAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
+
         function playAudio(item, mediaSource, startPositionTicks) {
 
             startPositionTicks = startPositionTicks || 0;
