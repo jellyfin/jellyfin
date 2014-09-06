@@ -775,11 +775,6 @@ namespace MediaBrowser.Api.Playback
             return "copy";
         }
 
-        protected virtual bool SupportsThrottling
-        {
-            get { return false; }
-        }
-
         /// <summary>
         /// Gets the input argument.
         /// </summary>
@@ -788,7 +783,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
-            if (SupportsThrottling && state.InputProtocol == MediaProtocol.File &&
+            if (state.InputProtocol == MediaProtocol.File &&
                state.RunTimeTicks.HasValue &&
                state.VideoType == VideoType.VideoFile &&
                !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
