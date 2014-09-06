@@ -20,6 +20,12 @@ namespace MediaBrowser.Common
         string Name { get; }
 
         /// <summary>
+        /// Gets the device identifier.
+        /// </summary>
+        /// <value>The device identifier.</value>
+        string SystemId { get; }
+
+        /// <summary>
         /// Occurs when [application updated].
         /// </summary>
         event EventHandler<GenericEventArgs<PackageVersionInfo>> ApplicationUpdated;

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Archiving;
+using MediaBrowser.Common.Implementations.Devices;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
@@ -177,6 +178,20 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
         public abstract bool IsRunningAsService { get; }
+
+        private DeviceId _deviceId;
+        public string SystemId
+        {
+            get
+            {
+                if (_deviceId == null)
+                {
+                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"));
+                }
+
+                return _deviceId.Value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.

@@ -1485,7 +1485,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var item = GetItemById(id) as UserView;
 
-            if (item == null)
+            if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 

@@ -30,6 +30,7 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 { "feature", _applicationHost.Name }, 
                 { "mac", mac }, 
+                { "systemid", _applicationHost.SystemId }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
                 { "platform", Environment.OSVersion.VersionString }, 
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
@@ -40,12 +41,18 @@ namespace MediaBrowser.Common.Implementations.Security
 
         public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(app.DeviceId))
+            {
+                throw new ArgumentException("Client info must have a device Id");
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var data = new Dictionary<string, string>
             {
                 { "feature", app.AppName ?? "Unknown App" }, 
-                { "mac", app.DeviceId ?? _networkManager.GetMacAddress() }, 
+                { "systemid", _applicationHost.SystemId }, 
+                { "mac", app.DeviceId }, 
                 { "ver", app.AppVersion ?? "Unknown" }, 
                 { "platform", app.DeviceName }, 
             };

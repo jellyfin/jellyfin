@@ -1240,7 +1240,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 User = _userManager.GetUserDto(user, request.RemoteEndPoint),
                 SessionInfo = GetSessionInfoDto(session),
                 AccessToken = token,
-                ServerId = _appHost.ServerId
+                ServerId = _appHost.SystemId
             };
         }
 

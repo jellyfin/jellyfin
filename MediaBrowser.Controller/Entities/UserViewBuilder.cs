@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.GameFavorites:
                     return GetFavoriteGames(parent, user, query);
 
-                case CollectionType.ViewTypeTvShowSeries:
+                case CollectionType.TvShowSeries:
                     return GetTvSeries(parent, user, query);
 
                 case CollectionType.TvGenres:
@@ -183,6 +183,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.MusicArtists:
                     return GetMusicArtists(parent, user, query);
 
+                case CollectionType.MusicSongs:
+                    return GetMusicSongs(parent, user, query);
+
                 case CollectionType.TvFavoriteEpisodes:
                     return GetFavoriteEpisodes(parent, user, query);
 
@@ -213,6 +216,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(category, CollectionType.MusicLatest, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.MusicAlbums, user, "1", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.MusicAlbumArtists, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.MusicSongs, user, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.MusicArtists, user, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.MusicGenres, user, "5", parent).ConfigureAwait(false));
 
@@ -270,6 +274,11 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, UserItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is MusicAlbum), query);
+        }
+
+        private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, UserItemsQuery query)
+        {
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is Audio.Audio), query);
         }
 
         private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, UserItemsQuery query)
@@ -388,7 +397,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(category, CollectionType.TvResume, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvNextUp, user, "1", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvLatest, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.ViewTypeTvShowSeries, user, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.TvShowSeries, user, "3", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvFavoriteSeries, user, "4", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvFavoriteEpisodes, user, "5", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.TvGenres, user, "5", parent).ConfigureAwait(false));

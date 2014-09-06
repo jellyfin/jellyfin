@@ -864,6 +864,7 @@
     "ViewTypeMusicAlbums": "Albums",
     "ViewTypeMusicAlbumArtists": "Album Artists",
     "HeaderOtherDisplaySettings": "Display Settings",
+    "ViewTypeMusicSongs":  "Songs",
     "HeaderMyViews": "My Views",
     "LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
     "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
