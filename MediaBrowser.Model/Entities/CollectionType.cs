@@ -30,7 +30,7 @@
         public const string LiveTvChannels = "LiveTvChannels";
         public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
 
-        public const string ViewTypeTvShowSeries = "ViewTypeTvShowSeries";
+        public const string TvShowSeries = "TvShowSeries";
         public const string TvGenres = "TvGenres";
         public const string TvLatest = "TvLatest";
         public const string TvNextUp = "TvNextUp";
@@ -56,5 +56,6 @@
         public const string MusicAlbums = "MusicAlbums";
         public const string MusicGenres = "MusicGenres";
         public const string MusicLatest = "MusicLatest";
+        public const string MusicSongs = "MusicSongs";
     }
 }

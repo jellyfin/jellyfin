@@ -904,20 +904,6 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private DeviceId _serverId;
-        public string ServerId
-        {
-            get
-            {
-                if (_serverId == null)
-                {
-                    _serverId = new DeviceId(ApplicationPaths, LogManager.GetLogger("ServerId"));
-                }
-
-                return _serverId.Value;
-            }
-        }
-
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -934,7 +920,7 @@ namespace MediaBrowser.ServerApplication
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
-                Id = ServerId,
+                Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 LogPath = ApplicationPaths.LogDirectoryPath,
                 ItemsByNamePath = ApplicationPaths.ItemsByNamePath,

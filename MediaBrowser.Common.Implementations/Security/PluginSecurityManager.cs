@@ -203,6 +203,7 @@ namespace MediaBrowser.Common.Implementations.Security
                     { "feature", feature }, 
                     { "key", SupporterKey }, 
                     { "mac", mac }, 
+                    { "systemid", _appHost.SystemId }, 
                     { "mb2equiv", mb2Equivalent }, 
                     { "ver", version }, 
                     { "platform", Environment.OSVersion.VersionString }, 

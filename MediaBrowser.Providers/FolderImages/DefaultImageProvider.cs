@@ -78,38 +78,38 @@ namespace MediaBrowser.Providers.FolderImages
 
             if (string.Equals(viewType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "books.jpg";
+                return urlPrefix + "books.png";
             }
             if (string.Equals(viewType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "games.jpg";
+                return urlPrefix + "games.png";
             }
             if (string.Equals(viewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "music.jpg";
+                return urlPrefix + "music.png";
             }
             if (string.Equals(viewType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "photos.jpg";
+                return urlPrefix + "photos.png";
             }
             if (string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "tv.jpg";
+                return urlPrefix + "tv.png";
             }
             if (string.Equals(viewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "channels.jpg";
+                return urlPrefix + "channels.png";
             }
             if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "livetv.jpg";
+                return urlPrefix + "livetv.png";
             }
             if (string.Equals(viewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "movies.jpg";
+                return urlPrefix + "movies.png";
             }
 
-            return urlPrefix + "generic.jpg";
+            return urlPrefix + "generic.png";
         }
 
         public string Name

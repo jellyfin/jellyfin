@@ -118,14 +118,14 @@
 @media all and (min-width: 1600px) {
 
     .ehsContent {
-        width: 1280px;
+        width: 1500px;
     }
 }
 
-@media all and (min-width: 1600px) {
+@media all and (min-width: 2200px) {
 
     .ehsContent {
-        width: 1500px;
+        width: 1900px;
     }
 }
 

@@ -52,7 +52,8 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                updatePageSizeSetting: false
             });
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
