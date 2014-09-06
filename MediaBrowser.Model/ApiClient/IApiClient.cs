@@ -790,7 +790,8 @@ namespace MediaBrowser.Model.ApiClient
         /// Changes the server location.
         /// </summary>
         /// <param name="address">The address.</param>
-        void ChangeServerLocation(string address);
+        /// <param name="keepExistingAuth">Don't clear any existing authentication</param>
+        void ChangeServerLocation(string address, bool keepExistingAuth = false);
 
         /// <summary>
         /// Gets or sets the type of the client.
