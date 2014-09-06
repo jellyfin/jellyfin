@@ -392,7 +392,7 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var category = "tv";
+            var category = "tvshows";
 
             list.Add(await GetUserView(category, CollectionType.TvResume, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvNextUp, user, "1", parent).ConfigureAwait(false));

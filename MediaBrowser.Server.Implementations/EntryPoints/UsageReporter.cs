@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Implementations.Security
+namespace MediaBrowser.Server.Implementations.EntryPoints
 {
     public class UsageReporter
     {
@@ -37,7 +37,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
             };
 
-            return _httpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            return _httpClient.Post(Common.Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
 
         public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 { "platform", app.DeviceName }, 
             };
 
-            return _httpClient.Post(Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            return _httpClient.Post(Common.Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
     }
 
