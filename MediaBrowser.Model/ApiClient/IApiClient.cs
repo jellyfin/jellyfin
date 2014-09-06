@@ -1265,5 +1265,32 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task&lt;QueryResult&lt;BaseItemDto&gt;&gt;.</returns>
         Task<QueryResult<BaseItemDto>> GetPlaylistItems(PlaylistItemQuery query);
+
+        /// <summary>
+        /// Gets the url needed to stream an audio file
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        [Obsolete]
+        string GetAudioStreamUrl(StreamOptions options);
+
+        /// <summary>
+        /// Gets the url needed to stream a video file
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        [Obsolete]
+        string GetVideoStreamUrl(VideoStreamOptions options);
+
+        /// <summary>
+        /// Formulates a url for streaming video using the HLS protocol
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentNullException">options</exception>
+        [Obsolete]
+        string GetHlsVideoStreamUrl(VideoStreamOptions options);
     }
 }

@@ -503,6 +503,9 @@ namespace MediaBrowser.Dlna.Didl
 
         private XmlElement CreateObjectClass(XmlDocument result, BaseItem item)
         {
+            // More types here
+            // http://oss.linn.co.uk/repos/Public/LibUpnpCil/DidlLite/UpnpAv/Test/TestDidlLite.cs
+
             var objectClass = result.CreateElement("upnp", "class", NS_UPNP);
 
             if (item.IsFolder)
@@ -527,6 +530,10 @@ namespace MediaBrowser.Dlna.Didl
                     {
                         classType = "object.container.playlistContainer";
                     }
+                    else if (item is PhotoAlbum)
+                    {
+                        classType = "object.container.album.photoAlbum";
+                    }
                 }
 
                 objectClass.InnerText = classType ?? "object.container.storageFolder";
@@ -545,10 +552,22 @@ namespace MediaBrowser.Dlna.Didl
                 {
                     objectClass.InnerText = "object.item.videoItem.movie";
                 }
+                else if (!_profile.RequiresPlainVideoItems && item is MusicVideo)
+                {
+                    objectClass.InnerText = "object.item.videoItem.musicVideoClip";
+                }
                 else
                 {
                     objectClass.InnerText = "object.item.videoItem";
                 }
+            }
+            else if (item is MusicGenre)
+            {
+                objectClass.InnerText = _profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre.musicGenre";
+            }
+            else if (item is Genre || item is GameGenre)
+            {
+                objectClass.InnerText = _profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre";
             }
             else
             {

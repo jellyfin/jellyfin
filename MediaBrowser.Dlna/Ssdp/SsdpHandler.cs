@@ -101,7 +101,7 @@ namespace MediaBrowser.Dlna.Ssdp
             ReloadAliveNotifier();
         }
 
-        public void SendSearchMessage(IPEndPoint localIp)
+        public void SendSearchMessage(EndPoint localIp)
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -121,7 +121,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
-            IPEndPoint localAddress,
+            EndPoint localAddress,
             int sendCount = 1)
         {
             SendDatagram(header, values, _ssdpEndp, localAddress, sendCount);
@@ -129,8 +129,8 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
-            IPEndPoint endpoint,
-            IPEndPoint localAddress,
+            EndPoint endpoint,
+            EndPoint localAddress,
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
@@ -147,7 +147,7 @@ namespace MediaBrowser.Dlna.Ssdp
             StartQueueTimer();
         }
 
-        private void RespondToSearch(IPEndPoint endpoint, string deviceType)
+        private void RespondToSearch(EndPoint endpoint, string deviceType)
         {
             if (_config.GetDlnaConfiguration().EnableDebugLogging)
             {
@@ -267,7 +267,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     _logger.Debug(Encoding.ASCII.GetString(received));
                 }
 
-                var args = SsdpHelper.ParseSsdpResponse(received, (IPEndPoint)endpoint);
+                var args = SsdpHelper.ParseSsdpResponse(received);
+                args.EndPoint = endpoint;
 
                 if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {

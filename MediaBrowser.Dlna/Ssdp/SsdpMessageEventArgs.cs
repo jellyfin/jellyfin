@@ -8,7 +8,7 @@ namespace MediaBrowser.Dlna.Ssdp
     {
         public string Method { get; set; }
 
-        public IPEndPoint EndPoint { get; set; }
+        public EndPoint EndPoint { get; set; }
 
         public Dictionary<string, string> Headers { get; set; }
 

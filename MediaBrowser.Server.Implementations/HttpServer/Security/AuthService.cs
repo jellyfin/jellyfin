@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
             if (!string.IsNullOrWhiteSpace(auth.Token)
-                || _config.Configuration.SecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                || _config.Configuration.SecureApps1.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 if (!allowLocal || !req.IsLocal)
                 {

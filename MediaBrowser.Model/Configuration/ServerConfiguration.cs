@@ -160,7 +160,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableAutomaticRestart { get; set; }
 
         public TvFileOrganizationOptions TvFileOrganizationOptions { get; set; }
-        public LiveTvOptions LiveTvOptions { get; set; }
 
         public bool EnableRealtimeMonitor { get; set; }
         public PathSubstitution[] PathSubstitutions { get; set; }
@@ -178,7 +177,9 @@ namespace MediaBrowser.Model.Configuration
 
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
 
-        public string[] SecureApps { get; set; }
+        public string[] SecureApps1 { get; set; }
+
+        public bool SaveMetadataHidden { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -205,7 +206,7 @@ namespace MediaBrowser.Model.Configuration
 
             RealtimeMonitorDelay = 30;
 
-            EnableInternetProviders = true; //initial installs will need these
+            EnableInternetProviders = true; 
 
             PathSubstitutions = new PathSubstitution[] { };
 
@@ -224,14 +225,14 @@ namespace MediaBrowser.Model.Configuration
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            SecureApps = new[]
+            SecureApps1 = new[]
             {
                 "Dashboard",
-                "Chrome Companion",
                 "MBKinect",
                 "NuVue",
                 "Media Browser Theater",
 
+                //"Chrome Companion",
                 //"MB-Classic"
             };
 

@@ -501,8 +501,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 var downloadedLanguages = await new SubtitleDownloader(_logger,
                     _subtitleManager)
                     .DownloadSubtitles(video,
-                    currentStreams,
-                    externalSubtitleStreams,
+                    currentStreams.Concat(externalSubtitleStreams).ToList(),
                     subtitleOptions.SkipIfGraphicalSubtitlesPresent,
                     subtitleOptions.SkipIfAudioTrackMatches,
                     subtitleOptions.DownloadLanguages,

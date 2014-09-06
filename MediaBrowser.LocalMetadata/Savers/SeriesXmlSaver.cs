@@ -1,18 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
     public class SeriesXmlSaver : IMetadataFileSaver
     {
+        private readonly IServerConfigurationManager _config;
+
+        public SeriesXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+        
         public string Name
         {
             get
@@ -38,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -119,7 +127,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     // Deprecated. No longer saving in this field.
                     "AnimeSeriesIndex"
-                });
+                }, _config);
         }
 
         /// <summary>

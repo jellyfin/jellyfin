@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -20,6 +21,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
+        private readonly IServerConfigurationManager _config;
+
+        public SeasonXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+        
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
@@ -42,7 +50,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Saves the specified item.
         /// </summary>
@@ -71,7 +79,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
             {
                 "SeasonNumber"
-            });
+            }, _config);
         }
 
         /// <summary>

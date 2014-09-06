@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 // Return the original without any conversions, if possible
-                if (startTimeTicks == 0 && 
+                if (startTimeTicks == 0 &&
                     !endTimeTicks.HasValue &&
                     string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
                 {
@@ -158,14 +158,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
-            var stream = await GetSubtitleStream(fileInfo.Item1, subtitleStream.Language).ConfigureAwait(false);
+            var stream = await GetSubtitleStream(fileInfo.Item1, subtitleStream.Language, fileInfo.Item3).ConfigureAwait(false);
 
             return new Tuple<Stream, string>(stream, fileInfo.Item2);
         }
 
-        private async Task<Stream> GetSubtitleStream(string path, string language)
+        private async Task<Stream> GetSubtitleStream(string path, string language, bool requiresCharset)
         {
-            if (!string.IsNullOrEmpty(language))
+            if (requiresCharset && !string.IsNullOrEmpty(language))
             {
                 var charset = GetSubtitleFileCharacterSet(path, language);
 
@@ -188,7 +188,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return File.OpenRead(path);
         }
 
-        private async Task<Tuple<string, string>> GetReadableFile(string mediaPath,
+        private async Task<Tuple<string, string, bool>> GetReadableFile(string mediaPath,
             string[] inputFiles,
             MediaProtocol protocol,
             MediaStream subtitleStream,
@@ -225,7 +225,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 await ExtractTextSubtitle(inputFiles, protocol, subtitleStream.Index, outputCodec, outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new Tuple<string, string>(outputPath, outputFormat);
+                return new Tuple<string, string, bool>(outputPath, outputFormat, false);
             }
 
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
@@ -239,10 +239,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 await ConvertTextSubtitleToSrt(subtitleStream.Path, outputPath, subtitleStream.Language, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new Tuple<string, string>(outputPath, "srt");
+                return new Tuple<string, string, bool>(outputPath, "srt", false);
             }
 
-            return new Tuple<string, string>(subtitleStream.Path, currentFormat);
+            return new Tuple<string, string, bool>(subtitleStream.Path, currentFormat, false);
         }
 
         private async Task<SubtitleTrackInfo> GetTrackInfo(Stream stream,
@@ -647,7 +647,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 _logger.Info(msg);
             }
 
-            await SetAssFont(outputPath).ConfigureAwait(false);
+            if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))
+            {
+                await SetAssFont(outputPath).ConfigureAwait(false);
+            }
         }
 
         /// <summary>

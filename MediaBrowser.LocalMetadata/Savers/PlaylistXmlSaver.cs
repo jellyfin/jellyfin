@@ -1,9 +1,10 @@
-﻿using System.Security;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text;
 using System.Threading;
 
@@ -17,6 +18,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 return "Media Browser Xml";
             }
+        }
+
+        private readonly IServerConfigurationManager _config;
+
+        public PlaylistXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
         }
 
         /// <summary>
@@ -70,7 +78,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 "OwnerUserId",
                 "PlaylistMediaType"
 
-            });
+            }, _config);
         }
 
         /// <summary>

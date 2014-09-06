@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Text;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
     public class SsdpHelper
     {
-        public static SsdpMessageEventArgs ParseSsdpResponse(byte[] data, IPEndPoint endpoint)
+        public static SsdpMessageEventArgs ParseSsdpResponse(byte[] data)
         {
             using (var ms = new MemoryStream(data))
             {
@@ -35,8 +34,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     return new SsdpMessageEventArgs
                     {
                         Method = method,
-                        Headers = headers,
-                        EndPoint = endpoint
+                        Headers = headers
                     };
                 }
             }

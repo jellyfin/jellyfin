@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -23,6 +24,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
+        private readonly IServerConfigurationManager _config;
+
+        public GameXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
+        
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
@@ -91,7 +99,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "GameSystem",
                     "NesBox",
                     "NesBoxRom"
-                });
+                }, _config);
         }
 
         public string GetSavePath(IHasMetadata item)

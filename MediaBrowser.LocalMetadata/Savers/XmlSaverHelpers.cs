@@ -1,4 +1,11 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,12 +13,6 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -126,7 +127,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="xml">The XML.</param>
         /// <param name="path">The path.</param>
         /// <param name="xmlTagsUsed">The XML tags used.</param>
-        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed)
+        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed, IServerConfigurationManager config)
         {
             if (File.Exists(path))
             {
@@ -165,7 +166,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (wasHidden)
+            if (wasHidden || config.Configuration.SaveMetadataHidden)
             {
                 file.Refresh();
 

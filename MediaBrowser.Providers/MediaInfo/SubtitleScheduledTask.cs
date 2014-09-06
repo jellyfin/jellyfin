@@ -105,14 +105,10 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var mediaStreams = video.GetMediaSources(false).First().MediaStreams;
 
-                var externalSubtitleStreams = mediaStreams.Where(i => i.Type == MediaStreamType.Subtitle && i.IsExternal).ToList();
-                var currentStreams = mediaStreams.Except(externalSubtitleStreams).ToList();
-
                 var downloadedLanguages = await new SubtitleDownloader(_logger,
                     _subtitleManager)
                     .DownloadSubtitles(video,
-                    currentStreams,
-                    externalSubtitleStreams,
+                    mediaStreams,
                     options.SkipIfGraphicalSubtitlesPresent,
                     options.SkipIfAudioTrackMatches,
                     options.DownloadLanguages,

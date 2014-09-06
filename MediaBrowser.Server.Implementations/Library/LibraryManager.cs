@@ -861,13 +861,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!fileInfo.Exists)
             {
-                Directory.CreateDirectory(path);
-                fileInfo = new DirectoryInfo(path);
-
-                if (!fileInfo.Exists)
-                {
-                    throw new IOException("Path not created: " + path);
-                }
+                fileInfo = Directory.CreateDirectory(path);
 
                 isNew = true;
             }
@@ -1468,20 +1462,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ToList();
 
             return collectionTypes.Count == 1 ? collectionTypes[0] : null;
-        }
-
-
-        public IEnumerable<string> GetAllArtists()
-        {
-            return GetAllArtists(RootFolder.RecursiveChildren);
-        }
-
-        public IEnumerable<string> GetAllArtists(IEnumerable<BaseItem> items)
-        {
-            return items
-                .OfType<Audio>()
-                .SelectMany(i => i.AllArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
         }
 
         public Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)

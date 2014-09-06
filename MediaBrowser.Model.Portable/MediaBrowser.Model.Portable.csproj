@@ -341,6 +341,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
+      <Link>Dto\StreamOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
     </Compile>
