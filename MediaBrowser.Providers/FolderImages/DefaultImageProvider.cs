@@ -7,12 +7,13 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Genres;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.FolderImages
 {
-    public class DefaultImageProvider : IRemoteImageProvider
+    public class DefaultImageProvider : IRemoteImageProvider, IHasChangeMonitor
     {
         private readonly IHttpClient _httpClient;
 
@@ -129,6 +130,11 @@ namespace MediaBrowser.Providers.FolderImages
                 Url = url,
                 ResourcePool = GenreImageProvider.ImageDownloadResourcePool
             });
+        }
+
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        {
+            return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }
     }
 }

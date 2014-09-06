@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.GameFavorites:
                     return GetFavoriteGames(parent, user, query);
 
-                case CollectionType.TvSeries:
+                case CollectionType.ViewTypeTvShowSeries:
                     return GetTvSeries(parent, user, query);
 
                 case CollectionType.TvGenres:
@@ -182,6 +182,12 @@ namespace MediaBrowser.Controller.Entities
 
                 case CollectionType.MusicArtists:
                     return GetMusicArtists(parent, user, query);
+
+                case CollectionType.TvFavoriteEpisodes:
+                    return GetFavoriteEpisodes(parent, user, query);
+
+                case CollectionType.TvFavoriteSeries:
+                    return GetFavoriteSeries(parent, user, query);
 
                 default:
                     return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), query);
@@ -302,6 +308,20 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), query);
         }
 
+        private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, UserItemsQuery query)
+        {
+            query.IsFavorite = true;
+
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).Where(i => i is Series), query);
+        }
+
+        private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, UserItemsQuery query)
+        {
+            query.IsFavorite = true;
+
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).Where(i => i is Episode), query);
+        }
+
         private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, UserItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), query);
@@ -368,8 +388,9 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(category, CollectionType.TvResume, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvNextUp, user, "1", parent).ConfigureAwait(false));
             list.Add(await GetUserView(category, CollectionType.TvLatest, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvSeries, user, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(CollectionType.TvFavorites, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.ViewTypeTvShowSeries, user, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.TvFavoriteSeries, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.TvFavoriteEpisodes, user, "5", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.TvGenres, user, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, query);

@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -16,10 +17,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         private readonly IItemRepository _itemRepository;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly IServerConfigurationManager _config;
 
-        public EpisodeXmlSaver(IItemRepository itemRepository)
+        public EpisodeXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config)
         {
             _itemRepository = itemRepository;
+            _config = config;
         }
 
         /// <summary>
@@ -133,7 +136,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "DVD_episodenumber",
                     "DVD_season",
                     "absolute_number"
-                });
+                }, _config);
         }
 
         /// <summary>

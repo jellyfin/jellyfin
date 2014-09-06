@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -19,6 +20,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 return "Media Browser Xml";
             }
+        }
+
+        private readonly IServerConfigurationManager _config;
+
+        public FolderXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
         }
 
         /// <summary>
@@ -66,7 +74,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { });
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { }, _config);
         }
 
         /// <summary>

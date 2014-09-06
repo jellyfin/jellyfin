@@ -25,8 +25,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         public async Task<List<string>> DownloadSubtitles(Video video,
-            List<MediaStream> internalMediaStreams,
-            List<MediaStream> externalSubtitleStreams,
+            List<MediaStream> mediaStreams,
             bool skipIfGraphicalSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             IEnumerable<string> languages,
@@ -60,7 +59,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 try
                 {
-                    var downloaded = await DownloadSubtitles(video, internalMediaStreams, externalSubtitleStreams, skipIfGraphicalSubtitlesPresent, skipIfAudioTrackMatches, lang, mediaType, cancellationToken)
+                    var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfGraphicalSubtitlesPresent, skipIfAudioTrackMatches, lang, mediaType, cancellationToken)
                         .ConfigureAwait(false);
 
                     if (downloaded)
@@ -78,8 +77,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         private async Task<bool> DownloadSubtitles(Video video,
-            List<MediaStream> internalMediaStreams,
-            IEnumerable<MediaStream> externalSubtitleStreams,
+            List<MediaStream> mediaStreams,
             bool skipIfGraphicalSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             string language,
@@ -87,12 +85,12 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             // There's already subtitles for this language
-            if (externalSubtitleStreams.Any(i => string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+            if (mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
 
-            var audioStreams = internalMediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
+            var audioStreams = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
             var defaultAudioStreams = audioStreams.Where(i => i.IsDefault).ToList();
 
             // If none are marked as default, just take a guess
@@ -110,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // There's an internal subtitle stream for this language
             if (skipIfGraphicalSubtitlesPresent &&
-                internalMediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
+                mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && !i.IsTextSubtitleStream && string.Equals(i.Language, language, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }

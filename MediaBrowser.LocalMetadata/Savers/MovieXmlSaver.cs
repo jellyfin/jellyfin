@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Security;
-using System.Text;
-using System.Threading;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using System.Collections.Generic;
+using System.IO;
+using System.Security;
+using System.Text;
+using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -17,10 +18,12 @@ namespace MediaBrowser.LocalMetadata.Savers
     public class MovieXmlSaver : IMetadataFileSaver
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IServerConfigurationManager _config;
 
-        public MovieXmlSaver(IItemRepository itemRepository)
+        public MovieXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config)
         {
             _itemRepository = itemRepository;
+            _config = config;
         }
 
         public string Name
@@ -112,7 +115,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "Artist",
                     "Album",
                     "TmdbCollectionName"
-                });
+                }, _config);
         }
 
         public string GetSavePath(IHasMetadata item)

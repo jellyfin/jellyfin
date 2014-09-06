@@ -45,6 +45,8 @@
 
         $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl).checkboxradio('refresh');
 
+        renderXmlDocumentAttributes(page, profile.XmlRootAttributes || []);
+
         var idInfo = profile.Identification || {};
 
         renderIdentificationHeaders(page, idInfo.Headers || []);
@@ -171,6 +173,73 @@
         currentSubProfile = null;
 
         $('#identificationHeaderPopup', page).popup('close');
+    }
+
+    function renderXmlDocumentAttributes(page, attribute) {
+
+        var index = 0;
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + attribute.map(function (h) {
+
+            var li = '<li>';
+
+            li += '<a href="#">';
+
+            li += '<div style="font-weight:normal;">' + h.Name + ' = ' + (h.Value || '') + '</div>';
+
+            li += '</a>';
+
+            li += '<a class="btnDeleteXmlAttribute" href="#" data-index="' + index + '"></a>';
+
+            li += '</li>';
+
+            index++;
+
+            return li;
+
+        }).join('') + '</ul>';
+
+        var elem = $('.xmlDocumentAttributeList', page).html(html).trigger('create');
+
+        $('.btnDeleteXmlAttribute', elem).on('click', function () {
+
+            var itemIndex = parseInt(this.getAttribute('data-index'));
+
+            currentProfile.XmlRootAttributes.splice(itemIndex, 1);
+
+            renderXmlDocumentAttributes(page, currentProfile.XmlRootAttributes);
+        });
+    }
+
+    function editXmlDocumentAttribute(page, attribute) {
+        
+        isSubProfileNew = attribute == null;
+        attribute = attribute || {};
+        currentSubProfile = attribute;
+
+        var popup = $('#xmlAttributePopup', page);
+
+        $('#txtXmlAttributeName', popup).val(attribute.Name || '');
+        $('#txtXmlAttributeValue', popup).val(attribute.Value || '');
+
+        popup.popup('open');
+    }
+
+    function saveXmlDocumentAttribute(page) {
+
+        currentSubProfile.Name = $('#txtXmlAttributeName', page).val();
+        currentSubProfile.Value = $('#txtXmlAttributeValue', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.XmlRootAttributes.push(currentSubProfile);
+        }
+
+        renderXmlDocumentAttributes(page, currentProfile.XmlRootAttributes);
+
+        currentSubProfile = null;
+
+        $('#xmlAttributePopup', page).popup('close');
     }
 
     function renderSubProfiles(page, profile) {
@@ -907,6 +976,11 @@
             editIdentificationHeader(page);
         });
 
+        $('.btnAddXmlDocumentAttribute', page).on('click', function () {
+
+            editXmlDocumentAttribute(page);
+        });
+
     }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
@@ -990,6 +1064,16 @@
             var page = $(form).parents('.page');
 
             saveIdentificationHeader(page);
+
+            return false;
+        },
+
+        onXmlAttributeFormSubmit: function () {
+
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveXmlDocumentAttribute(page);
 
             return false;
         }

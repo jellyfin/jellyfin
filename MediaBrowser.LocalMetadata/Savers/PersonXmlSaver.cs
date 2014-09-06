@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using System.Collections.Generic;
 using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -19,6 +20,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 return "Media Browser Xml";
             }
+        }
+
+        private readonly IServerConfigurationManager _config;
+
+        public PersonXmlSaver(IServerConfigurationManager config)
+        {
+            _config = config;
         }
 
         /// <summary>
@@ -65,7 +73,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
                 {
                     "PlaceOfBirth"
-                });
+                }, _config);
         }
 
         /// <summary>

@@ -216,6 +216,14 @@ namespace MediaBrowser.Providers.Manager
                 {
                     await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
+
+                if (_config.Configuration.SaveMetadataHidden)
+                {
+                    file.Refresh();
+
+                    // Add back the attribute
+                    file.Attributes |= FileAttributes.Hidden;
+                }
             }
             finally
             {

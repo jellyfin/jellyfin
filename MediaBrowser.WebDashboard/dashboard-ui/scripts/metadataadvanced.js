@@ -2,6 +2,8 @@
 
     function loadAdvancedConfig(page, config) {
 
+        $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden).checkboxradio("refresh");
+
         $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
         $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
         $('#chkEnableFanartUpdates', page).checked(config.EnableFanArtUpdates).checkboxradio("refresh");
@@ -173,6 +175,8 @@
     function saveAdvancedConfig(form) {
 
         ApiClient.getServerConfiguration().done(function (config) {
+
+            config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();

@@ -189,7 +189,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 stream.CopyTo(filestream);
             }
 
-            if (wasHidden)
+            if (wasHidden || ConfigurationManager.Configuration.SaveMetadataHidden)
             {
                 file.Refresh();
 

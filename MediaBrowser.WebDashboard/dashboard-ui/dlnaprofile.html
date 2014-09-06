@@ -219,6 +219,18 @@
                             </div>
                         </div>
 
+                        <div data-role="collapsible">
+                            <h2>${HeaderXmlSettings}</h2>
+                            <div>
+                                <h2>
+                                    <span style="vertical-align:middle;">${HeaderXmlDocumentAttributes}</span>
+                                    <button class="btnAddXmlDocumentAttribute" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
+                                </h2>
+                                <div class="xmlDocumentAttributeList"></div>
+                                <div class="fieldDescription">${XmlDocumentAttributeListHelp}</div>
+                                <br />
+                            </div>
+                        </div>
                     </div>
                     <div class="tabContent tabIdentification">
 
@@ -643,6 +655,37 @@
             </div>
 
         </div>
+        <div data-role="popup" id="xmlAttributePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>${HeaderXmlDocumentAttribute}</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="xmlAttributeForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtXmlAttributeName">${LabelName}</label>
+                        <input type="text" id="txtXmlAttributeName" data-mini="true" required="required" />
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtXmlAttributeValue">${LabelValue}</label>
+                        <input type="text" id="txtXmlAttributeValue" data-mini="true" required="required" />
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            ${ButtonCancel}
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
@@ -651,6 +694,7 @@
             $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
             $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
             $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
+            $('.xmlAttributeForm').off('submit', DlnaProfilePage.onXmlAttributeFormSubmit).on('submit', DlnaProfilePage.onXmlAttributeFormSubmit);
         </script>
     </div>
 </body>

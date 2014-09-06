@@ -148,49 +148,49 @@
 
         if (item.MovieCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on">';
             html += '<label for="radioMovies">'+Globalize.translate('TabMovies')+'</label>';
         }
 
         if (item.SeriesCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on">';
             html += '<label for="radioShows">'+Globalize.translate('TabSeries')+'</label>';
         }
 
         if (item.EpisodeCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on">';
             html += '<label for="radioEpisodes">'+Globalize.translate('TabEpisodes')+'</label>';
         }
 
         if (item.TrailerCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on">';
             html += '<label for="radioTrailers">'+Globalize.translate('TabTrailers')+'</label>';
         }
 
         if (item.GameCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on">';
             html += '<label for="radioGames">'+Globalize.translate('TabGames')+'</label>';
         }
 
         if (item.AlbumCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on">';
             html += '<label for="radioAlbums">'+Globalize.translate('TabAlbums')+'</label>';
         }
 
         if (item.SongCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on">';
             html += '<label for="radioSongs">'+Globalize.translate('TabSongs')+'</label>';
         }
 
         if (item.MusicVideoCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on" data-mini="true">';
+            html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on">';
             html += '<label for="radioMusicVideos">'+Globalize.translate('TabMusicVideos')+'</label>';
         }
 

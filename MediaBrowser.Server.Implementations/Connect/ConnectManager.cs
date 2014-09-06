@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -12,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             WanIpAddress = address;
 
-            UpdateConnectInfo();
+            //UpdateConnectInfo();
         }
 
         private async void UpdateConnectInfo()

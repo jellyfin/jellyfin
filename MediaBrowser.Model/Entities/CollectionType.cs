@@ -30,12 +30,13 @@
         public const string LiveTvChannels = "LiveTvChannels";
         public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
 
-        public const string TvSeries = "TvSeries";
+        public const string ViewTypeTvShowSeries = "ViewTypeTvShowSeries";
         public const string TvGenres = "TvGenres";
         public const string TvLatest = "TvLatest";
         public const string TvNextUp = "TvNextUp";
         public const string TvResume = "TvResume";
-        public const string TvFavorites = "TvFavorites";
+        public const string TvFavoriteSeries = "TvFavoriteSeries";
+        public const string TvFavoriteEpisodes = "TvFavoriteEpisodes";
 
         public const string MovieLatest = "MovieLatest";
         public const string MovieResume = "MovieResume";

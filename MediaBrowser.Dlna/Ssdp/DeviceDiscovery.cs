@@ -87,13 +87,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
             try
             {
-                //var ip = _networkManager.GetLocalIpAddresses().FirstOrDefault();
+                var ip = _networkManager.GetLocalIpAddresses().FirstOrDefault();
 
-                //if (ip != null)
-                //{
-                //    e.LocalIp = IPAddress.Parse(ip);
-                //    TryCreateDevice(e);
-                //}
+                if (ip != null)
+                {
+                    e.LocalIp = IPAddress.Parse(ip);
+                    TryCreateDevice(e);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -140,7 +140,8 @@ namespace MediaBrowser.Dlna.Ssdp
 
                         if (receivedBytes > 0)
                         {
-                            var args = SsdpHelper.ParseSsdpResponse(receiveBuffer, endPoint);
+                            var args = SsdpHelper.ParseSsdpResponse(receiveBuffer);
+                            args.EndPoint = endPoint;
                             args.LocalIp = localIp;
 
                             TryCreateDevice(args);

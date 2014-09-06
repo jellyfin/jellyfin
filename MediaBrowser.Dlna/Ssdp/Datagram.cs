@@ -8,8 +8,8 @@ namespace MediaBrowser.Dlna.Ssdp
 {
     public class Datagram
     {
-        public IPEndPoint ToEndPoint { get; private set; }
-        public IPEndPoint FromEndPoint { get; private set; }
+        public EndPoint ToEndPoint { get; private set; }
+        public EndPoint FromEndPoint { get; private set; }
         public string Message { get; private set; }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private readonly ILogger _logger;
 
-        public Datagram(IPEndPoint toEndPoint, IPEndPoint fromEndPoint, ILogger logger, string message, int totalSendCount)
+        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, int totalSendCount)
         {
             Message = message;
             _logger = logger;

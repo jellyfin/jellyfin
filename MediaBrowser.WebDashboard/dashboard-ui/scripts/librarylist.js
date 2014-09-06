@@ -112,9 +112,8 @@
         if (MediaController.canPlay(item)) {
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
-            var onPlayClick = 'LibraryBrowser.showPlayMenu(this, \'' + item.Id + '\', \'' + item.Type + '\', ' + item.IsFolder + ', \'' + item.MediaType + '\', ' + resumePosition + ');return false;';
 
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="' + Globalize.translate('ButtonPlay') + '" onclick="' + onPlayClick + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlay') + '</button>';
+            html += '<button type="button" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="' + Globalize.translate('ButtonPlay') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlay') + '</button>';
             buttonCount++;
         }
 
@@ -148,6 +147,21 @@
         });
 
         closeContextMenu();
+
+        return false;
+    }
+
+    function onPlayItemButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+        var type = this.getAttribute('data-itemtype');
+        var isFolder = this.getAttribute('data-isfolder') == 'true';
+        var mediaType = this.getAttribute('data-mediatype');
+        var resumePosition = parseInt(this.getAttribute('data-resumeposition'));
+
+        closeContextMenu();
+
+        LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
         return false;
     }
@@ -549,6 +563,7 @@
 
                 innerElem.html(getOverlayHtml(item, user, elem, commands)).trigger('create');
 
+                $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
                 $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
             });
