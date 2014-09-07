@@ -783,20 +783,20 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
-            if (state.InputProtocol == MediaProtocol.File &&
-               state.RunTimeTicks.HasValue &&
-               state.VideoType == VideoType.VideoFile &&
-               !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
-                {
-                    var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+            //if (state.InputProtocol == MediaProtocol.File &&
+            //   state.RunTimeTicks.HasValue &&
+            //   state.VideoType == VideoType.VideoFile &&
+            //   !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
+            //    {
+            //        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
 
-                    url += "&transcodingJobId=" + transcodingJobId;
+            //        url += "&transcodingJobId=" + transcodingJobId;
 
-                    return string.Format("\"{0}\"", url);
-                }
-            }
+            //        return string.Format("\"{0}\"", url);
+            //    }
+            //}
 
             var protocol = state.InputProtocol;
 
