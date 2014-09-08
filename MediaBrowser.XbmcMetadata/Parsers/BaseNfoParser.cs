@@ -343,7 +343,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                hasProductionLocations.AddProductionLocation(val);
+                                var parts = val.Split('/')
+                                    .Select(i => i.Trim())
+                                    .Where(i => !string.IsNullOrWhiteSpace(i));
+
+                                foreach (var p in parts)
+                                {
+                                    hasProductionLocations.AddProductionLocation(p);
+                                }
                             }
                         }
                         break;
@@ -426,7 +433,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.AddStudio(val);
+                            var parts = val.Split('/')
+                                .Select(i => i.Trim())
+                                .Where(i => !string.IsNullOrWhiteSpace(i));
+
+                            foreach (var p in parts)
+                            {
+                                item.AddStudio(p);
+                            }
                         }
                         break;
                     }
@@ -730,9 +744,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "genre":
                     {
                         var val = reader.ReadElementContentAsString();
+
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            item.AddGenre(val);
+                            var parts = val.Split('/')
+                                .Select(i => i.Trim())
+                                .Where(i => !string.IsNullOrWhiteSpace(i));
+
+                            foreach (var p in parts)
+                            {
+                                item.AddGenre(p);
+                            }
                         }
                         break;
                     }
