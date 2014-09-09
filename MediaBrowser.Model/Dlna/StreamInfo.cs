@@ -248,6 +248,19 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
+        /// Gets the target reference frames.
+        /// </summary>
+        /// <value>The target reference frames.</value>
+        public int? TargetRefFrames
+        {
+            get
+            {
+                MediaStream stream = TargetVideoStream;
+                return stream == null || !IsDirectStream ? null : stream.RefFrames;
+            }
+        }
+
+        /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>
         public float? TargetFramerate

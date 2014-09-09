@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Net.WebSockets;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -775,6 +776,29 @@ namespace MediaBrowser.Api.Playback
             return "copy";
         }
 
+        private bool SupportsThrottleWithStream
+        {
+            // TODO: These checks are a hack. 
+            // They should go through the IHttpServer interface or IServerManager to find out this information
+
+            get
+            {
+#if __MonoCS__
+                return false;
+#endif
+
+                try
+                {
+                    new ClientWebSocket();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the input argument.
         /// </summary>
@@ -783,20 +807,23 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
-            //if (state.InputProtocol == MediaProtocol.File &&
-            //   state.RunTimeTicks.HasValue &&
-            //   state.VideoType == VideoType.VideoFile &&
-            //   !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
-            //    {
-            //        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+            if (state.InputProtocol == MediaProtocol.File &&
+               state.RunTimeTicks.HasValue &&
+               state.VideoType == VideoType.VideoFile &&
+               !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
+                {
+                    if (SupportsThrottleWithStream)
+                    {
+                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
 
-            //        url += "&transcodingJobId=" + transcodingJobId;
+                        url += "&transcodingJobId=" + transcodingJobId;
 
-            //        return string.Format("\"{0}\"", url);
-            //    }
-            //}
+                        return string.Format("\"{0}\"", url);
+                    }
+                }
+            }
 
             var protocol = state.InputProtocol;
 
@@ -1893,7 +1920,8 @@ namespace MediaBrowser.Api.Playback
                 state.TargetFramerate,
                 state.TargetPacketLength,
                 state.TargetTimestamp,
-                state.IsTargetAnamorphic);
+                state.IsTargetAnamorphic,
+                state.TargetRefFrames);
 
             if (mediaProfile != null)
             {
@@ -1991,7 +2019,8 @@ namespace MediaBrowser.Api.Playback
                     state.TargetFramerate,
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
-                    state.IsTargetAnamorphic
+                    state.IsTargetAnamorphic,
+                    state.TargetRefFrames
 
                     ).FirstOrDefault() ?? string.Empty;
             }

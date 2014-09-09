@@ -190,7 +190,7 @@ namespace MediaBrowser.Common.Implementations.Security
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
             var reg = new RegRecord
             {
-                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-7)
+                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-3)
             };
 
             var success = reg.registered;

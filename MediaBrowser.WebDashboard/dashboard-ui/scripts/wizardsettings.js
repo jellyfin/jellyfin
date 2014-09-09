@@ -50,7 +50,15 @@
 
     function navigateToNextPage() {
 
-        Dashboard.navigate('wizardservice.html');
+        ApiClient.getSystemInfo().done(function(info) {
+
+            if (info.SupportsRunningAsService) {
+                Dashboard.navigate('wizardservice.html');
+
+            } else {
+                Dashboard.navigate('wizardfinish.html');
+            }
+        });
     }
 
     $(document).on('pageshow', "#wizardSettingsPage", function () {

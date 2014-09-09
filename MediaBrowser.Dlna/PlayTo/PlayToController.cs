@@ -521,7 +521,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetFramerate,
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
-                    streamInfo.IsTargetAnamorphic);
+                    streamInfo.IsTargetAnamorphic,
+                    streamInfo.TargetRefFrames);
 
                 return list.FirstOrDefault();
             }

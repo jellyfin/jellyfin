@@ -227,11 +227,13 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
+        /// <param name="supportsRunningAsService">if set to <c>true</c> [supports running as service].</param>
         /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
-        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool isRunningAsService)
+        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool supportsRunningAsService, bool isRunningAsService)
             : base(applicationPaths, logManager)
         {
             _isRunningAsService = isRunningAsService;
+            SupportsRunningAsService = supportsRunningAsService;
         }
 
         private readonly bool _isRunningAsService;
@@ -239,6 +241,8 @@ namespace MediaBrowser.ServerApplication
         {
             get { return _isRunningAsService; }
         }
+
+        public bool SupportsRunningAsService { get; private set; }
 
         /// <summary>
         /// Gets the name.
@@ -936,6 +940,7 @@ namespace MediaBrowser.ServerApplication
                 SupportsAutoRunAtStartup = SupportsAutoRunAtStartup,
                 TranscodingTempPath = ApplicationPaths.TranscodingTempPath,
                 IsRunningAsService = IsRunningAsService,
+                SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = GetLocalIpAddress()
             };

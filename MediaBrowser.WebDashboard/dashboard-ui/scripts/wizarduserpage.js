@@ -1,9 +1,22 @@
 ﻿(function ($, document, window) {
 
-    function onSaveComplete() {
+    function onSaveComplete(user) {
+
+        var userId = user.Id;
+
+        var metadataKey = "xbmcmetadata";
+
         Dashboard.hideLoadingMsg();
 
-        Dashboard.navigate('wizardlibrary.html');
+        ApiClient.getNamedConfiguration(metadataKey).done(function (config) {
+
+            config.UserId = userId;
+
+            ApiClient.updateNamedConfiguration(metadataKey, config).done(function () {
+
+                Dashboard.navigate('wizardlibrary.html');
+            });
+        });
     }
 
     function wizardUserPage() {
@@ -25,7 +38,10 @@
 
                     user.Name = $('#txtUsername', form).val();
 
-                    ApiClient.updateUser(user).done(onSaveComplete);
+                    ApiClient.updateUser(user).done(function () {
+
+                        onSaveComplete(user);
+                    });
 
                 } else {
 

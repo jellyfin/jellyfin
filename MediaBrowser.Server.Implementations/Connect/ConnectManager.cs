@@ -133,7 +133,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var postData = new Dictionary<string, string>
             {
                 {"name", _appHost.FriendlyName}, 
-                {"url", wanApiAddress}
+                {"url", wanApiAddress}, 
+                {"systemid", _appHost.SystemId}
             };
 
             using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
@@ -162,7 +163,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(new Dictionary<string, string>
             {
                 {"name", _appHost.FriendlyName}, 
-                {"url", wanApiAddress}
+                {"url", wanApiAddress}, 
+                {"systemid", _appHost.SystemId}
             });
 
             options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);

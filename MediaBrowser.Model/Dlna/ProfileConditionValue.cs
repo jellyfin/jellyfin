@@ -15,6 +15,7 @@
         VideoLevel = 10,
         VideoProfile = 11,
         VideoTimestamp = 12,
-        IsAnamorphic = 13
+        IsAnamorphic = 13,
+        RefFrames = 14
     }
 }

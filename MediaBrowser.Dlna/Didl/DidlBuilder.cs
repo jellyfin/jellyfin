@@ -138,7 +138,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetFramerate,
                 streamInfo.TargetPacketLength,
                 streamInfo.TranscodeSeekInfo,
-                streamInfo.IsTargetAnamorphic);
+                streamInfo.IsTargetAnamorphic,
+                streamInfo.TargetRefFrames);
 
             foreach (var contentFeature in contentFeatureList)
             {
@@ -258,7 +259,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetFramerate,
                 streamInfo.TargetPacketLength,
                 streamInfo.TargetTimestamp,
-                streamInfo.IsTargetAnamorphic);
+                streamInfo.IsTargetAnamorphic,
+                streamInfo.TargetRefFrames);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 

@@ -207,7 +207,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="runService">if set to <c>true</c> [run service].</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService)
         {
-            _appHost = new ApplicationHost(appPaths, logManager, runService);
+            _appHost = new ApplicationHost(appPaths, logManager, true, runService);
 
             var initProgress = new Progress<double>();
 

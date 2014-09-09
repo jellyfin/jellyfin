@@ -14,8 +14,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
-        private WebSocketSharp.Net.HttpListener _listener;
-        private readonly AutoResetEvent _listenForNextRequest = new AutoResetEvent(false);
+        private HttpListener _listener;
+        private readonly ManualResetEventSlim _listenForNextRequest = new ManualResetEventSlim(false);
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
@@ -59,11 +59,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             while (IsListening)
             {
                 if (_listener == null) return;
+                _listenForNextRequest.Reset();
 
                 try
                 {
                     _listener.BeginGetContext(ListenerCallback, _listener);
-                    _listenForNextRequest.WaitOne();
+                    _listenForNextRequest.Wait();
                 }
                 catch (Exception ex)
                 {
@@ -77,6 +78,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         // Handle the processing of a request in here.
         private void ListenerCallback(IAsyncResult asyncResult)
         {
+            _listenForNextRequest.Set();
+            
             var listener = asyncResult.AsyncState as HttpListener;
             HttpListenerContext context;
 
@@ -102,14 +105,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 var errMsg = ex + ": " + IsListening;
                 _logger.Warn(errMsg);
                 return;
-            }
-            finally
-            {
-                // Once we know we have a request (or exception), we signal the other thread
-                // so that it calls the BeginGetContext() (or possibly exits if we're not
-                // listening any more) method to start handling the next incoming request
-                // while we continue to process this request on a different thread.
-                _listenForNextRequest.Set();
             }
 
             Task.Factory.StartNew(() => InitTask(context));

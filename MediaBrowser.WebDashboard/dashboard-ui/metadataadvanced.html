@@ -84,7 +84,7 @@
                                     <br />
                                 </div>
                             </div>
-                            <ul data-role="listview" class="ulForm">
+                            <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
                                 <li>
                                     <label>${HeaderExtractChapterImagesFor}</label>
                                     <div data-role="controlgroup">
@@ -100,6 +100,13 @@
                                     </div>
                                 </li>
                             </ul>
+
+                            <div>
+                                <label for="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</label>
+                                <input type="checkbox" id="chkExtractChaptersDuringLibraryScan" />
+                                <div class="fieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
+                            </div>
+                            <br />
                         </div>
                     </div>
 
@@ -131,8 +138,8 @@
 
                                         <input type="checkbox" id="chkPeopleOthers" />
                                         <label for="chkPeopleOthers">${OptionOthers}</label>
-                                        <div class="fieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
                                     </div>
+                                    <div class="fieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
                                 </li>
                             </ul>
                         </div>

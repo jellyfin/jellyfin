@@ -458,6 +458,14 @@ namespace MediaBrowser.Api
                     DeleteHlsPartialStreamFiles(path);
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
             catch (IOException ex)
             {
                 Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
@@ -500,6 +508,14 @@ namespace MediaBrowser.Api
                 {
                     Logger.Info("Deleting HLS file {0}", file);
                     File.Delete(file);
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+                catch (FileNotFoundException)
+                {
+                    
                 }
                 catch (IOException ex)
                 {

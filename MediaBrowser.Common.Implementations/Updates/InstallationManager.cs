@@ -193,7 +193,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                         cacheLength = TimeSpan.FromMinutes(3);
                         break;
                     default:
-                        cacheLength = TimeSpan.FromHours(6);
+                        cacheLength = TimeSpan.FromHours(3);
                         break;
                 }
 

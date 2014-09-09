@@ -37,6 +37,8 @@
         $('#chkDownloadChapterMovies', page).checked(config.DownloadMovieChapters).checkboxradio("refresh");
         $('#chkDownloadChapterEpisodes', page).checked(config.DownloadEpisodeChapters).checkboxradio("refresh");
 
+        $('#chkExtractChaptersDuringLibraryScan', page).checked(config.ExtractDuringLibraryScan).checkboxradio("refresh");
+
         renderChapterFetchers(page, config, providers);
 
         Dashboard.hideLoadingMsg();
@@ -205,6 +207,7 @@
 
             config.DownloadMovieChapters = $('#chkDownloadChapterMovies', form).checked();
             config.DownloadEpisodeChapters = $('#chkDownloadChapterEpisodes', form).checked();
+            config.ExtractDuringLibraryScan = $('#chkExtractChaptersDuringLibraryScan', form).checked();
 
             config.DisabledFetchers = $('.chkChapterFetcher:not(:checked)', form).get().map(function (c) {
 
