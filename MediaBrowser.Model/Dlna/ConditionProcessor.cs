@@ -18,7 +18,8 @@ namespace MediaBrowser.Model.Dlna
             float? videoFramerate,
             int? packetLength,
             TransportStreamTimestamp? timestamp,
-            bool? isAnamorphic)
+            bool? isAnamorphic,
+            int? refFrames)
         {
             switch (condition.Property)
             {
@@ -50,6 +51,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, height);
                 case ProfileConditionValue.Width:
                     return IsConditionSatisfied(condition, width);
+                case ProfileConditionValue.RefFrames:
+                    return IsConditionSatisfied(condition, refFrames);
                 case ProfileConditionValue.VideoTimestamp:
                     return IsConditionSatisfied(condition, timestamp);
                 default:

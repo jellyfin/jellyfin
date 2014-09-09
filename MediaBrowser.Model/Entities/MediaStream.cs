@@ -46,6 +46,12 @@ namespace MediaBrowser.Model.Entities
         public int? BitDepth { get; set; }
 
         /// <summary>
+        /// Gets or sets the reference frames.
+        /// </summary>
+        /// <value>The reference frames.</value>
+        public int? RefFrames { get; set; }
+        
+        /// <summary>
         /// Gets or sets the length of the packet.
         /// </summary>
         /// <value>The length of the packet.</value>

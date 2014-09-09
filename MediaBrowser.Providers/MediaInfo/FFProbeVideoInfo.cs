@@ -238,9 +238,11 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
+                var chapterOptions = _chapterManager.GetConfiguration();
+
                 try
                 {
-                    var remoteChapters = await DownloadChapters(video, chapters, cancellationToken).ConfigureAwait(false);
+                    var remoteChapters = await DownloadChapters(video, chapters, chapterOptions, cancellationToken).ConfigureAwait(false);
 
                     if (remoteChapters.Count > 0)
                     {
@@ -263,7 +265,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     Chapters = chapters,
                     Video = video,
-                    ExtractImages = true,
+                    ExtractImages = chapterOptions.ExtractDuringLibraryScan,
                     SaveChapters = false
 
                 }, cancellationToken).ConfigureAwait(false);
@@ -519,10 +521,8 @@ namespace MediaBrowser.Providers.MediaInfo
             currentStreams.AddRange(externalSubtitleStreams);
         }
 
-        private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, CancellationToken cancellationToken)
+        private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, ChapterOptions options, CancellationToken cancellationToken)
         {
-            var options = _chapterManager.GetConfiguration();
-
             if ((options.DownloadEpisodeChapters &&
                  video is Episode) ||
                 (options.DownloadMovieChapters &&

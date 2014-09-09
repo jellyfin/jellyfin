@@ -23,7 +23,6 @@ namespace MediaBrowser.ServerApplication
         private System.Windows.Forms.ToolStripMenuItem cmdBrowse;
         private System.Windows.Forms.ToolStripMenuItem cmdConfigure;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem cmdLibraryExplorer;
         private System.Windows.Forms.ToolStripMenuItem cmdRestart;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem cmdLogWindow;
@@ -84,7 +83,6 @@ namespace MediaBrowser.ServerApplication
             cmdLogWindow = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
-            cmdLibraryExplorer = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
             cmdBrowse = new System.Windows.Forms.ToolStripMenuItem();
@@ -106,7 +104,6 @@ namespace MediaBrowser.ServerApplication
             cmdBrowse,
             cmdConfigure,
             toolStripSeparator2,
-            cmdLibraryExplorer,
             cmdRestart,
             toolStripSeparator1,
             cmdApiDocs,
@@ -143,11 +140,6 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdRestart.Name = "cmdRestart";
             cmdRestart.Size = new System.Drawing.Size(208, 22);
-            // 
-            // cmdLibraryExplorer
-            // 
-            cmdLibraryExplorer.Name = "cmdLibraryExplorer";
-            cmdLibraryExplorer.Size = new System.Drawing.Size(208, 22);
             // 
             // toolStripSeparator2
             // 
@@ -188,7 +180,6 @@ namespace MediaBrowser.ServerApplication
             cmdConfigure.Click += cmdConfigure_Click;
             cmdCommunity.Click += cmdCommunity_Click;
             cmdBrowse.Click += cmdBrowse_Click;
-            cmdLibraryExplorer.Click += cmdLibraryExplorer_Click;
 
             cmdSwagger.Click += cmdSwagger_Click;
             cmdGtihub.Click += cmdGtihub_Click;
@@ -218,7 +209,6 @@ namespace MediaBrowser.ServerApplication
             cmdApiDocs.Text = _localization.GetLocalizedString("LabelViewApiDocumentation");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
-            cmdLibraryExplorer.Text = _localization.GetLocalizedString("LabelOpenLibraryViewer");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
             cmdLogWindow.Text = _localization.GetLocalizedString("LabelShowLogWindow");
         }
@@ -314,11 +304,6 @@ namespace MediaBrowser.ServerApplication
             _configurationManager.Configuration.ShowLogWindow = !_configurationManager.Configuration.ShowLogWindow;
             _configurationManager.SaveConfiguration();
             LoadLogWindow(sender, e);
-        }
-
-        void cmdLibraryExplorer_Click(object sender, EventArgs e)
-        {
-            new LibraryViewer(_jsonSerializer, _userManager, _libraryManager, _userViewManager).Show();
         }
 
         void cmdRestart_Click(object sender, EventArgs e)

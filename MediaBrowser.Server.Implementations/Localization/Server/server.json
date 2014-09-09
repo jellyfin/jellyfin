@@ -864,7 +864,7 @@
     "ViewTypeMusicAlbums": "Albums",
     "ViewTypeMusicAlbumArtists": "Album Artists",
     "HeaderOtherDisplaySettings": "Display Settings",
-    "ViewTypeMusicSongs":  "Songs",
+    "ViewTypeMusicSongs": "Songs",
     "HeaderMyViews": "My Views",
     "LabelSelectFolderGroups": "Automatically group content from the following folders into views such as Movies, Music and TV:",
     "LabelSelectFolderGroupsHelp": "Folders that are unchecked will be displayed by themselves in their own view.",
@@ -1150,5 +1150,7 @@
     "HeaderXmlDocumentAttributes": "Xml Document Attributes",
     "HeaderXmlDocumentAttribute": "Xml Document Attribute",
     "XmlDocumentAttributeListHelp": "These attributes are applied to the root element of every xml response.",
-    "OptionSaveMetadataAsHidden": "Save metadata and images as hidden files"
+    "OptionSaveMetadataAsHidden": "Save metadata and images as hidden files",
+    "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
+    "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted as part of the normal library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster."
 }

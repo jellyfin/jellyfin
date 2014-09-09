@@ -105,12 +105,6 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
     <Compile Include="IO\NativeFileSystem.cs" />
-    <Compile Include="LibraryViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="LibraryViewer.Designer.cs">
-      <DependentUpon>LibraryViewer.cs</DependentUpon>
-    </Compile>
     <Compile Include="Logging\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -155,9 +149,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="LibraryViewer.resx">
-      <DependentUpon>LibraryViewer.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Logging\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
