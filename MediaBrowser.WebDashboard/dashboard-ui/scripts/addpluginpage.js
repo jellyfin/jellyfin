@@ -135,22 +135,30 @@
             $('.premiumPackage', page).show();
 
             // Fill in registration info
-            var regStatus = "<strong>";
+            var regStatus = "";
             if (pkg.isRegistered) {
+
+                regStatus += "<p style='color:green;'>";
+
+                regStatus += Globalize.translate('MessageFeatureIncludedWithSupporter');
+
             } else {
 
-                if (new Date(pkg.expDate).getTime() < new Date(1970, 1, 1).getTime()) {
-                } else {
-                    if (new Date(pkg.expDate).getTime() <= new Date().getTime()) {
-                        regStatus += Globalize.translate('MessageTrialExpired');
-                    } else {
+                var expDateTime = new Date(pkg.expDate).getTime();
+                var nowTime = new Date().getTime();
 
-                        regStatus += Globalize.translate('MessageTrialWillExpireIn').replace('{0}', Math.round((new Date(pkg.expDate).getTime() - new Date().getTime()) / (86400000)));
-                    }
+                if (expDateTime <= nowTime) {
+                    regStatus += "<p style='color:red;'>";
+                    regStatus += Globalize.translate('MessageTrialExpired');
+                }
+                else if (expDateTime > new Date(1970, 1, 1).getTime()) {
+
+                    regStatus += "<p style='color:blue;'>";
+                    regStatus += Globalize.translate('MessageTrialWillExpireIn').replace('{0}', Math.round(expDateTime - nowTime) / (86400000));
                 }
             }
 
-            regStatus += "</strong>";
+            regStatus += "</p>";
             $('#regStatus', page).html(regStatus);
 
             if (pluginSecurityInfo.IsMBSupporter) {

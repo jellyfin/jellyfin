@@ -31,8 +31,23 @@ namespace MediaBrowser.Server.Implementations.Connect
         public string ConnectServerId { get; set; }
         public string ConnectAccessKey { get; set; }
 
-        public string WanIpAddress { get; private set; }
+        public string DiscoveredWanIpAddress { get; private set; }
 
+        public string WanIpAddress
+        {
+            get
+            {
+                var address = _config.Configuration.WanDdns;
+
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    address = DiscoveredWanIpAddress;
+                }
+
+                return address;
+            }
+        }
+        
         public string WanApiAddress
         {
             get
@@ -75,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         internal void OnWanAddressResolved(string address)
         {
-            WanIpAddress = address;
+            DiscoveredWanIpAddress = address;
 
             //UpdateConnectInfo();
         }

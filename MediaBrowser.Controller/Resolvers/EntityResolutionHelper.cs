@@ -1,9 +1,10 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -29,43 +30,6 @@ namespace MediaBrowser.Controller.Resolvers
                 ".wd_tv"
 
         };
-
-        /// <summary>
-        /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
-        /// </summary>
-        public static List<string> VideoFileExtensions = new List<string>
-            {
-                ".mkv",
-                ".m2t",
-                ".m2ts",
-                ".img",
-                ".iso",
-                ".mk3d",
-                ".ts",
-                ".rmvb",
-                ".mov",
-                ".avi",
-                ".mpg",
-                ".mpeg",
-                ".wmv",
-                ".mp4",
-                ".divx",
-                ".dvr-ms",
-                ".wtv",
-                ".ogm",
-                ".ogv",
-                ".asf",
-                ".m4v",
-                ".flv",
-                ".f4v",
-                ".3gp",
-                ".webm",
-                ".mts",
-                ".m2v",
-                ".rec"
-        };
-
-        private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
         private static readonly Regex MultiFileRegex = new Regex(
             @"(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck]|d)[ _.-]*[0-9]+)(.*?)(\.[^.]+)$",
@@ -156,19 +120,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsVideoFile(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            var extension = Path.GetExtension(path);
-
-            if (string.IsNullOrEmpty(extension))
-            {
-                return false;
-            }
-
-            return VideoFileExtensionsDictionary.ContainsKey(extension);
+            return MimeTypes.IsVideoFile(path);
         }
 
         /// <summary>

@@ -39,7 +39,13 @@
 
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount
+            });
+
+            html += pagingHtml;
 
             $('#items', page).html(html).trigger('create').createCardMenus();
 

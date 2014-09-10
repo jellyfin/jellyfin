@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var pageSizeKey = 'people';
+
     // The base query options
     var query = {
 
@@ -35,7 +37,8 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                updatePageSizeSetting: false
+                updatePageSizeSetting: false,
+                pageSizeKey: pageSizeKey
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -142,7 +145,7 @@
 
         query.ParentId = LibraryMenu.getTopParentId();
 
-        var limit = LibraryBrowser.getDefaultPageSize();
+        var limit = LibraryBrowser.getDefaultPageSize(pageSizeKey, 100);
 
         // If the default page size has changed, the start index will have to be reset
         if (limit != query.Limit) {

@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var pageSizeKey = 'people';
+
     // The base query options
     var query = {
 
@@ -34,8 +36,7 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false,
-                updatePageSizeSetting: false
+                showLimit: false
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -150,6 +151,14 @@
     }).on('pagebeforeshow', "#tvPeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
+
+        var limit = LibraryBrowser.getDefaultPageSize(pageSizeKey, 100);
+
+        // If the default page size has changed, the start index will have to be reset
+        if (limit != query.Limit) {
+            query.Limit = limit;
+            query.StartIndex = 0;
+        }
 
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
