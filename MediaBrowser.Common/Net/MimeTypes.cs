@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Common.Net
 {
@@ -14,6 +16,65 @@ namespace MediaBrowser.Common.Net
         public static string JsonMimeType = "application/json";
 
         /// <summary>
+        /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
+        /// </summary>
+        private static readonly List<string> VideoFileExtensions = new List<string>
+            {
+                ".mkv",
+                ".m2t",
+                ".m2ts",
+                ".img",
+                ".iso",
+                ".mk3d",
+                ".ts",
+                ".rmvb",
+                ".mov",
+                ".avi",
+                ".mpg",
+                ".mpeg",
+                ".wmv",
+                ".mp4",
+                ".divx",
+                ".dvr-ms",
+                ".wtv",
+                ".ogm",
+                ".ogv",
+                ".asf",
+                ".m4v",
+                ".flv",
+                ".f4v",
+                ".3gp",
+                ".webm",
+                ".mts",
+                ".m2v",
+                ".rec"
+        };
+
+        private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Determines whether [is video file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
+        public static bool IsVideoFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var extension = Path.GetExtension(path);
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                return false;
+            }
+
+            return VideoFileExtensionsDictionary.ContainsKey(extension);
+        }
+
+        /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -26,7 +87,7 @@ namespace MediaBrowser.Common.Net
             {
                 throw new ArgumentNullException("path");
             }
-            
+
             var ext = Path.GetExtension(path) ?? string.Empty;
 
             // http://en.wikipedia.org/wiki/Internet_media_type
@@ -36,10 +97,6 @@ namespace MediaBrowser.Common.Net
             if (ext.Equals(".mpg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("mpeg", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mpeg";
-            }
-            if (ext.Equals(".mp4", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/mp4";
             }
             if (ext.Equals(".ogv", StringComparison.OrdinalIgnoreCase))
             {
@@ -88,6 +145,12 @@ namespace MediaBrowser.Common.Net
             if (ext.Equals(".ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/mp2t";
+            }
+
+            // Catch-all for all video types that don't require specific mime types
+            if (VideoFileExtensionsDictionary.ContainsKey(ext))
+            {
+                return "video/" + ext.TrimStart('.').ToLower();
             }
 
             // Type text
@@ -152,7 +215,7 @@ namespace MediaBrowser.Common.Net
                 return "image/vnd.microsoft.icon";
             }
 
-             // Type audio
+            // Type audio
             if (ext.Equals(".mp3", StringComparison.OrdinalIgnoreCase))
             {
                 return "audio/mpeg";

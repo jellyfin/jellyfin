@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -60,9 +61,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
+        protected INetworkManager NetworkManager { get; private set; }
+
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, INetworkManager networkManager)
             : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
         {
+            NetworkManager = networkManager;
         }
 
         public object Get(GetMasterHlsVideoStream request)
@@ -480,6 +484,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableAdaptiveBitrateStreaming(StreamState state)
         {
+            // Within the local network this will likely do more harm than good.
+            if (Request.IsLocal || NetworkManager.IsInLocalNetwork(Request.RemoteIp))
+            {
+                return false;
+            }
+
             var request = state.Request as GetMasterHlsVideoStream;
 
             if (request != null && !request.EnableAdaptiveBitrateStreaming)
