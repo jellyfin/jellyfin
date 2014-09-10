@@ -38,6 +38,11 @@ VOLUME /MediaBrowser.Mono.docker/ProgramData-Server
 ADD ./start.sh /start.sh
 RUN chmod u+x  /start.sh
 
-EXPOSE 8096
+# Default MB3 HTTP/tcp server port
+EXPOSE 8096/tcp
+# UDP server port
+EXPOSE 7359/udp
+# ssdp port for UPnP / DLNA discovery
+EXPOSE 1900/udp
 
 ENTRYPOINT ["/start.sh"]
