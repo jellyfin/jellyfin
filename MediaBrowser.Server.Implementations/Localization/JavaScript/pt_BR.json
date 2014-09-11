@@ -438,5 +438,6 @@
     "MessageTrialExpired": "O per\u00edodo de testes terminou",
     "MessageTrialWillExpireIn": "O per\u00edodo de testes expirar\u00e1 em {0} dia(s)",
     "MessageInstallPluginFromApp": "Este plugin deve ser instalado de dentro da app em que deseja us\u00e1-lo.",
-    "ValuePriceUSD": "Pre\u00e7o: {0} (USD)"
+    "ValuePriceUSD": "Pre\u00e7o: {0} (USD)",
+    "MessageFeatureIncludedWithSupporter": "Voc\u00ea est\u00e1 registrado para este recurso e poder\u00e1 continuar usando-o com uma filia\u00e7\u00e3o ativa de colaborador."
 }

@@ -446,5 +446,9 @@
     "MessageTrialWillExpireIn": "The trial period for this feature will expire in {0} day(s)",
     "MessageInstallPluginFromApp": "This plugin must be installed from with in the app you intend to use it in.",
     "ValuePriceUSD": "Price: {0} (USD)",
-    "MessageFeatureIncludedWithSupporter": "You are registered for this feature, and will be able to continue using it with an active supporter membership."
+    "MessageFeatureIncludedWithSupporter": "You are registered for this feature, and will be able to continue using it with an active supporter membership.",
+    "MessageChangeRecurringPlanConfirm": "After completing this transaction you will need to cancel your previous recurring donation from within your PayPal account. Thank you for supporting Media Browser.",
+    "MessageSupporterMembershipExpiredOn": "Your supporter membership expired on {0}.",
+    "MessageYouHaveALifetimeMembership": "You have a lifetime supporter membership. You can provide additional donations on a one-time or recurring basis using the options below. Thank you for supporting Media Browser.",
+    "MessageYouHaveAnActiveRecurringMembership": "You have an active {0} membership. You can upgrade your plan using the options below."
 }

@@ -159,8 +159,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticRestart { get; set; }
 
-        public TvFileOrganizationOptions TvFileOrganizationOptions { get; set; }
-
         public bool EnableRealtimeMonitor { get; set; }
         public PathSubstitution[] PathSubstitutions { get; set; }
 

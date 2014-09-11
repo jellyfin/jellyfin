@@ -61,6 +61,8 @@ namespace MediaBrowser.Controller.Providers
         public List<Guid> MetadataProvidersRefreshed { get; set; }
         public List<Guid> ImageProvidersRefreshed { get; set; }
 
+        public DateTime? ItemDateModified { get; set; }
+
         public void AddStatus(ProviderRefreshStatus status, string errorMessage)
         {
             if (LastStatus != status)

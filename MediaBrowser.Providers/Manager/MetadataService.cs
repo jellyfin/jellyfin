@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -38,8 +39,9 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="result">The result.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected Task SaveProviderResult(TItemType item, MetadataStatus result)
+        protected Task SaveProviderResult(TItemType item, MetadataStatus result, IDirectoryService directoryService)
         {
             result.ItemId = item.Id;
             result.ItemName = item.Name;
@@ -48,6 +50,23 @@ namespace MediaBrowser.Providers.Manager
             var series = item as IHasSeries;
 
             result.SeriesName = series == null ? null : series.SeriesName;
+
+            //var locationType = item.LocationType;
+
+            //if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            //{
+            //    if (!string.IsNullOrWhiteSpace(item.Path))
+            //    {
+            //        var file = directoryService.GetFile(item.Path);
+
+            //        if ((file.Attributes & FileAttributes.Directory) != FileAttributes.Directory && file.Exists)
+            //        {
+            //            result.ItemDateModified = FileSystem.GetLastWriteTimeUtc(file);
+            //        }
+            //    }
+            //}
+
+            result.ItemDateModified = item.DateModified;
 
             return ProviderRepo.SaveMetadataStatus(result, CancellationToken.None);
         }
@@ -106,7 +125,7 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, refreshResult.DateLastMetadataRefresh.HasValue, refreshOptions)
+                var providers = GetProviders(item, refreshResult, refreshOptions)
                     .ToList();
 
                 if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
@@ -135,7 +154,7 @@ namespace MediaBrowser.Providers.Manager
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshResult.DateLastImagesRefresh, refreshOptions).ToList();
+                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshResult, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
@@ -161,7 +180,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (providersHadChanges || refreshResult.IsDirty)
             {
-                await SaveProviderResult(itemOfType, refreshResult).ConfigureAwait(false);
+                await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
         }
 
@@ -188,25 +207,39 @@ namespace MediaBrowser.Providers.Manager
         /// Gets the providers.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="hasRefreshedMetadata">if set to <c>true</c> [has refreshed metadata].</param>
+        /// <param name="status">The status.</param>
         /// <param name="options">The options.</param>
         /// <returns>IEnumerable{`0}.</returns>
-        protected virtual IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, bool hasRefreshedMetadata, MetadataRefreshOptions options)
+        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataStatus status, MetadataRefreshOptions options)
         {
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !hasRefreshedMetadata;
+            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !status.DateLastMetadataRefresh.HasValue;
 
             if (!runAllProviders)
             {
                 // Avoid implicitly captured closure
                 var currentItem = item;
 
-                var providersWithChanges = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => HasChanged(currentItem, i, currentItem.DateLastSaved, options.DirectoryService))
-                    .Cast<IMetadataProvider<TItemType>>()
+                var providersWithChanges = providers
+                    .Where(i =>
+                    {
+                        var hasChangeMonitor = i as IHasChangeMonitor;
+                        if (hasChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasChangeMonitor, currentItem.DateLastSaved, options.DirectoryService);
+                        }
+
+                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
+                        if (hasFileChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
+                        }
+
+                        return false;
+                    })
                     .ToList();
 
                 if (providersWithChanges.Count == 0)
@@ -242,19 +275,33 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, DateTime? dateLastImageRefresh, ImageRefreshOptions options)
+        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, MetadataStatus status, ImageRefreshOptions options)
         {
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !dateLastImageRefresh.HasValue;
+            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !status.DateLastImagesRefresh.HasValue;
 
             if (!runAllProviders)
             {
-                providers = providers.OfType<IHasChangeMonitor>()
-                    .Where(i => HasChanged(item, i, dateLastImageRefresh.Value, options.DirectoryService))
-                    .Cast<IImageProvider>()
+                providers = providers
+                    .Where(i =>
+                    {
+                        var hasChangeMonitor = i as IHasChangeMonitor;
+                        if (hasChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasChangeMonitor, status.DateLastImagesRefresh.Value, options.DirectoryService);
+                        }
+
+                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
+                        if (hasFileChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
+                        }
+                        
+                        return false;
+                    })
                     .ToList();
             }
 
@@ -517,6 +564,19 @@ namespace MediaBrowser.Providers.Manager
             get
             {
                 return 0;
+            }
+        }
+
+        private bool HasChanged(IHasMetadata item, IHasItemChangeMonitor changeMonitor, MetadataStatus status, IDirectoryService directoryService)
+        {
+            try
+            {
+                return changeMonitor.HasChanged(item, status, directoryService);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error in {0}.HasChanged", ex, changeMonitor.GetType().Name);
+                return false;
             }
         }
 

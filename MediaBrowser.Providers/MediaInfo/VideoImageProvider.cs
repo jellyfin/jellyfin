@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    public class VideoImageProvider : IDynamicImageProvider, IHasChangeMonitor, IHasOrder
+    public class VideoImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -124,11 +124,6 @@ namespace MediaBrowser.Providers.MediaInfo
             return item.LocationType == LocationType.FileSystem && item is Video;
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            return item.DateModified > date;
-        }
-
         public int Order
         {
             get
@@ -136,6 +131,19 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Make sure this comes after internet image providers
                 return 100;
             }
+        }
+
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        {
+            if (status.ItemDateModified.HasValue)
+            {
+                if (status.ItemDateModified.Value != item.DateModified)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

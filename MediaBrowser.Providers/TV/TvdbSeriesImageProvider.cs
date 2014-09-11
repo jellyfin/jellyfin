@@ -20,7 +20,7 @@ using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
@@ -334,7 +334,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             if (!_config.Configuration.EnableTvDbUpdates)
             {
@@ -350,7 +350,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = new FileInfo(imagesXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > (status.DateLastMetadataRefresh ?? DateTime.MinValue);
             }
 
             return false;
