@@ -192,6 +192,18 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.TvFavoriteSeries:
                     return GetFavoriteSeries(parent, user, query);
 
+                case CollectionType.MusicFavorites:
+                    return await GetMusicFavorites(parent, user, query).ConfigureAwait(false);
+
+                case CollectionType.MusicFavoriteAlbums:
+                    return GetFavoriteAlbums(parent, user, query);
+
+                case CollectionType.MusicFavoriteArtists:
+                    return GetFavoriteArtists(parent, user, query);
+
+                case CollectionType.MusicFavoriteSongs:
+                    return GetFavoriteSongs(parent, user, query);
+
                 default:
                     return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), query);
             }
@@ -219,6 +231,20 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(category, CollectionType.MusicSongs, user, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.MusicArtists, user, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.MusicGenres, user, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.MusicFavorites, user, "6", parent).ConfigureAwait(false));
+
+            return GetResult(list, query);
+        }
+
+        private async Task<QueryResult<BaseItem>> GetMusicFavorites(Folder parent, User user, UserItemsQuery query)
+        {
+            var list = new List<BaseItem>();
+
+            var category = "music";
+
+            list.Add(await GetUserView(category, CollectionType.MusicFavoriteAlbums, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.MusicFavoriteArtists, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(category, CollectionType.MusicFavoriteSongs, user, "2", parent).ConfigureAwait(false));
 
             return GetResult(list, query);
         }
@@ -267,6 +293,30 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i != null);
+
+            return GetResult(artists, query);
+        }
+
+        private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, UserItemsQuery query)
+        {
+            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music })
+                .Where(i => !i.IsFolder)
+                .OfType<IHasAlbumArtist>()
+                .SelectMany(i => i.AlbumArtists)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i =>
+                {
+                    try
+                    {
+                        return _libraryManager.GetArtist(i);
+                    }
+                    catch
+                    {
+                        // Already logged at lower levels
+                        return null;
+                    }
+                })
+                .Where(i => i != null && _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
 
             return GetResult(artists, query);
         }
@@ -329,6 +379,20 @@ namespace MediaBrowser.Controller.Entities
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).Where(i => i is Episode), query);
+        }
+
+        private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, UserItemsQuery query)
+        {
+            query.IsFavorite = true;
+
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is Audio.Audio), query);
+        }
+
+        private QueryResult<BaseItem> GetFavoriteAlbums(Folder parent, User user, UserItemsQuery query)
+        {
+            query.IsFavorite = true;
+
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is MusicAlbum), query);
         }
 
         private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, UserItemsQuery query)

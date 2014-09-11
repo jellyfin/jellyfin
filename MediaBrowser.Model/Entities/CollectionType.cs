@@ -57,5 +57,9 @@
         public const string MusicGenres = "MusicGenres";
         public const string MusicLatest = "MusicLatest";
         public const string MusicSongs = "MusicSongs";
+        public const string MusicFavorites = "MusicFavorites";
+        public const string MusicFavoriteArtists = "MusicFavoriteArtists";
+        public const string MusicFavoriteAlbums = "MusicFavoriteAlbums";
+        public const string MusicFavoriteSongs = "MusicFavoriteSongs";
     }
 }
