@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
@@ -51,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, ItemType TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, LastStatus TEXT, LastErrorMessage TEXT, MetadataProvidersRefreshed TEXT, ImageProvidersRefreshed TEXT)",
+                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, ItemType TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, LastStatus TEXT, LastErrorMessage TEXT, MetadataProvidersRefreshed TEXT, ImageProvidersRefreshed TEXT, ItemDateModified DateTimeNull)",
                                 "create index if not exists idx_MetadataStatus on MetadataStatus(ItemId)",
 
                                 //pragmas
@@ -61,6 +62,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                };
 
             _connection.RunQueries(queries, _logger);
+
+            AddItemDateModifiedCommand();
 
             PrepareStatements();
 
@@ -78,9 +81,41 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "LastStatus",
             "LastErrorMessage",
             "MetadataProvidersRefreshed",
-            "ImageProvidersRefreshed"
+            "ImageProvidersRefreshed",
+            "ItemDateModified"
         };
 
+        private void AddItemDateModifiedCommand()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(MetadataStatus)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "ItemDateModified", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table MetadataStatus");
+            builder.AppendLine("add column ItemDateModified DateTime NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+        
         /// <summary>
         /// The _write lock
         /// </summary>
@@ -183,6 +218,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 result.ImageProvidersRefreshed = reader.GetString(9).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
             }
 
+            if (!reader.IsDBNull(10))
+            {
+                result.ItemDateModified = reader.GetDateTime(10).ToUniversalTime();
+            }
+
             return result;
         }
 
@@ -213,6 +253,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveStatusCommand.GetParameter(7).Value = status.LastErrorMessage;
                 _saveStatusCommand.GetParameter(8).Value = string.Join("|", status.MetadataProvidersRefreshed.ToArray());
                 _saveStatusCommand.GetParameter(9).Value = string.Join("|", status.ImageProvidersRefreshed.ToArray());
+                _saveStatusCommand.GetParameter(10).Value = status.ItemDateModified;
 
                 _saveStatusCommand.Transaction = transaction;
 

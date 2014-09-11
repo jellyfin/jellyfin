@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             // Add PixelFormat column
 
-            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -59,6 +59,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddPixelFormatColumnCommand();
             AddBitDepthCommand();
             AddIsAnamorphicColumn();
+            AddRefFramesCommand();
 
             PrepareStatements();
 
@@ -127,6 +128,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
+        private void AddRefFramesCommand()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "RefFrames", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column RefFrames INT NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
         private void AddIsAnamorphicColumn()
         {
             using (var cmd = _connection.CreateCommand())
@@ -183,7 +215,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Level",
             "PixelFormat",
             "BitDepth",
-            "IsAnamorphic"
+            "IsAnamorphic",
+            "RefFrames"
         };
 
         /// <summary>
@@ -357,6 +390,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.IsAnamorphic = reader.GetBoolean(23);
             }
 
+            if (!reader.IsDBNull(24))
+            {
+                item.RefFrames = reader.GetInt32(24);
+            }
+
             return item;
         }
 
@@ -421,6 +459,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(21).Value = stream.PixelFormat;
                     _saveStreamCommand.GetParameter(22).Value = stream.BitDepth;
                     _saveStreamCommand.GetParameter(23).Value = stream.IsAnamorphic;
+                    _saveStreamCommand.GetParameter(24).Value = stream.RefFrames;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();

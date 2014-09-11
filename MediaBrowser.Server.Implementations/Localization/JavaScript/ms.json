@@ -438,5 +438,6 @@
     "MessageTrialExpired": "The trial period for this feature has expired",
     "MessageTrialWillExpireIn": "The trial period for this feature will expire in {0} day(s)",
     "MessageInstallPluginFromApp": "This plugin must be installed from with in the app you intend to use it in.",
-    "ValuePriceUSD": "Price: {0} (USD)"
+    "ValuePriceUSD": "Price: {0} (USD)",
+    "MessageFeatureIncludedWithSupporter": "You are registered for this feature, and will be able to continue using it with an active supporter membership."
 }

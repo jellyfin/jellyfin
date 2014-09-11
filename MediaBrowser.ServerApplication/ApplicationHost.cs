@@ -2,9 +2,7 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.Devices;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -48,7 +46,6 @@ using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
-using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
@@ -312,13 +309,6 @@ namespace MediaBrowser.ServerApplication
         private void MigrateModularConfigurations()
         {
             var saveConfig = false;
-
-            if (ServerConfigurationManager.Configuration.TvFileOrganizationOptions != null)
-            {
-                ServerConfigurationManager.SaveConfiguration("autoorganize", new AutoOrganizeOptions { TvOptions = ServerConfigurationManager.Configuration.TvFileOrganizationOptions });
-                ServerConfigurationManager.Configuration.TvFileOrganizationOptions = null;
-                saveConfig = true;
-            }
 
             if (saveConfig)
             {

@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Trailer>,
         ICustomMetadataProvider<Video>,
         ICustomMetadataProvider<Audio>,
-        IHasChangeMonitor,
+        IHasItemChangeMonitor,
         IHasOrder,
         IForcedProvider
     {
@@ -161,17 +161,11 @@ namespace MediaBrowser.Providers.MediaInfo
             return prober.Probe(item, cancellationToken);
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
-            if (item.DateModified > date)
+            if (status.ItemDateModified.HasValue)
             {
-                return true;
-            }
-
-            if (item is Audio)
-            {
-                // Moved to plural AlbumArtists
-                if (date < new DateTime(2014, 8, 28))
+                if (status.ItemDateModified.Value != item.DateModified)
                 {
                     return true;
                 }

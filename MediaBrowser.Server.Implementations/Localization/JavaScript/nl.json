@@ -438,5 +438,6 @@
     "MessageTrialExpired": "De proef periode voor deze feature is verlopen",
     "MessageTrialWillExpireIn": "De proef periode voor deze feature zal in {0} dag(en) verlopen",
     "MessageInstallPluginFromApp": "Deze plugin moet ge\u00efnstalleerd worden vanuit de app waarin je het wil gebruiken.",
-    "ValuePriceUSD": "Prijs {0} (USD)"
+    "ValuePriceUSD": "Prijs {0} (USD)",
+    "MessageFeatureIncludedWithSupporter": "U bent geregistreerd voor deze functie, en zal deze kunnen blijven gebruiken met uw actieve supporter lidmaatschap."
 }

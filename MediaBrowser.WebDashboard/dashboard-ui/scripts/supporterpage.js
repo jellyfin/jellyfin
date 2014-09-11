@@ -10,7 +10,7 @@
         $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
             .appendTo("#payPalSupporterForm", page);
 
-        $("<input type='hidden' name='t3' value='"+period+"' class='pprecurring' />")
+        $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
             .appendTo("#payPalSupporterForm", page);
 
         $("<input type='hidden' name='src' value='1' class='pprecurring' />")
@@ -104,14 +104,14 @@
             if (info.IsActiveSupporter && info.PlanType == 'Lifetime') {
 
                 $('.planSummary', page)
-                    .html('You have a lifetime supporter membership. You can provide additional donations on a one-time or recurring basis using the options below. Thank you for supporting Media Browser.')
+                    .html(Globalize.translate('MessageYouHaveALifetimeMembership'))
                     .css('color', 'blue');
 
             }
             else if (info.IsActiveSupporter) {
 
                 $('.planSummary', page)
-                    .html('You have an active ' + info.PlanType + ' membership. You can upgrade your plan using the options below.')
+                    .html(Globalize.translate('MessageYouHaveAnActiveRecurringMembership').replace('{0}', info.PlanType))
                     .css('color', 'blue');
 
             }
@@ -121,7 +121,7 @@
                 expirationDate = expirationDate.toLocaleDateString();
 
                 $('.planSummary', page)
-                    .html('Your ' + info.PlanType + ' membership expired on ' + expirationDate + '.')
+                    .html(Globalize.translate('MessageSupporterMembershipExpiredOn').replace('{0}', expirationDate))
                     .css('color', 'red');
             }
         });
@@ -208,7 +208,7 @@
                 if (currentPlanType != 'Lifetime') {
 
                     // Use a regular alert to block the submission process until they hit ok
-                    alert('After completing this transaction you will need to cancel your previous recurring donation from within your PayPal account. Thank you for supporting Media Browser.');
+                    alert(Globalize.translate('MessageChangeRecurringPlanConfirm'));
                 }
             }
 

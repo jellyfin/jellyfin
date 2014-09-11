@@ -438,5 +438,6 @@
     "MessageTrialExpired": "El periodo de prueba de esta caracter\u00edstica ya ha expirado.",
     "MessageTrialWillExpireIn": "El periodo de prueba de esta caracter\u00edstica expirar\u00e1 en {0} d\u00eda(s).",
     "MessageInstallPluginFromApp": "El complemento debe estar instalado desde la aplicaci\u00f3n en la que va a utilizarlo.",
-    "ValuePriceUSD": "Precio: {0} (USD)"
+    "ValuePriceUSD": "Precio: {0} (USD)",
+    "MessageFeatureIncludedWithSupporter": "You are registered for this feature, and will be able to continue using it with an active supporter membership."
 }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    public class ChannelImageProvider : IDynamicImageProvider, IHasChangeMonitor
+    public class ChannelImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IHttpClient _httpClient;
@@ -103,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             get { return 0; }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             var liveTvItem = item as LiveTvChannel;
 

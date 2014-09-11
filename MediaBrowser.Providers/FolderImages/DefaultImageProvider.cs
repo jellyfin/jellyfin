@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.FolderImages
 {
-    public class DefaultImageProvider : IRemoteImageProvider, IHasChangeMonitor
+    public class DefaultImageProvider : IRemoteImageProvider, IHasItemChangeMonitor
     {
         private readonly IHttpClient _httpClient;
 
@@ -132,7 +132,7 @@ namespace MediaBrowser.Providers.FolderImages
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    public class ChannelImageProvider : IDynamicImageProvider, IHasChangeMonitor
+    public class ChannelImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly IChannelManager _channelManager;
 
@@ -41,16 +41,16 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item is Channel;
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            return GetSupportedImages(item).Any(i => !item.HasImage(i));
-        }
-
         private IChannel GetChannel(IHasImages item)
         {
             var channel = (Channel)item;
 
             return ((ChannelManager)_channelManager).GetChannelProvider(channel);
+        }
+
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        {
+            return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }
     }
 }

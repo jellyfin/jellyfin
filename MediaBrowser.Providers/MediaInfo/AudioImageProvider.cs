@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.MediaInfo
     /// <summary>
     /// Uses ffmpeg to create video images
     /// </summary>
-    public class AudioImageProvider : IDynamicImageProvider, IHasChangeMonitor
+    public class AudioImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -135,9 +135,17 @@ namespace MediaBrowser.Providers.MediaInfo
             return item is Audio;
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
-            return item.DateModified > date;
+            if (status.ItemDateModified.HasValue)
+            {
+                if (status.ItemDateModified.Value != item.DateModified)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

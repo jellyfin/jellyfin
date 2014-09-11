@@ -15,7 +15,7 @@ using TagLib.IFD.Tags;
 
 namespace MediaBrowser.Providers.Photos
 {
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasChangeMonitor
+    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;
@@ -155,16 +155,14 @@ namespace MediaBrowser.Providers.Photos
             get { return "Embedded Information"; }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
-            // Moved to plural AlbumArtists
-            if (date < new DateTime(2014, 8, 29))
+            if (status.ItemDateModified.HasValue)
             {
-                // Revamped vaptured metadata
-                return true;
+                return status.ItemDateModified.Value != item.DateModified;
             }
-            
-            return item.DateModified > date;
+
+            return false;
         }
     }
 }

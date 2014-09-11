@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    public class ChannelItemImageProvider : IDynamicImageProvider, IHasChangeMonitor
+    public class ChannelItemImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item is IChannelItem;
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             var channelItem = item as IChannelItem;
 
