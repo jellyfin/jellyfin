@@ -231,7 +231,7 @@ namespace MediaBrowser.WebDashboard.Api
                 }    
             }
 
-            path = path.Replace("scripts/jquery.mobile-1.4.3.min.map", "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.map", StringComparison.OrdinalIgnoreCase);
+            path = path.Replace("scripts/jquery.mobile-1.4.4.min.map", "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.map", StringComparison.OrdinalIgnoreCase);
 
             var localizationCulture = GetLocalizationCulture();
 
@@ -415,7 +415,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.css",
+                                "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -459,7 +459,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.3/jquery.mobile-1.4.3.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 

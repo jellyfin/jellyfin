@@ -55,7 +55,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             // Check parent for null to avoid running this against things like video backdrops
             if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
-                return updateType >= ItemUpdateType.MetadataDownload;
+                return updateType >= ItemUpdateType.ImageUpdate;
             }
 
             return false;

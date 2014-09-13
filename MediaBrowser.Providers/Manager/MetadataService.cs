@@ -172,8 +172,13 @@ namespace MediaBrowser.Providers.Manager
             var providersHadChanges = updateType > ItemUpdateType.None;
 
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || providersHadChanges || item.DateLastSaved == default(DateTime))
+            if (refreshOptions.ForceSave || providersHadChanges || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
             {
+                if (refreshOptions.ForceSave || providersHadChanges || refreshOptions.ReplaceAllMetadata)
+                {
+                    updateType = updateType | ItemUpdateType.MetadataDownload;
+                }
+
                 // Save to database
                 await SaveItem(itemOfType, updateType, cancellationToken);
             }
