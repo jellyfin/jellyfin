@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
     public class WebSocketSharpListener : IHttpListener
     {
         private HttpListener _listener;
-        private readonly ManualResetEventSlim _listenForNextRequest = new ManualResetEventSlim(false);
+        private readonly ManualResetEvent _listenForNextRequest = new ManualResetEvent(false);
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 try
                 {
                     _listener.BeginGetContext(ListenerCallback, _listener);
-                    _listenForNextRequest.Wait();
+                    _listenForNextRequest.WaitOne();
                 }
                 catch (Exception ex)
                 {
