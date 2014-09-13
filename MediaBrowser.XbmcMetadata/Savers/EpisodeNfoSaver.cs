@@ -20,11 +20,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public override string GetSavePath(IHasMetadata item)
         {
-            return GetMovieSavePath(item);
-        }
-
-        public static string GetMovieSavePath(IHasMetadata item)
-        {
             return Path.ChangeExtension(item.Path, ".nfo");
         }
 
@@ -40,7 +35,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            return item is Episode && updateType >= ItemUpdateType.MetadataDownload;
+            return item is Episode && updateType >= ItemUpdateType.ImageUpdate;
         }
 
         protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)

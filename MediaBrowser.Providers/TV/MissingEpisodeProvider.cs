@@ -107,13 +107,13 @@ namespace MediaBrowser.Providers.TV
                 hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!hasBadData && _config.Configuration.EnableInternetProviders)
+            if (_config.Configuration.EnableInternetProviders)
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
                 if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    hasNewEpisodes = await AddMissingEpisodes(group.ToList(), seriesDataPath, episodeLookup, cancellationToken)
+                    hasNewEpisodes = await AddMissingEpisodes(group.ToList(), hasBadData, seriesDataPath, episodeLookup, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
@@ -193,11 +193,16 @@ namespace MediaBrowser.Providers.TV
         /// Adds the missing episodes.
         /// </summary>
         /// <param name="series">The series.</param>
+        /// <param name="seriesHasBadData">if set to <c>true</c> [series has bad data].</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task<bool> AddMissingEpisodes(List<Series> series, string seriesDataPath, IEnumerable<Tuple<int, int>> episodeLookup, CancellationToken cancellationToken)
+        private async Task<bool> AddMissingEpisodes(List<Series> series, 
+            bool seriesHasBadData,
+            string seriesDataPath, 
+            IEnumerable<Tuple<int, int>> episodeLookup, 
+            CancellationToken cancellationToken)
         {
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
@@ -247,11 +252,15 @@ namespace MediaBrowser.Providers.TV
 
                 if (airDate.Value < now)
                 {
-                    // tvdb has a lot of nearly blank episodes
-                    _logger.Info("Creating virtual missing episode {0} {1}x{2}", targetSeries.Name, tuple.Item1, tuple.Item2);
-                    await AddEpisode(targetSeries, tuple.Item1 - seasonOffset, tuple.Item2, cancellationToken).ConfigureAwait(false);
+                    // Be conservative here to avoid creating missing episodes for ones they already have
+                    if (!seriesHasBadData)
+                    {
+                        // tvdb has a lot of nearly blank episodes
+                        _logger.Info("Creating virtual missing episode {0} {1}x{2}", targetSeries.Name, tuple.Item1, tuple.Item2);
+                        await AddEpisode(targetSeries, tuple.Item1 - seasonOffset, tuple.Item2, cancellationToken).ConfigureAwait(false);
 
-                    hasChanges = true;
+                        hasChanges = true;
+                    }
                 }
                 else if (airDate.Value > now)
                 {

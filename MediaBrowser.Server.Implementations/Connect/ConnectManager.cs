@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             DiscoveredWanIpAddress = address;
 
-            //UpdateConnectInfo();
+            UpdateConnectInfo();
         }
 
         private async void UpdateConnectInfo()

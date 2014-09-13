@@ -39,7 +39,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            return updateType >= ItemUpdateType.MetadataDownload || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
+            return updateType >= ItemUpdateType.ImageUpdate || (updateType >= ItemUpdateType.MetadataImport && File.Exists(GetSavePath(item)));
         }
 
         protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
