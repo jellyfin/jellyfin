@@ -2,7 +2,7 @@
 
     function deleteUser(page, id) {
 
-        $('.userMenu', page).on("popupafterclose.deleteuser", function() {
+        $('.userMenu', page).on("popupafterclose.deleteuser", function () {
 
             $(this).off('popupafterclose.deleteuser');
 
@@ -98,7 +98,7 @@
         html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId) {
-            html += '<div class="playedIndicator"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
+            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToMediaBrowserConnect') + '"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
         }
 
         html += "</div>";
