@@ -291,6 +291,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             }, CancellationToken.None).ConfigureAwait(false);
 
+            if (!connectUser.IsActive)
+            {
+                throw new ArgumentException("The Media Browser account has been disabled.");
+            }
+
             var user = GetUser(userId);
 
             if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
@@ -422,7 +427,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     Email = response.Email,
                     Id = response.Id,
-                    Name = response.Name
+                    Name = response.Name,
+                    IsActive = response.IsActive
                 };
             }
         }

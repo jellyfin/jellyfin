@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         public string Name { get; set; }
         public string DisplayName { get; set; }
         public string Email { get; set; }
-        public string IsActive { get; set; }
+        public bool IsActive { get; set; }
         public string ImageUrl { get; set; }
     }
 
