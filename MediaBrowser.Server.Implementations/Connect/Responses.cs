@@ -25,4 +25,9 @@ namespace MediaBrowser.Server.Implementations.Connect
         public string IsActive { get; set; }
         public string ImageUrl { get; set; }
     }
+
+    public class ServerUserAuthorizationResponse
+    {
+        
+    }
 }

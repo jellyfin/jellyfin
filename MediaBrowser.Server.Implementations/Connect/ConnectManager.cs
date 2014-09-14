@@ -295,7 +295,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
             {
-                await RemoveLink(user, connectUser).ConfigureAwait(false);
+                await RemoveLink(user, connectUser.Id).ConfigureAwait(false);
             }
 
             var url = GetConnectUrl("ServerAuthorizations");
@@ -323,6 +323,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
             {
+                var response = _json.DeserializeFromStream<ServerUserAuthorizationResponse>(stream);
             }
 
             user.ConnectAccessKey = accessToken;
@@ -332,44 +333,55 @@ namespace MediaBrowser.Server.Implementations.Connect
             await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public async Task RemoveLink(string userId)
+        public Task RemoveLink(string userId)
         {
             var user = GetUser(userId);
 
-            var connectUser = await GetConnectUser(new ConnectUserQuery
-            {
-                Name = user.ConnectUserId
-
-            }, CancellationToken.None).ConfigureAwait(false);
-
-            await RemoveLink(user, connectUser).ConfigureAwait(false);
+            return RemoveLink(user, user.ConnectUserId);
         }
 
-        public async Task RemoveLink(User user, ConnectUser connectUser)
+        private async Task RemoveLink(User user, string connectUserId)
         {
-            var url = GetConnectUrl("ServerAuthorizations");
-
-            var options = new HttpRequestOptions
+            if (!string.IsNullOrWhiteSpace(connectUserId))
             {
-                Url = url,
-                CancellationToken = CancellationToken.None
-            };
+                var url = GetConnectUrl("ServerAuthorizations");
 
-            var postData = new Dictionary<string, string>
-            {
-                {"serverId", ConnectServerId},
-                {"userId", connectUser.Id}
-            };
+                var options = new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = CancellationToken.None
+                };
 
-            options.SetPostData(postData);
+                var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"userId", connectUserId}
+                };
 
-            SetServerAccessToken(options);
+                options.SetPostData(postData);
 
-            // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
-            {
+                SetServerAccessToken(options);
+
+                try
+                {
+                    // No need to examine the response
+                    using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
+                    {
+                    }
+                }
+                catch (HttpException ex)
+                {
+                    // If connect says the auth doesn't exist, we can handle that gracefully since this is a remove operation
+
+                    if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                    {
+                        throw;
+                    }
+
+                    _logger.Debug("Connect returned a 404 when removing a user auth link. Handling it.");
+                }
             }
-            
+
             user.ConnectAccessKey = null;
             user.ConnectUserName = null;
             user.ConnectUserId = null;
