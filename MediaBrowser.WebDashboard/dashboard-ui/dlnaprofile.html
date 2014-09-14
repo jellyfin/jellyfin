@@ -21,8 +21,6 @@
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioInfo" value="tabInfo">
                         <label for="radioInfo">${TabInfo}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioIdentification" value="tabIdentification">
-                        <label for="radioIdentification">${TabIdentification}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioDirectPlay" value="tabDirectPlayProfiles">
                         <label for="radioDirectPlay">${TabDirectPlay}</label>
                         <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioTranscoding" value="tabTranscodingProfiles">
@@ -66,6 +64,67 @@
 
 
                         <br />
+                        <div data-role="collapsible">
+                            <h2>${HeaderIdentification}</h2>
+                            <div>
+                                <br />
+                                <p>${HeaderIdentificationCriteriaHelp}</p>
+                                <br />
+                                <ul data-role="listview" class="ulForm">
+                                    <li>
+                                        <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
+                                        <input type="text" id="txtIdFriendlyName" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdManufacturer">${LabelManufacturer}</label>
+                                        <input type="text" id="txtIdManufacturer" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
+                                        <input type="text" id="txtIdManufacturerUrl" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdModelName">${LabelModelName}</label>
+                                        <input type="text" id="txtIdModelName" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdModelNumber">${LabelModelNumber}</label>
+                                        <input type="text" id="txtIdModelNumber" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdModelDesription">${LabelModelDescription}</label>
+                                        <input type="text" id="txtIdModelDesription" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdModelUrl">${LabelModelUrl}</label>
+                                        <input type="text" id="txtIdModelUrl" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
+                                        <input type="text" id="txtIdSerialNumber" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                    <li>
+                                        <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
+                                        <input type="text" id="txtIdDeviceDescription" data-mini="true" />
+                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                    </li>
+                                </ul>
+
+                                <h2>
+                                    <span style="vertical-align:middle;">${HeaderHttpHeaders}</span>
+                                    <button class="btnAddIdentificationHttpHeader" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
+                                </h2>
+                                <div class="httpHeaderIdentificationList"></div>
+                            </div>
+                        </div>
                         <div data-role="collapsible">
                             <h2>${HeaderDisplaySettings}</h2>
                             <div>
@@ -231,64 +290,6 @@
                                 <br />
                             </div>
                         </div>
-                    </div>
-                    <div class="tabContent tabIdentification">
-
-                        <p>${HeaderIdentificationCriteriaHelp}</p>
-                        <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
-                                <input type="text" id="txtIdFriendlyName" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdManufacturer">${LabelManufacturer}</label>
-                                <input type="text" id="txtIdManufacturer" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
-                                <input type="text" id="txtIdManufacturerUrl" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdModelName">${LabelModelName}</label>
-                                <input type="text" id="txtIdModelName" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdModelNumber">${LabelModelNumber}</label>
-                                <input type="text" id="txtIdModelNumber" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdModelDesription">${LabelModelDescription}</label>
-                                <input type="text" id="txtIdModelDesription" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdModelUrl">${LabelModelUrl}</label>
-                                <input type="text" id="txtIdModelUrl" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
-                                <input type="text" id="txtIdSerialNumber" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                            <li>
-                                <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
-                                <input type="text" id="txtIdDeviceDescription" data-mini="true" />
-                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                            </li>
-                        </ul>
-
-                        <h2>
-                            <span style="vertical-align:middle;">${HeaderHttpHeaders}</span>
-                            <button class="btnAddIdentificationHttpHeader" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
-                        </h2>
-                        <div class="httpHeaderIdentificationList"></div>
                     </div>
 
                     <div class="tabContent tabDirectPlayProfiles">

@@ -118,13 +118,16 @@
                 url: linkUrl,
                 data: {
                     ConnectUsername: enteredConnectUsername
-                }
+                },
+                dataType: 'json'
 
-            }).done(function () {
+            }).done(function (result) {
+
+                var msgKey = result.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
 
                 Dashboard.alert({
 
-                    message: Globalize.translate('MessageMediaBrowserAccontAdded'),
+                    message: Globalize.translate(msgKey),
                     title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
 
                     callback: function () {
