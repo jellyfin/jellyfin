@@ -293,12 +293,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var user = GetUser(userId);
 
-            // See if it's already been set.
-            if (string.Equals(connectUser.Id, user.ConnectUserId, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
             {
                 await RemoveLink(user, connectUser).ConfigureAwait(false);
