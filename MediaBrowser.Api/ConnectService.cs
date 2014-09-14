@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Controller.Connect;
+﻿using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using ServiceStack;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -28,8 +28,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string Id { get; set; }
     }
-    
-    [Authenticated]
+
+    [Authenticated(Roles = "Admin")]
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
