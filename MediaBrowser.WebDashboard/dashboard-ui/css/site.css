@@ -61,6 +61,13 @@
     src: local('Roboto Bold'), local('Roboto-Bold'), url(fonts/RobotoBold.woff) format('woff');
 }
 
+@font-face {
+    font-family: 'Gotham';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Gotham'), url(fonts/gotham-book.woff) format('woff');
+}
+
 * {
     text-shadow: none !important;
 }
@@ -345,7 +352,6 @@ h1 .imageLink {
     }
 
 .page > .ui-content {
-
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
 }

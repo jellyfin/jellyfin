@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             var user = string.IsNullOrWhiteSpace(auth.UserId)
                 ? null
-                : UserManager.GetUserById(new Guid(auth.UserId));
+                : UserManager.GetUserById(auth.UserId);
 
             if (user == null & !string.IsNullOrWhiteSpace(auth.UserId))
             {

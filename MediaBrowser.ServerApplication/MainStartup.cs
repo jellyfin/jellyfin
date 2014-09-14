@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
+using MediaBrowser.ServerApplication.IO;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.ServerApplication.Updates;
@@ -32,8 +33,8 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         public static void Main()
         {
-            var startFlag = Environment.GetCommandLineArgs().ElementAtOrDefault(1);
-            _isRunningAsService = string.Equals(startFlag, "-service", StringComparison.OrdinalIgnoreCase);
+            var options = new StartupOptions();
+            _isRunningAsService = options.ContainsOption("-service");
 
             var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
 
@@ -48,7 +49,7 @@ namespace MediaBrowser.ServerApplication
             BeginLog(logger, appPaths);
 
             // Install directly
-            if (string.Equals(startFlag, "-installservice", StringComparison.OrdinalIgnoreCase))
+            if (options.ContainsOption("-installservice"))
             {
                 logger.Info("Performing service installation");
                 InstallService(applicationPath, logger);
@@ -56,7 +57,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Restart with admin rights, then install
-            if (string.Equals(startFlag, "-installserviceasadmin", StringComparison.OrdinalIgnoreCase))
+            if (options.ContainsOption("-installserviceasadmin"))
             {
                 logger.Info("Performing service installation");
                 RunServiceInstallation(applicationPath);
@@ -64,7 +65,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Uninstall directly
-            if (string.Equals(startFlag, "-uninstallservice", StringComparison.OrdinalIgnoreCase))
+            if (options.ContainsOption("-uninstallservice"))
             {
                 logger.Info("Performing service uninstallation");
                 UninstallService(applicationPath, logger);
@@ -72,7 +73,7 @@ namespace MediaBrowser.ServerApplication
             }
 
             // Restart with admin rights, then uninstall
-            if (string.Equals(startFlag, "-uninstallserviceasadmin", StringComparison.OrdinalIgnoreCase))
+            if (options.ContainsOption("-uninstallserviceasadmin"))
             {
                 logger.Info("Performing service uninstallation");
                 RunServiceUninstallation(applicationPath);
@@ -99,7 +100,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                RunApplication(appPaths, logManager, _isRunningAsService);
+                RunApplication(appPaths, logManager, _isRunningAsService, options);
             }
             finally
             {
@@ -205,9 +206,10 @@ namespace MediaBrowser.ServerApplication
         /// <param name="appPaths">The app paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="runService">if set to <c>true</c> [run service].</param>
-        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService)
+        /// <param name="options">The options.</param>
+        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            _appHost = new ApplicationHost(appPaths, logManager, true, runService);
+            _appHost = new ApplicationHost(appPaths, logManager, true, runService, options);
 
             var initProgress = new Progress<double>();
 

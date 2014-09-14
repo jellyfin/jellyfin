@@ -137,7 +137,7 @@ namespace MediaBrowser.Api
         public object Get(GetPlaylistItems request)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(new Guid(request.UserId)) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var items = playlist.GetManageableItems().ToArray();
 

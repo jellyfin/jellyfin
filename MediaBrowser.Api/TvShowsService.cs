@@ -282,7 +282,7 @@ namespace MediaBrowser.Api
                 UserId = request.UserId
             });
 
-            var user = _userManager.GetUserById(new Guid(request.UserId));
+            var user = _userManager.GetUserById(request.UserId);
 
             var fields = request.GetItemFields().ToList();
 

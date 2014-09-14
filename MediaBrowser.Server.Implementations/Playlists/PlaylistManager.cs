@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public IEnumerable<Playlist> GetPlaylists(string userId)
         {
-            var user = _userManager.GetUserById(new Guid(userId));
+            var user = _userManager.GetUserById(userId);
 
             return GetPlaylistsFolder(userId).GetChildren(user, true).OfType<Playlist>();
         }
@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 throw new ArgumentException("A playlist media type is required.");
             }
 
-            var user = _userManager.GetUserById(new Guid(options.UserId));
+            var user = _userManager.GetUserById(options.UserId);
 
             var path = Path.Combine(parentFolder.Path, folderName);
             path = GetTargetPath(path);
@@ -162,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public Task AddToPlaylist(string playlistId, IEnumerable<string> itemIds, string userId)
         {
-            var user = string.IsNullOrWhiteSpace(userId) ? null : _userManager.GetUserById(new Guid(userId));
+            var user = string.IsNullOrWhiteSpace(userId) ? null : _userManager.GetUserById(userId);
 
             return AddToPlaylistInternal(playlistId, itemIds, user);
         }

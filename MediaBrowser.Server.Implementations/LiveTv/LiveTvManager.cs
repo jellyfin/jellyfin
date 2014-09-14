@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<LiveTvChannel>> GetInternalChannels(LiveTvChannelQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             var channels = _channelIdList.Select(_libraryManager.GetItemById)
                 .Where(i => i != null)
@@ -231,7 +231,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             var internalResult = await GetInternalChannels(query, cancellationToken).ConfigureAwait(false);
 
@@ -693,7 +693,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 });
             }
 
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             if (user != null)
             {
@@ -730,7 +730,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             IEnumerable<LiveTvProgram> programs = _programs.Values;
 
-            var user = _userManager.GetUserById(new Guid(query.UserId));
+            var user = _userManager.GetUserById(query.UserId);
 
             // Avoid implicitly captured closure
             var currentUser = user;
@@ -786,7 +786,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var internalResult = await GetRecommendedProgramsInternal(query, cancellationToken).ConfigureAwait(false);
 
-            var user = _userManager.GetUserById(new Guid(query.UserId));
+            var user = _userManager.GetUserById(query.UserId);
 
             var returnArray = internalResult.Items
                 .Select(i =>
@@ -1099,7 +1099,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 };
             }
 
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
 
@@ -1199,7 +1199,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 };
             }
 
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(new Guid(query.UserId));
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             var internalResult = await GetInternalRecordings(query, cancellationToken).ConfigureAwait(false);
 
@@ -1869,7 +1869,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<BaseItemDto> GetLiveTvFolder(string userId, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(new Guid(userId));
+            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();

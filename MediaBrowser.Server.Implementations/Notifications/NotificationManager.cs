@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 GetConfiguration().GetOptions(notificationType);
 
             var users = GetUserIds(request, options)
-                .Select(i => _userManager.GetUserById(new Guid(i)));
+                .Select(i => _userManager.GetUserById(i));
 
             var title = GetTitle(request, options);
             var description = GetDescription(request, options);
