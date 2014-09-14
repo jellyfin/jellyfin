@@ -5,6 +5,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication;
 using MediaBrowser.ServerApplication.Native;
+using MediaBrowser.ServerApplication.IO;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -41,8 +42,10 @@ namespace MediaBrowser.Server.Mono
 			var applicationPath = Assembly.GetEntryAssembly ().Location;
 			#endif
 			
+			var options = new StartupOptions();
+
 			// Allow this to be specified on the command line.
-			var customProgramDataPath = ParseProgramDataPathFromCommandLine();
+			var customProgramDataPath = options.GetOption("-programdata");
 
 			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
@@ -52,7 +55,7 @@ namespace MediaBrowser.Server.Mono
 
 			var logger = _logger = logManager.GetLogger("Main");
 
-			BeginLog(logger);
+			BeginLog(logger, appPaths);
 
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
@@ -72,20 +75,6 @@ namespace MediaBrowser.Server.Mono
 
 				_appHost.Dispose();
 			}
-		}
-		
-		private static string ParseProgramDataPathFromCommandLine()
-		{
-			var commandArgs = Environment.GetCommandLineArgs().ToList();
-			
-			var programDataPathIndex = commandArgs.IndexOf("-programdata");
-			
-			if (programDataPathIndex != -1)
-			{
-				return commandArgs.ElementAtOrDefault(programDataPathIndex + 1);
-			}
-			
-			return null;
 		}
 
 		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
@@ -169,14 +158,11 @@ namespace MediaBrowser.Server.Mono
 		/// Begins the log.
 		/// </summary>
 		/// <param name="logger">The logger.</param>
-		private static void BeginLog(ILogger logger)
-		{
-			logger.Info("Media Browser Server started");
-			logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
-
-			logger.Info("Server: {0}", Environment.MachineName);
-			logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
-		}
+		private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
+        {
+            logger.Info("Media Browser Server started");
+            ApplicationHost.LogEnvironmentInfo(logger, appPaths);
+        }
 
 		/// <summary>
 		/// Handles the UnhandledException event of the CurrentDomain control.

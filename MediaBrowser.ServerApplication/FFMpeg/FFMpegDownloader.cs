@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 #if __MonoCS__
 using Mono.Unix.Native;
 #endif
+using MediaBrowser.ServerApplication.IO;
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -39,8 +40,21 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             _fileSystem = fileSystem;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo(IProgress<double> progress)
+        public async Task<FFMpegInfo> GetFFMpegInfo(StartupOptions options, IProgress<double> progress)
         {
+            var customffMpegPath = options.GetOption("-ffmpeg");
+            var customffProbePath = options.GetOption("-ffprobe");
+
+            if (!string.IsNullOrWhiteSpace(customffMpegPath) && !string.IsNullOrWhiteSpace(customffProbePath))
+            {
+                return new FFMpegInfo
+                {
+                    ProbePath = customffProbePath,
+                    EncoderPath = customffMpegPath,
+                    Version = "custom"
+                };
+            }
+
             var rootEncoderPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
             var versionedDirectoryPath = Path.Combine(rootEncoderPath, FFMpegDownloadInfo.Version);
 
