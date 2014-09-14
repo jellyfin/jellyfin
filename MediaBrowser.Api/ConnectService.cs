@@ -23,7 +23,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Users/{Id}/Connect/Link", "DELETE", Summary = "Removes a Connect link for a user")]
-    public class DeleteConnectLink : IReturn<ConnectUserLink>
+    public class DeleteConnectLink : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string Id { get; set; }

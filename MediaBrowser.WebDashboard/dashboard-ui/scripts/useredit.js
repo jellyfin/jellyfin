@@ -95,8 +95,17 @@
 
             }).done(function () {
 
-                Dashboard.alert(Globalize.translate('SettingsSaved'));
-                loadData(page);
+                Dashboard.alert({
+
+                    message: Globalize.translate('MessageMediaBrowserAccontRemoved'),
+                    title: Globalize.translate('HeaderMediaBrowserAccountRemoved'),
+
+                    callback: function () {
+
+                        loadData(page);
+                    }
+
+                });
             });
 
         }
