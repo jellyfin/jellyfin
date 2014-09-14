@@ -82,6 +82,9 @@
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloadInfo.cs">
       <Link>FFMpeg\FFMpegDownloadInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.ServerApplication\IO\StartupOptions.cs">
+      <Link>IO\StartupOptions.cs"</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
