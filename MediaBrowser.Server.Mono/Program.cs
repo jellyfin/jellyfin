@@ -1,3 +1,4 @@
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Constants;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Implementations.Updates;
