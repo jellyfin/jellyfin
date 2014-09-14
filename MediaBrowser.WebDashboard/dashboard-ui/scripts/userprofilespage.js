@@ -97,13 +97,10 @@
 
         html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
 
-        //if (plugin.isPremium) {
-        //    if (plugin.price > 0) {
-        //        html += "<div class='premiumBanner'><img src='css/images/supporter/premiumflag.png' /></div>";
-        //    } else {
-        //        html += "<div class='premiumBanner'><img src='css/images/supporter/supporterflag.png' /></div>";
-        //    }
-        //}
+        if (user.ConnectUserId) {
+            html += '<div class="playedIndicator"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
+        }
+
         html += "</div>";
 
         // cardContent

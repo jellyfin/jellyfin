@@ -86,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         public event EventHandler<GenericEventArgs<User>> UserUpdated;
         public event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
-        
+
         /// <summary>
         /// Called when [user updated].
         /// </summary>
@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             return GetUserById(new Guid(id));
         }
-        
+
         public async Task Initialize()
         {
             Users = await LoadUsers().ConfigureAwait(false);
@@ -260,7 +260,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 HasConfiguredPassword = hasConfiguredDefaultPassword,
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate,
-                Configuration = user.Configuration
+                Configuration = user.Configuration,
+                ConnectLinkType = user.ConnectLinkType,
+                ConnectUserId = user.ConnectUserId,
+                ConnectUserName = user.ConnectUserName
             };
 
             var image = user.GetImageInfo(ImageType.Primary, 0);

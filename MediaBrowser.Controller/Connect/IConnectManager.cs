@@ -11,13 +11,6 @@ namespace MediaBrowser.Controller.Connect
         string WanApiAddress { get; }
 
         /// <summary>
-        /// Gets the user information.
-        /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <returns>ConnectUserInfo.</returns>
-        ConnectUserLink GetUserInfo(string userId);
-
-        /// <summary>
         /// Links the user.
         /// </summary>
         /// <param name="userId">The user identifier.</param>

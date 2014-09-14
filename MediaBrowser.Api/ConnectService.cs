@@ -5,15 +5,8 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Users/{Id}/Connect/Info", "GET", Summary = "Gets connect info for a user")]
-    public class GetConnectUserInfo : IReturn<ConnectUserLink>
-    {
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
     [Route("/Users/{Id}/Connect/Link", "POST", Summary = "Creates a Connect link for a user")]
-    public class CreateConnectLink : IReturn<ConnectUserLink>
+    public class CreateConnectLink : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Id { get; set; }
@@ -37,13 +30,6 @@ namespace MediaBrowser.Api
         public ConnectService(IConnectManager connectManager)
         {
             _connectManager = connectManager;
-        }
-
-        public object Get(GetConnectUserInfo request)
-        {
-            var result = _connectManager.GetUserInfo(request.Id);
-
-            return ToOptimizedResult(result);
         }
 
         public void Post(CreateConnectLink request)

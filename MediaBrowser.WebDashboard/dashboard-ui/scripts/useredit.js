@@ -1,10 +1,10 @@
 ﻿(function ($, window, document) {
 
-    var currentConnectInfo;
+    var currentUser;
 
-    function loadUser(page, user, loggedInUser, connectInfo) {
+    function loadUser(page, user, loggedInUser) {
 
-        currentConnectInfo = connectInfo;
+        currentUser = user;
 
         if (!loggedInUser.Configuration.IsAdministrator) {
 
@@ -39,7 +39,7 @@
         Dashboard.setPageTitle(user.Name || Globalize.translate('AddUser'));
 
         $('#txtUserName', page).val(user.Name);
-        $('#txtConnectUserName', page).val(connectInfo.Username);
+        $('#txtConnectUserName', page).val(currentUser.ConnectUserName);
 
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
@@ -64,7 +64,7 @@
 
         if (userId) {
 
-            var currentConnectUsername = currentConnectInfo.Username || '';
+            var currentConnectUsername = currentUser.ConnectUserName || '';
             var enteredConnectUsername = $('#txtConnectUserName', page).val();
 
             if (currentConnectUsername == enteredConnectUsername) {
@@ -79,7 +79,7 @@
 
     function updateConnectInfo(page, user) {
 
-        var currentConnectUsername = currentConnectInfo.Username || '';
+        var currentConnectUsername = currentUser.ConnectUserName || '';
         var enteredConnectUsername = $('#txtConnectUserName', page).val();
 
         var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
@@ -209,33 +209,16 @@
         return deferred.promise();
     }
 
-    function getConnectUserInfo() {
-
-        var userId = getParameterByName("userId");
-
-        if (userId) {
-
-            return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Connect/Info'));
-        }
-
-        var deferred = $.Deferred();
-
-        deferred.resolveWith(null, [[{}]]);
-
-        return deferred.promise();
-    }
-
     function loadData(page) {
 
         Dashboard.showLoadingMsg();
 
         var promise1 = getUser();
         var promise2 = Dashboard.getCurrentUser();
-        var promise3 = getConnectUserInfo();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
-            loadUser(page, response1[0] || response1, response2[0], response3[0]);
+            loadUser(page, response1[0] || response1, response2[0]);
 
         });
     }

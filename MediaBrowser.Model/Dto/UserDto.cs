@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Extensions;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -19,6 +20,22 @@ namespace MediaBrowser.Model.Dto
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the connect user.
+        /// </summary>
+        /// <value>The name of the connect user.</value>
+        public string ConnectUserName { get; set; }
+        /// <summary>
+        /// Gets or sets the connect user identifier.
+        /// </summary>
+        /// <value>The connect user identifier.</value>
+        public string ConnectUserId { get; set; }
+        /// <summary>
+        /// Gets or sets the type of the connect link.
+        /// </summary>
+        /// <value>The type of the connect link.</value>
+        public UserLinkType ConnectLinkType { get; set; }
+        
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
