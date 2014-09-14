@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request)
         {
-            var user = _userManager.GetUserById(new Guid(request.UserId));
+            var user = _userManager.GetUserById(request.UserId);
 
             if (user == null)
             {
@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request, IEnumerable<Folder> parentsFolders)
         {
-            var user = _userManager.GetUserById(new Guid(request.UserId));
+            var user = _userManager.GetUserById(request.UserId);
 
             if (user == null)
             {

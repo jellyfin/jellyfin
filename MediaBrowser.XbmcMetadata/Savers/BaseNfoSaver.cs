@@ -858,7 +858,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return;
             }
 
-            var user = userManager.GetUserById(new Guid(userId));
+            var user = userManager.GetUserById(userId);
 
             if (user == null)
             {

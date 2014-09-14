@@ -50,6 +50,13 @@ namespace MediaBrowser.Controller.Library
         User GetUserById(Guid id);
 
         /// <summary>
+        /// Gets the user by identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>User.</returns>
+        User GetUserById(string id);
+        
+        /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
         /// <param name="username">The username.</param>

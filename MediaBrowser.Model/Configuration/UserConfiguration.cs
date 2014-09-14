@@ -78,14 +78,15 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLocalPassword { get; set; }
 
         public string[] OrderedViews { get; set; }
-        
+
+        public bool SyncConnectName { get; set; }
+        public bool SyncConnectImage { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
         public UserConfiguration()
         {
-            IsAdministrator = true;
-
             PlayDefaultAudioTrack = true;
             EnableRemoteControlOfOtherUsers = true;
             EnableLiveTvManagement = true;
@@ -101,6 +102,9 @@ namespace MediaBrowser.Model.Configuration
             ExcludeFoldersFromGrouping = new string[] { };
             DisplayCollectionsView = true;
             DisplayFoldersView = true;
+
+            SyncConnectName = true;
+            SyncConnectImage = true;
         }
     }
 }

@@ -321,7 +321,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetChannel request)
         {
-            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
+            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
             var result = await _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 
@@ -406,7 +406,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecording request)
         {
-            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
+            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
             var result = await _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 
@@ -514,7 +514,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetProgram request)
         {
-            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(new Guid(request.UserId));
+            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
             var result = await _liveTvManager.GetProgram(request.Id, CancellationToken.None, user).ConfigureAwait(false);
 

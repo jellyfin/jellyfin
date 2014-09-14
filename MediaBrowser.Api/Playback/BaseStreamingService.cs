@@ -784,7 +784,7 @@ namespace MediaBrowser.Api.Playback
             get
             {
 #if __MonoCS__
-                return false;
+                return true;
 #endif
 
                 try
