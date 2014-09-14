@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -266,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             return "https://connect.mediabrowser.tv/service/" + handler;
         }
 
-        public async Task LinkUser(string userId, string connectUsername)
+        public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)
         {
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
@@ -313,17 +314,24 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             SetServerAccessToken(options);
 
+            var result = new UserLinkResult();
+
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
             {
                 var response = _json.DeserializeFromStream<ServerUserAuthorizationResponse>(stream);
+
+                result.IsPending = string.Equals(response.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase);
             }
 
             user.ConnectAccessKey = accessToken;
             user.ConnectUserName = connectUser.Name;
             user.ConnectUserId = connectUser.Id;
+            user.ConnectLinkType = UserLinkType.LinkedUser;
 
             await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            return result;
         }
 
         public Task RemoveLink(string userId)
@@ -378,6 +386,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             user.ConnectAccessKey = null;
             user.ConnectUserName = null;
             user.ConnectUserId = null;
+            user.ConnectLinkType = UserLinkType.LinkedUser;
 
             await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }

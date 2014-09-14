@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="userId">The user identifier.</param>
         /// <param name="connectUsername">The connect username.</param>
         /// <returns>Task.</returns>
-        Task LinkUser(string userId, string connectUsername);
+        Task<UserLinkResult> LinkUser(string userId, string connectUsername);
 
         /// <summary>
         /// Removes the link.

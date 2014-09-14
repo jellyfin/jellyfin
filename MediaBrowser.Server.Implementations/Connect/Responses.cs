@@ -28,6 +28,13 @@ namespace MediaBrowser.Server.Implementations.Connect
 
     public class ServerUserAuthorizationResponse
     {
-        
+        public string Id { get; set; }
+        public string ServerId { get; set; }
+        public string UserId { get; set; }
+        public string AccessToken { get; set; }
+        public string DateCreated { get; set; }
+        public bool IsActive { get; set; }
+        public string AcceptStatus { get; set; }
+        public string UserType { get; set; }
     }
 }
