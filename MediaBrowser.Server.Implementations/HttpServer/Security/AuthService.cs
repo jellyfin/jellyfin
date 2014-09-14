@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -42,24 +41,29 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         public string HtmlRedirect { get; set; }
 
-        public void Authenticate(IRequest req, IResponse res, object requestDto, bool allowLocal)
+        public void Authenticate(IRequest request,
+            IResponse response,
+            object requestDto,
+            bool allowLocal,
+            string[] roles)
         {
-            if (HostContext.HasValidAuthSecret(req))
+            if (HostContext.HasValidAuthSecret(request))
                 return;
 
             //ExecuteBasic(req, res, requestDto); //first check if session is authenticated
             //if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            ValidateUser(req, allowLocal);
+            ValidateUser(request, allowLocal, roles);
         }
 
-        private void ValidateUser(IRequest req, bool allowLocal)
+        private void ValidateUser(IRequest req, bool allowLocal,
+            string[] roles)
         {
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
             if (!string.IsNullOrWhiteSpace(auth.Token)
-                || _config.Configuration.SecureApps1.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                || _config.Configuration.SecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 if (!allowLocal || !req.IsLocal)
                 {
@@ -73,13 +77,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (user == null & !string.IsNullOrWhiteSpace(auth.UserId))
             {
-                // TODO: Re-enable
-                //throw new ArgumentException("User with Id " + auth.UserId + " not found");
+                throw new ArgumentException("User with Id " + auth.UserId + " not found");
             }
 
             if (user != null && user.Configuration.IsDisabled)
             {
                 throw new AuthenticationException("User account has been disabled.");
+            }
+
+            if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
+            {
+                if (user == null || !user.Configuration.IsAdministrator)
+                {
+                    throw new ArgumentException("Administrative access is required for this request.");
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&
