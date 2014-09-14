@@ -275,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private string GetConnectUrl(string handler)
         {
-            return "http://mb3admin.com/test/connect/" + handler;
+            return "https://connect.mediabrowser.tv/service/" + handler;
         }
 
         public async Task LinkUser(string userId, string connectUsername)
@@ -292,12 +292,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             }, CancellationToken.None).ConfigureAwait(false);
 
             var user = GetUser(userId);
-
-            // See if it's already been set.
-            if (string.Equals(connectUser.Id, user.ConnectUserId, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
 
             if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
             {
