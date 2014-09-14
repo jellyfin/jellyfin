@@ -261,18 +261,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             return user;
         }
 
-        public ConnectUserLink GetUserInfo(string userId)
-        {
-            var user = GetUser(userId);
-
-            return new ConnectUserLink
-            {
-                LocalUserId = user.Id.ToString("N"),
-                Username = user.ConnectUserName,
-                UserId = user.ConnectUserId
-            };
-        }
-
         private string GetConnectUrl(string handler)
         {
             return "https://connect.mediabrowser.tv/service/" + handler;

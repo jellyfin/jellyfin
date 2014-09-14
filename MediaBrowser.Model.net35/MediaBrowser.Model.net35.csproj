@@ -151,6 +151,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
       <Link>Configuration\XbmcMetadataOptions.cs</Link>
     </Compile>
+    <Compile Include="..\mediabrowser.model\connect\UserLinkType.cs">
+      <Link>Connect\UserLinkType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\AudioOptions.cs">
       <Link>Dlna\AudioOptions.cs</Link>
     </Compile>
