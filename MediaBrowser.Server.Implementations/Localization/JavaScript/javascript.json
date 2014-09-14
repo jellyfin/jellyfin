@@ -453,8 +453,8 @@
     "MessageYouHaveAnActiveRecurringMembership": "You have an active {0} membership. You can upgrade your plan using the options below.",
     "ButtonDelete": "Delete",
     "HeaderMediaBrowserAccountAdded": "Media Browser Account Added",
-    "MessageMediaBrowserAccountAdded": "The Media Browser account has been successfully linked to this user.",
-    "MessagePendingMediaBrowserAccountAdded": "A Media Browser account has been linked to this user. An email will be sent to the owner of the account. The invitation will need to be confirmed by clicking a link within the email.",
+    "MessageMediaBrowserAccountAdded": "The Media Browser account has been added to this user.",
+    "MessagePendingMediaBrowserAccountAdded": "The Media Browser account has been added to this user. An email will be sent to the owner of the account. The invitation will need to be confirmed by clicking a link within the email.",
     "HeaderMediaBrowserAccountRemoved": "Media Browser Account Removed",
     "MessageMediaBrowserAccontRemoved": "The Media Browser account has been removed from this user.",
     "TooltipLinkedToMediaBrowserConnect": "Linked to Media Browser Connect"
