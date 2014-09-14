@@ -219,6 +219,8 @@ namespace MediaBrowser.ServerApplication
         private ISyncRepository SyncRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
 
+        private StartupOptions _startupOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
@@ -226,9 +228,15 @@ namespace MediaBrowser.ServerApplication
         /// <param name="logManager">The log manager.</param>
         /// <param name="supportsRunningAsService">if set to <c>true</c> [supports running as service].</param>
         /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
-        public ApplicationHost(ServerApplicationPaths applicationPaths, ILogManager logManager, bool supportsRunningAsService, bool isRunningAsService)
+        /// <param name="options">The options.</param>
+        public ApplicationHost(ServerApplicationPaths applicationPaths, 
+            ILogManager logManager, 
+            bool supportsRunningAsService, 
+            bool isRunningAsService,
+            StartupOptions options)
             : base(applicationPaths, logManager)
         {
+            _startupOptions = options;
             _isRunningAsService = isRunningAsService;
             SupportsRunningAsService = supportsRunningAsService;
         }
@@ -548,7 +556,7 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder(IProgress<double> progress)
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(progress).ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(_startupOptions, progress).ConfigureAwait(false);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), JsonSerializer, info.EncoderPath, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);
