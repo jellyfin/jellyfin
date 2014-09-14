@@ -402,7 +402,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         public async Task<object> Get(GetUserViews request)
         {
-            var user = _userManager.GetUserById(new Guid(request.UserId));
+            var user = _userManager.GetUserById(request.UserId);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();

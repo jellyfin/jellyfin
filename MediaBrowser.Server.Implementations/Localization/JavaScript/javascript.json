@@ -11,7 +11,7 @@
     "FileNotFound": "File not found.",
     "FileReadError": "An error occurred while reading the file.",
     "DeleteUser": "Delete User",
-    "DeleteUserConfirmation": "Are you sure you wish to delete {0}?",
+    "DeleteUserConfirmation": "Are you sure you wish to delete this user?",
     "PasswordResetHeader": "Password Reset",
     "PasswordResetComplete": "The password has been reset.",
     "PasswordResetConfirmation": "Are you sure you wish to reset the password?",
@@ -450,5 +450,8 @@
     "MessageChangeRecurringPlanConfirm": "After completing this transaction you will need to cancel your previous recurring donation from within your PayPal account. Thank you for supporting Media Browser.",
     "MessageSupporterMembershipExpiredOn": "Your supporter membership expired on {0}.",
     "MessageYouHaveALifetimeMembership": "You have a lifetime supporter membership. You can provide additional donations on a one-time or recurring basis using the options below. Thank you for supporting Media Browser.",
-    "MessageYouHaveAnActiveRecurringMembership": "You have an active {0} membership. You can upgrade your plan using the options below."
+    "MessageYouHaveAnActiveRecurringMembership": "You have an active {0} membership. You can upgrade your plan using the options below.",
+    "ButtonDelete": "Delete",
+    "HeaderMediaBrowserAccountAdded": "Media Browser Account Added",
+    "MessageMediaBrowserAccontAdded": "A Media Browser account has been added to this user. An email has been sent to the owner of the account. They will need to confirm the invitation by clicking a link within the email."
 }

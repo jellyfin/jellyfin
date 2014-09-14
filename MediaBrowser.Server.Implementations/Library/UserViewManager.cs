@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
         {
-            var user = _userManager.GetUserById(new Guid(query.UserId));
+            var user = _userManager.GetUserById(query.UserId);
 
             var folders = user.RootFolder
                 .GetChildren(user, true)

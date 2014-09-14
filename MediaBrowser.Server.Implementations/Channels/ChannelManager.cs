@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             var channels = GetAllChannels()
                 .Select(GetChannelEntity)
@@ -163,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
 
@@ -565,7 +565,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             if (!string.IsNullOrWhiteSpace(query.UserId) && user == null)
             {
@@ -724,7 +724,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             var channels = GetAllChannels();
 
@@ -897,7 +897,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             ChannelItemSortField? sortField = null;
             ChannelItemSortField parsedField;
@@ -942,7 +942,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
-                : _userManager.GetUserById(new Guid(query.UserId));
+                : _userManager.GetUserById(query.UserId);
 
             var internalResult = await GetChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
 
@@ -1356,7 +1356,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public async Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(new Guid(userId));
+            var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();

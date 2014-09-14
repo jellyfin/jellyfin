@@ -23,37 +23,32 @@
                     <ul data-role="listview" class="ulForm">
                         <li id="fldUserName">
                             <label for="txtUserName">${LabelName}</label>
-                            <input id="txtUserName" name="txtUserName" required="required" type="text" />
+                            <input id="txtUserName" required="required" type="text" />
+                        </li>
+                        <li id="fldConnectInfo" style="display: none;">
+                            <label for="txtConnectUserName">${LabelConnectUserName}</label>
+                            <input id="txtConnectUserName" type="text" />
+                            <div class="fieldDescription">${LabelConnectUserNameHelp}</div>
                         </li>
                         <li id="fldIsAdmin" style="display: none;">
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
                             <label for="chkIsAdmin">${OptionAllowUserToManageServer}</label>
                         </li>
                     </ul>
-                    <div id="featureAccessFields">
-                        <h2>${HeaderFeatureAccess}</h2>
-                        <div>
-                            <input type="checkbox" id="chkEnableMediaPlayback" name="chkEnableMediaPlayback" data-mini="true" />
-                            <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" data-mini="true" />
-                            <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" data-mini="true" />
-                            <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" data-mini="true" />
-                            <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
-                        </div>
-                        <div>
-                            <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" data-mini="true" />
-                            <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
-                        </div>
-                        <br />
-                    </div>
+                    <fieldset id="featureAccessFields" data-role="controlgroup">
+                        <legend>${HeaderFeatureAccess}</legend>
+                        <input type="checkbox" id="chkEnableMediaPlayback" name="chkEnableMediaPlayback" />
+                        <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
+                        <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" />
+                        <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
+                        <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
+                        <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
+                        <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
+                        <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
+                        <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
+                        <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
+                    </fieldset>
+                    <br />
                     <div id="accessControlDiv" style="display: none" data-role="collapsible">
                         <h2>${HeaderAdvancedControl}</h2>
                         <div id="fldIsEnabled" style="margin: 1em 0 2em;">

@@ -1,19 +1,63 @@
 ﻿(function (document, window, $) {
 
-    function deleteUser(page, id, name) {
+    function deleteUser(page, id) {
 
-        var msg = Globalize.translate('DeleteUserConfirmation').replace('{0}', name);
+        $('.userMenu', page).on("popupafterclose.deleteuser", function() {
 
-        Dashboard.confirm(msg, Globalize.translate('DeleteUser'), function (result) {
+            $(this).off('popupafterclose.deleteuser');
 
-            if (result) {
-                Dashboard.showLoadingMsg();
+            var msg = Globalize.translate('DeleteUserConfirmation');
 
-                ApiClient.deleteUser(id).done(function () {
+            Dashboard.confirm(msg, Globalize.translate('DeleteUser'), function (result) {
 
-                    loadUsers(page);
-                });
-            }
+                if (result) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.deleteUser(id).done(function () {
+
+                        loadUsers(page);
+                    });
+                }
+            });
+
+        }).popup('close');
+    }
+
+    function closeUserMenu(page) {
+        $('.userMenu', page).popup('close').remove();
+    }
+
+    function showUserMenu(elem) {
+
+        var card = $(elem).parents('.card');
+        var page = $(elem).parents('.page');
+        var userId = card.attr('data-userid');
+
+        $('.userMenu', page).popup("close").remove();
+
+        var html = '<div data-role="popup" class="userMenu" data-history="false" data-theme="a">';
+
+        html += '<ul data-role="listview" style="min-width: 180px;">';
+        html += '<li data-role="list-divider">Menu</li>';
+
+        html += '<li><a href="#" class="btnDeleteUser" data-userid="' + userId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+
+        html += '<li><a href="useredit.html?userid=' + userId + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
+
+        html += '</ul>';
+
+        html += '</div>';
+
+        page.append(html);
+
+        var flyout = $('.userMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+
+            $(this).off("popupafterclose").remove();
+
+        });
+
+        $('.btnDeleteUser', flyout).on('click', function () {
+            deleteUser(page, this);
         });
     }
 
@@ -21,7 +65,13 @@
 
         var html = '';
 
-        html += "<div class='card homePageSquareCard alternateHover bottomPaddedCard'>";
+        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+
+        if (user.Configuration.IsDisabled) {
+            cssClass += ' grayscale';
+        }
+
+        html += "<div data-userid='" + user.Id + "' class='" + cssClass + "'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
@@ -36,7 +86,7 @@
         if (user.PrimaryImageTag) {
 
             imgUrl = ApiClient.getUserImageUrl(user.Id, {
-                width: 200,
+                width: 300,
                 tag: user.PrimaryImageTag,
                 type: "Primary"
             });
@@ -66,7 +116,7 @@
 
         html += '<div class="cardText" style="text-align:right; float:right;">';
 
-        html += '<button type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
+        html += '<button class="btnUserMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="margin-right: 30px; padding: 11px 0 10px;">';
@@ -82,42 +132,29 @@
         // card
         html += "</div>";
 
+        return html;
+    }
 
+    function getUserSectionHtml(users) {
 
-        //html += "<li>";
+        var html = '';
 
-        //html += "<a href='useredit.html?userId=" + user.Id + "'>";
-
-        //if (user.PrimaryImageTag) {
-
-        //    var url = ApiClient.getUserImageUrl(user.Id, {
-        //        width: 80,
-        //        tag: user.PrimaryImageTag,
-        //        type: "Primary"
-        //    });
-        //    html += "<img src='" + url + "' />";
-        //} else {
-        //    html += "<img src='css/images/userflyoutdefault.png' />";
-        //}
-
-        //html += "<h3>" + user.Name;
-
-        //html += "</h3>";
-
-        //html += "<p class='ui-li-aside'>";
-        //if (user.HasConfiguredPassword) html += '<img src="css/images/userdata/password.png" alt="' + Globalize.translate('Password') + '" title="' + Globalize.translate('Password') + '" class="userProfileIcon" />';
-        //if (user.Configuration.IsAdministrator) html += '<img src="css/images/userdata/administrator.png" alt="' + Globalize.translate('Administrator') + '" title="' + Globalize.translate('Administrator') + '" class="userProfileIcon" />';
-
-        //html += "</p>";
-
-        //html += "</a>";
-
-
-        //html += "<a onclick='UserProfilesPage.deleteUser(this);' data-userid='" + user.Id + "' data-username='" + user.Name + "' href='#'>" + Globalize.translate('Delete') + "</a>";
-
-        //html += "</li>";
+        html += users.map(getUserHtml).join('');
 
         return html;
+    }
+
+    function renderUsers(page, users) {
+
+        var html = '';
+
+        html += getUserSectionHtml(users);
+
+        var elem = $('.users', page).html(html).trigger('create');
+
+        $('.btnUserMenu', elem).on('click', function () {
+            showUserMenu(this);
+        });
     }
 
     function loadUsers(page) {
@@ -125,11 +162,7 @@
         Dashboard.showLoadingMsg();
 
         ApiClient.getUsers().done(function (users) {
-
-            var html = users.map(getUserHtml).join('');
-
-            $('.users', page).html(html).trigger('create');
-
+            renderUsers(page, users);
             Dashboard.hideLoadingMsg();
         });
     }

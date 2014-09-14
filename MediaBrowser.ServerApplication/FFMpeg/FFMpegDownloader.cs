@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
@@ -52,6 +53,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             Directory.CreateDirectory(versionedDirectoryPath);
 
+            var excludeFromDeletions = new List<string> { versionedDirectoryPath };
+
             if (!File.Exists(info.ProbePath) || !File.Exists(info.EncoderPath))
             {
                 // ffmpeg not present. See if there's an older version we can start with
@@ -71,12 +74,40 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                     info = existingVersion;
                     versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
+
+                    excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }
 
             await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
 
+            DeleteOlderFolders(Path.GetDirectoryName(versionedDirectoryPath), excludeFromDeletions);
+
             return info;
+        }
+
+        private void DeleteOlderFolders(string path, IEnumerable<string> excludeFolders )
+        {
+            var folders = Directory.GetDirectories(path)
+                .Where(i => !excludeFolders.Contains(i, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var folder in folders)
+            {
+                DeleteFolder(folder);
+            }
+        }
+
+        private void DeleteFolder(string path)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting {0}", ex, path);
+            }
         }
 
         private FFMpegInfo GetExistingVersion(FFMpegInfo info, string rootEncoderPath)

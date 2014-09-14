@@ -48,6 +48,12 @@
     margin: 4px;
 }
 
+.grayscale {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
 @media all and (max-width: 800px) {
 
     .cardBox {
@@ -486,7 +492,7 @@
 
 
 .detailPageSquareCard {
-        width: 33.33%;
+    width: 33.33%;
 }
 
 @media all and (min-width: 540px) {

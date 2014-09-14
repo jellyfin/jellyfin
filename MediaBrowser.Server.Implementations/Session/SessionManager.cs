@@ -455,7 +455,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 users.Add(user);
 
                 var additionalUsers = session.AdditionalUsers
-                    .Select(i => _userManager.GetUserById(new Guid(i.UserId)))
+                    .Select(i => _userManager.GetUserById(i.UserId))
                     .Where(i => i != null);
 
                 users.AddRange(additionalUsers);
@@ -1189,7 +1189,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(info.UserId))
             {
-                var user = _userManager.GetUserById(new Guid(info.UserId));
+                var user = _userManager.GetUserById(info.UserId);
 
                 if (user == null || user.Configuration.IsDisabled)
                 {

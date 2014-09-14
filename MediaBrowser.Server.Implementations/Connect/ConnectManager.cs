@@ -3,6 +3,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -27,9 +29,18 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
         private readonly IServerConfigurationManager _config;
+        private readonly IUserManager _userManager;
 
-        public string ConnectServerId { get; set; }
-        public string ConnectAccessKey { get; set; }
+        private ConnectData _data = new ConnectData();
+
+        public string ConnectServerId
+        {
+            get { return _data.ServerId; }
+        }
+        public string ConnectAccessKey
+        {
+            get { return _data.AccessKey; }
+        }
 
         public string DiscoveredWanIpAddress { get; private set; }
 
@@ -47,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 return address;
             }
         }
-        
+
         public string WanApiAddress
         {
             get
@@ -75,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             IEncryptionManager encryption,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config)
+            IServerConfigurationManager config, IUserManager userManager)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -84,6 +95,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _httpClient = httpClient;
             _appHost = appHost;
             _config = config;
+            _userManager = userManager;
 
             LoadCachedData();
         }
@@ -156,8 +168,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var data = _json.DeserializeFromStream<ServerRegistrationResponse>(stream);
 
-                ConnectServerId = data.Id;
-                ConnectAccessKey = data.AccessKey;
+                _data.ServerId = data.Id;
+                _data.AccessKey = data.AccessKey;
 
                 CacheData();
             }
@@ -182,7 +194,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {"systemid", _appHost.SystemId}
             });
 
-            options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
+            SetServerAccessToken(options);
 
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
@@ -203,11 +215,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                var json = _json.SerializeToString(new ConnectData
-                {
-                    AccessKey = ConnectAccessKey,
-                    ServerId = ConnectServerId
-                });
+                var json = _json.SerializeToString(_data);
 
                 var encrypted = _encryption.EncryptString(json);
 
@@ -229,10 +237,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 var json = _encryption.DecryptString(encrypted);
 
-                var data = _json.DeserializeFromString<ConnectData>(json);
-
-                ConnectAccessKey = data.AccessKey;
-                ConnectServerId = data.ServerId;
+                _data = _json.DeserializeFromString<ConnectData>(json);
             }
             catch (IOException)
             {
@@ -244,9 +249,181 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
+        private User GetUser(string id)
+        {
+            var user = _userManager.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            return user;
+        }
+
+        public ConnectUserLink GetUserInfo(string userId)
+        {
+            var user = GetUser(userId);
+
+            return new ConnectUserLink
+            {
+                LocalUserId = user.Id.ToString("N"),
+                Username = user.ConnectUserName,
+                UserId = user.ConnectUserId
+            };
+        }
+
         private string GetConnectUrl(string handler)
         {
             return "http://mb3admin.com/test/connect/" + handler;
+        }
+
+        public async Task LinkUser(string userId, string connectUsername)
+        {
+            if (string.IsNullOrWhiteSpace(connectUsername))
+            {
+                throw new ArgumentNullException("connectUsername");
+            }
+
+            var connectUser = await GetConnectUser(new ConnectUserQuery
+            {
+                Name = connectUsername
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            var user = GetUser(userId);
+
+            // See if it's already been set.
+            if (string.Equals(connectUser.Id, user.ConnectUserId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
+            {
+                await RemoveLink(user, connectUser).ConfigureAwait(false);
+            }
+
+            var url = GetConnectUrl("ServerAuthorizations");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            var accessToken = Guid.NewGuid().ToString("N");
+
+            var postData = new Dictionary<string, string>
+            {
+                {"serverId", ConnectServerId},
+                {"userId", connectUser.Id},
+                {"userType", "Linked"},
+                {"accessToken", accessToken}
+            };
+
+            options.SetPostData(postData);
+
+            SetServerAccessToken(options);
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
+            {
+            }
+
+            user.ConnectAccessKey = accessToken;
+            user.ConnectUserName = connectUser.Name;
+            user.ConnectUserId = connectUser.Id;
+
+            await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public async Task RemoveLink(string userId)
+        {
+            var user = GetUser(userId);
+
+            var connectUser = await GetConnectUser(new ConnectUserQuery
+            {
+                Name = user.ConnectUserId
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            await RemoveLink(user, connectUser).ConfigureAwait(false);
+        }
+
+        public async Task RemoveLink(User user, ConnectUser connectUser)
+        {
+            var url = GetConnectUrl("ServerAuthorizations");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            var postData = new Dictionary<string, string>
+            {
+                {"serverId", ConnectServerId},
+                {"userId", connectUser.Id}
+            };
+
+            options.SetPostData(postData);
+
+            SetServerAccessToken(options);
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
+            {
+            }
+            
+            user.ConnectAccessKey = null;
+            user.ConnectUserName = null;
+            user.ConnectUserId = null;
+
+            await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task<ConnectUser> GetConnectUser(ConnectUserQuery query, CancellationToken cancellationToken)
+        {
+            var url = GetConnectUrl("user");
+
+            if (!string.IsNullOrWhiteSpace(query.Id))
+            {
+                url = url + "?id=" + WebUtility.UrlEncode(query.Id);
+            }
+            else if (!string.IsNullOrWhiteSpace(query.Name))
+            {
+                url = url + "?name=" + WebUtility.UrlEncode(query.Name);
+            }
+            else if (!string.IsNullOrWhiteSpace(query.Email))
+            {
+                url = url + "?email=" + WebUtility.UrlEncode(query.Email);
+            }
+
+            var options = new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url
+            };
+
+            SetServerAccessToken(options);
+
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+            {
+                var response = _json.DeserializeFromStream<GetConnectUserResponse>(stream);
+
+                return new ConnectUser
+                {
+                    Email = response.Email,
+                    Id = response.Id,
+                    Name = response.Name
+                };
+            }
+        }
+
+        private void SetServerAccessToken(HttpRequestOptions options)
+        {
+            options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
         }
     }
 }

@@ -81,7 +81,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {
-                var user = _userManager.GetUserById(new Guid(profile.UserId));
+                var user = _userManager.GetUserById(profile.UserId);
 
                 if (user != null)
                 {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             if (!string.IsNullOrEmpty(userId))
             {
-                var user = _userManager.GetUserById(new Guid(userId));
+                var user = _userManager.GetUserById(userId);
 
                 if (user != null)
                 {

@@ -128,6 +128,16 @@ namespace MediaBrowser.Server.Implementations.Library
             return Users.FirstOrDefault(u => u.Id == id);
         }
 
+        /// <summary>
+        /// Gets the user by identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>User.</returns>
+        public User GetUserById(string id)
+        {
+            return GetUserById(new Guid(id));
+        }
+        
         public async Task Initialize()
         {
             Users = await LoadUsers().ConfigureAwait(false);
@@ -219,6 +229,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 await UserRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
 
                 users.Add(user);
+
+                user.Configuration.IsAdministrator = true;
+                UpdateConfiguration(user, user.Configuration);
             }
 
             return users;
@@ -503,7 +516,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 Name = name,
                 Id = ("MBUser" + name).GetMD5(),
                 DateCreated = DateTime.UtcNow,
-                DateModified = DateTime.UtcNow
+                DateModified = DateTime.UtcNow,
+                UsesIdForConfigurationPath = true
             };
         }
 

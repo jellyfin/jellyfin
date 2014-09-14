@@ -1,6 +1,10 @@
 ﻿(function ($, window, document) {
 
-    function loadUser(page, user, loggedInUser) {
+    var currentConnectInfo;
+
+    function loadUser(page, user, loggedInUser, connectInfo) {
+
+        currentConnectInfo = connectInfo;
 
         if (!loggedInUser.Configuration.IsAdministrator) {
 
@@ -16,6 +20,12 @@
             $('.lnkEditUserPreferencesContainer', page).show();
         }
 
+        if (user.Id && loggedInUser.Configuration.IsAdministrator) {
+            $('#fldConnectInfo', page).show();
+        } else {
+            $('#fldConnectInfo', page).hide();
+        }
+
         if (!loggedInUser.Configuration.IsAdministrator || !user.Id) {
 
             $('.lnkEditUserPreferencesContainer', page).hide();
@@ -29,6 +39,7 @@
         Dashboard.setPageTitle(user.Name || Globalize.translate('AddUser'));
 
         $('#txtUserName', page).val(user.Name);
+        $('#txtConnectUserName', page).val(connectInfo.Username);
 
         $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
         $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
@@ -45,16 +56,75 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function onSaveComplete(page) {
+    function onSaveComplete(page, user) {
 
         Dashboard.hideLoadingMsg();
 
         var userId = getParameterByName("userId");
 
         if (userId) {
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
+
+            var currentConnectUsername = currentConnectInfo.Username || '';
+            var enteredConnectUsername = $('#txtConnectUserName', page).val();
+
+            if (currentConnectUsername == enteredConnectUsername) {
+                Dashboard.alert(Globalize.translate('SettingsSaved'));
+            } else {
+                updateConnectInfo(page, user);
+            }
         } else {
             Dashboard.navigate("userprofiles.html");
+        }
+    }
+
+    function updateConnectInfo(page, user) {
+
+        var currentConnectUsername = currentConnectInfo.Username || '';
+        var enteredConnectUsername = $('#txtConnectUserName', page).val();
+
+        var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
+
+        if (currentConnectUsername && !enteredConnectUsername) {
+
+            // Remove connect info
+            // Add/Update connect info
+            ApiClient.ajax({
+
+                type: "DELETE",
+                url: linkUrl
+
+            }).done(function () {
+
+                Dashboard.alert(Globalize.translate('SettingsSaved'));
+                loadData(page);
+            });
+
+        }
+        else if (currentConnectUsername != enteredConnectUsername) {
+
+            // Add/Update connect info
+            ApiClient.ajax({
+
+                type: "POST",
+                url: linkUrl,
+                data: {
+                    ConnectUsername: enteredConnectUsername
+                }
+
+            }).done(function () {
+
+                Dashboard.alert({
+
+                    message: Globalize.translate('MessageMediaBrowserAccontAdded'),
+                    title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
+
+                    callback: function () {
+
+                        loadData(page);
+                    }
+
+                });
+            });
         }
     }
 
@@ -78,11 +148,11 @@
 
         if (userId) {
             ApiClient.updateUser(user).done(function () {
-                onSaveComplete(page);
+                onSaveComplete(page, user);
             });
         } else {
             ApiClient.createUser(user).done(function () {
-                onSaveComplete(page);
+                onSaveComplete(page, user);
             });
         }
     }
@@ -97,21 +167,68 @@
 
             Dashboard.showLoadingMsg();
 
-            var userId = getParameterByName("userId");
-
-            if (!userId) {
-                saveUser({
-                    Configuration: {}
-                }, page);
-            } else {
-                ApiClient.getUser(userId).done(function (result) {
-                    saveUser(result, page);
-                });
-            }
+            getUser().done(function (result) {
+                saveUser(result, page);
+            });
 
             // Disable default form submission
             return false;
         };
+    }
+
+    function getUser() {
+
+        var userId = getParameterByName("userId");
+
+        if (userId) {
+
+            return ApiClient.getUser(userId);
+        }
+
+        var deferred = $.Deferred();
+
+        deferred.resolveWith(null, [{
+            Configuration: {
+                IsAdministrator: false,
+                EnableLiveTvManagement: true,
+                EnableLiveTvAccess: true,
+                EnableRemoteControlOfOtherUsers: true,
+                EnableMediaPlayback: true
+            }
+        }]);
+
+        return deferred.promise();
+    }
+
+    function getConnectUserInfo() {
+
+        var userId = getParameterByName("userId");
+
+        if (userId) {
+
+            return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Connect/Info'));
+        }
+
+        var deferred = $.Deferred();
+
+        deferred.resolveWith(null, [[{}]]);
+
+        return deferred.promise();
+    }
+
+    function loadData(page) {
+
+        Dashboard.showLoadingMsg();
+
+        var promise1 = getUser();
+        var promise2 = Dashboard.getCurrentUser();
+        var promise3 = getConnectUserInfo();
+
+        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+
+            loadUser(page, response1[0] || response1, response2[0], response3[0]);
+
+        });
     }
 
     window.EditUserPage = new editUserPage();
@@ -141,39 +258,7 @@
 
         var page = this;
 
-        Dashboard.showLoadingMsg();
-
-        var userId = getParameterByName("userId");
-
-        var promise1;
-
-        if (!userId) {
-
-            var deferred = $.Deferred();
-
-            deferred.resolveWith(null, [{
-                Configuration: {
-                    IsAdministrator: true,
-                    EnableLiveTvManagement: true,
-                    EnableLiveTvAccess: true,
-                    EnableRemoteControlOfOtherUsers: true,
-                    EnableMediaPlayback: true
-                }
-            }]);
-
-            promise1 = deferred.promise();
-        } else {
-
-            promise1 = ApiClient.getUser(userId);
-        }
-
-        var promise2 = Dashboard.getCurrentUser();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadUser(page, response1[0] || response1, response2[0]);
-
-        });
+        loadData(page);
 
         $("form input:first", page).focus();
     });
