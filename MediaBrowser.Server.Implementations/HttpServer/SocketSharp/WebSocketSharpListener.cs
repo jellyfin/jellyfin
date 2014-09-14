@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
     public class WebSocketSharpListener : IHttpListener
     {
         private HttpListener _listener;
-        private readonly ManualResetEvent _listenForNextRequest = new ManualResetEvent(false);
+        private readonly ManualResetEventSlim _listenForNextRequest = new ManualResetEventSlim(false);
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 try
                 {
                     _listener.BeginGetContext(ListenerCallback, _listener);
-                    _listenForNextRequest.WaitOne();
+                    _listenForNextRequest.Wait();
                 }
                 catch (Exception ex)
                 {
@@ -78,8 +78,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         // Handle the processing of a request in here.
         private void ListenerCallback(IAsyncResult asyncResult)
         {
-            _listenForNextRequest.Set();
-            
             var listener = asyncResult.AsyncState as HttpListener;
             HttpListenerContext context;
 
@@ -90,7 +88,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 if (!isListening)
                 {
-                    _logger.Debug("Ignoring ListenerCallback() as HttpListener is no longer listening"); return;
+                    _logger.Debug("Ignoring ListenerCallback() as HttpListener is no longer listening");
+                    return;
                 }
                 // The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
                 // blocks until there is a request to be processed or some type of data is available.
@@ -105,6 +104,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 var errMsg = ex + ": " + IsListening;
                 _logger.Warn(errMsg);
                 return;
+            }
+            finally
+            {
+                _listenForNextRequest.Set();
             }
 
             Task.Factory.StartNew(() => InitTask(context));
