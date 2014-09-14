@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Mono
 
 			try
 			{
-				RunApplication(appPaths, logManager);
+				RunApplication(appPaths, logManager, options);
 			}
 			finally
 			{
@@ -115,14 +115,14 @@ namespace MediaBrowser.Server.Mono
 
 		private static TaskCompletionSource<bool> _applicationTaskCompletionSource = new TaskCompletionSource<bool>();
 
-		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager)
+		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
 		{
 			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
 			// Allow all https requests
 			ServicePointManager.ServerCertificateValidationCallback = _ignoreCertificates;
 
-			_appHost = new ApplicationHost(appPaths, logManager, false, false);
+			_appHost = new ApplicationHost(appPaths, logManager, false, false, options);
 
 			Console.WriteLine ("appHost.Init");
 
