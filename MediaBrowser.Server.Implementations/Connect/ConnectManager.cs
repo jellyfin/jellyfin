@@ -275,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private string GetConnectUrl(string handler)
         {
-            return "http://mb3admin.com/test/connect/" + handler;
+            return "https://connect.mediabrowser.tv/service/" + handler;
         }
 
         public async Task LinkUser(string userId, string connectUsername)
