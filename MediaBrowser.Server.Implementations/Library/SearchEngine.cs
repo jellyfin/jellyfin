@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
-                var user = _userManager.GetUserById(new Guid(query.UserId));
+                var user = _userManager.GetUserById(query.UserId);
 
                 inputItems = user.RootFolder.GetRecursiveChildren(user, true);
             }

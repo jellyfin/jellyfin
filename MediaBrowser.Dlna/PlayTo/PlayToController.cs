@@ -281,7 +281,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             _logger.Debug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
-            var user = String.IsNullOrEmpty(command.ControllingUserId) ? null : _userManager.GetUserById(new Guid(command.ControllingUserId));
+            var user = String.IsNullOrEmpty(command.ControllingUserId) ? null : _userManager.GetUserById(command.ControllingUserId);
 
             var items = new List<BaseItem>();
             foreach (string id in command.ItemIds)

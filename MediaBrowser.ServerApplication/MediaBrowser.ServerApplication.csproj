@@ -105,6 +105,7 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="IO\FileSystemFactory.cs" />
     <Compile Include="IO\NativeFileSystem.cs" />
+    <Compile Include="IO\StartupOptions.cs" />
     <Compile Include="Logging\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>

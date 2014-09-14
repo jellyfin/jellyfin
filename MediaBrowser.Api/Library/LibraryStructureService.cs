@@ -195,7 +195,7 @@ namespace MediaBrowser.Api.Library
             }
             else
             {
-                var user = _userManager.GetUserById(new Guid(request.UserId));
+                var user = _userManager.GetUserById(request.UserId);
 
                 var result = _libraryManager.GetVirtualFolders(user).OrderBy(i => i.Name).ToList();
 

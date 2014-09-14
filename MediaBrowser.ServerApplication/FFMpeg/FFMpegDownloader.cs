@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 #if __MonoCS__
 using Mono.Unix.Native;
 #endif
+using MediaBrowser.ServerApplication.IO;
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -38,8 +40,21 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             _fileSystem = fileSystem;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo(IProgress<double> progress)
+        public async Task<FFMpegInfo> GetFFMpegInfo(StartupOptions options, IProgress<double> progress)
         {
+            var customffMpegPath = options.GetOption("-ffmpeg");
+            var customffProbePath = options.GetOption("-ffprobe");
+
+            if (!string.IsNullOrWhiteSpace(customffMpegPath) && !string.IsNullOrWhiteSpace(customffProbePath))
+            {
+                return new FFMpegInfo
+                {
+                    ProbePath = customffProbePath,
+                    EncoderPath = customffMpegPath,
+                    Version = "custom"
+                };
+            }
+
             var rootEncoderPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
             var versionedDirectoryPath = Path.Combine(rootEncoderPath, FFMpegDownloadInfo.Version);
 
@@ -51,6 +66,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             };
 
             Directory.CreateDirectory(versionedDirectoryPath);
+
+            var excludeFromDeletions = new List<string> { versionedDirectoryPath };
 
             if (!File.Exists(info.ProbePath) || !File.Exists(info.EncoderPath))
             {
@@ -71,12 +88,40 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                     info = existingVersion;
                     versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
+
+                    excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }
 
             await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
 
+            DeleteOlderFolders(Path.GetDirectoryName(versionedDirectoryPath), excludeFromDeletions);
+
             return info;
+        }
+
+        private void DeleteOlderFolders(string path, IEnumerable<string> excludeFolders )
+        {
+            var folders = Directory.GetDirectories(path)
+                .Where(i => !excludeFolders.Contains(i, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var folder in folders)
+            {
+                DeleteFolder(folder);
+            }
+        }
+
+        private void DeleteFolder(string path)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting {0}", ex, path);
+            }
         }
 
         private FFMpegInfo GetExistingVersion(FFMpegInfo info, string rootEncoderPath)

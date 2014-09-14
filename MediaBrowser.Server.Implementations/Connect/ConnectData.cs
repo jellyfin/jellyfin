@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace MediaBrowser.Server.Implementations.Connect
 {
     public class ConnectData
@@ -13,5 +15,27 @@ namespace MediaBrowser.Server.Implementations.Connect
         /// </summary>
         /// <value>The access key.</value>
         public string AccessKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorizations.
+        /// </summary>
+        /// <value>The authorizations.</value>
+        public List<ConnectAuthorization> Authorizations { get; set; }
+
+        public ConnectData()
+        {
+            Authorizations = new List<ConnectAuthorization>();
+        }
+    }
+
+    public class ConnectAuthorization
+    {
+        public string LocalUserId { get; set; }
+        public string AccessToken { get; set; }
+
+        public ConnectAuthorization()
+        {
+            AccessToken = new Guid().ToString("N");
+        }
     }
 }

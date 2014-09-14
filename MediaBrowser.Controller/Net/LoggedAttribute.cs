@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Net
                 {
                     var userId = auth.UserId;
 
-                    user = UserManager.GetUserById(new Guid(userId));
+                    user = UserManager.GetUserById(userId);
                 }
 
                 string deviceId = auth.DeviceId;

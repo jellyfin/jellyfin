@@ -74,6 +74,8 @@
     "TabProfiles": "Profiles",
     "TabSecurity": "Security",
     "ButtonAddUser": "Add User",
+    "ButtonAddLocalUser": "Add Local User",
+    "ButtonInviteMediaBrowserUser": "Invite Media Browser User",
     "ButtonSave": "Save",
     "ButtonResetPassword": "Reset Password",
     "LabelNewPassword": "New password:",
@@ -1156,5 +1158,7 @@
     "XmlDocumentAttributeListHelp": "These attributes are applied to the root element of every xml response.",
     "OptionSaveMetadataAsHidden": "Save metadata and images as hidden files",
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
-    "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster."
+    "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
+    "LabelConnectUserName": "Media Browser username/email:",
+    "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from any app without having to know the server ip address."
 }

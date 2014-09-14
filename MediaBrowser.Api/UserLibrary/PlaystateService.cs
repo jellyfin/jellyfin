@@ -245,7 +245,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
-                var additionalUser = _userManager.GetUserById(new Guid(additionalUserInfo.UserId));
+                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
 
                 await UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed).ConfigureAwait(false);
             }
@@ -353,7 +353,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
-                var additionalUser = _userManager.GetUserById(new Guid(additionalUserInfo.UserId));
+                var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
 
                 await UpdatePlayedStatus(additionalUser, request.Id, false, null).ConfigureAwait(false);
             }

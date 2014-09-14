@@ -20,11 +20,21 @@ namespace MediaBrowser.Controller.Entities
         public static IXmlSerializer XmlSerializer { get; set; }
 
         /// <summary>
+        /// From now on all user paths will be Id-based. 
+        /// This is for backwards compatibility.
+        /// </summary>
+        public bool UsesIdForConfigurationPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the password.
         /// </summary>
         /// <value>The password.</value>
         public string Password { get; set; }
         public string LocalPassword { get; set; }
+
+        public string ConnectUserName { get; set; }
+        public string ConnectUserId { get; set; }
+        public string ConnectAccessKey { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -136,12 +146,14 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrEmpty(newName))
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("newName");
             }
 
             // If only the casing is changing, leave the file system alone
-            if (!newName.Equals(Name, StringComparison.OrdinalIgnoreCase))
+            if (!UsesIdForConfigurationPath && !newName.Equals(Name, StringComparison.OrdinalIgnoreCase))
             {
+                UsesIdForConfigurationPath = true;
+
                 // Move configuration
                 var newConfigDirectory = GetConfigurationDirectoryPath(newName);
                 var oldConfigurationDirectory = ConfigurationDirectoryPath;
@@ -168,7 +180,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 ReplaceAllMetadata = true,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                ForceSave = true
 
             }, CancellationToken.None);
         }
@@ -183,7 +196,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The configuration directory path.</value>
         [IgnoreDataMember]
-        public string ConfigurationDirectoryPath
+        private string ConfigurationDirectoryPath
         {
             get
             {
@@ -203,9 +216,17 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("username");
             }
 
-            var safeFolderName = FileSystem.GetValidFilename(username);
+            var parentPath = ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
 
-            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
+            // Legacy
+            if (!UsesIdForConfigurationPath)
+            {
+                var safeFolderName = FileSystem.GetValidFilename(username);
+
+                return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);
+            }
+
+            return System.IO.Path.Combine(parentPath, Id.ToString("N"));
         }
 
         /// <summary>
