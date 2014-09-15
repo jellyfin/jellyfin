@@ -145,10 +145,10 @@
 
                     minutes = minutes || 1;
 
-                    childText += Math.round(minutes) + " min";
+                    childText += Globalize.translate('ValueMinutes', Math.round(minutes));
 
                 } else {
-                    childText += '0 min';
+                    childText += Globalize.translate('ValueMinutes', 0);
                 }
 
                 //childText += item.ChildCount == 1 ? "1 item" : item.ChildCount + " items";
@@ -248,28 +248,28 @@
             var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
-            html += '<li data-role="list-divider">Menu</li>';
+            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-            html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Play</a></li>';
+            html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">Resume</a></li>';
+                html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonResume') + '</a></li>';
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Queue</a></li>';
+                html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonQueue') + '</a></li>';
             }
 
             if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Instant Mix</a></li>';
+                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
             }
 
             if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">Shuffle</a></li>';
+                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonShuffle') + '</a></li>';
             }
 
             if (showAddToPlaylist) {
-                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">Add to playlist</a></li>';
+                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             html += '</ul>';
@@ -313,14 +313,14 @@
             var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
-            html += '<li data-role="list-divider">Menu</li>';
+            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">Add to playlist</a></li>';
+                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('edit') != -1) {
-                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">Edit</a></li>';
+                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
             html += '</ul>';
@@ -499,7 +499,7 @@
 
             if (options.index == 'disc') {
 
-                return item.ParentIndexNumber == null ? '' : 'Disc ' + item.ParentIndexNumber;
+                return item.ParentIndexNumber == null ? '' : Globalize.translate('ValueDiscNumber', item.ParentIndexNumber);
             }
 
             var sortBy = (options.sortBy || '').toLowerCase();
@@ -521,12 +521,12 @@
             }
             if (sortBy.indexOf('officialrating') == 0) {
 
-                return item.OfficialRating || 'Unrated';
+                return item.OfficialRating || Globalize.translate('HeaderUnrated');
             }
             if (sortBy.indexOf('communityrating') == 0) {
 
                 if (item.CommunityRating == null) {
-                    return 'Unrated';
+                    return Globalize.translate('HeaderUnrated');
                 }
 
                 return Math.floor(item.CommunityRating);
@@ -534,7 +534,7 @@
             if (sortBy.indexOf('criticrating') == 0) {
 
                 if (item.CriticRating == null) {
-                    return 'Unrated';
+                    return Globalize.translate('HeaderUnrated');
                 }
 
                 return Math.floor(item.CriticRating);
@@ -542,7 +542,7 @@
             if (sortBy.indexOf('metascore') == 0) {
 
                 if (item.Metascore == null) {
-                    return 'Unrated';
+                    return Globalize.translate('HeaderUnrated');
                 }
 
                 return Math.floor(item.Metascore);
@@ -683,9 +683,9 @@
                 var textlines = [];
 
                 if (item.Type == 'Episode') {
-                    textlines.push(item.SeriesName || 'Unknown Series');
+                    textlines.push(item.SeriesName || '&nbsp;');
                 } else if (item.Type == 'MusicAlbum') {
-                    textlines.push(item.AlbumArtist || 'Unknown Artist');
+                    textlines.push(item.AlbumArtist || '&nbsp;');
                 }
 
                 var displayName = LibraryBrowser.getPosterViewDisplayName(item);
@@ -696,18 +696,18 @@
                 textlines.push(displayName);
 
                 if (item.Type == 'Audio') {
-                    textlines.push(item.Artists.join(', ') || 'Unknown Artist');
+                    textlines.push(item.Artists.join(', ') || '&nbsp;');
                 }
 
                 if (item.Type == 'Game') {
-                    textlines.push(item.GameSystem || 'Unknown Game System');
+                    textlines.push(item.GameSystem || '&nbsp;');
                 }
 
                 else if (item.Type == 'MusicGenre') {
-                    textlines.push('Music genre');
+                    textlines.push('&nbsp;');
                 }
                 else if (item.Type == 'MusicArtist') {
-                    textlines.push('Music artist');
+                    textlines.push('&nbsp;');
                 }
                 else {
                     textlines.push(LibraryBrowser.getMiscInfoHtml(item));
@@ -874,7 +874,7 @@
 
                 if (options.showPremiereDateIndex && futureDateText) {
 
-                    var val = futureDateText || "Unknown Date";
+                    var val = futureDateText || Globalize.translate('HeaderUnknownDate');
 
                     if (val != currentIndexValue) {
 
@@ -882,7 +882,7 @@
                         currentIndexValue = val;
                     }
                 } else if (options.timeline) {
-                    var year = item.ProductionYear || "Unknown Year";
+                    var year = item.ProductionYear || Globalize.translate('HeaderUnknownYear');
 
                     if (year != currentIndexValue) {
 
@@ -1257,7 +1257,7 @@
 
                 if (progressHtml) {
                     html += "<div class='cardText cardProgress'>";
-                    html += progressHtml || "&nbsp;";
+                    html += progressHtml;
                     html += "</div>";
                 }
             }

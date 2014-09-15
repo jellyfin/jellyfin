@@ -513,8 +513,15 @@ function ticks_to_human(str) {
     window.Globalize = {
         translate: function (key) {
 
-            return window.localizationGlossary[key] || key;
+            var val = window.localizationGlossary[key] || key;
 
+            for (var i = 1; i < arguments.length; i++) {
+
+                val = val.replace('{' + (i - 1) + '}', arguments[i]);
+
+            }
+
+            return val;
         }
     };
 
