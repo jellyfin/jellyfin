@@ -684,6 +684,7 @@
     "OptionPlainVideoItemsHelp": "If enabled, all videos are represented in DIDL as \"object.item.videoItem\" instead of a more specific type, such as \"object.item.videoItem.movie\".",
     "LabelSupportedMediaTypes": "Supported Media Types:",
     "TabIdentification": "Identification",
+    "HeaderIdentification": "Identification",
     "TabDirectPlay": "Direct Play",
     "TabContainers": "Containers",
     "TabCodecs": "Codecs",
@@ -1160,5 +1161,6 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectUserName": "Media Browser username/email:",
-    "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from any app without having to know the server ip address."
+    "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from any app without having to know the server ip address.",
+    "ButtonLearnMoreAboutMediaBrowserConnect": "Learn more about Media Browser Connect"
 }

@@ -175,7 +175,7 @@ namespace MediaBrowser.Model.Configuration
 
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
 
-        public string[] SecureApps1 { get; set; }
+        public string[] SecureApps2 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
 
@@ -223,7 +223,7 @@ namespace MediaBrowser.Model.Configuration
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            SecureApps1 = new[]
+            SecureApps2 = new[]
             {
                 "Dashboard",
                 "MBKinect",
@@ -231,7 +231,7 @@ namespace MediaBrowser.Model.Configuration
                 "Media Browser Theater",
 
                 //"Chrome Companion",
-                //"MB-Classic"
+                "MB-Classic"
             };
 
             MetadataOptions = new[]
