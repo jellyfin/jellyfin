@@ -133,7 +133,9 @@ namespace MediaBrowser.Server.Implementations.Connect
                     }
                     catch (HttpException ex)
                     {
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound || ex.StatusCode.Value != HttpStatusCode.Unauthorized)
+                        var webEx = (WebException) ex.InnerException;
+
+                        if (webEx != null && webEx.Status != WebExceptionStatus.ProtocolError && ((HttpWebResponse)webEx.Response).StatusCode != HttpStatusCode.NotFound)
                         {
                             throw;
                         }
