@@ -1124,7 +1124,7 @@
     "TabDonate": "Donate",
     "HeaderDonationType": "Donation type:",
     "OptionMakeOneTimeDonation": "Make a separate donation",
-    "OptionOneTimeDescription": "This is an additional donation to the team to show your support. It does not have any additional benefits.",
+    "OptionOneTimeDescription": "This is an additional donation to the team to show your support. It does not have any additional benefits and will not produce a supporter key.",
     "OptionLifeTimeSupporterMembership": "Lifetime supporter membership",
     "OptionYearlySupporterMembership": "Yearly supporter membership",
     "OptionMonthlySupporterMembership": "Monthly supporter membership",
