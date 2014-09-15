@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     {
                         var webEx = (WebException) ex.InnerException;
 
-                        if (webEx != null && webEx.Status != WebExceptionStatus.ProtocolError && ((HttpWebResponse)webEx.Response).StatusCode != HttpStatusCode.NotFound)
+                        if (webEx == null || (webEx.Status != WebExceptionStatus.ProtocolError && ((HttpWebResponse)webEx.Response).StatusCode != HttpStatusCode.NotFound))
                         {
                             throw;
                         }
