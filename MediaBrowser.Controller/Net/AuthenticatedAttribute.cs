@@ -1,5 +1,6 @@
 ﻿using ServiceStack.Web;
 using System;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -13,6 +14,8 @@ namespace MediaBrowser.Controller.Net
         /// <value><c>true</c> if [allow local]; otherwise, <c>false</c>.</value>
         public bool AllowLocal { get; set; }
 
+        public string Roles { get; set; }
+
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
@@ -21,7 +24,11 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            AuthService.Authenticate(request, response, requestDto, AllowLocal);
+            var roles = (Roles ?? string.Empty).Split(',')
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToArray();
+
+            AuthService.Authenticate(request, response, requestDto, AllowLocal, roles);
         }
 
         /// <summary>

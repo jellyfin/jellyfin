@@ -1,19 +1,12 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Controller.Connect;
+﻿using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using ServiceStack;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Users/{Id}/Connect/Info", "GET", Summary = "Gets connect info for a user")]
-    public class GetConnectUserInfo : IReturn<ConnectUserLink>
-    {
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
     [Route("/Users/{Id}/Connect/Link", "POST", Summary = "Creates a Connect link for a user")]
-    public class CreateConnectLink : IReturn<ConnectUserLink>
+    public class CreateConnectLink : IReturn<UserLinkResult>
     {
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Id { get; set; }
@@ -23,13 +16,13 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Users/{Id}/Connect/Link", "DELETE", Summary = "Removes a Connect link for a user")]
-    public class DeleteConnectLink : IReturn<ConnectUserLink>
+    public class DeleteConnectLink : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string Id { get; set; }
     }
-    
-    [Authenticated]
+
+    [Authenticated(Roles = "Admin")]
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
@@ -39,18 +32,9 @@ namespace MediaBrowser.Api
             _connectManager = connectManager;
         }
 
-        public object Get(GetConnectUserInfo request)
+        public object Post(CreateConnectLink request)
         {
-            var result = _connectManager.GetUserInfo(request.Id);
-
-            return ToOptimizedResult(result);
-        }
-
-        public void Post(CreateConnectLink request)
-        {
-            var task = _connectManager.LinkUser(request.Id, request.ConnectUsername);
-
-            Task.WaitAll(task);
+            return _connectManager.LinkUser(request.Id, request.ConnectUsername);
         }
 
         public void Delete(DeleteConnectLink request)

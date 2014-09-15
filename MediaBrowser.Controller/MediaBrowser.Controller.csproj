@@ -99,10 +99,9 @@
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\CollectionEvents.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
-    <Compile Include="Connect\ConnectInvitationRequest.cs" />
     <Compile Include="Connect\ConnectUser.cs" />
-    <Compile Include="Connect\ConnectUserLink.cs" />
     <Compile Include="Connect\IConnectManager.cs" />
+    <Compile Include="Connect\UserLinkResult.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
     <Compile Include="Dlna\DlnaIconResponse.cs" />
