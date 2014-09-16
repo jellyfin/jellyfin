@@ -135,7 +135,11 @@
     padding-left: 0 !important;
     margin-left: -8px;
     cursor: default;
-    font-family: Gotham;
+}
+
+.logoLibraryMenuButtonText {
+    font-family: MBLogo;
+    font-weight: 200;
 }
 
 .viewMenuBar {

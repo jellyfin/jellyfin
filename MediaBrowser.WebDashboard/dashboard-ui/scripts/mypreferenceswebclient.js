@@ -2,6 +2,19 @@
 
     function loadForm(page, userId, displayPreferences) {
 
+        var externalPlayers = JSON.parse(store.getItem('externalplayers') || '[]');
+
+        $('.chkExternalPlayer', page).each(function () {
+
+            var chk = this;
+            chk.checked = externalPlayers.filter(function (p) {
+
+                return p.name == chk.getAttribute('data-name');
+
+            }).length > 0;
+
+        }).checkboxradio('refresh');
+
         $('#selectThemeSong', page).val(store.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
         $('#selectBackdrop', page).val(store.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
 
@@ -35,6 +48,17 @@
         var page = $(this).parents('.page');
 
         Dashboard.showLoadingMsg();
+
+        var externalPlayers = $('.chkExternalPlayer:checked', page).get().map(function (i) {
+
+            return {
+                name: i.getAttribute('data-name'),
+                scheme: i.getAttribute('data-scheme')
+            };
+
+        });
+
+        store.setItem('externalplayers', JSON.stringify(externalPlayers));
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 

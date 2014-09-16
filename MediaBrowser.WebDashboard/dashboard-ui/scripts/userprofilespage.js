@@ -38,7 +38,7 @@
         var html = '<div data-role="popup" class="userMenu" data-history="false" data-theme="a">';
 
         html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">Menu</li>';
+        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
         html += '<li><a href="#" class="btnDeleteUser" data-userid="' + userId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
 

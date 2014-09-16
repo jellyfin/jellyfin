@@ -845,9 +845,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (isArtist)
             {
+                var validFilename = _fileSystem.GetValidFilename(name).Trim();
+
                 var existing = RootFolder.RecursiveChildren
                     .OfType<T>()
-                    .FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(i => string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase));
 
                 if (existing != null)
                 {

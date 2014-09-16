@@ -234,6 +234,17 @@
         return false;
     }
 
+    function onExternalPlayerButtonClick() {
+
+        closeContextMenu();
+
+        var id = this.getAttribute('data-itemid');
+
+        ExternalPlayer.showMenu(id);
+
+        return false;
+    }
+
     function onPlayAllFromHereButtonClick() {
 
         var index = this.getAttribute('data-index');
@@ -358,6 +369,10 @@
                     }
                 }
 
+                if (mediaType == 'Video' && ExternalPlayer.getExternalPlayers().length) {
+                    html += '<li data-icon="play"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+                }
+
                 if (playbackPositionTicks && mediaType != "Audio") {
                     html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
                 }
@@ -405,6 +420,7 @@
             $('.btnRemoveFromPlaylist', elem).on('click', onRemoveFromPlaylistButtonClick);
             $('.btnPlayAllFromHere', elem).on('click', onPlayAllFromHereButtonClick);
             $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
+            $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
         });
     }
 

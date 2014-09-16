@@ -566,7 +566,8 @@ a.itemTag:hover {
 .libraryPanelHeader {
     margin: 5px 0 15px 0;
     font-size: 15px;
-    font-family: Gotham;
+    font-family: MBLogo;
+    font-weight: 200;
 }
 
     .libraryPanelHeader a {

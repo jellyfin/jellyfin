@@ -238,9 +238,14 @@
 
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
+            var externalPlayers = ExternalPlayer.getExternalPlayers();
+
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
-                MediaController.play(itemId);
-                return;
+
+                if (!externalPlayers.length || mediaType != "Video") {
+                    MediaController.play(itemId);
+                    return;
+                }
             }
 
             $('.playFlyout').popup("close").remove();
@@ -251,6 +256,10 @@
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
+
+            if (!isFolder && externalPlayers.length) {
+                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();ExternalPlayer.showMenu(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+            }
 
             if (resumePositionTicks) {
                 html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonResume') + '</a></li>';

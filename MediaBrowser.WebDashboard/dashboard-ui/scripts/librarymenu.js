@@ -332,7 +332,7 @@
 
             //}
         else if ($(page).hasClass('allLibraryPage') || $(page).hasClass('type-interior')) {
-            $('.libraryMenuButtonText').html('<span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span>');
+            $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">MEDIA</span><span class="logoLibraryMenuButtonText mediaBrowserAccent">BROWSER</span>');
         }
     }
 

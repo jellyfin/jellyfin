@@ -1,8 +1,59 @@
-﻿if (!window.MediaBrowser) {
+﻿(function (window) {
+
+    function myStore(defaultObject) {
+
+        var self = this;
+        self.localData = {};
+
+        var isDefaultAvailable;
+
+        if (defaultObject) {
+            try {
+                defaultObject.setItem('_test', '0');
+                isDefaultAvailable = true;
+            } catch (e) {
+
+            }
+        }
+
+        self.setItem = function (name, value) {
+
+            if (isDefaultAvailable) {
+                defaultObject.setItem(name, value);
+            } else {
+                self.localData[name] = value;
+            }
+        };
+
+        self.getItem = function (name) {
+
+            if (isDefaultAvailable) {
+                return defaultObject.getItem(name);
+            }
+
+            return self.localData[name];
+        };
+
+        self.removeItem = function (name) {
+
+            if (isDefaultAvailable) {
+                defaultObject.removeItem(name);
+            } else {
+                self.localData[name] = null;
+            }
+        };
+    }
+
+    window.store = new myStore(window.localStorage);
+    window.sessionStore = new myStore(window.sessionStorage);
+
+})(window);
+
+if (!window.MediaBrowser) {
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader, localStorage) {
+MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader, store) {
 
     function generateDeviceId() {
 
@@ -13,17 +64,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         var randomId = '';
 
-        if (localStorage) {
+        //  Since the above is not guaranteed to be unique per device, add a little more
+        randomId = store.getItem('randomId');
 
-            //  Since the above is not guaranteed to be unique per device, add a little more
-            randomId = localStorage.getItem('randomId');
+        if (!randomId) {
 
-            if (!randomId) {
+            randomId = new Date().getTime();
 
-                randomId = new Date().getTime();
-
-                localStorage.setItem('randomId', randomId.toString());
-            }
+            store.setItem('randomId', randomId.toString());
         }
 
         keys.push(randomId);
@@ -70,7 +118,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return currentUserId;
         };
 
-        self.accessToken = function() {
+        self.accessToken = function () {
             return accessToken;
         };
 
@@ -3226,7 +3274,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     };
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader, window.localStorage);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader, window.store);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url

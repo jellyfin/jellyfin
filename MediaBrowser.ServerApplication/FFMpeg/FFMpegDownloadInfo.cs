@@ -202,13 +202,16 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         {
             IsWindows = Path.DirectorySeparatorChar == '\\';
 
-            //Don't call uname on windows
+            // Don't call uname on windows
             if (!IsWindows)
             {
                 var uname = GetUnixName();
 
-                IsMac = uname.sysname == "Darwin";
-                IsLinux = uname.sysname == "Linux";
+                var sysName = uname.sysname ?? string.Empty;
+
+                IsMac = string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase);
+                IsLinux = string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase) ||
+                    sysName.EndsWith("BSD", StringComparison.OrdinalIgnoreCase);
 
                 var archX86 = new Regex("(i|I)[3-6]86");
                 IsX86 = archX86.IsMatch(uname.machine);
