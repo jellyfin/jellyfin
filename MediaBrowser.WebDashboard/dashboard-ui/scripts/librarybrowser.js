@@ -977,6 +977,7 @@
                     });
 
                     forceName = true;
+
                 } else if (item.ImageTags && item.ImageTags.Primary) {
 
                     height = 400;
@@ -1012,7 +1013,17 @@
                         tag: item.AlbumPrimaryImageTag
                     });
 
-                } else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                }
+                else if (item.Type == 'Season' && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: downloadHeight,
+                        tag: item.ImageTags.Thumb
+                    });
+
+                }
+                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
