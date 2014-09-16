@@ -645,6 +645,8 @@
     "ButtonStop": "Stop",
     "ButtonPlay": "Play",
     "ButtonPause": "Pause",
+    "ButtonNext": "Next",
+    "ButtonPrevious": "Previous",
     "LabelGroupMoviesIntoCollections": "Group movies into collections",
     "LabelGroupMoviesIntoCollectionsHelp": "When displaying movie lists, movies belonging to a collection will be displayed as one grouped item.",
     "NotificationOptionPluginError": "Plugin failure",
@@ -1162,5 +1164,7 @@
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectUserName": "Media Browser username/email:",
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from any app without having to know the server ip address.",
-    "ButtonLearnMoreAboutMediaBrowserConnect": "Learn more about Media Browser Connect"
+    "ButtonLearnMoreAboutMediaBrowserConnect": "Learn more about Media Browser Connect",
+    "LabelExternalPlayers": "External players:",
+    "LabelExternalPlayersHelp": "Display buttons to play content in external players. This is only available on devices that support url schemes, generally Android and iOS."
 }
