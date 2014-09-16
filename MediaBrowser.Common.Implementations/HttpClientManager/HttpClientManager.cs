@@ -13,7 +13,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -225,7 +224,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if ((DateTime.UtcNow - client.LastTimeout).TotalSeconds < TimeoutSeconds)
             {
-                throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url)) { IsTimedOut = true };
+                throw new HttpException(string.Format("Cancelling connection to {0} due to a previous timeout.", options.Url))
+                {
+                    IsTimedOut = true
+                };
             }
 
             var httpWebRequest = GetRequest(options, httpMethod, options.EnableHttpCompression);
@@ -348,7 +350,15 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             _logger.ErrorException("Error getting response from " + options.Url, ex);
 
-            return new HttpException(ex.Message, ex);
+            var exception = new HttpException(ex.Message, ex);
+
+            var response = ex.Response as HttpWebResponse;
+            if (response != null)
+            {
+                exception.StatusCode = response.StatusCode;
+            }
+
+            return exception;
         }
 
         private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength)
@@ -658,7 +668,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 _logger.Error(msg);
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
-                return new HttpException(msg, exception) { IsTimedOut = true };
+                return new HttpException(msg, exception)
+                {
+                    IsTimedOut = true
+                };
             }
 
             return exception;
@@ -693,7 +706,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     }
                 }
-                throw new HttpException(response.StatusDescription) { StatusCode = response.StatusCode };
+                throw new HttpException(response.StatusDescription)
+                {
+                    StatusCode = response.StatusCode
+                };
             }
         }
 

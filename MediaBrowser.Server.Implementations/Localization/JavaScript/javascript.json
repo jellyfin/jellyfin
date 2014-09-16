@@ -462,5 +462,11 @@
     "ValueDiscNumber": "Disc {0}",
     "HeaderUnknownDate": "Unknown Date",
     "HeaderUnknownYear": "Unknown Year",
-    "ValueMinutes":  "{0} min"
+    "ValueMinutes": "{0} min",
+    "ButtonPlayExternalPlayer": "Play with external player",
+    "HeaderSelectExternalPlayer": "Select External Player",
+    "HeaderExternalPlayerPlayback": "External Player Playback",
+    "ButtonImDone": "I'm Done",
+    "OptionMarkWatched": "Mark watched",
+    "OptionMarkWatchedHelp": "Check this if you watched the entire video"
 }

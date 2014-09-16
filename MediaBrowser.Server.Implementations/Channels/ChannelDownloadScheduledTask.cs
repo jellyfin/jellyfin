@@ -266,21 +266,28 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private bool IsSizeLimitReached(string path, double gbLimit)
         {
-            var byteLimit = gbLimit*1000000000;
-
-            long total = 0;
-
-            foreach (var file in new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories))
+            try
             {
-                total += file.Length;
+                var byteLimit = gbLimit * 1000000000;
 
-                if (total >= byteLimit)
+                long total = 0;
+
+                foreach (var file in new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories))
                 {
-                    return true;
-                }
-            }
+                    total += file.Length;
 
-            return false;
+                    if (total >= byteLimit)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
         }
 
         private async Task RefreshMediaSourceItems(IEnumerable<MediaSourceInfo> items, CancellationToken cancellationToken)
