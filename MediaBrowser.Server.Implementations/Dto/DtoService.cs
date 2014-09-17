@@ -1129,10 +1129,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
                 dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
-                var seasonId = episode.SeasonId;
-                if (seasonId.HasValue)
+                var episodeSeason = episode.Season;
+                if (episodeSeason != null)
                 {
-                    dto.SeasonId = seasonId.Value.ToString("N");
+                    dto.SeasonId = episodeSeason.Id.ToString("N");
+                    dto.SeasonName = episodeSeason.Name;
                 }
             }
 
