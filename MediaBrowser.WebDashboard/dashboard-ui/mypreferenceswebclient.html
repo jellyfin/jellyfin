@@ -89,6 +89,30 @@
             <br />
             <ul data-role="listview" class="ulForm">
                 <li>
+                    <label for="selectMaxBitrate">${LabelMaxStreamingBitrate}</label>
+                    <select id="selectMaxBitrate" data-mini="true">
+                        <option value="30000000">30Mbps</option>
+                        <option value="25000000">25Mbps</option>
+                        <option value="20000000">20Mbps</option>
+                        <option value="15000000">15Mbps</option>
+                        <option value="10000000">10Mbps</option>
+                        <option value="8000000">8Mbps</option>
+                        <option value="6000000">6Mbps</option>
+                        <option value="5000000">5Mbps</option>
+                        <option value="4000000">4Mbps</option>
+                        <option value="3500000">3.5Mbps</option>
+                        <option value="3000000">3Mbps</option>
+                        <option value="2500000">2.5Mbps</option>
+                        <option value="2000000">2Mbps</option>
+                        <option value="1500000">1.5Mbps</option>
+                        <option value="1000000">1Mbps</option>
+                        <option value="720000">720kbps</option>
+                        <option value="420000">420kbps</option>
+                        <option value="400000">400kbps</option>
+                        <option value="320000">320kbps</option>
+                    </select>
+                </li>
+                <li>
                     <label for="selectThemeSong">${LabelEnableThemeSongs}</label>
                     <select id="selectThemeSong" data-mini="true">
                         <option value="">${OptionAuto}</option>
@@ -111,7 +135,9 @@
             <div style="margin: 0 1em;">
                 <fieldset data-role="controlgroup">
                     <legend>${LabelExternalPlayers}</legend>
-                    <input type="checkbox" id="chkVlc" class="chkExternalPlayer" data-name="vlc" data-scheme="vlc://{0}" />
+                    <input type="checkbox" id="chkGoodplayer" class="chkExternalPlayer" data-name="GoodPlayer" data-scheme="goodplayer://{0}" />
+                    <label for="chkGoodplayer">GoodPlayer</label>
+                    <input type="checkbox" id="chkVlc" class="chkExternalPlayer" data-name="Vlc" data-scheme="vlc://{0}" />
                     <label for="chkVlc">Vlc</label>
                 </fieldset>
                 <div style="padding: 0 2px;">${LabelExternalPlayersHelp}</div>

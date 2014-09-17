@@ -160,13 +160,17 @@
 
                 if (item.MovieCount) {
 
-                    childText = item.MovieCount == 1 ? "1 movie" : item.MovieCount + " movies";
+                    childText = item.MovieCount == 1 ?
+					Globalize.translate('ValueOneMovie') :
+					Globalize.translate('ValueMovieCount', item.MovieCount);
 
                     counts.push(childText);
                 }
                 if (item.TrailerCount) {
 
-                    childText = item.TrailerCount == 1 ? "1 trailer" : item.TrailerCount + " trailers";
+                    childText = item.TrailerCount == 1 ?
+					Globalize.translate('ValueOneTrailer') :
+					Globalize.translate('ValueTrailerCount', item.TrailerCount);
 
                     counts.push(childText);
                 }
@@ -175,13 +179,17 @@
 
                 if (item.SeriesCount) {
 
-                    childText = item.SeriesCount == 1 ? "1 show" : item.SeriesCount + " shows";
+                    childText = item.SeriesCount == 1 ?
+					Globalize.translate('ValueOneSeries') :
+					Globalize.translate('ValueSeriesCount', item.SeriesCount);
 
                     counts.push(childText);
                 }
                 if (item.EpisodeCount) {
 
-                    childText = item.EpisodeCount == 1 ? "1 episode" : item.EpisodeCount + " episodes";
+                    childText = item.EpisodeCount == 1 ?
+					Globalize.translate('ValueOneEpisode') :
+					Globalize.translate('ValueEpisodeCount', item.EpisodeCount);
 
                     counts.push(childText);
                 }
@@ -190,7 +198,9 @@
 
                 if (item.GameCount) {
 
-                    childText = item.GameCount == 1 ? "1 game" : item.GameCount + " games";
+                    childText = item.GameCount == 1 ?
+					Globalize.translate('ValueOneGame') :
+					Globalize.translate('ValueGameCount', item.GameCount);
 
                     counts.push(childText);
                 }
@@ -198,19 +208,25 @@
 
                 if (item.AlbumCount) {
 
-                    childText = item.AlbumCount == 1 ? "1 album" : item.AlbumCount + " albums";
+                    childText = item.AlbumCount == 1 ?
+					Globalize.translate('ValueOneAlbum') :
+					Globalize.translate('ValueAlbumCount', item.AlbumCount);
 
                     counts.push(childText);
                 }
                 if (item.SongCount) {
 
-                    childText = item.SongCount == 1 ? "1 song" : item.SongCount + " songs";
+                    childText = item.SongCount == 1 ?
+					Globalize.translate('ValueOneSong') :
+					Globalize.translate('ValueSongCount', item.SongCount);
 
                     counts.push(childText);
                 }
                 if (item.MusicVideoCount) {
 
-                    childText = item.MusicVideoCount == 1 ? "1 music video" : item.MusicVideoCount + " music videos";
+                    childText = item.MusicVideoCount == 1 ?
+					Globalize.translate('ValueOneMusicVideo') :
+					Globalize.translate('ValueMusicVideoCount', item.MusicVideoCount);
 
                     counts.push(childText);
                 }
@@ -1317,41 +1333,16 @@
             return html;
         },
 
-        isYesterday: function (date1) {
-
-            var today = new Date();
-            today.setDate(today.getDate() - 1);
-
-            return date1.getFullYear() == today.getFullYear() && date1.getDate() == today.getDate();
-
-        },
-
-        isSameDay: function (date1, date2) {
-
-            return date1.getFullYear() == date2.getFullYear() && date1.getDate() == date2.getDate();
-
-        },
-
-        getFutureDateText: function (date, includeDayNamesInFuture) {
+        getFutureDateText: function (date) {
 
             var weekday = [];
-            weekday[0] = "Sunday";
-            weekday[1] = "Monday";
-            weekday[2] = "Tuesday";
-            weekday[3] = "Wednesday";
-            weekday[4] = "Thursday";
-            weekday[5] = "Friday";
-            weekday[6] = "Saturday";
-
-            var currentDate = new Date();
-
-            if (LibraryBrowser.isSameDay(date, currentDate)) {
-                return "Today";
-            }
-
-            if (LibraryBrowser.isYesterday(date)) {
-                return "Yesterday";
-            }
+            weekday[0] = Globalize.translate('OptionSunday');
+            weekday[1] = Globalize.translate('OptionMonday');
+            weekday[2] = Globalize.translate('OptionTuesday');
+            weekday[3] = Globalize.translate('OptionWednesday');
+            weekday[4] = Globalize.translate('OptionThursday');
+            weekday[5] = Globalize.translate('OptionFriday');
+            weekday[6] = Globalize.translate('OptionSaturday');
 
             var day = weekday[date.getDay()];
             date = date.toLocaleDateString();
@@ -1411,7 +1402,7 @@
             }
             if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
-                name = "Special - " + name;
+                name = Globalize.translate('ValueSpecialEpisodeName', name);
 
             } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
 
@@ -1439,7 +1430,7 @@
         getOfflineIndicatorHtml: function (item) {
 
             if (item.LocationType == "Offline") {
-                return '<div class="posterRibbon offlinePosterRibbon">Offline</div>';
+                return '<div class="posterRibbon offlinePosterRibbon">' + Globalize.translate('HeaderOffline') + '</div>';
             }
 
             try {
@@ -1447,7 +1438,7 @@
                 var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
                 if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
-                    return '<div class="posterRibbon unairedPosterRibbon">Unaired</div>';
+                    return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
                 }
             } catch (err) {
 
@@ -1456,7 +1447,7 @@
             if (item.IsFolder) {
                 return '';
             }
-            return '<div class="posterRibbon missingPosterRibbon">Missing</div>';
+            return '<div class="posterRibbon missingPosterRibbon">' + Globalize.translate('HeaderMissing') + '</div>';
         },
 
         getPlayedIndicatorHtml: function (item) {
@@ -1596,9 +1587,11 @@
             if (item.SeriesName && item.Type == "Season") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + '">' + item.SeriesName + '</a>');
+
             } else if (item.ParentIndexNumber != null && item.Type == "Episode") {
 
-                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">Season ' + item.ParentIndexNumber + '</a>');
+                html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeasonId + '">' + item.SeasonName + '</a>');
+
             } else if (item.Album && item.Type == "Audio" && (item.AlbumId || item.ParentId)) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + (item.AlbumId || item.ParentId) + '">' + item.Album + '</a>');
 
@@ -1624,7 +1617,7 @@
             var links = [];
 
             if (item.HomePageUrl) {
-                links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">Website</a>');
+                links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">' + Globalize.translate('ButtonWebsite') + '</a>');
             }
 
             if (item.ExternalUrls) {
@@ -1639,7 +1632,9 @@
 
             if (links.length) {
 
-                var html = 'Links:&nbsp;&nbsp;' + links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+                var html = links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+
+                html = Globalize.translate('ValueLinks', html);
 
                 $(linksElem).html(html).trigger('create');
 
@@ -1689,9 +1684,9 @@
 
                 if (showControls) {
 
-                    html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>Previous Page</button>';
+                    html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
 
-                    html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                    html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
                 }
 
                 html += (options.additionalButtonsHtml || '');
@@ -1702,7 +1697,7 @@
 
                 if (options.viewButton) {
 
-                    html += '<button data-icon="ellipsis-v" data-iconpos="notext" data-inline="true" data-mini="true" onclick="$(\'.viewPanel\', $(this).parents(\'.page\')).panel(\'toggle\');">View</button>';
+                    html += '<button data-icon="ellipsis-v" data-iconpos="notext" data-inline="true" data-mini="true" onclick="$(\'.viewPanel\', $(this).parents(\'.page\')).panel(\'toggle\');">' + Globalize.translate('ButtonView') + '</button>';
                 }
 
                 html += '</div>';
@@ -1724,7 +1719,7 @@
                     }).join('');
 
                     // Add styles to defeat jquery mobile
-                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + optionsHtml + '</select></div>';
+                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">' + Globalize.translate('LabelLimit') + '</label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + optionsHtml + '</select></div>';
                 }
             }
 
@@ -1762,9 +1757,9 @@
             if (showControls) {
 
                 html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
-                html += '<button type="button" data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>Previous Page</button>';
+                html += '<button type="button" data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
 
-                html += '<button type="button" data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit >= totalRecordCount ? 'disabled' : '') + '>Next Page</button>';
+                html += '<button type="button" data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit >= totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
                 html += '</div>';
 
                 if (showLimit !== false) {
@@ -1790,7 +1785,7 @@
                     }
 
                     // Add styles to defeat jquery mobile
-                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">Limit: </label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + options + '</select></div>';
+                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">' + Globalize.translate('LabelLimit') + '</label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + options + '</select></div>';
                 }
             }
 
@@ -1814,9 +1809,9 @@
             if (item.CriticRating != null) {
 
                 if (item.CriticRating >= 60) {
-                    html += '<div class="fresh rottentomatoesicon" title="fresh"></div>';
+                    html += '<div class="fresh rottentomatoesicon"></div>';
                 } else {
-                    html += '<div class="rotten rottentomatoesicon" title="rotten"></div>';
+                    html += '<div class="rotten rottentomatoesicon"></div>';
                 }
 
                 html += '<div class="criticRating">' + item.CriticRating + '%</div>';
@@ -1864,31 +1859,38 @@
             var itemId = item.Id;
             var type = item.Type;
 
+            var tooltipPlayed = Globalize.translate('TooltipPlayed');
+
             if ((item.MediaType || item.IsFolder) && item.Type != "TvChannel" && item.Type != "MusicArtist") {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="' + tooltipPlayed + '" title="' + tooltipPlayed + '" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/checkedoff.png" alt="Played" title="Played" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/checkedoff.png" alt="' + tooltipPlayed + '" title="' + tooltipPlayed + '" onclick="LibraryBrowser.markPlayed(this);return false;" />';
                 }
             }
 
+            var tooltipLike = Globalize.translate('TooltipLike');
+            var tooltipDislike = Globalize.translate('TooltipDislike');
+
             if (typeof userData.Likes == "undefined") {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="' + tooltipDislike + '" title="' + tooltipDislike + '" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
             }
             else if (userData.Likes) {
                 html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
             }
             else {
                 html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="Like" title="Like" />';
+                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
             }
 
+            var tooltipFavorite = Globalize.translate('TooltipFavorite');
             if (userData.IsFavorite) {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="Favorite" title="Favorite" />';
+
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="' + tooltipFavorite + '" title="' + tooltipFavorite + '" />';
             } else {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="Favorite" title="Favorite" />';
+                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="' + tooltipFavorite + '" title="' + tooltipFavorite + '" />';
             }
 
             return html;
@@ -2142,7 +2144,7 @@
             if (item.ProductionYear && item.Type == "Series") {
 
                 if (item.Status == "Continuing") {
-                    miscInfo.push(item.ProductionYear + "-Present");
+                    miscInfo.push(Globalize.translate('ValueSeriesYearToPresent', item.ProductionYear));
 
                 }
                 else if (item.ProductionYear) {
@@ -2241,8 +2243,7 @@
 
             if (item.Studios && item.Studios.length && item.Type != "Series") {
 
-                var prefix = item.Studios.length > 1 ? "Studios" : "Studio";
-                var html = prefix + ':&nbsp;&nbsp;';
+                var html = '';
 
                 for (var i = 0, length = item.Studios.length; i < length; i++) {
 
@@ -2252,6 +2253,10 @@
 
                     html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
                 }
+
+                var translationKey = item.Studios.length > 1 ? "ValueStudios" : "ValueStudio";
+
+                html = Globalize.translate(translationKey, html);
 
                 elem.show().html(html).trigger('create');
 
@@ -2291,9 +2296,10 @@
 
                     var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
-                    var text = new Date().getTime() > date.getTime() ? "Premiered" : "Premieres";
+                    var translationKey = new Date().getTime() > date.getTime() ? "ValuePremiered" : "ValuePremieres";
 
-                    elem.show().html(text + '&nbsp;&nbsp;' + date.toLocaleDateString());
+                    elem.show().html(Globalize.translate(translationKey, date.toLocaleDateString()));
+
                 } catch (err) {
                     elem.hide();
                 }
@@ -2303,18 +2309,20 @@
         },
 
         renderBudget: function (elem, item) {
+
             if (item.Budget) {
 
-                elem.show().html('Budget:&nbsp;&nbsp;$<span>' + item.Budget + '</span>');
+                elem.show().html(Globalize.translate('ValueBudget', '$' + item.Budget));
             } else {
                 elem.hide();
             }
         },
 
         renderRevenue: function (elem, item) {
+
             if (item.Revenue) {
 
-                elem.show().html('Revenue:&nbsp;&nbsp;$<span>' + item.Revenue + '</span>');
+                elem.show().html(Globalize.translate('ValueRevenue', '$' + item.Revenue));
             } else {
                 elem.hide();
             }
@@ -2322,7 +2330,7 @@
 
         renderAwardSummary: function (elem, item) {
             if (item.AwardSummary) {
-                elem.show().html('Awards:&nbsp;&nbsp;' + item.AwardSummary);
+                elem.show().html(Globalize.translate('ValueAwards', item.AwardSummary));
             } else {
                 elem.hide();
             }
@@ -2505,7 +2513,7 @@
             html += '</div>';
 
             html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup">';
-            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>';
+            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">' + Globalize.translate('ButtonClose') + '</a>';
             html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
 
                 maxWidth: screenWidth,

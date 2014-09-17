@@ -427,7 +427,7 @@
                     var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
                     var bitrate = parseInt(this.getAttribute('data-bitrate'));
 
-                    store.setItem('preferredVideoBitrate', bitrate);
+                    AppSettings.maxStreamingBitrate(bitrate);
 
                     self.changeStream(self.getCurrentTicks(), {
 
@@ -849,7 +849,7 @@
                 return stream.Type == "Video";
             })[0];
 
-            var bitrateSetting = self.getBitrateSetting();
+            var bitrateSetting = AppSettings.maxStreamingBitrate();
 
             var maxAllowedWidth = Math.max(screen.height, screen.width);
 
@@ -897,8 +897,8 @@
             }
 
             options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
-            options.push({ name: '480p - 720 kbps', maxWidth: 720, bitrate: 700000 });
-            options.push({ name: '480p - 420 kbps', maxWidth: 720, bitrate: 420000 });
+            options.push({ name: '480p - 720kbps', maxWidth: 720, bitrate: 720000 });
+            options.push({ name: '480p - 420kbps', maxWidth: 720, bitrate: 420000 });
             options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });
             options.push({ name: '240p', maxWidth: 426, bitrate: 320000 });
 

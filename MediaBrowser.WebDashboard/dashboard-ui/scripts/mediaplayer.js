@@ -455,17 +455,13 @@
             });
         };
 
-        self.getBitrateSetting = function () {
-            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
-        };
-
         function getOptimalMediaSource(mediaType, versions) {
 
             var optimalVersion;
 
             if (mediaType == 'Video') {
 
-                var bitrateSetting = self.getBitrateSetting();
+                var bitrateSetting = AppSettings.maxStreamingBitrate();
 
                 var maxAllowedWidth = Math.max(screen.height, screen.width);
 

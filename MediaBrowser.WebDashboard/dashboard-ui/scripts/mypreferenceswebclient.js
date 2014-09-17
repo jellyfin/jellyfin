@@ -4,6 +4,8 @@
 
         var externalPlayers = JSON.parse(store.getItem('externalplayers') || '[]');
 
+        $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
+
         $('.chkExternalPlayer', page).each(function () {
 
             var chk = this;
@@ -60,6 +62,8 @@
 
         store.setItem('externalplayers', JSON.stringify(externalPlayers));
 
+        AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
@@ -103,3 +107,21 @@
     };
 
 })(jQuery, window, document);
+
+(function (window, store) {
+
+    window.AppSettings = {
+
+        maxStreamingBitrate: function (val) {
+
+            if (val != null) {
+                store.setItem('preferredVideoBitrate', val);
+            }
+
+            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
+        }
+
+    };
+
+
+})(window, window.store);

@@ -49,6 +49,10 @@
                 return false;
             }
 
+            if (mediaSource.VideoType != 'VideoFile') {
+                return false;
+            }
+
             return mediaSource.Protocol == 'File';
         }
 
@@ -159,7 +163,7 @@
                 return false;
             }
 
-            if (m.subtitleStream) {
+            if (m.subtitleStream && m.subtitleStream.IsExternal) {
                 return false;
             }
 
@@ -200,7 +204,7 @@
 
         var url = getStreamUrl(serverAddress, deviceId, item.MediaType, item.Id, mediaSourceInfo, startPositionTicks, maxBitrate);
 
-        if (mediaSourceInfo.subtitleStream) {
+        if (mediaSourceInfo.subtitleStream && mediaSourceInfo.subtitleStream.IsExternal) {
             url += "&SubtitleStreamIndex=" + mediaSourceInfo.Index;
         }
 
@@ -280,7 +284,7 @@
 
     function getVideoUrl(item) {
 
-        var maxBitrate = parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
+        var maxBitrate = AppSettings.maxStreamingBitrate();
 
         var info = getStreamInfo(ApiClient.serverAddress(), ApiClient.deviceId(), item, null, maxBitrate);
 
@@ -304,12 +308,30 @@
 
         html += '<div style="padding:1em;">';
 
-        if (item.RunTimeTicks) {
-            html += '<div>';
-            html += '<label for="chkMarkWatched">' + Globalize.translate('OptionMarkWatched') + '</label>';
-            html += '<input type="checkbox" id="chkMarkWatched" checked="checked" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('OptionMarkWatchedHelp') + '</div>';
+        var autoMarkWatched = item.RunTimeTicks;
+
+        if (item.RunTimeTicks && item.RunTimeTicks >= 3000000000) {
+
+            autoMarkWatched = false;
+
+            html += '<fieldset data-role="controlgroup">';
+            html += '<legend>' + Globalize.translate('LabelMarkAs') + '</legend>';
+            html += '<label for="radioMarkUnwatched">' + Globalize.translate('OptionUnwatched') + '</label>';
+            html += '<input type="radio" id="radioMarkUnwatched" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+            html += '<label for="radioMarkWatched">' + Globalize.translate('OptionWatched') + '</label>';
+            html += '<input type="radio" id="radioMarkWatched" checked="checked" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+            html += '<label for="radioMarkInProgress">' + Globalize.translate('OptionInProgress') + '</label>';
+            html += '<input type="radio" id="radioMarkInProgress" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+            html += '</fieldset>';
+
+            html += '<br/>';
+
+            html += '<p style="margin-top: 0;">' + Globalize.translate('LabelResumePoint') + '</p>';
+
+            html += '<div class="sliderContainer" style="display:block;margin-top:4px;">';
+            html += '<input class="playstateSlider" type="range" step=".001" min="0" max="100" value="0" style="display:none;" data-theme="a" data-highlight="true" />';
             html += '</div>';
+            html += '<div class="sliderValue" style="text-align:center;margin:2px 0 4px;">0:00:00</div>';
 
             html += '<br/>';
         }
@@ -328,19 +350,55 @@
 
         });
 
+        $('.radioPlaystate', elem).on('change', function () {
+
+            if ($('#radioMarkInProgress', elem).checked()) {
+
+                $('.playstateSlider', elem).slider('enable');
+
+            } else {
+                $('.playstateSlider', elem).slider('disable');
+            }
+
+        }).trigger('change');
+
         $('.btnDone', elem).on('click', function () {
 
             $('.externalPlayerPostPlayFlyout').popup("close").remove();
 
             ApiClient.stopActiveEncodings();
 
-            if ($('#chkMarkWatched', elem).checked()) {
+            if ($('#radioMarkInProgress', elem).checked()) {
+
+                var pct = $(".playstateSlider", elem).val();
+                var ticks = item.RunTimeTicks * (Number(pct) * .01);
 
                 ApiClient.markPlayed(userId, item.Id, new Date());
-
             }
+            else if (autoMarkWatched || $('#radioMarkWatched', elem).checked()) {
+
+                ApiClient.markPlayed(userId, item.Id, new Date());
+            }
+            else if ($('#radioMarkUnwatched', elem).checked()) {
+
+                ApiClient.markUnplayed(userId, item.Id);
+            }
+
         });
 
+        $(".playstateSlider", elem).on("change", function (e) {
+
+            var pct = $(this).val();
+
+            var time = item.RunTimeTicks * (Number(pct) * .01);
+
+            var tooltext = Dashboard.getDisplayTime(time);
+
+            $('.sliderValue', elem).html(tooltext);
+
+            console.log("slidin", pct, self.currentDurationTicks, time);
+
+        });
     }
 
     function closePlayMenu() {
@@ -354,7 +412,7 @@
         var html = '<div data-role="popup" class="externalPlayerFlyout" data-history="false" data-theme="a">';
 
         html += '<ul data-role="listview" style="min-width: 200px;">';
-        html += '<li data-role="list-divider" style="padding: 1em;">' + Globalize.translate('HeaderSelectExternalPlayer') + '</li>';
+        html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderSelectExternalPlayer') + '</li>';
         html += '</ul>';
 
         html += '<div style="padding:1em;">';

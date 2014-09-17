@@ -313,7 +313,7 @@
 
         var player = this;
 
-        var bitrateSetting = MediaPlayer.getBitrateSetting();
+        var bitrateSetting = AppSettings.maxStreamingBitrate();
         bitrateSetting = Math.min(bitrateSetting, 10000000);
 
         var receiverName = null;
