@@ -14,7 +14,6 @@ using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,15 +39,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
 
-        private readonly ConcurrentDictionary<string, string> _localEndPoints = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        
+        private readonly List<string> _localEndpoints = new List<string>();
+
+        private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
+
         /// <summary>
         /// Gets the local end points.
         /// </summary>
         /// <value>The local end points.</value>
         public IEnumerable<string> LocalEndPoints
         {
-            get { return _listener == null ? new List<string>() : _localEndPoints.Keys.ToList(); }
+            get
+            {
+                _localEndpointLock.EnterReadLock();
+
+                var list = _localEndpoints.ToList();
+
+                _localEndpointLock.ExitReadLock();
+
+                return list;
+            }
         }
 
         public HttpListenerHost(IApplicationHost applicationHost, ILogManager logManager, string serviceName, string handlerPath, string defaultRedirectPath, params Assembly[] assembliesWithServices)
@@ -156,7 +166,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void OnRequestReceived(string localEndPoint)
         {
-            _localEndPoints.GetOrAdd(localEndPoint, localEndPoint);
+            if (_localEndpointLock.TryEnterWriteLock(100))
+            {
+                var list = _localEndpoints.ToList();
+
+                list.Remove(localEndPoint);
+                list.Insert(0, localEndPoint);
+
+                _localEndpointLock.ExitWriteLock();
+            }
         }
 
         /// <summary>

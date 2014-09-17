@@ -111,7 +111,7 @@ namespace MediaBrowser.Dlna.Main
 
                 _ssdpHandler.Start();
 
-                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _httpClient, _ssdpHandler, _network);
+                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _ssdpHandler, _appHost);
 
                 _deviceDiscovery.Start();
             }

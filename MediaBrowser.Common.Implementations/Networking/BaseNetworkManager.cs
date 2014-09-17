@@ -24,14 +24,32 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
         public IEnumerable<string> GetLocalIpAddresses()
         {
-            var list = GetIPsDefault().Where(i => !IPAddress.IsLoopback(i)).Select(i => i.ToString()).ToList();
+            var list = GetIPsDefault()
+                .Where(i => !IPAddress.IsLoopback(i))
+                .Select(i => i.ToString())
+                .ToList();
 
-            if (list.Count > 0)
+            try
             {
-                return list;
-            }
+                var listFromDns = Dns.GetHostAddresses(Dns.GetHostName())
+                    .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
+                    .Where(i => !IPAddress.IsLoopback(i))
+                    .Select(i => i.ToString())
+                    .ToList();
 
-            return GetLocalIpAddressesFallback();
+                if (listFromDns.Count > 0)
+                {
+                    return listFromDns
+                        .OrderBy(i => (list.Contains(i, StringComparer.OrdinalIgnoreCase) ? 0 : 1))
+                        .ToList();
+                }
+            }
+            catch
+            {
+
+            }
+            
+            return list;
         }
 
         public bool IsInLocalNetwork(string endpoint)

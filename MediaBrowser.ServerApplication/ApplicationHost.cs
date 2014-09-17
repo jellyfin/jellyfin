@@ -950,17 +950,8 @@ namespace MediaBrowser.ServerApplication
         /// <returns>System.String.</returns>
         private string GetLocalIpAddress()
         {
-            var localAddresses = NetworkManager.GetLocalIpAddresses().ToList();
-
-            // Cross-check the local ip addresses with addresses that have been received on with the http server
-            var matchedAddress = HttpServer.LocalEndPoints
-                .ToList()
-                .Select(i => i.Split(':').FirstOrDefault())
-                .Where(i => !string.IsNullOrEmpty(i))
-                .FirstOrDefault(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase));
-
             // Return the first matched address, if found, or the first known local address
-            var address = matchedAddress ?? localAddresses.FirstOrDefault();
+            var address = HttpServerIpAddresses.FirstOrDefault();
 
             if (!string.IsNullOrWhiteSpace(address))
             {
@@ -970,6 +961,37 @@ namespace MediaBrowser.ServerApplication
             }
 
             return address;
+        }
+
+        public IEnumerable<string> HttpServerIpAddresses
+        {
+            get
+            {
+                var localAddresses = NetworkManager.GetLocalIpAddresses()
+                    .ToList();
+
+                if (localAddresses.Count < 2)
+                {
+                    return localAddresses;
+                }
+
+                var httpServerAddresses = HttpServer.LocalEndPoints
+                    .Select(i => i.Split(':').FirstOrDefault())
+                    .Where(i => !string.IsNullOrEmpty(i))
+                    .ToList();
+
+                // Cross-check the local ip addresses with addresses that have been received on with the http server
+                var matchedAddresses = httpServerAddresses
+                    .Where(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (matchedAddresses.Count == 0)
+                {
+                    return localAddresses.Take(1);
+                }
+
+                return matchedAddresses;
+            }
         }
 
         public string FriendlyName

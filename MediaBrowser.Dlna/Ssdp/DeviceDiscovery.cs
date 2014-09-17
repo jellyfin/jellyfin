@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
@@ -21,21 +22,19 @@ namespace MediaBrowser.Dlna.Ssdp
         private readonly IServerConfigurationManager _config;
         private readonly SsdpHandler _ssdpHandler;
         private readonly CancellationTokenSource _tokenSource;
-        private readonly IHttpClient _httpClient;
-        private readonly INetworkManager _networkManager;
+        private readonly IServerApplicationHost _appHost;
 
         public event EventHandler<SsdpMessageEventArgs> DeviceDiscovered;
         public event EventHandler<SsdpMessageEventArgs> DeviceLeft;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IHttpClient httpClient, SsdpHandler ssdpHandler, INetworkManager networkManager)
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, SsdpHandler ssdpHandler, IServerApplicationHost appHost)
         {
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
             _config = config;
-            _httpClient = httpClient;
             _ssdpHandler = ssdpHandler;
-            _networkManager = networkManager;
+            _appHost = appHost;
         }
 
         public void Start()
@@ -48,21 +47,21 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 if (!network.SupportsMulticast || OperationalStatus.Up != network.OperationalStatus || !network.GetIPProperties().MulticastAddresses.Any())
                     continue;
-
+                
                 var ipV4 = network.GetIPProperties().GetIPv4Properties();
                 if (null == ipV4)
                     continue;
 
-                var localIp = network.GetIPProperties().UnicastAddresses
+                var localIps = network.GetIPProperties().UnicastAddresses
                     .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork)
                     .Select(i => i.Address)
-                    .FirstOrDefault();
+                    .ToList();
 
-                if (localIp != null)
+                foreach (var localIp in localIps)
                 {
                     try
                     {
-                        CreateListener(localIp, ipV4.Index);
+                        CreateListener(localIp);
                     }
                     catch (Exception e)
                     {
@@ -71,7 +70,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 }
             }
         }
-
+        
         void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
@@ -87,9 +86,9 @@ namespace MediaBrowser.Dlna.Ssdp
 
             try
             {
-                var ip = _networkManager.GetLocalIpAddresses().FirstOrDefault();
+                var ip = _appHost.HttpServerIpAddresses.FirstOrDefault();
 
-                if (ip != null)
+                if (!string.IsNullOrWhiteSpace(ip))
                 {
                     e.LocalIp = IPAddress.Parse(ip);
                     TryCreateDevice(e);
@@ -116,19 +115,17 @@ namespace MediaBrowser.Dlna.Ssdp
                 return new List<NetworkInterface>();
             }
         }
-        private void CreateListener(IPAddress localIp, int networkInterfaceIndex)
+        private void CreateListener(IPAddress localIp)
         {
             Task.Factory.StartNew(async (o) =>
             {
                 try
                 {
-                    var socket = GetMulticastSocket(networkInterfaceIndex);
-
                     var endPoint = new IPEndPoint(localIp, 1900);
 
-                    socket.Bind(endPoint);
+                    var socket = GetMulticastSocket(localIp, endPoint);
 
-                    _logger.Info("Creating SSDP listener on {0}, network interface index {1}", localIp, networkInterfaceIndex);
+                    _logger.Info("Creating SSDP listener on {0}", localIp);
 
                     var receiveBuffer = new byte[64000];
 
@@ -188,12 +185,15 @@ namespace MediaBrowser.Dlna.Ssdp
 
         }
 
-        private Socket GetMulticastSocket(int networkInterfaceIndex)
+        private Socket GetMulticastSocket(IPAddress localIpAddress, EndPoint localEndpoint)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), networkInterfaceIndex));
+            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIpAddress));
             socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+
+            socket.Bind(localEndpoint);
+            
             return socket;
         }
 
