@@ -10,15 +10,25 @@
 
     }
 
-    function getCodecLimits() {
+    function getCodecLimits(maxBitrate) {
+
+        var maxWidth;
+
+        if (maxBitrate <= 1000000) {
+            maxWidth = 720;
+        }
+        else if (maxBitrate <= 5000000) {
+            maxWidth = 1280;
+        } else {
+            maxWidth = 1280;
+        }
 
         return {
 
             maxVideoAudioChannels: 6,
             maxAudioChannels: 2,
             maxVideoLevel: 50,
-            maxWidth: 1920,
-            maxHeight: 1080,
+            maxWidth: maxWidth,
             maxSampleRate: 48000
 
         };
@@ -31,7 +41,7 @@
             return false;
         }
 
-        var codecLimits = getCodecLimits();
+        var codecLimits = getCodecLimits(maxBitrate);
 
         if (mediaType == "Audio") {
 
@@ -49,6 +59,10 @@
                 return false;
             }
 
+            if (videoStream.Width && videoStream.Width > codecLimits.maxWidth) {
+                return false;
+            }
+
             if (mediaSource.VideoType != 'VideoFile') {
                 return false;
             }
@@ -59,7 +73,7 @@
         throw new Error('Unrecognized MediaType');
     }
 
-    function canPlayAudioStreamDirect(audioStream, isVideo) {
+    function canPlayAudioStreamDirect(audioStream, isVideo, maxBitrate) {
 
         var audioCodec = (audioStream.Codec || '').toLowerCase().replace('-', '');
 
@@ -70,7 +84,7 @@
             return false;
         }
 
-        var codecLimits = getCodecLimits();
+        var codecLimits = getCodecLimits(maxBitrate);
 
         var maxChannels = isVideo ? codecLimits.maxVideoAudioChannels : codecLimits.maxAudioChannels;
 
@@ -159,7 +173,7 @@
 
             var audioStream = m.audioStream;
 
-            if (!audioStream || !canPlayAudioStreamDirect(audioStream, item.MediaType == 'Video')) {
+            if (!audioStream || !canPlayAudioStreamDirect(audioStream, item.MediaType == 'Video', maxBitrate)) {
                 return false;
             }
 
@@ -217,7 +231,7 @@
 
         var url;
 
-        var codecLimits = getCodecLimits();
+        var codecLimits = getCodecLimits(maxBitrate);
 
         if (mediaType == 'Audio') {
 
@@ -268,7 +282,6 @@
             url += '&level=41';
 
             url += '&maxwidth=' + codecLimits.maxWidth;
-            url += '&maxheight=' + codecLimits.maxHeight;
 
             url += '&videoCodec=h264';
             url += '&audioCodec=aac';

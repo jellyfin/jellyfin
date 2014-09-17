@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using System;
 
@@ -46,5 +47,11 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The name of the friendly.</value>
         string FriendlyName { get; }
+
+        /// <summary>
+        /// Gets the HTTP server ip addresses.
+        /// </summary>
+        /// <value>The HTTP server ip addresses.</value>
+        IEnumerable<string> HttpServerIpAddresses { get; }
     }
 }
