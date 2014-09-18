@@ -556,9 +556,9 @@
     "MediaInfoAnamorphic": "Anamorfe",
     "MediaInfoInterlaced": "Interlaced",
     "MediaInfoFramerate": "Framerate",
-    "MediaInfoStreamTypeAudio": "Audio",
+    "MediaInfoStreamTypeAudio": "Geluid",
     "MediaInfoStreamTypeData": "Data",
     "MediaInfoStreamTypeVideo": "Video",
-    "MediaInfoStreamTypeSubtitle": "Subtitle",
-    "MediaInfoStreamTypeEmbeddedImage": "Embedded Image"
+    "MediaInfoStreamTypeSubtitle": "Ondertiteling",
+    "MediaInfoStreamTypeEmbeddedImage": "Ingevoegde afbeelding"
 }
