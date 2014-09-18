@@ -1076,7 +1076,8 @@
                 maxWidth: webmQuality.maxWidth,
                 videoBitrate: webmQuality.videoBitrate,
                 audioBitrate: webmQuality.audioBitrate,
-                EnableAutoStreamCopy: false
+                EnableAutoStreamCopy: false,
+                ClientTime: new Date().getTime()
             }));
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
@@ -1087,7 +1088,8 @@
                 AudioCodec: m3U8Quality.audioCodec,
                 profile: 'baseline',
                 level: '3',
-                StartTimeTicks: 0
+                StartTimeTicks: 0,
+                ClientTime: new Date().getTime()
 
             })) + seekParam;
 

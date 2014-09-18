@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -30,8 +31,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly ISecurityManager _security;
 
-        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager, IUserManager userManager)
+        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager, IUserManager userManager, ISecurityManager security)
         {
             _manager = manager;
             _config = config;
@@ -40,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _userManager = userManager;
+            _security = security;
         }
 
         public string Name
@@ -176,14 +179,28 @@ namespace MediaBrowser.Server.Implementations.Channels
             progress.Report(100);
         }
 
+        private double? GetDownloadLimit(ChannelOptions channelOptions)
+        {
+            if (!_security.IsMBSupporter)
+            {
+                const double limit = .5;
+
+                return Math.Min(channelOptions.DownloadSizeLimit ?? limit, limit);
+            }
+
+            return channelOptions.DownloadSizeLimit;
+        }
+
         private async Task DownloadChannelItem(BaseItemDto item,
             ChannelOptions channelOptions,
             CancellationToken cancellationToken,
             string path)
         {
-            if (channelOptions.DownloadSizeLimit.HasValue)
+            var limit = GetDownloadLimit(channelOptions);
+
+            if (limit.HasValue)
             {
-                if (IsSizeLimitReached(path, channelOptions.DownloadSizeLimit.Value))
+                if (IsSizeLimitReached(path, limit.Value))
                 {
                     return;
                 }    

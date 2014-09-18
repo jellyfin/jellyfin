@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Drawing;
+﻿using System.Globalization;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
@@ -125,7 +126,8 @@ namespace MediaBrowser.Model.Dlna
                 item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty,
                 item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty,
                 StringHelper.ToStringCultureInvariant(item.StartPositionTicks),
-                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty
+                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty,
+                item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)
             };
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));

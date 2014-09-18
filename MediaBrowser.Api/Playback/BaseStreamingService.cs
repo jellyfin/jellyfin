@@ -127,6 +127,7 @@ namespace MediaBrowser.Api.Playback
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
+            data += "-" + (state.Request.ClientTime ?? string.Empty);
 
             return Path.Combine(folder, data.GetMD5().ToString("N") + (outputFileExtension ?? string.Empty).ToLower());
         }
@@ -1383,6 +1384,10 @@ namespace MediaBrowser.Api.Playback
                     {
                         videoRequest.Level = val;
                     }
+                }
+                else if (i == 16)
+                {
+                    request.ClientTime = val;
                 }
             }
         }

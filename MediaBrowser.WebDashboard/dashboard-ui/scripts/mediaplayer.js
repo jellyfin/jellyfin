@@ -141,6 +141,7 @@
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
                     } else {
                         currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension);
+                        currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
                     }
 
                     currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
@@ -1247,6 +1248,8 @@
             if (isStatic) {
                 var seekParam = startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
                 audioUrl += "&static=true" + seekParam;
+            } else {
+                audioUrl += "&ClientTime=" + new Date().getTime();
             }
 
             self.startTimeTicksOffset = isStatic ? 0 : startPositionTicks;

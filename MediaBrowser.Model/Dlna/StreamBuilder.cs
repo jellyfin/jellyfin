@@ -18,18 +18,17 @@ namespace MediaBrowser.Model.Dlna
 
             List<MediaSourceInfo> mediaSources = options.MediaSources;
 
-            // If the client wants a specific media soure, filter now
+            // If the client wants a specific media source, filter now
             if (!string.IsNullOrEmpty(options.MediaSourceId))
             {
-                // Avoid implicitly captured closure
-                string mediaSourceId = options.MediaSourceId;
-
-                mediaSources = new List<MediaSourceInfo>();
+                List<MediaSourceInfo> newMediaSources = new List<MediaSourceInfo>();
                 foreach (MediaSourceInfo i in mediaSources)
                 {
-                    if (StringHelper.EqualsIgnoreCase(i.Id, mediaSourceId))
-                        mediaSources.Add(i);
+                    if (StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
+                        newMediaSources.Add(i);
                 }
+
+                mediaSources = newMediaSources;
             }
 
             List<StreamInfo> streams = new List<StreamInfo>();

@@ -166,7 +166,6 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 var response = _jsonSerializer.DeserializeFromStream<SuppporterInfoResponse>(stream);
 
-
                 var info = new SupporterInfo
                 {
                     Email = response.email,
