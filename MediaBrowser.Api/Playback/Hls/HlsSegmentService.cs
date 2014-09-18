@@ -63,18 +63,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetHlsPlaylist request)
         {
-            var normalizedPlaylistId = request.PlaylistId.Replace("-low", string.Empty);
-
-            foreach (var playlist in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*.m3u8")
-                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList())
-            {
-                if (!string.IsNullOrEmpty(playlist))
-                {
-                    ExtendPlaylistTimer(playlist);
-                }
-            }
-
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
 
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
@@ -101,18 +89,6 @@ namespace MediaBrowser.Api.Playback.Hls
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
-        }
-
-        private async void ExtendPlaylistTimer(string playlist)
-        {
-            var job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-
-            await Task.Delay(20000).ConfigureAwait(false);
-
-            if (job != null)
-            {
-                ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
-            }
         }
     }
 }

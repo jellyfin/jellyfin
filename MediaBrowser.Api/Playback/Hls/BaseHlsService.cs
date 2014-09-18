@@ -88,27 +88,18 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var playlist = state.OutputFilePath;
-            TranscodingJob job;
 
-            if (File.Exists(playlist))
-            {
-                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-            }
-            else
+            if (!File.Exists(playlist))
             {
                 await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 try
                 {
-                    if (File.Exists(playlist))
-                    {
-                        job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-                    }
-                    else
+                    if (!File.Exists(playlist))
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            job = await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
+                            await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -132,17 +123,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 //file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
 
-                try
-                {
-                    return ResultFactory.GetStaticFileResult(Request, playlist, FileShare.ReadWrite);
-                }
-                finally
-                {
-                    if (job != null)
-                    {
-                        ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
-                    }
-                }
+                return ResultFactory.GetStaticFileResult(Request, playlist, FileShare.ReadWrite);
             }
 
             var audioBitrate = state.OutputAudioBitrate ?? 0;
@@ -160,17 +141,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
-            try
-            {
-                return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
-            }
-            finally
-            {
-                if (job != null)
-                {
-                    ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
-                }
-            }
+            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         /// <summary>

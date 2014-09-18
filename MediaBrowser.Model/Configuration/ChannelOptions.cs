@@ -14,7 +14,7 @@
         public ChannelOptions()
         {
             DownloadingChannels = new string[] { };
-            DownloadSizeLimit = 1;
+            DownloadSizeLimit = .5;
             MaxDownloadAge = 30;
         }
     }

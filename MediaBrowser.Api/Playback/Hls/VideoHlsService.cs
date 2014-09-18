@@ -36,7 +36,7 @@ namespace MediaBrowser.Api.Playback.Hls
     public class GetLiveHlsStream : VideoStreamRequest
     {
     }
-    
+
     /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
@@ -58,7 +58,8 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class VideoHlsService : BaseHlsService
     {
-        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
         {
         }
 
@@ -73,28 +74,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
 
-            var normalizedPlaylistId = request.PlaylistId.Replace("-low", string.Empty);
-
-            foreach (var playlist in Directory.EnumerateFiles(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, "*.m3u8")
-                .Where(i => i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList())
-            {
-                ExtendPlaylistTimer(playlist);
-            }
-
             return ResultFactory.GetStaticFileResult(Request, file);
-        }
-
-        private async void ExtendPlaylistTimer(string playlist)
-        {
-            var job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType.Hls);
-
-            await Task.Delay(20000).ConfigureAwait(false);
-
-            if (job != null)
-            {
-                ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
-            }
         }
 
         /// <summary>

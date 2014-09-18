@@ -270,11 +270,7 @@ namespace MediaBrowser.Api
 
                 job.ActiveRequestCount++;
 
-                if (job.KillTimer != null)
-                {
-                    job.KillTimer.Dispose();
-                    job.KillTimer = null;
-                }
+                job.DisposeKillTimer();
 
                 return job;
             }
@@ -286,16 +282,18 @@ namespace MediaBrowser.Api
 
             if (job.ActiveRequestCount == 0)
             {
-                // The HLS kill timer is long - 1/2 hr. clients should use the manual kill command when stopping.
-                var timerDuration = job.Type == TranscodingJobType.Progressive ? 1000 : 1800000;
+                if (job.Type == TranscodingJobType.Progressive)
+                {
+                    const int timerDuration = 1000;
 
-                if (job.KillTimer == null)
-                {
-                    job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
-                }
-                else
-                {
-                    job.KillTimer.Change(timerDuration, Timeout.Infinite);
+                    if (job.KillTimer == null)
+                    {
+                        job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
+                    }
+                    else
+                    {
+                        job.KillTimer.Change(timerDuration, Timeout.Infinite);
+                    }
                 }
             }
         }
@@ -389,11 +387,7 @@ namespace MediaBrowser.Api
                     job.CancellationTokenSource.Cancel();
                 }
 
-                if (job.KillTimer != null)
-                {
-                    job.KillTimer.Dispose();
-                    job.KillTimer = null;
-                }
+                job.DisposeKillTimer();
             }
 
             lock (job.ProcessLock)
@@ -580,6 +574,15 @@ namespace MediaBrowser.Api
         
         public long? TranscodingPositionTicks { get; set; }
         public long? DownloadPositionTicks { get; set; }
+
+        public void DisposeKillTimer()
+        {
+            if (KillTimer != null)
+            {
+                KillTimer.Dispose();
+                KillTimer = null;
+            }
+        }
     }
 
     /// <summary>
