@@ -279,6 +279,16 @@
                         </div>
 
                         <div data-role="collapsible">
+                            <h2>${HeaderSubtitleProfiles}</h2>
+                            <div>
+                                <p>${HeaderSubtitleProfilesHelp}</p>
+                                <p><button type="button" class="btnAddSubtitleProfile" data-icon="plus">${ButtonAdd}</button></p>
+                                <div class="subtitleProfileList"></div>
+                                <br />
+                            </div>
+                        </div>
+
+                        <div data-role="collapsible">
                             <h2>${HeaderXmlSettings}</h2>
                             <div>
                                 <h2>
@@ -687,6 +697,52 @@
             </div>
 
         </div>
+
+        <div data-role="popup" id="subtitleProfilePopup" class="popup">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>${HeaderSubtitleProfile}</h3>
+            </div>
+
+            <div data-role="content">
+                <form class="subtitleProfileForm">
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtSubtitleProfileFormat">${LabelFormat}</label>
+                        <input type="text" id="txtSubtitleProfileFormat" data-mini="true" required="required" />
+                        <div class="fieldDescription">${LabelSubtitleFormatHelp}</div>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectSubtitleProfileMethod">${LabelMethod}</label>
+                        <select id="selectSubtitleProfileMethod" data-mini="true" required="required">
+                            <option value="Embed">${OptionEmbedSubtitles}</option>
+                            <option value="External">${OptionExternallyDownloaded}</option>
+                            <option value="Hls">${OptionHlsSegmentedSubtitles}</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="selectSubtitleProfileDidlMode">${LabelDidlMode}</label>
+                        <select id="selectSubtitleProfileDidlMode" data-mini="true">
+                            <option value="">${OptionResElement}</option>
+                            <option value="CaptionInfoEx">${OptionCaptionInfoExSamsung}</option>
+                        </select>
+                    </div>
+
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            ${ButtonCancel}
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+
         <script type="text/javascript">
             $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
             $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
@@ -696,6 +752,7 @@
             $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
             $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
             $('.xmlAttributeForm').off('submit', DlnaProfilePage.onXmlAttributeFormSubmit).on('submit', DlnaProfilePage.onXmlAttributeFormSubmit);
+            $('.subtitleProfileForm').off('submit', DlnaProfilePage.onSubtitleProfileFormSubmit).on('submit', DlnaProfilePage.onSubtitleProfileFormSubmit);
         </script>
     </div>
 </body>

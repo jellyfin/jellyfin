@@ -50,6 +50,7 @@
         var idInfo = profile.Identification || {};
 
         renderIdentificationHeaders(page, idInfo.Headers || []);
+        renderSubtitleProfiles(page, profile.SubtitleProfiles || []);
 
         $('#txtInfoFriendlyName', page).val(profile.FriendlyName || '');
         $('#txtInfoModelName', page).val(profile.ModelName || '');
@@ -212,7 +213,7 @@
     }
 
     function editXmlDocumentAttribute(page, attribute) {
-        
+
         isSubProfileNew = attribute == null;
         attribute = attribute || {};
         currentSubProfile = attribute;
@@ -240,6 +241,82 @@
         currentSubProfile = null;
 
         $('#xmlAttributePopup', page).popup('close');
+    }
+
+    function renderSubtitleProfiles(page, profiles) {
+
+        var index = 0;
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + profiles.map(function (h) {
+
+            var li = '<li>';
+
+            li += '<a href="#" class="lnkEditSubProfile" data-index="' + index + '">';
+
+            li += '<div style="font-weight:normal;">' + (h.Format || '') + '</div>';
+
+            li += '</a>';
+
+            li += '<a class="btnDeleteProfile" href="#" data-index="' + index + '"></a>';
+
+            li += '</li>';
+
+            index++;
+
+            return li;
+
+        }).join('') + '</ul>';
+
+        var elem = $('.subtitleProfileList', page).html(html).trigger('create');
+
+        $('.btnDeleteProfile', elem).on('click', function () {
+
+            var itemIndex = parseInt(this.getAttribute('data-index'));
+
+            currentProfile.SubtitleProfiles.splice(itemIndex, 1);
+
+            renderSubtitleProfiles(page, currentProfile.SubtitleProfiles);
+        });
+
+        $('.lnkEditSubProfile', elem).on('click', function () {
+
+            var itemIndex = parseInt(this.getAttribute('data-index'));
+
+            editSubtitleProfile(page, currentProfile.SubtitleProfiles[itemIndex]);
+        });
+    }
+
+    function editSubtitleProfile(page, profile) {
+
+        isSubProfileNew = profile == null;
+        profile = profile || {};
+        currentSubProfile = profile;
+
+        var popup = $('#subtitleProfilePopup', page);
+
+        $('#txtSubtitleProfileFormat', popup).val(profile.Format || '');
+        $('#selectSubtitleProfileMethod', popup).val(profile.Method || '').selectmenu('refresh');
+        $('#selectSubtitleProfileDidlMode', popup).val(profile.DidlMode || '').selectmenu('refresh');
+
+        popup.popup('open');
+    }
+
+    function saveSubtitleProfile(page) {
+
+        currentSubProfile.Format = $('#txtSubtitleProfileFormat', page).val();
+        currentSubProfile.Method = $('#selectSubtitleProfileMethod', page).val();
+        currentSubProfile.DidlMode = $('#selectSubtitleProfileDidlMode', page).val();
+
+        if (isSubProfileNew) {
+
+            currentProfile.SubtitleProfiles.push(currentSubProfile);
+        }
+
+        renderSubtitleProfiles(page, currentProfile.SubtitleProfiles);
+
+        currentSubProfile = null;
+
+        $('#subtitleProfilePopup', page).popup('close');
     }
 
     function renderSubProfiles(page, profile) {
@@ -981,6 +1058,11 @@
             editXmlDocumentAttribute(page);
         });
 
+        $('.btnAddSubtitleProfile', page).on('click', function () {
+
+            editSubtitleProfile(page);
+        });
+
     }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
@@ -1058,8 +1140,8 @@
             return false;
         },
 
-        onIdentificationHeaderFormSubmit: function() {
-            
+        onIdentificationHeaderFormSubmit: function () {
+
             var form = this;
             var page = $(form).parents('.page');
 
@@ -1074,6 +1156,16 @@
             var page = $(form).parents('.page');
 
             saveXmlDocumentAttribute(page);
+
+            return false;
+        },
+
+        onSubtitleProfileFormSubmit: function () {
+
+            var form = this;
+            var page = $(form).parents('.page');
+
+            saveSubtitleProfile(page);
 
             return false;
         }

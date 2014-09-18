@@ -183,9 +183,9 @@
     function setPeopleHeader(page, item) {
 
         if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
-            $('#peopleHeader', page).html('People');
+            $('#peopleHeader', page).html(Globalize.translate('HeaderPeople'));
         } else {
-            $('#peopleHeader', page).html('Cast & Crew');
+            $('#peopleHeader', page).html(Globalize.translate('HeaderCastAndCrew'));
         }
 
     }
@@ -426,54 +426,54 @@
         var attributes = [];
 
         if (item.CameraMake) {
-            attributes.push(createAttribute("Camera make", item.CameraMake));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoCameraMake'), item.CameraMake));
         }
 
         if (item.CameraModel) {
-            attributes.push(createAttribute("Camera model", item.CameraModel));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoCameraModel'), item.CameraModel));
         }
 
         if (item.Altitude) {
-            attributes.push(createAttribute("Altitude", item.Altitude.toFixed(1)));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoAltitude'), item.Altitude.toFixed(1)));
         }
 
         if (item.Aperture) {
-            attributes.push(createAttribute("Aperture", 'F' + item.Aperture.toFixed(1)));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoAperture'), 'F' + item.Aperture.toFixed(1)));
         }
 
         if (item.ExposureTime) {
 
             var val = 1 / item.ExposureTime;
 
-            attributes.push(createAttribute("Exposure time", '1/' + val + ' s'));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoExposureTime'), '1/' + val + ' s'));
         }
 
         if (item.FocalLength) {
-            attributes.push(createAttribute("Focal length", item.FocalLength.toFixed(1) + ' mm'));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoFocalLength'), item.FocalLength.toFixed(1) + ' mm'));
         }
 
         if (item.ImageOrientation) {
-            attributes.push(createAttribute("Orientation", item.ImageOrientation));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoOrientation'), item.ImageOrientation));
         }
 
         if (item.IsoSpeedRating) {
-            attributes.push(createAttribute("Iso Speed Rating", item.IsoSpeedRating));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoIsoSpeedRating'), item.IsoSpeedRating));
         }
 
         if (item.Latitude) {
-            attributes.push(createAttribute("Latitude", item.Latitude.toFixed(1)));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoLatitude'), item.Latitude.toFixed(1)));
         }
 
         if (item.Longitude) {
-            attributes.push(createAttribute("Longitude", item.Longitude.toFixed(1)));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoLongitude'), item.Longitude.toFixed(1)));
         }
 
         if (item.ShutterSpeed) {
-            attributes.push(createAttribute("ShutterSpeed", item.ShutterSpeed));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoShutterSpeed'), item.ShutterSpeed));
         }
 
         if (item.Software) {
-            attributes.push(createAttribute("Software", item.Software));
+            attributes.push(createAttribute(Globalize.translate('MediaInfoSoftware'), item.Software));
         }
 
         html += attributes.join('<br/>');
@@ -510,10 +510,10 @@
         html = html.join(' / ');
 
         if (artists.length == 1) {
-            return 'Artist:&nbsp;&nbsp;' + html;
+            return Globalize.translate('ValueArtist', html);
         }
         if (artists.length > 1) {
-            return 'Artists:&nbsp;&nbsp;' + html;
+            return Globalize.translate('ValueArtists', html);
         }
 
         return html;
@@ -619,7 +619,7 @@
 
             var elem = $('#similarCollapsible', page).show();
 
-            $('.detailSectionHeader', elem).html('If you like ' + item.Name + ', check these out...');
+            $('.detailSectionHeader', elem).html(Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name));
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -674,7 +674,7 @@
         if (item.Tags && item.Tags.length) {
 
             var html = '';
-            html += '<p>Tags</p>';
+            html += '<p>' + Globalize.translate('HeaderTags') + '</p>';
             for (var i = 0, length = item.Tags.length; i < length; i++) {
 
                 html += '<div class="itemTag">' + item.Tags[i] + '</div>';
@@ -693,7 +693,7 @@
         if (item.Keywords && item.Keywords.length) {
 
             var html = '';
-            html += '<p>Plot Keywords</p>';
+            html += '<p>' + Globalize.translate('HeaderPlotKeywords') + '</p>';
             for (var i = 0, length = item.Keywords.length; i < length; i++) {
 
                 html += '<div class="itemTag">' + item.Keywords[i] + '</div>';
@@ -800,11 +800,11 @@
             if (item.Type == "BoxSet") {
 
                 var collectionItemTypes = [
-                    { name: 'Movies', type: 'Movie' },
-                    { name: 'Series', type: 'Series' },
-                    { name: 'Albums', type: 'MusicAlbum' },
-                    { name: 'Games', type: 'Game' },
-                    { name: 'Books', type: 'Book' }
+                    { name: Globalize.translate('HeaderMovies'), type: 'Movie' },
+                    { name: Globalize.translate('HeaderSeries'), type: 'Series' },
+                    { name: Globalize.translate('HeaderAlbums'), type: 'MusicAlbum' },
+                    { name: Globalize.translate('HeaderGames'), type: 'Game' },
+                    { name: Globalize.translate('HeaderBooks'), type: 'Book' }
                 ];
 
                 renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
@@ -812,19 +812,19 @@
         });
 
         if (item.Type == "Season") {
-            $('#childrenTitle', page).html('Episodes');
+            $('#childrenTitle', page).html(Globalize.translate('HeaderEpisodes'));
         }
         else if (item.Type == "Series") {
-            $('#childrenTitle', page).html('Seasons');
+            $('#childrenTitle', page).html(Globalize.translate('HeaderSeasons'));
         }
         else if (item.Type == "MusicAlbum") {
-            $('#childrenTitle', page).html('Tracks');
+            $('#childrenTitle', page).html(Globalize.translate('HeaderTracks'));
         }
         else if (item.Type == "GameSystem") {
-            $('#childrenTitle', page).html('Games');
+            $('#childrenTitle', page).html(Globalize.translate('HeaderGames'));
         }
         else {
-            $('#childrenTitle', page).html('Items');
+            $('#childrenTitle', page).html(Globalize.translate('HeaderItems'));
         }
     }
 
@@ -840,14 +840,12 @@
 
             });
 
-            if (!typeItems.length) {
-                continue;
+            if (typeItems.length) {
+                renderCollectionItemType(page, type, typeItems, user);
             }
-
-            renderCollectionItemType(page, type, typeItems, user);
         }
 
-        var otherType = { name: 'Other Items' };
+        var otherType = { name: Globalize.translate('HeaderOtherItems') };
 
         var otherTypeItems = items.filter(function (curr) {
 
@@ -864,7 +862,7 @@
         }
 
         if (!items.length) {
-            renderCollectionItemType(page, { name: 'Titles' }, items, user);
+            renderCollectionItemType(page, { name: Globalize.translate('HeaderItems') }, items, user);
         }
 
         $('.collectionItems', page).trigger('create').createCardMenus();
@@ -880,7 +878,7 @@
         html += '<span>' + type.name + '</span>';
 
         if (user.Configuration.IsAdministrator) {
-            html += '<a class="detailSectionHeaderButton" href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">Edit</a>';
+            html += '<a class="detailSectionHeaderButton" href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonEdit') + '</a>';
         }
 
         html += '</div>';
@@ -991,14 +989,14 @@
             html += '</div>';
 
             if (review.Url) {
-                html += '<div class="reviewLink"><a class="textlink" href="' + review.Url + '" target="_blank">Full review</a></div>';
+                html += '<div class="reviewLink"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
             html += '</div>';
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
         }
 
         $('#criticReviewsContent', page).html(html).trigger('create');
@@ -1154,7 +1152,7 @@
         }
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
         }
 
         $('#scenesContent', page).html(html).trigger('create');
@@ -1191,83 +1189,83 @@
                 continue;
             }
 
-            var type = stream.Type.replace('EmbeddedImage', 'Embedded Image');
-
             html += '<div class="mediaInfoStream">';
 
-            html += '<div class="mediaInfoStreamType">' + type + '</div>';
+            var displayType = Globalize.translate('MediaInfoStreamType' + stream.Type);
+
+            html += '<div class="mediaInfoStreamType">' + displayType + '</div>';
 
             var attributes = [];
 
             if (stream.Language && stream.Type != "Video") {
-                attributes.push(createAttribute("Language", stream.Language));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoLanguage'), stream.Language));
             }
 
             if (stream.Codec) {
-                attributes.push(createAttribute("Codec", stream.Codec.toUpperCase()));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoCodec'), stream.Codec.toUpperCase()));
             }
 
             if (stream.Profile) {
-                attributes.push(createAttribute("Profile", stream.Profile));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoProfile'), stream.Profile));
             }
 
             if (stream.Level) {
-                attributes.push(createAttribute("Level", stream.Level));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoLevel'), stream.Level));
             }
 
             if (stream.Width || stream.Height) {
-                attributes.push(createAttribute("Resolution", stream.Width + 'x' + stream.Height));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoResolution'), stream.Width + 'x' + stream.Height));
             }
 
             if (stream.AspectRatio && stream.Codec != "mjpeg") {
-                attributes.push(createAttribute("Aspect Ratio", stream.AspectRatio));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoAspectRatio'), stream.AspectRatio));
             }
 
-            if (type == "Video") {
+            if (stream.Type == "Video") {
                 if (stream.IsAnamorphic != null) {
-                    attributes.push(createAttribute("Anamorphic", (stream.IsAnamorphic ? 'Yes' : 'No')));
+                    attributes.push(createAttribute(Globalize.translate('MediaInfoAnamorphic'), (stream.IsAnamorphic ? 'Yes' : 'No')));
                 }
 
-                attributes.push(createAttribute("Interlaced", (stream.IsInterlaced ? 'Yes' : 'No')));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoInterlaced'), (stream.IsInterlaced ? 'Yes' : 'No')));
             }
 
             if (stream.AverageFrameRate || stream.RealFrameRate) {
-                attributes.push(createAttribute("Framerate", (stream.AverageFrameRate || stream.RealFrameRate)));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoFramerate'), (stream.AverageFrameRate || stream.RealFrameRate)));
             }
 
             if (stream.ChannelLayout) {
-                attributes.push(createAttribute("Layout", stream.ChannelLayout));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoLayout'), stream.ChannelLayout));
             }
             else if (stream.Channels) {
-                attributes.push(createAttribute("Channels", stream.Channels + ' ch'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoChannels'), stream.Channels + ' ch'));
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push(createAttribute("Bitrate", (parseInt(stream.BitRate / 1024)) + ' kbps'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoBitrate'), (parseInt(stream.BitRate / 1024)) + ' kbps'));
             }
 
             if (stream.SampleRate) {
-                attributes.push(createAttribute("Sample Rate", stream.SampleRate + ' khz'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoSampleRate'), stream.SampleRate + ' khz'));
             }
 
             if (stream.BitDepth) {
-                attributes.push(createAttribute("Bit Depth", stream.BitDepth + ' bit'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoBitDepth'), stream.BitDepth + ' bit'));
             }
 
             if (stream.PixelFormat) {
-                attributes.push(createAttribute("Pixel Format", stream.PixelFormat));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoPixelFormat'), stream.PixelFormat));
             }
 
             if (stream.Type != "Video") {
-                attributes.push(createAttribute("Default", (stream.IsDefault ? 'Yes' : 'No')));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoDefault'), (stream.IsDefault ? 'Yes' : 'No')));
             }
             if (stream.Type == "Subtitle") {
-                attributes.push(createAttribute("Forced", (stream.IsForced ? 'Yes' : 'No')));
-                attributes.push(createAttribute("External", (stream.IsExternal ? 'Yes' : 'No')));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoForced'), (stream.IsForced ? 'Yes' : 'No')));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoExternal'), (stream.IsExternal ? 'Yes' : 'No')));
             }
 
             if (stream.Type == "Video" && version.Timestamp) {
-                attributes.push(createAttribute("Timestamp", version.Timestamp));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
             }
 
             html += attributes.join('<br/>');
@@ -1276,22 +1274,22 @@
         }
 
         if (version.Container) {
-            html += '<div><span class="mediaInfoLabel">Container</span><span class="mediaInfoAttribute">' + version.Container + '</span></div>';
+            html += '<div><span class="mediaInfoLabel">' + Globalize.translate('MediaInfoContainer') + '</span><span class="mediaInfoAttribute">' + version.Container + '</span></div>';
         }
 
         if (version.Formats && version.Formats.length) {
-            //html += '<div><span class="mediaInfoLabel">Format</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
+            //html += '<div><span class="mediaInfoLabel">'+Globalize.translate('MediaInfoFormat')+'</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
         }
 
         if (version.Path) {
-            html += '<div style="max-width:600px;overflow:hidden;"><span class="mediaInfoLabel">Path</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
+            html += '<div style="max-width:600px;overflow:hidden;"><span class="mediaInfoLabel">' + Globalize.translate('MediaInfoPath') + '</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
         }
 
         if (version.Size) {
 
             var size = (version.Size / (1024 * 1024)).toFixed(0);
 
-            html += '<div><span class="mediaInfoLabel">Size</span><span class="mediaInfoAttribute">' + size + ' MB</span></div>';
+            html += '<div><span class="mediaInfoLabel">' + Globalize.translate('MediaInfoSize') + '</span><span class="mediaInfoAttribute">' + size + ' MB</span></div>';
         }
 
         return html;
@@ -1372,7 +1370,7 @@
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
         }
 
         return html;
@@ -1426,10 +1424,10 @@
 
             html += '<p>' + cast.Name + '</p>';
 
-            var role = cast.Role ? "as " + cast.Role : cast.Type;
+            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
 
             if (role == "GuestStar") {
-                role = "Guest star";
+                role = Globalize.translate('ValueGuestStar');
             }
 
             role = role || "";
@@ -1448,7 +1446,7 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">More ...</button></p>';
+            html += '<p style="margin: 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
         }
 
         $('#castContent', page).html(html).trigger('create');

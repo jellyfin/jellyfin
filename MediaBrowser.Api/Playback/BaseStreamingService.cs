@@ -925,11 +925,6 @@ namespace MediaBrowser.Api.Playback
         /// <exception cref="System.InvalidOperationException">ffmpeg was not found at  + MediaEncoder.EncoderPath</exception>
         protected async Task<TranscodingJob> StartFfMpeg(StreamState state, string outputPath, CancellationTokenSource cancellationTokenSource)
         {
-            if (!File.Exists(MediaEncoder.EncoderPath))
-            {
-                throw new InvalidOperationException("ffmpeg was not found at " + MediaEncoder.EncoderPath);
-            }
-
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
@@ -955,7 +950,6 @@ namespace MediaBrowser.Api.Playback
                     RedirectStandardInput = true,
 
                     FileName = MediaEncoder.EncoderPath,
-                    WorkingDirectory = Path.GetDirectoryName(MediaEncoder.EncoderPath),
                     Arguments = commandLineArgs,
 
                     WindowStyle = ProcessWindowStyle.Hidden,

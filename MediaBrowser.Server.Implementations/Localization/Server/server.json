@@ -1166,5 +1166,17 @@
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from any app without having to know the server ip address.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "Learn more about Media Browser Connect",
     "LabelExternalPlayers": "External players:",
-    "LabelExternalPlayersHelp": "Display buttons to play content in external players. This is only available on devices that support url schemes, generally Android and iOS. With external players there is generally no support for remote control or resuming."
+    "LabelExternalPlayersHelp": "Display buttons to play content in external players. This is only available on devices that support url schemes, generally Android and iOS. With external players there is generally no support for remote control or resuming.",
+	"HeaderSubtitleProfile": "Subtitle Profile",
+	"HeaderSubtitleProfiles": "Subtitle Profiles",
+	"HeaderSubtitleProfilesHelp": "Subtitle profiles describe the subtitle formats supported by the device.",
+	"LabelFormat": "Format:",
+	"LabelMethod": "Method:",
+	"LabelDidlMode": "Didl mode:",
+	"OptionCaptionInfoExSamsung": "CaptionInfoEx (Samsung)",
+	"OptionResElement": "res element",
+	"OptionEmbedSubtitles": "Embed within container",
+	"OptionExternallyDownloaded": "External download",
+    "OptionHlsSegmentedSubtitles": "Hls segmented subtitles",
+    "LabelSubtitleFormatHelp":  "Example: srt"
 }

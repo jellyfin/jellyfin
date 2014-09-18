@@ -65,8 +65,7 @@
     font-family: 'MBLogo';
     font-style: normal;
     font-weight: 200;
-    src: url('fonts/mblogo.eot');
-    src: url('fonts/mblogo.eot?#iefix') format('embedded-opentype'), url('fonts/mblogo.woff') format('woff'), url('fonts/mblogo.ttf') format('truetype');
+    src: url('fonts/mblogo.woff') format('woff');
 }
 
 * {
