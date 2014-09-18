@@ -16,16 +16,14 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         // OS X builds: http://ffmpegmac.net/
         // OS X x64: http://www.evermeet.cx/ffmpeg/
 
-        public static string Version = ffmpegOsType("Version");
+        public static string Version = getFfmpegValue("Version");
 
-        public static string[] FfMpegUrls = GetDownloadUrls();
+        public static string FFMpegFilename = getFfmpegValue("FFMpegFilename");
+        public static string FFProbeFilename = getFfmpegValue("FFProbeFilename");
 
-        public static string FFMpegFilename = ffmpegOsType("FFMpegFilename");
-        public static string FFProbeFilename = ffmpegOsType("FFProbeFilename");
+        public static string ArchiveType = getFfmpegValue("ArchiveType");
 
-        public static string ArchiveType = ffmpegOsType("ArchiveType");
-
-        private static string ffmpegOsType(string arg)
+        private static string getFfmpegValue(string arg)
         {
             OperatingSystem os = Environment.OSVersion;
             PlatformID pid = os.Platform;
@@ -61,7 +59,6 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                                 case "ArchiveType":
                                     return "gz";
                             }
-                            break;
                         }
                         if (PlatformDetection.IsX86)
                         {
@@ -76,10 +73,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                                 case "ArchiveType":
                                     return "gz";
                             }
-                            break;
                         }
                     }
-                    if (PlatformDetection.IsLinux)
+                    else if (PlatformDetection.IsLinux)
                     {
                         if (PlatformDetection.IsX86)
                         {
@@ -94,8 +90,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                                 case "ArchiveType":
                                     return "gz";
                             }
-                            break;
                         }
+
                         else if (PlatformDetection.IsX86_64)
                         {
                             // Linux on x86 or x86_64
@@ -110,16 +106,28 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                                 case "ArchiveType":
                                     return "gz";
                             }
-                            break;
                         }
                     }
-                    // Unsupported Unix platform
-                    return "";
+
+                    break;
             }
-            return "";
+
+            switch (arg)
+            {
+                case "Version":
+                    return "path";
+                case "FFMpegFilename":
+                    return "ffmpeg";
+                case "FFProbeFilename":
+                    return "ffprobe";
+                case "ArchiveType":
+                    return "";
+                default:
+                    return string.Empty;
+            }
         }
 
-        private static string[] GetDownloadUrls()
+        public static string[] GetDownloadUrls()
         {
             var pid = Environment.OSVersion.Platform;
 
@@ -210,8 +218,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 var sysName = uname.sysname ?? string.Empty;
 
                 IsMac = string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase);
-                IsLinux = string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase) ||
-                    sysName.EndsWith("BSD", StringComparison.OrdinalIgnoreCase);
+                IsLinux = string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase);
 
                 var archX86 = new Regex("(i|I)[3-6]86");
                 IsX86 = archX86.IsMatch(uname.machine);

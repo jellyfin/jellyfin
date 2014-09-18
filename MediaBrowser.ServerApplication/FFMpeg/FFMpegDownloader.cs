@@ -55,14 +55,26 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 };
             }
 
+            var version = FFMpegDownloadInfo.Version;
+
+            if (string.Equals(version, "path", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FFMpegInfo
+                {
+                    ProbePath = FFMpegDownloadInfo.FFProbeFilename,
+                    EncoderPath = FFMpegDownloadInfo.FFMpegFilename,
+                    Version = version
+                };
+            }
+
             var rootEncoderPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
-            var versionedDirectoryPath = Path.Combine(rootEncoderPath, FFMpegDownloadInfo.Version);
+            var versionedDirectoryPath = Path.Combine(rootEncoderPath, version);
 
             var info = new FFMpegInfo
             {
                 ProbePath = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFProbeFilename),
                 EncoderPath = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFMpegFilename),
-                Version = FFMpegDownloadInfo.Version
+                Version = version
             };
 
             Directory.CreateDirectory(versionedDirectoryPath);
@@ -166,7 +178,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         private async Task DownloadFFMpeg(string directory, IProgress<double> progress)
         {
-            foreach (var url in FFMpegDownloadInfo.FfMpegUrls)
+            foreach (var url in FFMpegDownloadInfo.GetDownloadUrls())
             {
                 progress.Report(0);
 
