@@ -302,7 +302,7 @@
     "OptionCriticRating": "Avalia\u00e7\u00e3o da Cr\u00edtica",
     "LabelExternalPlayers": "Reprodutores externos:",
     "OptionVideoBitrate": "Taxa do V\u00eddeo",
-    "LabelExternalPlayersHelp": "Exibir bot\u00f5es para reproduzir conte\u00fado em reprodutores externos. Isto est\u00e1 dispon\u00edvel apenas em dispositivos que suportam esquemas url, geralmente Android e iOS. Com os reprodutores externos, geralmente n\u00e3o existe suporte para controle remoto, retomar ou mostrar o progresso no servidor.",
+    "LabelExternalPlayersHelp": "Exibir bot\u00f5es para reproduzir conte\u00fado em reprodutores externos. Isto est\u00e1 dispon\u00edvel apenas em dispositivos que suportam esquemas url, geralmente Android e iOS. Com os reprodutores externos, geralmente n\u00e3o existe suporte para controle remoto ou para retomar.",
     "HeaderSubtitleProfile": "Subtitle Profile",
     "OptionResumable": "Por retomar",
     "ScheduledTasksHelp": "Clique em uma tarefa para ajustar quando ser\u00e1 executada.",
