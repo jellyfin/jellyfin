@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
@@ -117,6 +118,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return PersistUserData(userId, key, userData, cancellationToken);
         }
 
+        public Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+        {
+            if (userData == null)
+            {
+                throw new ArgumentNullException("userData");
+            }
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            return PersistAllUserData(userId, userData, cancellationToken);
+        }
+
         /// <summary>
         /// Persists the user data.
         /// </summary>
@@ -153,6 +168,79 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     cmd.Transaction = transaction;
 
                     cmd.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save user data:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Persist all user data for the specified user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task PersistAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                foreach (var userItemData in userData)
+                {
+                    using (var cmd = _connection.CreateCommand())
+                    {
+                        cmd.CommandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate)";
+
+                        cmd.Parameters.Add(cmd, "@key", DbType.String).Value = userItemData.Key;
+                        cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+                        cmd.Parameters.Add(cmd, "@rating", DbType.Double).Value = userItemData.Rating;
+                        cmd.Parameters.Add(cmd, "@played", DbType.Boolean).Value = userItemData.Played;
+                        cmd.Parameters.Add(cmd, "@playCount", DbType.Int32).Value = userItemData.PlayCount;
+                        cmd.Parameters.Add(cmd, "@isFavorite", DbType.Boolean).Value = userItemData.IsFavorite;
+                        cmd.Parameters.Add(cmd, "@playbackPositionTicks", DbType.Int64).Value = userItemData.PlaybackPositionTicks;
+                        cmd.Parameters.Add(cmd, "@lastPlayedDate", DbType.DateTime).Value = userItemData.LastPlayedDate;
+
+                        cmd.Transaction = transaction;
+
+                        cmd.ExecuteNonQuery();
+                    }
                 }
 
                 transaction.Commit();
@@ -227,25 +315,72 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (reader.Read())
                     {
-                        if (!reader.IsDBNull(0))
-                        {
-                            userData.Rating = reader.GetDouble(0);
-                        }
-
-                        userData.Played = reader.GetBoolean(1);
-                        userData.PlayCount = reader.GetInt32(2);
-                        userData.IsFavorite = reader.GetBoolean(3);
-                        userData.PlaybackPositionTicks = reader.GetInt64(4);
-
-                        if (!reader.IsDBNull(5))
-                        {
-                            userData.LastPlayedDate = reader.GetDateTime(5).ToUniversalTime();
-                        }
+                        ReadRow(reader, ref userData);
                     }
                 }
 
                 return userData;
             }
+        }
+
+        /// <summary>
+        /// Return all user-data associated with the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public IEnumerable<UserItemData> GetAllUserData(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,key from userdata where userId=@userId";
+
+                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var userData = new UserItemData
+                        {
+                            UserId = userId,
+                        };
+                        ReadRow(reader, ref userData);
+                        userData.Key = reader.GetString(6);
+                        yield return userData;
+                    }
+                }
+
+            }
+            
+        }
+
+        /// <summary>
+        /// Read a row from the specified reader into the provided userData object
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="userData"></param>
+        private static void ReadRow(IDataReader reader, ref UserItemData userData)
+        {
+            if (!reader.IsDBNull(0))
+            {
+                userData.Rating = reader.GetDouble(0);
+            }
+
+            userData.Played = reader.GetBoolean(1);
+            userData.PlayCount = reader.GetInt32(2);
+            userData.IsFavorite = reader.GetBoolean(3);
+            userData.PlaybackPositionTicks = reader.GetInt64(4);
+
+            if (!reader.IsDBNull(5))
+            {
+                userData.LastPlayedDate = reader.GetDateTime(5).ToUniversalTime();
+            }
+            
         }
 
         /// <summary>
