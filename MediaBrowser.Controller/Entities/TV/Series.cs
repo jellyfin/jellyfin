@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }

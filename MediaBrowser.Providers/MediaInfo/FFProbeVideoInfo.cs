@@ -13,6 +13,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.MediaInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -232,6 +233,7 @@ namespace MediaBrowser.Providers.MediaInfo
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
             ExtractTimestamp(video);
+            UpdateFromMediaInfo(video, videoStream);
 
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
@@ -271,6 +273,28 @@ namespace MediaBrowser.Providers.MediaInfo
                 }, cancellationToken).ConfigureAwait(false);
 
                 await _chapterManager.SaveChapters(video.Id.ToString(), chapters, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private void UpdateFromMediaInfo(Video video, MediaStream videoStream)
+        {
+            if (video.VideoType == VideoType.VideoFile && video.LocationType != LocationType.Remote && video.LocationType != LocationType.Virtual)
+            {
+                if (videoStream != null)
+                {
+                    try
+                    {
+                        var result = new MediaInfoLib().GetVideoInfo(video.Path);
+
+                        videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
+                        videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
+                        videoStream.RefFrames = result.RefFrames;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error running MediaInfo on {0}", ex, video.Path);
+                    }
+                }
             }
         }
 

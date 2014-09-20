@@ -148,6 +148,18 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\MediaInfo\linux\x86\libmediainfo.so">
+      <Link>MediaInfo\linux\lib\libmediainfo.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\MediaInfo\linux\x86_64\libmediainfo.so">
+      <Link>MediaInfo\linux\lib64\libmediainfo.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
+      <Link>MediaInfo\osx\libmediainfo.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
       <Link>libwebp\linux\lib\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -182,6 +194,10 @@
     </Content>
     <Content Include="Imazen.WebP.dll.config">
       <Link>Imazen.WebP.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="MediaBrowser.MediaInfo.dll.config">
+      <Link>MediaBrowser.MediaInfo.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

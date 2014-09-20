@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
