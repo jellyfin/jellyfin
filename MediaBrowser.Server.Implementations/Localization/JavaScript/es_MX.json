@@ -560,5 +560,6 @@
     "MediaInfoStreamTypeData": "Datos",
     "MediaInfoStreamTypeVideo": "Video",
     "MediaInfoStreamTypeSubtitle": "Subt\u00edtulo",
-    "MediaInfoStreamTypeEmbeddedImage": "Im\u00e1gen Embebida"
+    "MediaInfoStreamTypeEmbeddedImage": "Im\u00e1gen Embebida",
+    "MediaInfoRefFrames": "Ref frames"
 }

@@ -560,5 +560,6 @@
     "MediaInfoStreamTypeData": "Dados",
     "MediaInfoStreamTypeVideo": "V\u00eddeo",
     "MediaInfoStreamTypeSubtitle": "Legenda",
-    "MediaInfoStreamTypeEmbeddedImage": "Imagem Incorporada"
+    "MediaInfoStreamTypeEmbeddedImage": "Imagem Incorporada",
+    "MediaInfoRefFrames": "Ref frames"
 }

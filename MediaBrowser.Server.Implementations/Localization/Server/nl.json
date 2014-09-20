@@ -60,7 +60,7 @@
     "VideoImageExtractionHelp": "Voor video's die nog geen afbeeldingen hebben, en waarvoor geen afbeeldingen op Internet te vinden zijn. Dit voegt extra tijd toe aan de oorspronkelijke bibliotheek scan, maar resulteert in een mooiere weergave.",
     "LabelChannelDownloadSizeLimit": "Downloadlimiet (GB): ",
     "LabelEnableChapterImageExtractionForMovies": "Hoofdstuk afbeeldingen uitpakken voor Films",
-    "LabelChannelDownloadSizeLimitHelp": "Beperk de grootte van de kanaal download map",
+    "LabelChannelDownloadSizeLimitHelp": "De grootte van het kanaal downloadmap beperken. Downloaden buiten  500MB vereist een actieve supporter lidmaatschap",
     "HeaderRecentActivity": "Recente activiteit",
     "LabelChapterImageExtractionForMoviesHelp": "Uitpakken van hoofdstuk afbeeldingen geeft de Cli\u00ebnt de mogelijkheid om grafische scene selectie menu's te tonen. Het proces kan traag en cpu-intensief zijn en kan enkele gigabytes aan ruimte vereisen. Het word uitgevoerd als nachtelijke taak om 4:00, maar dit is instelbaar via de geplande taken. Het wordt niet aanbevolen om deze taak uit te voeren tijdens de piekuren.",
     "HeaderPeople": "Personen",

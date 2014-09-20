@@ -560,5 +560,6 @@
     "MediaInfoStreamTypeData": "\u0414\u0435\u0440\u0435\u043a\u0442\u0435\u0440",
     "MediaInfoStreamTypeVideo": "\u0411\u0435\u0439\u043d\u0435",
     "MediaInfoStreamTypeSubtitle": "\u0421\u0443\u0431\u0442\u0438\u0442\u0440\u043b\u0435\u0440",
-    "MediaInfoStreamTypeEmbeddedImage": "\u0415\u043d\u0434\u0456\u0440\u0456\u043b\u0433\u0435\u043d \u0441\u0443\u0440\u0435\u0442"
+    "MediaInfoStreamTypeEmbeddedImage": "\u0415\u043d\u0434\u0456\u0440\u0456\u043b\u0433\u0435\u043d \u0441\u0443\u0440\u0435\u0442",
+    "MediaInfoRefFrames": "Ref frames"
 }

@@ -204,6 +204,12 @@ namespace MediaBrowser.Providers.TV
             IEnumerable<Tuple<int, int>> episodeLookup, 
             CancellationToken cancellationToken)
         {
+            // Be conservative here to avoid creating missing episodes for ones they already have
+            if (!seriesHasBadData)
+            {
+                return false;
+            }
+
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
                                     from c in s.RecursiveChildren.OfType<Episode>()
