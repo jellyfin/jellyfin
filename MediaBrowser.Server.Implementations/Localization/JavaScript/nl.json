@@ -560,5 +560,6 @@
     "MediaInfoStreamTypeData": "Data",
     "MediaInfoStreamTypeVideo": "Video",
     "MediaInfoStreamTypeSubtitle": "Ondertiteling",
-    "MediaInfoStreamTypeEmbeddedImage": "Ingevoegde afbeelding"
+    "MediaInfoStreamTypeEmbeddedImage": "Ingevoegde afbeelding",
+    "MediaInfoRefFrames": "Ref frames"
 }
