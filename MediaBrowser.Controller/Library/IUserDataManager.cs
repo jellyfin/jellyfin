@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
@@ -43,5 +44,22 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>UserItemDataDto.</returns>
         UserItemDataDto GetUserDataDto(IHasUserData item, User user);
+
+        /// <summary>
+        /// Get all user data for the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        IEnumerable<UserItemData> GetAllUserData(Guid userId);
+
+        /// <summary>
+        /// Save the all provided user data for the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken);
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -94,6 +95,55 @@ namespace MediaBrowser.Server.Implementations.Library
                 Item = item
 
             }, _logger);
+        }
+
+        /// <summary>
+        /// Save the provided user data for the given user.  Batch operation. Does not fire any events or update the cache.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+        {
+            if (userData == null)
+            {
+                throw new ArgumentNullException("userData");
+            }
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                await Repository.SaveAllUserData(userId, userData, cancellationToken).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving user data", ex);
+
+                throw;
+            }
+            
+        }
+
+        /// <summary>
+        /// Retrieve all user data for the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public IEnumerable<UserItemData> GetAllUserData(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            return Repository.GetAllUserData(userId);
         }
 
         /// <summary>
