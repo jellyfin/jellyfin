@@ -118,14 +118,5 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [user data changed].
         /// </summary>
         event EventHandler<GenericEventArgs<UserDataChangeInfo>> UserDataChanged;
-        /// <summary>
-        /// Occurs when [connected].
-        /// </summary>
-        event EventHandler<EventArgs> Connected;
-        /// <summary>
-        /// Gets a value indicating whether this instance is connected.
-        /// </summary>
-        /// <value><c>true</c> if this instance is connected; otherwise, <c>false</c>.</value>
-        bool IsConnected { get; }
     }
 }

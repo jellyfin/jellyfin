@@ -328,6 +328,7 @@
     "HeaderFrequentlyPlayed": "Fr\u00e9quemment lus",
     "LabelSubtitleFormatHelp": "Example: srt",
     "DevBuildWarning": "Les versions Dev incorporent les derniers d\u00e9veloppements. Mises \u00e0 jour fr\u00e9quemment, ces versions ne sont pas test\u00e9es. L'application peut planter et certaines fonctionalit\u00e9s peuvent ne pas fonctionner du tout.",
+    "ButtonLearnMore": "Learn more",
     "LabelVideoType": "Type de vid\u00e9o:",
     "OptionBluray": "Bluray",
     "OptionDvd": "DVD",

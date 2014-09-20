@@ -1102,16 +1102,21 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (movie != null)
             {
-                var specialFeatureCount = movie.SpecialFeatureIds.Count;
+                if (fields.Contains(ItemFields.TmdbCollectionName))
+                {
+                    dto.TmdbCollectionName = movie.TmdbCollectionName;
+                }
+            }
+
+            var hasSpecialFeatures = item as IHasSpecialFeatures;
+
+            if (hasSpecialFeatures != null)
+            {
+                var specialFeatureCount = hasSpecialFeatures.SpecialFeatureIds.Count;
 
                 if (specialFeatureCount > 0)
                 {
                     dto.SpecialFeatureCount = specialFeatureCount;
-                }
-
-                if (fields.Contains(ItemFields.TmdbCollectionName))
-                {
-                    dto.TmdbCollectionName = movie.TmdbCollectionName;
                 }
             }
 
@@ -1145,8 +1150,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
                 dto.Status = series.Status;
-
-                dto.SpecialFeatureCount = series.SpecialFeatureIds.Count;
 
                 dto.SeasonCount = series.SeasonCount;
 

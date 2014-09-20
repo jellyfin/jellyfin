@@ -328,6 +328,7 @@
     "HeaderFrequentlyPlayed": "Ofte avspilt",
     "LabelSubtitleFormatHelp": "Example: srt",
     "DevBuildWarning": "Dev builds er \u00e5 anses som p\u00e5 kanten. Disse har ikke blitt testet. Dette vil kunne medf\u00f8re til at applikasjonen kan krasje og komplette funksjoner ikke fungerer.",
+    "ButtonLearnMore": "Learn more",
     "LabelVideoType": "Video-type",
     "OptionBluray": "Bluray",
     "OptionDvd": "Dvd",

@@ -1008,22 +1008,13 @@ namespace MediaBrowser.Api.UserLibrary
 
                 items = items.Where(i =>
                 {
-                    var movie = i as Movie;
+                    var movie = i as IHasSpecialFeatures;
 
                     if (movie != null)
                     {
                         return filterValue
                                    ? movie.SpecialFeatureIds.Count > 0
                                    : movie.SpecialFeatureIds.Count == 0;
-                    }
-
-                    var series = i as Series;
-
-                    if (series != null)
-                    {
-                        return filterValue
-                                   ? series.SpecialFeatureIds.Count > 0
-                                   : series.SpecialFeatureIds.Count == 0;
                     }
 
                     return false;

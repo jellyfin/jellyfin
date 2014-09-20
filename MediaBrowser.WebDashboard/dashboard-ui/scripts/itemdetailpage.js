@@ -1256,6 +1256,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoPixelFormat'), stream.PixelFormat));
             }
 
+            if (stream.RefFrames) {
+                attributes.push(createAttribute(Globalize.translate('MediaInfoRefFrames'), stream.RefFrames));
+            }
+
             if (stream.Type != "Video") {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoDefault'), (stream.IsDefault ? 'Yes' : 'No')));
             }

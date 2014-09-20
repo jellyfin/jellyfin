@@ -70,6 +70,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             .Replace(":", " ")
             .Replace(",", " ")
             .Replace("-", " ")
+            .Replace("'", " ")
+            .Replace("[", " ")
+            .Replace("]", " ")
             .Replace(" a ", String.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace(" the ", String.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace(" ", String.Empty);

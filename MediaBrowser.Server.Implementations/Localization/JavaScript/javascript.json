@@ -550,7 +550,7 @@
     "MediaInfoExternal": "External",
     "MediaInfoTimestamp": "Timestamp",
     "MediaInfoPixelFormat": "Pixel format",
-    "MediaInfoBitDepth": "Bit Depth",
+    "MediaInfoBitDepth": "Bit depth",
     "MediaInfoSampleRate": "Sample rate",
     "MediaInfoBitrate": "Bitrate",
     "MediaInfoChannels": "Channels",
@@ -568,5 +568,6 @@
     "MediaInfoStreamTypeData": "Data",
     "MediaInfoStreamTypeVideo": "Video",
     "MediaInfoStreamTypeSubtitle": "Subtitle",
-    "MediaInfoStreamTypeEmbeddedImage": "Embedded Image"
+    "MediaInfoStreamTypeEmbeddedImage": "Embedded Image",
+    "MediaInfoRefFrames":  "Ref frames"
 }

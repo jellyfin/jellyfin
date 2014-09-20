@@ -443,22 +443,6 @@ namespace MediaBrowser.Api.UserLibrary
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
 
-            var movie = item as Movie;
-
-            // Get them from the db
-            if (movie != null)
-            {
-                // Avoid implicitly captured closure
-                var movie1 = movie;
-
-                var dtos = movie.SpecialFeatureIds
-                    .Select(_libraryManager.GetItemById)
-                    .OrderBy(i => i.SortName)
-                    .Select(i => _dtoService.GetBaseItemDto(i, fields, user, movie1));
-
-                return dtos.ToList();
-            }
-
             var series = item as Series;
 
             // Get them from the child tree
@@ -482,6 +466,19 @@ namespace MediaBrowser.Api.UserLibrary
                     })
                     .ThenBy(i => i.SortName)
                     .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+
+                return dtos.ToList();
+            }
+
+            var movie = item as IHasSpecialFeatures;
+
+            // Get them from the db
+            if (movie != null)
+            {
+                var dtos = movie.SpecialFeatureIds
+                    .Select(_libraryManager.GetItemById)
+                    .OrderBy(i => i.SortName)
+                    .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
 
                 return dtos.ToList();
             }
