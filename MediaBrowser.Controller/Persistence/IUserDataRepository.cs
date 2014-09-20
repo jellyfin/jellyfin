@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,5 +34,22 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
+
+        /// <summary>
+        /// Return all user data associated with the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        IEnumerable<UserItemData> GetAllUserData(Guid userId);
+
+        /// <summary>
+        /// Save all user data associated with the given user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userData"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken);
+
     }
 }
