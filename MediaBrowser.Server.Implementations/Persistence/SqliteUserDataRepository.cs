@@ -241,6 +241,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                         cmd.ExecuteNonQuery();
                     }
+                    
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 transaction.Commit();
