@@ -158,9 +158,10 @@ namespace MediaBrowser.Controller.Resolvers
             // Normalize
             // Remove whitespace
             filename = filename.Replace("-", string.Empty);
+            filename = filename.Replace(".", string.Empty);
             filename = Regex.Replace(filename, @"\s+", "");
 
-            var prefixes = new[] { "disc", "cd", "disk" };
+            var prefixes = new[] { "disc", "cd", "disk", "vol", "volume" };
 
             foreach (var prefix in prefixes)
             {
@@ -210,7 +211,7 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     if (includeCreationTime)
                     {
-                        item.DateCreated = fileSystem.GetCreationTimeUtc(childData);
+                        item.DateCreated = DateTime.UtcNow;
                     }
 
                     item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
@@ -223,7 +224,7 @@ namespace MediaBrowser.Controller.Resolvers
                     {
                         if (includeCreationTime)
                         {
-                            item.DateCreated = fileSystem.GetCreationTimeUtc(fileData);
+                            item.DateCreated = DateTime.UtcNow;
                         }
                         item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
                     }
@@ -233,7 +234,7 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 if (includeCreationTime)
                 {
-                    item.DateCreated = fileSystem.GetCreationTimeUtc(args.FileInfo);
+                    item.DateCreated = DateTime.UtcNow;
                 }
                 item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
             }

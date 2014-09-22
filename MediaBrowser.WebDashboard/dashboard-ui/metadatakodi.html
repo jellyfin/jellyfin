@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataXbmcPage" data-role="page" class="page type-interior metadataConfigurationPage">
+    <div id="metadataKodiPage" data-role="page" class="page type-interior metadataConfigurationPage">
 
         <div data-role="content">
 
@@ -13,47 +13,47 @@
                     <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html" data-role="button">${TabServices}</a>
                     <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
-                    <a href="#" class="ui-btn-active" data-role="button">${TabXbmcMetadata}</a>
+                    <a href="#" class="ui-btn-active" data-role="button">${TabKodiMetadata}</a>
                     <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
-                <form class="metadataXbmcForm">
+                <form class="metadataKodiForm">
 
-                    <p>${HeaderXbmcMetadataHelp}</p>
+                    <p>${HeaderKodiMetadataHelp}</p>
                     <br />
                     <ul class="ulForm" data-role="listview">
 
                         <li>
-                            <label for="selectUser">${LabelXbmcMetadataUser}</label>
+                            <label for="selectUser">${LabelKodiMetadataUser}</label>
                             <select name="selectUser" id="selectUser" data-mini="true">
                             </select>
-                            <div class="fieldDescription">${LabelXbmcMetadataUserHelp}</div>
+                            <div class="fieldDescription">${LabelKodiMetadataUserHelp}</div>
                         </li>
 
                         <li>
-                            <label for="selectReleaseDateFormat">${LabelXbmcMetadataDateFormat}</label>
+                            <label for="selectReleaseDateFormat">${LabelKodiMetadataDateFormat}</label>
                             <select name="selectReleaseDateFormat" id="selectReleaseDateFormat" data-mini="true">
                                 <option value="yyyy-MM-dd">yyyy-MM-dd</option>
                             </select>
-                            <div class="fieldDescription">${LabelXbmcMetadataDateFormatHelp}</div>
+                            <div class="fieldDescription">${LabelKodiMetadataDateFormatHelp}</div>
                         </li>
                         <li>
-                            <label for="chkSaveImagePaths">${LabelXbmcMetadataSaveImagePaths}</label>
+                            <label for="chkSaveImagePaths">${LabelKodiMetadataSaveImagePaths}</label>
                             <input id="chkSaveImagePaths" type="checkbox" data-mini="true" />
-                            <div class="fieldDescription">${LabelXbmcMetadataSaveImagePathsHelp}</div>
+                            <div class="fieldDescription">${LabelKodiMetadataSaveImagePathsHelp}</div>
                         </li>
                         <li>
-                            <label for="chkEnablePathSubstitution">${LabelXbmcMetadataEnablePathSubstitution}</label>
+                            <label for="chkEnablePathSubstitution">${LabelKodiMetadataEnablePathSubstitution}</label>
                             <input id="chkEnablePathSubstitution" type="checkbox" data-mini="true" />
                             <div class="fieldDescription">
-                                <div>${LabelXbmcMetadataEnablePathSubstitutionHelp}</div>
-                                <div style="margin-top: .5em;"><a href="librarypathmapping.html">${LabelXbmcMetadataEnablePathSubstitutionHelp2}</a></div>
+                                <div>${LabelKodiMetadataEnablePathSubstitutionHelp}</div>
+                                <div style="margin-top: .5em;"><a href="librarypathmapping.html">${LabelKodiMetadataEnablePathSubstitutionHelp2}</a></div>
                             </div>
                         </li>
                         <li>
-                            <label for="chkEnableExtraThumbs">${LabelXbmcMetadataEnableExtraThumbs}</label>
+                            <label for="chkEnableExtraThumbs">${LabelKodiMetadataEnableExtraThumbs}</label>
                             <input id="chkEnableExtraThumbs" type="checkbox" data-mini="true" />
-                            <div class="fieldDescription">${LabelXbmcMetadataEnableExtraThumbsHelp}</div>
+                            <div class="fieldDescription">${LabelKodiMetadataEnableExtraThumbsHelp}</div>
                         </li>
                     </ul>
                     <br />
@@ -73,7 +73,7 @@
         </div>
 
         <script type="text/javascript">
-            $('.metadataXbmcForm').off('submit', XbmcMetadataPage.onSubmit).on('submit', XbmcMetadataPage.onSubmit);
+            $('.metadataKodiForm').off('submit', KodiMetadataPage.onSubmit).on('submit', KodiMetadataPage.onSubmit);
         </script>
     </div>
 </body>

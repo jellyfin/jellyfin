@@ -693,6 +693,11 @@ var Dashboard = {
             href: "metadata.html",
             selected: page.hasClass('metadataConfigurationPage')
         }, {
+            name: Globalize.translate('TabPlayback'),
+            href: "playbackconfiguration.html",
+            selected: page.hasClass('playbackConfigurationPage')
+        }, {
+            divider: true,
             name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage")

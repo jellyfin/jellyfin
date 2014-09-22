@@ -50,10 +50,6 @@ namespace MediaBrowser.Providers.BoxSets
         {
             var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
 
-            var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
-
             if (!string.IsNullOrEmpty(tmdbId))
             {
                 await EnsureInfo(tmdbId, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
@@ -62,7 +58,11 @@ namespace MediaBrowser.Providers.BoxSets
                 var info = _json.DeserializeFromFile<RootObject>(dataFilePath);
 
                 var images = (info.images ?? new Images()).posters ?? new List<Poster>();
-               
+
+                var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+
                 var result = new RemoteSearchResult
                 {
                     Name = info.name,

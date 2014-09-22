@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -45,6 +47,13 @@ namespace MediaBrowser.Providers.Movies
                 return !trailer.IsLocalTrailer;
             }
 
+            var channelItem = item as ChannelVideoItem;
+
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            {
+                return true;
+            }
+            
             // Don't support local trailers
             return item is Movie || item is MusicVideo;
         }

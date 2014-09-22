@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitlePlayback}</title>
+</head>
+<body>
+    <div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="playbackconfiguration.html" data-role="button">${TabGeneral}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabCinemaMode}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
+                <form class="cinemaModeConfigurationForm">
+
+                    <p>${CinemaModeConfigurationHelp}</p>
+                    <p><a href="supporter.html">${ButtonThisFeatureRequiresSupporter}</a></p>
+                    <br />
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>${LabelEnableCinemaModeFor}</legend>
+                            <label for="chkMovies">${OptionMovies}</label>
+                            <input type="checkbox" id="chkMovies" />
+                            <label for="chkEpisodes">${OptionEpisodes}</label>
+                            <input type="checkbox" id="chkEpisodes" />
+                        </fieldset>
+                    </div>
+                    <br />
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>${LabelEnableTheFollowingIntros}</legend>
+                            <label for="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</label>
+                            <input type="checkbox" id="chkMyMovieTrailers" />
+                            <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
+                            <input type="checkbox" id="chkUpcomingTheaterTrailers" />
+                        </fieldset>
+                        <div class="fieldDescription">${LabelEnableTheFollowingIntrosHelp}</div>
+                    </div>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</label>
+                            <input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />
+                        </li>
+                        <li>
+                            <label for="chkEnableParentalControl">${LabelEnableIntroParentalControl}</label>
+                            <input type="checkbox" id="chkEnableParentalControl" data-mini="true" />
+                            <div class="fieldDescription">${LabelEnableIntroParentalControlHelp}</div>
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.cinemaModeConfigurationForm').off('submit', CinemaModeConfigurationPage.onSubmit).on('submit', CinemaModeConfigurationPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -4,6 +4,8 @@
 
         $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden).checkboxradio("refresh");
 
+        $('#chkFindTrailers', page).checked(config.FindInternetTrailers).checkboxradio("refresh");
+
         $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
         $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
         $('#chkEnableFanartUpdates', page).checked(config.EnableFanArtUpdates).checkboxradio("refresh");
@@ -180,6 +182,7 @@
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 
+            config.FindInternetTrailers = $('#chkFindTrailers', form).checked();
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();

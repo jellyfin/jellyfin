@@ -566,13 +566,13 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetIntros request)
+        public async Task<object> Get(GetIntros request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
-            var items = _libraryManager.GetIntros(item, user);
+            var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
 
             // Get everything
             var fields = Enum.GetNames(typeof(ItemFields))

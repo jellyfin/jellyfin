@@ -650,8 +650,8 @@
 
             return "<img src='css/images/clients/mbkinect.png' />";
         }
-        if (clientLowered == "xbmc") {
-            return "<img src='css/images/clients/xbmc.png' />";
+        if (clientLowered == "kodi" || clientLowered == "xbmc") {
+            return "<img src='css/images/clients/kodi.png' />";
         }
         if (clientLowered == "chromecast") {
 

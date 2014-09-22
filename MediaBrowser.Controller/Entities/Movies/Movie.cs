@@ -125,7 +125,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return hasChanges;
         }
 
-        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LoadSpecialFeatures(fileSystemChildren, options.DirectoryService).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
@@ -139,32 +139,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             SpecialFeatureIds = newItemIds;
 
             return itemsChanged;
-        }
-
-        /// <summary>
-        /// Loads the special features.
-        /// </summary>
-        /// <returns>IEnumerable{Video}.</returns>
-        private IEnumerable<Video> LoadSpecialFeatures(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
-                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
-
-            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
-            {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.GetItemById(video.Id) as Video;
-
-                if (dbItem != null)
-                {
-                    video = dbItem;
-                }
-
-                return video;
-
-                // Sort them so that the list can be easily compared for changes
-            }).OrderBy(i => i.Path).ToList();
         }
 
         protected override bool GetBlockUnratedValue(UserConfiguration config)

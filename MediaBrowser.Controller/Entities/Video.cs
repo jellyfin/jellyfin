@@ -41,6 +41,7 @@ namespace MediaBrowser.Controller.Entities
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
         public string ShortOverview { get; set; }
+        public ExtraType ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.

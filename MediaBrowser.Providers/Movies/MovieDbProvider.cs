@@ -56,10 +56,6 @@ namespace MediaBrowser.Providers.Movies
 
         public async Task<IEnumerable<RemoteSearchResult>> GetMovieSearchResults(ItemLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
-
             var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
@@ -71,6 +67,10 @@ namespace MediaBrowser.Providers.Movies
                 var dataFilePath = GetDataFilePath(tmdbId, searchInfo.MetadataLanguage);
 
                 var obj = _jsonSerializer.DeserializeFromFile<CompleteMovieData>(dataFilePath);
+
+                var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
+
+                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
                 var remoteResult = new RemoteSearchResult
                 {

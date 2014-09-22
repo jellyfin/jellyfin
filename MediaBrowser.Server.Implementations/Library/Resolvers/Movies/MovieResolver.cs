@@ -111,8 +111,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             var filename = Path.GetFileName(args.Path);
-            // Don't misidentify xbmc trailers as a movie
-            if (filename.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
+            // Don't misidentify extras or trailers
+            if (BaseItem.ExtraSuffixes.Any(i => filename.IndexOf(i.Key, StringComparison.OrdinalIgnoreCase) != -1))
             {
                 return null;
             }
@@ -229,8 +229,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     continue;
                 }
 
-                // Don't misidentify xbmc trailers as a movie
-                if (filename.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
+                // Don't misidentify extras or trailers as a movie
+                if (BaseItem.ExtraSuffixes.Any(i => filename.IndexOf(i.Key, StringComparison.OrdinalIgnoreCase) != -1))
                 {
                     continue;
                 }

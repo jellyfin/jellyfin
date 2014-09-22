@@ -571,7 +571,11 @@ namespace MediaBrowser.WebDashboard.Api
                                 "edititemmetadata.js",
                                 "edititemimages.js",
                                 "edititemsubtitles.js",
+
+                                "playbackconfiguration.js",
+                                "cinemamodeconfiguration.js",
                                 "encodingsettings.js",
+
                                 "externalplayer.js",
                                 "favorites.js",
                                 "gamesrecommendedpage.js",
@@ -610,7 +614,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
-                                "metadataxbmc.js",
+                                "metadatakodi.js",
                                 "moviegenres.js",
                                 "moviecollections.js",
                                 "movies.js",

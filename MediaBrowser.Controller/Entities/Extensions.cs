@@ -25,16 +25,11 @@ namespace MediaBrowser.Controller.Entities
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
 
-            if (current != null)
-            {
-                current.IsDirectLink = isDirectLink;
-            }
-            else
+            if (current == null)
             {
                 item.RemoteTrailers.Add(new MediaUrl
                 {
-                    Url = url,
-                    IsDirectLink = isDirectLink
+                    Url = url
                 });
             }
         }

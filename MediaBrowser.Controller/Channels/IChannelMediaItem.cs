@@ -5,8 +5,6 @@ namespace MediaBrowser.Controller.Channels
 {
     public interface IChannelMediaItem : IChannelItem
     {
-        bool IsInfiniteStream { get; set; }
-
         long? RunTimeTicks { get; set; }
         string MediaType { get; }
 

@@ -179,6 +179,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveMetadataHidden { get; set; }
 
+        public bool FindInternetTrailers { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -204,7 +206,8 @@ namespace MediaBrowser.Model.Configuration
 
             RealtimeMonitorDelay = 30;
 
-            EnableInternetProviders = true; 
+            EnableInternetProviders = true;
+            FindInternetTrailers = true;
 
             PathSubstitutions = new PathSubstitution[] { };
 

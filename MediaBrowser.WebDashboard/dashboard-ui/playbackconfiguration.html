@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitlePlayback}</title>
+</head>
+<body>
+    <div id="playbackConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
+                    <a href="cinemamodeconfiguration.html" data-role="button">${TabCinemaMode}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
+                <form class="playbackConfigurationForm">
+                    <div data-role="collapsible" data-collapsed="false">
+                        <h2>${HeaderResumeSettings}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtMinResumePct">${LabelMinResumePercentage}</label>
+                                    <input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required="required" min="0" max="100" />
+                                    <div class="fieldDescription">
+                                        ${LabelMinResumePercentageHelp}
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtMaxResumePct">${LabelMaxResumePercentage}</label>
+                                    <input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required="required" min="1" max="100" />
+                                    <div class="fieldDescription">
+                                        ${LabelMaxResumePercentageHelp}
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtMinResumeDuration">${LabelMinResumeDuration}</label>
+                                    <input type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required="required" min="0" />
+                                    <div class="fieldDescription">
+                                        ${LabelMinResumeDurationHelp}
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.playbackConfigurationForm').off('submit', PlaybackConfigurationPage.onSubmit).on('submit', PlaybackConfigurationPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -9,7 +9,7 @@
         } else {
             $('#windowsStartupDescription', page).hide();
         }
-        
+
         if (systemInfo.SupportsAutoRunAtStartup) {
             $('#fldRunAtStartup', page).show();
         } else {
@@ -27,10 +27,6 @@
         $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
 
         $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");
-
-        $('#txtMinResumePct', page).val(config.MinResumePct);
-        $('#txtMaxResumePct', page).val(config.MaxResumePct);
-        $('#txtMinResumeDuration', page).val(config.MinResumeDurationSeconds);
 
         Dashboard.hideLoadingMsg();
     }
@@ -83,10 +79,6 @@
                 config.RunAtStartup = $('#chkRunAtStartup', form).checked();
                 config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
                 config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
-
-                config.MinResumePct = $('#txtMinResumePct', form).val();
-                config.MaxResumePct = $('#txtMaxResumePct', form).val();
-                config.MinResumeDurationSeconds = $('#txtMinResumeDuration', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

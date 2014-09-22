@@ -13,7 +13,6 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
                     <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
                     <a href="scheduledtasks.html" data-role="button">${TabScheduledTasks}</a>
-                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
                 </div>
                 <form id="advancedConfigurationForm">
 
@@ -52,35 +51,6 @@
                                     <label for="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</label>
                                     <div class="fieldDescription">
                                         ${LabelAllowServerAutoRestartHelp}
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div data-role="collapsible">
-                        <h2>${HeaderResumeSettings}</h2>
-                        <div>
-                            <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtMinResumePct">${LabelMinResumePercentage}</label>
-                                    <input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required="required" min="0" max="100" />
-                                    <div class="fieldDescription">
-                                        ${LabelMinResumePercentageHelp}
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtMaxResumePct">${LabelMaxResumePercentage}</label>
-                                    <input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required="required" min="1" max="100" />
-                                    <div class="fieldDescription">
-                                        ${LabelMaxResumePercentageHelp}
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtMinResumeDuration">${LabelMinResumeDuration}</label>
-                                    <input type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required="required" min="0" />
-                                    <div class="fieldDescription">
-                                        ${LabelMinResumeDurationHelp}
                                     </div>
                                 </li>
                             </ul>
