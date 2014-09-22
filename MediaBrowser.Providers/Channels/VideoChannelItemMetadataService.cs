@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Providers.Channels
 {
-    public class VideoChannelItemMetadataService : MetadataService<ChannelVideoItem, ItemLookupInfo>
+    public class VideoChannelItemMetadataService : MetadataService<ChannelVideoItem, ChannelItemLookupInfo>
     {
         public VideoChannelItemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
             : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)

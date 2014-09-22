@@ -60,6 +60,14 @@ namespace MediaBrowser.Controller.Channels
         Task<QueryResult<BaseItemDto>> GetChannels(ChannelQuery query, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets all media internal.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItem&gt;&gt;.</returns>
+        Task<QueryResult<BaseItem>> GetAllMediaInternal(AllChannelMediaQuery query, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Gets all media.
         /// </summary>
         /// <param name="query">The query.</param>

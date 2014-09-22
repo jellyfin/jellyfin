@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -14,12 +15,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<IntroInfo> GetIntros(BaseItem item, User user);
+        Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, User user);
 
         /// <summary>
         /// Gets all intro files.
         /// </summary>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> GetAllIntroFiles();
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
     }
 }

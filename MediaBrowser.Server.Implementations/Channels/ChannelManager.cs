@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             get
             {
-                return TimeSpan.FromHours(12);
+                return TimeSpan.FromHours(6);
             }
         }
 
@@ -663,7 +663,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<IEnumerable<ChannelItemInfo>> GetLatestItems(ISupportsLatestMedia indexable, IChannel channel, string userId, CancellationToken cancellationToken)
         {
-            var cacheLength = TimeSpan.FromHours(12);
+            var cacheLength = CacheLength;
             var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-latest", null, false);
 
             try
@@ -720,7 +720,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetAllMedia(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItem>> GetAllMediaInternal(AllChannelMediaQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
                 ? null
@@ -798,19 +798,43 @@ namespace MediaBrowser.Server.Implementations.Channels
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
             await RefreshIfNeeded(internalItems, cancellationToken).ConfigureAwait(false);
 
-            var returnItemArray = internalItems.Select(i => _dtoService.GetBaseItemDto(i, query.Fields, user))
-                .ToArray();
+            var returnItemArray = internalItems.ToArray();
 
-            return new QueryResult<BaseItemDto>
+            return new QueryResult<BaseItem>
             {
                 TotalRecordCount = totalCount,
                 Items = returnItemArray
             };
         }
+        
+        public async Task<QueryResult<BaseItemDto>> GetAllMedia(AllChannelMediaQuery query, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrWhiteSpace(query.UserId)
+                ? null
+                : _userManager.GetUserById(query.UserId);
+
+            var internalResult = await GetAllMediaInternal(query, cancellationToken).ConfigureAwait(false);
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields))
+                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+                    .ToList();
+
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+                .ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnItems,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
+
+            return result;
+        }
 
         private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, string userId, CancellationToken cancellationToken)
         {
-            var cacheLength = TimeSpan.FromHours(12);
+            var cacheLength = CacheLength;
             var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-allitems", null, false);
 
             try
@@ -1199,7 +1223,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Genres = info.Genres;
                 item.Studios = info.Studios;
                 item.CommunityRating = info.CommunityRating;
-                item.OfficialRating = info.OfficialRating;
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;
                 item.ParentIndexNumber = info.ParentIndexNumber;
@@ -1207,6 +1230,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.PremiereDate = info.PremiereDate;
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
+                item.OfficialRating = info.OfficialRating;
 
                 item.DateCreated = info.DateCreated.HasValue ?
                     info.DateCreated.Value :

@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<Video> GetIntros(BaseItem item, User user);
+        Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
 
         /// <summary>
         /// Gets all intro files.

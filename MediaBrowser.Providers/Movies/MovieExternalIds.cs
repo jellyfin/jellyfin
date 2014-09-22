@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Movies
@@ -25,6 +27,13 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasProviderIds item)
         {
+            var channelItem = item as ChannelVideoItem;
+
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            {
+                return true;
+            }
+
             return item is Movie || item is Trailer || item is MusicVideo;
         }
     }
@@ -140,6 +149,13 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasProviderIds item)
         {
+            var channelItem = item as ChannelVideoItem;
+
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            {
+                return true;
+            }
+
             return item is Movie || item is Trailer || item is MusicVideo || item is Series || item is Episode;
         }
     }

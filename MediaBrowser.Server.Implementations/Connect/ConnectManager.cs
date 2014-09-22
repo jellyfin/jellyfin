@@ -402,11 +402,11 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
             else if (!string.IsNullOrWhiteSpace(query.Name))
             {
-                url = url + "?nameoremail=" + WebUtility.UrlEncode(query.Name);
+                url = url + "?name=" + WebUtility.UrlEncode(query.Name);
             }
             else if (!string.IsNullOrWhiteSpace(query.Email))
             {
-                url = url + "?nameoremail=" + WebUtility.UrlEncode(query.Email);
+                url = url + "?name=" + WebUtility.UrlEncode(query.Email);
             }
 
             var options = new HttpRequestOptions

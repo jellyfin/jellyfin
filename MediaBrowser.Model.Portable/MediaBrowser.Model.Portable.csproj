@@ -374,6 +374,9 @@
     <Compile Include="..\MediaBrowser.Model\Entities\EmptyRequestResult.cs">
       <Link>Entities\EmptyRequestResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\ExtraType.cs">
+      <Link>Entities\ExtraType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\IHasProviderIds.cs">
       <Link>Entities\IHasProviderIds.cs</Link>
     </Compile>

@@ -314,17 +314,16 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deleteFiles">The delete files.</param>
-        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">deviceId</exception>
-        internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles, bool acquireLock)
+        internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException("deviceId");
             }
 
-            return KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles, acquireLock);
+            return KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles);
         }
 
         /// <summary>
@@ -332,9 +331,8 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="killJob">The kill job.</param>
         /// <param name="deleteFiles">The delete files.</param>
-        /// <param name="acquireLock">if set to <c>true</c> [acquire lock].</param>
         /// <returns>Task.</returns>
-        internal async Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles, bool acquireLock)
+        internal async Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
         {
             var jobs = new List<TranscodingJob>();
 
@@ -350,10 +348,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            if (acquireLock)
-            {
-                await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-            }
+            await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
             try
             {
@@ -364,10 +359,7 @@ namespace MediaBrowser.Api
             }
             finally
             {
-                if (acquireLock)
-                {
-                    TranscodingStartLock.Release();
-                }
+                TranscodingStartLock.Release();
             }
         }
 

@@ -332,7 +332,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             return new ITaskTrigger[]
                 {
-                    new IntervalTrigger{ Interval = TimeSpan.FromHours(6)},
+                    new IntervalTrigger{ Interval = TimeSpan.FromHours(3)},
                 };
         }
 

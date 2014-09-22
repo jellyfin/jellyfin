@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -235,5 +236,10 @@ namespace MediaBrowser.Controller.Providers
         public string SeriesId { get; set; }
 
         public int SeasonIndex { get; set; }
+    }
+
+    public class ChannelItemLookupInfo : ItemLookupInfo
+    {
+        public ChannelMediaContentType ContentType { get; set; }
     }
 }

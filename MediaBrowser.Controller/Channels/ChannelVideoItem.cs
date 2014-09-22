@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -9,7 +10,7 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelVideoItem : Video, IChannelMediaItem
+    public class ChannelVideoItem : Video, IChannelMediaItem, IHasLookupInfo<ChannelItemLookupInfo>
     {
         public string ExternalId { get; set; }
 
@@ -86,6 +87,15 @@ namespace MediaBrowser.Controller.Channels
             list.InsertRange(0, ChannelManager.GetCachedChannelItemMediaSources(Id.ToString("N")));
 
             return list;
+        }
+
+        public ChannelItemLookupInfo GetLookupInfo()
+        {
+            var info = GetItemLookupInfo<ChannelItemLookupInfo>();
+
+            info.ContentType = ContentType;
+
+            return info;
         }
     }
 }

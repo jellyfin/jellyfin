@@ -251,7 +251,6 @@ namespace MediaBrowser.Providers.Movies
                     hasTrailers.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
                     {
                         Url = string.Format("http://www.youtube.com/watch?v={0}", i.source),
-                        IsDirectLink = false,
                         Name = i.name,
                         VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
 

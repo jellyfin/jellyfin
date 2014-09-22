@@ -2,8 +2,10 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -41,9 +43,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 }
 
                 // Support xbmc local trailer convention, but only when looking for local trailers (hence the parent == null check)
-                if (args.Parent == null && _fileSystem.GetFileNameWithoutExtension(args.Path).EndsWith(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase))
+                if (args.Parent == null)
                 {
-                    return base.Resolve(args);
+                    var nameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(args.Path);
+                    var suffix = BaseItem.ExtraSuffixes.First(i => i.Value == ExtraType.Trailer);
+
+                    if (nameWithoutExtension.EndsWith(suffix.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return base.Resolve(args);
+                    }
                 }
             }
 

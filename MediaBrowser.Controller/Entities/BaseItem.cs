@@ -41,16 +41,25 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The supported image extensions
         /// </summary>
-        public static readonly string[] SupportedImageExtensions = new[] { ".png", ".jpg", ".jpeg", ".tbn" };
+        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn" };
 
         /// <summary>
         /// The trailer folder name
         /// </summary>
-        public const string TrailerFolderName = "trailers";
-        public const string ThemeSongsFolderName = "theme-music";
-        public const string ThemeSongFilename = "theme";
-        public const string ThemeVideosFolderName = "backdrops";
-        public const string XbmcTrailerFileSuffix = "-trailer";
+        public static string TrailerFolderName = "trailers";
+        public static string ThemeSongsFolderName = "theme-music";
+        public static string ThemeSongFilename = "theme";
+        public static string ThemeVideosFolderName = "backdrops";
+
+        public static List<KeyValuePair<string, ExtraType>> ExtraSuffixes = new List<KeyValuePair<string, ExtraType>>
+        {
+            new KeyValuePair<string,ExtraType>("-trailer", ExtraType.Trailer),
+            new KeyValuePair<string,ExtraType>("-deleted", ExtraType.DeletedScene),
+            new KeyValuePair<string,ExtraType>("-behindthescenes", ExtraType.BehindTheScenes),
+            new KeyValuePair<string,ExtraType>("-interview", ExtraType.Interview),
+            new KeyValuePair<string,ExtraType>("-scene", ExtraType.Scene),
+            new KeyValuePair<string,ExtraType>("-sample", ExtraType.Sample)
+        };
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
@@ -167,7 +176,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 // Local trailer, special feature, theme video, etc.
                 // An item that belongs to another item but is not part of the Parent-Child tree
-                return !IsFolder && Parent == null;
+                return !IsFolder && Parent == null && LocationType == LocationType.FileSystem;
             }
         }
 
@@ -552,11 +561,24 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
-            
-            // Support plex/xbmc convention
+
+            var extraTypes = new List<ExtraType> { ExtraType.Trailer };
+            var suffixes = ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
+                .Select(i => i.Key)
+                .ToList();
+
             files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => FileSystem.GetFileNameWithoutExtension(i).EndsWith(XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) && !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase))
-                );
+                .Where(i =>
+                {
+                    var nameEithoutExtension = FileSystem.GetFileNameWithoutExtension(i);
+
+                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase);
+                }));
 
             return LibraryManager.ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
             {
@@ -568,10 +590,77 @@ namespace MediaBrowser.Controller.Entities
                     video = dbItem;
                 }
 
+                if (video != null)
+                {
+                    video.ExtraType = ExtraType.Trailer;
+                }
+
                 return video;
 
                 // Sort them so that the list can be easily compared for changes
             }).OrderBy(i => i.Path).ToList();
+        }
+
+        protected IEnumerable<Video> LoadSpecialFeatures(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        {
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
+
+            var extraTypes = new List<ExtraType> { ExtraType.BehindTheScenes, ExtraType.DeletedScene, ExtraType.Interview, ExtraType.Sample, ExtraType.Scene, ExtraType.Clip };
+            var suffixes = ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
+                .Select(i => i.Key)
+                .ToList();
+
+            files.AddRange(fileSystemChildren.OfType<FileInfo>()
+                .Where(i =>
+                {
+                    var nameEithoutExtension = FileSystem.GetFileNameWithoutExtension(i);
+
+                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase);
+                }));
+
+            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = LibraryManager.GetItemById(video.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    video = dbItem;
+                }
+
+                if (video != null)
+                {
+                    SetExtraTypeFromFilename(video);
+                }
+
+                return video;
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
+        }
+
+        private void SetExtraTypeFromFilename(Video item)
+        {
+            var name = System.IO.Path.GetFileNameWithoutExtension(item.Path) ?? string.Empty;
+
+            foreach (var suffix in ExtraSuffixes)
+            {
+                if (name.EndsWith(suffix.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.ExtraType = suffix.Value;
+                    return;
+                }
+            }
+
+            item.ExtraType = ExtraType.Clip;
         }
 
         /// <summary>
@@ -600,6 +689,11 @@ namespace MediaBrowser.Controller.Entities
                     audio = dbItem;
                 }
 
+                if (audio != null)
+                {
+                    audio.ExtraType = ExtraType.ThemeSong;
+                }
+
                 return audio;
 
                 // Sort them so that the list can be easily compared for changes
@@ -624,6 +718,11 @@ namespace MediaBrowser.Controller.Entities
                 if (dbItem != null)
                 {
                     item = dbItem;
+                }
+
+                if (item != null)
+                {
+                    item.ExtraType = ExtraType.ThemeVideo;
                 }
 
                 return item;

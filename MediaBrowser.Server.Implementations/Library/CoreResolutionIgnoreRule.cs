@@ -95,8 +95,7 @@ namespace MediaBrowser.Server.Implementations.Library
                         return true;
                     }
 
-                    // Don't misidentify xbmc trailers as a movie
-                    if (filename.IndexOf(BaseItem.XbmcTrailerFileSuffix, StringComparison.OrdinalIgnoreCase) != -1)
+                    if (BaseItem.ExtraSuffixes.Any(i => filename.IndexOf(i.Key, StringComparison.OrdinalIgnoreCase) != -1))
                     {
                         return true;
                     }

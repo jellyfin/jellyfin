@@ -1193,11 +1193,40 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        public IEnumerable<Video> GetIntros(BaseItem item, User user)
+        public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
-            return IntroProviders.SelectMany(i => i.GetIntros(item, user))
+            var tasks = IntroProviders
+                .OrderBy(i => (i.GetType().Name.IndexOf("Default", StringComparison.OrdinalIgnoreCase) == -1 ? 1 : 0))
+                .Take(1)
+                .Select(i => GetIntros(i, item, user));
+
+            var items = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return items
+                .SelectMany(i => i.ToArray())
                 .Select(ResolveIntro)
                 .Where(i => i != null);
+        }
+
+        /// <summary>
+        /// Gets the intros.
+        /// </summary>
+        /// <param name="provider">The provider.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>Task&lt;IEnumerable&lt;IntroInfo&gt;&gt;.</returns>
+        private async Task<IEnumerable<IntroInfo>> GetIntros(IIntroProvider provider, BaseItem item, User user)
+        {
+            try
+            {
+                return await provider.GetIntros(item, user).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting intros", ex);
+
+                return new List<IntroInfo>();
+            }
         }
 
         /// <summary>
@@ -1487,7 +1516,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var item = GetItemById(id) as UserView;
 
-            if (item == null || 
+            if (item == null ||
                 !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.CreateDirectory(path);
