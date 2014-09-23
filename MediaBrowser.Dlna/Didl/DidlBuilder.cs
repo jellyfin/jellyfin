@@ -381,7 +381,7 @@ namespace MediaBrowser.Dlna.Didl
             return false;
         }
 
-        public XmlElement GetFolderElement(XmlDocument doc, Folder folder, int childCount, Filter filter, string requestedId = null)
+        public XmlElement GetFolderElement(XmlDocument doc, BaseItem folder, int childCount, Filter filter, string requestedId = null)
         {
             var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
             container.SetAttribute("restricted", "0");

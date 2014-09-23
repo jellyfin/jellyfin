@@ -542,7 +542,7 @@
     "MediaInfoExternal": "Externo",
     "MediaInfoTimestamp": "Fecha y hora",
     "MediaInfoPixelFormat": "Formato de pixel",
-    "MediaInfoBitDepth": "Profundidad de Bit",
+    "MediaInfoBitDepth": "Profundidad de bit",
     "MediaInfoSampleRate": "Tasa de muestreo",
     "MediaInfoBitrate": "Tasa de bits",
     "MediaInfoChannels": "Canales",
@@ -561,5 +561,7 @@
     "MediaInfoStreamTypeVideo": "Video",
     "MediaInfoStreamTypeSubtitle": "Subt\u00edtulo",
     "MediaInfoStreamTypeEmbeddedImage": "Im\u00e1gen Embebida",
-    "MediaInfoRefFrames": "Ref frames"
+    "MediaInfoRefFrames": "Tramas de referencia",
+    "TabPlayback": "Playback",
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
 }

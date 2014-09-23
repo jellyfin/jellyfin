@@ -542,7 +542,7 @@
     "MediaInfoExternal": "Externa",
     "MediaInfoTimestamp": "Data e hora",
     "MediaInfoPixelFormat": "Formato do pixel",
-    "MediaInfoBitDepth": "Bits da imagem",
+    "MediaInfoBitDepth": "Bit da imagem",
     "MediaInfoSampleRate": "Taxa da amostra",
     "MediaInfoBitrate": "Taxa",
     "MediaInfoChannels": "Canais",
@@ -561,5 +561,7 @@
     "MediaInfoStreamTypeVideo": "V\u00eddeo",
     "MediaInfoStreamTypeSubtitle": "Legenda",
     "MediaInfoStreamTypeEmbeddedImage": "Imagem Incorporada",
-    "MediaInfoRefFrames": "Ref frames"
+    "MediaInfoRefFrames": "Quadros de refer\u00eancia",
+    "TabPlayback": "Reprodu\u00e7\u00e3o",
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
 }

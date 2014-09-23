@@ -47,6 +47,9 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxWidth { get; set; }
         public int? MaxHeight { get; set; }
 
+        public int? MaxVideoBitDepth { get; set; }
+        public int? MaxRefFrames { get; set; }
+        
         public float? MaxFramerate { get; set; }
 
         public string DeviceProfileId { get; set; }
@@ -126,9 +129,12 @@ namespace MediaBrowser.Model.Dlna
                 item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty,
                 item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty,
                 StringHelper.ToStringCultureInvariant(item.StartPositionTicks),
-                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty,
-                item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)
+                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty
             };
+
+            list.Add(item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
+            list.Add(item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty);
+            list.Add(item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty);
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }

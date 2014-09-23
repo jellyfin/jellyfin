@@ -628,9 +628,26 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
                     case ProfileConditionValue.VideoTimestamp:
-                    case ProfileConditionValue.VideoBitDepth:
                         {
                             // Not supported yet
+                            break;
+                        }
+                    case ProfileConditionValue.RefFrames:
+                        {
+                            int num;
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            {
+                                item.MaxRefFrames = num;
+                            }
+                            break;
+                        }
+                    case ProfileConditionValue.VideoBitDepth:
+                        {
+                            int num;
+                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            {
+                                item.MaxVideoBitDepth = num;
+                            }
                             break;
                         }
                     case ProfileConditionValue.VideoProfile:

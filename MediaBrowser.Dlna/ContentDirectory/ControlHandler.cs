@@ -178,8 +178,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
-
-
                 var folder = item as Folder;
 
                 if (folder == null)
@@ -188,8 +186,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
                 else
                 {
-
-
                     var childrenResult = (await GetUserItems(folder, user, sortCriteria, start, requested).ConfigureAwait(false));
                     totalCount = childrenResult.TotalRecordCount;
 

@@ -340,7 +340,7 @@
     "HeaderRuntime": "Speelduur",
     "HeaderCommunityRating": "Gemeenschap cijfer",
     "HeaderParentalRating": "Kijkwijzer classificatie",
-    "HeaderReleaseDate": "Releasedatum ",
+    "HeaderReleaseDate": "Uitgave datum",
     "HeaderDateAdded": "Datum toegevoegd",
     "HeaderSeries": "Series",
     "HeaderSeason": "Seizoen",
@@ -507,7 +507,7 @@
     "ValueArtist": "Artiest: {0}",
     "ValueArtists": "Artiesten: {0}",
     "HeaderTags": "Labels",
-    "MediaInfoCameraMake": "Camera make",
+    "MediaInfoCameraMake": "Camera merk",
     "MediaInfoCameraModel": "Camera model",
     "MediaInfoAltitude": "Hoogte",
     "MediaInfoAperture": "Diafragma",
@@ -515,7 +515,7 @@
     "MediaInfoFocalLength": "Brandpuntsafstand",
     "MediaInfoOrientation": "Ori\u00ebntatie",
     "MediaInfoIsoSpeedRating": "ISO-waarde",
-    "MediaInfoLatitude": "Breette graad",
+    "MediaInfoLatitude": "Breedte graad",
     "MediaInfoLongitude": "Lengte graad",
     "MediaInfoShutterSpeed": "Sluitertijd",
     "MediaInfoSoftware": "Software",
@@ -561,5 +561,7 @@
     "MediaInfoStreamTypeVideo": "Video",
     "MediaInfoStreamTypeSubtitle": "Ondertiteling",
     "MediaInfoStreamTypeEmbeddedImage": "Ingevoegde afbeelding",
-    "MediaInfoRefFrames": "Ref frames"
+    "MediaInfoRefFrames": "Ref frames",
+    "TabPlayback": "Afspelen",
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
 }

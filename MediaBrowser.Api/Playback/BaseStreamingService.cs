@@ -1389,6 +1389,20 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.ClientTime = val;
                 }
+                else if (i == 17)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.MaxRefFrames = int.Parse(val, UsCulture);
+                    }
+                }
+                else if (i == 18)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.MaxVideoBitDepth = int.Parse(val, UsCulture);
+                    }
+                }
             }
         }
 
@@ -1790,6 +1804,22 @@ namespace MediaBrowser.Api.Playback
             if (request.VideoBitRate.HasValue)
             {
                 if (!videoStream.BitRate.HasValue || videoStream.BitRate.Value > request.VideoBitRate.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (request.MaxVideoBitDepth.HasValue)
+            {
+                if (videoStream.BitDepth.HasValue && videoStream.BitDepth.Value > request.MaxVideoBitDepth.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (request.MaxRefFrames.HasValue)
+            {
+                if (videoStream.RefFrames.HasValue && videoStream.RefFrames.Value > request.MaxRefFrames.Value)
                 {
                     return false;
                 }
