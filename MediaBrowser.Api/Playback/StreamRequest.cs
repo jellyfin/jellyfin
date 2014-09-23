@@ -141,6 +141,12 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "MaxHeight", Description = "Optional. The maximum vertical resolution of the encoded video.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxHeight { get; set; }
 
+        [ApiMember(Name = "MaxRefFrames", Description = "Optional.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MaxRefFrames { get; set; }
+
+        [ApiMember(Name = "MaxVideoBitDepth", Description = "Optional.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? MaxVideoBitDepth { get; set; }
+        
         /// <summary>
         /// Gets or sets the framerate.
         /// </summary>

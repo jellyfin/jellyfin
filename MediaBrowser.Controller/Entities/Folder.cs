@@ -164,14 +164,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Never want folders to be blocked by "BlockNotRated"
-        /// </summary>
         [IgnoreDataMember]
         public override string OfficialRatingForComparison
         {
             get
             {
+                // Never want folders to be blocked by "BlockNotRated"
                 if (this is Series)
                 {
                     return base.OfficialRatingForComparison;

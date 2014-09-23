@@ -1042,12 +1042,12 @@ namespace MediaBrowser.Controller.Entities
 
             var rating = CustomRatingForComparison;
 
-            if (string.IsNullOrEmpty(rating))
+            if (string.IsNullOrWhiteSpace(rating))
             {
                 rating = OfficialRatingForComparison;
             }
 
-            if (string.IsNullOrEmpty(rating))
+            if (string.IsNullOrWhiteSpace(rating))
             {
                 return !GetBlockUnratedValue(user.Configuration);
             }
