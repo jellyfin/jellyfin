@@ -570,5 +570,6 @@
     "MediaInfoStreamTypeSubtitle": "Subtitle",
     "MediaInfoStreamTypeEmbeddedImage": "Embedded Image",
     "MediaInfoRefFrames": "Ref frames",
-    "TabPlayback": "Playback"
+    "TabPlayback": "Playback",
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
 }

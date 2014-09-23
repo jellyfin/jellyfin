@@ -274,6 +274,10 @@ h1 .imageLink {
     border-radius: 5px;
 }
 
+.fieldDescription + .fieldDescription {
+    margin-top: 5px;
+}
+
 .ulForm {
     margin-bottom: 20px !important;
 }

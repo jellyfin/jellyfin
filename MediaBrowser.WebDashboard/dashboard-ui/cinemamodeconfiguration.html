@@ -18,9 +18,7 @@
                 <form class="cinemaModeConfigurationForm">
 
                     <p>${CinemaModeConfigurationHelp}</p>
-                    <p><a href="supporter.html">${ButtonThisFeatureRequiresSupporter}</a></p>
-                    <br />
-                    <div>
+                    <div style="margin-top:2em;">
                         <fieldset data-role="controlgroup">
                             <legend>${LabelEnableCinemaModeFor}</legend>
                             <label for="chkMovies">${OptionMovies}</label>
@@ -30,26 +28,35 @@
                         </fieldset>
                     </div>
                     <br />
-                    <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${LabelEnableTheFollowingIntros}</legend>
-                            <label for="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</label>
-                            <input type="checkbox" id="chkMyMovieTrailers" />
-                            <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
-                            <input type="checkbox" id="chkUpcomingTheaterTrailers" />
-                        </fieldset>
-                        <div class="fieldDescription">${LabelEnableTheFollowingIntrosHelp}</div>
-                    </div>
-                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</label>
-                            <input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />
+                            <label for="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</label>
+                            <input type="checkbox" id="chkMyMovieTrailers" data-mini="true" />
+                            <div class="fieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
+                            <div class="fieldDescription"><a href="http://mediabrowser.tv/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a></div>
+                        </li>
+                        <li>
+                            <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
+                            <input type="checkbox" id="chkUpcomingTheaterTrailers" data-mini="true" />
+                            <div class="fieldDescription">${LabelThisFeatureRequiresSupporterHelp}</div>
+                            <div class="fieldDescription"><a href="supporter.html">${ButtonLearnMore}</a></div>
                         </li>
                         <li>
                             <label for="chkEnableParentalControl">${LabelEnableIntroParentalControl}</label>
                             <input type="checkbox" id="chkEnableParentalControl" data-mini="true" />
                             <div class="fieldDescription">${LabelEnableIntroParentalControlHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</label>
+                            <input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />
+                        </li>
+                        <li>
+                            <label for="txtCustomIntrosPath">${LabelCustomIntrosPath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtCustomIntrosPath" />
+                            </div>
+                            <button id="btnSelectCustomIntrosPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
                         </li>
                     </ul>
                     <br />

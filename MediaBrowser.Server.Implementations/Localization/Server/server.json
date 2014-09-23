@@ -1188,12 +1188,13 @@
     "TitlePlayback": "Playback",
     "LabelEnableCinemaModeFor": "Enable cinema mode for:",
     "CinemaModeConfigurationHelp": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
-    "LabelEnableTheFollowingIntros": "Enable the following types of intros:",
-    "OptionTrailersFromMyMovies": "Trailers from movies in my library",
-    "OptionUpcomingMoviesInTheaters": "Trailers from upcoming movies",
+    "OptionTrailersFromMyMovies": "Include trailers from movies in my library",
+    "OptionUpcomingMoviesInTheaters": "Include trailers from new and upcoming movies",
     "LabelLimitIntrosToUnwatchedContent": "Only use trailers from unwatched content",
     "LabelEnableIntroParentalControl": "Enable smart parental control",
-    "LabelEnableIntroParentalControlHelp": "Intros will only used from content with a parental rating equal to or less than the content being watched.",
-    "LabelEnableTheFollowingIntrosHelp": "Trailers from existing movies requires setup of local trailers. Theater trailers require installation of the Trailer channel plugin.",
-    "ButtonThisFeatureRequiresSupporter": "This feature requires an active supporter membership"
+    "LabelEnableIntroParentalControlHelp": "Trailers will only be selected with a parental rating equal to or less than the content being watched.",
+    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership.",
+    "OptionTrailersFromMyMoviesHelp": "Requires setup of local trailers.",
+    "LabelCustomIntrosPath": "Custom intros path:",
+    "LabelCustomIntrosPathHelp": "A folder containing video files. A video will be randomly selected and played after trailers."
 }

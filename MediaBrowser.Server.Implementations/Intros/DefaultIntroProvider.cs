@@ -6,11 +6,13 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,11 +57,6 @@ namespace MediaBrowser.Server.Implementations.Intros
                 return new List<IntroInfo>();
             }
 
-            if (!IsSupporter)
-            {
-                return new List<IntroInfo>();
-            }
-
             var ratingLevel = string.IsNullOrWhiteSpace(item.OfficialRating)
                 ? (int?)null
                 : _localization.GetRatingLevel(item.OfficialRating);
@@ -98,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }));
             }
 
-            if (config.EnableIntrosFromUpcomingTrailers)
+            if (config.EnableIntrosFromUpcomingTrailers && IsSupporter)
             {
                 var channelTrailers = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
                 {
@@ -137,7 +134,6 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             // Avoid implicitly captured closure
-            var currentUser = user;
             return candidates.Where(i =>
             {
                 if (config.EnableIntrosParentalControl && !FilterByParentalRating(ratingLevel, i.Item))
@@ -166,7 +162,33 @@ namespace MediaBrowser.Server.Implementations.Intros
 
         private List<IntroInfo> GetCustomIntros(BaseItem item)
         {
-            return new List<IntroInfo>();
+            try
+            {
+                return GetCustomIntroFiles()
+                    .OrderBy(i => Guid.NewGuid())
+                    .Select(i => new IntroInfo
+                    {
+                        Path = i
+
+                    }).ToList();
+            }
+            catch (IOException)
+            {
+                return new List<IntroInfo>();
+            }
+        }
+
+        private IEnumerable<string> GetCustomIntroFiles(CinemaModeConfiguration options = null)
+        {
+            options = options ?? GetOptions();
+
+            if (string.IsNullOrWhiteSpace(options.CustomIntroPath))
+            {
+                return new List<string>();
+            }
+
+            return Directory.EnumerateFiles(options.CustomIntroPath, "*", SearchOption.AllDirectories)
+                .Where(EntityResolutionHelper.IsVideoFile);
         }
 
         private bool FilterByParentalRating(int? ratingLevel, BaseItem item)
@@ -265,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.Intros
 
         public IEnumerable<string> GetAllIntroFiles()
         {
-            return new List<string>();
+            return GetCustomIntroFiles();
         }
 
         private bool IsSupporter

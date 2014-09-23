@@ -10,10 +10,10 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIntrosFromMoviesInLibrary { get; set; }
         public bool EnableCustomIntro { get; set; }
         public bool EnableIntrosParentalControl { get; set; }
+        public string CustomIntroPath { get; set; }
 
         public CinemaModeConfiguration()
         {
-            EnableIntrosForMovies = true;
             EnableCustomIntro = true;
             EnableIntrosFromMoviesInLibrary = true;
             EnableIntrosFromUpcomingTrailers = true;

@@ -1235,7 +1235,19 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{System.String}.</returns>
         public IEnumerable<string> GetAllIntroFiles()
         {
-            return IntroProviders.SelectMany(i => i.GetAllIntroFiles());
+            return IntroProviders.SelectMany(i =>
+            {
+                try
+                {
+                    return i.GetAllIntroFiles().ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting intro files", ex);
+
+                    return new List<string>();
+                }
+            });
         }
 
         /// <summary>

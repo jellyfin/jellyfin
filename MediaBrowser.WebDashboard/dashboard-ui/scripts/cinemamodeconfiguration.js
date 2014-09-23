@@ -11,10 +11,34 @@
         $('#chkUnwatchedOnly', page).checked(!config.EnableIntrosForWatchedContent).checkboxradio('refresh');
         $('#chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl).checkboxradio('refresh');
 
+        $('#txtCustomIntrosPath', page).val(config.CustomIntroPath || '');
+
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#cinemaModeConfigurationPage", function () {
+    $(document).on('pageinit', "#cinemaModeConfigurationPage", function () {
+
+        var page = this;
+
+        $('#btnSelectCustomIntrosPath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtCustomIntrosPath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: Globalize.translate('HeaderSelectCustomIntrosPath')
+            });
+        });
+
+    }).on('pageshow', "#cinemaModeConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -40,6 +64,8 @@
             var page = $(form).parents('.page');
 
             ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+
+                config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
 
                 config.EnableIntrosForMovies = $('#chkMovies', page).checked();
                 config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();
