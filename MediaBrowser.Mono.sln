@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.LocalMetadata"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaInfo", "MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj", "{6e4145e4-c6d4-4e4d-94f2-87188db6e239}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -133,6 +135,14 @@ Global
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x86.ActiveCfg = Release|Any CPU
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|x86.Build.0 = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Debug|x86.Build.0 = Debug|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release|x86.ActiveCfg = Release|Any CPU
+		{6e4145e4-c6d4-4e4d-94f2-87188db6e239}.Release|x86.Build.0 = Release|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|x86.Build.0 = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
