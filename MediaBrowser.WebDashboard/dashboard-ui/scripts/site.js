@@ -1162,7 +1162,7 @@ var Dashboard = {
         alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
     }
 
-    window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion);
+    window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion, MediaBrowser.ApiClient.generateDeviceName(), MediaBrowser.ApiClient.generateDeviceId());
 
     $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
         .on("websocketmessage", Dashboard.onWebSocketMessageReceived);

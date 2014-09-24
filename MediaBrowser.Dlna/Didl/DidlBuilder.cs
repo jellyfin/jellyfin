@@ -283,14 +283,14 @@ namespace MediaBrowser.Dlna.Didl
         private string GetDisplayName(BaseItem item, BaseItem context)
         {
             var episode = item as Episode;
+            var season = context as Season;
 
-            if (episode != null)
+            if (episode != null && season != null)
             {
                 // This is a special embedded within a season
                 if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0)
                 {
-                    var season = context as Season;
-                    if (season != null && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
+                    if (season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
                     {
                         return string.Format(_localization.GetLocalizedString("ValueSpecialEpisodeName"), item.Name);
                     }

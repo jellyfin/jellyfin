@@ -53,30 +53,7 @@ if (!window.MediaBrowser) {
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader, store) {
-
-    function generateDeviceId() {
-
-        var keys = [];
-
-        keys.push(navigator.userAgent);
-        keys.push((navigator.cpuClass || ""));
-
-        var randomId = '';
-
-        //  Since the above is not guaranteed to be unique per device, add a little more
-        randomId = store.getItem('randomId');
-
-        if (!randomId) {
-
-            randomId = new Date().getTime();
-
-            store.setItem('randomId', randomId.toString());
-        }
-
-        keys.push(randomId);
-        return MediaBrowser.SHA1(keys.join('|'));
-    }
+MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader) {
 
     /**
      * Creates a new api client instance
@@ -84,15 +61,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    return function (serverAddress, clientName, applicationVersion) {
+    return function (serverAddress, clientName, applicationVersion, deviceName, deviceId) {
 
         if (!serverAddress) {
             throw new Error("Must supply a serverAddress");
         }
 
         var self = this;
-        var deviceName = "Web Browser";
-        var deviceId = generateDeviceId();
         var currentUserId;
         var accessToken;
         var webSocket;
@@ -127,42 +102,6 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             currentUserId = userId;
             accessToken = token;
         };
-
-        deviceName = (function () {
-
-            var name = "";
-
-            if ($.browser.chrome) {
-                name = "Chrome";
-            } else if ($.browser.safari) {
-                name = "Safari";
-            } else if ($.browser.webkit) {
-                name = "WebKit";
-            } else if ($.browser.msie) {
-                name = "Internet Explorer";
-            } else if ($.browser.opera) {
-                name = "Opera";
-            } else if ($.browser.firefox || $.browser.mozilla) {
-                name = "Firefox";
-            }
-
-            if (name) {
-                if ($.browser.version) {
-                    name += " " + $.browser.version;
-                }
-            } else {
-                name = "Web Browser";
-            }
-
-            if ($.browser.ipad) {
-                name += " Ipad";
-            } else if ($.browser.iphone) {
-                name += " Iphone";
-            } else if ($.browser.android) {
-                name += " Android";
-            }
-            return name;
-        }());
 
         self.deviceName = function () {
             return deviceName;
@@ -3274,12 +3213,71 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     };
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader, window.store);
+}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader);
+
+(function (store) {
+
+    MediaBrowser.ApiClient.generateDeviceId = function() {
+
+        var keys = [];
+
+        keys.push(navigator.userAgent);
+        keys.push((navigator.cpuClass || ""));
+
+        var randomId = '';
+
+        //  Since the above is not guaranteed to be unique per device, add a little more
+        randomId = store.getItem('randomId');
+
+        if (!randomId) {
+
+            randomId = new Date().getTime();
+
+            store.setItem('randomId', randomId.toString());
+        }
+
+        keys.push(randomId);
+        return MediaBrowser.SHA1(keys.join('|'));
+    };
+
+    MediaBrowser.ApiClient.generateDeviceName = function () {
+
+        var name = "Web Browser";
+
+        if ($.browser.chrome) {
+            name = "Chrome";
+        } else if ($.browser.safari) {
+            name = "Safari";
+        } else if ($.browser.webkit) {
+            name = "WebKit";
+        } else if ($.browser.msie) {
+            name = "Internet Explorer";
+        } else if ($.browser.opera) {
+            name = "Opera";
+        } else if ($.browser.firefox || $.browser.mozilla) {
+            name = "Firefox";
+        }
+
+        if ($.browser.version) {
+            name += " " + $.browser.version;
+        }
+
+        if ($.browser.ipad) {
+            name += " Ipad";
+        } else if ($.browser.iphone) {
+            name += " Iphone";
+        } else if ($.browser.android) {
+            name += " Android";
+        }
+        return name;
+    };
+
+})(window.store);
 
 /**
  * Provides a friendly way to create an api client instance using information from the browser's current url
  */
-MediaBrowser.ApiClient.create = function (clientName, applicationVersion) {
+MediaBrowser.ApiClient.create = function (clientName, applicationVersion, deviceName, deviceId) {
 
     var loc = window.location;
 
@@ -3289,7 +3287,7 @@ MediaBrowser.ApiClient.create = function (clientName, applicationVersion) {
         address += ':' + loc.port;
     }
 
-    return new MediaBrowser.ApiClient(address, clientName, applicationVersion);
+    return new MediaBrowser.ApiClient(address, clientName, applicationVersion, deviceName, deviceId);
 };
 
 /**

@@ -564,11 +564,11 @@
     "MediaInfoRefFrames": "Quadros de refer\u00eancia",
     "TabPlayback": "Reprodu\u00e7\u00e3o",
     "HeaderSelectCustomIntrosPath": "Selecionar o Caminho para Intros Personalizadas",
-    "HeaderRateAndReview": "Rate and Review",
-    "HeaderThankYou": "Thank You",
-    "MessageThankYouForYourReview": "Thank you for your review.",
-    "LabelYourRating": "Your rating:",
-    "LabelFullReview": "Full review:",
-    "LabelShortRatingDescription": "Short rating summary:",
-    "OptionIRecommendThisItem": "I recommend this item"
+    "HeaderRateAndReview": "Avaliar e Comentar",
+    "HeaderThankYou": "Obrigado",
+    "MessageThankYouForYourReview": "Obrigado por sua avalia\u00e7\u00e3o",
+    "LabelYourRating": "Sua avalia\u00e7\u00e3o:",
+    "LabelFullReview": "Coment\u00e1rio completo:",
+    "LabelShortRatingDescription": "Resumo da avalia\u00e7\u00e3o:",
+    "OptionIRecommendThisItem": "Eu recomendo este item"
 }

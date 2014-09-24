@@ -33,12 +33,6 @@ namespace MediaBrowser.Model.System
         public string MacAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the local address.
-        /// </summary>
-        /// <value>The local address.</value>
-        public string LocalAddress { get; set; }
-        
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has pending restart.
         /// </summary>
         /// <value><c>true</c> if this instance has pending restart; otherwise, <c>false</c>.</value>
@@ -135,12 +129,6 @@ namespace MediaBrowser.Model.System
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the wan address.
-        /// </summary>
-        /// <value>The wan address.</value>
-        public string WanAddress { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
@@ -167,6 +155,18 @@ namespace MediaBrowser.Model.System
 
     public class PublicSystemInfo
     {
+        /// <summary>
+        /// Gets or sets the local address.
+        /// </summary>
+        /// <value>The local address.</value>
+        public string LocalAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wan address.
+        /// </summary>
+        /// <value>The wan address.</value>
+        public string WanAddress { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the server.
         /// </summary>
