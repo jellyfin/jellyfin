@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -47,7 +48,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _profile = profile;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, userDataManager);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, userDataManager, localization);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -182,7 +183,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
                 if (folder == null)
                 {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, item, deviceId, filter));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, item, null, deviceId, filter));
                 }
                 else
                 {
@@ -214,7 +215,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                     }
                     else
                     {
-                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, deviceId, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, folder, deviceId, filter));
                     }
                 }
             }
@@ -288,7 +289,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
                 else
                 {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, deviceId, filter));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, folder, deviceId, filter));
                 }
             }
 

@@ -1638,7 +1638,7 @@ namespace MediaBrowser.Api.Playback
 
             AttachMediaStreamInfo(state, mediaStreams, videoRequest, url);
 
-            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 7;
+            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 6;
             state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
 
             var container = Path.GetExtension(state.RequestedUrl);

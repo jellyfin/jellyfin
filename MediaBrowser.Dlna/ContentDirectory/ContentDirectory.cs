@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
@@ -21,6 +22,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IDlnaManager _dlna;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
+        private readonly ILocalizationManager _localization;
 
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -29,7 +31,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger logger,
-            IHttpClient httpClient)
+            IHttpClient httpClient, ILocalizationManager localization)
             : base(logger, httpClient)
         {
             _dlna = dlna;
@@ -38,6 +40,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _libraryManager = libraryManager;
             _config = config;
             _userManager = userManager;
+            _localization = localization;
         }
 
         private int SystemUpdateId
@@ -73,7 +76,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 _userDataManager,
                 user,
                 SystemUpdateId,
-                _config)
+                _config,
+                _localization)
                 .ProcessControlRequest(request);
         }
 

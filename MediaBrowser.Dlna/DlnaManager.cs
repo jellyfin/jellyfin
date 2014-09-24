@@ -80,6 +80,7 @@ namespace MediaBrowser.Dlna
                 new WindowsPhoneProfile(),
                 new AndroidProfile(),
                 new DirectTvProfile(),
+                new DishHopperJoeyProfile(),
                 new DefaultProfile()
             };
 

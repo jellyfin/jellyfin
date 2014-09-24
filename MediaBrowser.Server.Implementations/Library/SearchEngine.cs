@@ -355,7 +355,22 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>System.String[][].</returns>
         private List<string> GetWords(string term)
         {
-            return term.Split().Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            var stoplist = GetStopList().ToList();
+
+            return term.Split()
+                .Where(i => !string.IsNullOrWhiteSpace(i) && !stoplist.Contains(i, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        private IEnumerable<string> GetStopList()
+        {
+            return new[]
+            {
+                "the",
+                "a",
+                "of",
+                "an"
+            };
         }
     }
 }
