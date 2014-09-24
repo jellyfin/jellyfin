@@ -563,5 +563,12 @@
     "MediaInfoStreamTypeEmbeddedImage": "Ingevoegde afbeelding",
     "MediaInfoRefFrames": "Ref frames",
     "TabPlayback": "Afspelen",
-    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
+    "HeaderSelectCustomIntrosPath": "Selecteer eigen pad naar intro's",
+    "HeaderRateAndReview": "Rate and Review",
+    "HeaderThankYou": "Thank You",
+    "MessageThankYouForYourReview": "Thank you for your review.",
+    "LabelYourRating": "Your rating:",
+    "LabelFullReview": "Full review:",
+    "LabelShortRatingDescription": "Short rating summary:",
+    "OptionIRecommendThisItem": "I recommend this item"
 }

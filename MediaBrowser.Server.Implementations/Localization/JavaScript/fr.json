@@ -563,5 +563,12 @@
     "MediaInfoStreamTypeEmbeddedImage": "Image am\u00e9lior\u00e9e",
     "MediaInfoRefFrames": "Image de r\u00e9f\u00e9rence",
     "TabPlayback": "Lecture",
-    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path",
+    "HeaderRateAndReview": "Rate and Review",
+    "HeaderThankYou": "Thank You",
+    "MessageThankYouForYourReview": "Thank you for your review.",
+    "LabelYourRating": "Your rating:",
+    "LabelFullReview": "Full review:",
+    "LabelShortRatingDescription": "Short rating summary:",
+    "OptionIRecommendThisItem": "I recommend this item"
 }

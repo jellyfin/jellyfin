@@ -563,5 +563,12 @@
     "MediaInfoStreamTypeEmbeddedImage": "Im\u00e1gen Embebida",
     "MediaInfoRefFrames": "Tramas de referencia",
     "TabPlayback": "Playback",
-    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path",
+    "HeaderRateAndReview": "Rate and Review",
+    "HeaderThankYou": "Thank You",
+    "MessageThankYouForYourReview": "Thank you for your review.",
+    "LabelYourRating": "Your rating:",
+    "LabelFullReview": "Full review:",
+    "LabelShortRatingDescription": "Short rating summary:",
+    "OptionIRecommendThisItem": "I recommend this item"
 }

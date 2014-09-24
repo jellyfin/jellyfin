@@ -356,7 +356,7 @@
     "OptionHasThemeSong": "\u05e9\u05d9\u05e8 \u05e0\u05d5\u05e9\u05d0",
     "LabelEnableIntroParentalControlHelp": "Trailers will only be selected with a parental rating equal to or less than the content being watched.",
     "OptionHasThemeVideo": "\u05e1\u05e8\u05d8 \u05e0\u05d5\u05e9\u05d0",
-    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership",
+    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership.",
     "TabMovies": "\u05e1\u05e8\u05d8\u05d9\u05dd",
     "OptionTrailersFromMyMoviesHelp": "Requires setup of local trailers.",
     "TabStudios": "\u05d0\u05d5\u05dc\u05e4\u05e0\u05d9\u05dd",
