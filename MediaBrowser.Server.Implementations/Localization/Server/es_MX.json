@@ -356,7 +356,7 @@
     "OptionHasThemeSong": "Canci\u00f3n del Tema",
     "LabelEnableIntroParentalControlHelp": "Trailers will only be selected with a parental rating equal to or less than the content being watched.",
     "OptionHasThemeVideo": "Video del Tema",
-    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership",
+    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership.",
     "TabMovies": "Pel\u00edculas",
     "OptionTrailersFromMyMoviesHelp": "Requires setup of local trailers.",
     "TabStudios": "Estudios",

@@ -123,7 +123,7 @@
     "HeaderMyViews": "Mina vyer",
     "HeaderLibraryFolders": "Mappvy",
     "HeaderLatestMedia": "Nytillkommet",
-    "ButtonMoreItems": "More...",
+    "ButtonMoreItems": "Mer...",
     "ButtonMore": "Mer...",
     "HeaderFavoriteMovies": "Favoritfilmer",
     "HeaderFavoriteShows": "Favoritserier",
@@ -331,7 +331,7 @@
     "ButtonView": "Visa",
     "ButtonViewSeriesRecording": "Visa serieinspelning",
     "ValueOriginalAirDate": "Ursprungligt s\u00e4ndningsdatum: {0}",
-    "ButtonRemoveFromPlaylist": "Remove from playlist",
+    "ButtonRemoveFromPlaylist": "Ta bort fr\u00e5n spellista",
     "HeaderSpecials": "Specials",
     "HeaderTrailers": "Trailers",
     "HeaderAudio": "Audio",
@@ -563,5 +563,12 @@
     "MediaInfoStreamTypeEmbeddedImage": "Embedded Image",
     "MediaInfoRefFrames": "Ref frames",
     "TabPlayback": "Playback",
-    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path"
+    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path",
+    "HeaderRateAndReview": "Rate and Review",
+    "HeaderThankYou": "Thank You",
+    "MessageThankYouForYourReview": "Thank you for your review.",
+    "LabelYourRating": "Your rating:",
+    "LabelFullReview": "Full review:",
+    "LabelShortRatingDescription": "Short rating summary:",
+    "OptionIRecommendThisItem": "I recommend this item"
 }
