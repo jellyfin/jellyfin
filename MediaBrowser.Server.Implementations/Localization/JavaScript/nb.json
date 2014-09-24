@@ -466,7 +466,7 @@
     "ExternalPlayerPlaystateOptionsHelp": "Specify how you would like to resume playing this video next time.",
     "LabelMarkAs": "Mark as:",
     "OptionInProgress": "In-Progress",
-    "LabelResumePoint": "Resume point:",
+    "LabelResumePoint": "Fortsettelsespunkt",
     "ValueOneMovie": "1 movie",
     "ValueMovieCount": "{0} movies",
     "ValueOneTrailer": "1 trailer",

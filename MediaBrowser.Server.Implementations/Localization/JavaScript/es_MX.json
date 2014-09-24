@@ -562,13 +562,13 @@
     "MediaInfoStreamTypeSubtitle": "Subt\u00edtulo",
     "MediaInfoStreamTypeEmbeddedImage": "Im\u00e1gen Embebida",
     "MediaInfoRefFrames": "Tramas de referencia",
-    "TabPlayback": "Playback",
-    "HeaderSelectCustomIntrosPath": "Select Custom Intros Path",
-    "HeaderRateAndReview": "Rate and Review",
-    "HeaderThankYou": "Thank You",
-    "MessageThankYouForYourReview": "Thank you for your review.",
-    "LabelYourRating": "Your rating:",
-    "LabelFullReview": "Full review:",
-    "LabelShortRatingDescription": "Short rating summary:",
-    "OptionIRecommendThisItem": "I recommend this item"
+    "TabPlayback": "Reproducci\u00f3n",
+    "HeaderSelectCustomIntrosPath": "Seleccionar Trayectorias Personalizadas de Intros",
+    "HeaderRateAndReview": "Clasificar y Rese\u00f1ar",
+    "HeaderThankYou": "Gracias",
+    "MessageThankYouForYourReview": "Gracias por su rese\u00f1a.",
+    "LabelYourRating": "Su calificaci\u00f3n:",
+    "LabelFullReview": "Rese\u00f1a completa:",
+    "LabelShortRatingDescription": "Res\u00famen corto de clasificaci\u00f3n:",
+    "OptionIRecommendThisItem": "Yo recomiendo este \u00edtem"
 }
