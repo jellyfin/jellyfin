@@ -24,32 +24,32 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
         public IEnumerable<string> GetLocalIpAddresses()
         {
-            var list = GetIPsDefault()
-                .Where(i => !IPAddress.IsLoopback(i))
-                .Select(i => i.ToString())
-                .ToList();
+            var list = GetIPsDefault().Where(i => !IPAddress.IsLoopback(i)).Select(i => i.ToString()).ToList();
 
-            try
+            if (list.Count > 0)
             {
-                var listFromDns = Dns.GetHostAddresses(Dns.GetHostName())
-                    .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
-                    .Where(i => !IPAddress.IsLoopback(i))
-                    .Select(i => i.ToString())
-                    .ToList();
-
-                if (listFromDns.Count > 0)
-                {
-                    return listFromDns
-                        .OrderBy(i => (list.Contains(i, StringComparer.OrdinalIgnoreCase) ? 0 : 1))
-                        .ToList();
-                }
+                return list;
             }
-            catch
-            {
 
-            }
-            
-            return list;
+            return GetLocalIpAddressesFallback();
+        }
+
+        private bool IsInPrivateAddressSpace(string endpoint)
+        {
+            // Private address space:
+            // http://en.wikipedia.org/wiki/Private_network
+
+            return
+
+                // If url was requested with computer name, we may see this
+                endpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
+
+                endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool IsInLocalNetwork(string endpoint)
@@ -64,6 +64,11 @@ namespace MediaBrowser.Common.Implementations.Networking
                 throw new ArgumentNullException("endpoint");
             }
 
+            if (IsInPrivateAddressSpace(endpoint))
+            {
+                return true;
+            }
+
             const int lengthMatch = 4;
 
             if (endpoint.Length >= lengthMatch)
@@ -75,24 +80,6 @@ namespace MediaBrowser.Common.Implementations.Networking
                 {
                     return true;
                 }
-            }
-
-            // Private address space:
-            // http://en.wikipedia.org/wiki/Private_network
-
-            var isPrivate =
-
-                // If url was requested with computer name, we may see this
-                endpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
-
-                endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
-
-            if (isPrivate)
-            {
-                return true;
             }
 
             IPAddress address;

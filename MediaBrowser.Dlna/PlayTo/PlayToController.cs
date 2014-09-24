@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Didl;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserManager _userManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
 
         private readonly DeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
@@ -52,7 +54,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -64,6 +66,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _serverAddress = serverAddress;
             _deviceDiscovery = deviceDiscovery;
             _userDataManager = userDataManager;
+            _localization = localization;
             _logger = logger;
         }
 
@@ -476,7 +479,8 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress, _userDataManager).GetItemDidl(item, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress, _userDataManager, _localization)
+                .GetItemDidl(item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 

@@ -1196,5 +1196,6 @@
     "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership.",
     "OptionTrailersFromMyMoviesHelp": "Requires setup of local trailers.",
     "LabelCustomIntrosPath": "Custom intros path:",
-    "LabelCustomIntrosPathHelp": "A folder containing video files. A video will be randomly selected and played after trailers."
+    "LabelCustomIntrosPathHelp": "A folder containing video files. A video will be randomly selected and played after trailers.",
+    "ValueSpecialEpisodeName": "Special - {0}"
 }

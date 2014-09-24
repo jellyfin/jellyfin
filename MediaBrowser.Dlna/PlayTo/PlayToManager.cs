@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Ssdp;
@@ -30,10 +31,11 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
         private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
 
         private readonly DeviceDiscovery _deviceDiscovery;
         
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -47,6 +49,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _httpClient = httpClient;
             _config = config;
             _userDataManager = userDataManager;
+            _localization = localization;
         }
 
         public void Start()
@@ -106,7 +109,8 @@ namespace MediaBrowser.Dlna.PlayTo
                             _imageProcessor,
                             serverAddress,
                             _deviceDiscovery,
-                            _userDataManager);
+                            _userDataManager,
+                            _localization);
 
                         controller.Init(device);
 

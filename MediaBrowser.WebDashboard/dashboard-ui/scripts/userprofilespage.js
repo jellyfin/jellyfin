@@ -57,7 +57,7 @@
         });
 
         $('.btnDeleteUser', flyout).on('click', function () {
-            deleteUser(page, this);
+            deleteUser(page, this.getAttribute('data-userid'));
         });
     }
 

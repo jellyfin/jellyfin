@@ -8,7 +8,7 @@
 
             options = options || {};
 
-            options.header = options.header || "Rate and Review";
+            options.header = options.header || Globalize.translate('HeaderRateAndReview');
 
             var html = '<div data-role="popup" id="popupRatingDialog" class="popup" style="min-width:400px;">';
 
@@ -20,20 +20,20 @@
             html += '<form>';
 
             html += '<div style="margin:0;">';
-            html += '<label for="txtRatingDialogRating" >Your Rating:</label>';
+            html += '<label for="txtRatingDialogRating" >' + Globalize.translate('LabelYourRating') + '</label>';
             html += '<input id="txtRatingDialogRating" name="rating" type="number" required="required" min=0 max=5 step=1 value=' + options.rating + ' />';
-            html += '<label for="txtRatingDialogTitle" >Short Overall Rating Description:</label>';
+            html += '<label for="txtRatingDialogTitle" >' + Globalize.translate('LabelShortRatingDescription') + '</label>';
             html += '<input id="txtRatingDialogTitle" name="title" type="text" maxlength=160 />';
-            html += '<label for="txtRatingDialogRecommend" >I recommend this item</label>';
+            html += '<label for="txtRatingDialogRecommend" >' + Globalize.translate('OptionIRecommendThisItem') + '</label>';
             html += '<input id="txtRatingDialogRecommend" name="recommend" type="checkbox" checked />';
-            html += '<label for="txtRatingDialogReview" >Full Review</label>';
+            html += '<label for="txtRatingDialogReview" >' + Globalize.translate('LabelFullReview') + '</label>';
             html += '<textarea id="txtRatingDialogReview" name="review" rows=8 style="height:inherit" ></textarea>';
             html += '</div>';
 
 
             html += '<p>';
-            html += '<button type="submit" data-theme="b" data-icon="check">OK</button>';
-            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');">Cancel</button>';
+            html += '<button type="submit" data-theme="b" data-icon="check">' + Globalize.translate('ButtonOk') + '</button>';
+            html += '<button type="button" data-icon="delete" onclick="$(this).parents(\'.popup\').popup(\'close\');">' + Globalize.translate('ButtonCancel') + '</button>';
             html += '</p>';
             html += '<p id="errorMsg" style="display:none; color:red; font-weight:bold">';
             html += '</p>';
@@ -66,22 +66,6 @@
                         review: $('#txtRatingDialogReview', this).val(),
                     };
 
-                    if (review.rating < 3) {
-                        if (!review.title) {
-                            $('#errorMsg', this).html("Please give reason for low rating").show();
-                            $('#txtRatingDialogTitle', this).focus();
-                            return false;
-                        }
-                    }
-
-                    if (!review.recommend) {
-                        if (!review.title) {
-                            $('#errorMsg', this).html("Please give reason for not recommending").show();
-                            $('#txtRatingDialogTitle', this).focus();
-                            return false;
-                        }
-                    }
-
                     options.callback(review);
                 } else console.log("No callback function provided");
 
@@ -99,12 +83,11 @@
 
         ratePackage: function (link) {
             var id = link.getAttribute('data-id');
-            var name = link.getAttribute('data-name');
             var rating = link.getAttribute('data-rating');
 
             var dialog = new RatingDialog($.mobile.activePage);
             dialog.show({
-                header: "Rate and review " + name,
+                header: Globalize.translate('HeaderRateAndReview'),
                 id: id,
                 rating: rating,
                 callback: function (review) {
@@ -113,8 +96,8 @@
 
                     ApiClient.createPackageReview(review).done(function () {
                         Dashboard.alert({
-                            message: "Thank you for your review",
-                            title: "Thank You"
+                            message: Globalize.translate('MessageThankYouForYourReview'),
+                            title: Globalize.translate('HeaderThankYou')
                         });
                     });
                 }

@@ -166,6 +166,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void OnRequestReceived(string localEndPoint)
         {
+            var ignore = localEndPoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
+
+                localEndPoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                localEndPoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+                localEndPoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+
+            if (ignore)
+            {
+                return;
+            }
+
             if (_localEndpointLock.TryEnterWriteLock(100))
             {
                 var list = _localEndpoints.ToList();

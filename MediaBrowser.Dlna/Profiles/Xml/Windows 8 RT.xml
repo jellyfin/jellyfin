@@ -65,6 +65,6 @@
   </CodecProfiles>
   <ResponseProfiles />
   <SubtitleProfiles>
-    <SubtitleProfile format="ttml" method="External" />
+    <SubtitleProfile format="vtt" method="External" />
   </SubtitleProfiles>
 </Profile>

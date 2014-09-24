@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -35,6 +36,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly IDlnaManager _dlnaManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
 
         private SsdpHandler _ssdpHandler;
         private DeviceDiscovery _deviceDiscovery;
@@ -42,7 +44,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager, ILocalizationManager localization)
         {
             _config = config;
             _appHost = appHost;
@@ -55,6 +57,7 @@ namespace MediaBrowser.Dlna.Main
             _dlnaManager = dlnaManager;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
+            _localization = localization;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -221,7 +224,8 @@ namespace MediaBrowser.Dlna.Main
                         _deviceDiscovery,
                         _httpClient,
                         _config,
-                        _userDataManager);
+                        _userDataManager,
+                        _localization);
 
                     _manager.Start();
                 }

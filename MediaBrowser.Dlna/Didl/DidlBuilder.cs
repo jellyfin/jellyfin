@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -33,17 +34,19 @@ namespace MediaBrowser.Dlna.Didl
         private readonly string _serverAddress;
         private readonly User _user;
         private readonly IUserDataManager _userDataManager;
+        private readonly ILocalizationManager _localization;
 
-        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, IUserDataManager userDataManager)
+        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, IUserDataManager userDataManager, ILocalizationManager localization)
         {
             _profile = profile;
             _imageProcessor = imageProcessor;
             _serverAddress = serverAddress;
             _userDataManager = userDataManager;
+            _localization = localization;
             _user = user;
         }
 
-        public string GetItemDidl(BaseItem item, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var result = new XmlDocument();
 
@@ -60,12 +63,12 @@ namespace MediaBrowser.Dlna.Didl
 
             result.AppendChild(didl);
 
-            result.DocumentElement.AppendChild(GetItemElement(result, item, deviceId, filter, streamInfo));
+            result.DocumentElement.AppendChild(GetItemElement(result, item, context, deviceId, filter, streamInfo));
 
             return result.DocumentElement.OuterXml;
         }
 
-        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var element = doc.CreateElement(string.Empty, "item", NS_DIDL);
             element.SetAttribute("restricted", "1");
@@ -78,7 +81,7 @@ namespace MediaBrowser.Dlna.Didl
 
             //AddBookmarkInfo(item, user, element);
 
-            AddGeneralProperties(item, element, filter);
+            AddGeneralProperties(item, context, element, filter);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -276,6 +279,38 @@ namespace MediaBrowser.Dlna.Didl
 
             container.AppendChild(res);
         }
+
+        private string GetDisplayName(BaseItem item, BaseItem context)
+        {
+            var episode = item as Episode;
+
+            if (episode != null)
+            {
+                // This is a special embedded within a season
+                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0)
+                {
+                    var season = context as Season;
+                    if (season != null && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
+                    {
+                        return string.Format(_localization.GetLocalizedString("ValueSpecialEpisodeName"), item.Name);
+                    }
+                }
+
+                if (item.IndexNumber.HasValue)
+                {
+                    var number = item.IndexNumber.Value.ToString("00").ToString(CultureInfo.InvariantCulture);
+
+                    if (episode.IndexNumberEnd.HasValue)
+                    {
+                        number += "-" + episode.IndexNumberEnd.Value.ToString("00").ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    return number + " - " + item.Name;
+                }
+            }
+
+            return item.Name;
+        }
         
         private void AddAudioResource(XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
@@ -408,7 +443,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddCommonFields(folder, container, filter);
+            AddCommonFields(folder, null, container, filter);
 
             AddCover(folder, container);
 
@@ -431,15 +466,16 @@ namespace MediaBrowser.Dlna.Didl
         /// Adds fields used by both items and folders
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="context">The context.</param>
         /// <param name="element">The element.</param>
         /// <param name="filter">The filter.</param>
-        private void AddCommonFields(BaseItem item, XmlElement element, Filter filter)
+        private void AddCommonFields(BaseItem item, BaseItem context, XmlElement element, Filter filter)
         {
             // Don't filter on dc:title because not all devices will include it in the filter
             // MediaMonkey for example won't display content without a title
             //if (filter.Contains("dc:title"))
             {
-                AddValue(element, "dc", "title", item.Name, NS_DC);
+                AddValue(element, "dc", "title", GetDisplayName(item, context), NS_DC);
             }
 
             element.AppendChild(CreateObjectClass(element.OwnerDocument, item));
@@ -592,9 +628,9 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddGeneralProperties(BaseItem item, XmlElement element, Filter filter)
+        private void AddGeneralProperties(BaseItem item, BaseItem context, XmlElement element, Filter filter)
         {
-            AddCommonFields(item, element, filter);
+            AddCommonFields(item, context, element, filter);
 
             var audio = item as Audio;
 

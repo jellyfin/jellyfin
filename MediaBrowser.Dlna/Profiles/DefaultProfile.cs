@@ -53,6 +53,12 @@ namespace MediaBrowser.Dlna.Profiles
                     AudioCodec = "aac",
                     VideoCodec = "h264",
                     VideoProfile= "baseline"
+                },
+
+                new TranscodingProfile
+                {
+                    Container = "jpeg",
+                    Type = DlnaProfileType.Photo
                 }
             };
 
