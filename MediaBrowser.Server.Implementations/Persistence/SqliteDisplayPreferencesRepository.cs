@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -177,6 +178,84 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
 
         /// <summary>
+        /// Save all display preferences associated with a user in the repo
+        /// </summary>
+        /// <param name="displayPreferences">The display preferences.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public async Task SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId, CancellationToken cancellationToken)
+        {
+            if (displayPreferences == null)
+            {
+                throw new ArgumentNullException("displayPreferences");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                foreach (var displayPreference in displayPreferences)
+                {
+
+                    var serialized = _jsonSerializer.SerializeToBytes(displayPreference);
+
+                    using (var cmd = _connection.CreateCommand())
+                    {
+                        cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
+
+                        cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreference.Id);
+                        cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
+                        cmd.Parameters.Add(cmd, "@3", DbType.String).Value = displayPreference.Client;
+                        cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
+
+                        cmd.Transaction = transaction;
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save display preferences:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
+        /// <summary>
         /// Gets the display preferences.
         /// </summary>
         /// <param name="displayPreferencesId">The display preferences id.</param>
@@ -215,6 +294,32 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 Id = guidId.ToString("N")
             };
+        }
+
+        /// <summary>
+        /// Gets all display preferences for the given user.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task{DisplayPreferences}.</returns>
+        /// <exception cref="System.ArgumentNullException">item</exception>
+        public IEnumerable<DisplayPreferences> GetAllDisplayPreferences(Guid userId)
+        {
+
+            var cmd = _connection.CreateCommand();
+            cmd.CommandText = "select data from userdisplaypreferences where userId=@userId";
+
+            cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+
+            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            {
+                while (reader.Read())
+                {
+                    using (var stream = reader.GetMemoryStream(0))
+                    {
+                        yield return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                    }
+                }
+            }
         }
 
         /// <summary>
