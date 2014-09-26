@@ -396,6 +396,8 @@
     <EmbeddedResource Include="Localization\JavaScript\en_GB.json" />
     <EmbeddedResource Include="Localization\JavaScript\tr.json" />
     <EmbeddedResource Include="Localization\Server\tr.json" />
+    <EmbeddedResource Include="Localization\JavaScript\hr.json" />
+    <EmbeddedResource Include="Localization\Server\hr.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

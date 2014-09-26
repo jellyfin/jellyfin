@@ -570,5 +570,19 @@
     "LabelYourRating": "\u0411\u0430\u0493\u0430\u043b\u0430\u0443\u044b\u04a3\u044b\u0437",
     "LabelFullReview": "\u041f\u0456\u043a\u0456\u0440 \u0442\u043e\u043b\u044b\u0493\u044b\u043c\u0435\u043d:",
     "LabelShortRatingDescription": "\u0411\u0430\u0493\u0430\u043b\u0430\u0443\u0434\u044b\u04a3 \u049b\u044b\u0441\u049b\u0430 \u0430\u049b\u043f\u0430\u0440\u044b:",
-    "OptionIRecommendThisItem": "\u041e\u0441\u044b \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0442\u0456 \u04b1\u0441\u044b\u043d\u0430\u043c\u044b\u043d"
+    "OptionIRecommendThisItem": "\u041e\u0441\u044b \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0442\u0456 \u04b1\u0441\u044b\u043d\u0430\u043c\u044b\u043d",
+    "WebClientTourContent": "View your recently added media, next episodes, and more. The green circles indicate how many unplayed items you have.",
+    "WebClientTourMovies": "Play movies, trailers and more from any device with a web browser",
+    "WebClientTourMouseOver": "Hold the mouse over any poster for quick access to important information",
+    "WebClientTourTapHold": "Tap and hold or right click any poster for a context menu",
+    "WebClientTourMetadataManager": "Click edit to open the metadata manager",
+    "WebClientTourPlaylists": "Easily create playlists and instant mixes, and play them on any device",
+    "WebClientTourCollections": "Create movie collections to group box sets together",
+    "WebClientTourUserPreferences1": "User preferences allow you to customize the way your library is presented in all of your Media Browser apps",
+    "WebClientTourUserPreferences2": "Configure your audio and subtitle language settings once, for every Media Browser app",
+    "WebClientTourUserPreferences3": "Design the web client home page to your liking",
+    "WebClientTourUserPreferences4": "Configure backdrops, theme songs and external players",
+    "WebClientTourMobile1": "The web client works great on smartphones and tablets...",
+    "WebClientTourMobile2": "and easily controls other devices and Media Browser apps",
+    "MessageEnjoyYourStay": "Enjoy your stay"
 }

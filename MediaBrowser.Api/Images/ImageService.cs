@@ -39,6 +39,8 @@ namespace MediaBrowser.Api.Images
 
     [Route("/Items/{Id}/Images/{Type}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
+    [Route("/Items/{Id}/Images/{Type}", "HEAD")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}", "HEAD")]
     [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "HEAD")]
     [Api(Description = "Gets an item image")]

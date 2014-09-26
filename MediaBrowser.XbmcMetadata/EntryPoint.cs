@@ -75,7 +75,7 @@ namespace MediaBrowser.XbmcMetadata
 
                 if (item != null)
                 {
-                    if (!item.IsFolder && !(item is IItemByName))
+                    if (item is Video)
                     {
                         SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
                     }

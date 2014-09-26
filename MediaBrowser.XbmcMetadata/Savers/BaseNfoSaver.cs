@@ -852,6 +852,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static void AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
         {
+            if (!(item is Video))
+            {
+                return;
+            }
+
             var userId = options.UserId;
             if (string.IsNullOrWhiteSpace(userId))
             {

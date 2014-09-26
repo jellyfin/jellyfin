@@ -194,7 +194,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
+            var enableFavoriteSorting = query.EnableFavoriteSorting;
+
             channels = channels.OrderBy(i =>
+            {
+                if (enableFavoriteSorting)
+                {
+                    var userData = _userDataManager.GetUserData(user.Id, i.GetUserDataKey());
+
+                    if (userData.IsFavorite)
+                    {
+                        return 0;
+                    }
+                    if (userData.Likes.HasValue)
+                    {
+                        if (!userData.Likes.Value)
+                        {
+                            return 3;
+                        }
+
+                        return 1;
+                    }
+                }
+
+                return 2;
+            })
+            .ThenBy(i =>
             {
                 double number = 0;
 

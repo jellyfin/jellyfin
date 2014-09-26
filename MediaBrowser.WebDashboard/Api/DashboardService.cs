@@ -416,6 +416,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.css",
+                                "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
                                 "css/all.css" + versionString
                             };
 
@@ -438,7 +439,8 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js"
+                                "thirdparty/jstree1.0/jquery.jstree.min.js",
+                                "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
             };
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
