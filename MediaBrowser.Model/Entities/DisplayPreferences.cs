@@ -98,6 +98,10 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if [show sidebar]; otherwise, <c>false</c>.</value>
         public bool ShowSidebar { get; set; }
+        /// <summary>
+        /// Gets or sets the client
+        /// </summary>
+        public string Client { get; set; }
 
         /// <summary>
         /// Increases the size of the image.
