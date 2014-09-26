@@ -50,6 +50,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "IsDisliked", Description = "Filter by channels that are disliked, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsDisliked { get; set; }
+
+        [ApiMember(Name = "EnableFavoriteSorting", Description = "Incorporate favorite and like status into channel sorting.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool EnableFavoriteSorting { get; set; }
     }
 
     [Route("/LiveTv/Channels/{Id}", "GET", Summary = "Gets a live tv channel")]
@@ -312,7 +315,8 @@ namespace MediaBrowser.Api.LiveTv
                 Limit = request.Limit,
                 IsFavorite = request.IsFavorite,
                 IsLiked = request.IsLiked,
-                IsDisliked = request.IsDisliked
+                IsDisliked = request.IsDisliked,
+                EnableFavoriteSorting = request.EnableFavoriteSorting
 
             }, CancellationToken.None).ConfigureAwait(false);
 

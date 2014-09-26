@@ -570,5 +570,19 @@
     "LabelYourRating": "Sua avalia\u00e7\u00e3o:",
     "LabelFullReview": "Coment\u00e1rio completo:",
     "LabelShortRatingDescription": "Resumo da avalia\u00e7\u00e3o:",
-    "OptionIRecommendThisItem": "Eu recomendo este item"
+    "OptionIRecommendThisItem": "Eu recomendo este item",
+    "WebClientTourContent": "View your recently added media, next episodes, and more. The green circles indicate how many unplayed items you have.",
+    "WebClientTourMovies": "Play movies, trailers and more from any device with a web browser",
+    "WebClientTourMouseOver": "Hold the mouse over any poster for quick access to important information",
+    "WebClientTourTapHold": "Tap and hold or right click any poster for a context menu",
+    "WebClientTourMetadataManager": "Click edit to open the metadata manager",
+    "WebClientTourPlaylists": "Easily create playlists and instant mixes, and play them on any device",
+    "WebClientTourCollections": "Create movie collections to group box sets together",
+    "WebClientTourUserPreferences1": "User preferences allow you to customize the way your library is presented in all of your Media Browser apps",
+    "WebClientTourUserPreferences2": "Configure your audio and subtitle language settings once, for every Media Browser app",
+    "WebClientTourUserPreferences3": "Design the web client home page to your liking",
+    "WebClientTourUserPreferences4": "Configure backdrops, theme songs and external players",
+    "WebClientTourMobile1": "The web client works great on smartphones and tablets...",
+    "WebClientTourMobile2": "and easily controls other devices and Media Browser apps",
+    "MessageEnjoyYourStay": "Enjoy your stay"
 }

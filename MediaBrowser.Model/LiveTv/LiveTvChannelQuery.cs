@@ -29,6 +29,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is disliked] contains no value, <c>true</c> if [is disliked]; otherwise, <c>false</c>.</value>
         public bool? IsDisliked { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable favorite sorting].
+        /// </summary>
+        /// <value><c>true</c> if [enable favorite sorting]; otherwise, <c>false</c>.</value>
+        public bool EnableFavoriteSorting { get; set; }
         
         /// <summary>
         /// Gets or sets the user identifier.

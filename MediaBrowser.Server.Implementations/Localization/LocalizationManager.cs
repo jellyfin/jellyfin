@@ -363,6 +363,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="English (United States)", Value="en-us"},
                 new LocalizatonOption{ Name="Catalan", Value="ca"},
                 new LocalizatonOption{ Name="Chinese Traditional", Value="zh-TW"},
+                new LocalizatonOption{ Name="Croatian", Value="hr"},
                 new LocalizatonOption{ Name="Czech", Value="cs"},
                 new LocalizatonOption{ Name="Danish", Value="da"},
                 new LocalizatonOption{ Name="Dutch", Value="nl"},
