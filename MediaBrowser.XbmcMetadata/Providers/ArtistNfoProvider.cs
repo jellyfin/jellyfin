@@ -23,7 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<MusicArtist> result, string path, CancellationToken cancellationToken)
         {
-            new BaseNfoParser<MusicArtist>(_logger, _config).Fetch(result.Item, path, cancellationToken);
+            new BaseNfoParser<MusicArtist>(_logger, _config).Fetch(result.Item, result.UserDataLIst, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

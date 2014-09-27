@@ -14,12 +14,8 @@ namespace MediaBrowser.Providers.Movies
 {
     public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

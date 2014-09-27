@@ -110,6 +110,15 @@ namespace MediaBrowser.Controller.Providers
         Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType);
 
         /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The savers.</param>
+        /// <returns>Task.</returns>
+        Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers);
+        
+        /// <summary>
         /// Gets the metadata options.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -139,10 +148,21 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseInfo> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the item identity providers.
+        /// </summary>
+        /// <typeparam name="TLookupInfo">The type of the t lookup information.</typeparam>
+        /// <typeparam name="TIdentity">The type of the t identity.</typeparam>
+        /// <returns>IEnumerable&lt;IItemIdentityProvider&lt;TLookupInfo, TIdentity&gt;&gt;.</returns>
         IEnumerable<IItemIdentityProvider<TLookupInfo, TIdentity>> GetItemIdentityProviders<TLookupInfo, TIdentity>()
             where TLookupInfo : ItemLookupInfo
             where TIdentity : IItemIdentity;
 
+        /// <summary>
+        /// Gets the item identity converters.
+        /// </summary>
+        /// <typeparam name="TIdentity">The type of the t identity.</typeparam>
+        /// <returns>IEnumerable&lt;IItemIdentityConverter&lt;TIdentity&gt;&gt;.</returns>
         IEnumerable<IItemIdentityConverter<TIdentity>> GetItemIdentityConverters<TIdentity>()
             where TIdentity : IItemIdentity;
     }

@@ -2,6 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -11,8 +12,7 @@ namespace MediaBrowser.Providers.Channels
 {
     public class AudioChannelItemMetadataService : MetadataService<ChannelAudioItem, ItemLookupInfo>
     {
-        public AudioChannelItemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public AudioChannelItemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
         }
 

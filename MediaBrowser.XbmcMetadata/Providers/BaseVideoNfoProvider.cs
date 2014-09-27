@@ -28,7 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
             var chapters = new List<ChapterInfo>();
 
-            new MovieNfoParser(_logger, _config).Fetch(result.Item, chapters, path, cancellationToken);
+            new MovieNfoParser(_logger, _config).Fetch(result.Item, result.UserDataLIst, chapters, path, cancellationToken);
 
             result.Chapters = chapters;
         }

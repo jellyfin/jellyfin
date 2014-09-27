@@ -570,9 +570,33 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <returns>Task.</returns>
-        public async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
+        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType)
         {
-            foreach (var saver in _savers.Where(i => IsSaverEnabledForItem(i, item, updateType, false)))
+            return SaveMetadata(item, updateType, _savers);
+        }
+
+        /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The savers.</param>
+        /// <returns>Task.</returns>
+        public Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<string> savers)
+        {
+            return SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
+        }
+
+        /// <summary>
+        /// Saves the metadata.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The savers.</param>
+        /// <returns>Task.</returns>
+        private async Task SaveMetadata(IHasMetadata item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
+        {
+            foreach (var saver in savers.Where(i => IsSaverEnabledForItem(i, item, updateType, false)))
             {
                 _logger.Debug("Saving {0} to {1}.", item.Path ?? item.Name, saver.Name);
 
@@ -625,6 +649,14 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        /// <summary>
+        /// Determines whether [is saver enabled for item] [the specified saver].
+        /// </summary>
+        /// <param name="saver">The saver.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="includeDisabled">if set to <c>true</c> [include disabled].</param>
+        /// <returns><c>true</c> if [is saver enabled for item] [the specified saver]; otherwise, <c>false</c>.</returns>
         private bool IsSaverEnabledForItem(IMetadataSaver saver, IHasMetadata item, ItemUpdateType updateType, bool includeDisabled)
         {
             var options = GetMetadataOptions(item);

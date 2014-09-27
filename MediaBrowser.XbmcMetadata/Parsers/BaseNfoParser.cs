@@ -3,15 +3,13 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
+using MediaBrowser.XbmcMetadata.Savers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Xml;
-using MediaBrowser.XbmcMetadata.Savers;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -41,10 +39,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Fetches metadata for an item from one xml file
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="userDataList">The user data list.</param>
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void Fetch(T item, string metadataFile, CancellationToken cancellationToken)
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
+        public void Fetch(T item, List<UserItemData> userDataList, string metadataFile, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -64,17 +64,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ValidationType = ValidationType.None
             };
 
-            Fetch(item, metadataFile, settings, cancellationToken);
+            Fetch(item, userDataList, metadataFile, settings, cancellationToken);
         }
 
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="userDataList">The user data list.</param>
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="settings">The settings.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void Fetch(T item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        private void Fetch(T item, List<UserItemData> userDataList, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
@@ -90,15 +91,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            FetchDataFromXmlNode(reader, item, userDataList);
                         }
                     }
                 }
             }
         }
 
-        protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
+        protected virtual void FetchDataFromXmlNode(XmlReader reader, T item, List<UserItemData> userDataList)
         {
+            var userDataUserId = _config.GetNfoConfiguration().UserId;
+
             switch (reader.Name)
             {
                 // DateCreated
@@ -571,7 +574,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "releasedate":
                     {
                         var formatString = _config.GetNfoConfiguration().ReleaseDateFormat;
-                        
+
                         var val = reader.ReadElementContentAsString();
 
                         if (!string.IsNullOrWhiteSpace(val))
@@ -798,9 +801,173 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "watched":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            bool parsedValue;
+                            if (bool.TryParse(val, out parsedValue))
+                            {
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                    userData.Played = parsedValue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                case "playcount":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int parsedValue;
+                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out parsedValue))
+                            {
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                    userData.PlayCount = parsedValue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                case "lastplayed":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            DateTime parsedValue;
+                            if (DateTime.TryParseExact(val, "yyyy-MM-dd HH:mm:ss", _usCulture, DateTimeStyles.None, out parsedValue))
+                            {
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                    userData.LastPlayedDate = parsedValue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                case "resume":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            if (!string.IsNullOrWhiteSpace(userDataUserId))
+                            {
+                                var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                FetchFromResumeNode(subtree, item, userData);
+                            }
+                        }
+                        break;
+                    }
+
+                case "isuserfavorite":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            bool parsedValue;
+                            if (bool.TryParse(val, out parsedValue))
+                            {
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                    userData.IsFavorite = parsedValue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                case "userrating":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            double parsedValue;
+                            if (double.TryParse(val, NumberStyles.Any, _usCulture, out parsedValue))
+                            {
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(userDataList, userDataUserId);
+
+                                    userData.Rating = parsedValue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
                 default:
                     reader.Skip();
                     break;
+            }
+        }
+
+        private UserItemData GetOrAdd(List<UserItemData> userDataList, string userId)
+        {
+            var userData = userDataList.FirstOrDefault(i => string.Equals(userId, i.UserId.ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            if (userData == null)
+            {
+                userData = new UserItemData()
+                {
+                    UserId = new Guid(userId)
+                };
+
+                userDataList.Add(userData);
+            }
+
+            return userData;
+        }
+
+        private void FetchFromResumeNode(XmlReader reader, T item, UserItemData userData)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "position":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    double parsedValue;
+                                    if (double.TryParse(val, NumberStyles.Any, _usCulture, out parsedValue))
+                                    {
+                                        userData.PlaybackPositionTicks = TimeSpan.FromSeconds(parsedValue).Ticks;
+                                    }
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -21,7 +22,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
         }
 
-        public void Fetch(Episode item, 
+        public void Fetch(Episode item,
+            List<UserItemData> userDataList,
             List<LocalImageInfo> images,
             List<ChapterInfo> chapters, 
             string metadataFile, 
@@ -31,7 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _chaptersFound = chapters;
             _xmlPath = metadataFile;
 
-            Fetch(item, metadataFile, cancellationToken);
+            Fetch(item, userDataList, metadataFile, cancellationToken);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -41,7 +43,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item)
+        /// <param name="userDataList">The user data list.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item, List<UserItemData> userDataList)
         {
             switch (reader.Name)
             {
@@ -203,7 +206,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, item, userDataList);
                     break;
             }
         }

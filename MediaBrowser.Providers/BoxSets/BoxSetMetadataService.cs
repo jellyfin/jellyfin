@@ -17,13 +17,10 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     {
-        private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _iLocalizationManager;
 
-        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager, ILocalizationManager iLocalizationManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILocalizationManager iLocalizationManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
             _iLocalizationManager = iLocalizationManager;
         }
 

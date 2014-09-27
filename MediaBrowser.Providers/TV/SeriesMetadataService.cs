@@ -13,12 +13,8 @@ namespace MediaBrowser.Providers.TV
 {
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

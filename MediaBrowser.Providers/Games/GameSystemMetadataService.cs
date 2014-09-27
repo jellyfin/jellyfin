@@ -14,12 +14,8 @@ namespace MediaBrowser.Providers.Games
 {
     public class GameSystemMetadataService : MetadataService<GameSystem, GameSystemInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public GameSystemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public GameSystemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

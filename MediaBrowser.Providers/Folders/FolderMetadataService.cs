@@ -12,12 +12,8 @@ namespace MediaBrowser.Providers.Folders
 {
     public class FolderMetadataService : MetadataService<Folder, ItemLookupInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public FolderMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public FolderMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

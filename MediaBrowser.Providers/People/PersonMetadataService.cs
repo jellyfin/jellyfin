@@ -14,12 +14,8 @@ namespace MediaBrowser.Providers.People
 {
     public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

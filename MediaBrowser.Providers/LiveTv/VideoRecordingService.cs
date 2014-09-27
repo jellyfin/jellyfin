@@ -14,12 +14,8 @@ namespace MediaBrowser.Providers.LiveTv
 {
     public class VideoRecordingService : MetadataService<LiveTvVideoRecording, ItemLookupInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public VideoRecordingService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public VideoRecordingService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _libraryManager = libraryManager;
         }
 
         /// <summary>

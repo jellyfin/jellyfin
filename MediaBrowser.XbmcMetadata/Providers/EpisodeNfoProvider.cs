@@ -28,7 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             var images = new List<LocalImageInfo>();
             var chapters = new List<ChapterInfo>();
 
-            new EpisodeNfoParser(_logger, _config).Fetch(result.Item, images, chapters, path, cancellationToken);
+            new EpisodeNfoParser(_logger, _config).Fetch(result.Item, result.UserDataLIst, images, chapters, path, cancellationToken);
 
             result.Images = images;
             result.Chapters = chapters;

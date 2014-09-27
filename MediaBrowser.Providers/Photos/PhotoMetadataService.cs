@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -11,8 +12,7 @@ namespace MediaBrowser.Providers.Photos
 {
     class PhotoMetadataService : MetadataService<Photo, ItemLookupInfo>
     {
-        public PhotoMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public PhotoMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
         }
 

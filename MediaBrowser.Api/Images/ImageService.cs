@@ -108,6 +108,20 @@ namespace MediaBrowser.Api.Images
     [Route("/Studios/{Name}/Images/{Type}/{Index}", "GET")]
     [Route("/Years/{Year}/Images/{Type}", "GET")]
     [Route("/Years/{Year}/Images/{Type}/{Index}", "GET")]
+    [Route("/Artists/{Name}/Images/{Type}", "HEAD")]
+    [Route("/Artists/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/Genres/{Name}/Images/{Type}", "HEAD")]
+    [Route("/Genres/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/GameGenres/{Name}/Images/{Type}", "HEAD")]
+    [Route("/GameGenres/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/MusicGenres/{Name}/Images/{Type}", "HEAD")]
+    [Route("/MusicGenres/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/Persons/{Name}/Images/{Type}", "HEAD")]
+    [Route("/Persons/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/Studios/{Name}/Images/{Type}", "HEAD")]
+    [Route("/Studios/{Name}/Images/{Type}/{Index}", "HEAD")]
+    [Route("/Years/{Year}/Images/{Type}", "HEAD")]
+    [Route("/Years/{Year}/Images/{Type}/{Index}", "HEAD")]
     [Api(Description = "Gets an item by name image")]
     public class GetItemByNameImage : ImageRequest
     {
@@ -404,6 +418,16 @@ namespace MediaBrowser.Api.Images
             var item = GetItemByName(request.Name, type, _libraryManager);
 
             return GetImage(request, item, false);
+        }
+
+        public object Head(GetItemByNameImage request)
+        {
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var type = pathInfo.GetArgumentValue<string>(0);
+
+            var item = GetItemByName(request.Name, type, _libraryManager);
+
+            return GetImage(request, item, true);
         }
 
         /// <summary>
