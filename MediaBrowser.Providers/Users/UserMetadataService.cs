@@ -14,12 +14,8 @@ namespace MediaBrowser.Providers.Users
 {
     public class UserMetadataService : MetadataService<User, ItemLookupInfo>
     {
-        private readonly IUserManager _userManager;
-
-        public UserMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserManager userManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem)
+        public UserMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _userManager = userManager;
         }
 
         /// <summary>

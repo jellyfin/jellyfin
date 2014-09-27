@@ -17,14 +17,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
         }
 
-        public void Fetch(Video item, 
+        public void Fetch(Video item,
+            List<UserItemData> userDataList,
             List<ChapterInfo> chapters, 
             string metadataFile, 
             CancellationToken cancellationToken)
         {
             _chaptersFound = chapters;
 
-            Fetch(item, metadataFile, cancellationToken);
+            Fetch(item, userDataList, metadataFile, cancellationToken);
         }
 
         /// <summary>
@@ -32,7 +33,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Video item)
+        /// <param name="userDataList">The user data list.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, Video item, List<UserItemData> userDataList)
         {
             switch (reader.Name)
             {
@@ -89,7 +91,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 //    break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, item, userDataList);
                     break;
             }
         }

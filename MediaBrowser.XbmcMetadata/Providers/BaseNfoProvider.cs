@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.XbmcMetadata.Savers;
 using System;
 using System.IO;
 using System.Threading;
@@ -27,8 +28,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             var path = file.FullName;
 
-            //await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 result.Item = new T();
@@ -44,10 +43,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 result.HasMetadata = false;
             }
-            //finally
-            //{
-            //    XmlProviderUtils.XmlParsingResourcePool.Release();
-            //}
 
             return result;
         }
@@ -77,7 +72,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
             get
             {
-                return "Xbmc Nfo";
+                return BaseNfoSaver.SaverName;
             }
         }
     }

@@ -37,11 +37,13 @@ namespace MediaBrowser.Controller.Providers
         
         public List<LocalImageInfo> Images { get; set; }
         public List<ChapterInfo> Chapters { get; set; }
+        public List<UserItemData> UserDataLIst { get; set; }
 
         public LocalMetadataResult()
         {
             Images = new List<LocalImageInfo>();
             Chapters = new List<ChapterInfo>();
+            UserDataLIst = new List<UserItemData>();
         }
     }
 }

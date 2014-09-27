@@ -9,22 +9,26 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The playback start
         /// </summary>
-        PlaybackStart,
+        PlaybackStart = 1,
         /// <summary>
         /// The playback progress
         /// </summary>
-        PlaybackProgress,
+        PlaybackProgress = 2,
         /// <summary>
         /// The playback finished
         /// </summary>
-        PlaybackFinished,
+        PlaybackFinished = 3,
         /// <summary>
         /// The toggle played
         /// </summary>
-        TogglePlayed,
+        TogglePlayed = 4,
         /// <summary>
         /// The update user rating
         /// </summary>
-        UpdateUserRating
+        UpdateUserRating = 5,
+        /// <summary>
+        /// The import
+        /// </summary>
+        Import = 6
     }
 }

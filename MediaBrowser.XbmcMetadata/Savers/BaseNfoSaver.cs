@@ -95,7 +95,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "musicbrainzalbumid",
                     "musicbrainzreleasegroupid",
                     "tvdbid",
-                    "collectionitem"
+                    "collectionitem",
+
+                    "isuserfavorite",
+                    "userrating"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -117,6 +120,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected ILogger Logger { get; private set; }
 
         public string Name
+        {
+            get
+            {
+                return SaverName;
+            }
+        }
+
+        public static string SaverName
         {
             get
             {
@@ -852,11 +863,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static void AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
         {
-            if (!(item is Video))
-            {
-                return;
-            }
-
             var userId = options.UserId;
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -877,20 +883,30 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var userdata = userDataRepo.GetUserData(user.Id, item.GetUserDataKey());
 
-            writer.WriteElementString("playcount", userdata.PlayCount.ToString(UsCulture));
-            writer.WriteElementString("watched", userdata.Played.ToString().ToLower());
+            writer.WriteElementString("isuserfavorite", userdata.IsFavorite.ToString().ToLower());
 
-            if (userdata.LastPlayedDate.HasValue)
+            if (userdata.Rating.HasValue)
             {
-                writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss").ToLower());
+                writer.WriteElementString("userrating", userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLower());
             }
 
-            writer.WriteStartElement("resume");
+            if (!item.IsFolder)
+            {
+                writer.WriteElementString("playcount", userdata.PlayCount.ToString(UsCulture));
+                writer.WriteElementString("watched", userdata.Played.ToString().ToLower());
 
-            var runTimeTicks = item.RunTimeTicks ?? 0;
+                if (userdata.LastPlayedDate.HasValue)
+                {
+                    writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss").ToLower());
+                }
 
-            writer.WriteElementString("position", TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(UsCulture));
-            writer.WriteElementString("total", TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(UsCulture));
+                writer.WriteStartElement("resume");
+
+                var runTimeTicks = item.RunTimeTicks ?? 0;
+
+                writer.WriteElementString("position", TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(UsCulture));
+                writer.WriteElementString("total", TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(UsCulture));
+            }
 
             writer.WriteEndElement();
         }

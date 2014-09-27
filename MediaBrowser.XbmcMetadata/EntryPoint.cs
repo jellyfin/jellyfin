@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
+using MediaBrowser.XbmcMetadata.Savers;
 using System;
 using System.Linq;
 
@@ -36,20 +37,19 @@ namespace MediaBrowser.XbmcMetadata
 
         void _libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
-            // TODO: Need a more accurate check here to see if xbmc metadata saving is enabled.
-            // This is probably good enough, but no guarantee
-            var userId = _config.GetNfoConfiguration().UserId;
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return;
-            }
-
             if (e.UpdateReason == ItemUpdateType.ImageUpdate)
             {
                 var person = e.Item as Person;
 
                 if (person != null)
                 {
+                    var config = _config.GetNfoConfiguration();
+
+                    if (!config.SaveImagePathsInNfo)
+                    {
+                        return;
+                    }
+
                     var items = _libraryManager.RootFolder.RecursiveChildren;
                     items = person.GetTaggedItems(items).ToList();
 
@@ -63,22 +63,13 @@ namespace MediaBrowser.XbmcMetadata
 
         void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
         {
-            var userId = _config.GetNfoConfiguration().UserId;
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return;
-            }
-
-            if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed)
+            if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed || e.SaveReason == UserDataSaveReason.UpdateUserRating)
             {
                 var item = e.Item as BaseItem;
 
-                if (item != null)
+                if (!string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
                 {
-                    if (item is Video)
-                    {
-                        SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
-                    }
+                    SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
                 }
             }
         }
@@ -99,7 +90,7 @@ namespace MediaBrowser.XbmcMetadata
 
             try
             {
-                await _providerManager.SaveMetadata(item, updateReason).ConfigureAwait(false);
+                await _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver.SaverName }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

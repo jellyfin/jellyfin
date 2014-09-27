@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -16,7 +18,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Season item)
+        /// <param name="userDataList">The user data list.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, Season item, List<UserItemData> userDataList)
         {
             switch (reader.Name)
             {
@@ -37,7 +40,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, item, userDataList);
                     break;
             }
         }

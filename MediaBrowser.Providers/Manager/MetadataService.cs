@@ -24,14 +24,16 @@ namespace MediaBrowser.Providers.Manager
         protected readonly IProviderManager ProviderManager;
         protected readonly IProviderRepository ProviderRepo;
         protected readonly IFileSystem FileSystem;
+        protected readonly IUserDataManager UserDataManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             ProviderRepo = providerRepo;
             FileSystem = fileSystem;
+            UserDataManager = userDataManager;
         }
 
         /// <summary>
@@ -304,7 +306,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
                         }
-                        
+
                         return false;
                     })
                     .ToList();
@@ -356,6 +358,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
+            var userDataList = new List<UserItemData>();
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
@@ -375,6 +378,8 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
                         }
 
+                        userDataList = localItem.UserDataLIst;
+
                         MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
@@ -393,9 +398,9 @@ namespace MediaBrowser.Providers.Manager
                 catch (Exception ex)
                 {
                     failedProviderCount++;
-                    
+
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
-                    
+
                     // If a local provider fails, consider that a failure
                     refreshResult.Status = ProviderRefreshStatus.Failure;
                     refreshResult.ErrorMessage = ex.Message;
@@ -441,7 +446,23 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
+            await ImportUserData(item, userDataList, cancellationToken).ConfigureAwait(false);
+
             return refreshResult;
+        }
+
+        private async Task ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        {
+            var hasUserData = item as IHasUserData;
+
+            if (hasUserData != null)
+            {
+                foreach (var userData in userDataList)
+                {
+                    await UserDataManager.SaveUserData(userData.UserId, hasUserData, userData, UserDataSaveReason.Import, cancellationToken)
+                            .ConfigureAwait(false);
+                }
+            }
         }
 
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
@@ -539,13 +560,13 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual void AfterRemoteRefresh(TItemType item)
         {
-            
+
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
         {
             var info = item.GetLookupInfo();
-            
+
             var hasIdentity = info as IHasIdentities<IItemIdentity>;
             if (hasIdentity != null)
             {
