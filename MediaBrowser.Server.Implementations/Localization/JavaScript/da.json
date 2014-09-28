@@ -11,7 +11,7 @@
     "FileNotFound": "Filen blev ikke fundet",
     "FileReadError": "Der opstod en fejl i fors\u00f8get p\u00e5 at l\u00e6se filen",
     "DeleteUser": "Slet bruger",
-    "DeleteUserConfirmation": "Er du sikker p\u00e5 du \u00f8nsker at slette {0}?",
+    "DeleteUserConfirmation": "Er du sikker p\u00e5 du \u00f8nsker at slette denne bruger?",
     "PasswordResetHeader": "Nulstil kode",
     "PasswordResetComplete": "Koden er blevet nulstillet",
     "PasswordResetConfirmation": "Er du sikker p\u00e5 at koden skal nulstilles",

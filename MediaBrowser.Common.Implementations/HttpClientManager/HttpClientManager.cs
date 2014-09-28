@@ -231,9 +231,12 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </exception>
         public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
         {
+            HttpResponseInfo response;
+
             if (!options.EnableUnconditionalCache)
             {
-                return await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+                response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+                return response;
             }
 
             var url = options.Url;
@@ -242,7 +245,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
-            var response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+            response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
             if (response != null)
             {
                 return response;

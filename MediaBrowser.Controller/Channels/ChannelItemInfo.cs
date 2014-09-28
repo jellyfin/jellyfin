@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Channels
         public List<string> Tags { get; set; }
 
         public List<PersonInfo> People { get; set; }
-        
+
         public float? CommunityRating { get; set; }
 
         public long? RunTimeTicks { get; set; }
@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Channels
 
         public ChannelMediaContentType ContentType { get; set; }
         public ExtraType ExtraType { get; set; }
-        public TrailerType TrailerType { get; set; }
+        public List<TrailerType> TrailerTypes { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.Channels
         public ChannelItemInfo()
         {
             MediaSources = new List<ChannelMediaInfo>();
+            TrailerTypes = new List<TrailerType>();
             Genres = new List<string>();
             Studios = new List<string>();
             People = new List<PersonInfo>();

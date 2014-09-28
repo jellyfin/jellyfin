@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Channels
         {
             if (ContentType == ChannelMediaContentType.MovieExtra)
             {
-                var key = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tvcom);
+                var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
 
                 if (!string.IsNullOrWhiteSpace(key))
                 {
