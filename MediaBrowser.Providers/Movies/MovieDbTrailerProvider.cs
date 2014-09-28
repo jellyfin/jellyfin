@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace MediaBrowser.Providers.Movies
 
         public Task<MetadataResult<ChannelVideoItem>> GetMetadata(ChannelItemLookupInfo info, CancellationToken cancellationToken)
         {
-            if (info.ContentType != Model.Channels.ChannelMediaContentType.Trailer)
+            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
             {
                 return Task.FromResult(new MetadataResult<ChannelVideoItem>());
             }
@@ -40,14 +41,14 @@ namespace MediaBrowser.Providers.Movies
             return MovieDbProvider.Current.GetItemMetadata<ChannelVideoItem>(info, cancellationToken);
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo info, CancellationToken cancellationToken)
         {
-            if (searchInfo.ContentType != ChannelMediaContentType.Trailer)
+            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
             {
                 return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
             }
-            
-            return MovieDbProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
+
+            return MovieDbProvider.Current.GetMovieSearchResults(info, cancellationToken);
         }
 
         public string Name

@@ -40,6 +40,12 @@ namespace MediaBrowser.Model.Channels
         public int? MaxPageSize { get; set; }
 
         /// <summary>
+        /// Gets or sets the automatic refresh levels.
+        /// </summary>
+        /// <value>The automatic refresh levels.</value>
+        public int? AutoRefreshLevels { get; set; }
+
+        /// <summary>
         /// Gets or sets the default sort orders.
         /// </summary>
         /// <value>The default sort orders.</value>

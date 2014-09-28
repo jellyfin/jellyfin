@@ -1,12 +1,9 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -22,20 +19,17 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
-        private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IMediaEncoder _encoder;
         private readonly IChapterManager _chapterManager;
 
-        public EncodingManager(IServerConfigurationManager config, 
-            IFileSystem fileSystem, 
+        public EncodingManager(IFileSystem fileSystem, 
             ILogger logger, 
             IMediaEncoder encoder, 
             IChapterManager chapterManager)
         {
-            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
             _encoder = encoder;
@@ -46,9 +40,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         /// Gets the chapter images data path.
         /// </summary>
         /// <value>The chapter images data path.</value>
-        private string GetChapterImagesPath(Guid itemId)
+        private string GetChapterImagesPath(IHasImages item)
         {
-            return Path.Combine(_config.ApplicationPaths.GetInternalMetadataPath(itemId), "chapters");
+            return Path.Combine(item.GetInternalMetadataPath(), "chapters");
         }
 
         /// <summary>
@@ -190,12 +184,12 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         {
             var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
 
-            return Path.Combine(GetChapterImagesPath(video.Id), filename);
+            return Path.Combine(GetChapterImagesPath(video), filename);
         }
 
         private List<string> GetSavedChapterImages(Video video)
         {
-            var path = GetChapterImagesPath(video.Id);
+            var path = GetChapterImagesPath(video);
 
             try
             {

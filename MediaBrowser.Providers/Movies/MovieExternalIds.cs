@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var channelItem = item as ChannelVideoItem;
 
-            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra && channelItem.ExtraType == ExtraType.Trailer)
             {
                 return true;
             }
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var channelItem = item as ChannelVideoItem;
 
-            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra && channelItem.ExtraType == ExtraType.Trailer)
             {
                 return true;
             }

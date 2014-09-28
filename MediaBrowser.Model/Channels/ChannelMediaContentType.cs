@@ -12,6 +12,12 @@
 
         Episode = 4,
 
-        Song = 5
+        Song = 5,
+
+        MovieExtra = 6,
+
+        TvExtra = 7,
+
+        GameExtra = 8
     }
 }

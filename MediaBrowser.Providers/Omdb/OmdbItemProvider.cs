@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Omdb
 
         public Task<MetadataResult<ChannelVideoItem>> GetMetadata(ChannelItemLookupInfo info, CancellationToken cancellationToken)
         {
-            if (info.ContentType != ChannelMediaContentType.Trailer)
+            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
             {
                 return Task.FromResult(new MetadataResult<ChannelVideoItem>());
             }

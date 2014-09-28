@@ -12,6 +12,7 @@ namespace MediaBrowser.Controller.Channels
         public string ExternalId { get; set; }
 
         public string ChannelId { get; set; }
+        public string DataVersion { get; set; }
 
         public ChannelItemType ChannelItemType { get; set; }
         public ChannelFolderType ChannelFolderType { get; set; }
@@ -30,6 +31,11 @@ namespace MediaBrowser.Controller.Channels
             {
                 return false;
             }
+        }
+
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return false;
         }
 
         public override string GetUserDataKey()
@@ -62,6 +68,11 @@ namespace MediaBrowser.Controller.Channels
 
                 };
             }
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
         }
     }
 }

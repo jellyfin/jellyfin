@@ -64,9 +64,16 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             foreach (var channel in channels.Items)
             {
+                var channelId = channel.Id.ToString("N");
+
+                var features = _channelManager.GetChannelFeatures(channelId);
+
+                const int currentRefreshLevel = 1;
+                var maxRefreshLevel = features.AutoRefreshLevels ?? 1;
+
                 try
                 {
-                    await GetAllItems(user, channel.Id.ToString("N"), null, false, cancellationToken).ConfigureAwait(false);
+                    await GetAllItems(user, channelId, null, currentRefreshLevel, maxRefreshLevel, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -83,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         }
 
-        private async Task GetAllItems(string user, string channelId, string folderId, bool recursive, CancellationToken cancellationToken)
+        private async Task GetAllItems(string user, string channelId, string folderId, int currentRefreshLevel, int maxRefreshLevel, CancellationToken cancellationToken)
         {
             var folderItems = new List<string>();
 
@@ -117,13 +124,13 @@ namespace MediaBrowser.Server.Implementations.Channels
                 totalCount = result.TotalRecordCount;
             }
 
-            if (recursive)
+            if (currentRefreshLevel < maxRefreshLevel)
             {
                 foreach (var folder in folderItems)
                 {
                     try
                     {
-                        await GetAllItems(user, channelId, folder, false, cancellationToken).ConfigureAwait(false);
+                        await GetAllItems(user, channelId, folder, currentRefreshLevel + 1, maxRefreshLevel, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

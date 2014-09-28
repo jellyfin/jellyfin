@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Controller
 {
@@ -106,12 +105,5 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
-
-        /// <summary>
-        /// Gets the internal metadata path.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>System.String.</returns>
-        string GetInternalMetadataPath(Guid id);
     }
 }

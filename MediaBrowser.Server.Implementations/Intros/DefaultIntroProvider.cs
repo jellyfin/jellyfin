@@ -99,7 +99,8 @@ namespace MediaBrowser.Server.Implementations.Intros
             {
                 var channelTrailers = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
                 {
-                    ContentTypes = new[] { ChannelMediaContentType.Trailer },
+                    ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
+                    ExtraTypes = new[] { ExtraType.Trailer },
                     UserId = user.Id.ToString("N")
 
                 }, CancellationToken.None);

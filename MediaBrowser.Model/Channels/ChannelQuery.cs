@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Querying;
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Channels
@@ -68,11 +69,18 @@ namespace MediaBrowser.Model.Channels
         /// <value>The content types.</value>
         public ChannelMediaContentType[] ContentTypes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the extra types.
+        /// </summary>
+        /// <value>The extra types.</value>
+        public ExtraType[] ExtraTypes { get; set; }
+        
         public AllChannelMediaQuery()
         {
             ChannelIds = new string[] { };
 
             ContentTypes = new ChannelMediaContentType[] { };
+            ExtraTypes = new ExtraType[] { };
 
             Filters = new ItemFilter[] { };
             Fields = new List<ItemFields>();

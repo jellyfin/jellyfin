@@ -405,7 +405,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>System.Object.</returns>
         public object Get(GetUserImage request)
         {
-            var item = _userManager.Users.First(i => i.Id == request.Id);
+            var item = _userManager.GetUserById(request.Id);
 
             return GetImage(request, item, false);
         }
@@ -441,7 +441,7 @@ namespace MediaBrowser.Api.Images
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
 
-            var item = _userManager.Users.First(i => i.Id == id);
+            var item = _userManager.GetUserById(id);
 
             var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
@@ -472,7 +472,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Delete(DeleteUserImage request)
         {
-            var item = _userManager.Users.First(i => i.Id == request.Id);
+            var item = _userManager.GetUserById(request.Id);
 
             var task = item.DeleteImage(request.Type, request.Index ?? 0);
 

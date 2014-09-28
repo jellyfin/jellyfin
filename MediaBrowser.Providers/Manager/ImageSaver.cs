@@ -362,7 +362,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     filename = "folder";
                 }
-                path = Path.Combine(_config.ApplicationPaths.GetInternalMetadataPath(item.Id), filename + extension);
+                path = Path.Combine(item.GetInternalMetadataPath(), filename + extension);
             }
 
             return path;

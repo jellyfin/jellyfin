@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -56,7 +57,12 @@ namespace MediaBrowser.LocalMetadata.Images
 
         public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
         {
-            var path = _config.ApplicationPaths.GetInternalMetadataPath(item.Id);
+            var path = item.GetInternalMetadataPath();
+
+            if (item is IChannelItem)
+            {
+                var b = true;
+            }
 
             try
             {

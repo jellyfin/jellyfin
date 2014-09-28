@@ -449,10 +449,10 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var list = new List<string>
             {
-                ConfigurationManager.ApplicationPaths.GetInternalMetadataPath(item.Id)
+                item.GetInternalMetadataPath()
             };
 
-            list.AddRange(children.Select(i => ConfigurationManager.ApplicationPaths.GetInternalMetadataPath(i.Id)));
+            list.AddRange(children.Select(i => i.GetInternalMetadataPath()));
 
             return list;
         }

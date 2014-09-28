@@ -36,6 +36,8 @@ namespace MediaBrowser.Controller.Channels
         public ChannelFolderType FolderType { get; set; }
 
         public ChannelMediaContentType ContentType { get; set; }
+        public ExtraType ExtraType { get; set; }
+        public TrailerType TrailerType { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
 

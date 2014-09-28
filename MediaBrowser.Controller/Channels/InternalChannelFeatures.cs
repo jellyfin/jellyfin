@@ -32,6 +32,11 @@ namespace MediaBrowser.Controller.Channels
         /// Indicates if a sort ascending/descending toggle is supported or not.
         /// </summary>
         public bool SupportsSortOrderToggle { get; set; }
+        /// <summary>
+        /// Gets or sets the automatic refresh levels.
+        /// </summary>
+        /// <value>The automatic refresh levels.</value>
+        public int? AutoRefreshLevels { get; set; }
 
         public InternalChannelFeatures()
         {
