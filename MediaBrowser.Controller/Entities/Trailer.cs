@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override string GetUserDataKey()
         {
-            var key = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tvcom);
+            var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
 
             if (!string.IsNullOrWhiteSpace(key))
             {

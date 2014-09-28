@@ -333,10 +333,11 @@ namespace MediaBrowser.Providers.Manager
             };
 
             var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>().ToList();
+            var logName = item.LocationType == LocationType.Remote ? item.Name ?? item.Path : item.Path ?? item.Name;
 
             foreach (var provider in customProviders.Where(i => i is IPreRefreshProvider))
             {
-                await RunCustomProvider(provider, item, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             var temp = CreateNew();
@@ -347,7 +348,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(item, temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
                 refreshResult.Status = remoteResult.Status;
@@ -362,7 +363,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
                 var providerName = provider.GetType().Name;
-                Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
+                Logger.Debug("Running {0} for {1}", providerName, logName);
 
                 var itemInfo = new ItemInfo { Path = item.Path, IsInMixedFolder = item.IsInMixedFolder };
 
@@ -388,7 +389,7 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
+                    Logger.Debug("{0} returned no metadata for {1}", providerName, logName);
                 }
                 catch (OperationCanceledException)
                 {
@@ -415,7 +416,7 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
-                var remoteResult = await ExecuteRemoteProviders(item, temp, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(item, temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
@@ -442,7 +443,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
             {
-                await RunCustomProvider(provider, item, options, refreshResult, cancellationToken).ConfigureAwait(false);
+                await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
             await ImportUserData(item, userDataList, cancellationToken).ConfigureAwait(false);
@@ -464,9 +465,9 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
+        private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            Logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+            Logger.Debug("Running {0} for {1}", provider.GetType().Name, logName);
 
             try
             {
@@ -489,14 +490,14 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType item, TItemType temp, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType item, TItemType temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult();
 
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
-                Logger.Debug("Running {0} for {1}", providerName, item.Path ?? item.Name);
+                Logger.Debug("Running {0} for {1}", providerName, logName);
 
                 if (id != null)
                 {
@@ -520,7 +521,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         refreshResult.Failures++;
-                        Logger.Debug("{0} returned no metadata for {1}", providerName, item.Path ?? item.Name);
+                        Logger.Debug("{0} returned no metadata for {1}", providerName, logName);
                     }
                 }
                 catch (OperationCanceledException)

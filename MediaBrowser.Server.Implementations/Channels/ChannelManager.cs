@@ -730,10 +730,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public async Task<QueryResult<BaseItem>> GetAllMediaInternal(AllChannelMediaQuery query, CancellationToken cancellationToken)
         {
-            var user = string.IsNullOrWhiteSpace(query.UserId)
-                ? null
-                : _userManager.GetUserById(query.UserId);
-
             var channels = GetAllChannels();
 
             if (query.ChannelIds.Length > 0)
@@ -745,9 +741,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                     .ToArray();
             }
 
-            // Avoid implicitly captured closure
-            var userId = query.UserId;
-
             var tasks = channels
                 .Select(async i =>
                 {
@@ -757,7 +750,14 @@ namespace MediaBrowser.Server.Implementations.Channels
                     {
                         try
                         {
-                            var result = await GetAllItems(indexable, i, userId, cancellationToken).ConfigureAwait(false);
+                            var result = await GetAllItems(indexable, i, new InternalAllChannelMediaQuery
+                            {
+                                UserId = query.UserId,
+                                ContentTypes = query.ContentTypes,
+                                ExtraTypes = query.ExtraTypes,
+                                TrailerTypes = query.TrailerTypes
+
+                            }, cancellationToken).ConfigureAwait(false);
 
                             return new Tuple<IChannel, ChannelItemResult>(i, result);
                         }
@@ -776,21 +776,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             IEnumerable<Tuple<IChannel, ChannelItemInfo>> items = results
                 .SelectMany(i => i.Item2.Items.Select(m => new Tuple<IChannel, ChannelItemInfo>(i.Item1, m)))
                 .OrderBy(i => i.Item2.Name);
-
-            if (query.ContentTypes.Length > 0)
-            {
-                // Avoid implicitly captured closure
-                var contentTypes = query.ContentTypes;
-
-                items = items.Where(i => contentTypes.Contains(i.Item2.ContentType));
-            }
-            if (query.ExtraTypes.Length > 0)
-            {
-                // Avoid implicitly captured closure
-                var contentTypes = query.ExtraTypes;
-
-                items = items.Where(i => contentTypes.Contains(i.Item2.ExtraType));
-            }
 
             if (query.StartIndex.HasValue)
             {
@@ -847,10 +832,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             return result;
         }
 
-        private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, string userId, CancellationToken cancellationToken)
+        private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
             var cacheLength = CacheLength;
-            var cachePath = GetChannelDataCachePath(channel, userId, "channelmanager-allitems", null, false);
+            var folderId = _jsonSerializer.SerializeToString(query).GetMD5().ToString("N");
+            var cachePath = GetChannelDataCachePath(channel, query.UserId, folderId, null, false);
 
             try
             {
@@ -888,11 +874,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 }
 
-                var result = await indexable.GetAllMedia(new InternalAllChannelMediaQuery
-                {
-                    UserId = userId
-
-                }, cancellationToken).ConfigureAwait(false);
+                var result = await indexable.GetAllMedia(query, cancellationToken).ConfigureAwait(false);
 
                 CacheResponse(result, cachePath);
 

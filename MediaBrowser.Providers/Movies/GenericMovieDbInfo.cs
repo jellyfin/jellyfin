@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Movies
             // Id could be ImdbId or TmdbId
             if (string.IsNullOrEmpty(tmdbId))
             {
-                movieInfo = await MovieDbProvider.Current.FetchMainResult(imdbId, language, cancellationToken).ConfigureAwait(false);
+                movieInfo = await MovieDbProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);
                 if (movieInfo == null) return null;
 
                 tmdbId = movieInfo.id.ToString(_usCulture);

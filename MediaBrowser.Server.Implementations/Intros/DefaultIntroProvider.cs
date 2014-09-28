@@ -101,7 +101,8 @@ namespace MediaBrowser.Server.Implementations.Intros
                 {
                     ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
                     ExtraTypes = new[] { ExtraType.Trailer },
-                    UserId = user.Id.ToString("N")
+                    UserId = user.Id.ToString("N"),
+                    TrailerTypes = new[] { TrailerType.ComingSoonToTheaters }
 
                 }, CancellationToken.None);
 

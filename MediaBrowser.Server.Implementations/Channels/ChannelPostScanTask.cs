@@ -136,22 +136,43 @@ namespace MediaBrowser.Server.Implementations.Channels
                 totalCount = result.TotalRecordCount;
             }
 
+            progress.Report(50);
+
             if (currentRefreshLevel < maxRefreshLevel)
             {
+                var numComplete = 0;
+                var numItems = folderItems.Count;
+                
                 foreach (var folder in folderItems)
                 {
                     try
                     {
-                        var innerProgress = new Progress<double>();
+                        var innerProgress = new ActionableProgress<double>();
 
+                        var startingNumberComplete = numComplete;
+                        innerProgress.RegisterAction(p =>
+                        {
+                            double innerPercent = startingNumberComplete;
+                            innerPercent += (p / 100);
+                            innerPercent /= numItems;
+                            progress.Report((innerPercent * 50) + 50);
+                        });
+                        
                         await GetAllItems(user, channelId, folder, currentRefreshLevel + 1, maxRefreshLevel, innerProgress, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error getting channel content", ex);
                     }
+
+                    numComplete++;
+                    double percent = numComplete;
+                    percent /= numItems;
+                    progress.Report(percent * 100);
                 }
             }
+
+            progress.Report(100);
         }
     }
 }
