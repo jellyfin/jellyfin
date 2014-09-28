@@ -209,7 +209,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            _appHost = new ApplicationHost(appPaths, logManager, true, runService, options);
+            _appHost = new ApplicationHost(appPaths, logManager, true, runService, options, "MBServer");
 
             var initProgress = new Progress<double>();
 

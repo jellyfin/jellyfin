@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Mono
 			// Allow all https requests
 			ServicePointManager.ServerCertificateValidationCallback = _ignoreCertificates;
 
-			_appHost = new ApplicationHost(appPaths, logManager, false, false, options);
+			_appHost = new ApplicationHost(appPaths, logManager, false, false, options, "MBServer.Mono");
 
 			Console.WriteLine ("appHost.Init");
 

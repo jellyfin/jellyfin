@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
@@ -157,6 +158,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         }
 
         /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="url">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private SemaphoreSlim GetLock(string url)
+        {
+            return _semaphoreLocks.GetOrAdd(url, key => new SemaphoreSlim(1, 1));
+        }
+
+        /// <summary>
         /// Gets the response internal.
         /// </summary>
         /// <param name="options">The options.</param>
@@ -216,6 +231,107 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </exception>
         public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
         {
+            if (!options.EnableUnconditionalCache)
+            {
+                return await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+            }
+
+            var url = options.Url;
+            var urlHash = url.ToLower().GetMD5().ToString("N");
+            var semaphore = GetLock(url);
+
+            var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
+
+            var response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+            if (response != null)
+            {
+                return response;
+            }
+
+            await semaphore.WaitAsync(options.CancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+                if (response != null)
+                {
+                    return response;
+                }
+
+                response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    await CacheResponse(response, responseCachePath).ConfigureAwait(false);
+                }
+
+                return response;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
+        {
+            try
+            {
+                if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
+                {
+                    using (var stream = _fileSystem.GetFileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                    {
+                        var memoryStream = new MemoryStream();
+
+                        await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                        memoryStream.Position = 0;
+
+                        return new HttpResponseInfo
+                        {
+                            ResponseUrl = url,
+                            Content = memoryStream,
+                            StatusCode = HttpStatusCode.OK,
+                            Headers = new NameValueCollection(),
+                            ContentLength = memoryStream.Length
+                        };
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            return null;
+        }
+
+        private async Task CacheResponse(HttpResponseInfo response, string responseCachePath)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(responseCachePath));
+
+            using (var responseStream = response.Content)
+            {
+                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                {
+                    var memoryStream = new MemoryStream();
+
+                    await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    memoryStream.Position = 0;
+                    await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
+
+                    memoryStream.Position = 0;
+                    response.Content = memoryStream;
+                }
+            }
+        }
+
+        private async Task<HttpResponseInfo> SendAsyncInternal(HttpRequestOptions options, string httpMethod)
+        {
             ValidateParams(options);
 
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -236,11 +352,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 !string.IsNullOrEmpty(options.RequestContent) ||
                 string.Equals(httpMethod, "post", StringComparison.OrdinalIgnoreCase))
             {
-                var bytes = options.RequestContentBytes ?? 
+                var bytes = options.RequestContentBytes ??
                     Encoding.UTF8.GetBytes(options.RequestContent ?? string.Empty);
 
                 httpWebRequest.ContentType = options.RequestContentType ?? "application/x-www-form-urlencoded";
-                
+
                 httpWebRequest.ContentLength = bytes.Length;
                 httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
             }

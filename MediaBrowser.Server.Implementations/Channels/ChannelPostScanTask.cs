@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Progress;
+﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }, cancellationToken);
 
             var numComplete = 0;
+            var numItems = channels.Items.Length;
 
             foreach (var channel in channels.Items)
             {
@@ -71,9 +72,20 @@ namespace MediaBrowser.Server.Implementations.Channels
                 const int currentRefreshLevel = 1;
                 var maxRefreshLevel = features.AutoRefreshLevels ?? 1;
 
+                var innerProgress = new ActionableProgress<double>();
+
+                var startingNumberComplete = numComplete;
+                innerProgress.RegisterAction(p =>
+                {
+                    double innerPercent = startingNumberComplete;
+                    innerPercent += (p / 100);
+                    innerPercent /= numItems;
+                    progress.Report(innerPercent * 100);
+                });
+
                 try
                 {
-                    await GetAllItems(user, channelId, null, currentRefreshLevel, maxRefreshLevel, cancellationToken).ConfigureAwait(false);
+                    await GetAllItems(user, channelId, null, currentRefreshLevel, maxRefreshLevel, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -82,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 numComplete++;
                 double percent = numComplete;
-                percent /= channels.Items.Length;
+                percent /= numItems;
                 progress.Report(percent * 100);
             }
 
@@ -90,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         }
 
-        private async Task GetAllItems(string user, string channelId, string folderId, int currentRefreshLevel, int maxRefreshLevel, CancellationToken cancellationToken)
+        private async Task GetAllItems(string user, string channelId, string folderId, int currentRefreshLevel, int maxRefreshLevel, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var folderItems = new List<string>();
 
@@ -119,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 }, cancellationToken);
 
                 folderItems.AddRange(result.Items.Where(i => i.IsFolder).Select(i => i.Id.ToString("N")));
-                
+
                 totalRetrieved += result.Items.Length;
                 totalCount = result.TotalRecordCount;
             }
@@ -130,7 +142,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     try
                     {
-                        await GetAllItems(user, channelId, folder, currentRefreshLevel + 1, maxRefreshLevel, cancellationToken).ConfigureAwait(false);
+                        var innerProgress = new Progress<double>();
+
+                        await GetAllItems(user, channelId, folder, currentRefreshLevel + 1, maxRefreshLevel, innerProgress, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

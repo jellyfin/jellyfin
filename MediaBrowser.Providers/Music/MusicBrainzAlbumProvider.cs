@@ -38,6 +38,7 @@ namespace MediaBrowser.Providers.Music
             var releaseId = searchInfo.GetReleaseId();
 
             string url = null;
+            var isNameSearch = false;
 
             if (!string.IsNullOrEmpty(releaseId))
             {
@@ -55,6 +56,8 @@ namespace MediaBrowser.Providers.Music
                 }
                 else
                 {
+                    isNameSearch = true;
+
                     url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                        WebUtility.UrlEncode(searchInfo.Name),
                        WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
@@ -63,7 +66,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+                var doc = await GetMusicBrainzResponse(url, isNameSearch, cancellationToken).ConfigureAwait(false);
 
                 return GetResultsFromResponse(doc);
             }
@@ -193,7 +196,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
-            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
             return GetReleaseResult(doc);
         }
@@ -204,7 +207,7 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
-            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
             return GetReleaseResult(doc);
         }
@@ -252,7 +255,7 @@ namespace MediaBrowser.Providers.Music
         {
             var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
-            var doc = await GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false);
+            var doc = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
@@ -274,9 +277,10 @@ namespace MediaBrowser.Providers.Music
         /// Gets the music brainz response.
         /// </summary>
         /// <param name="url">The URL.</param>
+        /// <param name="isSearch">if set to <c>true</c> [is search].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{XmlDocument}.</returns>
-        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, CancellationToken cancellationToken)
+        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
             await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -294,15 +298,20 @@ namespace MediaBrowser.Providers.Music
 
                 var doc = new XmlDocument();
 
-                var userAgent = _appHost.Name + "/" + _appHost.ApplicationVersion;
-
-                using (var xml = await _httpClient.Get(new HttpRequestOptions
+                var options = new HttpRequestOptions
                 {
                     Url = url,
                     CancellationToken = cancellationToken,
-                    UserAgent = userAgent
+                    UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
+                };
 
-                }).ConfigureAwait(false))
+                if (!isSearch)
+                {
+                    options.EnableUnconditionalCache = true;
+                    options.CacheLength = TimeSpan.FromDays(7);
+                }
+
+                using (var xml = await _httpClient.Get(options).ConfigureAwait(false))
                 {
                     using (var oReader = new StreamReader(xml, Encoding.UTF8))
                     {

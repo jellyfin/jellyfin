@@ -171,7 +171,7 @@
 
     function setFieldVisibilities(page, item) {
 
-        if (item.Path) {
+        if (item.Path && item.LocationType != 'Remote') {
             $('#fldPath', page).show();
         } else {
             $('#fldPath', page).hide();

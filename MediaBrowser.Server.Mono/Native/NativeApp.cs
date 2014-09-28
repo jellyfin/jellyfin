@@ -63,16 +63,5 @@ namespace MediaBrowser.ServerApplication.Native
         {
             
         }
-
-        public static Task<CheckForUpdateResult> CheckForApplicationUpdate(Version currentVersion,
-            PackageVersionClass updateLevel,
-            IInstallationManager installationManager,
-            CancellationToken cancellationToken,
-            IProgress<double> progress)
-        {
-            var result = new CheckForUpdateResult { AvailableVersion = currentVersion.ToString(), IsUpdateAvailable = false };
-			
-			return Task.FromResult(result);
-        }
     }
 }

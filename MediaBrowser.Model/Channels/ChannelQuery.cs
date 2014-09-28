@@ -74,13 +74,15 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value>The extra types.</value>
         public ExtraType[] ExtraTypes { get; set; }
-        
+        public TrailerType[] TrailerTypes { get; set; }
+     
         public AllChannelMediaQuery()
         {
             ChannelIds = new string[] { };
 
             ContentTypes = new ChannelMediaContentType[] { };
             ExtraTypes = new ExtraType[] { };
+            TrailerTypes = new TrailerType[] { };
 
             Filters = new ItemFilter[] { };
             Fields = new List<ItemFields>();
