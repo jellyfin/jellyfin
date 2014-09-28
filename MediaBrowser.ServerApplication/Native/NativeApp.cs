@@ -1,10 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Updates;
+﻿using System.Runtime.InteropServices;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -89,25 +83,6 @@ namespace MediaBrowser.ServerApplication.Native
             {
                 EXECUTION_STATE es = SetThreadExecutionState(EXECUTION_STATE.ES_SYSTEM_REQUIRED);
             }
-        }
-
-        public static async Task<CheckForUpdateResult> CheckForApplicationUpdate(Version currentVersion,
-            PackageVersionClass updateLevel,
-            IInstallationManager installationManager,
-            CancellationToken cancellationToken,
-            IProgress<double> progress)
-        {
-            var availablePackages = await installationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-            var version = installationManager.GetLatestCompatibleVersion(availablePackages, "MBServer", null, currentVersion, updateLevel);
-
-            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
-
-            var isUpdateAvailable = versionObject != null && versionObject > currentVersion;
-
-            return versionObject != null ?
-                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
-                new CheckForUpdateResult { AvailableVersion = currentVersion.ToString(), IsUpdateAvailable = false };
         }
     }
 }

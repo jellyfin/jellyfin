@@ -219,7 +219,8 @@ namespace MediaBrowser.ServerApplication
         private ISyncRepository SyncRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
 
-        private StartupOptions _startupOptions;
+        private readonly StartupOptions _startupOptions;
+        private readonly string _remotePackageName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -229,14 +230,16 @@ namespace MediaBrowser.ServerApplication
         /// <param name="supportsRunningAsService">if set to <c>true</c> [supports running as service].</param>
         /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
         /// <param name="options">The options.</param>
+        /// <param name="remotePackageName">Name of the remote package.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths, 
             ILogManager logManager, 
             bool supportsRunningAsService, 
             bool isRunningAsService,
-            StartupOptions options)
+            StartupOptions options, string remotePackageName)
             : base(applicationPaths, logManager)
         {
             _startupOptions = options;
+            _remotePackageName = remotePackageName;
             _isRunningAsService = isRunningAsService;
             SupportsRunningAsService = supportsRunningAsService;
         }
@@ -1091,9 +1094,17 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var result = await NativeApp.CheckForApplicationUpdate(ApplicationVersion,
-                        ConfigurationManager.CommonConfiguration.SystemUpdateLevel, InstallationManager,
-                        cancellationToken, progress).ConfigureAwait(false);
+            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+
+            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, _remotePackageName, null, ApplicationVersion, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
+
+            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
+
+            var isUpdateAvailable = versionObject != null && versionObject > ApplicationVersion;
+
+            var result = versionObject != null ?
+                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
+                new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
 
             HasUpdateAvailable = result.IsUpdateAvailable;
 
