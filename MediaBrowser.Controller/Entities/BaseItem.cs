@@ -351,6 +351,18 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public string GetInternalMetadataPath()
+        {
+            return GetInternalMetadataPath(ConfigurationManager.ApplicationPaths.InternalMetadataPath);
+        }
+
+        protected virtual string GetInternalMetadataPath(string basePath)
+        {
+            var idString = Id.ToString("N");
+
+            return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>

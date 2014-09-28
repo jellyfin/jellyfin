@@ -508,7 +508,7 @@ namespace MediaBrowser.ServerApplication
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
 
-            EncodingManager = new EncodingManager(ServerConfigurationManager, FileSystemManager, Logger,
+            EncodingManager = new EncodingManager(FileSystemManager, Logger,
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 

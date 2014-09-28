@@ -33,6 +33,14 @@ namespace MediaBrowser.Common.ScheduledTasks
             {
                 key = hasKey.Key;
             }
+
+            var triggers = task.Triggers
+                .Select(GetTriggerInfo)
+                .OrderBy(i => i.Type)
+                .ThenBy(i => i.DayOfWeek ?? DayOfWeek.Sunday)
+                .ThenBy(i => i.TimeOfDayTicks ?? 0)
+                .ToList();
+
             return new TaskInfo
             {
                 Name = task.Name,
@@ -40,7 +48,9 @@ namespace MediaBrowser.Common.ScheduledTasks
                 State = task.State,
                 Id = task.Id,
                 LastExecutionResult = task.LastExecutionResult,
-                Triggers = task.Triggers.Select(GetTriggerInfo).ToList(),
+
+                Triggers = triggers,
+
                 Description = task.Description,
                 Category = task.Category,
                 IsHidden = isHidden,

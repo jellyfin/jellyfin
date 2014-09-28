@@ -357,11 +357,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!item.SupportsLocalMetadata && provider is ILocalImageProvider)
-            {
-                return false;
-            }
-
             try
             {
                 return provider.Supports(item);

@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Channels
         public string ExternalId { get; set; }
 
         public string ChannelId { get; set; }
+        public string DataVersion { get; set; }
 
         public ChannelItemType ChannelItemType { get; set; }
 
@@ -28,13 +29,13 @@ namespace MediaBrowser.Controller.Channels
         
         public override string GetUserDataKey()
         {
-            if (ContentType == ChannelMediaContentType.Trailer)
+            if (ContentType == ChannelMediaContentType.MovieExtra)
             {
                 var key = this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tvcom);
 
                 if (!string.IsNullOrWhiteSpace(key))
                 {
-                    key = key + "-trailer";
+                    key = key + "-" + ExtraType.ToString().ToLower();
 
                     // Make sure different trailers have their own data.
                     if (RunTimeTicks.HasValue)
@@ -60,6 +61,11 @@ namespace MediaBrowser.Controller.Channels
             {
                 return false;
             }
+        }
+
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return false;
         }
 
         public ChannelVideoItem()
@@ -94,8 +100,14 @@ namespace MediaBrowser.Controller.Channels
             var info = GetItemLookupInfo<ChannelItemLookupInfo>();
 
             info.ContentType = ContentType;
+            info.ExtraType = ExtraType;
 
             return info;
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
         }
     }
 }

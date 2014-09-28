@@ -251,13 +251,5 @@ namespace MediaBrowser.Server.Implementations
                 _internalMetadataPath = value;
             }
         }
-
-
-        public string GetInternalMetadataPath(Guid id)
-        {
-            var idString = id.ToString("N");
-
-            return Path.Combine(InternalMetadataPath, idString.Substring(0, 2), idString);
-        }
     }
 }

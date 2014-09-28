@@ -11,5 +11,7 @@ namespace MediaBrowser.Controller.Channels
         ChannelItemType ChannelItemType { get; set; }
 
         string OriginalImageUrl { get; set; }
+
+        string DataVersion { get; set; }
     }
 }

@@ -49,17 +49,28 @@ namespace MediaBrowser.Providers.Movies
 
             var channelItem = item as ChannelVideoItem;
 
-            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Trailer)
+            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra && channelItem.ExtraType == ExtraType.Trailer)
             {
                 return true;
             }
-            
+
             // Don't support local trailers
             return item is Movie || item is MusicVideo;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
+            var channelItem = item as ChannelVideoItem;
+
+            if (channelItem != null)
+            {
+                // Too many channel items to allow backdrops here
+                return new List<ImageType>
+                {
+                    ImageType.Primary
+                };
+            }
+
             return new List<ImageType>
             {
                 ImageType.Primary, 
@@ -82,30 +93,38 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-            list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
-            {
-                Url = tmdbImageUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
-                Language = i.iso_639_1,
-                ProviderName = Name,
-                Type = ImageType.Primary,
-                RatingType = RatingType.Score
-            }));
+            var supportedImages = GetSupportedImages(item).ToList();
 
-            list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
+            if (supportedImages.Contains(ImageType.Primary))
             {
-                Url = tmdbImageUrl + i.file_path,
-                CommunityRating = i.vote_average,
-                VoteCount = i.vote_count,
-                Width = i.width,
-                Height = i.height,
-                ProviderName = Name,
-                Type = ImageType.Backdrop,
-                RatingType = RatingType.Score
-            }));
+                list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
+                {
+                    Url = tmdbImageUrl + i.file_path,
+                    CommunityRating = i.vote_average,
+                    VoteCount = i.vote_count,
+                    Width = i.width,
+                    Height = i.height,
+                    Language = i.iso_639_1,
+                    ProviderName = Name,
+                    Type = ImageType.Primary,
+                    RatingType = RatingType.Score
+                }));
+            }
+
+            if (supportedImages.Contains(ImageType.Backdrop))
+            {
+                list.AddRange(GetBackdrops(results).Select(i => new RemoteImageInfo
+                {
+                    Url = tmdbImageUrl + i.file_path,
+                    CommunityRating = i.vote_average,
+                    VoteCount = i.vote_count,
+                    Width = i.width,
+                    Height = i.height,
+                    ProviderName = Name,
+                    Type = ImageType.Backdrop,
+                    RatingType = RatingType.Score
+                }));
+            }
 
             var language = item.GetPreferredMetadataLanguage();
 

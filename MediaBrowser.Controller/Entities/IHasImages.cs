@@ -160,6 +160,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if [supports remote image downloading]; otherwise, <c>false</c>.</value>
         bool SupportsRemoteImageDownloading { get; }
+
+        /// <summary>
+        /// Gets the internal metadata path.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        string GetInternalMetadataPath();
     }
 
     public static class HasImagesExtensions

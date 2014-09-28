@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Channels;
+﻿using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Entities;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -9,6 +10,8 @@ namespace MediaBrowser.Controller.Channels
         string MediaType { get; }
 
         ChannelMediaContentType ContentType { get; set; }
+
+        ExtraType ExtraType { get; set; }
 
         List<ChannelMediaInfo> ChannelMediaSources { get; set; }
     }

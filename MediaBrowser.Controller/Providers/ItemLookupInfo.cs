@@ -241,5 +241,6 @@ namespace MediaBrowser.Controller.Providers
     public class ChannelItemLookupInfo : ItemLookupInfo
     {
         public ChannelMediaContentType ContentType { get; set; }
+        public ExtraType ExtraType { get; set; }
     }
 }
