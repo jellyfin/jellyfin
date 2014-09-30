@@ -138,6 +138,8 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "GET")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "GET")]
+    [Route("/Users/{Id}/Images/{Type}", "HEAD")]
+    [Route("/Users/{Id}/Images/{Type}/{Index}", "HEAD")]
     [Api(Description = "Gets a user image")]
     public class GetUserImage : ImageRequest
     {
@@ -408,6 +410,13 @@ namespace MediaBrowser.Api.Images
             var item = _userManager.GetUserById(request.Id);
 
             return GetImage(request, item, false);
+        }
+
+        public object Head(GetUserImage request)
+        {
+            var item = _userManager.GetUserById(request.Id);
+
+            return GetImage(request, item, true);
         }
 
         public object Get(GetItemByNameImage request)

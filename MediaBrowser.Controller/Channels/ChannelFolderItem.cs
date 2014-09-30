@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
@@ -58,7 +59,7 @@ namespace MediaBrowser.Controller.Channels
                     SortBy = query.SortBy,
                     SortOrder = query.SortOrder
 
-                }, CancellationToken.None);
+                }, new Progress<double>(), CancellationToken.None);
             }
             catch
             {

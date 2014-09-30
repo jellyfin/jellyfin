@@ -472,7 +472,7 @@ namespace MediaBrowser.ServerApplication
 
             progress.Report(15);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
             RegisterSingleInstance(ChannelManager);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);

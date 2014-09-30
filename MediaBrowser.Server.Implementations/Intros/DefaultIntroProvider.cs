@@ -95,14 +95,29 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }));
             }
 
-            if (config.EnableIntrosFromUpcomingTrailers && IsSupporter)
+            var trailerTypes = new List<TrailerType>();
+
+            if (config.EnableIntrosFromUpcomingTrailers)
+            {
+                trailerTypes.Add(TrailerType.ComingSoonToTheaters);
+            }
+            if (config.EnableIntrosFromUpcomingDvdMovies)
+            {
+                trailerTypes.Add(TrailerType.ComingSoonToDvd);
+            }
+            if (config.EnableIntrosFromUpcomingStreamingMovies)
+            {
+                trailerTypes.Add(TrailerType.ComingSoonToStreaming);
+            }
+
+            if (trailerTypes.Count > 0 && IsSupporter)
             {
                 var channelTrailers = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
                 {
                     ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
                     ExtraTypes = new[] { ExtraType.Trailer },
                     UserId = user.Id.ToString("N"),
-                    TrailerTypes = new[] { TrailerType.ComingSoonToTheaters }
+                    TrailerTypes = trailerTypes.ToArray()
 
                 }, CancellationToken.None);
 

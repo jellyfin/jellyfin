@@ -12,7 +12,7 @@ We have several client apps released and in production:
 - [iPad](https://itunes.apple.com/us/app/media-browser-client/id879475585 "iPad")
 - [iPhone](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087?mt=8 "iPhone")
 - [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
-- [Roku](http://www.roku.com/channels/#!details/34503/media-browser "Roku")
+- [Roku](http://www.roku.com/channels/#!details/44191/media-browser-for-roku "Roku")
 - Windows 7/8 Desktop
 - Windows Media Center
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")

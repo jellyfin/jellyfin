@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -57,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
 
         private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
-        
+
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
@@ -241,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                         cmd.ExecuteNonQuery();
                     }
-                    
+
                     cancellationToken.ThrowIfCancellationRequested();
                 }
 
@@ -302,26 +301,24 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where key = @key and userId=@userId";
+                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where key = @key and userId=@userId";
 
                 cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
                 cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-
-                var userData = new UserItemData
-                {
-                    UserId = userId,
-                    Key = key
-                };
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                 {
                     if (reader.Read())
                     {
-                        ReadRow(reader, ref userData);
+                        return ReadRow(reader);
                     }
                 }
 
-                return userData;
+                return new UserItemData
+                {
+                    UserId = userId,
+                    Key = key
+                };
             }
         }
 
@@ -339,7 +336,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,key from userdata where userId=@userId";
+                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate from userdata where userId=@userId";
 
                 cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
 
@@ -347,42 +344,39 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        var userData = new UserItemData
-                        {
-                            UserId = userId,
-                        };
-                        ReadRow(reader, ref userData);
-                        userData.Key = reader.GetString(6);
-                        yield return userData;
+                        yield return ReadRow(reader);
                     }
                 }
-
             }
-            
         }
 
         /// <summary>
         /// Read a row from the specified reader into the provided userData object
         /// </summary>
         /// <param name="reader"></param>
-        /// <param name="userData"></param>
-        private static void ReadRow(IDataReader reader, ref UserItemData userData)
+        private UserItemData ReadRow(IDataReader reader)
         {
-            if (!reader.IsDBNull(0))
+            var userData = new UserItemData();
+
+            userData.Key = reader.GetString(0);
+            userData.UserId = reader.GetGuid(1);
+
+            if (!reader.IsDBNull(2))
             {
-                userData.Rating = reader.GetDouble(0);
+                userData.Rating = reader.GetDouble(2);
             }
 
-            userData.Played = reader.GetBoolean(1);
-            userData.PlayCount = reader.GetInt32(2);
-            userData.IsFavorite = reader.GetBoolean(3);
-            userData.PlaybackPositionTicks = reader.GetInt64(4);
+            userData.Played = reader.GetBoolean(3);
+            userData.PlayCount = reader.GetInt32(4);
+            userData.IsFavorite = reader.GetBoolean(5);
+            userData.PlaybackPositionTicks = reader.GetInt64(6);
 
-            if (!reader.IsDBNull(5))
+            if (!reader.IsDBNull(7))
             {
-                userData.LastPlayedDate = reader.GetDateTime(5).ToUniversalTime();
+                userData.LastPlayedDate = reader.GetDateTime(7).ToUniversalTime();
             }
-            
+
+            return userData;
         }
 
         /// <summary>

@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Channels
                     SortBy = query.SortBy,
                     SortOrder = query.SortOrder
 
-                }, CancellationToken.None);
+                }, new Progress<double>(), CancellationToken.None);
             }
             catch
             {

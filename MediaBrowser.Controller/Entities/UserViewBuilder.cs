@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.Recursive)
             {
-                return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }), query);
+                return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }), query);
             }
 
             var list = new List<BaseItem>();
@@ -251,7 +251,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, UserItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music })
+            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
                 .OfType<IHasAlbumArtist>()
                 .SelectMany(i => i.AlbumArtists)
@@ -275,7 +275,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, UserItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music })
+            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
                 .OfType<IHasArtist>()
                 .SelectMany(i => i.Artists)
@@ -299,7 +299,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, UserItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music })
+            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
                 .OfType<IHasAlbumArtist>()
                 .SelectMany(i => i.AlbumArtists)
@@ -323,12 +323,12 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, UserItemsQuery query)
         {
-            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is MusicAlbum), query);
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is MusicAlbum), query);
         }
 
         private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, UserItemsQuery query)
         {
-            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is Audio.Audio), query);
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is Audio.Audio), query);
         }
 
         private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, UserItemsQuery query)
@@ -336,7 +336,7 @@ namespace MediaBrowser.Controller.Entities
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
 
-            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is MusicVideo || i is Audio.Audio), GetSpecialItemsLimit(), query);
+            return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is MusicVideo || i is Audio.Audio), GetSpecialItemsLimit(), query);
         }
 
         private async Task<QueryResult<BaseItem>> GetMovieFolders(Folder parent, User user, UserItemsQuery query)

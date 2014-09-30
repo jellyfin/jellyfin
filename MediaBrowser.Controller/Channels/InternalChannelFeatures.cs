@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Channels;
+﻿using System;
+using MediaBrowser.Model.Channels;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
@@ -38,12 +39,27 @@ namespace MediaBrowser.Controller.Channels
         /// <value>The automatic refresh levels.</value>
         public int? AutoRefreshLevels { get; set; }
 
+        /// <summary>
+        /// Gets or sets the daily download limit.
+        /// </summary>
+        /// <value>The daily download limit.</value>
+        public int? DailyDownloadLimit { get; set; }
+
         public InternalChannelFeatures()
         {
             MediaTypes = new List<ChannelMediaType>();
             ContentTypes = new List<ChannelMediaContentType>();
 
             DefaultSortFields = new List<ChannelItemSortField>();
+        }
+    }
+
+    public class ChannelDownloadException : Exception
+    {
+        public ChannelDownloadException(string message)
+            : base(message)
+        {
+
         }
     }
 }

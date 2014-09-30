@@ -1,17 +1,22 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MoreLinq;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -21,13 +26,6 @@ namespace MediaBrowser.Api.Movies
     [Route("/Movies/{Id}/Similar", "GET", Summary = "Finds movies and trailers similar to a given movie.")]
     public class GetSimilarMovies : BaseGetSimilarItemsFromItem
     {
-        [ApiMember(Name = "IncludeTrailers", Description = "Whether or not to include trailers within the results. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool IncludeTrailers { get; set; }
-
-        public GetSimilarMovies()
-        {
-            IncludeTrailers = true;
-        }
     }
 
     [Route("/Movies/Recommendations", "GET", Summary = "Gets movie recommendations")]
@@ -52,7 +50,7 @@ namespace MediaBrowser.Api.Movies
         /// <value>The parent id.</value>
         [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
-        
+
         public GetMovieRecommendations()
         {
             CategoryLimit = 5;
@@ -85,19 +83,22 @@ namespace MediaBrowser.Api.Movies
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
 
+        private readonly IChannelManager _channelManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MoviesService"/> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IChannelManager channelManager)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _channelManager = channelManager;
         }
 
         /// <summary>
@@ -105,38 +106,111 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarMovies request)
+        public async Task<object> Get(GetSimilarMovies request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
-                _itemRepo,
-                _libraryManager,
-                _userDataRepository,
-                _dtoService,
-                Logger,
-
+            var result = await GetSimilarItemsResult(
                 // Strip out secondary versions
-                request, item => (item is Movie || (item is Trailer && request.IncludeTrailers)) && !((Video)item).PrimaryVersionId.HasValue,
+                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
 
-                SimilarItemsHelper.GetSimiliarityScore);
+                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetMovieRecommendations request)
+        public async Task<object> Get(GetMovieRecommendations request)
         {
             var user = _userManager.GetUserById(request.UserId.Value);
 
             var movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OfType<Movie>();
+                .Where(i => i is Movie);
 
-            movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies).Cast<Movie>();
+            movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
-            var result = GetRecommendationCategories(user, movies.ToList(), request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
+            var list = movies.ToList();
+
+            if (user.Configuration.IncludeTrailersInSuggestions)
+            {
+                var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+                {
+                    ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
+                    ExtraTypes = new[] { ExtraType.Trailer },
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None).ConfigureAwait(false);
+
+                var newTrailers = trailerResult.Items;
+
+                list.AddRange(newTrailers);
+
+                list = list
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
+            var result = GetRecommendationCategories(user, list, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
 
             return ToOptimizedResult(result);
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<Movie> allMovies, int categoryLimit, int itemLimit, List<ItemFields> fields)
+        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        {
+            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (request.UserId.HasValue ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            var fields = request.GetItemFields().ToList();
+
+            var inputItems = user == null
+                                 ? _libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
+                                 : user.RootFolder.GetRecursiveChildren(user).Where(i => i.Id != item.Id);
+
+            inputItems = inputItems.Where(includeInSearch);
+
+            var list = inputItems.ToList();
+
+            if (item is Movie && user != null && user.Configuration.IncludeTrailersInSuggestions)
+            {
+                var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+                {
+                    ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
+                    ExtraTypes = new[] { ExtraType.Trailer },
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None).ConfigureAwait(false);
+
+                var newTrailers = trailerResult.Items;
+
+                list.AddRange(newTrailers);
+
+                list = list
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
+            var items = SimilarItemsHelper.GetSimilaritems(item, list, getSimilarityScore).ToList();
+
+            IEnumerable<BaseItem> returnItems = items;
+
+            if (request.Limit.HasValue)
+            {
+                returnItems = returnItems.Take(request.Limit.Value);
+            }
+
+            var result = new ItemsResult
+            {
+                Items = returnItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
+
+                TotalRecordCount = items.Count
+            };
+
+            return result;
+        }
+
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<BaseItem> allMovies, int categoryLimit, int itemLimit, List<ItemFields> fields)
         {
             var categories = new List<RecommendationDto>();
 
@@ -144,7 +218,7 @@ namespace MediaBrowser.Api.Movies
                 .Select(i =>
                 {
                     var userdata = _userDataRepository.GetUserData(user.Id, i.GetUserDataKey());
-                    return new Tuple<Movie, bool, DateTime>(i, userdata.Played, userdata.LastPlayedDate ?? DateTime.MinValue);
+                    return new Tuple<BaseItem, bool, DateTime>(i, userdata.Played, userdata.LastPlayedDate ?? DateTime.MinValue);
                 })
                 .Where(i => i.Item2)
                 .OrderByDescending(i => i.Item3)
@@ -167,7 +241,7 @@ namespace MediaBrowser.Api.Movies
                         score = userData.Likes.HasValue ? userData.Likes.Value ? 1 : -1 : 0;
                     }
 
-                    return new Tuple<Movie, int>(i, score);
+                    return new Tuple<BaseItem, int>(i, score);
                 })
                 .OrderByDescending(i => i.Item2)
                 .ThenBy(i => Guid.NewGuid())
@@ -233,7 +307,7 @@ namespace MediaBrowser.Api.Movies
             return categories.OrderBy(i => i.RecommendationType).ThenBy(i => Guid.NewGuid());
         }
 
-        private IEnumerable<RecommendationDto> GetWithDirector(User user, List<Movie> allMovies, IEnumerable<string> directors, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithDirector(User user, List<BaseItem> allMovies, IEnumerable<string> directors, int itemLimit, List<ItemFields> fields, RecommendationType type)
         {
             var userId = user.Id;
 
@@ -257,7 +331,7 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetWithActor(User user, List<Movie> allMovies, IEnumerable<string> names, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithActor(User user, List<BaseItem> allMovies, IEnumerable<string> names, int itemLimit, List<ItemFields> fields, RecommendationType type)
         {
             var userId = user.Id;
 
@@ -281,7 +355,7 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<Movie> allMovies, IEnumerable<Movie> baselineItems, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> allMovies, IEnumerable<BaseItem> baselineItems, int itemLimit, List<ItemFields> fields, RecommendationType type)
         {
             var userId = user.Id;
 

@@ -163,7 +163,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("key");
             }
 
-            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => Repository.GetUserData(userId, key));
+            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => GetUserDataFromRepository(userId, key));
+        }
+
+        public UserItemData GetUserDataFromRepository(Guid userId, string key)
+        {
+            var data = Repository.GetUserData(userId, key);
+
+            return data;
         }
 
         /// <summary>

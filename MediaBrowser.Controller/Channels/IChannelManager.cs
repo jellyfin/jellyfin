@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -82,6 +83,14 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{BaseItemDto}}.</returns>
         Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the latest channel items internal.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;QueryResult&lt;BaseItem&gt;&gt;.</returns>
+        Task<QueryResult<BaseItem>> GetLatestChannelItemsInternal(AllChannelMediaQuery query, CancellationToken cancellationToken);
         
         /// <summary>
         /// Gets the channel items.
@@ -95,9 +104,10 @@ namespace MediaBrowser.Controller.Channels
         /// Gets the channel items internal.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;QueryResult&lt;BaseItem&gt;&gt;.</returns>
-        Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the cached channel item media sources.
@@ -129,5 +139,15 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
         Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Downloads the channel item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="destinationPath">The destination path.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task DownloadChannelItem(IChannelMediaItem item, string destinationPath, IProgress<double> progress, CancellationToken cancellationToken);
     }
 }
