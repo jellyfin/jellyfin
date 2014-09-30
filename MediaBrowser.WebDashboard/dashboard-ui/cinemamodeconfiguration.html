@@ -36,9 +36,16 @@
                             <div class="fieldDescription"><a href="http://mediabrowser.tv/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a></div>
                         </li>
                         <li>
-                            <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
-                            <input type="checkbox" id="chkUpcomingTheaterTrailers" data-mini="true" />
-                            <div class="fieldDescription">${LabelThisFeatureRequiresSupporterHelp}</div>
+                            <fieldset data-role="controlgroup">
+                                <legend>${LabelSelectInternetTrailersForCinemaMode}</legend>
+                                <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
+                                <input type="checkbox" id="chkUpcomingTheaterTrailers" data-mini="true" />
+                                <label for="chkUpcomingDvdTrailers">${OptionUpcomingDvdMovies}</label>
+                                <input type="checkbox" id="chkUpcomingDvdTrailers" data-mini="true" />
+                                <label for="chkUpcomingStreamingTrailers">${OptionUpcomingStreamingMovies}</label>
+                                <input type="checkbox" id="chkUpcomingStreamingTrailers" data-mini="true" />
+                          </fieldset>
+                            <div class="fieldDescription">${LabelTheseFeaturesRequireSupporterHelpAndTrailers}</div>
                             <div class="fieldDescription"><a href="supporter.html">${ButtonLearnMore}</a></div>
                         </li>
                         <li>

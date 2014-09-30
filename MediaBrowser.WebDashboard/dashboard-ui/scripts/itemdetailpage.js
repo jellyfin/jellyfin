@@ -39,7 +39,7 @@
         renderHeader(page, item, context);
 
         LibraryBrowser.renderName(item, $('.itemName', page), false, context);
-        LibraryBrowser.renderParentName(item, $('.parentName', page));
+        LibraryBrowser.renderParentName(item, $('.parentName', page), context);
 
         Dashboard.getCurrentUser().done(function (user) {
 
@@ -242,6 +242,11 @@
             elem = $('.homeTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
             $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-latest') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeLatest', page).addClass('ui-btn-active');
         }
         else if (context == 'movies' || item.Type == 'Movie') {
             elem = $('#movieTabs', page).show();

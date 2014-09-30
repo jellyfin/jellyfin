@@ -839,7 +839,7 @@
     "LabelChannelDownloadAgeHelp": "Downloaded content older than this will be deleted. It will remain playable via internet streaming.",
     "ChannelSettingsFormHelp": "Install channels such as Trailers and Vimeo in the plugin catalog.",
     "LabelSelectCollection": "Select collection:",
-    "ButtonOptions":  "Options",
+    "ButtonOptions": "Options",
     "ViewTypeMovies": "Movies",
     "ViewTypeTvShows": "TV",
     "ViewTypeGames": "Games",
@@ -1194,9 +1194,14 @@
     "LabelLimitIntrosToUnwatchedContent": "Only use trailers from unwatched content",
     "LabelEnableIntroParentalControl": "Enable smart parental control",
     "LabelEnableIntroParentalControlHelp": "Trailers will only be selected with a parental rating equal to or less than the content being watched.",
-    "LabelThisFeatureRequiresSupporterHelp": "This feature requires an active supporter membership.",
+    "LabelTheseFeaturesRequireSupporterHelpAndTrailers": "These features require an active supporter membership and installation of the Trailer channel plugin.",
     "OptionTrailersFromMyMoviesHelp": "Requires setup of local trailers.",
     "LabelCustomIntrosPath": "Custom intros path:",
     "LabelCustomIntrosPathHelp": "A folder containing video files. A video will be randomly selected and played after trailers.",
-    "ValueSpecialEpisodeName": "Special - {0}"
+    "ValueSpecialEpisodeName": "Special - {0}",
+    "LabelSelectInternetTrailersForCinemaMode": "Internet trailers:",
+    "OptionUpcomingDvdMovies": "Include trailers from new and upcoming movies on Dvd & Blu-ray",
+    "OptionUpcomingStreamingMovies": "Include trailers from new and upcoming movies on Netflix",
+    "LabelDisplayTrailersWithinMovieSuggestions": "Display trailers within movie suggestions",
+    "LabelDisplayTrailersWithinMovieSuggestionsHelp": "Requires installation of the Trailer channel."
 }

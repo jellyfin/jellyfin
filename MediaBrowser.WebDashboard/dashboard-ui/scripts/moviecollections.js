@@ -232,7 +232,7 @@
             $('.movieTabs', page).hide();
         }
 
-        query.ParentId = LibraryMenu.getTopParentId();
+        //query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
 

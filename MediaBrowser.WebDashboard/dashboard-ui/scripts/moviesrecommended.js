@@ -83,7 +83,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
-            ItemLimit: screenWidth >= 1920 ? 9 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 6 : 5)),
+            ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 6 : 5)),
             Fields: "PrimaryImageAspectRatio"
         });
 

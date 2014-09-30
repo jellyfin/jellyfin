@@ -421,7 +421,6 @@ namespace MediaBrowser.Api.Library
                 MovieCount = movies.Count,
                 SeriesCount = series.Count,
                 SongCount = songs.Count,
-                TrailerCount = filteredItems.OfType<Trailer>().Count(),
                 MusicVideoCount = musicVideos.Count,
                 AdultVideoCount = adultVideos.Count,
                 BoxSetCount = boxsets.Count,

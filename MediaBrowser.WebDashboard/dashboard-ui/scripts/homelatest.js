@@ -17,7 +17,9 @@
             elem.html(html);
         }
 
-        Sections.loadRecentlyAdded($('.section0', page), userId);
+        var context = 'home-latest';
+
+        Sections.loadRecentlyAdded($('.section0', page), userId, context);
         Sections.loadLatestLiveTvRecordings($(".section1", page), userId);
         Sections.loadLatestChannelItems($(".section2", page), userId);
     }

@@ -82,6 +82,7 @@ namespace MediaBrowser.Model.Configuration
         public bool SyncConnectName { get; set; }
         public bool SyncConnectImage { get; set; }
 
+        public bool IncludeTrailersInSuggestions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -106,6 +107,7 @@ namespace MediaBrowser.Model.Configuration
 
             SyncConnectName = true;
             SyncConnectImage = true;
+            IncludeTrailersInSuggestions = true;
         }
     }
 }

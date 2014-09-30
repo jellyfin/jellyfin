@@ -111,21 +111,21 @@
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 1000px;
+        width: 84%;
     }
 }
 
 @media all and (min-width: 1600px) {
 
     .ehsContent {
-        width: 1500px;
+        width: 85%;
     }
 }
 
-@media all and (min-width: 2200px) {
+@media all and (min-width: 1920px) {
 
     .ehsContent {
-        width: 1900px;
+        width: 90%;
     }
 }
 

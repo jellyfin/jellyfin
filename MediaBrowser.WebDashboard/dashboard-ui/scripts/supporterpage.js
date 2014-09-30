@@ -45,7 +45,7 @@
 
     var lifeTimeAmount = 30;
     var dailyAmount = 1;
-    var monthlyAmount = 3;
+    var monthlyAmount = 4;
     var yearlyAmount = 20;
     function getDonationAmount(page) {
 

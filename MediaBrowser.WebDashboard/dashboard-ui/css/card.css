@@ -538,7 +538,7 @@
 @media all and (min-width: 1920px) {
 
     .homePageBackdropCard {
-        width: 20%;
+        width: 16.666666666666666666666666666667%;
     }
 }
 
@@ -605,13 +605,6 @@
 @media all and (min-width: 1920px) {
 
     .homePageSquareCard {
-        width: 12.5%;
-    }
-}
-
-@media all and (min-width: 2200px) {
-
-    .homePageSquareCard {
         width: 11.11111111111111111%;
     }
 }
@@ -665,13 +658,6 @@
 @media all and (min-width: 1920px) {
 
     .homePagePortraitCard {
-        width: 11.111111111111111111111111111111%;
-    }
-}
-
-@media all and (min-width: 2200px) {
-
-    .homePagePortraitCard {
         width: 10%;
     }
 }
@@ -712,20 +698,5 @@
 
     .homePageSmallBackdropCard {
         width: 16.666666666666666666666666666667%;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .homePageSmallBackdropCard {
-        width: 14.285714285714285714285714285714%;
-    }
-}
-
-
-@media all and (min-width: 2200px) {
-
-    .homePageSmallBackdropCard {
-        width: 12.5%;
     }
 }

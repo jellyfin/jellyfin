@@ -100,6 +100,8 @@
         $('#chkDisplayMissingEpisodes', page).checked(user.Configuration.DisplayMissingEpisodes || false).checkboxradio("refresh");
         $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
 
+        $('#chkDisplayTrailersWithinMovieSuggestions', page).checked(user.Configuration.IncludeTrailersInSuggestions || false).checkboxradio("refresh");
+
         $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
         $('#chkDisplayCollectionView', page).checked(user.Configuration.DisplayCollectionsView || false).checkboxradio("refresh");
         $('#chkDisplayFolderView', page).checked(user.Configuration.DisplayFoldersView || false).checkboxradio("refresh");
@@ -132,6 +134,8 @@
 
         user.Configuration.DisplayCollectionsView = $('#chkDisplayCollectionView', page).checked();
         user.Configuration.DisplayFoldersView = $('#chkDisplayFolderView', page).checked();
+
+        user.Configuration.IncludeTrailersInSuggestions = $('#chkDisplayTrailersWithinMovieSuggestions', page).checked();
 
         user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
 

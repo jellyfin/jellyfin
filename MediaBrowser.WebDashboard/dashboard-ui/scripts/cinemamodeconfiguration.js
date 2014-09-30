@@ -6,7 +6,10 @@
         $('#chkEpisodes', page).checked(config.EnableIntrosForEpisodes).checkboxradio('refresh');
 
         $('#chkMyMovieTrailers', page).checked(config.EnableIntrosFromMoviesInLibrary).checkboxradio('refresh');
+
         $('#chkUpcomingTheaterTrailers', page).checked(config.EnableIntrosFromUpcomingTrailers).checkboxradio('refresh');
+        $('#chkUpcomingDvdTrailers', page).checked(config.EnableIntrosFromUpcomingDvdMovies).checkboxradio('refresh');
+        $('#chkUpcomingStreamingTrailers', page).checked(config.EnableIntrosFromUpcomingStreamingMovies).checkboxradio('refresh');
 
         $('#chkUnwatchedOnly', page).checked(!config.EnableIntrosForWatchedContent).checkboxradio('refresh');
         $('#chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl).checkboxradio('refresh');
@@ -70,10 +73,12 @@
                 config.EnableIntrosForMovies = $('#chkMovies', page).checked();
                 config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();
                 config.EnableIntrosFromMoviesInLibrary = $('#chkMyMovieTrailers', page).checked();
-                config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
                 config.EnableIntrosForWatchedContent = !$('#chkUnwatchedOnly', page).checked();
                 config.EnableIntrosParentalControl = $('#chkEnableParentalControl', page).checked();
 
+                config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
+                config.EnableIntrosFromUpcomingDvdMovies = $('#chkUpcomingDvdTrailers', page).checked();
+                config.EnableIntrosFromUpcomingStreamingMovies = $('#chkUpcomingStreamingTrailers', page).checked();
 
                 ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

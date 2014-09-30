@@ -67,7 +67,7 @@
                 $('.noNextUpItems', page).show();
             }
 
-            $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
+            var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "homePageBackdrop",
                 showTitle: true,
@@ -76,7 +76,9 @@
                 context: context,
                 lazy: true
 
-            })).trigger('create').createCardMenus();
+            });
+
+            $('#nextUpItems', page).html(html).trigger('create').createCardMenus();
 
         });
     }
