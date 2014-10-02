@@ -21,7 +21,7 @@
         }
 
         if (user.Id && loggedInUser.Configuration.IsAdministrator) {
-            $('#fldConnectInfo', page).show();
+            $('#fldConnectInfo', page).hide();
         } else {
             $('#fldConnectInfo', page).hide();
         }

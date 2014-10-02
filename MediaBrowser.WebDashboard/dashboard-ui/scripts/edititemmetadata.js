@@ -294,7 +294,7 @@
             $('#fldCustomRating', page).show();
         }
 
-        if (item.Type == "Movie" || item.Type == "AdultVideo" || item.Type == "Trailer" || item.Type == "MusicArtist") {
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicArtist") {
             $('#countriesCollapsible', page).show();
         } else {
             $('#countriesCollapsible', page).hide();
@@ -318,7 +318,6 @@
 
         if (item.Type == "Movie" ||
             item.Type == "Trailer" ||
-            item.Type == "AdultVideo" ||
             item.Type == "Series" ||
             item.Type == "Game" ||
             item.Type == "BoxSet" ||

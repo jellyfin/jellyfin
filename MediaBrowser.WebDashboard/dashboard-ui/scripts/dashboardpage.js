@@ -1072,6 +1072,17 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
         html += '<div style="margin: 0;color:' + color + ';">' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase() + '</div>';
 
         html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
+
+        if (entry.UserId && entry.UserPrimaryImageTag) {
+
+            var userImgUrl = ApiClient.getUserImageUrl(entry.UserId, {
+                type: 'Primary',
+                tag: entry.UserPrimaryImageTag,
+                height: 20
+            });
+            html += '<img src="' + userImgUrl + '" style="height:20px;vertical-align:middle;margin-right:5px;" />';
+        }
+
         html += entry.Name;
         html += '</div>';
 

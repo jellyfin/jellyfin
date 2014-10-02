@@ -1,10 +1,12 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Activity;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Activity
@@ -15,11 +17,13 @@ namespace MediaBrowser.Server.Implementations.Activity
         
         private readonly IActivityRepository _repo;
         private readonly ILogger _logger;
+        private readonly IUserManager _userManager;
 
-        public ActivityManager(ILogger logger, IActivityRepository repo)
+        public ActivityManager(ILogger logger, IActivityRepository repo, IUserManager userManager)
         {
             _logger = logger;
             _repo = repo;
+            _userManager = userManager;
         }
 
         public async Task Create(ActivityLogEntry entry)
@@ -34,7 +38,20 @@ namespace MediaBrowser.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
-            return _repo.GetActivityLogEntries(minDate, startIndex, limit);
+            var result = _repo.GetActivityLogEntries(minDate, startIndex, limit);
+
+            foreach (var item in result.Items.Where(i => !string.IsNullOrWhiteSpace(i.UserId)))
+            {
+                var user = _userManager.GetUserById(item.UserId);
+
+                if (user != null)
+                {
+                    var dto = _userManager.GetUserDto(user);
+                    item.UserPrimaryImageTag = dto.PrimaryImageTag;
+                }
+            }
+
+            return result;
         }
     }
 }

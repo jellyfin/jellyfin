@@ -1203,5 +1203,8 @@
     "OptionUpcomingDvdMovies": "Include trailers from new and upcoming movies on Dvd & Blu-ray",
     "OptionUpcomingStreamingMovies": "Include trailers from new and upcoming movies on Netflix",
     "LabelDisplayTrailersWithinMovieSuggestions": "Display trailers within movie suggestions",
-    "LabelDisplayTrailersWithinMovieSuggestionsHelp": "Requires installation of the Trailer channel."
+    "LabelDisplayTrailersWithinMovieSuggestionsHelp": "Requires installation of the Trailer channel.",
+    "CinemaModeConfigurationHelp2": "Individual users will have the ability to disable cinema mode within their own preferences.",
+    "LabelEnableCinemaMode": "Enable cinema mode",
+    "HeaderCinemaMode": "Cinema Mode"
 }

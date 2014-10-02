@@ -29,8 +29,37 @@
 
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh").trigger('change');
         $('#chkPlayDefaultAudioTrack', page).checked(user.Configuration.PlayDefaultAudioTrack || false).checkboxradio("refresh");
+        $('#chkEnableCinemaMode', page).checked(user.Configuration.EnableCinemaMode || false).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function loadPage(page) {
+
+        Dashboard.showLoadingMsg();
+
+        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+
+        var promise1 = ApiClient.getUser(userId);
+
+        var promise2 = Dashboard.getCurrentUser();
+
+        var allCulturesPromise = ApiClient.getCultures();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            loadForm(page, response1[0] || response1, response2[0], allCulturesPromise);
+
+        });
+
+        ApiClient.getNamedConfiguration("cinemamode").done(function (cinemaConfig) {
+
+            if (cinemaConfig.EnableIntrosForMovies || cinemaConfig.EnableIntrosForEpisodes) {
+                $('.cinemaModeOptions', page).show();
+            } else {
+                $('.cinemaModeOptions', page).hide();
+            }
+        });
     }
 
     function saveUser(page, user) {
@@ -40,6 +69,7 @@
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = $('#chkPlayDefaultAudioTrack', page).checked();
+        user.Configuration.EnableCinemaMode = $('#chkEnableCinemaMode', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -79,22 +109,7 @@
 
         var page = this;
 
-        Dashboard.showLoadingMsg();
-
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
-
-        var promise1 = ApiClient.getUser(userId);
-
-        var promise2 = Dashboard.getCurrentUser();
-
-        var allCulturesPromise = ApiClient.getCultures();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadForm(page, response1[0] || response1, response2[0], allCulturesPromise);
-
-        });
-
+        loadPage(page);
     });
 
     window.LanguagePreferencesPage = {

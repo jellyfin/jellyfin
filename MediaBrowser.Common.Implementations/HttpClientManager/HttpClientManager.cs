@@ -233,7 +233,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             HttpResponseInfo response;
 
-            if (!options.EnableUnconditionalCache)
+            if (options.CacheMode == CacheMode.None)
             {
                 response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
                 return response;

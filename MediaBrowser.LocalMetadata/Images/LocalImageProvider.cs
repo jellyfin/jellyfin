@@ -173,7 +173,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
 
             // Support plex/xbmc convention
-            if (item is Movie || item is MusicVideo || item is AdultVideo)
+            if (item is Video && !(item is Episode))
             {
                 AddImage(files, images, imagePrefix + "movie", ImageType.Primary);
             }

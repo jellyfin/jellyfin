@@ -414,7 +414,6 @@
             { name: 'OptionSongs', type: 'Audio' },
             { name: 'OptionHomeVideos', type: 'Video' },
             { name: 'OptionBooks', type: 'Book' },
-            { name: 'OptionAdultVideos', type: 'AdultVideo' },
             { name: 'OptionPeople', type: 'Person' }
             //{ name: 'Genres', type: 'Genre' },
             //{ name: 'Studios', type: 'Studio' }

@@ -869,7 +869,56 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<ChannelItemResult> GetAllItems(IIndexableChannel indexable, IChannel channel, InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
         {
-            return await indexable.GetAllMedia(query, cancellationToken).ConfigureAwait(false);
+            var cacheLength = CacheLength;
+            var folderId = _jsonSerializer.SerializeToString(query).GetMD5().ToString("N");
+            var cachePath = GetChannelDataCachePath(channel, query.UserId, folderId, null, false);
+
+            try
+            {
+                if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                {
+                    return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                try
+                {
+                    if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
+                    {
+                        return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
+
+                var result = await indexable.GetAllMedia(query, cancellationToken).ConfigureAwait(false);
+
+                CacheResponse(result, cachePath);
+
+                return result;
+            }
+            finally
+            {
+                _resourcePool.Release();
+            }
         }
 
         public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, IProgress<double> progress, CancellationToken cancellationToken)

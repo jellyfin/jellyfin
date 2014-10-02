@@ -20,13 +20,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
         }
     }
 
-    public class AdultVideoNfoProvider : BaseVideoNfoProvider<AdultVideo>
-    {
-        public AdultVideoNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config) : base(fileSystem, logger, config)
-        {
-        }
-    }
-
     public class VideoNfoProvider : BaseVideoNfoProvider<Video>
     {
         public VideoNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config) : base(fileSystem, logger, config)

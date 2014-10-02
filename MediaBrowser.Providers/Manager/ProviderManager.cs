@@ -446,7 +446,6 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<Studio>(),
                 GetPluginSummary<GameGenre>(),
                 GetPluginSummary<MusicGenre>(),
-                GetPluginSummary<AdultVideo>(),
                 GetPluginSummary<MusicVideo>(),
                 GetPluginSummary<Video>(),
                 GetPluginSummary<LiveTvChannel>(),

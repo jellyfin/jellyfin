@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Movies
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
                 AcceptHeader = AcceptHeader,
-                EnableUnconditionalCache = true,
+                CacheMode = CacheMode.Unconditional,
                 CacheLength = TimeSpan.FromDays(3)
 
             }).ConfigureAwait(false))
@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             // Cache if not using a tmdbId because we won't have the tmdb cache directory structure. So use the lower level cache.
-            var enableResponseCache = !isTmdbId;
+            var cacheMode = isTmdbId ? CacheMode.None : CacheMode.Unconditional;
             var cacheLength = TimeSpan.FromDays(3);
 
             using (var json = await GetMovieDbResponse(new HttpRequestOptions
@@ -306,7 +306,7 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = AcceptHeader,
-                EnableUnconditionalCache = enableResponseCache,
+                CacheMode = cacheMode,
                 CacheLength = cacheLength
 
             }).ConfigureAwait(false))
@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.Movies
                         Url = url,
                         CancellationToken = cancellationToken,
                         AcceptHeader = AcceptHeader,
-                        EnableUnconditionalCache = enableResponseCache,
+                        CacheMode = cacheMode,
                         CacheLength = cacheLength
 
                     }).ConfigureAwait(false))

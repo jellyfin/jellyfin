@@ -880,7 +880,6 @@
             }
             else if (maxAllowedWidth >= 460) {
                 options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
-                options.push({ name: '480p - 3.5Mbps', maxWidth: 720, bitrate: 3500000 });
                 options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
                 options.push({ name: '480p - 2.5Mbps', maxWidth: 720, bitrate: 2500000 });
                 options.push({ name: '480p - 2Mbps', maxWidth: 720, bitrate: 2000000 });

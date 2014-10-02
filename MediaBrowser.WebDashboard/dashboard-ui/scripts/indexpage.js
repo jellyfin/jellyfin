@@ -47,7 +47,6 @@
                 case "trailers":
                     imgUrl = "css/images/items/folders/movies.png";
                     break;
-                case "adultvideos":
                 case "homevideos":
                     imgUrl = "css/images/items/folders/homevideos.png";
                     break;

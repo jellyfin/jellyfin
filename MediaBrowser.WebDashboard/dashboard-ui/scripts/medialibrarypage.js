@@ -227,7 +227,6 @@
             { name: Globalize.translate('FolderTypeHomeVideos'), value: "homevideos" },
             { name: Globalize.translate('FolderTypeMusicVideos'), value: "musicvideos" },
             { name: Globalize.translate('FolderTypePhotos'), value: "photos" },
-            { name: Globalize.translate('FolderTypeAdultVideos'), value: "adultvideos" },
             { name: Globalize.translate('FolderTypeMixed'), value: "mixed" }
         ];
 

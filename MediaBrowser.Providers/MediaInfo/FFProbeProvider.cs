@@ -28,7 +28,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public class FFProbeProvider : ICustomMetadataProvider<Episode>,
         ICustomMetadataProvider<MusicVideo>,
         ICustomMetadataProvider<Movie>,
-        ICustomMetadataProvider<AdultVideo>,
         ICustomMetadataProvider<LiveTvVideoRecording>,
         ICustomMetadataProvider<LiveTvAudioRecording>,
         ICustomMetadataProvider<Trailer>,
@@ -68,11 +67,6 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         public Task<ItemUpdateType> FetchAsync(Movie item, MetadataRefreshOptions options, CancellationToken cancellationToken)
-        {
-            return FetchVideoInfo(item, options, cancellationToken);
-        }
-
-        public Task<ItemUpdateType> FetchAsync(AdultVideo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }

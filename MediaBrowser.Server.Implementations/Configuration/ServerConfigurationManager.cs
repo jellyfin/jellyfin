@@ -221,7 +221,6 @@ namespace MediaBrowser.Server.Implementations.Configuration
             DisableMetadataService(typeof(Series), Configuration, service);
             DisableMetadataService(typeof(MusicVideo), Configuration, service);
             DisableMetadataService(typeof(Trailer), Configuration, service);
-            DisableMetadataService(typeof(AdultVideo), Configuration, service);
             DisableMetadataService(typeof(Video), Configuration, service);
         }
 

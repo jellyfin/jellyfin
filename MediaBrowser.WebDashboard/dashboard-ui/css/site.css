@@ -797,7 +797,6 @@ progress {
 }
 
 .dashboardContent {
-    max-width: 1550px;
     margin-top: -10px;
 }
 
@@ -844,12 +843,21 @@ progress {
         }
 }
 
+@media all and (min-width: 1680px) {
+
+    .dashboardHomeRightColumn {
+        width: 350px;
+        min-width: 350px;
+    }
+}
+
+
 @media all and (min-width: 1880px) {
 
     .dashboardHomeRightColumn {
         max-width: 440px;
         margin-left: 2em;
-        min-width: 400px;
+        min-width: 440px;
     }
 }
 

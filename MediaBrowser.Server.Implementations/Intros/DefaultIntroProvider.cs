@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }));
             }
 
-            var customIntros = config.EnableCustomIntro ?
+            var customIntros = !string.IsNullOrWhiteSpace(config.CustomIntroPath) ?
                 GetCustomIntros(item) :
                 new List<IntroInfo>();
 
