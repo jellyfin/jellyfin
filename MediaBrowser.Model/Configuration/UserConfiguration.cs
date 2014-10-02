@@ -84,6 +84,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool IncludeTrailersInSuggestions { get; set; }
 
+        public bool EnableCinemaMode { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -108,6 +110,7 @@ namespace MediaBrowser.Model.Configuration
             SyncConnectName = true;
             SyncConnectImage = true;
             IncludeTrailersInSuggestions = true;
+            EnableCinemaMode = true;
         }
     }
 }

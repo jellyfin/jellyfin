@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<AdultVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
@@ -132,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
             {
-                item = ResolveVideo<AdultVideo>(args);
+                item = ResolveVideo<Video>(args);
             }
 
             // To find a movie file, the collection type must be movies or boxsets

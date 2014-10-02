@@ -680,7 +680,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The locked fields.</value>
         public List<MetadataFields> LockedFields { get; set; }
 
-        public int? AdultVideoCount { get; set; }
         /// <summary>
         /// Gets or sets the movie count.
         /// </summary>

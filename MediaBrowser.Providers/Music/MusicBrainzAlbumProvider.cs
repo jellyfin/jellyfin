@@ -307,7 +307,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (!isSearch)
                 {
-                    options.EnableUnconditionalCache = true;
+                    options.CacheMode = CacheMode.Unconditional;
                     options.CacheLength = TimeSpan.FromDays(7);
                 }
 

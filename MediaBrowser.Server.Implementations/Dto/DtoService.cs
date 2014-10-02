@@ -215,7 +215,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 // This populates them all and covers Genre, Person, Studio, Year
 
-                dto.AdultVideoCount = taggedItems.Count(i => i is AdultVideo);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
                 dto.GameCount = taggedItems.Count(i => i is Game);

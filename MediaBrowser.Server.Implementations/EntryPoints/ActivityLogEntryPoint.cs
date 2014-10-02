@@ -129,13 +129,14 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
-            var username = e.Users.First().Name;
+            var user = e.Users.First();
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), username, item.Name),
+                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, item.Name),
                 Type = "PlaybackStopped",
-                ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName)
+                ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName),
+                UserId = user.Id.ToString("N")
             });
         }
 
@@ -161,13 +162,14 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
-            var username = e.Users.First().Name;
+            var user = e.Users.First();
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), username, item.Name),
+                Name = string.Format(_localization.GetLocalizedString("UserStartedPlayingItemWithValues"), user.Name, item.Name),
                 Type = "PlaybackStart",
-                ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName)
+                ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), e.ClientName, e.DeviceName),
+                UserId = user.Id.ToString("N")
             });
         }
 
@@ -192,7 +194,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 Name = name,
                 Type = "SessionEnded",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint)
+                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
+                UserId = (session.UserId.HasValue ? session.UserId.Value.ToString("N") : null)
             });
         }
 
@@ -255,7 +258,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserConfigurationUpdatedWithName"), e.Argument.Name),
-                Type = "UserConfigurationUpdated"
+                Type = "UserConfigurationUpdated",
+                UserId = e.Argument.Id.ToString("N")
             });
         }
 
@@ -273,7 +277,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserPasswordChangedWithName"), e.Argument.Name),
-                Type = "UserPasswordChanged"
+                Type = "UserPasswordChanged",
+                UserId = e.Argument.Id.ToString("N")
             });
         }
 
@@ -282,7 +287,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             CreateLogEntry(new ActivityLogEntry
             {
                 Name = string.Format(_localization.GetLocalizedString("UserCreatedWithName"), e.Argument.Name),
-                Type = "UserCreated"
+                Type = "UserCreated",
+                UserId = e.Argument.Id.ToString("N")
             });
         }
 
@@ -318,7 +324,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 Name = name,
                 Type = "SessionStarted",
-                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint)
+                ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
+                UserId = (session.UserId.HasValue ? session.UserId.Value.ToString("N") : null)
             });
         }
 

@@ -147,13 +147,6 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetAdultVideoRemoteSearchResults request)
-        {
-            var result = _providerManager.GetRemoteSearchResults<AdultVideo, ItemLookupInfo>(request, CancellationToken.None).Result;
-
-            return ToOptimizedResult(result);
-        }
-
         public object Post(GetSeriesRemoteSearchResults request)
         {
             var result = _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(request, CancellationToken.None).Result;

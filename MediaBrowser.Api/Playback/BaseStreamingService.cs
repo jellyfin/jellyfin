@@ -1,5 +1,4 @@
-﻿using System.Net.WebSockets;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -779,24 +778,9 @@ namespace MediaBrowser.Api.Playback
 
         private bool SupportsThrottleWithStream
         {
-            // TODO: These checks are a hack. 
-            // They should go through the IHttpServer interface or IServerManager to find out this information
-
             get
             {
-#if __MonoCS__
-                return true;
-#endif
-
-                try
-                {
-                    new ClientWebSocket();
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                return false;
             }
         }
 

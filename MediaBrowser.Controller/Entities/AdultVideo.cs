@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
+using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
+    [Obsolete]
     public class AdultVideo : Video, IHasProductionLocations, IHasPreferredMetadataLanguage, IHasTaglines
     {
         /// <summary>
