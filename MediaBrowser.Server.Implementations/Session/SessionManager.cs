@@ -1417,6 +1417,10 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 _jsonSerializer.SerializeToFile(capabilities, path);
             }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving to {0}", ex, path);
+            }
             finally
             {
                 _capabilitiesLock.Release();
