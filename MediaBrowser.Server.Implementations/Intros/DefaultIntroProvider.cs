@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                       {
                           if (i is Movie)
                           {
-                              return true;
+                              return !IsDuplicate(item, i);
                           }
                       }
                       return false;
@@ -162,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 {
                     return false;
                 }
-                return true;
+                return !IsDuplicate(item, i.Item);
             })
                 .OrderByDescending(i => i.Score)
                 .ThenBy(i => Guid.NewGuid())
@@ -170,6 +170,23 @@ namespace MediaBrowser.Server.Implementations.Intros
                 .Select(i => i.IntroInfo)
                 .Take(trailerLimit)
                 .Concat(customIntros.Take(1));
+        }
+
+        private bool IsDuplicate(BaseItem playingContent, BaseItem test)
+        {
+            var id = playingContent.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(id) && string.Equals(id, test.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            id = playingContent.GetProviderId(MetadataProviders.Tmdb);
+            if (!string.IsNullOrWhiteSpace(id) && string.Equals(id, test.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private CinemaModeConfiguration GetOptions()
