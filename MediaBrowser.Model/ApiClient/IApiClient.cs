@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.ApiClient
     /// <summary>
     /// Interface IApiClient
     /// </summary>
-    public interface IApiClient : IDisposable
+    public interface IApiClient : IServerEvents, IDisposable
     {
         /// <summary>
         /// Occurs when [HTTP response received].
@@ -1288,5 +1288,17 @@ namespace MediaBrowser.Model.ApiClient
         /// <exception cref="ArgumentNullException">options</exception>
         [Obsolete]
         string GetHlsVideoStreamUrl(VideoStreamOptions options);
+
+        /// <summary>
+        /// Sends the context message asynchronous.
+        /// </summary>
+        /// <param name="itemType">Type of the item.</param>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="itemName">Name of the item.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context,
+            CancellationToken cancellationToken);
     }
 }

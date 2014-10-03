@@ -67,6 +67,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ServerDiscoveryInfo.cs">
       <Link>ApiClient\ServerDiscoveryInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ServerInfo.cs">
+      <Link>ApiClient\ServerInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>

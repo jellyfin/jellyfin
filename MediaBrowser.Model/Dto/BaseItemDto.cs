@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the playlist item identifier.
         /// </summary>
