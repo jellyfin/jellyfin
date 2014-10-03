@@ -74,6 +74,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ApiClientExtensions.cs">
       <Link>ApiClient\ApiClientExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionResult.cs">
+      <Link>ApiClient\ConnectionResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\GeneralCommandEventArgs.cs">
       <Link>ApiClient\GeneralCommandEventArgs.cs</Link>
     </Compile>
@@ -83,11 +86,17 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\IApiClient.cs">
       <Link>ApiClient\IApiClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\IConnectionManager.cs">
+      <Link>ApiClient\IConnectionManager.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
       <Link>ApiClient\IServerEvents.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ServerDiscoveryInfo.cs">
       <Link>ApiClient\ServerDiscoveryInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ServerInfo.cs">
+      <Link>ApiClient\ServerInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>

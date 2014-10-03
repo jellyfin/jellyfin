@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             IEnumerable<BaseItem> inputItems;
 
-            if (string.IsNullOrEmpty(query.UserId))
+            if (string.IsNullOrWhiteSpace(query.UserId))
             {
                 inputItems = _libraryManager.RootFolder.RecursiveChildren;
             }
@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var searchTerm = query.SearchTerm;
 
-            if (string.IsNullOrEmpty(searchTerm))
+            if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 throw new ArgumentNullException("searchTerm");
             }
@@ -105,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.IncludeMedia)
             {
                 // Add search hints based on item name
-                hints.AddRange(items.Where(i => !string.IsNullOrEmpty(i.Name)).Select(item =>
+                hints.AddRange(items.Where(i => !string.IsNullOrWhiteSpace(i.Name)).Select(item =>
                 {
                     var index = GetIndex(item.Name, searchTerm, terms);
 
@@ -118,6 +118,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Find artists
                 var artists = items.OfType<Audio>()
                     .SelectMany(i => i.AllArtists)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -146,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Find genres, from non-audio items
                 var genres = items.Where(i => !(i is IHasMusicGenres) && !(i is Game))
                     .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -172,7 +173,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Find music genres
                 var musicGenres = items.Where(i => i is IHasMusicGenres)
                     .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -198,7 +199,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Find music genres
                 var gameGenres = items.OfType<Game>()
                     .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -226,7 +227,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 // Find studios
                 var studios = items.SelectMany(i => i.Studios)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -255,7 +256,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Find persons
                 var persons = items.SelectMany(i => i.People)
                     .Select(i => i.Name)
-                    .Where(i => !string.IsNullOrEmpty(i))
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -297,7 +298,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>System.Int32.</returns>
         private Tuple<string, int> GetIndex(string input, string searchInput, List<string> searchWords)
         {
-            if (string.IsNullOrEmpty(input))
+            if (string.IsNullOrWhiteSpace(input))
             {
                 throw new ArgumentNullException("input");
             }
