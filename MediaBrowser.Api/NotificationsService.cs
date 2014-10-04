@@ -157,7 +157,12 @@ namespace MediaBrowser.Api
 
         private Task MarkRead(string idList, string userId, bool read)
         {
-            var ids = idList.Split(',');
+            var ids = (idList ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (ids.Length == 0)
+            {
+                return _notificationsRepo.MarkAllRead(userId, read, CancellationToken.None);
+            }
 
             return _notificationsRepo.MarkRead(ids, userId, read, CancellationToken.None);
         }

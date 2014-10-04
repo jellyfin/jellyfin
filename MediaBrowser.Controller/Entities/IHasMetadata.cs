@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -24,12 +23,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The date modified.</value>
         DateTime DateModified { get; }
-
-        /// <summary>
-        /// Gets the locked fields.
-        /// </summary>
-        /// <value>The locked fields.</value>
-        List<MetadataFields> LockedFields { get; }
 
         /// <summary>
         /// Gets or sets the date last saved.
