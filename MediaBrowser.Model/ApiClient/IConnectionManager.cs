@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Users;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,13 +51,23 @@ namespace MediaBrowser.Model.ApiClient
         Task<ConnectionResult> Logout();
 
         /// <summary>
-        /// Authenticates the specified server.
+        /// Authenticates with a specific server
         /// </summary>
         /// <param name="server">The server.</param>
         /// <param name="username">The username.</param>
         /// <param name="hash">The hash.</param>
         /// <param name="rememberLogin">if set to <c>true</c> [remember login].</param>
         /// <returns>Task.</returns>
-        Task Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin);
+        Task<AuthenticationResult> Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin);
+
+        /// <summary>
+        /// Authenticates with a specific server
+        /// </summary>
+        /// <param name="apiClient">The API client.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="hash">The hash.</param>
+        /// <param name="rememberLogin">if set to <c>true</c> [remember login].</param>
+        /// <returns>Task.</returns>
+        Task<AuthenticationResult> Authenticate(IApiClient apiClient, string username, byte[] hash, bool rememberLogin);
     }
 }
