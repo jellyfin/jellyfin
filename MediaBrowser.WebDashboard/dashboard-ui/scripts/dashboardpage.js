@@ -1246,7 +1246,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
 (function ($, document, window) {
 
-    var welcomeDismissValue = '6';
+    var welcomeDismissValue = '7';
     var welcomeTourKey = 'welcomeTour';
 
     function dismissWelcome(page, userId) {
@@ -1285,6 +1285,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
                 { href: 'css/images/tour/dashboard/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
                 { href: 'css/images/tour/dashboard/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
                 { href: 'css/images/tour/dashboard/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
+                { href: 'css/images/tour/dashboard/mobile.png', title: Globalize.translate('DashboardTourMobile') },
                 { href: 'css/images/tour/enjoy.jpg', title: Globalize.translate('MessageEnjoyYourStay') }
         ], {
             afterClose: function () {

@@ -600,5 +600,6 @@
     "DashboardTourSubtitles": "Automatically download subtitles for your videos in any language.",
     "DashboardTourPlugins": "Install plugins such as internet video channels, live tv, metadata scanners, and more.",
     "DashboardTourNotifications": "Automatically send notifications of server events to your mobile device, email and more.",
-    "DashboardTourScheduledTasks": "Easily manage long running operations with scheduled tasks. Decide when they run, and how often."
+    "DashboardTourScheduledTasks": "Easily manage long running operations with scheduled tasks. Decide when they run, and how often.",
+    "DashboardTourMobile": "The Media Browser dashboard works great on smartphones and tablets. Manage your server from the palm of your hand anytime, anywhere."
 }
