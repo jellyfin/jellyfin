@@ -139,8 +139,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                // TOOD: Switch to  -bsf dump_extra?
-                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf h264_mp4toannexb" : "-codec:v:0 copy";
+                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",

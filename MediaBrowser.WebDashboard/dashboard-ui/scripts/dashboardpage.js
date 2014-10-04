@@ -1069,10 +1069,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : 'green';
 
-        html += '<div style="margin: 0;color:' + color + ';">' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase() + '</div>';
-
-        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
-
+        html += '<div style="margin: 0;color:' + color + ';">';
         if (entry.UserId && entry.UserPrimaryImageTag) {
 
             var userImgUrl = ApiClient.getUserImageUrl(entry.UserId, {
@@ -1083,6 +1080,10 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             html += '<img src="' + userImgUrl + '" style="height:20px;vertical-align:middle;margin-right:5px;" />';
         }
 
+        html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
+        html += '</div>';
+
+        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
         html += entry.Name;
         html += '</div>';
 
@@ -1204,7 +1205,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
     }
 
     function startListening() {
-        
+
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ActivityLogEntryStart", "0,1500");
         }
@@ -1240,5 +1241,76 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         return this;
     };
+
+})(jQuery, document, window);
+
+(function ($, document, window) {
+
+    var welcomeDismissValue = '6';
+    var welcomeTourKey = 'welcomeTour';
+
+    function dismissWelcome(page, userId) {
+
+        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+
+            result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
+            ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
+
+            $(page).off('pagebeforeshow.checktour');
+        });
+    }
+
+    function showWelcomeIfNeeded(page) {
+
+        var userId = Dashboard.getCurrentUserId();
+
+        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+
+            if (result.CustomPrefs[welcomeTourKey] == welcomeDismissValue) {
+                $('.welcomeMessage', page).hide();
+            } else {
+                $('.welcomeMessage', page).show();
+            }
+        });
+    }
+
+    function takeTour(page, userId) {
+
+        $.swipebox([
+                { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
+                { href: 'css/images/tour/dashboard/users.png', title: Globalize.translate('DashboardTourUsers') },
+                { href: 'css/images/tour/dashboard/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
+                { href: 'css/images/tour/dashboard/chapters.png', title: Globalize.translate('DashboardTourChapters') },
+                { href: 'css/images/tour/dashboard/subtitles.png', title: Globalize.translate('DashboardTourSubtitles') },
+                { href: 'css/images/tour/dashboard/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
+                { href: 'css/images/tour/dashboard/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
+                { href: 'css/images/tour/dashboard/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
+                { href: 'css/images/tour/enjoy.jpg', title: Globalize.translate('MessageEnjoyYourStay') }
+        ], {
+            afterClose: function () {
+                dismissWelcome(page, userId);
+                $('.welcomeMessage', page).hide();
+            },
+            hideBarsDelay: 30000
+        });
+    }
+
+    $(document).on('pageinit', "#dashboardPage", function () {
+
+        var page = this;
+
+        var userId = Dashboard.getCurrentUserId();
+
+        $('.btnTakeTour', page).on('click', function () {
+            takeTour(page, userId);
+        });
+
+    }).on('pagebeforeshow.checktour', "#dashboardPage", function () {
+
+        var page = this;
+
+        showWelcomeIfNeeded(page);
+
+    });
 
 })(jQuery, document, window);

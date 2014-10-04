@@ -536,6 +536,10 @@
         });
     }
 
+    function showWelcomeIfNeeded() {
+        
+    }
+
     function takeTour(page, userId) {
 
         $.swipebox([
@@ -568,7 +572,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        $('.btnDismissWelcome', page).on('click', function () {
+        $('.btnTakeTour', page).on('click', function () {
             takeTour(page, userId);
         });
 

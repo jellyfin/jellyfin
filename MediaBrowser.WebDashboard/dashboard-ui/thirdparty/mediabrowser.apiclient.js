@@ -334,7 +334,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 throw new Error("null userId");
             }
 
-            if (!idList || !idList.length) {
+            if (!idList) {
                 throw new Error("null idList");
             }
 

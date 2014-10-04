@@ -34,6 +34,12 @@ namespace MediaBrowser.Controller.Entities
         LocationType LocationType { get; }
 
         /// <summary>
+        /// Gets the locked fields.
+        /// </summary>
+        /// <value>The locked fields.</value>
+        List<MetadataFields> LockedFields { get; }
+
+        /// <summary>
         /// Gets the images.
         /// </summary>
         /// <param name="imageType">Type of the image.</param>

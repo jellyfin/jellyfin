@@ -46,8 +46,6 @@
 
             html += '</div>';
 
-            html += '<div style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check" data-mini="true">' + Globalize.translate('ButtonMarkTheseRead') + '</button></div>';
-
             html += '</div>';
 
             html += '</div>';
@@ -58,30 +56,18 @@
 
                 $(this).off("panelclose").remove();
 
-            }).on('click', '.btnMarkRead', function () {
-
-                var ids = $('.unreadFlyoutNotification').map(function () {
-
-                    return this.getAttribute('data-notificationid');
-
-                }).get();
-
-                self.markNotificationsRead(ids, function () {
-
-                    $('.notificationsFlyout').panel("close");
-
-                });
-
             });
 
             self.isFlyout = true;
 
             var startIndex = 0;
-            var limit = 5;
+            var limit = 4;
             var elem = $('.notificationsFlyoutlist');
-            var markReadButton = $('.btnMarkReadContainer');
 
-            refreshNotifications(startIndex, limit, elem, markReadButton, false);
+            refreshNotifications(startIndex, limit, elem, null, false).done(function() {
+                
+                self.markNotificationsRead([]);
+            });
         };
 
         self.markNotificationsRead = function (ids, callback) {
@@ -92,7 +78,9 @@
 
                 self.updateNotificationCount();
 
-                callback();
+                if (callback) {
+                    callback();
+                }
 
             });
 
@@ -107,7 +95,7 @@
 
     function refreshNotifications(startIndex, limit, elem, btn, showPaging) {
 
-        ApiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
+        return ApiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
 
             listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn, showPaging);
 
@@ -118,20 +106,25 @@
 
         if (!totalRecordCount) {
             elem.html('<p style="padding:.5em 1em;">' + Globalize.translate('LabelNoUnreadNotifications') + '</p>');
-            btn.hide();
+
+            if (btn) {
+                btn.hide();
+            }
             return;
         }
 
         Notifications.total = totalRecordCount;
 
-        if (list.filter(function (n) {
+        if (btn) {
+            if (list.filter(function (n) {
 
-            return !n.IsRead;
+                return !n.IsRead;
 
-        }).length) {
-            btn.show();
-        } else {
-            btn.hide();
+            }).length) {
+                btn.show();
+            } else {
+                btn.hide();
+            }
         }
 
         var html = '';

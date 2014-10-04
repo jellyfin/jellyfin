@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
 {
     public class SqliteNotificationsRepository : INotificationsRepository
     {
-        private  IDbConnection _connection;
+        private IDbConnection _connection;
         private readonly ILogger _logger;
         private readonly IServerApplicationPaths _appPaths;
 
@@ -33,13 +33,14 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         private IDbCommand _replaceNotificationCommand;
         private IDbCommand _markReadCommand;
+        private IDbCommand _markAllReadCommand;
 
         public async Task Initialize()
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "notifications.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
-            
+
             string[] queries = {
 
                                 "create table if not exists Notifications (Id GUID NOT NULL, UserId GUID NOT NULL, Date DATETIME NOT NULL, Name TEXT NOT NULL, Description TEXT, Url TEXT, Level TEXT NOT NULL, IsRead BOOLEAN NOT NULL, Category TEXT NOT NULL, RelatedId TEXT, PRIMARY KEY (Id, UserId))",
@@ -78,6 +79,12 @@ namespace MediaBrowser.Server.Implementations.Notifications
             _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@UserId");
             _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@IsRead");
             _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@Id");
+
+            _markAllReadCommand = _connection.CreateCommand();
+            _markAllReadCommand.CommandText = "update Notifications set IsRead=@IsRead where UserId=@UserId";
+
+            _markAllReadCommand.Parameters.Add(_replaceNotificationCommand, "@UserId");
+            _markAllReadCommand.Parameters.Add(_replaceNotificationCommand, "@IsRead");
         }
 
         /// <summary>
@@ -354,6 +361,58 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 {
                     _logger.ErrorException("Error in NotificationsMarkedRead event handler", ex);
                 }
+            }
+        }
+
+        public async Task MarkAllRead(string userId, bool isRead, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                transaction = _connection.BeginTransaction();
+
+                _markAllReadCommand.GetParameter(0).Value = new Guid(userId);
+                _markAllReadCommand.GetParameter(1).Value = isRead;
+
+                _markAllReadCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save notification:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
             }
         }
 

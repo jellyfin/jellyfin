@@ -132,8 +132,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                // TODO: Switch to  -bsf dump_extra ?
-                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf h264_mp4toannexb" : args;
+                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf:v h264_mp4toannexb" : args;
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",

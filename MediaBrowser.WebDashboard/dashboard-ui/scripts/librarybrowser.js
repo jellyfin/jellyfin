@@ -591,6 +591,8 @@
 
         getUserDataCssClass: function (key) {
 
+            if (!key) return '';
+
             return 'libraryItemUserData' + key.replace(new RegExp(' ', 'g'), '');
         },
 

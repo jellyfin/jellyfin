@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!savedOptions.IsEnabled(imageType)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item)) continue;
 
                     if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
@@ -224,14 +224,14 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task RefreshFromProvider(IHasImages item, 
-            IRemoteImageProvider provider, 
-            ImageRefreshOptions refreshOptions, 
-            MetadataOptions savedOptions, 
-            int backdropLimit, 
-            int screenshotLimit, 
+        private async Task RefreshFromProvider(IHasImages item,
+            IRemoteImageProvider provider,
+            ImageRefreshOptions refreshOptions,
+            MetadataOptions savedOptions,
+            int backdropLimit,
+            int screenshotLimit,
             ICollection<ImageType> downloadedImages,
-            RefreshResult result, 
+            RefreshResult result,
             CancellationToken cancellationToken)
         {
             try
@@ -241,8 +241,8 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                if (!refreshOptions.ReplaceAllImages && 
-                    refreshOptions.ReplaceImages.Count == 0 && 
+                if (!refreshOptions.ReplaceAllImages &&
+                    refreshOptions.ReplaceImages.Count == 0 &&
                     ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))
                 {
                     return;
@@ -263,7 +263,7 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in _singularImages)
                 {
-                    if (!savedOptions.IsEnabled(imageType)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item)) continue;
 
                     if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
@@ -277,14 +277,20 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
-
-                var hasScreenshots = item as IHasScreenshots;
-                if (hasScreenshots != null)
+                if (!item.LockedFields.Contains(MetadataFields.Backdrops))
                 {
-                    minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
+                    await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!item.LockedFields.Contains(MetadataFields.Screenshots))
+                {
+                    var hasScreenshots = item as IHasScreenshots;
+                    if (hasScreenshots != null)
+                    {
+                        minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
+                        await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -297,6 +303,33 @@ namespace MediaBrowser.Providers.Manager
                 result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
+        }
+
+        private bool IsEnabled(MetadataOptions options, ImageType type, IHasImages item)
+        {
+            if (type == ImageType.Backdrop)
+            {
+                if (item.LockedFields.Contains(MetadataFields.Backdrops))
+                {
+                    return false;
+                }
+            }
+            else if (type == ImageType.Screenshot)
+            {
+                if (item.LockedFields.Contains(MetadataFields.Screenshots))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (item.LockedFields.Contains(MetadataFields.Images))
+                {
+                    return false;
+                }
+            }
+
+            return options.IsEnabled(type);
         }
 
         private void ClearImages(IHasImages item, ImageType type)
@@ -397,12 +430,12 @@ namespace MediaBrowser.Providers.Manager
             return changed;
         }
 
-        private async Task<bool> DownloadImage(IHasImages item, 
-            IRemoteImageProvider provider, 
-            RefreshResult result, 
-            IEnumerable<RemoteImageInfo> images, 
-            int minWidth, 
-            ImageType type, 
+        private async Task<bool> DownloadImage(IHasImages item,
+            IRemoteImageProvider provider,
+            RefreshResult result,
+            IEnumerable<RemoteImageInfo> images,
+            int minWidth,
+            ImageType type,
             CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == type))
