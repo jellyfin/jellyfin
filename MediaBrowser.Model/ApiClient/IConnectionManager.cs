@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Users;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +13,11 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
 
+        /// <summary>
+        /// Occurs when [remote logged out].
+        /// </summary>
+        event EventHandler<EventArgs> RemoteLoggedOut;
+        
         /// <summary>
         /// Gets the API client.
         /// </summary>
@@ -49,25 +53,5 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
         Task<ConnectionResult> Logout();
-
-        /// <summary>
-        /// Authenticates with a specific server
-        /// </summary>
-        /// <param name="server">The server.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="hash">The hash.</param>
-        /// <param name="rememberLogin">if set to <c>true</c> [remember login].</param>
-        /// <returns>Task.</returns>
-        Task<AuthenticationResult> Authenticate(ServerInfo server, string username, byte[] hash, bool rememberLogin);
-
-        /// <summary>
-        /// Authenticates with a specific server
-        /// </summary>
-        /// <param name="apiClient">The API client.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="hash">The hash.</param>
-        /// <param name="rememberLogin">if set to <c>true</c> [remember login].</param>
-        /// <returns>Task.</returns>
-        Task<AuthenticationResult> Authenticate(IApiClient apiClient, string username, byte[] hash, bool rememberLogin);
     }
 }
