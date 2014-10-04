@@ -584,5 +584,14 @@
     "WebClientTourUserPreferences4": "Configure imagens de fundo, m\u00fasicas-tema e reprodutores externos",
     "WebClientTourMobile1": "O cliente web funciona perfeitamente em smartphones e tablets...",
     "WebClientTourMobile2": "e controle facilmente outros dispositivos e apps do Media Browser",
-    "MessageEnjoyYourStay": "Divirta-se"
+    "MessageEnjoyYourStay": "Divirta-se",
+    "DashboardTourDashboard": "O painel do servidor permite monitorar seu servidor e seus usu\u00e1rios. Voc\u00ea sempre poder\u00e1 saber quem est\u00e1 fazendo o qu\u00ea e onde est\u00e3o.",
+    "DashboardTourUsers": "Crie facilmente contas de usu\u00e1rios para seus amigos e fam\u00edlia, cada um com sua permiss\u00e3o, acesso \u00e0 biblioteca, controle parental e mais.",
+    "DashboardTourCinemaMode": "O modo cinema traz a experi\u00eancia do cinema para sua sala, permitindo reproduzir trailers e intros personalizadas antes da fun\u00e7\u00e3o principal.",
+    "DashboardTourChapters": "Ative a gera\u00e7\u00e3o de imagem do cap\u00edtulo para seus v\u00eddeos para ter uma apresenta\u00e7\u00e3o mais prazeirosa.",
+    "DashboardTourSubtitles": "Fa\u00e7a download de legendas para os seus v\u00eddeos, em qualquer idioma, automaticamente.",
+    "DashboardTourPlugins": "Instale plugins, como os canais de v\u00eddeo de internet, tv ao vivo, rastreadores de metadados e mais.",
+    "DashboardTourNotifications": "Envie, automaticamente, notifica\u00e7\u00f5es de eventos do servidor para seus dispositivos m\u00f3veis, email e mais.",
+    "DashboardTourScheduledTasks": "Gerencie facilmente opera\u00e7\u00f5es longas com tarefas agendadas. Decida quando executar e com que frequ\u00eancia.",
+    "DashboardTourMobile": "O painel do M\u00e9dia Browser funciona perfeitamente em smartphones e tablets. Gerencie seu servidor da palma de sua m\u00e3o, a qualquer hora e em qualquer lugar."
 }

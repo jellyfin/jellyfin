@@ -7,7 +7,7 @@
     "Password": "Passwort",
     "DeleteImage": "Bild l\u00f6schen",
     "DeleteImageConfirmation": "M\u00f6chtest du dieses Bild wirklich l\u00f6schen?",
-    "FileReadCancelled": "Das Einlesen der Datei wurde abgebrochen.",
+    "FileReadCancelled": "The file read has been canceled.",
     "FileNotFound": "Datei nicht gefunden",
     "FileReadError": "Beim Lesen der Datei ist ein Fehler aufgetreten.",
     "DeleteUser": "Benutzer l\u00f6schen",
@@ -584,5 +584,14 @@
     "WebClientTourUserPreferences4": "Konfiguriere Hintergr\u00fcnde, Titelsongs und externe Abspieler",
     "WebClientTourMobile1": "Der Web-Client funktioniert hervorragend auf Smartphones und Tablets ...",
     "WebClientTourMobile2": "und steuert einfach andere Ger\u00e4te und Media Browser Anwendungen",
-    "MessageEnjoyYourStay": "Genie\u00dfe deinen Aufenthalt"
+    "MessageEnjoyYourStay": "Genie\u00dfe deinen Aufenthalt",
+    "DashboardTourDashboard": "Die Server\u00fcbersicht erlaubt es dir deinen Server und dessen Benutzer im Blick zu behalten. Somit wei\u00dft du immer wer gerade was macht und wo er sich befindet.",
+    "DashboardTourUsers": "Erstelle einfach Benutzeraccounts f\u00fcr Freunde und Familie. Jeder mit seinen individuellen Einstellungen bei Berechtigungen, Blibliothekenzugriff, Kindersicherung und mehr.",
+    "DashboardTourCinemaMode": "Der Kino-Modus bringt das Kinoerlebnis direkt in dein Wohnzimmer, mit der F\u00e4higkeit Trailer und benutzerdefinierte Intros vor dem Hauptfilm zu spielen.",
+    "DashboardTourChapters": "Aktiviere die Bildgenerierung f\u00fcr die Kapitel deiner Videos f\u00fcr eine bessere Darstellung w\u00e4hrend des Ansehens.",
+    "DashboardTourSubtitles": "Lade automatisch Untertitel f\u00fcr jede Sprache f\u00fcr deine Videos herunter.",
+    "DashboardTourPlugins": "Installiere Plugins wie Internet Videoportale, Live-TV, Metadatenscanner und mehr.",
+    "DashboardTourNotifications": "Sende automatisch Benachrichtigungen von Serverereignissen auf dein mobiles Endger\u00e4t, per E-Mail und mehr.",
+    "DashboardTourScheduledTasks": "Verwalte einfach lang dauernde Aufgaben mit Hilfe von geplanten Aufgaben. Entscheide wann diese ausgef\u00fchrt werden und wie oft.",
+    "DashboardTourMobile": "The Media Browser dashboard works great on smartphones and tablets. Manage your server from the palm of your hand anytime, anywhere."
 }

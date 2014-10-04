@@ -584,5 +584,14 @@
     "WebClientTourUserPreferences4": "Configurer les images de fonds, les th\u00e8mes musicaux et les players externes",
     "WebClientTourMobile1": "Le client web fonctionne parfaitement sur les smartphones et les tablettes...",
     "WebClientTourMobile2": "et controles facilement les autres p\u00e9riph\u00e9riques et applications Medi Browser",
-    "MessageEnjoyYourStay": "Enjoy your stay"
+    "MessageEnjoyYourStay": "Enjoy your stay",
+    "DashboardTourDashboard": "The server dashboard allows you to monitor your server and your users. You'll always know who is doing what and where they are.",
+    "DashboardTourUsers": "Easily create user accounts for your friends and family, each with their own permissions, library access, parental controls and more.",
+    "DashboardTourCinemaMode": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
+    "DashboardTourChapters": "Enable chapter image generation for your videos for a more pleasing presentation while viewing.",
+    "DashboardTourSubtitles": "Automatically download subtitles for your videos in any language.",
+    "DashboardTourPlugins": "Install plugins such as internet video channels, live tv, metadata scanners, and more.",
+    "DashboardTourNotifications": "Automatically send notifications of server events to your mobile device, email and more.",
+    "DashboardTourScheduledTasks": "Easily manage long running operations with scheduled tasks. Decide when they run, and how often.",
+    "DashboardTourMobile": "The Media Browser dashboard works great on smartphones and tablets. Manage your server from the palm of your hand anytime, anywhere."
 }
