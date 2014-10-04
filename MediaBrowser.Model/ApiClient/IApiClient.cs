@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Notifications;
@@ -28,10 +29,15 @@ namespace MediaBrowser.Model.ApiClient
     public interface IApiClient : IServerEvents, IDisposable
     {
         /// <summary>
-        /// Occurs when [HTTP response received].
+        /// Occurs when [remote logged out].
         /// </summary>
-        event EventHandler<HttpResponseEventArgs> HttpResponseReceived;
+        event EventHandler<EventArgs> RemoteLoggedOut;
 
+        /// <summary>
+        /// Occurs when [authenticated].
+        /// </summary>
+        event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
+        
         /// <summary>
         /// Gets the API URL.
         /// </summary>
