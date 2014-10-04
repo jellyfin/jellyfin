@@ -790,11 +790,7 @@
             var currentSrc = self.currentMediaElement.currentSrc.toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
-            var transcodingExtension = self.getTranscodingExtension();
-
-            var currentAudioStreamIndex = getParameterByName('AudioStreamIndex', self.currentMediaElement.currentSrc);
-
-            var options = getVideoQualityOptions(self.currentMediaSource.MediaStreams, currentAudioStreamIndex, transcodingExtension);
+            var options = getVideoQualityOptions(self.currentMediaSource.MediaStreams);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -1067,7 +1063,11 @@
                 EnableAutoStreamCopy: false
             }));
 
-            if (isStatic) mp4VideoUrl += seekParam;
+            if (isStatic) {
+                mp4VideoUrl += seekParam;
+            } else {
+                mp4VideoUrl += "&ClientTime=" + new Date().getTime();
+            }
 
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
                 VideoCodec: 'vpx',
@@ -1113,6 +1113,12 @@
                 html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             }
 
+            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm';
+
+            if (mp4BeforeWebm) {
+                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            }
+
             // Have to put webm ahead of mp4 because it will play in fast forward in chrome
             // And firefox doesn't like fragmented mp4
             if (!isStatic) {
@@ -1120,7 +1126,9 @@
                 html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
             }
 
-            html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            if (!mp4BeforeWebm) {
+                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
+            }
 
             if (self.supportsTextTracks()) {
                 var textStreams = subtitleStreams.filter(function (s) {

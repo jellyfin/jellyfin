@@ -1656,7 +1656,7 @@ namespace MediaBrowser.Api.Playback
                     state.OutputVideoCodec = "copy";
                 }
 
-                if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream, state.SupportedAudioCodecs))
+                if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
                 {
                     state.OutputAudioCodec = "copy";
                 }
@@ -1831,7 +1831,7 @@ namespace MediaBrowser.Api.Playback
             return request.EnableAutoStreamCopy;
         }
 
-        private bool CanStreamCopyAudio(StreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
+        private bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
@@ -1879,7 +1879,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return true;
+            return request.EnableAutoStreamCopy;
         }
 
         private void ApplyDeviceProfileSettings(StreamState state)

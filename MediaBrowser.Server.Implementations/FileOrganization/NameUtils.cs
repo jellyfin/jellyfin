@@ -63,6 +63,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             name = name.Replace(".", " ")
             .Replace("_", " ")
+            .Replace(" and ", " ")
+            .Replace(".and.", " ")
             .Replace("&", " ")
             .Replace("!", " ")
             .Replace("(", " ")

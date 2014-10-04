@@ -39,6 +39,7 @@
 
         self.updateCanClientSeek = function (elem) {
             var duration = elem.duration;
+
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
         };
 
@@ -71,7 +72,17 @@
             }, intervalTime);
         };
 
-        self.getTranscodingExtension = function () {
+        self.getCurrentMediaExtension = function(currentSrc) {
+            currentSrc = currentSrc.split('?')[0];
+
+            return currentSrc.substring(currentSrc.lastIndexOf('.'));
+        };
+
+        self.getVideoTranscodingExtension = function (currentSrc) {
+
+            if (currentSrc) {
+                return self.getCurrentMediaExtension(currentSrc);
+            }
 
             var media = testableVideoElement;
 
@@ -108,7 +119,7 @@
 
                 if (self.currentItem.MediaType == "Video") {
 
-                    transcodingExtension = self.getTranscodingExtension();
+                    transcodingExtension = self.getVideoTranscodingExtension(currentSrc);
 
                     if (params.AudioStreamIndex != null) {
                         currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
@@ -140,7 +151,7 @@
                     if (finalParams.isStatic) {
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
                     } else {
-                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension);
+                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
                         currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
                     }
 
