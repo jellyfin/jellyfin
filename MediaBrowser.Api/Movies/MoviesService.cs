@@ -126,7 +126,13 @@ namespace MediaBrowser.Api.Movies
 
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
+            var listEligibleForCategories = new List<BaseItem>();
+            var listEligibleForSuggestion = new List<BaseItem> ();
+
             var list = movies.ToList();
+
+            listEligibleForCategories.AddRange(list);
+            listEligibleForSuggestion.AddRange(list);
 
             if (user.Configuration.IncludeTrailersInSuggestions)
             {
@@ -138,17 +144,20 @@ namespace MediaBrowser.Api.Movies
 
                 }, CancellationToken.None).ConfigureAwait(false);
 
-                var newTrailers = trailerResult.Items;
-
-                list.AddRange(newTrailers);
-
-                list = list
-                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                    .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
-                    .ToList();
+                listEligibleForSuggestion.AddRange(trailerResult.Items);
             }
 
-            var result = GetRecommendationCategories(user, list, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
+            listEligibleForCategories = listEligibleForCategories
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            listEligibleForSuggestion = listEligibleForSuggestion
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var result = GetRecommendationCategories(user, listEligibleForCategories, listEligibleForSuggestion, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
 
             return ToOptimizedResult(result);
         }
@@ -210,11 +219,11 @@ namespace MediaBrowser.Api.Movies
             return result;
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<BaseItem> allMovies, int categoryLimit, int itemLimit, List<ItemFields> fields)
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<BaseItem> allMoviesForCategories, List<BaseItem> allMovies, int categoryLimit, int itemLimit, List<ItemFields> fields)
         {
             var categories = new List<RecommendationDto>();
 
-            var recentlyPlayedMovies = allMovies
+            var recentlyPlayedMovies = allMoviesForCategories
                 .Select(i =>
                 {
                     var userdata = _userDataRepository.GetUserData(user.Id, i.GetUserDataKey());

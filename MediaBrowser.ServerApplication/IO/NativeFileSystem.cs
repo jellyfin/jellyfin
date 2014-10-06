@@ -10,8 +10,8 @@ namespace MediaBrowser.ServerApplication.IO
 {
     public class NativeFileSystem : CommonFileSystem
     {
-        public NativeFileSystem(ILogger logger)
-            : base(logger, true)
+        public NativeFileSystem(ILogger logger, bool usePresetInvalidFileNameChars)
+            : base(logger, true, usePresetInvalidFileNameChars)
         {
         }
 

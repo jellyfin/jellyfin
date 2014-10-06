@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,6 +11,8 @@
     <AssemblyName>MediaBrowser.Server.Mono</AssemblyName>
     <StartupObject>MediaBrowser.Server.Mono.MainClass</StartupObject>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,16 +45,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
     <Reference Include="MediaBrowser.IsoMounting.Linux">
       <HintPath>..\ThirdParty\MediaBrowser.IsoMounting.Linux\MediaBrowser.IsoMounting.Linux.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.ServerApplication\IO\StartupOptions.cs">
+      <Link>IO\StartupOptions.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -78,12 +86,8 @@
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs">
       <Link>FFMpeg\FFMpegDownloader.cs</Link>
     </Compile>
-    <Compile Include="IO\FileSystemFactory.cs" />
     <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloadInfo.cs">
       <Link>FFMpeg\FFMpegDownloadInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ServerApplication\IO\StartupOptions.cs">
-      <Link>IO\StartupOptions.cs"</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -137,68 +141,59 @@
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="EntryPoints\" />
-    <Folder Include="Native\" />
-    <Folder Include="FFMpeg\" />
-    <Folder Include="Networking\" />
-    <Folder Include="IO\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\ThirdParty\MediaInfo\linux\x86\libmediainfo.so">
-      <Link>MediaInfo\linux\lib\libmediainfo.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\MediaInfo\linux\x86_64\libmediainfo.so">
-      <Link>MediaInfo\linux\lib64\libmediainfo.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
-      <Link>MediaInfo\osx\libmediainfo.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
+    <None Include="..\thirdparty\libwebp\linux\x86\libwebp.so">
       <Link>libwebp\linux\lib\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\libwebp\linux\x86_64\libwebp.so">
+    </None>
+    <None Include="..\thirdparty\libwebp\linux\x86_64\libwebp.so">
       <Link>libwebp\linux\lib64\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
+    </None>
+    <None Include="..\thirdparty\libwebp\osx\libwebp.5.dylib">
       <Link>libwebp\osx\libwebp.5.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
+    <None Include="..\thirdparty\mediainfo\osx\libmediainfo.dylib">
+      <Link>MediaInfo\osx\libmediainfo.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\thirdparty\sqlite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
+      <Link>sqlite3\linux\lib\libsqlite3.so.0.8.6</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\thirdparty\sqlite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
+      <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\thirdparty\sqlite3\mac\universal\3.8.2\libsqlite3.0.dylib">
+      <Link>sqlite3\mac\libsqlite3.0.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="app.config" />
+    <None Include="Imazen.WebP.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="MediaBrowser.MediaInfo.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+    <None Include="System.Data.SQLite.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="..\ThirdParty\SQLite3\windows\x86\3.8.2\sqlite3.dll">
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\ThirdParty\SQLite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
-      <Link>sqlite3\linux\lib\libsqlite3.so.0.8.6</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\SQLite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
-      <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\SQLite3\mac\universal\3.8.2\libsqlite3.0.dylib">
-      <Link>sqlite3\mac\libsqlite3.0.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="System.Data.SQLite.dll.config">
-      <Link>System.Data.SQLite.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Imazen.WebP.dll.config">
-      <Link>Imazen.WebP.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MediaBrowser.MediaInfo.dll.config">
-      <Link>MediaBrowser.MediaInfo.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
 </Project>

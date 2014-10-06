@@ -220,6 +220,15 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\ProfileConditionValue.cs">
       <Link>Dlna\ProfileConditionValue.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\Profiles\AndroidProfile.cs">
+      <Link>Dlna\Profiles\AndroidProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\Profiles\DefaultProfile.cs">
+      <Link>Dlna\Profiles\DefaultProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ResolutionNormalizer.cs">
+      <Link>Dlna\ResolutionNormalizer.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ResponseProfile.cs">
       <Link>Dlna\ResponseProfile.cs</Link>
     </Compile>

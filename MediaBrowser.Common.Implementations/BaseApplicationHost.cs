@@ -196,12 +196,15 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
-        protected BaseApplicationHost(TApplicationPathsType applicationPaths, ILogManager logManager)
+        protected BaseApplicationHost(TApplicationPathsType applicationPaths, 
+            ILogManager logManager, 
+            IFileSystem fileSystem)
         {
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
             LogManager = logManager;
+            FileSystemManager = fileSystem;
 
             ConfigurationManager = GetConfigurationManager();
         }
@@ -441,7 +444,6 @@ namespace MediaBrowser.Common.Implementations
 
                 RegisterSingleInstance(TaskManager);
 
-                FileSystemManager = CreateFileSystemManager();
                 RegisterSingleInstance(FileSystemManager);
 
                 HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
@@ -483,11 +485,6 @@ namespace MediaBrowser.Common.Implementations
                     Logger.ErrorException("Error setting up dependency bindings for " + type.Name, ex);
                 }
             }
-        }
-
-        protected virtual IFileSystem CreateFileSystemManager()
-        {
-            return new CommonFileSystem(Logger, true);
         }
 
         /// <summary>

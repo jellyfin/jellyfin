@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -101,7 +102,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             filteredItems = FilterByLibraryItems(request, filteredItems, user, libraryItems);
 
-            filteredItems = ItemsService.ApplySortOrder(request, filteredItems, user, LibraryManager).Cast<TItemType>();
+            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending).Cast<TItemType>();
 
             var ibnItemsArray = filteredItems.ToList();
 

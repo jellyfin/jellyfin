@@ -1,20 +1,18 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.ServerApplication.IO;
+using Mono.Unix.Native;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-#if __MonoCS__
-using Mono.Unix.Native;
-#endif
-using MediaBrowser.ServerApplication.IO;
 
 namespace MediaBrowser.ServerApplication.FFMpeg
 {
@@ -228,18 +226,22 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     }))
                 {
                     File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
-                    #if __MonoCS__
-                    //Linux: File permission to 666, and user's execute bit
-                    if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
-                    {
-                        Syscall.chmod(Path.Combine(targetFolder, Path.GetFileName(file)), FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
-                    }
-                    #endif
+
+                    SetFilePermissions(targetFolder, file);
                 }
             }
             finally
             {
                 DeleteFile(tempFile);
+            }
+        }
+
+        private void SetFilePermissions(string targetFolder, string file)
+        {
+            // Linux: File permission to 666, and user's execute bit
+            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
+            {
+                Syscall.chmod(Path.Combine(targetFolder, Path.GetFileName(file)), FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
             }
         }
 

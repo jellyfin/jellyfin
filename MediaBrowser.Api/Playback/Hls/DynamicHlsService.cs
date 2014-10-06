@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            await ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType.Hls && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+                            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType.Hls && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
 
                             if (currentTranscodingIndex.HasValue)
                             {
@@ -157,7 +157,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await WaitForMinimumSegmentCount(playlistPath, 2, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -402,8 +402,10 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
+            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+
             // Main stream
-            var playlistUrl = (state.RunTimeTicks ?? 0) > 0 ? "main.m3u8" : "live.m3u8";
+            var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
             playlistUrl += queryString;
 
             var request = (GetMasterHlsVideoStream)state.Request;
@@ -418,7 +420,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             AppendPlaylist(builder, playlistUrl, totalBitrate, subtitleGroup);
 
-            if (EnableAdaptiveBitrateStreaming(state))
+            if (EnableAdaptiveBitrateStreaming(state, isLiveStream))
             {
                 var requestedVideoBitrate = state.VideoRequest.VideoBitRate.Value;
 
@@ -482,7 +484,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private bool EnableAdaptiveBitrateStreaming(StreamState state)
+        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream)
         {
             // Within the local network this will likely do more harm than good.
             if (Request.IsLocal || NetworkManager.IsInLocalNetwork(Request.RemoteIp))
@@ -491,13 +493,12 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var request = state.Request as GetMasterHlsVideoStream;
-
             if (request != null && !request.EnableAdaptiveBitrateStreaming)
             {
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(state.MediaPath))
+            if (isLiveStream || string.IsNullOrWhiteSpace(state.MediaPath))
             {
                 // Opening live streams is so slow it's not even worth it
                 return false;

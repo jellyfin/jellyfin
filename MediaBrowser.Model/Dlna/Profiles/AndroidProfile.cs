@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace MediaBrowser.Model.Dlna.Profiles
 {
     [XmlRoot("Profile")]
     public class AndroidProfile : DefaultProfile
@@ -91,33 +90,10 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = CodecType.Video,
                     Conditions = new []
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Width,
-                            Value = "1920"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.Height,
-                            Value = "1080"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.NotEquals,
-                            Property = ProfileConditionValue.IsAnamorphic,
-                            Value = "true",
-                            IsRequired = false
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoBitDepth,
-                            Value = "8",
-                            IsRequired = false
-                        },
-                        // TODO: Add HasScalingMatrix != true, IsRequired false
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Width, "1920"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Height, "1080"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoBitDepth, "8"),
+                        new ProfileCondition(ProfileConditionType.NotEquals, ProfileConditionValue.IsAnamorphic, "true")
                     }
                 },
 
@@ -127,12 +103,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Codec = "aac",
                     Conditions = new []
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "2"
-                        }
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioChannels, "2")
                     }
                 },
 
@@ -142,12 +113,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Codec = "aac",
                     Conditions = new []
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "2"
-                        }
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioChannels, "2")
                     }
                 },
 
@@ -157,18 +123,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Codec = "mp3",
                     Conditions = new []
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "2"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioBitrate,
-                            Value = "320000"
-                        }
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioChannels, "2"),
+                        new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.AudioBitrate, "320000")
                     }
                 }
             };

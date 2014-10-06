@@ -222,6 +222,8 @@ namespace MediaBrowser.ServerApplication
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
 
+        private readonly bool _supportsNativeWebSocket;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
@@ -230,16 +232,21 @@ namespace MediaBrowser.ServerApplication
         /// <param name="supportsRunningAsService">if set to <c>true</c> [supports running as service].</param>
         /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
         /// <param name="options">The options.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="remotePackageName">Name of the remote package.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths, 
             ILogManager logManager, 
             bool supportsRunningAsService, 
             bool isRunningAsService,
-            StartupOptions options, string remotePackageName)
-            : base(applicationPaths, logManager)
+            StartupOptions options, 
+            IFileSystem fileSystem,
+            string remotePackageName, 
+            bool supportsNativeWebSocket)
+            : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
             _remotePackageName = remotePackageName;
+            _supportsNativeWebSocket = supportsNativeWebSocket;
             _isRunningAsService = isRunningAsService;
             SupportsRunningAsService = supportsRunningAsService;
         }
@@ -433,7 +440,7 @@ namespace MediaBrowser.ServerApplication
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html", _supportsNativeWebSocket);
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -546,11 +553,6 @@ namespace MediaBrowser.ServerApplication
         protected override INetworkManager CreateNetworkManager(ILogger logger)
         {
             return new NetworkManager(logger);
-        }
-
-        protected override IFileSystem CreateFileSystemManager()
-        {
-            return FileSystemFactory.CreateFileSystemManager(LogManager);
         }
 
         /// <summary>

@@ -1,30 +1,19 @@
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Constants;
+using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
-using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.ServerApplication;
-using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.IO;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using System.Windows;
 using System.Net;
 using System.Net.Security;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Linq;
-// MONOMKBUNDLE: For the embedded version, mkbundle tool
-#if MONOMKBUNDLE
-using Mono.Unix;
-using Mono.Unix.Native;
-using System.Text;
-#endif
 
 namespace MediaBrowser.Server.Mono
 {
@@ -123,7 +112,9 @@ namespace MediaBrowser.Server.Mono
 			// Allow all https requests
 			ServicePointManager.ServerCertificateValidationCallback = _ignoreCertificates;
 
-			_appHost = new ApplicationHost(appPaths, logManager, false, false, options, "MBServer.Mono");
+		    var fileSystem = new CommonFileSystem(logManager.GetLogger("FileSystem"), false, true);
+
+            _appHost = new ApplicationHost(appPaths, logManager, false, false, options, fileSystem, "MBServer.Mono", false);
 			
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (_appHost.ApplicationVersion.ToString());

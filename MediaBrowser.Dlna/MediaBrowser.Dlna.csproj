@@ -87,7 +87,6 @@
     <Compile Include="Common\ServiceAction.cs" />
     <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
     <Compile Include="PlayTo\uParserObject.cs" />
-    <Compile Include="Profiles\AndroidProfile.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
     <Compile Include="Profiles\Windows81Profile.cs" />
@@ -114,7 +113,6 @@
     <Compile Include="Common\DeviceIcon.cs" />
     <Compile Include="PlayTo\uParser.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
-    <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DenonAvrProfile.cs" />
     <Compile Include="Profiles\LgTvProfile.cs" />
     <Compile Include="Profiles\LinksysDMA2100Profile.cs" />

@@ -3,7 +3,7 @@ using System;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class UserItemsQuery
+    public class InternalItemsQuery
     {
         public bool Recursive { get; set; }
 
@@ -21,15 +21,21 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsFolder { get; set; }
         public bool? IsFavorite { get; set; }
+        public bool? IsFavoriteOrLiked { get; set; }
+        public bool? IsLiked { get; set; }
         public bool? IsPlayed { get; set; }
         public bool? IsResumable { get; set; }
 
         public string[] MediaTypes { get; set; }
-        
-        public UserItemsQuery()
+        public string[] IncludeItemTypes { get; set; }
+        public string[] ExcludeItemTypes { get; set; }
+
+        public InternalItemsQuery()
         {
             SortBy = new string[] { };
             MediaTypes = new string[] { };
+            IncludeItemTypes = new string[] { };
+            ExcludeItemTypes = new string[] { };
         }
     }
 }

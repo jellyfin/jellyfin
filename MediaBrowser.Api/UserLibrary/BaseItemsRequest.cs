@@ -96,6 +96,21 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsPlayed", Description = "Optional filter by items that are played, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsPlayed { get; set; }
 
+        public string[] GetMediaTypes()
+        {
+            return (MediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetIncludeItemTypes()
+        {
+            return (IncludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetExcludeItemTypes()
+        {
+            return (ExcludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+        
         /// <summary>
         /// Gets the filters.
         /// </summary>
@@ -132,7 +147,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// Gets the order by.
         /// </summary>
         /// <returns>IEnumerable{ItemSortBy}.</returns>
-        public IEnumerable<string> GetOrderBy()
+        public string[] GetOrderBy()
         {
             var val = SortBy;
 

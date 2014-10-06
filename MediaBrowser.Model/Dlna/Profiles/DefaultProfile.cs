@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace MediaBrowser.Model.Dlna.Profiles
 {
     [XmlRoot("Profile")]
     public class DefaultProfile : DeviceProfile

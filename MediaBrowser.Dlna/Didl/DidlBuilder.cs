@@ -766,12 +766,10 @@ namespace MediaBrowser.Dlna.Didl
 
             if (!_profile.EnableAlbumArtInDidl)
             {
-                if (!string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase) && !string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!item.IsFolder)
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
 

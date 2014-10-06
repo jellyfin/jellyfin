@@ -116,9 +116,9 @@ namespace MediaBrowser.ServerApplication.Native
                 Console.WriteLine("Error launching browser");
                 Console.WriteLine(ex.Message);
 
-#if !__MonoCS__
-                System.Windows.Forms.MessageBox.Show("There was an error launching your web browser. Please check your default browser settings.");
-#endif
+//#if !__MonoCS__
+//                System.Windows.Forms.MessageBox.Show("There was an error launching your web browser. Please check your default browser settings.");
+//#endif
             }
         }
 

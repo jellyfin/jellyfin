@@ -20,5 +20,19 @@ namespace MediaBrowser.Model.Dlna
         {
             IsRequired = true;
         }
+
+        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value)
+            : this(condition, property, value, false)
+        {
+            
+        }
+
+        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value, bool isRequired)
+        {
+            Condition = condition;
+            Property = property;
+            Value = value;
+            IsRequired = isRequired;
+        }
     }
 }

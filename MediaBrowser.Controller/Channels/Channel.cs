@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Channels
             return base.IsVisible(user);
         }
 
-        public override async Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             try
             {

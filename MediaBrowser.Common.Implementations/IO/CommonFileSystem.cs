@@ -15,11 +15,31 @@ namespace MediaBrowser.Common.Implementations.IO
         protected ILogger Logger;
 
         private readonly bool _supportsAsyncFileStreams;
+        private char[] _invalidFileNameChars;
 
-        public CommonFileSystem(ILogger logger, bool supportsAsyncFileStreams)
+        public CommonFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool usePresetInvalidFileNameChars)
         {
             Logger = logger;
             _supportsAsyncFileStreams = supportsAsyncFileStreams;
+
+            SetInvalidFileNameChars(usePresetInvalidFileNameChars);
+        }
+
+        private void SetInvalidFileNameChars(bool usePresetInvalidFileNameChars)
+        {
+            // GetInvalidFileNameChars is less restrictive in Linux/Mac than Windows, this mimic Windows behavior for mono under Linux/Mac.
+
+            if (usePresetInvalidFileNameChars)
+            {
+                _invalidFileNameChars = new char[41] { '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
+            '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F', '\x10', '\x11', '\x12',
+            '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D',
+            '\x1E', '\x1F', '\x22', '\x3C', '\x3E', '\x7C', ':', '*', '?', '\\', '/' };
+            }
+            else
+            {
+                _invalidFileNameChars = Path.GetInvalidFileNameChars();
+            }
         }
 
         /// <summary>
@@ -129,18 +149,6 @@ namespace MediaBrowser.Common.Implementations.IO
         /// The space char
         /// </summary>
         private const char SpaceChar = ' ';
-        /// <summary>
-        /// The invalid file name chars
-        /// </summary>
-        #if __MonoCS__
-        //GetInvalidFileNameChars is less restrictive in Linux/Mac than Windows, this mimic Windows behavior for mono under Linux/Mac.
-        private static readonly char[] InvalidFileNameChars = new char [41] { '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
-            '\x08', '\x09', '\x0A', '\x0B', '\x0C', '\x0D', '\x0E', '\x0F', '\x10', '\x11', '\x12',
-            '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1A', '\x1B', '\x1C', '\x1D',
-            '\x1E', '\x1F', '\x22', '\x3C', '\x3E', '\x7C', ':', '*', '?', '\\', '/' };
-        #else
-        private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
-        #endif
 
         /// <summary>
         /// Takes a filename and removes invalid characters
@@ -157,7 +165,7 @@ namespace MediaBrowser.Common.Implementations.IO
 
             var builder = new StringBuilder(filename);
 
-            foreach (var c in InvalidFileNameChars)
+            foreach (var c in _invalidFileNameChars)
             {
                 builder = builder.Replace(c, SpaceChar);
             }
@@ -300,7 +308,7 @@ namespace MediaBrowser.Common.Implementations.IO
             {
                 throw new ArgumentNullException("path");
             }
-            
+
             return path.IndexOf(parentPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
@@ -310,12 +318,12 @@ namespace MediaBrowser.Common.Implementations.IO
             {
                 throw new ArgumentNullException("path");
             }
-            
+
             var parent = Path.GetDirectoryName(path);
 
             if (!string.IsNullOrEmpty(parent))
             {
-                return false;   
+                return false;
             }
 
             return true;

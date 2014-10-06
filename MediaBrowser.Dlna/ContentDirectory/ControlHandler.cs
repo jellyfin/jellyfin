@@ -341,7 +341,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 isFolder = true;
             }
             
-            return await folder.GetUserItems(new UserItemsQuery
+            return await folder.GetItems(new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,
@@ -364,7 +364,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            return await folder.GetUserItems(new UserItemsQuery
+            return await folder.GetItems(new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,

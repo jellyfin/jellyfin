@@ -185,7 +185,7 @@ namespace MediaBrowser.Providers.People
 
             var fileInfo = _fileSystem.GetFileSystemInfo(dataFilePath);
 
-            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+            if (fileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
             {
                 return;
             }

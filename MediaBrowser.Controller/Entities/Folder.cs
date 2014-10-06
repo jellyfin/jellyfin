@@ -770,7 +770,7 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        public virtual Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        public virtual Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             var user = query.User;
 
@@ -783,7 +783,7 @@ namespace MediaBrowser.Controller.Entities
             return Task.FromResult(result);
         }
 
-        protected QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items, UserItemsQuery query)
+        protected QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)
         {
             return UserViewBuilder.SortAndFilter(items, null, query, LibraryManager, UserDataManager);
         }

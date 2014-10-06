@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Channels
             return ExternalId;
         }
 
-        public override async Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             try
             {
