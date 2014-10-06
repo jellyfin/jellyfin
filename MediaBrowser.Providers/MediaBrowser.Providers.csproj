@@ -136,6 +136,7 @@
     <Compile Include="Music\MusicBrainzArtistProvider.cs" />
     <Compile Include="Music\MusicExternalIds.cs" />
     <Compile Include="Music\MusicVideoMetadataService.cs" />
+    <Compile Include="Omdb\OmdbImageProvider.cs" />
     <Compile Include="Omdb\OmdbProvider.cs" />
     <Compile Include="Omdb\OmdbItemProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />

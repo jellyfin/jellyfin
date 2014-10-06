@@ -93,7 +93,6 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" Condition=" '$(ConfigurationName)' == 'Release Mono' " />
     <Reference Include="websocket-sharp, Version=1.0.2.508, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\WebsocketSharp\websocket-sharp.dll</HintPath>

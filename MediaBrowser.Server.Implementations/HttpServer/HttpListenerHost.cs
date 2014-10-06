@@ -43,6 +43,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
 
+        private readonly bool _supportsNativeWebSocket;
+
         /// <summary>
         /// Gets the local end points.
         /// </summary>
@@ -61,10 +63,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        public HttpListenerHost(IApplicationHost applicationHost, ILogManager logManager, string serviceName, string handlerPath, string defaultRedirectPath, params Assembly[] assembliesWithServices)
+        public HttpListenerHost(IApplicationHost applicationHost, 
+            ILogManager logManager, 
+            string serviceName, 
+            string handlerPath, 
+            string defaultRedirectPath, 
+            bool supportsNativeWebSocket, 
+            params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
+            _supportsNativeWebSocket = supportsNativeWebSocket;
             HandlerPath = handlerPath;
 
             _logger = logManager.GetLogger("HttpServer");
@@ -195,7 +204,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
-            _listener = NativeWebSocket.IsSupported
+            _listener = _supportsNativeWebSocket && NativeWebSocket.IsSupported
                 ? _listener = new HttpListenerServer(_logger, OnRequestReceived)
                 //? _listener = new WebSocketSharpListener(_logger, OnRequestReceived)
                 : _listener = new WebSocketSharpListener(_logger, OnRequestReceived);

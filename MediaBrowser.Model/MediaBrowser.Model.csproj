@@ -86,6 +86,9 @@
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
+    <Compile Include="Dlna\Profiles\AndroidProfile.cs" />
+    <Compile Include="Dlna\Profiles\DefaultProfile.cs" />
+    <Compile Include="Dlna\ResolutionNormalizer.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Entities\ExtraType.cs" />

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -57,15 +58,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         }
 
         private void ValidateUser(IRequest req, bool allowLocal,
-            string[] roles)
+            IEnumerable<string> roles)
         {
-            //This code is executed before the service
+            // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (!string.IsNullOrWhiteSpace(auth.Token)
-                || _config.Configuration.SecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (!allowLocal || !req.IsLocal)
             {
-                if (!allowLocal || !req.IsLocal)
+                if (!_config.Configuration.InsecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     SessionManager.ValidateSecurityToken(auth.Token);
                 }

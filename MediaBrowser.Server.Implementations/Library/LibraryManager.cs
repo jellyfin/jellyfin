@@ -489,9 +489,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
         {
-            return items.Select(i =>
+            var dict = new Dictionary<Guid, BaseItem>();
+
+            foreach (var item in items)
             {
-                var video = i as Video;
+                var video = item as Video;
 
                 if (video != null)
                 {
@@ -501,14 +503,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
                         if (primary != null)
                         {
-                            return primary;
+                            dict[primary.Id] = primary;
+                            continue;
                         }
                     }
                 }
+                dict[item.Id] = item;
+            }
 
-                return i;
-
-            }).DistinctBy(i => i.Id);
+            return dict.Values;
         }
 
         /// <summary>

@@ -34,7 +34,7 @@
             var profile = profiles[i];
 
             html += '<li>';
-            html += '<a href="dlnaprofile.html?id=' + profile.Id + '" style="font-size:14px;">';
+            html += '<a href="dlnaprofile.html?id=' + profile.Id + '">';
             html += profile.Name;
             html += '</a>';
 
@@ -69,7 +69,7 @@
             var profile = profiles[i];
 
             html += '<li>';
-            html += '<a href="dlnaprofile.html?id=' + profile.Id + '" style="font-size:14px;">';
+            html += '<a href="dlnaprofile.html?id=' + profile.Id + '">';
             html += profile.Name;
             html += '</a>';
             html += '</li>';

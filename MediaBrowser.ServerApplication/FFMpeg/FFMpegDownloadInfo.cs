@@ -1,9 +1,5 @@
-﻿using System;
-#if __MonoCS__
-using Mono.Unix.Native;
-using System.Text.RegularExpressions;
-using System.IO;
-#endif
+﻿using Mono.Unix.Native;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -33,7 +29,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     switch (arg)
                     {
                         case "Version":
-                            return "20140827";
+                            return "20141005";
                         case "FFMpegFilename":
                             return "ffmpeg.exe";
                         case "FFProbeFilename":
@@ -82,7 +78,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20140506";
+                                    return "20140716";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -98,7 +94,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20140505";
+                                    return "20140716";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -138,15 +134,15 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                         return new[]
                         {
-                            "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20140827-git-9e8ab36-win64-static.7z",
-                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140827-git-9e8ab36-win64-static.7z"
+                            "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20141005-git-e079d43-win64-static.7z",
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141005-git-e079d43-win64-static.7z"
                         };
                     }
 
                     return new[]
                     {
-                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20140827-git-9e8ab36-win32-static.7z",
-                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20140827-git-9e8ab36-win32-static.7z"
+                        "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20141005-git-e079d43-win32-static.7z",
+                        "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141005-git-e079d43-win32-static.7z"
                     };
 
                 case PlatformID.Unix:
@@ -173,7 +169,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.latest.tar.gz",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.32bit.2014-05-06.tar.gz"
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.32bit.2014-07-16.tar.gz"
                             };
                         }
 
@@ -182,7 +178,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.latest.tar.gz",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.64bit.2014-05-05.tar.gz"
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.64bit.2014-07-16.tar.gz"
                             };
                         }
 
@@ -237,16 +233,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
         private static Uname GetUnixName()
         {
             var uname = new Uname();
-
-#if __MonoCS__
-                Utsname utsname;
-                var callResult = Syscall.uname(out utsname);
-                if (callResult == 0)
-                {
-                    uname.sysname= utsname.sysname;
-                    uname.machine= utsname.machine;
-                }
-#endif
+            Utsname utsname;
+            var callResult = Syscall.uname(out utsname);
+            if (callResult == 0)
+            {
+                uname.sysname = utsname.sysname;
+                uname.machine = utsname.machine;
+            }
             return uname;
         }
     }

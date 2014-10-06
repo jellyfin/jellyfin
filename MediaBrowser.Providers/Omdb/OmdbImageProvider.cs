@@ -1,0 +1,124 @@
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Providers;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Providers.Omdb
+{
+    public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
+    {
+        private readonly IHttpClient _httpClient;
+
+        public OmdbImageProvider(IHttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
+        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary
+            };
+        }
+
+        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        {
+            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+
+            var list = new List<RemoteImageInfo>();
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                list.Add(new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Url = string.Format("http://img.omdbapi.com/?i={0}&apikey=82e83907", imdbId)
+                });
+            }
+
+            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
+        }
+
+        public async Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            var response = await _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = OmdbProvider.ResourcePool
+
+            }).ConfigureAwait(false);
+
+            if (response.ContentLength == 11059)
+            {
+                throw new HttpException("File not found")
+                {
+                    StatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            return response;
+        }
+
+        public string Name
+        {
+            get { return "The Open Movie Database"; }
+        }
+
+        public bool Supports(IHasImages item)
+        {
+            // Save the http requests since we know it's not currently supported
+            // TODO: Check again periodically
+            if (item is Person)
+            {
+                return false;
+            }
+
+            // Save the http requests since we know it's not currently supported
+            if (item is Series || item is Season || item is Episode)
+            {
+                return false;
+            }
+
+            var channelItem = item as IChannelMediaItem;
+
+            if (channelItem != null)
+            {
+                if (channelItem.ContentType == ChannelMediaContentType.Movie)
+                {
+                    return true;
+                }
+                if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
+                {
+                    if (channelItem.ExtraType == ExtraType.Trailer)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return item is Movie || item is Trailer;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // After other internet providers, because they're better
+                // But before fallback providers like screengrab
+                return 90;
+            }
+        }
+    }
+}

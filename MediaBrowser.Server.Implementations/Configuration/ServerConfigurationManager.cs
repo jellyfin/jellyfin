@@ -214,13 +214,9 @@ namespace MediaBrowser.Server.Implementations.Configuration
         public void DisableMetadataService(string service)
         {
             DisableMetadataService(typeof(Movie), Configuration, service);
-            DisableMetadataService(typeof(MusicAlbum), Configuration, service);
-            DisableMetadataService(typeof(MusicArtist), Configuration, service);
             DisableMetadataService(typeof(Episode), Configuration, service);
             DisableMetadataService(typeof(Season), Configuration, service);
             DisableMetadataService(typeof(Series), Configuration, service);
-            DisableMetadataService(typeof(MusicVideo), Configuration, service);
-            DisableMetadataService(typeof(Trailer), Configuration, service);
             DisableMetadataService(typeof(Video), Configuration, service);
         }
 

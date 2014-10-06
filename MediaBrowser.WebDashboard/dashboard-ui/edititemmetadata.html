@@ -34,8 +34,7 @@
                             <button class="btnSave" type="submit" data-theme="a" data-icon="check" data-mini="true" data-inline="true">
                                 ${ButtonSave}
                             </button>
-                            <button class="btnRefresh btnRefreshBasic" type="button" data-icon="refresh" data-mini="true" data-inline="true">${ButtonRefresh}</button>
-                            <button class="btnRefresh btnRefreshAdvanced" type="button" data-icon="refresh" data-mini="true" data-inline="true">${ButtonAdvancedRefresh}</button>
+                            <button class="btnRefresh btnRefreshAdvanced" type="button" data-icon="refresh" data-mini="true" data-inline="true">${ButtonRefresh}</button>
                             <button id="btnIdentify" type="button" data-icon="info" data-mini="true" data-inline="true">${ButtonIdentify}</button>
                             <div style="vertical-align: bottom; display: inline-block;">
                                 <div id="fldDelete" style="display: none;">
@@ -365,38 +364,6 @@
 
                 </form>
             </div>
-        </div>
-        <div data-role="popup" id="popupConfirmDelete" class="popup" data-theme="a">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderConfirmDeletion}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="popupConfirmDeleteForm">
-                    <p style="color:red;">${LabelFollowingFileWillBeDeleted}</p>
-                    <p class="deletePath"></p>
-
-                    <p>${LabelIfYouWishToContinueWithDeletion}</p>
-					
-					<p id="challengeValueText" style="font-weight: bold;"></p>
-
-                    <p>
-                        <input type="number" id="txtDeleteTest" data-mini="true" pattern="[0-9]*" required="required" />
-                        <input id="fldChallengeValue" type="hidden" />
-                    </p>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
         </div>
         <div data-role="popup" class="popupIdentify popup" data-theme="a">
             <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>

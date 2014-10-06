@@ -206,18 +206,6 @@
                     </div>
                 </div>
 
-                <div class="detailSection detailCollapsibleSection audioVideoMediaInfo">
-                    <div data-role="collapsible" class="detailPageCollabsible" data-content-theme="false">
-                        <h2>${HeaderMediaInfo}</h2>
-                        <div>
-                            <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
-                                <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
-                            </div>
-                            <div id="mediaInfoContent"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="detailSection photoInfo hide">
                     <div class="detailSectionHeader">
                         ${HeaderPhotoInfo}
@@ -280,6 +268,16 @@
                         ${HeaderThemeVideos}
                     </div>
                     <div id="themeVideosContent" class="detailSectionContent smallItemsContainer"></div>
+                </div>
+
+                <div class="detailSection audioVideoMediaInfo hide">
+                    <h2 class="detailSectionHeader">${HeaderMediaInfo}</h2>
+                    <div class="detailSectionContent" style="padding: 0 .7em;">
+                        <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
+                            <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
+                        </div>
+                        <div id="mediaInfoContent"></div>
+                    </div>
                 </div>
             </div>
         </div>

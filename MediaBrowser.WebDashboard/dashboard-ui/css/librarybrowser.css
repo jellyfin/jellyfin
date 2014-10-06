@@ -323,7 +323,6 @@
     background-color: #181818;
     border-radius: 4px;
     padding: 5px 7px;
-    font-size: 13px;
     margin: 0 5px 5px 0;
     color: #fff !important;
     text-decoration: none;
@@ -345,7 +344,6 @@ a.itemTag:hover {
 
 .reviewerName {
     color: #ccc;
-    font-size: 13px;
     margin-top: .5em;
 }
 

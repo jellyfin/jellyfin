@@ -1587,7 +1587,16 @@
 
         $(ApiClient).on('websocketmessage', onWebSocketMessage);
 
+        $(LibraryBrowser).on('itemdeleting.detailpage', function (e, itemId) {
+
+            if (currentItem && currentItem.Id == itemId) {
+                Dashboard.navigate('index.html');
+            }
+        });
+
     }).on('pagehide', "#itemDetailPage", function () {
+
+        $(LibraryBrowser).off('itemdeleting.detailpage');
 
         currentItem = null;
 

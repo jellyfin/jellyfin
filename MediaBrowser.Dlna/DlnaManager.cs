@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dlna.Profiles;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;

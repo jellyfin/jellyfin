@@ -219,11 +219,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             get
             {
-#if __MonoCS__
-				return false;
-#else
-#endif
-
                 if (!_supportsNativeWebSocket.HasValue)
                 {
                     try

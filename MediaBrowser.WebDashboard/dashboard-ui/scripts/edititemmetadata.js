@@ -96,18 +96,9 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
-                    $('#fldDelete', page).show();
-                }
-                else if (user.Configuration.EnableContentDeletion &&
-                    item.Type != "TvChannel" &&
-                    item.Type != "Genre" &&
-                    item.Type != "Studio" &&
-                    item.Type != "MusicGenre" &&
-                    item.Type != "GameGenre" &&
-                    item.Type != "Person" &&
-                    item.Type != "MusicArtist" &&
-                    item.Type != "CollectionFolder") {
+                var moreCommands = LibraryBrowser.getMoreCommands(item, user);
+
+                if (moreCommands.indexOf('delete') != -1) {
                     $('#fldDelete', page).show();
                 } else {
                     $('#fldDelete', page).hide();
@@ -793,23 +784,12 @@
         }).get();
     }
 
-    function performDelete(page) {
+    function onDeleted(id) {
+        
+        var elem = $('#' + id)[0];
 
-        $('#btnDelete', page).buttonEnabled(false);
-        $('.btnRefresh', page).buttonEnabled(false);
-        $('.btnSave', page).buttonEnabled(false);
-
-        $('#refreshLoading', page).show();
-
-        var parentId = currentItem.ParentId;
-
-        ApiClient.deleteItem(currentItem.Id).done(function () {
-
-            var elem = $('#' + parentId)[0];
-
-            $('.libraryTree').jstree("select_node", elem, true)
-                .jstree("delete_node", '#' + currentItem.Id);
-        });
+        $('.libraryTree').jstree("select_node", elem, true)
+            .jstree("delete_node", '#' + id);
     }
 
     function editItemMetadataPage() {
@@ -1223,18 +1203,6 @@
 
         var page = this;
 
-        $('.btnRefreshBasic', this).on('click', function () {
-
-            refreshWithOptions(page, {
-
-                Recursive: true,
-                ImageRefreshMode: 'FullRefresh',
-                MetadataRefreshMode: 'FullRefresh',
-                ReplaceAllImages: false,
-                ReplaceAllMetadata: true
-            });
-        });
-
         $('.btnRefreshAdvanced', this).on('click', function () {
 
             performAdvancedRefresh(page);
@@ -1250,42 +1218,10 @@
             $('.popupIdentifyForm', page).show();
             $('.identificationSearchResults', page).hide();
             $('.btnSearchAgain', page).hide();
-
         });
 
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
-        }
-
         $('#btnDelete', this).on('click', function () {
-
-            if (currentItem.LocationType != "Remote" && currentItem.LocationType != "Virtual") {
-                $('.deletePath', page).html((currentItem.Path || ''));
-
-                var val1 = getRandomInt(6, 12);
-                var val2 = getRandomInt(8, 16);
-
-                $('#challengeValueText', page).html(val1 + ' * ' + val2 + ':');
-
-                var val = val1 * val2;
-
-                $('#fldChallengeValue', page).val(val);
-
-                $('#popupConfirmDelete', page).popup('open');
-
-            } else {
-
-                var msg = "<p>" + Globalize.translate('ConfirmDeleteItem') + "</p>";
-
-                Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
-
-                    if (result) {
-
-                        performDelete(page);
-                    }
-
-                });
-            }
+            LibraryBrowser.deleteItem(currentItem.Id);
         });
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
@@ -1310,6 +1246,21 @@
         });
 
     }).on('pagebeforeshow', "#editItemMetadataPage", function () {
+
+        var page = this;
+
+        reload(page);
+
+        $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
+
+            if (currentItem && currentItem.Id == itemId) {
+                Dashboard.navigate('edititemmetadata.html');
+            }
+        });
+
+    }).on('pagehide', "#editItemMetadataPage", function () {
+
+        $(LibraryBrowser).off('itemdeleting.editor');
 
         var page = this;
 

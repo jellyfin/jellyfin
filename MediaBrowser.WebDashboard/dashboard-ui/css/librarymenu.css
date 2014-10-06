@@ -166,6 +166,18 @@
     z-index: 1000;
     background-image: linear-gradient(#1a1a1a,#1a1a1a);
     border-bottom: 1px solid #111;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+    padding: 0 0 0;
+    overflow-x: scroll;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+
+.libraryViewNav::-webkit-scrollbar {
+    height: 0 !important;
+    display: none;
 }
 
 .viewMenuLink {
@@ -288,15 +300,6 @@
 
 .ui-panel.ui-body-b {
     background-color: #222;
-}
-
-.libraryViewNavInner {
-    text-align: center;
-    font-size: 14px;
-    white-space: nowrap;
-    padding: 0 0 0;
-    overflow-x: auto;
-    height: 61px;
 }
 
 .libraryViewNav .ui-btn-active {

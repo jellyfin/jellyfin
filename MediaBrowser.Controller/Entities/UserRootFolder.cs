@@ -16,8 +16,14 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        public override async Task<QueryResult<BaseItem>> GetUserItems(UserItemsQuery query)
+        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
+            if (query.Recursive)
+            {
+                var items = query.User.RootFolder.GetRecursiveChildren(query.User);
+                return SortAndFilter(items, query);
+            }
+
             var result = await UserViewManager.GetUserViews(new UserViewQuery
             {
                 UserId = query.User.Id.ToString("N")

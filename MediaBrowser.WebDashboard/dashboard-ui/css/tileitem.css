@@ -78,10 +78,6 @@
     width: 60%;
 }
 
-.smallPosterTileItem .tileName {
-    font-weight: normal;
-}
-
 .smallBackdropTileItem .tileImage {
     height: 125px;
     width: 45%;
@@ -89,10 +85,6 @@
 
 .smallBackdropTileItem .tileContent {
     width: 50%;
-}
-
-.smallBackdropTileItem .tileName {
-    font-weight: normal;
 }
 
 .squareTileItem .tileImage {
@@ -103,18 +95,6 @@
 .squareTileItem .tileContent {
     width: 60%;
 }
-
-.tileName {
-    font-size: 14px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-    .tileName + .tileName {
-        margin-top: .75em;
-        font-weight: normal;
-    }
 
 @media all and (min-width: 540px) {
 
@@ -424,7 +404,6 @@
     white-space: nowrap;
     padding: 5px 4px 4px;
     text-shadow: none;
-    font-size: 13px;
     font-weight: 400;
 }
 

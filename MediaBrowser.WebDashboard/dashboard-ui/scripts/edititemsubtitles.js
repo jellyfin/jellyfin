@@ -217,7 +217,7 @@
 
             html += '<li><a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
 
-            html += '<h3 style="font-size:14px;">' + (result.Name) + '</h3>';
+            html += '<h3>' + (result.Name) + '</h3>';
             html += '<p>' + (result.Format) + '</p>';
 
             if (result.Comment) {

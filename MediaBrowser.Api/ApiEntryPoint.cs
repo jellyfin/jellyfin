@@ -316,14 +316,14 @@ namespace MediaBrowser.Api
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">deviceId</exception>
-        internal Task KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles)
+        internal void KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException("deviceId");
             }
 
-            return KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles);
+            KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles);
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace MediaBrowser.Api
         /// <param name="killJob">The kill job.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        internal async Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
+        internal void KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
         {
             var jobs = new List<TranscodingJob>();
 
@@ -348,18 +348,9 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            await TranscodingStartLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-
-            try
+            foreach (var job in jobs)
             {
-                foreach (var job in jobs)
-                {
-                    KillTranscodingJob(job, deleteFiles);
-                }
-            }
-            finally
-            {
-                TranscodingStartLock.Release();
+                KillTranscodingJob(job, deleteFiles);
             }
         }
 
@@ -501,7 +492,7 @@ namespace MediaBrowser.Api
                 }
                 catch (FileNotFoundException)
                 {
-                    
+
                 }
                 catch (IOException ex)
                 {
@@ -563,7 +554,7 @@ namespace MediaBrowser.Api
 
         public long? BytesDownloaded { get; set; }
         public long? BytesTranscoded { get; set; }
-        
+
         public long? TranscodingPositionTicks { get; set; }
         public long? DownloadPositionTicks { get; set; }
 

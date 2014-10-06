@@ -295,26 +295,14 @@ namespace MediaBrowser.Providers.TV
         {
             var url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey);
 
-            var imageLanguages = _localization.GetCultures()
-                .Select(i => i.TwoLetterISOLanguageName)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            imageLanguages.Add("null");
-
             if (!string.IsNullOrEmpty(language))
             {
-                // If preferred language isn't english, get those images too
-                if (imageLanguages.Contains(language, StringComparer.OrdinalIgnoreCase))
-                {
-                    imageLanguages.Add(language);
-                }
-
                 url += string.Format("&language={0}", language);
             }
 
+            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(_localization, language);
             // Get images in english and with no language
-            url += "&include_image_language=" + string.Join(",", imageLanguages.ToArray());
+            url += "&include_image_language=" + includeImageLanguageParam;
 
             cancellationToken.ThrowIfCancellationRequested();
 

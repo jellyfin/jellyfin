@@ -159,11 +159,14 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var people = itemsList.SelectMany(i => i.People.OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Type));
 
-            return personTypes.Length == 0 ?
+            if (personTypes.Length > 0)
+            {
+                people = people.Where(p =>
+                            personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) ||
+                            personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+            }
 
-                people :
-
-                people.Where(p => personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+            return people;
         }
     }
 }

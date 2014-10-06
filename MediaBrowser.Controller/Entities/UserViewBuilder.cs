@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
             _tvSeriesManager = tvSeriesManager;
         }
 
-        public async Task<QueryResult<BaseItem>> GetUserItems(Folder parent, string viewType, UserItemsQuery query)
+        public async Task<QueryResult<BaseItem>> GetUserItems(Folder parent, string viewType, InternalItemsQuery query)
         {
             var user = query.User;
 
@@ -214,7 +214,7 @@ namespace MediaBrowser.Controller.Entities
             return 50;
         }
 
-        private async Task<QueryResult<BaseItem>> GetMusicFolders(Folder parent, User user, UserItemsQuery query)
+        private async Task<QueryResult<BaseItem>> GetMusicFolders(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -236,7 +236,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetMusicFavorites(Folder parent, User user, UserItemsQuery query)
+        private async Task<QueryResult<BaseItem>> GetMusicFavorites(Folder parent, User user, InternalItemsQuery query)
         {
             var list = new List<BaseItem>();
 
@@ -249,7 +249,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, query);
         }
 
-        private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
         {
             var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
@@ -273,7 +273,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(artists, query);
         }
 
-        private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
         {
             var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
@@ -297,7 +297,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(artists, query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
         {
             var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
@@ -321,17 +321,17 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(artists, query);
         }
 
-        private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is MusicAlbum), query);
         }
 
-        private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is Audio.Audio), query);
         }
 
-        private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -339,7 +339,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }).Where(i => i is MusicVideo || i is Audio.Audio), GetSpecialItemsLimit(), query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetMovieFolders(Folder parent, User user, UserItemsQuery query)
+        private async Task<QueryResult<BaseItem>> GetMovieFolders(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -360,52 +360,52 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).Where(i => i is Series), query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).Where(i => i is Episode), query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is Audio.Audio), query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteAlbums(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteAlbums(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Music }).Where(i => i is MusicAlbum), query);
         }
 
-        private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), query);
         }
 
-        private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is BoxSet), query);
         }
 
-        private QueryResult<BaseItem> GetMovieLatest(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMovieLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -413,7 +413,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetMovieResume(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMovieResume(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -422,7 +422,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetMovieGenres(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetMovieGenres(Folder parent, User user, InternalItemsQuery query)
         {
             var genres = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty })
                 .Where(i => i is Movie)
@@ -447,7 +447,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, UserItemsQuery query)
+        private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -469,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetGameView(User user, Folder parent, UserItemsQuery query)
+        private async Task<QueryResult<BaseItem>> GetGameView(User user, Folder parent, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -489,7 +489,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, query);
         }
 
-        private QueryResult<BaseItem> GetLatestGames(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetLatestGames(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -497,7 +497,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Games }).OfType<Game>(), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetRecentlyPlayedGames(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetRecentlyPlayedGames(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsPlayed = true;
             query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
@@ -506,14 +506,14 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Games }).OfType<Game>(), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteGames(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteGames(Folder parent, User user, InternalItemsQuery query)
         {
             query.IsFavorite = true;
 
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Games }).OfType<Game>(), query);
         }
 
-        private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -521,7 +521,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).OfType<Episode>(), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetTvNextUp(Folder parent, UserItemsQuery query)
+        private QueryResult<BaseItem> GetTvNextUp(Folder parent, InternalItemsQuery query)
         {
             var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.TvShows, string.Empty });
 
@@ -536,7 +536,7 @@ namespace MediaBrowser.Controller.Entities
             return result;
         }
 
-        private QueryResult<BaseItem> GetTvResume(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetTvResume(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
             query.SortOrder = SortOrder.Descending;
@@ -545,12 +545,12 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).OfType<Episode>(), GetSpecialItemsLimit(), query);
         }
 
-        private QueryResult<BaseItem> GetTvSeries(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetTvSeries(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }).OfType<Series>(), query);
         }
 
-        private QueryResult<BaseItem> GetTvGenres(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetTvGenres(Folder parent, User user, InternalItemsQuery query)
         {
             var genres = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty })
                 .OfType<Series>()
@@ -575,12 +575,12 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, query);
         }
 
-        private QueryResult<BaseItem> GetGameSystems(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetGameSystems(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Games }).OfType<GameSystem>(), query);
         }
 
-        private QueryResult<BaseItem> GetGameGenres(Folder parent, User user, UserItemsQuery query)
+        private QueryResult<BaseItem> GetGameGenres(Folder parent, User user, InternalItemsQuery query)
         {
             var genres = GetRecursiveChildren(parent, user, new[] { CollectionType.Games })
                 .OfType<Game>()
@@ -616,7 +616,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private QueryResult<BaseItem> GetResult<T>(IEnumerable<T> items,
-            UserItemsQuery query)
+            InternalItemsQuery query)
             where T : BaseItem
         {
             return GetResult(items, null, query);
@@ -624,7 +624,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetResult<T>(IEnumerable<T> items,
             int? totalRecordLimit,
-            UserItemsQuery query)
+            InternalItemsQuery query)
             where T : BaseItem
         {
             return SortAndFilter(items, totalRecordLimit, query, _libraryManager, _userDataManager);
@@ -632,7 +632,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items,
             int? totalRecordLimit,
-            UserItemsQuery query,
+            InternalItemsQuery query,
             ILibraryManager libraryManager,
             IUserDataManager userDataManager)
         {
@@ -645,7 +645,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static QueryResult<BaseItem> Sort(IEnumerable<BaseItem> items,
             int? totalRecordLimit,
-            UserItemsQuery query,
+            InternalItemsQuery query,
             ILibraryManager libraryManager)
         {
             var user = query.User;
@@ -676,13 +676,23 @@ namespace MediaBrowser.Controller.Entities
             };
         }
 
-        private static bool Filter(BaseItem item, User user, UserItemsQuery query, IUserDataManager userDataManager)
+        private static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager)
         {
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
 
+            if (query.IncludeItemTypes.Length > 0 && !query.IncludeItemTypes.Contains(item.GetClientTypeName(), StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (query.ExcludeItemTypes.Length > 0 && query.ExcludeItemTypes.Contains(item.GetClientTypeName(), StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            
             if (query.IsFolder.HasValue && query.IsFolder.Value != item.IsFolder)
             {
                 return false;
@@ -694,6 +704,27 @@ namespace MediaBrowser.Controller.Entities
             }
 
             UserItemData userData = null;
+
+            if (query.IsLiked.HasValue)
+            {
+                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+
+                if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (query.IsFavoriteOrLiked.HasValue)
+            {
+                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
+
+                if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
+                {
+                    return false;
+                }
+            }
 
             if (query.IsFavorite.HasValue)
             {

@@ -1,32 +1,4 @@
 ﻿@font-face {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 300;
-    src: local('Open Sans Light'), local('OpenSans-Light'), url(fonts/OpenSans-Light.woff) format('woff');
-}
-
-@font-face {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Open Sans'), local('OpenSans'), url(fonts/OpenSans.woff) format('woff');
-}
-
-@font-face {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 700;
-    src: local('Open Sans Bold'), local('OpenSans-Bold'), url(fonts/OpenSans-Bold.woff) format('woff');
-}
-
-@font-face {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 800;
-    src: local('Open Sans Extrabold'), local('OpenSans-Extrabold'), url(fonts/OpenSans-ExtraBold.woff) format('woff');
-}
-
-@font-face {
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 100;
@@ -92,7 +64,6 @@ body {
 
 h1, h1 a {
     font-weight: 300 !important;
-    font-size: 30px;
 }
 
 .libraryPage h1, .libraryPage h1 a {
@@ -111,7 +82,6 @@ h1, h1 a {
 
 h2 {
     font-weight: 400;
-    font-size: 1.68em;
 }
 
 /*a, a.ui-link {

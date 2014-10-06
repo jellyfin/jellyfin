@@ -1645,6 +1645,17 @@ namespace MediaBrowser.Api.Playback
             {
                 state.OutputVideoCodec = GetVideoCodec(videoRequest);
                 state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
+
+                if (state.OutputVideoBitrate.HasValue)
+                {
+                    var resolution = ResolutionNormalizer.Normalize(state.OutputVideoBitrate.Value,
+                        state.OutputVideoCodec,
+                        videoRequest.MaxWidth,
+                        videoRequest.MaxHeight);
+
+                    videoRequest.MaxWidth = resolution.MaxWidth;
+                    videoRequest.MaxHeight = resolution.MaxHeight;
+                }
             }
 
             ApplyDeviceProfileSettings(state);

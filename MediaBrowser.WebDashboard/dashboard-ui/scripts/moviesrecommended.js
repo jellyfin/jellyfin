@@ -26,7 +26,7 @@
 
         html += '<h1 class="listHeader">' + title + '</h1>';
 
-        html += '<div>';
+        html += '<div class="mobileItemsContainer">';
         html += LibraryBrowser.getPosterViewHtml({
             items: recommendation.Items,
             lazy: true,

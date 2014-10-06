@@ -322,13 +322,64 @@
                 commands.push('playlist');
             }
 
+            if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
+                commands.push('delete');
+            }
+            else if (user.Configuration.EnableContentDeletion &&
+                item.Type != "TvChannel" &&
+                item.Type != "Genre" &&
+                item.Type != "Studio" &&
+                item.Type != "MusicGenre" &&
+                item.Type != "GameGenre" &&
+                item.Type != "Person" &&
+                item.Type != "MusicArtist" &&
+                item.Type != "CollectionFolder") {
+                commands.push('delete');
+            }
+
             if (user.Configuration.IsAdministrator) {
                 if (item.Type != "Recording" && item.Type != "Program") {
                     commands.push('edit');
                 }
             }
 
+            commands.push('refresh');
+
             return commands;
+        },
+
+        refreshItem: function (itemId) {
+
+            ApiClient.refreshItem(itemId, {
+
+                Recursive: true,
+                ImageRefreshMode: 'FullRefresh',
+                MetadataRefreshMode: 'FullRefresh',
+                ReplaceAllImages: false,
+                ReplaceAllMetadata: true
+
+            });
+
+
+            Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
+        },
+
+        deleteItem: function (itemId) {
+
+            // The timeout allows the flyout to close
+            setTimeout(function () {
+
+                var msg = "<p>" + Globalize.translate('ConfirmDeleteItem') + "</p>";
+
+                Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
+
+                    if (result) {
+                        ApiClient.deleteItem(itemId);
+
+                        $(LibraryBrowser).trigger('itemdeleting', [itemId]);
+                    }
+                });
+            }, 250);
         },
 
         showMoreCommands: function (positionTo, itemId, commands) {
@@ -348,17 +399,39 @@
                 html += '<li><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
+            if (commands.indexOf('refresh') != -1) {
+                html += '<li><a class="btnMoreMenuRefresh" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.refreshItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+            }
+
+            if (commands.indexOf('delete') != -1) {
+                html += '<li><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            }
+
             html += '</ul>';
 
             html += '</div>';
 
             $($.mobile.activePage).append(html);
 
-            $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+            var elem = $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
 
-            }).parents(".ui-popup-container");
+            });
+
+            $('.btnMoreMenuRefresh', elem).on('click', function () {
+
+                ApiClient.refreshItem(itemId, {
+
+                    Recursive: true,
+                    ImageRefreshMode: 'FullRefresh',
+                    MetadataRefreshMode: 'FullRefresh',
+                    ReplaceAllImages: false,
+                    ReplaceAllMetadata: true
+                }).done(function () {
+
+                });
+            });
         },
 
         getHref: function (item, context, topParentId) {
@@ -968,7 +1041,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Banner",
-                        maxWidth: 500,
+                        maxWidth: 700,
                         tag: item.ImageTags.Banner
                     });
 
