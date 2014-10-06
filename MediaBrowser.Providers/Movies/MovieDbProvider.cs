@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Movies
                 CancellationToken = cancellationToken,
                 AcceptHeader = AcceptHeader,
                 CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromDays(3)
+                CacheLength = TimeSpan.FromDays(1)
 
             }).ConfigureAwait(false))
             {
@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.Movies
             if (fileInfo.Exists)
             {
                 // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 7)
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
                 {
                     return _cachedTask;
                 }
@@ -259,6 +259,31 @@ namespace MediaBrowser.Providers.Movies
             return Path.Combine(path, filename);
         }
 
+        public static string GetImageLanguagesParam(ILocalizationManager localization, string preferredLanguage)
+        {
+            var languages = new List<string>();
+
+            if (!string.IsNullOrEmpty(preferredLanguage))
+            {
+                languages.Add(preferredLanguage);
+            }
+            languages.Add("null");
+            if (!string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+            {
+                languages.Add("en");
+            }
+
+            var allLanguages = localization.GetCultures()
+                .Select(i => i.TwoLetterISOLanguageName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(i => !languages.Contains(i, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            languages.AddRange(allLanguages);
+
+            return string.Join(",", languages.ToArray());
+        }
+
         /// <summary>
         /// Fetches the main result.
         /// </summary>
@@ -271,25 +296,12 @@ namespace MediaBrowser.Providers.Movies
         {
             var url = string.Format(GetMovieInfo3, id, ApiKey);
 
-            var imageLanguages = _localization.GetCultures()
-                .Select(i => i.TwoLetterISOLanguageName)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            imageLanguages.Add("null");
-
             if (!string.IsNullOrEmpty(language))
             {
-                // If preferred language isn't english, get those images too
-                if (!imageLanguages.Contains(language, StringComparer.OrdinalIgnoreCase))
-                {
-                    imageLanguages.Add(language);
-                }
-
                 url += string.Format("&language={0}", language);
             }
 
-            var includeImageLanguageParam = string.Join(",", imageLanguages.ToArray());
+            var includeImageLanguageParam = GetImageLanguagesParam(_localization, language);
             // Get images in english and with no language
             url += "&include_image_language=" + includeImageLanguageParam;
 
@@ -342,35 +354,14 @@ namespace MediaBrowser.Providers.Movies
             return mainResult;
         }
 
-        private DateTime _lastRequestDate = DateTime.MinValue;
-
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal async Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
+        internal Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
         {
-            var cancellationToken = options.CancellationToken;
+            options.ResourcePool = MovieDbResourcePool;
 
-            await MovieDbResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                var diff = 100 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
-
-                if (diff > 0)
-                {
-                    _logger.Debug("Throttling MovieDb by {0} ms", diff);
-                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
-                }
-
-                return await _httpClient.Get(options).ConfigureAwait(false);
-            }
-            finally
-            {
-                _lastRequestDate = DateTime.Now;
-
-                MovieDbResourcePool.Release();
-            }
+            return _httpClient.Get(options);
         }
 
         public bool HasChanged(IHasMetadata item, DateTime date)
