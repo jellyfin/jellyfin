@@ -7,7 +7,7 @@
     "Password": "Passwort",
     "DeleteImage": "Bild l\u00f6schen",
     "DeleteImageConfirmation": "M\u00f6chtest du dieses Bild wirklich l\u00f6schen?",
-    "FileReadCancelled": "The file read has been canceled.",
+    "FileReadCancelled": "Dateiimport wurde abgebrochen.",
     "FileNotFound": "Datei nicht gefunden",
     "FileReadError": "Beim Lesen der Datei ist ein Fehler aufgetreten.",
     "DeleteUser": "Benutzer l\u00f6schen",

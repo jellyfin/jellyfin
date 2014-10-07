@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             {
                 if (!_config.Configuration.InsecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    SessionManager.ValidateSecurityToken(auth.Token);
+                    //SessionManager.ValidateSecurityToken(auth.Token);
                 }
             }
 
