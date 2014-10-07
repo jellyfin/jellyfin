@@ -836,6 +836,26 @@ namespace MediaBrowser.Model.ApiClient
         void ClearAuthenticationInfo();
 
         /// <summary>
+        /// Changes the server location.
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="keepExistingAuth">if set to <c>true</c> [keep existing authentication].</param>
+        void ChangeServerLocation(string address, bool keepExistingAuth = false);
+
+        /// <summary>
+        /// Starts the receiving session updates.
+        /// </summary>
+        /// <param name="intervalMs">The interval ms.</param>
+        /// <returns>Task.</returns>
+        Task StartReceivingSessionUpdates(int intervalMs);
+
+        /// <summary>
+        /// Stops the receiving session updates.
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task StopReceivingSessionUpdates();
+        
+        /// <summary>
         /// Gets the image URL.
         /// </summary>
         /// <param name="item">The item.</param>

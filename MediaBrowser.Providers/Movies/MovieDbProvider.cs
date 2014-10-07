@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.Movies
 
         internal static string GetMoviesDataPath(IApplicationPaths appPaths)
         {
-            var dataPath = Path.Combine(appPaths.CachePath, "tmdb-movies");
+            var dataPath = Path.Combine(appPaths.CachePath, "tmdb-movies2");
 
             return dataPath;
         }
