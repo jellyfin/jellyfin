@@ -161,7 +161,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         /// <returns>Task.</returns>
         private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
         {
-#if !__MonoCS__
             try
             {
                 var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
@@ -181,7 +180,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
                 ctx.Response.StatusCode = 500;
                 ctx.Response.Close();
             }
-#endif
         }
 
         private void HandleError(Exception ex, HttpListenerContext context)
