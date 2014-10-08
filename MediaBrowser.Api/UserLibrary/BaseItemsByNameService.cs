@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.UserLibrary
             var imageTypes = request.GetImageTypes().ToList();
             if (imageTypes.Count > 0)
             {
-                items = items.Where(item => imageTypes.Any(imageType => ItemsService.HasImage(item, imageType)));
+                items = items.Where(item => imageTypes.Any(item.HasImage));
             }
 
             var filters = request.GetFilters().ToList();

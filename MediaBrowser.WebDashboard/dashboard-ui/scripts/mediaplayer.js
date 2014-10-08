@@ -38,6 +38,7 @@
         };
 
         self.updateCanClientSeek = function (elem) {
+
             var duration = elem.duration;
 
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
@@ -72,7 +73,7 @@
             }, intervalTime);
         };
 
-        self.getCurrentMediaExtension = function(currentSrc) {
+        self.getCurrentMediaExtension = function (currentSrc) {
             currentSrc = currentSrc.split('?')[0];
 
             return currentSrc.substring(currentSrc.lastIndexOf('.'));
@@ -257,11 +258,17 @@
             }
 
             if (!videoStream) {
+                console.log('Cannot direct play without videoStream info');
                 return false;
             }
 
-            if (mediaSource.VideoType != "VideoFile") {
-                console.log('Transcoding because the content is not a video file');
+            if (mediaSource.Protocol.toLowerCase() == "rtmp") {
+                //console.log('Transcoding because the content is not a video file');
+                return false;
+            }
+
+            if (mediaSource.VideoType && mediaSource.VideoType != "VideoFile") {
+                //console.log('Transcoding because the content is not a video file');
                 return false;
             }
 
@@ -282,7 +289,12 @@
                 return false;
             }
 
-            if (!videoStream.Width || videoStream.Width > maxWidth) {
+            if (!videoStream.Width) {
+                console.log('Transcoding because resolution is unknown');
+                return false;
+            }
+
+            if (videoStream.Width > maxWidth) {
                 console.log('Transcoding because resolution is too high');
                 return false;
             }
@@ -292,7 +304,12 @@
                 return false;
             }
 
-            if (!mediaSource.Bitrate || mediaSource.Bitrate > bitrate) {
+            if (!mediaSource.Bitrate) {
+                console.log('Transcoding because bitrate is unknown');
+                return false;
+            }
+
+            if (mediaSource.Bitrate > bitrate) {
                 console.log('Transcoding because bitrate is too high');
                 return false;
             }
@@ -303,6 +320,7 @@
 
             // only support high, baseline variants and main variants
             if (isH264 && profile != 'high' && profile.indexOf('baseline') == -1 && profile.indexOf('main') == -1) {
+                console.log('Transcoding because of unsupported h264 profile');
                 return false;
             }
 
@@ -322,11 +340,11 @@
             })[0];
 
             var audioStream = mediaStreams.filter(function (stream) {
-                return stream.Index === audioStreamIndex;
+                return stream.Index === audioStreamIndex && stream.Type == 'Audio';
             })[0];
 
             var subtitleStream = mediaStreams.filter(function (stream) {
-                return stream.Index === subtitleStreamIndex;
+                return stream.Index === subtitleStreamIndex && stream.Type == 'Subtitle';
             })[0];
 
             var canPlayDirect = self.canPlayVideoDirect(mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
@@ -445,6 +463,11 @@
 
         };
 
+        self.getMaxPlayableWidth = function () {
+
+            return Math.max(screen.height, screen.width);
+        };
+
         self.playWithIntros = function (items, options, user) {
 
             var firstItem = items[0];
@@ -475,7 +498,7 @@
 
                 var bitrateSetting = AppSettings.maxStreamingBitrate();
 
-                var maxAllowedWidth = Math.max(screen.height, screen.width);
+                var maxAllowedWidth = self.getMaxPlayableWidth();
 
                 optimalVersion = versions.filter(function (v) {
 
@@ -1316,6 +1339,8 @@
             if (audioCodec.indexOf('aac') == -1 &&
                 audioCodec.indexOf('mp3') == -1 &&
                 audioCodec.indexOf('mpeg') == -1) {
+
+                console.log('Cannot direct play. Unsupported audio codec');
 
                 return false;
             }

@@ -218,6 +218,7 @@ namespace MediaBrowser.ServerApplication
         private IAuthenticationRepository AuthenticationRepository { get; set; }
         private ISyncRepository SyncRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
+        private ICollectionManager CollectionManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
@@ -494,8 +495,8 @@ namespace MediaBrowser.ServerApplication
             var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
-            var collectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
-            RegisterSingleInstance<ICollectionManager>(collectionManager);
+            CollectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
+            RegisterSingleInstance(CollectionManager);
 
             var playlistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
             RegisterSingleInstance<IPlaylistManager>(playlistManager);
@@ -700,6 +701,7 @@ namespace MediaBrowser.ServerApplication
             BaseItem.LiveTvManager = LiveTvManager;
             Folder.UserViewManager = UserViewManager;
             UserView.TVSeriesManager = TVSeriesManager;
+            BaseItem.CollectionManager = CollectionManager;
         }
 
         /// <summary>

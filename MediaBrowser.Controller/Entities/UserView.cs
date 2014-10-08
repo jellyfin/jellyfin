@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
-            return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager)
+            return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, CollectionManager)
                 .GetUserItems(this, ViewType, query);
         }
 

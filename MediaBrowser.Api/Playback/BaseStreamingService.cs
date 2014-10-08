@@ -1718,7 +1718,7 @@ namespace MediaBrowser.Api.Playback
             string mediaSourceId,
             CancellationToken cancellationToken)
         {
-            var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(id, cancellationToken)
+            var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(id, true, cancellationToken)
                 .ConfigureAwait(false);
 
             var list = channelMediaSources.ToList();

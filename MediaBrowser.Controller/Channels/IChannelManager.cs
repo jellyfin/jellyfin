@@ -110,19 +110,13 @@ namespace MediaBrowser.Controller.Channels
         Task<QueryResult<BaseItem>> GetChannelItemsInternal(ChannelItemQuery query, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the cached channel item media sources.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>IEnumerable{MediaSourceInfo}.</returns>
-        IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(string id);
-
-        /// <summary>
         /// Gets the channel item media sources.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="includeDynamicSources">if set to <c>true</c> [include dynamic sources].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, bool includeDynamicSources, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel folder.

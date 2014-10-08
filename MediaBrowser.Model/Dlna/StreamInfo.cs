@@ -91,6 +91,13 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException(baseUrl);
             }
 
+            if (IsDirectStream && MediaSource != null && MediaSource.Protocol == MediaProtocol.Http)
+            {
+                if (MediaSource.RequiredHttpHeaders.Count == 0)
+                {
+                }
+            }
+
             string dlnaCommand = BuildDlnaParam(this);
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;

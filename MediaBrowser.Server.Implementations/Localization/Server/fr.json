@@ -1020,7 +1020,7 @@
     "LabelChannelDownloadPathHelp": "Sp\u00e9cifiez un chemin de t\u00e9l\u00e9chargements personnalis\u00e9 si besoin. Laissez vide pour t\u00e9l\u00e9charger dans un r\u00e9pertoire interne du programme.",
     "LabelChannelDownloadAge": "Supprimer le contenu apr\u00e8s : (jours)",
     "LabelChannelDownloadAgeHelp": "Le contenu t\u00e9l\u00e9charg\u00e9 plus vieux sera supprim\u00e9. Par contre, il sera toujours disponible par flux Internet (en ligne).",
-    "ChannelSettingsFormHelp": "Installer des cha\u00eenes comme \"Trailers\" and \"Vimeo\" par le catalogue de Plugins.",
+    "ChannelSettingsFormHelp": "Installer des cha\u00eenes comme \"Trailers\" et \"Vimeo\" dans le catalogue des plugins.",
     "LabelSelectCollection": "S\u00e9lectionner la collection :",
     "ButtonOptions": "Options",
     "ViewTypeMovies": "Films",
