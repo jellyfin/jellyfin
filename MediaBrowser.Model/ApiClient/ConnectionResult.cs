@@ -12,17 +12,4 @@ namespace MediaBrowser.Model.ApiClient
             State = ConnectionState.Unavailable;
         }
     }
-
-    public enum ConnectionState
-    {
-        Unavailable = 1,
-        ServerSignIn = 2,
-        SignedIn = 3
-    }
-
-    public enum ConnectionMode
-    {
-        Local = 1,
-        Remote = 2
-    }
 }

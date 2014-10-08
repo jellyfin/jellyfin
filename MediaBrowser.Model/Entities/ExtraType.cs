@@ -13,12 +13,4 @@ namespace MediaBrowser.Model.Entities
         ThemeSong = 8,
         ThemeVideo = 9
     }
-
-    public enum TrailerType
-    {
-        ComingSoonToTheaters = 1,
-        ComingSoonToDvd = 2,
-        ComingSoonToStreaming = 3,
-        Archive = 4
-    }
 }

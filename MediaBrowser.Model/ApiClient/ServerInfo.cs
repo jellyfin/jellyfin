@@ -19,15 +19,4 @@ namespace MediaBrowser.Model.ApiClient
             LocalAddress = "http://localhost:8096";
         }
     }
-
-    public class WakeOnLanInfo
-    {
-        public string MacAddress { get; set; }
-        public int Port { get; set; }
-
-        public WakeOnLanInfo()
-        {
-            Port = 9;
-        }
-    }
 }

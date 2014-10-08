@@ -45,10 +45,4 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
     }
-
-    public enum EncodingContext
-    {
-        Streaming = 0,
-        Static = 1
-    }
 }

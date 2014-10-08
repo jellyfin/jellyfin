@@ -109,6 +109,10 @@ namespace MediaBrowser.Server.Implementations.Intros
             {
                 trailerTypes.Add(TrailerType.ComingSoonToStreaming);
             }
+            if (config.EnableIntrosFromSimilarMovies)
+            {
+                trailerTypes.Add(TrailerType.Archive);
+            }
 
             if (trailerTypes.Count > 0 && IsSupporter)
             {

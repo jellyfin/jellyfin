@@ -514,33 +514,4 @@ namespace MediaBrowser.Model.Dlna
             }
         }
     }
-
-    public enum SubtitleDeliveryMethod
-    {
-        /// <summary>
-        /// The encode
-        /// </summary>
-        Encode = 0,
-        /// <summary>
-        /// The embed
-        /// </summary>
-        Embed = 1,
-        /// <summary>
-        /// The external
-        /// </summary>
-        External = 2,
-        /// <summary>
-        /// The HLS
-        /// </summary>
-        Hls = 3
-    }
-
-    public class SubtitleStreamInfo
-    {
-        public string Url { get; set; }
-        public string Language { get; set; }
-        public string Name { get; set; }
-        public bool IsForced { get; set; }
-        public string Format { get; set; }
-    }
 }
