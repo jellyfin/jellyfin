@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
 
         private readonly Action<string> _endpointListener;
-        
+
         public HttpListenerServer(ILogger logger, Action<string> endpointListener)
         {
             _logger = logger;
@@ -84,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         private void ListenerCallback(IAsyncResult asyncResult)
         {
             _listenForNextRequest.Set();
-            
+
             var listener = asyncResult.AsyncState as HttpListener;
             HttpListenerContext context;
 
@@ -161,6 +161,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
         /// <returns>Task.</returns>
         private async Task ProcessWebSocketRequest(HttpListenerContext ctx)
         {
+#if !__MonoCS__
             try
             {
                 var webSocketContext = await ctx.AcceptWebSocketAsync(null).ConfigureAwait(false);
@@ -180,13 +181,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.NetListener
                 ctx.Response.StatusCode = 500;
                 ctx.Response.Close();
             }
+#endif
         }
 
         private void HandleError(Exception ex, HttpListenerContext context)
         {
             var operationName = context.Request.GetOperationName();
             var httpReq = GetRequest(context, operationName);
-            
+
             if (ErrorHandler != null)
             {
                 ErrorHandler(ex, httpReq);
