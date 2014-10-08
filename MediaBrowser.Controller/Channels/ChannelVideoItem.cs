@@ -7,6 +7,7 @@ using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -90,7 +91,15 @@ namespace MediaBrowser.Controller.Channels
         {
             var list = base.GetMediaSources(enablePathSubstitution).ToList();
 
-            list.InsertRange(0, ChannelManager.GetCachedChannelItemMediaSources(Id.ToString("N")));
+            var sources = ChannelManager.GetChannelItemMediaSources(Id.ToString("N"), false, CancellationToken.None)
+                    .Result.ToList();
+
+            if (sources.Count > 0)
+            {
+                return sources;
+            }
+
+            list.InsertRange(0, sources);
 
             return list;
         }

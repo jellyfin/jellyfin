@@ -273,13 +273,17 @@ namespace MediaBrowser.Providers.Movies
                 languages.Add("en");
             }
 
+            var firstLetter = string.IsNullOrWhiteSpace(preferredLanguage)
+                ? string.Empty
+                : preferredLanguage.Substring(0, 1);
+
             var allLanguages = localization.GetCultures()
                 .Select(i => i.TwoLetterISOLanguageName)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Where(i => !languages.Contains(i, StringComparer.OrdinalIgnoreCase))
+                .Where(i => !languages.Contains(i, StringComparer.OrdinalIgnoreCase) && i.StartsWith(firstLetter, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            languages.AddRange(allLanguages);
+            //languages.AddRange(allLanguages);
 
             return string.Join(",", languages.ToArray());
         }

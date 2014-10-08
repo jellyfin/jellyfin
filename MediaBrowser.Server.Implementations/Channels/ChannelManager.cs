@@ -244,7 +244,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, bool includeDynamicSources, CancellationToken cancellationToken)
         {
             var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
 
@@ -255,7 +255,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             IEnumerable<ChannelMediaInfo> results;
 
-            if (requiresCallback != null)
+            if (requiresCallback != null && includeDynamicSources)
             {
                 results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken)
                             .ConfigureAwait(false);
@@ -373,6 +373,18 @@ namespace MediaBrowser.Server.Implementations.Channels
                 Name = id,
                 Id = id
             };
+
+            var bitrate = (info.AudioBitrate ?? 0) + (info.VideoBitrate ?? 0);
+
+            if (bitrate > 0)
+            {
+                source.Bitrate = bitrate;
+            }
+
+            if (item is ChannelVideoItem && info.Protocol != MediaProtocol.Rtmp)
+            {
+                
+            }
 
             return source;
         }
@@ -1447,7 +1459,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             IProgress<double> progress, CancellationToken cancellationToken)
         {
             var itemId = item.Id.ToString("N");
-            var sources = await GetChannelItemMediaSources(itemId, cancellationToken)
+            var sources = await GetChannelItemMediaSources(itemId, true, cancellationToken)
                 .ConfigureAwait(false);
 
             var list = sources.Where(i => i.Protocol == MediaProtocol.Http).ToList();

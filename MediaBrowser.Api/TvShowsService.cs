@@ -344,7 +344,7 @@ namespace MediaBrowser.Api
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                seasons = ItemsService.FilterForAdjacency(seasons, request.AdjacentTo)
+                seasons = UserViewBuilder.FilterForAdjacency(seasons, request.AdjacentTo)
                     .Cast<Season>();
             }
 
@@ -434,7 +434,7 @@ namespace MediaBrowser.Api
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                episodes = ItemsService.FilterForAdjacency(episodes, request.AdjacentTo)
+                episodes = UserViewBuilder.FilterForAdjacency(episodes, request.AdjacentTo)
                     .Cast<Episode>();
             }
 

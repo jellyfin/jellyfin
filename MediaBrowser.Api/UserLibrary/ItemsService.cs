@@ -243,6 +243,43 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? CollapseBoxSetItems { get; set; }
+
+        public string[] GetAllGenres()
+        {
+            return (AllGenres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetGenres()
+        {
+            return (Genres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetStudios()
+        {
+            return (Studios ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetPersonTypes()
+        {
+            return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public int[] GetYears()
+        {
+            return (Years ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+        }
+
+        public IEnumerable<VideoType> GetVideoTypes()
+        {
+            var val = VideoTypes;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new VideoType[] { };
+            }
+
+            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true));
+        }
     }
 
     /// <summary>
@@ -331,21 +368,21 @@ namespace MediaBrowser.Api.UserLibrary
                 items = ApplyFilter(items, filter, user, _userDataRepository);
             }
 
-            items = FilterVirtualEpisodes(request, items, user);
+            items = UserViewBuilder.FilterVirtualEpisodes(items,
+                request.IsMissing,
+                request.IsVirtualUnaired,
+                request.IsUnaired);
 
-            if (CollapseBoxSetItems(request, parentItem, user))
-            {
-                items = _collectionManager.CollapseItemsWithinBoxSets(items, user);
-            }
+            var internalQuery = GetItemsQuery(request, user);
 
-            items = ApplyPostCollectionCollapseFilters(request, items, user);
+            items = UserViewBuilder.CollapseBoxSetItemsIfNeeded(items, internalQuery, parentItem, user);
 
             items = _libraryManager.Sort(items, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending);
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                items = FilterForAdjacency(items, request.AdjacentTo);
+                items = UserViewBuilder.FilterForAdjacency(items, request.AdjacentTo);
             }
 
             var itemsArray = items.ToList();
@@ -361,33 +398,6 @@ namespace MediaBrowser.Api.UserLibrary
                 TotalRecordCount = itemsArray.Count,
                 Items = returnItems
             };
-        }
-
-        private bool CollapseBoxSetItems(GetItems request, BaseItem parentItem, User user)
-        {
-            // Could end up stuck in a loop like this
-            if (parentItem is BoxSet)
-            {
-                return false;
-            }
-
-            var param = request.CollapseBoxSetItems;
-
-            if (!param.HasValue)
-            {
-                if (user != null && !user.Configuration.GroupMoviesIntoBoxSets)
-                {
-                    return false;
-                }
-
-                if (!string.IsNullOrWhiteSpace(request.IncludeItemTypes) &&
-                    request.IncludeItemTypes.Split(',').Contains("Movie", StringComparer.OrdinalIgnoreCase))
-                {
-                    param = true;
-                }
-            }
-
-            return param.HasValue && param.Value && AllowBoxSetCollapsing(request);
         }
 
         /// <summary>
@@ -486,8 +496,47 @@ namespace MediaBrowser.Api.UserLibrary
                 Filter = (i, u) => ApplyAdditionalFilters(request, i, u, true),
 
                 Limit = request.Limit,
-                StartIndex = request.StartIndex
+                StartIndex = request.StartIndex,
+                IsMissing = request.IsMissing,
+                IsVirtualUnaired = request.IsVirtualUnaired,
+                IsUnaired = request.IsUnaired,
+                CollapseBoxSetItems = request.CollapseBoxSetItems,
+                NameLessThan = request.NameLessThan,
+                NameStartsWith = request.NameStartsWith,
+                NameStartsWithOrGreater = request.NameStartsWithOrGreater,
+                HasImdbId = request.HasImdbId,
+                IsYearMismatched = request.IsYearMismatched,
+                IsUnidentified = request.IsUnidentified,
+                IsPlaceHolder = request.IsPlaceHolder,
+                IsLocked = request.IsLocked,
+                IsInBoxSet = request.IsInBoxSet,
+                IsHD = request.IsHD,
+                Is3D = request.Is3D,
+                HasTvdbId = request.HasTvdbId,
+                HasTmdbId = request.HasTmdbId,
+                HasOverview = request.HasOverview,
+                HasOfficialRating = request.HasOfficialRating,
+                HasParentalRating = request.HasParentalRating,
+                HasSpecialFeature = request.HasSpecialFeature,
+                HasSubtitles = request.HasSubtitles,
+                HasThemeSong = request.HasThemeSong,
+                HasThemeVideo = request.HasThemeVideo,
+                HasTrailer = request.HasTrailer,
+                Genres = request.GetGenres(),
+                AllGenres = request.GetAllGenres(),
+                Studios = request.GetStudios(),
+                Person = request.Person,
+                PersonTypes = request.GetPersonTypes(),
+                Years = request.GetYears(),
+                ImageTypes = request.GetImageTypes().ToArray(),
+                VideoTypes = request.GetVideoTypes().ToArray(),
+                AdjacentTo = request.AdjacentTo
             };
+
+            if (!string.IsNullOrWhiteSpace(request.Ids))
+            {
+                query.CollapseBoxSetItems = false;
+            }
 
             foreach (var filter in request.GetFilters())
             {
@@ -610,121 +659,6 @@ namespace MediaBrowser.Api.UserLibrary
             return items;
         }
 
-        private IEnumerable<BaseItem> FilterVirtualEpisodes(GetItems request, IEnumerable<BaseItem> items, User user)
-        {
-            items = FilterVirtualSeasons(request, items, user);
-
-            if (request.IsMissing.HasValue)
-            {
-                var val = request.IsMissing.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsMissingEpisode == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (request.IsUnaired.HasValue)
-            {
-                var val = request.IsUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (request.IsVirtualUnaired.HasValue)
-            {
-                var val = request.IsVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            return items;
-        }
-
-        private IEnumerable<BaseItem> FilterVirtualSeasons(GetItems request, IEnumerable<BaseItem> items, User user)
-        {
-            if (request.IsMissing.HasValue && request.IsVirtualUnaired.HasValue)
-            {
-                var isMissing = request.IsMissing.Value;
-                var isVirtualUnaired = request.IsVirtualUnaired.Value;
-
-                if (!isMissing && !isVirtualUnaired)
-                {
-                    return items.Where(i =>
-                    {
-                        var e = i as Season;
-                        if (e != null)
-                        {
-                            return !e.IsMissingOrVirtualUnaired;
-                        }
-                        return true;
-                    });
-                }
-            }
-
-            if (request.IsMissing.HasValue)
-            {
-                var val = request.IsMissing.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsMissingSeason == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (request.IsUnaired.HasValue)
-            {
-                var val = request.IsUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (request.IsVirtualUnaired.HasValue)
-            {
-                var val = request.IsVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            return items;
-        }
-
         private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered)
         {
             if (!isPreFiltered)
@@ -759,6 +693,341 @@ namespace MediaBrowser.Api.UserLibrary
                 if (includeItemTypes.Length > 0 && !includeItemTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
+                }
+
+                if (request.IsInBoxSet.HasValue)
+                {
+                    var val = request.IsInBoxSet.Value;
+                    if (i.Parents.OfType<BoxSet>().Any() != val)
+                    {
+                        return false;
+                    }
+                }
+
+                // Filter by Video3DFormat
+                if (request.Is3D.HasValue)
+                {
+                    var val = request.Is3D.Value;
+                    var video = i as Video;
+
+                    if (video == null || val != video.Video3DFormat.HasValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsHD.HasValue)
+                {
+                    var val = request.IsHD.Value;
+                    var video = i as Video;
+
+                    if (video == null || val != video.IsHD)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsUnidentified.HasValue)
+                {
+                    var val = request.IsUnidentified.Value;
+                    if (i.IsUnidentified != val)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsLocked.HasValue)
+                {
+                    var val = request.IsLocked.Value;
+                    if (i.IsLocked != val)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasOverview.HasValue)
+                {
+                    var filterValue = request.HasOverview.Value;
+
+                    var hasValue = !string.IsNullOrEmpty(i.Overview);
+
+                    if (hasValue != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasImdbId.HasValue)
+                {
+                    var filterValue = request.HasImdbId.Value;
+
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Imdb));
+
+                    if (hasValue != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasTmdbId.HasValue)
+                {
+                    var filterValue = request.HasTmdbId.Value;
+
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb));
+
+                    if (hasValue != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasTvdbId.HasValue)
+                {
+                    var filterValue = request.HasTvdbId.Value;
+
+                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb));
+
+                    if (hasValue != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsYearMismatched.HasValue)
+                {
+                    var filterValue = request.IsYearMismatched.Value;
+
+                    if (UserViewBuilder.IsYearMismatched(i) != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasOfficialRating.HasValue)
+                {
+                    var filterValue = request.HasOfficialRating.Value;
+
+                    var hasValue = !string.IsNullOrEmpty(i.OfficialRating);
+
+                    if (hasValue != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsPlaceHolder.HasValue)
+                {
+                    var filterValue = request.IsPlaceHolder.Value;
+
+                    var isPlaceHolder = false;
+
+                    var hasPlaceHolder = i as ISupportsPlaceHolders;
+
+                    if (hasPlaceHolder != null)
+                    {
+                        isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
+                    }
+
+                    if (isPlaceHolder != filterValue)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasSpecialFeature.HasValue)
+                {
+                    var filterValue = request.HasSpecialFeature.Value;
+
+                    var movie = i as IHasSpecialFeatures;
+
+                    if (movie != null)
+                    {
+                        var ok = filterValue
+                            ? movie.SpecialFeatureIds.Count > 0
+                            : movie.SpecialFeatureIds.Count == 0;
+
+                        if (!ok)
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasSubtitles.HasValue)
+                {
+                    var val = request.HasSubtitles.Value;
+
+                    var video = i as Video;
+
+                    if (video == null || val != video.HasSubtitles)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasParentalRating.HasValue)
+                {
+                    var val = request.HasParentalRating.Value;
+
+                    var rating = i.CustomRating;
+
+                    if (string.IsNullOrEmpty(rating))
+                    {
+                        rating = i.OfficialRating;
+                    }
+
+                    if (val)
+                    {
+                        if (string.IsNullOrEmpty(rating))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(rating))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                if (request.HasTrailer.HasValue)
+                {
+                    var val = request.HasTrailer.Value;
+                    var trailerCount = 0;
+
+                    var hasTrailers = i as IHasTrailers;
+                    if (hasTrailers != null)
+                    {
+                        trailerCount = hasTrailers.LocalTrailerIds.Count;
+                    }
+
+                    var ok = val ? trailerCount > 0 : trailerCount == 0;
+
+                    if (!ok)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasThemeSong.HasValue)
+                {
+                    var filterValue = request.HasThemeSong.Value;
+
+                    var themeCount = 0;
+                    var iHasThemeMedia = i as IHasThemeMedia;
+
+                    if (iHasThemeMedia != null)
+                    {
+                        themeCount = iHasThemeMedia.ThemeSongIds.Count;
+                    }
+                    var ok = filterValue ? themeCount > 0 : themeCount == 0;
+
+                    if (!ok)
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.HasThemeVideo.HasValue)
+                {
+                    var filterValue = request.HasThemeVideo.Value;
+
+                    var themeCount = 0;
+                    var iHasThemeMedia = i as IHasThemeMedia;
+
+                    if (iHasThemeMedia != null)
+                    {
+                        themeCount = iHasThemeMedia.ThemeVideoIds.Count;
+                    }
+                    var ok = filterValue ? themeCount > 0 : themeCount == 0;
+
+                    if (!ok)
+                    {
+                        return false;
+                    }
+                }
+
+                // Apply genre filter
+                var genres = request.GetGenres();
+                if (genres.Length > 0 && !(genres.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
+                }
+
+                // Apply genre filter
+                var allGenres = request.GetAllGenres();
+                if (allGenres.Length > 0 && !allGenres.All(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+
+                // Filter by VideoType
+                if (!string.IsNullOrEmpty(request.VideoTypes))
+                {
+                    var types = request.VideoTypes.Split(',');
+
+                    var video = i as Video;
+                    if (video == null || !types.Contains(video.VideoType.ToString(), StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                var imageTypes = request.GetImageTypes().ToList();
+                if (imageTypes.Count > 0)
+                {
+                    if (!(imageTypes.Any(i.HasImage)))
+                    {
+                        return false;
+                    }
+                }
+
+                // Apply studio filter
+                var studios = request.GetStudios();
+                if (studios.Length > 0 && !studios.Any(v => i.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+
+                // Apply year filter
+                var years = request.GetYears();
+                if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
+                {
+                    return false;
+                }
+
+                // Apply person filter
+                if (!string.IsNullOrEmpty(request.Person))
+                {
+                    var personTypes = request.GetPersonTypes();
+
+                    if (personTypes.Length == 0)
+                    {
+                        if (!(i.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase))))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        var types = personTypes;
+
+                        var ok = new[] { i }.Any(item =>
+                                item.People != null &&
+                                item.People.Any(p =>
+                                    p.Name.Equals(request.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
+
+                        if (!ok)
+                        {
+                            return false;
+                        }
+                    }
                 }
             }
 
@@ -960,164 +1229,6 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            // Filter by Video3DFormat
-            if (request.Is3D.HasValue)
-            {
-                var val = request.Is3D.Value;
-                var video = i as Video;
-
-                if (video == null || val != video.Video3DFormat.HasValue)
-                {
-                    return false;
-                }
-            }
-
-            // Filter by VideoType
-            if (!string.IsNullOrEmpty(request.VideoTypes))
-            {
-                var types = request.VideoTypes.Split(',');
-
-                var video = i as Video;
-                if (video == null || !types.Contains(video.VideoType.ToString(), StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            var imageTypes = request.GetImageTypes().ToList();
-            if (imageTypes.Count > 0)
-            {
-                if (!(imageTypes.Any(imageType => HasImage(i, imageType))))
-                {
-                    return false;
-                }
-            }
-
-            // Apply genre filter
-            if (!string.IsNullOrEmpty(request.Genres))
-            {
-                var vals = request.Genres.Split('|');
-                if (!(vals.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
-                {
-                    return false;
-                }
-            }
-
-            // Apply genre filter
-            if (!string.IsNullOrEmpty(request.AllGenres))
-            {
-                var vals = request.AllGenres.Split('|');
-                if (!vals.All(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
-            }
-
-            // Apply studio filter
-            if (!string.IsNullOrEmpty(request.Studios))
-            {
-                var vals = request.Studios.Split('|');
-                if (!vals.Any(v => i.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
-            }
-
-            // Apply year filter
-            if (!string.IsNullOrEmpty(request.Years))
-            {
-                var vals = request.Years.Split(',').Select(int.Parse).ToList();
-                if (!(i.ProductionYear.HasValue && vals.Contains(i.ProductionYear.Value)))
-                {
-                    return false;
-                }
-            }
-
-            // Apply person filter
-            if (!string.IsNullOrEmpty(request.Person))
-            {
-                var personTypes = request.PersonTypes;
-
-                if (string.IsNullOrEmpty(personTypes))
-                {
-                    if (!(i.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    var types = personTypes.Split(',');
-
-                    var ok = new[] { i }.Any(item =>
-                            item.People != null &&
-                            item.People.Any(p =>
-                                p.Name.Equals(request.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            if (request.HasTrailer.HasValue)
-            {
-                var val = request.HasTrailer.Value;
-                var trailerCount = 0;
-
-                var hasTrailers = i as IHasTrailers;
-                if (hasTrailers != null)
-                {
-                    trailerCount = hasTrailers.LocalTrailerIds.Count;
-                }
-
-                var ok = val ? trailerCount > 0 : trailerCount == 0;
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasThemeSong.HasValue)
-            {
-                var filterValue = request.HasThemeSong.Value;
-
-                var themeCount = 0;
-                var iHasThemeMedia = i as IHasThemeMedia;
-
-                if (iHasThemeMedia != null)
-                {
-                    themeCount = iHasThemeMedia.ThemeSongIds.Count;
-                }
-                var ok = filterValue ? themeCount > 0 : themeCount == 0;
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasThemeVideo.HasValue)
-            {
-                var filterValue = request.HasThemeVideo.Value;
-
-                var themeCount = 0;
-                var iHasThemeMedia = i as IHasThemeMedia;
-
-                if (iHasThemeMedia != null)
-                {
-                    themeCount = iHasThemeMedia.ThemeVideoIds.Count;
-                }
-                var ok = filterValue ? themeCount > 0 : themeCount == 0;
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
             if (request.MinPlayers.HasValue)
             {
                 var filterValue = request.MinPlayers.Value;
@@ -1159,106 +1270,6 @@ namespace MediaBrowser.Api.UserLibrary
                     }
                 }
                 else
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasSpecialFeature.HasValue)
-            {
-                var filterValue = request.HasSpecialFeature.Value;
-
-                var movie = i as IHasSpecialFeatures;
-
-                if (movie != null)
-                {
-                    var ok = filterValue
-                        ? movie.SpecialFeatureIds.Count > 0
-                        : movie.SpecialFeatureIds.Count == 0;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasSubtitles.HasValue)
-            {
-                var val = request.HasSubtitles.Value;
-
-                var video = i as Video;
-
-                if (video == null || val != video.HasSubtitles)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasParentalRating.HasValue)
-            {
-                var val = request.HasParentalRating.Value;
-
-                var rating = i.CustomRating;
-
-                if (string.IsNullOrEmpty(rating))
-                {
-                    rating = i.OfficialRating;
-                }
-
-                if (val)
-                {
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            if (request.IsHD.HasValue)
-            {
-                var val = request.IsHD.Value;
-                var video = i as Video;
-
-                if (video == null || val != video.IsHD)
-                {
-                    return false;
-                }
-            }
-
-            if (request.IsInBoxSet.HasValue)
-            {
-                var val = request.IsHD.Value;
-                if (i.Parents.OfType<BoxSet>().Any() != val)
-                {
-                    return false;
-                }
-            }
-
-            if (request.IsUnidentified.HasValue)
-            {
-                var val = request.IsUnidentified.Value;
-                if (i.IsUnidentified != val)
-                {
-                    return false;
-                }
-            }
-
-            if (request.IsLocked.HasValue)
-            {
-                var val = request.IsLocked.Value;
-                if (i.IsLocked != val)
                 {
                     return false;
                 }
@@ -1324,319 +1335,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            if (request.HasOverview.HasValue)
-            {
-                var filterValue = request.HasOverview.Value;
-
-                var hasValue = !string.IsNullOrEmpty(i.Overview);
-
-                if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasImdbId.HasValue)
-            {
-                var filterValue = request.HasImdbId.Value;
-
-                var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Imdb));
-
-                if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasTmdbId.HasValue)
-            {
-                var filterValue = request.HasTmdbId.Value;
-
-                var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb));
-
-                if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasTvdbId.HasValue)
-            {
-                var filterValue = request.HasTvdbId.Value;
-
-                var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb));
-
-                if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.IsYearMismatched.HasValue)
-            {
-                var filterValue = request.IsYearMismatched.Value;
-
-                if (IsYearMismatched(i) != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.HasOfficialRating.HasValue)
-            {
-                var filterValue = request.HasOfficialRating.Value;
-
-                var hasValue = !string.IsNullOrEmpty(i.OfficialRating);
-
-                if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (request.IsPlaceHolder.HasValue)
-            {
-                var filterValue = request.IsPlaceHolder.Value;
-
-                var isPlaceHolder = false;
-
-                var hasPlaceHolder = i as ISupportsPlaceHolders;
-
-                if (hasPlaceHolder != null)
-                {
-                    isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
-                }
-
-                if (isPlaceHolder != filterValue)
-                {
-                    return false;
-                }
-            }
-
             return true;
-        }
-
-        private IEnumerable<BaseItem> ApplyPostCollectionCollapseFilters(GetItems request, IEnumerable<BaseItem> items, User user)
-        {
-            if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
-            }
-            if (!string.IsNullOrEmpty(request.NameStartsWith))
-            {
-                items = items.Where(i => string.Compare(request.NameStartsWith, i.SortName.Substring(0, 1), StringComparison.CurrentCultureIgnoreCase) == 0);
-            }
-
-            if (!string.IsNullOrEmpty(request.NameLessThan))
-            {
-                items = items.Where(i => string.Compare(request.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
-            }
-
-            return items;
-        }
-
-        private bool IsYearMismatched(BaseItem item)
-        {
-            if (item.ProductionYear.HasValue)
-            {
-                var path = item.Path;
-
-                if (!string.IsNullOrEmpty(path))
-                {
-                    int? yearInName;
-                    string name;
-                    NameParser.ParseName(Path.GetFileName(path), out name, out yearInName);
-
-                    // Go up a level if we didn't get a year
-                    if (!yearInName.HasValue)
-                    {
-                        NameParser.ParseName(Path.GetFileName(Path.GetDirectoryName(path)), out name, out yearInName);
-                    }
-
-                    if (yearInName.HasValue)
-                    {
-                        return yearInName.Value != item.ProductionYear.Value;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private bool AllowBoxSetCollapsing(GetItems request)
-        {
-            if (!string.IsNullOrWhiteSpace(request.Filters))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.AllGenres))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Genres))
-            {
-                return false;
-            }
-
-            if (request.HasImdbId.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasOfficialRating.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasOverview.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasParentalRating.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasSpecialFeature.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasSubtitles.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasThemeSong.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasThemeVideo.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasTmdbId.HasValue)
-            {
-                return false;
-            }
-
-            if (request.HasTrailer.HasValue)
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Ids))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.ImageTypes))
-            {
-                return false;
-            }
-
-            if (request.Is3D.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsHD.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsInBoxSet.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsLocked.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsPlaceHolder.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsPlayed.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsUnidentified.HasValue)
-            {
-                return false;
-            }
-
-            if (request.IsYearMismatched.HasValue)
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Person))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Studios))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.VideoTypes))
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Years))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        internal static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)
-        {
-            var list = items.ToList();
-
-            var adjacentToIdGuid = new Guid(adjacentToId);
-            var adjacentToItem = list.FirstOrDefault(i => i.Id == adjacentToIdGuid);
-
-            var index = list.IndexOf(adjacentToItem);
-
-            var previousId = Guid.Empty;
-            var nextId = Guid.Empty;
-
-            if (index > 0)
-            {
-                previousId = list[index - 1].Id;
-            }
-
-            if (index < list.Count - 1)
-            {
-                nextId = list[index + 1].Id;
-            }
-
-            return list.Where(i => i.Id == previousId || i.Id == nextId || i.Id == adjacentToIdGuid);
-        }
-
-        /// <summary>
-        /// Determines whether the specified item has image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <returns><c>true</c> if the specified item has image; otherwise, <c>false</c>.</returns>
-        internal static bool HasImage(BaseItem item, ImageType imageType)
-        {
-            return item.HasImage(imageType);
         }
 
         /// <summary>

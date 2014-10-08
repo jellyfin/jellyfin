@@ -1,9 +1,11 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -68,6 +70,23 @@ namespace MediaBrowser.Controller.Channels
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
+        }
+
+        public override IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        {
+            var list = base.GetMediaSources(enablePathSubstitution).ToList();
+
+            var sources = ChannelManager.GetChannelItemMediaSources(Id.ToString("N"), false, CancellationToken.None)
+                    .Result.ToList();
+
+            if (sources.Count > 0)
+            {
+                return sources;
+            }
+
+            list.InsertRange(0, sources);
+
+            return list;
         }
     }
 }

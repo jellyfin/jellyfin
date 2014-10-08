@@ -212,23 +212,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             var itemId = item.Id.ToString("N");
-            var sources = await _manager.GetChannelItemMediaSources(itemId, cancellationToken)
+            var sources = await _manager.GetChannelItemMediaSources(itemId, false, cancellationToken)
                 .ConfigureAwait(false);
 
-            var list = sources.ToList();
-
-            var cachedVersions = list.Where(i => i.Protocol == MediaProtocol.File).ToList();
+            var cachedVersions = sources.Where(i => i.Protocol == MediaProtocol.File).ToList();
 
             if (cachedVersions.Count > 0)
             {
                 await RefreshMediaSourceItems(cachedVersions, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-
-            var source = list.FirstOrDefault(i => i.Protocol == MediaProtocol.Http);
-
-            if (source == null)
-            {
                 return;
             }
 
