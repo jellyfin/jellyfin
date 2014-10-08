@@ -5,6 +5,7 @@
         Equals = 0,
         NotEquals = 1,
         LessThanEqual = 2,
-        GreaterThanEqual = 3
+        GreaterThanEqual = 3,
+        SubstringOf = 4
     }
 }
