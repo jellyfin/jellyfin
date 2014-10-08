@@ -79,7 +79,7 @@ namespace MediaBrowser.Dlna
                 new Windows81Profile(),
                 //new WindowsMediaCenterProfile(),
                 new WindowsPhoneProfile(),
-                new AndroidProfile(),
+                new AndroidProfile(true, true),
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
                 new DefaultProfile()

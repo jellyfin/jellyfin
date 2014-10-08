@@ -16,6 +16,7 @@ namespace MediaBrowser.Dlna.Ssdp
         /// The number of times to send the message
         /// </summary>
         public int TotalSendCount { get; private set; }
+        public bool IgnoreBindFailure { get; private set; }
 
         /// <summary>
         /// The number of times the message has been sent
@@ -24,10 +25,11 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private readonly ILogger _logger;
 
-        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, int totalSendCount)
+        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, int totalSendCount, bool ignoreBindFailure)
         {
             Message = message;
             _logger = logger;
+            IgnoreBindFailure = ignoreBindFailure;
             TotalSendCount = totalSendCount;
             FromEndPoint = fromEndPoint;
             ToEndPoint = toEndPoint;
@@ -42,7 +44,14 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 if (FromEndPoint != null)
                 {
-                    client.Bind(FromEndPoint);
+                    try
+                    {
+                        client.Bind(FromEndPoint);
+                    }
+                    catch
+                    {
+                        if (!IgnoreBindFailure) throw;
+                    }
                 }
 
                 client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>
@@ -53,7 +62,10 @@ namespace MediaBrowser.Dlna.Ssdp
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
+                        if (!IgnoreBindFailure)
+                        {
+                            _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
+                        }
                     }
                     finally
                     {

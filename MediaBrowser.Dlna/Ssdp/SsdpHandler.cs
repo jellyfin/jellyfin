@@ -124,18 +124,19 @@ namespace MediaBrowser.Dlna.Ssdp
             EndPoint localAddress,
             int sendCount = 1)
         {
-            SendDatagram(header, values, _ssdpEndp, localAddress, sendCount);
+            SendDatagram(header, values, _ssdpEndp, localAddress, false, sendCount);
         }
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             EndPoint endpoint,
             EndPoint localAddress,
+            bool ignoreBindFailure,
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount);
+            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount, ignoreBindFailure);
 
             if (_messageQueue.Count == 0)
             {
@@ -171,7 +172,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0));
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true);
+                    //SendDatagram(header, values, endpoint, null, true);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
                     {
