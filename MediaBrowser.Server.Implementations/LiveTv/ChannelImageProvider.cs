@@ -105,13 +105,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
-            var liveTvItem = item as LiveTvChannel;
-
-            if (liveTvItem != null)
-            {
-                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.HasProviderImage ?? true);
-            }
-            return false;
+            return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }
     }
 }

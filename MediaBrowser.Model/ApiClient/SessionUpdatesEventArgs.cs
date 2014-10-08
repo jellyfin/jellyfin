@@ -1,12 +1,11 @@
-﻿using System;
-using MediaBrowser.Model.Session;
+﻿using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.ApiClient
 {
     /// <summary>
     /// Class SessionUpdatesEventArgs
     /// </summary>
-    public class SessionUpdatesEventArgs : EventArgs
+    public class SessionUpdatesEventArgs
     {
         public SessionInfoDto[] Sessions { get; set; }
     }

@@ -1,0 +1,10 @@
+namespace MediaBrowser.Model.Entities
+{
+    public enum TrailerType
+    {
+        ComingSoonToTheaters = 1,
+        ComingSoonToDvd = 2,
+        ComingSoonToStreaming = 3,
+        Archive = 4
+    }
+}

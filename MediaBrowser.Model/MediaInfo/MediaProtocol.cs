@@ -1,0 +1,9 @@
+namespace MediaBrowser.Model.MediaInfo
+{
+    public enum MediaProtocol
+    {
+        File = 0,
+        Http = 1,
+        Rtmp = 2
+    }
+}

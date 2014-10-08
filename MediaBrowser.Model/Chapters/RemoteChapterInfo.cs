@@ -15,10 +15,4 @@ namespace MediaBrowser.Model.Chapters
         /// <value>The name.</value>
         public string Name { get; set; }
     }
-
-    public class ChapterProviderInfo
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-    }
 }

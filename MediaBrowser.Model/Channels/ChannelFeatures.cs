@@ -82,15 +82,4 @@ namespace MediaBrowser.Model.Channels
             DefaultSortFields = new List<ChannelItemSortField>();
         }
     }
-
-    public enum ChannelItemSortField
-    {
-        Name = 0,
-        CommunityRating = 1,
-        PremiereDate = 2,
-        DateCreated = 3,
-        Runtime = 4,
-        PlayCount = 5,
-        CommunityPlayCount = 6
-    }
 }

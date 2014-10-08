@@ -16,10 +16,4 @@ namespace MediaBrowser.Model.Providers
         public int? DownloadCount { get; set; }
         public bool? IsHashMatch { get; set; }
     }
-
-    public class SubtitleProviderInfo
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-    }
 }

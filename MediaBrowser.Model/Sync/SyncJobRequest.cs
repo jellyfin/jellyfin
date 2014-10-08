@@ -50,9 +50,4 @@ namespace MediaBrowser.Model.Sync
             ItemIds = new List<string>();
         }
     }
-
-    public enum SyncLimitType
-    {
-        ItemCount = 0
-    }
 }

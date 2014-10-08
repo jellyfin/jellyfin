@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [system command].
         /// </summary>
-        event EventHandler<GeneralCommandEventArgs> GeneralCommand;
+        event EventHandler<GenericEventArgs<GeneralCommandEventArgs>> GeneralCommand;
         /// <summary>
         /// Occurs when [notification added].
         /// </summary>
@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [sessions updated].
         /// </summary>
-        event EventHandler<SessionUpdatesEventArgs> SessionsUpdated;
+        event EventHandler<GenericEventArgs<SessionUpdatesEventArgs>> SessionsUpdated;
         /// <summary>
         /// Occurs when [restart required].
         /// </summary>
@@ -118,5 +118,17 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [user data changed].
         /// </summary>
         event EventHandler<GenericEventArgs<UserDataChangeInfo>> UserDataChanged;
+        /// <summary>
+        /// Occurs when [playback start].
+        /// </summary>
+        event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStart;
+        /// <summary>
+        /// Occurs when [playback stopped].
+        /// </summary>
+        event EventHandler<GenericEventArgs<SessionInfoDto>> PlaybackStopped;
+        /// <summary>
+        /// Occurs when [session ended].
+        /// </summary>
+        event EventHandler<GenericEventArgs<SessionInfoDto>> SessionEnded;
     }
 }

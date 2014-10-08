@@ -26,7 +26,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
         private readonly string[] _fontUrls =
         {
-            "https://www.dropbox.com/s/pj847twf7riq0j7/ARIALUNI.7z?dl=1"
+            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
         public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem)

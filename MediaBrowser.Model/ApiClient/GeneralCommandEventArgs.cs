@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Model.Session;
-using System;
 
 namespace MediaBrowser.Model.ApiClient
 {
     /// <summary>
     /// Class SystemCommandEventArgs
     /// </summary>
-    public class GeneralCommandEventArgs : EventArgs
+    public class GeneralCommandEventArgs
     {
         /// <summary>
         /// Gets or sets the command.

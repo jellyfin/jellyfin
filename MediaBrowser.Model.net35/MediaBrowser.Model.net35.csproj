@@ -55,6 +55,12 @@
     <Compile Include="..\mediabrowser.model\activity\ActivityLogEntry.cs">
       <Link>Activity\ActivityLogEntry.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionMode.cs">
+      <Link>ApiClient\ConnectionMode.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionState.cs">
+      <Link>ApiClient\ConnectionState.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\GeneralCommandEventArgs.cs">
       <Link>ApiClient\GeneralCommandEventArgs.cs</Link>
     </Compile>
@@ -73,17 +79,29 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\SessionUpdatesEventArgs.cs">
       <Link>ApiClient\SessionUpdatesEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\WakeOnLanInfo.cs">
+      <Link>ApiClient\WakeOnLanInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Branding\BrandingOptions.cs">
       <Link>Branding\BrandingOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\AllChannelMediaQuery.cs">
+      <Link>Channels\AllChannelMediaQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelFeatures.cs">
       <Link>Channels\ChannelFeatures.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelFolderType.cs">
+      <Link>Channels\ChannelFolderType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelInfo.cs">
       <Link>Channels\ChannelInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelItemQuery.cs">
       <Link>Channels\ChannelItemQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Channels\ChannelItemSortField.cs">
+      <Link>Channels\ChannelItemSortField.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelMediaContentType.cs">
       <Link>Channels\ChannelMediaContentType.cs</Link>
@@ -93,6 +111,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
       <Link>Channels\ChannelQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Chapters\ChapterProviderInfo.cs">
+      <Link>Chapters\ChapterProviderInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterInfo.cs">
       <Link>Chapters\RemoteChapterInfo.cs</Link>
@@ -138,6 +159,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\PathSubstitution.cs">
       <Link>Configuration\PathSubstitution.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\PeopleMetadataOptions.cs">
+      <Link>Configuration\PeopleMetadataOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ServerConfiguration.cs">
       <Link>Configuration\ServerConfiguration.cs</Link>
@@ -199,6 +223,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\DlnaProfileType.cs">
       <Link>Dlna\DlnaProfileType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\EncodingContext.cs">
+      <Link>Dlna\EncodingContext.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\HeaderMatchType.cs">
       <Link>Dlna\HeaderMatchType.cs</Link>
     </Compile>
@@ -226,8 +253,14 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\Profiles\DefaultProfile.cs">
       <Link>Dlna\Profiles\DefaultProfile.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ResolutionConfiguration.cs">
+      <Link>Dlna\ResolutionConfiguration.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ResolutionNormalizer.cs">
       <Link>Dlna\ResolutionNormalizer.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ResolutionOptions.cs">
+      <Link>Dlna\ResolutionOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\ResponseProfile.cs">
       <Link>Dlna\ResponseProfile.cs</Link>
@@ -247,8 +280,14 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
       <Link>Dlna\StreamInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleDeliveryMethod.cs">
+      <Link>Dlna\SubtitleDeliveryMethod.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleProfile.cs">
       <Link>Dlna\SubtitleProfile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleStreamInfo.cs">
+      <Link>Dlna\SubtitleStreamInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\TranscodeSeekInfo.cs">
       <Link>Dlna\TranscodeSeekInfo.cs</Link>
@@ -310,6 +349,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\MediaSourceInfo.cs">
       <Link>Dto\MediaSourceInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\MediaSourceType.cs">
+      <Link>Dto\MediaSourceType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RatingType.cs">
       <Link>Dto\RatingType.cs</Link>
     </Compile>
@@ -318,6 +360,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
+      <Link>Dto\StreamOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
@@ -330,6 +375,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\UserItemDataDto.cs">
       <Link>Dto\UserItemDataDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\VideoStreamOptions.cs">
+      <Link>Dto\VideoStreamOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\BaseItemInfo.cs">
       <Link>Entities\BaseItemInfo.cs</Link>
@@ -415,6 +463,12 @@
     <Compile Include="..\MediaBrowser.Model\Entities\SortOrder.cs">
       <Link>Entities\SortOrder.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\SupporterInfo.cs">
+      <Link>Entities\SupporterInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Entities\TrailerType.cs">
+      <Link>Entities\TrailerType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\UserDataSaveReason.cs">
       <Link>Entities\UserDataSaveReason.cs</Link>
     </Compile>
@@ -433,8 +487,14 @@
     <Compile Include="..\MediaBrowser.Model\Events\GenericEventArgs.cs">
       <Link>Events\GenericEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\BoolHelper.cs">
+      <Link>Extensions\BoolHelper.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\DoubleHelper.cs">
       <Link>Extensions\DoubleHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Extensions\FloatHelper.cs">
+      <Link>Extensions\FloatHelper.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
       <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
@@ -595,6 +655,9 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaProtocol.cs">
+      <Link>MediaInfo\MediaProtocol.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>
     </Compile>
@@ -708,6 +771,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Providers\SubtitleOptions.cs">
       <Link>Providers\SubtitleOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Providers\SubtitleProviderInfo.cs">
+      <Link>Providers\SubtitleProviderInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\AllThemeMediaResult.cs">
       <Link>Querying\AllThemeMediaResult.cs</Link>
@@ -838,6 +904,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\SessionUserInfo.cs">
       <Link>Session\SessionUserInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Session\TranscodingInfo.cs">
+      <Link>Session\TranscodingInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
@@ -859,6 +928,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobStatus.cs">
       <Link>Sync\SyncJobStatus.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncLimitType.cs">
+      <Link>Sync\SyncLimitType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
       <Link>Sync\SyncQuality.cs</Link>
     </Compile>
@@ -867,6 +939,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
       <Link>System\LogFile.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\PublicSystemInfo.cs">
+      <Link>System\PublicSystemInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\System\SystemInfo.cs">
       <Link>System\SystemInfo.cs</Link>
