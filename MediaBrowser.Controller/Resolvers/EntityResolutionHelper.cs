@@ -211,7 +211,7 @@ namespace MediaBrowser.Controller.Resolvers
                 {
                     if (includeCreationTime)
                     {
-                        item.DateCreated = DateTime.UtcNow;
+                        SetDateCreated(item, fileSystem, childData);
                     }
 
                     item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
@@ -224,7 +224,7 @@ namespace MediaBrowser.Controller.Resolvers
                     {
                         if (includeCreationTime)
                         {
-                            item.DateCreated = DateTime.UtcNow;
+                            SetDateCreated(item, fileSystem, fileData);
                         }
                         item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
                     }
@@ -234,9 +234,23 @@ namespace MediaBrowser.Controller.Resolvers
             {
                 if (includeCreationTime)
                 {
-                    item.DateCreated = DateTime.UtcNow;
+                    SetDateCreated(item, fileSystem, args.FileInfo);
                 }
                 item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
+            }
+        }
+
+        private static void SetDateCreated(BaseItem item, IFileSystem fileSystem, FileSystemInfo info)
+        {
+            var config = BaseItem.ConfigurationManager.GetMetadataConfiguration();
+
+            if (config.UseFileCreationTimeForDateAdded)
+            {
+                item.DateModified = fileSystem.GetCreationTimeUtc(info);
+            }
+            else
+            {
+                item.DateCreated = DateTime.UtcNow;
             }
         }
     }

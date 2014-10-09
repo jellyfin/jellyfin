@@ -43,6 +43,10 @@ namespace MediaBrowser.Providers.Manager
             if (replaceData || string.IsNullOrEmpty(target.HomePageUrl))
             {
                 target.HomePageUrl = source.HomePageUrl;
+                if (!string.IsNullOrWhiteSpace(target.HomePageUrl) && target.HomePageUrl.IndexOf("http", StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    target.HomePageUrl = "http://" + target.HomePageUrl;
+                }
             }
 
             if (replaceData || !target.IndexNumber.HasValue)

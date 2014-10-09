@@ -1387,6 +1387,13 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.MaxVideoBitDepth = int.Parse(val, UsCulture);
                     }
                 }
+                else if (i == 19)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Profile = val;
+                    }
+                }
             }
         }
 

@@ -13,6 +13,7 @@
         })).val(config.UICulture).selectmenu('refresh');
 
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
+        $('#txtPublicPort', page).val(config.PublicPort);
 
         $('#txtDdns', page).val(config.WanDdns || '');
 
@@ -81,6 +82,8 @@
                 config.UICulture = $('#selectLocalizationLanguage', form).val();
 
                 config.HttpServerPortNumber = $('#txtPortNumber', form).val();
+                config.PublicPort = $('#txtPublicPort', form).val();
+
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
 
                 config.WanDdns = $('#txtDdns', form).val();

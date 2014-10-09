@@ -60,7 +60,7 @@
 
         self.resetEnhancements = function () {
             $("#mediaPlayer").hide();
-            $('#videoPlayer').removeClass('fullscreenVideo');
+            $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
         };
@@ -497,6 +497,7 @@
 
             if (idleState == true) {
                 $('.hiddenOnIdle').removeClass("inactive");
+                $('#videoPlayer').removeClass('idlePlayer');
             }
 
             idleState = false;
@@ -504,6 +505,7 @@
             timeout = window.setTimeout(function () {
                 idleState = true;
                 $('.hiddenOnIdle').addClass("inactive");
+                $('#videoPlayer').addClass('idlePlayer');
             }, 4000);
         }
 

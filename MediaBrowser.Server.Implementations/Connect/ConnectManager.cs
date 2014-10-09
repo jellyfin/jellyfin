@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         ip = "http://" + ip;
                     }
 
-                    return ip + ":" + _config.Configuration.HttpServerPortNumber.ToString(CultureInfo.InvariantCulture);
+                    return ip + ":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture);
                 }
 
                 return null;

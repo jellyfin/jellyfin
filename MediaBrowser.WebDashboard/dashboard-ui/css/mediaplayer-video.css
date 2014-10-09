@@ -133,6 +133,10 @@
     display: none!important;
 }
 
+.idlePlayer video {
+    cursor: none;
+}
+
 #mediaPlayer .sliderContainer {
     position: relative;
     top: 5px;

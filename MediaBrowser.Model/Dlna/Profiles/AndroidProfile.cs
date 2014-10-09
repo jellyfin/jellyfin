@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Dlna.Profiles
                     VideoCodec = "h264",
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
-                    VideoProfile = "Baseline",
+                    VideoProfile = "baseline",
                     Context = EncodingContext.Streaming
                 });
             }
@@ -42,7 +42,7 @@ namespace MediaBrowser.Model.Dlna.Profiles
                 VideoCodec = "h264",
                 AudioCodec = "aac",
                 Type = DlnaProfileType.Video,
-                VideoProfile = "Baseline",
+                VideoProfile = "baseline",
                 Context = EncodingContext.Static
             });
 
@@ -102,7 +102,7 @@ namespace MediaBrowser.Model.Dlna.Profiles
 
                     Conditions = new []
                     {
-                        new ProfileCondition(ProfileConditionType.SubstringOf, ProfileConditionValue.VideoProfile, "baseline"),
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline"),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Width, "1920"),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Height, "1080"),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoBitDepth, "8"),

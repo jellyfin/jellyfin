@@ -43,13 +43,19 @@
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label for="txtPortNumber">${LabelHttpServerPortNumber}</label>
+                                    <label for="txtPortNumber">${LabelLocalHttpServerPortNumber}</label>
                                     <input type="number" id="txtPortNumber" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                                    <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
                                 </li>
                                 <li>
-                                    <label for="chkEnableUpnp">${LabelEnableAutomaticPortMapping}</label>
+                                    <label for="txtPublicPort">${LabelPublicPort}</label>
+                                    <input type="number" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                                    <div class="fieldDescription">${LabelPublicPortHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="chkEnableUpnp">${LabelEnableAutomaticPortMap}</label>
                                     <input type="checkbox" id="chkEnableUpnp" data-mini="true" />
-                                    <div class="fieldDescription">${LabelEnableAutomaticPortHelp}</div>
+                                    <div class="fieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
                                 </li>
                                 <li>
                                     <label for="txtDdns">${LabelExternalDDNS}</label>

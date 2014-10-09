@@ -148,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 GetCustomIntros(item) :
                 new List<IntroInfo>();
 
-            var trailerLimit = 2;
+            var trailerLimit = config.TrailerLimit;
             if (customIntros.Count > 0)
             {
                 trailerLimit--;

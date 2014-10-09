@@ -22,6 +22,13 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function loadMetadataConfig(page, config) {
+
+
+        $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0')).selectmenu("refresh");
+
+    }
+
     function loadChapters(page, config, providers) {
 
         if (providers.length) {
@@ -167,6 +174,12 @@
 
         });
 
+        ApiClient.getNamedConfiguration("metadata").done(function (metadata) {
+
+            loadMetadataConfig(page, metadata);
+
+        });
+
         var promise1 = ApiClient.getNamedConfiguration("chapters");
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
@@ -197,6 +210,16 @@
             config.PeopleMetadataOptions.DownloadOtherPeopleMetadata = $('#chkPeopleOthers', form).checked();
 
             ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+    }
+
+    function saveMetadata(form) {
+        
+        ApiClient.getNamedConfiguration("metadata").done(function (config) {
+
+            config.UseFileCreationTimeForDateAdded = $('#selectDateAdded', form).val() == '1';
+
+            ApiClient.updateNamedConfiguration("metadata", config);
         });
     }
 
@@ -237,6 +260,7 @@
 
             saveAdvancedConfig(form);
             saveChapters(form);
+            saveMetadata(form);
 
             // Disable default form submission
             return false;

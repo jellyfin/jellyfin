@@ -15,6 +15,7 @@
         $('#chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl).checkboxradio('refresh');
 
         $('#txtCustomIntrosPath', page).val(config.CustomIntroPath || '');
+        $('#txtNumTrailers', page).val(config.TrailerLimit);
 
         Dashboard.hideLoadingMsg();
     }
@@ -69,6 +70,7 @@
             ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
 
                 config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
+                config.TrailerLimit = $('#txtNumTrailers', page).val();
 
                 config.EnableIntrosForMovies = $('#chkMovies', page).checked();
                 config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();

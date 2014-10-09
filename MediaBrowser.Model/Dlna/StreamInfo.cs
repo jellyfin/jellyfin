@@ -142,6 +142,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
             list.Add(item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty);
             list.Add(item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty);
+            list.Add(item.VideoProfile ?? string.Empty);
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
