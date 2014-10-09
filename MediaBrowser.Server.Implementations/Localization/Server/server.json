@@ -464,10 +464,13 @@
     "NewCollectionNameExample": "Example: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Search the internet for artwork and metadata",
     "ButtonCreate": "Create",
-    "LabelHttpServerPortNumber": "Http server port number:",
+    "LabelLocalHttpServerPortNumber": "Local port number:",
+    "LabelLocalHttpServerPortNumberHelp": "The tcp port number that Media Browser's http server should bind to.",
+    "LabelPublicPort": "Public port number:",
+    "LabelPublicPortHelp": "The public port number that should be mapped to the local port.",
     "LabelWebSocketPortNumber": "Web socket port number:",
-    "LabelEnableAutomaticPortMapping": "Enable automatic port mapping",
-    "LabelEnableAutomaticPortHelp": "UPnP allows automated router configuration for remote access. This may not work with some router models.",
+    "LabelEnableAutomaticPortMap": "Enable automatic port mapping",
+    "LabelEnableAutomaticPortMapHelp": "Attempt to automatically map the public port to the local port via UPnP. This may not work with some router models.",
     "LabelExternalDDNS": "External DDNS:",
     "LabelExternalDDNSHelp": "If you have a dynamic DNS enter it here. Media Browser apps will use it when connecting remotely.",
     "TabResume": "Resume",
@@ -1207,5 +1210,10 @@
     "CinemaModeConfigurationHelp2": "Individual users will have the ability to disable cinema mode within their own preferences.",
     "LabelEnableCinemaMode": "Enable cinema mode",
     "HeaderCinemaMode": "Cinema Mode",
-    "HeaderWelcomeToMediaBrowserServerDashboard": "Welcome to the Media Browser Dashboard"
+    "HeaderWelcomeToMediaBrowserServerDashboard": "Welcome to the Media Browser Dashboard",
+    "LabelDateAddedBehavior": "Date added behavior for new content:",
+    "OptionDateAddedImportTime": "Use date scanned into the library",
+    "OptionDateAddedFileTime": "Use file creation date",
+    "LabelDateAddedBehaviorHelp": "If a metadata value is present it will always be used before either of these options.",
+    "LabelNumberTrailerToPlay": "Number of trailers to play:"
 }

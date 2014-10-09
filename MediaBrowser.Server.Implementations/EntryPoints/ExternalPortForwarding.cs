@@ -126,15 +126,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 var info = _appHost.GetSystemInfo();
 
-                CreatePortMap(device, info.HttpServerPortNumber);
+                CreatePortMap(device, info.HttpServerPortNumber, _config.Configuration.PublicPort);
             }
         }
 
-        private void CreatePortMap(INatDevice device, int port)
+        private void CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
-            _logger.Debug("Creating port map on port {0}", port);
+            _logger.Debug("Creating port map on port {0}", privatePort);
 
-            device.CreatePortMap(new Mapping(Protocol.Tcp, port, port)
+            device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
             {
                 Description = "Media Browser Server"
             });

@@ -143,31 +143,31 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="..\thirdparty\libwebp\linux\x86\libwebp.so">
+    <None Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
       <Link>libwebp\linux\lib\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\libwebp\linux\x86_64\libwebp.so">
+    <None Include="..\ThirdParty\libwebp\linux\x86_64\libwebp.so">
       <Link>libwebp\linux\lib64\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\libwebp\osx\libwebp.5.dylib">
+    <None Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
       <Link>libwebp\osx\libwebp.5.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\mediainfo\osx\libmediainfo.dylib">
+    <None Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
       <Link>MediaInfo\osx\libmediainfo.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\sqlite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
+    <None Include="..\ThirdParty\SQLite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
       <Link>sqlite3\linux\lib\libsqlite3.so.0.8.6</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\sqlite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
+    <None Include="..\ThirdParty\SQLite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
       <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\thirdparty\sqlite3\mac\universal\3.8.2\libsqlite3.0.dylib">
+    <None Include="..\ThirdParty\SQLite3\mac\universal\3.8.2\libsqlite3.0.dylib">
       <Link>sqlite3\mac\libsqlite3.0.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

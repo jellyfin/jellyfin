@@ -6,6 +6,6 @@
         NotEquals = 1,
         LessThanEqual = 2,
         GreaterThanEqual = 3,
-        SubstringOf = 4
+        EqualsAny = 4
     }
 }
