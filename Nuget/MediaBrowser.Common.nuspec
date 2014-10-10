@@ -16,6 +16,6 @@
         <file src="dlls\net35\MediaBrowser.Model.dll" target="lib\net35\MediaBrowser.Model.dll" />
         <file src="dlls\MediaBrowser.Common.dll" target="lib\net45\MediaBrowser.Common.dll" />
         <file src="dlls\net45\MediaBrowser.Model.dll" target="lib\net45\MediaBrowser.Model.dll" />
-        <file src="dlls\portable\MediaBrowser.Model.dll" target="lib\portable-net4+sl4+wp71+win8\MediaBrowser.Model.dll" />
+        <file src="dlls\portable\MediaBrowser.Model.dll" target="lib\portable-net4+sl4+wp71+win8+wpa81\MediaBrowser.Model.dll" />
     </files>
 </package>
