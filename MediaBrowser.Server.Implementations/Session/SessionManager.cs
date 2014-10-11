@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IServerApplicationHost _appHost;
 
         private readonly IAuthenticationRepository _authRepo;
+        private readonly IDeviceManager _deviceManager;
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -80,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Session
         public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
 
         public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationSucceeded;
-        
+
         /// <summary>
         /// Occurs when [playback start].
         /// </summary>
@@ -111,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="userRepository">The user repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo)
+        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
         {
             _userDataRepository = userDataRepository;
             _configurationManager = configurationManager;
@@ -127,6 +129,7 @@ namespace MediaBrowser.Server.Implementations.Session
             _appHost = appHost;
             _httpClient = httpClient;
             _authRepo = authRepo;
+            _deviceManager = deviceManager;
         }
 
         /// <summary>
@@ -394,7 +397,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             try
             {
-                var connection = _activeConnections.GetOrAdd(key, keyName =>
+                SessionInfo connection;
+
+                if (!_activeConnections.TryGetValue(key, out connection))
                 {
                     var sessionInfo = new SessionInfo
                     {
@@ -411,8 +416,15 @@ namespace MediaBrowser.Server.Implementations.Session
 
                     OnSessionStarted(sessionInfo);
 
-                    return sessionInfo;
-                });
+                    _activeConnections.TryAdd(key, sessionInfo);
+                    connection = sessionInfo;
+
+                    if (!string.IsNullOrEmpty(deviceId))
+                    {
+                        var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
+                        await _deviceManager.RegisterDevice(deviceId, deviceName, userIdString).ConfigureAwait(false);
+                    }
+                }
 
                 connection.DeviceName = deviceName;
                 connection.UserId = userId;
@@ -1226,7 +1238,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);
 
             EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
-            
+
             var session = await LogSessionActivity(request.App,
                 request.AppVersion,
                 request.DeviceId,
@@ -1234,7 +1246,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 request.RemoteEndPoint,
                 user)
                 .ConfigureAwait(false);
-            
+
             return new AuthenticationResult
             {
                 User = _userManager.GetUserDto(user, request.RemoteEndPoint),
@@ -1339,7 +1351,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        public void ReportCapabilities(string sessionId, SessionCapabilities capabilities)
+        public void ReportCapabilities(string sessionId, ClientCapabilities capabilities)
         {
             var session = GetSession(sessionId);
 
@@ -1347,7 +1359,7 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         private async void ReportCapabilities(SessionInfo session,
-            SessionCapabilities capabilities,
+            ClientCapabilities capabilities,
             bool saveCapabilities)
         {
             session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
@@ -1375,56 +1387,14 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private string GetCapabilitiesFilePath(string deviceId)
+        private ClientCapabilities GetSavedCapabilities(string deviceId)
         {
-            var filename = deviceId.GetMD5().ToString("N") + ".json";
-
-            return Path.Combine(_configurationManager.ApplicationPaths.CachePath, "devices", filename);
+            return _deviceManager.GetCapabilities(deviceId);
         }
 
-        private SessionCapabilities GetSavedCapabilities(string deviceId)
+        private Task SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
-            var path = GetCapabilitiesFilePath(deviceId);
-
-            try
-            {
-                return _jsonSerializer.DeserializeFromFile<SessionCapabilities>(path);
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return null;
-            }
-            catch (FileNotFoundException)
-            {
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting saved capabilities", ex);
-                return null;
-            }
-        }
-
-        private readonly SemaphoreSlim _capabilitiesLock = new SemaphoreSlim(1, 1);
-        private async Task SaveCapabilities(string deviceId, SessionCapabilities capabilities)
-        {
-            var path = GetCapabilitiesFilePath(deviceId);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            await _capabilitiesLock.WaitAsync().ConfigureAwait(false);
-
-            try
-            {
-                _jsonSerializer.SerializeToFile(capabilities, path);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving to {0}", ex, path);
-            }
-            finally
-            {
-                _capabilitiesLock.Release();
-            }
+            return _deviceManager.SaveCapabilities(deviceId, capabilities);
         }
 
         public SessionInfoDto GetSessionInfoDto(SessionInfo session)

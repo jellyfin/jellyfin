@@ -315,5 +315,20 @@ namespace MediaBrowser.Common.Net
 
             throw new ArgumentException("Argument not supported: " + path);
         }
+
+        private static readonly Dictionary<string, string> MimeExtensions =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"image/jpeg", "jpg"},
+                {"image/jpg", "jpg"},
+                {"image/png", "png"},
+                {"image/gif", "gif"},
+                {"image/webp", "webp"}
+            };
+
+        public static string ToExtension(string mimeType)
+        {
+            return "." + MimeExtensions[mimeType];
+        }
     }
 }

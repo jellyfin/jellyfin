@@ -75,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else
             {
-                var capabilities = new SessionCapabilities
+                var capabilities = new ClientCapabilities
                 {
                     PlayableMediaTypes = Session.PlayableMediaTypes,
                     SupportedCommands = Session.SupportedCommands,

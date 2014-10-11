@@ -60,41 +60,45 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var standaloneFolders = folders.Where(i => UserView.IsExcludedFromGrouping(i) || excludeFolderIds.Contains(i.Id)).ToList();
 
-            list.AddRange(standaloneFolders);
-
-            var recursiveChildren = folders
+            var foldersWithViewTypes = folders
                 .Except(standaloneFolders)
-                .SelectMany(i => i.GetRecursiveChildren(user, false))
+                .OfType<ICollectionFolder>()
                 .ToList();
 
-            if (recursiveChildren.OfType<Series>().Any())
+            list.AddRange(standaloneFolders);
+
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)) ||
+                foldersWithViewTypes.Any(i => string.IsNullOrWhiteSpace(i.CollectionType)))
             {
                 list.Add(await GetUserView(CollectionType.TvShows, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (recursiveChildren.OfType<MusicAlbum>().Any() ||
-                recursiveChildren.OfType<MusicVideo>().Any())
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase)) ||
+                foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase)))
             {
                 list.Add(await GetUserView(CollectionType.Music, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (recursiveChildren.OfType<Movie>().Any())
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)) ||
+                foldersWithViewTypes.Any(i => string.IsNullOrWhiteSpace(i.CollectionType)))
             {
                 list.Add(await GetUserView(CollectionType.Movies, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (recursiveChildren.OfType<Game>().Any())
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Games, StringComparison.OrdinalIgnoreCase)))
             {
                 list.Add(await GetUserView(CollectionType.Games, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayCollectionsView &&
-                recursiveChildren.OfType<BoxSet>().Any())
+                folders
+                .Except(standaloneFolders)
+                .SelectMany(i => i.GetRecursiveChildren(user, false)).OfType<BoxSet>().Any())
             {
                 list.Add(await GetUserView(CollectionType.BoxSets, user, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (recursiveChildren.OfType<Playlist>().Any())
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase)))
             {
                 list.Add(_playlists.GetPlaylistsFolder(user.Id.ToString("N")));
             }

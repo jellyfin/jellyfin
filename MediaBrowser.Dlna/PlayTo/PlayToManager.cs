@@ -117,21 +117,21 @@ namespace MediaBrowser.Dlna.PlayTo
                         var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
                                       _dlnaManager.GetDefaultProfile();
 
-                        _sessionManager.ReportCapabilities(sessionInfo.Id, new SessionCapabilities
+                        _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
                         {
                             PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
                             SupportedCommands = new List<string>
-                        {
-                            GeneralCommandType.VolumeDown.ToString(),
-                            GeneralCommandType.VolumeUp.ToString(),
-                            GeneralCommandType.Mute.ToString(),
-                            GeneralCommandType.Unmute.ToString(),
-                            GeneralCommandType.ToggleMute.ToString(),
-                            GeneralCommandType.SetVolume.ToString(),
-                            GeneralCommandType.SetAudioStreamIndex.ToString(),
-                            GeneralCommandType.SetSubtitleStreamIndex.ToString()
-                        },
+                            {
+                                GeneralCommandType.VolumeDown.ToString(),
+                                GeneralCommandType.VolumeUp.ToString(),
+                                GeneralCommandType.Mute.ToString(),
+                                GeneralCommandType.Unmute.ToString(),
+                                GeneralCommandType.ToggleMute.ToString(),
+                                GeneralCommandType.SetVolume.ToString(),
+                                GeneralCommandType.SetAudioStreamIndex.ToString(),
+                                GeneralCommandType.SetSubtitleStreamIndex.ToString()
+                            },
 
                             SupportsMediaControl = true
                         });

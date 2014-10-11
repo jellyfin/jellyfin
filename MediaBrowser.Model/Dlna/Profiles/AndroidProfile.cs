@@ -6,7 +6,9 @@ namespace MediaBrowser.Model.Dlna.Profiles
     [XmlRoot("Profile")]
     public class AndroidProfile : DefaultProfile
     {
-        public AndroidProfile(bool supportsHls, bool supportsMpegDash)
+        public AndroidProfile(bool supportsHls, 
+            bool supportsMpegDash, 
+            string[] supportedH264Profiles)
         {
             Name = "Android";
 
@@ -102,7 +104,7 @@ namespace MediaBrowser.Model.Dlna.Profiles
 
                     Conditions = new []
                     {
-                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline"),
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, string.Join("|", supportedH264Profiles)),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Width, "1920"),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.Height, "1080"),
                         new ProfileCondition(ProfileConditionType.LessThanEqual, ProfileConditionValue.VideoBitDepth, "8"),

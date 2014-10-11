@@ -1215,5 +1215,13 @@
     "OptionDateAddedImportTime": "Use date scanned into the library",
     "OptionDateAddedFileTime": "Use file creation date",
     "LabelDateAddedBehaviorHelp": "If a metadata value is present it will always be used before either of these options.",
-    "LabelNumberTrailerToPlay": "Number of trailers to play:"
+    "LabelNumberTrailerToPlay": "Number of trailers to play:",
+    "TitleDevices": "Devices",
+    "TabCameraUpload": "Camera Upload",
+    "TabDevices": "Devices",
+    "TitleDevices": "Devices",
+    "HeaderCameraUploadHelp": "Automatically upload photos and videos taken from your mobile devices into Media Browser.",
+    "MessageNoDevicesSupportCameraUpload": "You currently don't have any devices that support camera upload.",
+    "LabelUploadPath": "Upload path:",
+    "LabelUploadPathHelp": "Select a custom upload path, if desired. If unspecified an internal data folder will be used."
 }

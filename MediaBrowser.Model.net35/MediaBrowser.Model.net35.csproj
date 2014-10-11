@@ -184,6 +184,18 @@
     <Compile Include="..\mediabrowser.model\connect\UserLinkType.cs">
       <Link>Connect\UserLinkType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\ContentUploadHistory.cs">
+      <Link>Devices\ContentUploadHistory.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\DeviceInfo.cs">
+      <Link>Devices\DeviceInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\DevicesOptions.cs">
+      <Link>Devices\DevicesOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\LocalFileInfo.cs">
+      <Link>Devices\LocalFileInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\AudioOptions.cs">
       <Link>Dlna\AudioOptions.cs</Link>
     </Compile>
@@ -897,9 +909,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\PlaystateRequest.cs">
       <Link>Session\PlaystateRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Session\SessionCapabilities.cs">
-      <Link>Session\SessionCapabilities.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\SessionInfoDto.cs">
       <Link>Session\SessionInfoDto.cs</Link>

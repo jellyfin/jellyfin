@@ -679,6 +679,10 @@ var Dashboard = {
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage")
         }, {
+            name: Globalize.translate('TabDevices'),
+            href: "devices.html",
+            selected: page.hasClass("devicesPage")
+        }, {
             name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesPage")

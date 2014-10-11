@@ -265,10 +265,6 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <summary>
-        /// The _last music brainz request
-        /// </summary>
-        private DateTime _lastRequestDate = DateTime.MinValue;
-        /// <summary>
         /// The _music brainz resource pool
         /// </summary>
         private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
@@ -282,51 +278,35 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{XmlDocument}.</returns>
         internal async Task<XmlDocument> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
-            await _musicBrainzResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            // MusicBrainz is extremely adamant about limiting to one request per second
 
-            try
+            await Task.Delay(800, cancellationToken).ConfigureAwait(false);
+
+            var doc = new XmlDocument();
+
+            var options = new HttpRequestOptions
             {
-                var diff = 1500 - (DateTime.Now - _lastRequestDate).TotalMilliseconds;
+                Url = url,
+                CancellationToken = cancellationToken,
+                UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion,
+                ResourcePool = _musicBrainzResourcePool
+            };
 
-                // MusicBrainz is extremely adamant about limiting to one request per second
-
-                if (diff > 0)
-                {
-                    _logger.Debug("Throttling musicbrainz by {0} ms", diff);
-                    await Task.Delay(Convert.ToInt32(diff), cancellationToken).ConfigureAwait(false);
-                }
-
-                var doc = new XmlDocument();
-
-                var options = new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
-                };
-
-                if (!isSearch)
-                {
-                    options.CacheMode = CacheMode.Unconditional;
-                    options.CacheLength = TimeSpan.FromDays(7);
-                }
-
-                using (var xml = await _httpClient.Get(options).ConfigureAwait(false))
-                {
-                    using (var oReader = new StreamReader(xml, Encoding.UTF8))
-                    {
-                        doc.Load(oReader);
-                    }
-                }
-
-                return doc;
-            }
-            finally
+            if (!isSearch)
             {
-                _lastRequestDate = DateTime.Now;
-
-                _musicBrainzResourcePool.Release();
+                options.CacheMode = CacheMode.Unconditional;
+                options.CacheLength = TimeSpan.FromDays(7);
             }
+
+            using (var xml = await _httpClient.Get(options).ConfigureAwait(false))
+            {
+                using (var oReader = new StreamReader(xml, Encoding.UTF8))
+                {
+                    doc.Load(oReader);
+                }
+            }
+
+            return doc;
         }
 
         public int Order

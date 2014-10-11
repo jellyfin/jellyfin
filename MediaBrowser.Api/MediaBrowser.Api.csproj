@@ -71,6 +71,7 @@
     <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
     <Compile Include="ConnectService.cs" />
+    <Compile Include="Devices\DeviceService.cs" />
     <Compile Include="Dlna\DlnaServerService.cs" />
     <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="Library\ChapterService.cs" />
