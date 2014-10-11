@@ -76,7 +76,10 @@ namespace MediaBrowser.Model.Dlna
 
         public bool IsDirectStream
         {
-            get { return PlayMethod == PlayMethod.DirectStream; }
+            get { 
+                return PlayMethod == PlayMethod.DirectStream ||
+                    PlayMethod == PlayMethod.DirectPlay;
+            }
         }
 
         public string ToUrl(string baseUrl)
@@ -89,13 +92,6 @@ namespace MediaBrowser.Model.Dlna
             if (string.IsNullOrEmpty(baseUrl))
             {
                 throw new ArgumentNullException(baseUrl);
-            }
-
-            if (IsDirectStream && MediaSource != null && MediaSource.Protocol == MediaProtocol.Http)
-            {
-                if (MediaSource.RequiredHttpHeaders.Count == 0)
-                {
-                }
             }
 
             string dlnaCommand = BuildDlnaParam(this);

@@ -733,12 +733,6 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
         {
-            // Only plain video files can be direct played
-            if (item.VideoType != VideoType.VideoFile)
-            {
-                return false;
-            }
-
             if (profile.Container.Length > 0)
             {
                 // Check container type

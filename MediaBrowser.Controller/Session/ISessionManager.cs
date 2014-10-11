@@ -232,7 +232,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        void ReportCapabilities(string sessionId, SessionCapabilities capabilities);
+        void ReportCapabilities(string sessionId, ClientCapabilities capabilities);
 
         /// <summary>
         /// Reports the transcoding information.

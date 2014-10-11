@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using System.Collections.Generic;

@@ -235,6 +235,9 @@ namespace MediaBrowser.Api.Session
 
         [ApiMember(Name = "SupportsMediaControl", Description = "Determines whether media can be played remotely.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsMediaControl { get; set; }
+
+        [ApiMember(Name = "SupportsContentUploading", Description = "Determines whether camera upload is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool SupportsContentUploading { get; set; }
     }
 
     [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
@@ -494,7 +497,7 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession().Id;
             }
-            _sessionManager.ReportCapabilities(request.Id, new SessionCapabilities
+            _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
                 PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
@@ -502,7 +505,9 @@ namespace MediaBrowser.Api.Session
 
                 SupportsMediaControl = request.SupportsMediaControl,
 
-                MessageCallbackUrl = request.MessageCallbackUrl
+                MessageCallbackUrl = request.MessageCallbackUrl,
+
+                SupportsContentUploading = request.SupportsContentUploading
             });
         }
     }

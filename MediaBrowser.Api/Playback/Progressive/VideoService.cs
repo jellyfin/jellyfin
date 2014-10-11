@@ -32,6 +32,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.3gp", "GET")]
     [Route("/Videos/{Id}/stream.wmv", "GET")]
     [Route("/Videos/{Id}/stream.wtv", "GET")]
+    [Route("/Videos/{Id}/stream.mov", "GET")]
     [Route("/Videos/{Id}/stream", "GET")]
     [Route("/Videos/{Id}/stream.ts", "HEAD")]
     [Route("/Videos/{Id}/stream.webm", "HEAD")]
@@ -48,6 +49,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.wmv", "HEAD")]
     [Route("/Videos/{Id}/stream.wtv", "HEAD")]
     [Route("/Videos/{Id}/stream.m2ts", "HEAD")]
+    [Route("/Videos/{Id}/stream.mov", "HEAD")]
     [Route("/Videos/{Id}/stream", "HEAD")]
     [Api(Description = "Gets a video stream")]
     public class GetVideoStream : VideoStreamRequest

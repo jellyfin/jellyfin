@@ -67,6 +67,7 @@
     <Compile Include="ApiClient\IApiClient.cs" />
     <Compile Include="ApiClient\ApiClientExtensions.cs" />
     <Compile Include="ApiClient\IConnectionManager.cs" />
+    <Compile Include="ApiClient\IDevice.cs" />
     <Compile Include="ApiClient\IServerEvents.cs" />
     <Compile Include="ApiClient\GeneralCommandEventArgs.cs" />
     <Compile Include="ApiClient\ServerDiscoveryInfo.cs" />
@@ -95,6 +96,9 @@
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
+    <Compile Include="Devices\LocalFileInfo.cs" />
+    <Compile Include="Devices\DeviceInfo.cs" />
+    <Compile Include="Devices\DevicesOptions.cs" />
     <Compile Include="Dlna\EncodingContext.cs" />
     <Compile Include="Dlna\Profiles\AndroidProfile.cs" />
     <Compile Include="Dlna\Profiles\DefaultProfile.cs" />
@@ -331,11 +335,11 @@
     <Compile Include="Serialization\IJsonSerializer.cs" />
     <Compile Include="Serialization\IXmlSerializer.cs" />
     <Compile Include="Session\PlaystateRequest.cs" />
-    <Compile Include="Session\SessionCapabilities.cs" />
     <Compile Include="Session\SessionInfoDto.cs" />
     <Compile Include="Session\SessionUserInfo.cs" />
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
+    <Compile Include="Devices\ContentUploadHistory.cs" />
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
     <Compile Include="Sync\SyncJobItem.cs" />

@@ -316,17 +316,22 @@ namespace MediaBrowser.Api.Playback.Progressive
                 CancellationToken = cancellationTokenSource.Token
             };
 
-            var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
-
-            responseHeaders["Accept-Ranges"] = "none";
-
-            var length = response.Headers["Content-Length"];
-
-            if (!string.IsNullOrEmpty(length))
+            if (!string.IsNullOrWhiteSpace(Request.QueryString["Range"]))
             {
-                responseHeaders["Content-Length"] = length;
+                options.RequestHeaders["Range"] = Request.QueryString["Range"];
             }
 
+            var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
+
+            foreach (var name in new[] { "Content-Length", "Content-Range", "Accept-Ranges" })
+            {
+                var val = response.Headers[name];
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    responseHeaders[name] = val;
+                }
+            }
+            
             if (isHeadRequest)
             {
                 using (response.Content)

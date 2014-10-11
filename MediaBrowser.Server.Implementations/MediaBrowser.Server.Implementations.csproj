@@ -119,6 +119,9 @@
     <Compile Include="Connect\ConnectData.cs" />
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
+    <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\DeviceRepository.cs" />
+    <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />

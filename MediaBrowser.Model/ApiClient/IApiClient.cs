@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -794,16 +795,22 @@ namespace MediaBrowser.Model.ApiClient
         string ClientName { get; set; }
 
         /// <summary>
+        /// Gets the device.
+        /// </summary>
+        /// <value>The device.</value>
+        IDevice Device { get; }
+
+        /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
-        string DeviceName { get; set; }
+        string DeviceName { get; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
         /// <value>The device id.</value>
-        string DeviceId { get; set; }
+        string DeviceId { get; }
 
         /// <summary>
         /// Gets or sets the current user id.
@@ -1319,5 +1326,29 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task.</returns>
         Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the content upload history.
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <returns>Task&lt;ContentUploadHistory&gt;.</returns>
+        Task<ContentUploadHistory> GetContentUploadHistory(string deviceId);
+
+        /// <summary>
+        /// Uploads the file.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="file">The file.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UploadFile(Stream stream, 
+            LocalFileInfo file,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the devices options options.
+        /// </summary>
+        /// <returns>Task&lt;DevicesOptions&gt;.</returns>
+        Task<DevicesOptions> GetDevicesOptions();
     }
 }

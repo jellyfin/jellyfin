@@ -179,7 +179,6 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="sessionMananger">The session mananger.</param>
-        /// <exception cref="System.ArgumentNullException">xmlSerializer</exception>
         public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
         {
             _userManager = userManager;
