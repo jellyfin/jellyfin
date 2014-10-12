@@ -580,6 +580,10 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The HLS
         /// </summary>
-        Hls
+        Hls,
+        /// <summary>
+        /// The dash
+        /// </summary>
+        Dash
     }
 }

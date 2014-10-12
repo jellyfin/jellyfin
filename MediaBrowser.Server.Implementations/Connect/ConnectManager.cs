@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -133,8 +134,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     }
                     catch (HttpException ex)
                     {
-                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound ||
-                            ex.StatusCode.Value != HttpStatusCode.Unauthorized)
+                        if (!ex.StatusCode.HasValue || !new[] { HttpStatusCode.NotFound, HttpStatusCode.Unauthorized }.Contains(ex.StatusCode.Value))
                         {
                             throw;
                         }
@@ -147,6 +147,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
                 }
+
+                await RefreshAuthorizations(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -434,6 +436,47 @@ namespace MediaBrowser.Server.Implementations.Connect
         private void SetServerAccessToken(HttpRequestOptions options)
         {
             options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
+        }
+
+        public async Task RefreshAuthorizations(CancellationToken cancellationToken)
+        {
+            var url = GetConnectUrl("ServerAuthorizations");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken
+            };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId}
+                };
+
+            options.SetPostData(postData);
+
+            SetServerAccessToken(options);
+
+            try
+            {
+                // No need to examine the response
+                using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
+                {
+                    var list = _json.DeserializeFromStream<List<ServerUserAuthorizationResponse>>(stream);
+
+                    RefreshAuthorizations(list);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error refreshing server authorizations.", ex);
+            }
+
+        }
+
+        private void RefreshAuthorizations(List<ServerUserAuthorizationResponse> list)
+        {
+            
         }
     }
 }

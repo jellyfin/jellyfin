@@ -695,13 +695,5 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             return ".ts";
         }
-
-        protected override TranscodingJobType TranscodingJobType
-        {
-            get
-            {
-                return TranscodingJobType.Hls;
-            }
-        }
     }
 }
