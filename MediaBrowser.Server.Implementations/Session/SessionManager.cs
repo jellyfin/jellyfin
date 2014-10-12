@@ -26,7 +26,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1594,7 +1593,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 info.ChapterImagesItemId = chapterOwner.Id.ToString("N");
 
-                info.Chapters = _itemRepo.GetChapters(chapterOwner.Id).Select(i => _dtoService.GetChapterInfoDto(i, chapterOwner)).ToList();
+                info.Chapters = _dtoService.GetChapterInfoDtos(chapterOwner).ToList();
             }
 
             if (!string.IsNullOrWhiteSpace(mediaSourceId))

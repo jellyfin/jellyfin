@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
@@ -253,6 +254,7 @@ namespace MediaBrowser.Controller.Entities
         public static ILiveTvManager LiveTvManager { get; set; }
         public static IChannelManager ChannelManager { get; set; }
         public static ICollectionManager CollectionManager { get; set; }
+        public static IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -1455,17 +1457,16 @@ namespace MediaBrowser.Controller.Entities
 
             if (image == null)
             {
-                ImageInfos.Add(new ItemImageInfo
-                {
-                    Path = file.FullName,
-                    Type = type,
-                    DateModified = FileSystem.GetLastWriteTimeUtc(file)
-                });
+                ImageInfos.Add(GetImageInfo(file, type));
             }
             else
             {
+                var imageInfo = GetImageInfo(file, type);
+
                 image.Path = file.FullName;
-                image.DateModified = FileSystem.GetLastWriteTimeUtc(file);
+                image.DateModified = imageInfo.DateModified;
+                image.Width = imageInfo.Width;
+                image.Height = imageInfo.Height;
             }
         }
 
@@ -1574,7 +1575,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Path = path,
                     DateModified = FileSystem.GetLastWriteTimeUtc(path),
-                    Type = imageType
+                    Type = imageType,
+                    Width = chapter.ImageWidth,
+                    Height = chapter.ImageHeight
                 };
             }
 
@@ -1631,14 +1634,33 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            ImageInfos.AddRange(newImageList.Select(i => new ItemImageInfo
-            {
-                Path = i.FullName,
-                Type = imageType,
-                DateModified = FileSystem.GetLastWriteTimeUtc(i)
-            }));
+            ImageInfos.AddRange(newImageList.Select(i => GetImageInfo(i, imageType)));
 
             return newImageList.Count > 0;
+        }
+
+        private ItemImageInfo GetImageInfo(FileSystemInfo file, ImageType type)
+        {
+            var info = new ItemImageInfo
+            {
+                Path = file.FullName,
+                Type = type,
+                DateModified = FileSystem.GetLastWriteTimeUtc(file)
+            };
+
+            try
+            {
+                var size = ImageProcessor.GetImageSize(info.Path);
+
+                info.Width = Convert.ToInt32(size.Width);
+                info.Height = Convert.ToInt32(size.Height);
+            }
+            catch
+            {
+                
+            }
+
+            return info;
         }
 
         /// <summary>

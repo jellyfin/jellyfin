@@ -312,36 +312,6 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            var video = item as Video;
-
-            if (video != null)
-            {
-                var index = 0;
-
-                foreach (var chapter in _itemRepo.GetChapters(video.Id))
-                {
-                    if (!string.IsNullOrEmpty(chapter.ImagePath))
-                    {
-                        var image = chapter.ImagePath;
-
-                        var info = GetImageInfo(item, new ItemImageInfo
-                        {
-                            Path = image,
-                            Type = ImageType.Chapter,
-                            DateModified = _fileSystem.GetLastWriteTimeUtc(image)
-
-                        }, index);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
-                    }
-
-                    index++;
-                }
-            }
-
             return list;
         }
 
@@ -351,8 +321,6 @@ namespace MediaBrowser.Api.Images
             {
                 var fileInfo = new FileInfo(info.Path);
 
-                var size = _imageProcessor.GetImageSize(info.Path);
-
                 return new ImageInfo
                 {
                     Path = info.Path,
@@ -360,8 +328,8 @@ namespace MediaBrowser.Api.Images
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = fileInfo.Length,
-                    Width = Convert.ToInt32(size.Width),
-                    Height = Convert.ToInt32(size.Height)
+                    Width = info.Width ?? 0,
+                    Height = info.Height ?? 0
                 };
             }
             catch (Exception ex)

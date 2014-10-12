@@ -372,7 +372,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Longitude = item.Longitude;
             dto.Altitude = item.Altitude;
             dto.IsoSpeedRating = item.IsoSpeedRating;
-            
+
             var album = item.Album;
 
             if (album != null)
@@ -659,7 +659,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="chapterInfo">The chapter info.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfoDto.</returns>
-        public ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
+        private ChapterInfoDto GetChapterInfoDto(ChapterInfo chapterInfo, BaseItem item)
         {
             var dto = new ChapterInfoDto
             {
@@ -678,6 +678,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             return dto;
+        }
+
+        public List<ChapterInfoDto> GetChapterInfoDtos(BaseItem item)
+        {
+            return _itemRepo.GetChapters(item.Id)
+                .Select(c => GetChapterInfoDto(c, item))
+                .ToList();
         }
 
         /// <summary>
@@ -1055,20 +1062,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.Chapters))
                 {
-                    List<ChapterInfoDto> chapters;
-
-                    if (dto.MediaSources != null && dto.MediaSources.Count > 0)
-                    {
-                        chapters = _itemRepo.GetChapters(item.Id).Select(c => GetChapterInfoDto(c, item)).ToList();
-                    }
-                    else
-                    {
-                        chapters = _itemRepo.GetChapters(video.Id)
-                            .Select(c => GetChapterInfoDto(c, item))
-                            .ToList();
-                    }
-
-                    dto.Chapters = chapters;
+                    dto.Chapters = GetChapterInfoDtos(item);
                 }
             }
 
@@ -1435,21 +1429,35 @@ namespace MediaBrowser.Server.Implementations.Dto
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             var dateModified = imageInfo.DateModified;
 
+            double? width = imageInfo.Width;
+            double? height = imageInfo.Height;
+
             ImageSize size;
 
-            try
+            if (!width.HasValue || !height.HasValue)
             {
-                size = _imageProcessor.GetImageSize(path, dateModified);
+                try
+                {
+                    size = _imageProcessor.GetImageSize(path, dateModified);
+                }
+                catch (FileNotFoundException)
+                {
+                    _logger.Error("Image file does not exist: {0}", path);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                    return;
+                }
             }
-            catch (FileNotFoundException)
+            else
             {
-                _logger.Error("Image file does not exist: {0}", path);
-                return;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
-                return;
+                size = new ImageSize
+                {
+                    Height = height.Value,
+                    Width = width.Value
+                };
             }
 
             dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
