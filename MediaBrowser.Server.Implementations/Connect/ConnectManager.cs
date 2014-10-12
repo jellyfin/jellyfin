@@ -464,7 +464,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     var list = _json.DeserializeFromStream<List<ServerUserAuthorizationResponse>>(stream);
 
-                    RefreshAuthorizations(list);
+                    await RefreshAuthorizations(list).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -473,10 +473,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private void RefreshAuthorizations(List<ServerUserAuthorizationResponse> list)
+        private async Task RefreshAuthorizations(List<ServerUserAuthorizationResponse> list)
         {
-            // TODO: Handle newly added guests that we don't know about
-
             var users = _userManager.Users.ToList();
 
             // Handle existing authorizations that were removed by the Connect server
@@ -493,7 +491,14 @@ namespace MediaBrowser.Server.Implementations.Connect
                         user.ConnectAccessKey = null;
                         user.ConnectUserName = null;
 
-                        _userManager.UpdateUser(user);
+                        if (user.ConnectLinkType == UserLinkType.Guest)
+                        {
+                            await _userManager.DeleteUser(user).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await _userManager.UpdateUser(user).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
@@ -504,13 +509,28 @@ namespace MediaBrowser.Server.Implementations.Connect
                             user.ConnectUserId = connectEntry.UserId;
                             user.ConnectAccessKey = connectEntry.AccessToken;
 
-                            _userManager.UpdateUser(user);
+                            await _userManager.UpdateUser(user).ConfigureAwait(false);
                         }
                     }
                 }
             }
 
+            users = _userManager.Users.ToList();
 
+            // TODO: Handle newly added guests that we don't know about
+            foreach (var connectEntry in list)
+            {
+                if (string.Equals(connectEntry.UserType, "guest", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(connectEntry.AcceptStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                {
+                    var user = users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectEntry.UserId, StringComparison.OrdinalIgnoreCase));
+
+                    if (user == null)
+                    {
+                        // Add user
+                    }
+                }
+            }
         }
     }
 }
