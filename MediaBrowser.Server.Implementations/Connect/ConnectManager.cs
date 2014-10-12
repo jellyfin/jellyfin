@@ -24,6 +24,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 {
     public class ConnectManager : IConnectManager
     {
+        private SemaphoreSlim _operationLock = new SemaphoreSlim(1,1);
+
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
@@ -111,6 +113,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async void UpdateConnectInfo()
         {
+            await _operationLock.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                await UpdateConnectInfoInternal().ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private async Task UpdateConnectInfoInternal()
+        {
             var wanApiAddress = WanApiAddress;
 
             if (string.IsNullOrWhiteSpace(wanApiAddress))
@@ -148,14 +164,14 @@ namespace MediaBrowser.Server.Implementations.Connect
                     await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
                 }
 
-                await RefreshAuthorizations(CancellationToken.None).ConfigureAwait(false);
+                await RefreshAuthorizationsInternal(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error registering with Connect", ex);
             }
         }
-
+        
         private async Task CreateServerRegistration(string wanApiAddress)
         {
             var url = "Servers";
@@ -440,6 +456,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task RefreshAuthorizations(CancellationToken cancellationToken)
         {
+            await _operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await RefreshAuthorizationsInternal(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private async Task RefreshAuthorizationsInternal(CancellationToken cancellationToken)
+        {
             var url = GetConnectUrl("ServerAuthorizations");
 
             var options = new HttpRequestOptions
@@ -459,7 +489,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                // No need to examine the response
                 using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
                 {
                     var list = _json.DeserializeFromStream<List<ServerUserAuthorizationResponse>>(stream);
@@ -491,13 +520,11 @@ namespace MediaBrowser.Server.Implementations.Connect
                         user.ConnectAccessKey = null;
                         user.ConnectUserName = null;
 
+                        await _userManager.UpdateUser(user).ConfigureAwait(false);
+                        
                         if (user.ConnectLinkType == UserLinkType.Guest)
                         {
                             await _userManager.DeleteUser(user).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await _userManager.UpdateUser(user).ConfigureAwait(false);
                         }
                     }
                     else
