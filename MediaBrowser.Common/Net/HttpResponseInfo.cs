@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 
@@ -7,7 +8,7 @@ namespace MediaBrowser.Common.Net
     /// <summary>
     /// Class HttpResponseInfo
     /// </summary>
-    public class HttpResponseInfo
+    public class HttpResponseInfo : IDisposable
     {
         /// <summary>
         /// Gets or sets the type of the content.
@@ -50,5 +51,23 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The headers.</value>
         public NameValueCollection Headers { get; set; }
+
+        private readonly IDisposable _disposable;
+
+        public HttpResponseInfo(IDisposable disposable)
+        {
+            _disposable = disposable;
+        }
+        public HttpResponseInfo()
+        {
+        }
+
+        public void Dispose()
+        {
+            if (_disposable != null)
+            {
+                _disposable.Dispose();
+            }
+        }
     }
 }

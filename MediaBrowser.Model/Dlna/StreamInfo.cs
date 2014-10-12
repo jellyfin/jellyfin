@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Model.Drawing;
+﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
@@ -7,6 +6,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -89,6 +89,11 @@ namespace MediaBrowser.Model.Dlna
 
         public string ToDlnaUrl(string baseUrl)
         {
+            if (PlayMethod == PlayMethod.DirectPlay)
+            {
+                return MediaSource.Path;
+            }
+
             if (string.IsNullOrEmpty(baseUrl))
             {
                 throw new ArgumentNullException(baseUrl);

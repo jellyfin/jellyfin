@@ -34,7 +34,7 @@ namespace MediaBrowser.Api.Devices
     [Route("/Devices/CameraUploads", "POST", Summary = "Uploads content")]
     public class PostCameraUpload : IRequiresRequestStream, IReturnVoid
     {
-        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "DeviceId", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
 
         [ApiMember(Name = "Album", Description = "Album", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -87,8 +87,7 @@ namespace MediaBrowser.Api.Devices
 
         public void Post(PostCameraUpload request)
         {
-            var deviceId = request.DeviceId;
-
+            var deviceId = Request.QueryString["DeviceId"];
             var album = Request.QueryString["Album"];
             var fullPath = Request.QueryString["FullPath"];
             var name = Request.QueryString["Name"];

@@ -3,7 +3,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
@@ -60,7 +59,7 @@ namespace MediaBrowser.Controller.Entities
                 CollectionType.Trailers
             };
 
-            var collectionFolder = folder as CollectionFolder;
+            var collectionFolder = folder as ICollectionFolder;
 
             if (collectionFolder == null)
             {
@@ -69,31 +68,5 @@ namespace MediaBrowser.Controller.Entities
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
         }
-    }
-
-    public class SpecialFolder : Folder
-    {
-        public SpecialFolderType SpecialFolderType { get; set; }
-        public string ItemTypeName { get; set; }
-        public string ParentId { get; set; }
-
-        public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
-        {
-            var parent = (Folder)LibraryManager.GetItemById(new Guid(ParentId));
-
-            if (SpecialFolderType == SpecialFolderType.ItemsByType)
-            {
-                var items = parent.GetRecursiveChildren(user, includeLinkedChildren);
-
-                return items.Where(i => string.Equals(i.GetType().Name, ItemTypeName, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return new List<BaseItem>();
-        }
-    }
-
-    public enum SpecialFolderType
-    {
-        ItemsByType = 1
     }
 }

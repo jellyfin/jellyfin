@@ -74,6 +74,9 @@ namespace MediaBrowser.Model.Dlna
         public bool RequiresPlainVideoItems { get; set; }
         public bool RequiresPlainFolders { get; set; }
 
+        public bool SupportsDirectRemoteContent { get; set; }
+        public bool SupportsCustomHttpHeaders { get; set; }
+
         public XmlAttribute[] XmlRootAttributes { get; set; }
 
         /// <summary>

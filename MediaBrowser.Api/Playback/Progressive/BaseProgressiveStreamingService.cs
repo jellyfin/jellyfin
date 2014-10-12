@@ -308,6 +308,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             string useragent = null;
             state.RemoteHttpHeaders.TryGetValue("User-Agent", out useragent);
 
+            var trySupportSeek = false;
+
             var options = new HttpRequestOptions
             {
                 Url = state.MediaPath,
@@ -316,25 +318,39 @@ namespace MediaBrowser.Api.Playback.Progressive
                 CancellationToken = cancellationTokenSource.Token
             };
 
-            if (!string.IsNullOrWhiteSpace(Request.QueryString["Range"]))
+            if (trySupportSeek)
             {
-                options.RequestHeaders["Range"] = Request.QueryString["Range"];
+                if (!string.IsNullOrWhiteSpace(Request.QueryString["Range"]))
+                {
+                    options.RequestHeaders["Range"] = Request.QueryString["Range"];
+                }
             }
-
             var response = await HttpClient.GetResponse(options).ConfigureAwait(false);
 
-            foreach (var name in new[] { "Content-Length", "Content-Range", "Accept-Ranges" })
+            if (trySupportSeek)
             {
-                var val = response.Headers[name];
-                if (!string.IsNullOrWhiteSpace(val))
+                foreach (var name in new[] {"Content-Range", "Accept-Ranges"})
                 {
-                    responseHeaders[name] = val;
+                    var val = response.Headers[name];
+                    if (!string.IsNullOrWhiteSpace(val))
+                    {
+                        responseHeaders[name] = val;
+                    }
                 }
+            }
+            else
+            {
+                responseHeaders["Accept-Ranges"] = "none";
+            }
+            
+            if (response.ContentLength.HasValue)
+            {
+                responseHeaders["Content-Length"] = response.ContentLength.Value.ToString(UsCulture);
             }
             
             if (isHeadRequest)
             {
-                using (response.Content)
+                using (response)
                 {
                     return ResultFactory.GetResult(new byte[] { }, response.ContentType, responseHeaders);
                 }

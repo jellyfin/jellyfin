@@ -422,7 +422,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     if (!string.IsNullOrEmpty(deviceId))
                     {
                         var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
-                        await _deviceManager.RegisterDevice(deviceId, deviceName, userIdString).ConfigureAwait(false);
+                        await _deviceManager.RegisterDevice(deviceId, deviceName, clientType, userIdString).ConfigureAwait(false);
                     }
                 }
 
