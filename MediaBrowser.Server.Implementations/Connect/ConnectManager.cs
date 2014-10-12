@@ -471,12 +471,46 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 _logger.ErrorException("Error refreshing server authorizations.", ex);
             }
-
         }
 
         private void RefreshAuthorizations(List<ServerUserAuthorizationResponse> list)
         {
-            
+            // TODO: Handle newly added guests that we don't know about
+
+            var users = _userManager.Users.ToList();
+
+            // Handle existing authorizations that were removed by the Connect server
+            // Handle existing authorizations whose status may have been updated
+            foreach (var user in users)
+            {
+                if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
+                {
+                    var connectEntry = list.FirstOrDefault(i => string.Equals(i.UserId, user.ConnectUserId, StringComparison.OrdinalIgnoreCase));
+
+                    if (connectEntry == null)
+                    {
+                        user.ConnectUserId = null;
+                        user.ConnectAccessKey = null;
+                        user.ConnectUserName = null;
+
+                        _userManager.UpdateUser(user);
+                    }
+                    else
+                    {
+                        var changed = !string.Equals(user.ConnectAccessKey, connectEntry.AccessToken, StringComparison.OrdinalIgnoreCase);
+
+                        if (changed)
+                        {
+                            user.ConnectUserId = connectEntry.UserId;
+                            user.ConnectAccessKey = connectEntry.AccessToken;
+
+                            _userManager.UpdateUser(user);
+                        }
+                    }
+                }
+            }
+
+
         }
     }
 }
