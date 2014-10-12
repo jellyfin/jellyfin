@@ -146,6 +146,10 @@ namespace MediaBrowser.Common.Net
             {
                 return "video/mp2t";
             }
+            if (ext.Equals(".mpd", StringComparison.OrdinalIgnoreCase))
+            {
+                return "video/vnd.mpeg.dash.mpd";
+            }
 
             // Catch-all for all video types that don't require specific mime types
             if (VideoFileExtensionsDictionary.ContainsKey(ext))

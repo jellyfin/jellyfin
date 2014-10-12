@@ -1575,9 +1575,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     Path = path,
                     DateModified = FileSystem.GetLastWriteTimeUtc(path),
-                    Type = imageType,
-                    Width = chapter.ImageWidth,
-                    Height = chapter.ImageHeight
+                    Type = imageType
                 };
             }
 
