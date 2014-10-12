@@ -4,31 +4,20 @@
     <title>${TitleDevices}</title>
 </head>
 <body>
-    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage">
+    <div id="devicePage" data-role="page" class="page type-interior devicesPage">
 
         <div data-role="content">
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="devices.html" data-role="button">${TabDevices}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabCameraUpload}</a>
+                    <a href="devices.html" data-role="button" class="ui-btn-active">${TabDevices}</a>
+                    <a href="devicesupload.html" data-role="button">${TabCameraUpload}</a>
                 </div>
-
 
                 <div class="readOnlyContent">
 
-                    <p>${HeaderCameraUploadHelp}</p>
+                    <form class="deviceForm">
 
-                    <p class="noDevices" style="display:none;color:red;">${MessageNoDevicesSupportCameraUpload}</p>
-
-                    <br />
-                    <form class="devicesUploadForm">
-
-                        <div class="devicesList">
-
-                        </div>
-
-                        <br /><br />
                         <ul data-role="listview" class="ulForm">
                             <li>
                                 <label for="txtUploadPath">${LabelCameraUploadPath}</label>
@@ -37,11 +26,6 @@
                                 </div>
                                 <button id="btnSelectUploadPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                                 <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
-                            </li>
-                            <li>
-                                <label for="chkSubfolder">${LabelCreateCameraUploadSubfolder}</label>
-                                <input type="checkbox" id="chkSubfolder" data-mini="true" />
-                                <div class="fieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
                             </li>
 
                         </ul><br />
@@ -57,12 +41,10 @@
                         </ul>
 
                     </form>
+
                 </div>
             </div>
         </div>
-        <script type="text/javascript">
-            $('.devicesUploadForm').off('submit', DevicesUploadPage.onSubmit).on('submit', DevicesUploadPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

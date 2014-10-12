@@ -21,6 +21,11 @@ namespace MediaBrowser.Model.Devices
         /// <value>The last name of the user.</value>
         public string LastUserName { get; set; }
         /// <summary>
+        /// Gets or sets the name of the application.
+        /// </summary>
+        /// <value>The name of the application.</value>
+        public string AppName { get; set; }
+        /// <summary>
         /// Gets or sets the last user identifier.
         /// </summary>
         /// <value>The last user identifier.</value>

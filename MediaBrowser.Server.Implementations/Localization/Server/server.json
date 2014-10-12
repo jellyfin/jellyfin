@@ -1047,7 +1047,7 @@
     "AppDeviceValues": "App: {0}, Device: {1}",
     "ProviderValue": "Provider: {0}",
     "LabelChannelDownloadSizeLimit": "Download size limit (GB):",
-    "LabelChannelDownloadSizeLimitHelp": "Limit the size of the channel download folder. Downloading beyond 500MB requires an active supporter membership.",
+    "LabelChannelDownloadSizeLimitHelpText": "Limit the size of the channel download folder.",
     "HeaderRecentActivity": "Recent Activity",
     "HeaderPeople": "People",
     "HeaderDownloadPeopleMetadataFor": "Download biography and images for:",
@@ -1222,6 +1222,8 @@
     "TitleDevices": "Devices",
     "HeaderCameraUploadHelp": "Automatically upload photos and videos taken from your mobile devices into Media Browser.",
     "MessageNoDevicesSupportCameraUpload": "You currently don't have any devices that support camera upload.",
-    "LabelUploadPath": "Upload path:",
-    "LabelUploadPathHelp": "Select a custom upload path, if desired. If unspecified an internal data folder will be used."
+    "LabelCameraUploadPath": "Camera upload path:",
+    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used.",
+    "LabelCreateCameraUploadSubfolder": "Create a sub-folder for each device",
+    "LabelCreateCameraUploadSubfolderHelp": "Specific folders can be assigned to devices by clicking on the device on the Devices page."
 }

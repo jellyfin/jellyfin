@@ -114,6 +114,7 @@ namespace MediaBrowser.Common.Net
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             LogRequest = true;
+            CacheMode = CacheMode.None;
         }
 
         public void SetPostData(IDictionary<string,string> values)

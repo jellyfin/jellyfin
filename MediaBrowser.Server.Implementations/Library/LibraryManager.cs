@@ -1501,7 +1501,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Select(i => i.RootFolder)
                 .Distinct()
                 .SelectMany(i => i.Children)
-                .OfType<CollectionFolder>()
+                .OfType<ICollectionFolder>()
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
                 .Where(i => !string.IsNullOrEmpty(i))

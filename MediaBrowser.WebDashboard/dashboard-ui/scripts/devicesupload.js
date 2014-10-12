@@ -12,6 +12,8 @@
 
         $('#txtUploadPath', page).val(config.CameraUploadPath || '');
 
+        $('#chkSubfolder', page).checked(config.EnableCameraUploadSubfolders).checkboxradio('refresh');
+
         loadDeviceList(page, devices, config);
     }
 
@@ -34,6 +36,11 @@
 
             deviceHtml += '<label for="' + id + '">';
             deviceHtml += d.Name;
+
+            if (d.AppName) {
+                deviceHtml += '<br/><span>' + d.AppName + '</span>';
+            }
+
             deviceHtml += '</label>';
 
             var isChecked = config.EnabledCameraUploadDevices.indexOf(d.Id) != -1;
@@ -87,6 +94,8 @@
                 return c.getAttribute('data-id');
 
             });
+
+            config.EnableCameraUploadSubfolders = $('#chkSubfolder', page).checked();
 
             ApiClient.updateNamedConfiguration("devices", config).done(Dashboard.processServerConfigurationUpdateResult);
         });

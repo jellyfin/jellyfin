@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
@@ -7,5 +8,7 @@ namespace MediaBrowser.Controller.Entities
     public interface ICollectionFolder
     {
         string CollectionType { get; }
+        string Path { get; }
+        IEnumerable<string> PhysicalLocations { get; }
     }
 }

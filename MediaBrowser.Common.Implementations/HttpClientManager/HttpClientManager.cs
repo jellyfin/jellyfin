@@ -398,7 +398,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
-                    return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse));
+                    return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse), httpResponse);
                 }
 
                 using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
@@ -417,7 +417,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                         memoryStream.Position = 0;
 
-                        return GetResponseInfo(httpResponse, memoryStream, memoryStream.Length);
+                        return GetResponseInfo(httpResponse, memoryStream, memoryStream.Length, null);
                     }
                 }
             }
@@ -480,9 +480,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return exception;
         }
 
-        private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength)
+        private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength, IDisposable disposable)
         {
-            return new HttpResponseInfo
+            return new HttpResponseInfo(disposable)
             {
                 Content = content,
 

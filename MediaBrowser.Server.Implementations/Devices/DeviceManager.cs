@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             _config = config;
         }
 
-        public Task RegisterDevice(string reportedId, string name, string usedByUserId)
+        public Task RegisterDevice(string reportedId, string name, string appName, string usedByUserId)
         {
             var device = GetDevice(reportedId) ?? new DeviceInfo
             {
@@ -37,6 +37,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             };
 
             device.Name = name;
+            device.AppName = appName;
 
             if (!string.IsNullOrWhiteSpace(usedByUserId))
             {
@@ -115,12 +116,21 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             var config = _config.GetUploadOptions();
 
+            var device = GetDevice(deviceId);
+
             if (!string.IsNullOrWhiteSpace(config.CameraUploadPath))
             {
                 return config.CameraUploadPath;
             }
 
-            return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
+            var path = Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
+
+            if (config.EnableCameraUploadSubfolders)
+            {
+                path = Path.Combine(path, _fileSystem.GetValidFilename(device.Name));
+            }
+
+            return path;
         }
     }
 

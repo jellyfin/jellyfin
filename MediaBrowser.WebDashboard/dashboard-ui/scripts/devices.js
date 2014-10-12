@@ -34,11 +34,17 @@
             var deviceHtml = '';
             deviceHtml += '<li>';
 
-            deviceHtml += '<a href="#">';
+            deviceHtml += '<a href="device.html?id=' + d.Id + '">';
 
             deviceHtml += '<h3>';
             deviceHtml += d.Name;
             deviceHtml += '</h3>';
+
+            if (d.AppName) {
+                deviceHtml += '<p style="color:blue;">';
+                deviceHtml += d.AppName;
+                deviceHtml += '</p>';
+            }
 
             if (d.LastUserName) {
                 deviceHtml += '<p style="color:green;">';

@@ -186,13 +186,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private double? GetDownloadLimit(ChannelOptions channelOptions)
         {
-            if (!_security.IsMBSupporter)
-            {
-                const double limit = .5;
-
-                return Math.Min(channelOptions.DownloadSizeLimit ?? limit, limit);
-            }
-
             return channelOptions.DownloadSizeLimit;
         }
 

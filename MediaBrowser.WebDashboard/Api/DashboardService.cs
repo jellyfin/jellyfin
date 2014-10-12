@@ -564,6 +564,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "dashboardgeneral.js",
                                 "dashboardpage.js",
                                 "dashboardsync.js",
+                                "device.js",
                                 "devices.js",
                                 "devicesupload.js",
                                 "directorybrowser.js",

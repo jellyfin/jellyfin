@@ -82,7 +82,14 @@ namespace MediaBrowser.Model.Dlna
             // If that doesn't produce anything, just take the first
             foreach (StreamInfo i in streams)
             {
-                if (i.IsDirectStream)
+                if (i.PlayMethod == PlayMethod.DirectPlay)
+                {
+                    return i;
+                }
+            }
+            foreach (StreamInfo i in streams)
+            {
+                if (i.PlayMethod == PlayMethod.DirectStream)
                 {
                     return i;
                 }
@@ -249,11 +256,11 @@ namespace MediaBrowser.Model.Dlna
             if (IsEligibleForDirectPlay(item, maxBitrateSetting, subtitleStream, options))
             {
                 // See if it can be direct played
-                DirectPlayProfile directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream);
+                var directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream);
 
                 if (directPlay != null)
                 {
-                    playlistItem.PlayMethod = PlayMethod.DirectStream;
+                    playlistItem.PlayMethod = directPlay.Value;
                     playlistItem.Container = item.Container;
 
                     if (subtitleStream != null)
@@ -366,7 +373,7 @@ namespace MediaBrowser.Model.Dlna
             return 128000;
         }
 
-        private DirectPlayProfile GetVideoDirectPlayProfile(DeviceProfile profile,
+        private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream)
@@ -487,7 +494,21 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            return directPlay;
+            if (mediaSource.Protocol == MediaProtocol.Http)
+            {
+                if (!profile.SupportsDirectRemoteContent)
+                {
+                    return null;
+                }
+
+                if (mediaSource.RequiredHttpHeaders.Count > 0 && !profile.SupportsCustomHttpHeaders)
+                {
+                    return null;
+                }
+                return PlayMethod.DirectPlay;
+            }
+
+            return PlayMethod.DirectStream;
         }
 
         private bool IsEligibleForDirectPlay(MediaSourceInfo item,

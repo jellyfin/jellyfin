@@ -29,11 +29,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         }
 
         protected static string[] ImageExtensions = { ".tiff", ".jpeg", ".jpg", ".png", ".aiff" };
+
+        private static readonly string[] IgnoreFiles =
+        {
+            "folder",
+            "thumb",
+            "landscape",
+            "fanart",
+            "backdrop",
+            "poster"
+        };
+
         internal static bool IsImageFile(string path)
         {
-            var filename = Path.GetFileName(path);
+            var filename = Path.GetFileNameWithoutExtension(path) ?? string.Empty;
 
-            return !string.Equals(filename, "folder.jpg", StringComparison.OrdinalIgnoreCase)
+            return !IgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase)
                 && ImageExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 

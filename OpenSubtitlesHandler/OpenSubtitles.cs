@@ -17,6 +17,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Globalization;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
@@ -131,9 +132,18 @@ namespace OpenSubtitlesHandler
                         {
                             switch (MEMBER.Name)
                             {
-                                case "token": re.Token = TOKEN = MEMBER.Data.Data.ToString(); OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
-                                case "seconds": re.Seconds = (double)MEMBER.Data.Data; OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
-                                case "status": re.Status = MEMBER.Data.Data.ToString(); OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); break;
+                                case "token": 
+                                    re.Token = TOKEN = MEMBER.Data.Data.ToString(); 
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                    break;
+                                case "seconds":
+                                    re.Seconds = double.Parse(MEMBER.Data.Data.ToString(), CultureInfo.InvariantCulture);
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                    break;
+                                case "status": 
+                                    re.Status = MEMBER.Data.Data.ToString(); 
+                                    OSHConsole.WriteLine(MEMBER.Name + "= " + MEMBER.Data.Data.ToString()); 
+                                    break;
                             }
                         }
                         return re;

@@ -53,9 +53,9 @@ namespace MediaBrowser.Api.Playback
         /// <returns>Task.</returns>
         public async Task WriteToAsync(Stream responseStream)
         {
-            using (var remoteStream = _response.Content)
+            using (_response)
             {
-                await remoteStream.CopyToAsync(responseStream, 819200).ConfigureAwait(false);
+                await _response.Content.CopyToAsync(responseStream, 819200).ConfigureAwait(false);
             }
         }
     }
