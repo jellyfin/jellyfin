@@ -20,7 +20,7 @@
             $('.lnkEditUserPreferencesContainer', page).show();
         }
 
-        if (user.Id && loggedInUser.Configuration.IsAdministrator) {
+        if (user.Id && loggedInUser.Configuration.IsAdministrator && user.ConnectLinkType != 'Guest') {
             $('#fldConnectInfo', page).show();
         } else {
             $('#fldConnectInfo', page).hide();

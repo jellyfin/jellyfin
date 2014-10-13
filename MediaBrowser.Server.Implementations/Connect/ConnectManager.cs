@@ -623,6 +623,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                         if (user == null)
                         {
                             // Add user
+                            //user.Configuration.SyncConnectImage = user.ConnectLinkType == UserLinkType.Guest;
+                            //user.Configuration.SyncConnectName = user.ConnectLinkType == UserLinkType.Guest;
                         }
                     }
                     else if (string.Equals(connectEntry.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase))
@@ -630,7 +632,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         pending.Add(new ConnectAuthorization
                         {
                              ConnectUserId = connectEntry.UserId,
-                             ImageUrl = connectEntry.ImageUrl,
+                             ImageUrl = connectEntry.UserImageUrl,
                              UserName = connectEntry.UserName,
                              Id = connectEntry.Id
                         });
