@@ -499,9 +499,9 @@ namespace MediaBrowser.Api.Session
             }
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
-                PlayableMediaTypes = request.PlayableMediaTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                PlayableMediaTypes = (request.PlayableMediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
-                SupportedCommands = request.SupportedCommands.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
+                SupportedCommands = (request.SupportedCommands ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
 
                 SupportsMediaControl = request.SupportsMediaControl,
 

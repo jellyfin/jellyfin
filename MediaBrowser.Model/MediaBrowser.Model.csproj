@@ -66,6 +66,7 @@
     <Compile Include="ApiClient\HttpResponseEventArgs.cs" />
     <Compile Include="ApiClient\IApiClient.cs" />
     <Compile Include="ApiClient\ApiClientExtensions.cs" />
+    <Compile Include="ApiClient\IClientWebSocket.cs" />
     <Compile Include="ApiClient\IConnectionManager.cs" />
     <Compile Include="ApiClient\IDevice.cs" />
     <Compile Include="ApiClient\IServerEvents.cs" />
@@ -95,7 +96,9 @@
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
+    <Compile Include="Connect\ConnectAuthorization.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
+    <Compile Include="Devices\DeviceOptions.cs" />
     <Compile Include="Devices\LocalFileInfo.cs" />
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />

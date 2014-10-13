@@ -4,6 +4,7 @@ namespace MediaBrowser.Model.ApiClient
     {
         Unavailable = 1,
         ServerSignIn = 2,
-        SignedIn = 3
+        SignedIn = 3,
+        ServerSelection = 4
     }
 }

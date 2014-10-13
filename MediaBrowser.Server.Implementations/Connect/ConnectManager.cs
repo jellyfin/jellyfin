@@ -5,8 +5,10 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -24,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 {
     public class ConnectManager : IConnectManager
     {
-        private SemaphoreSlim _operationLock = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _operationLock = new SemaphoreSlim(1, 1);
 
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
@@ -34,6 +36,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IServerApplicationHost _appHost;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
+        private readonly IProviderManager _providerManager;
 
         private ConnectData _data = new ConnectData();
 
@@ -90,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             IEncryptionManager encryption,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config, IUserManager userManager)
+            IServerConfigurationManager config, IUserManager userManager, IProviderManager providerManager)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -100,6 +103,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _appHost = appHost;
             _config = config;
             _userManager = userManager;
+            _providerManager = providerManager;
 
             LoadCachedData();
         }
@@ -165,13 +169,15 @@ namespace MediaBrowser.Server.Implementations.Connect
                 }
 
                 await RefreshAuthorizationsInternal(CancellationToken.None).ConfigureAwait(false);
+
+                await RefreshUserInfosInternal(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error registering with Connect", ex);
             }
         }
-        
+
         private async Task CreateServerRegistration(string wanApiAddress)
         {
             var url = "Servers";
@@ -181,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 {"name", _appHost.FriendlyName}, 
                 {"url", wanApiAddress}, 
-                {"systemid", _appHost.SystemId}
+                {"systemId", _appHost.SystemId}
             };
 
             using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
@@ -211,7 +217,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 {"name", _appHost.FriendlyName}, 
                 {"url", wanApiAddress}, 
-                {"systemid", _appHost.SystemId}
+                {"systemId", _appHost.SystemId}
             });
 
             SetServerAccessToken(options);
@@ -222,6 +228,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
+        private readonly object _dataFileLock = new object();
         private string CacheFilePath
         {
             get { return Path.Combine(_appPaths.DataPath, "connect.txt"); }
@@ -239,7 +246,10 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 var encrypted = _encryption.EncryptString(json);
 
-                File.WriteAllText(path, encrypted, Encoding.UTF8);
+                lock (_dataFileLock)
+                {
+                    File.WriteAllText(path, encrypted, Encoding.UTF8);
+                }
             }
             catch (Exception ex)
             {
@@ -253,11 +263,14 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                var encrypted = File.ReadAllText(path, Encoding.UTF8);
+                lock (_dataFileLock)
+                {
+                    var encrypted = File.ReadAllText(path, Encoding.UTF8);
 
-                var json = _encryption.DecryptString(encrypted);
+                    var json = _encryption.DecryptString(encrypted);
 
-                _data = _json.DeserializeFromString<ConnectData>(json);
+                    _data = _json.DeserializeFromString<ConnectData>(json);
+                }
             }
             catch (IOException)
             {
@@ -287,6 +300,20 @@ namespace MediaBrowser.Server.Implementations.Connect
         }
 
         public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)
+        {
+            await _operationLock.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                return await LinkUserInternal(userId, connectUsername).ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private async Task<UserLinkResult> LinkUserInternal(string userId, string connectUsername)
         {
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
@@ -350,9 +377,86 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
+            user.Configuration.SyncConnectImage = user.ConnectLinkType == UserLinkType.Guest;
+            user.Configuration.SyncConnectName = user.ConnectLinkType == UserLinkType.Guest;
+            _userManager.UpdateConfiguration(user, user.Configuration);
+
+            await RefreshAuthorizationsInternal(CancellationToken.None).ConfigureAwait(false);
+
             return result;
         }
+        
+        public async Task<UserLinkResult> InviteUser(string sendingUserId, string connectUsername)
+        {
+            await _operationLock.WaitAsync().ConfigureAwait(false);
 
+            try
+            {
+                return await InviteUserInternal(sendingUserId, connectUsername).ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private async Task<UserLinkResult> InviteUserInternal(string sendingUserId, string connectUsername)
+        {
+            if (string.IsNullOrWhiteSpace(connectUsername))
+            {
+                throw new ArgumentNullException("connectUsername");
+            }
+
+            var connectUser = await GetConnectUser(new ConnectUserQuery
+            {
+                Name = connectUsername
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            if (!connectUser.IsActive)
+            {
+                throw new ArgumentException("The Media Browser account has been disabled.");
+            }
+
+            var url = GetConnectUrl("ServerAuthorizations");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            var accessToken = Guid.NewGuid().ToString("N");
+            var sendingUser = GetUser(sendingUserId);
+
+            var postData = new Dictionary<string, string>
+            {
+                {"serverId", ConnectServerId},
+                {"userId", connectUser.Id},
+                {"userType", "Guest"},
+                {"accessToken", accessToken},
+                {"requesterUserName", sendingUser.ConnectUserName}
+            };
+
+            options.SetPostData(postData);
+
+            SetServerAccessToken(options);
+
+            var result = new UserLinkResult();
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
+            {
+                var response = _json.DeserializeFromStream<ServerUserAuthorizationResponse>(stream);
+
+                result.IsPending = string.Equals(response.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase);
+            }
+
+            await RefreshAuthorizationsInternal(CancellationToken.None).ConfigureAwait(false);
+
+            return result;
+        }
+        
         public Task RemoveLink(string userId)
         {
             var user = GetUser(userId);
@@ -364,42 +468,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             if (!string.IsNullOrWhiteSpace(connectUserId))
             {
-                var url = GetConnectUrl("ServerAuthorizations");
-
-                var options = new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = CancellationToken.None
-                };
-
-                var postData = new Dictionary<string, string>
-                {
-                    {"serverId", ConnectServerId},
-                    {"userId", connectUserId}
-                };
-
-                options.SetPostData(postData);
-
-                SetServerAccessToken(options);
-
-                try
-                {
-                    // No need to examine the response
-                    using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
-                    {
-                    }
-                }
-                catch (HttpException ex)
-                {
-                    // If connect says the auth doesn't exist, we can handle that gracefully since this is a remove operation
-
-                    if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
-                    {
-                        throw;
-                    }
-
-                    _logger.Debug("Connect returned a 404 when removing a user auth link. Handling it.");
-                }
+                await CancelAuthorizationByConnectUserId(connectUserId).ConfigureAwait(false);
             }
 
             user.ConnectAccessKey = null;
@@ -472,24 +541,19 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var url = GetConnectUrl("ServerAuthorizations");
 
+            url += "?serverId=" + ConnectServerId;
+
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = cancellationToken
             };
 
-            var postData = new Dictionary<string, string>
-                {
-                    {"serverId", ConnectServerId}
-                };
-
-            options.SetPostData(postData);
-
             SetServerAccessToken(options);
 
             try
             {
-                using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
+                using (var stream = (await _httpClient.SendAsync(options, "GET").ConfigureAwait(false)).Content)
                 {
                     var list = _json.DeserializeFromStream<List<ServerUserAuthorizationResponse>>(stream);
 
@@ -521,10 +585,11 @@ namespace MediaBrowser.Server.Implementations.Connect
                         user.ConnectUserName = null;
 
                         await _userManager.UpdateUser(user).ConfigureAwait(false);
-                        
+
                         if (user.ConnectLinkType == UserLinkType.Guest)
                         {
-                            await _userManager.DeleteUser(user).ConfigureAwait(false);
+                            _logger.Debug("Deleting guest user {0}", user.Name);
+                            //await _userManager.DeleteUser(user).ConfigureAwait(false);
                         }
                     }
                     else
@@ -544,19 +609,195 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             users = _userManager.Users.ToList();
 
+            var pending = new List<ConnectAuthorization>();
+
             // TODO: Handle newly added guests that we don't know about
             foreach (var connectEntry in list)
             {
-                if (string.Equals(connectEntry.UserType, "guest", StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(connectEntry.AcceptStatus, "accepted", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(connectEntry.UserType, "guest", StringComparison.OrdinalIgnoreCase))
                 {
-                    var user = users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectEntry.UserId, StringComparison.OrdinalIgnoreCase));
-
-                    if (user == null)
+                    if (string.Equals(connectEntry.AcceptStatus, "accepted", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Add user
+                        var user = users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectEntry.UserId, StringComparison.OrdinalIgnoreCase));
+
+                        if (user == null)
+                        {
+                            // Add user
+                        }
+                    }
+                    else if (string.Equals(connectEntry.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase))
+                    {
+                        pending.Add(new ConnectAuthorization
+                        {
+                             ConnectUserId = connectEntry.UserId,
+                             ImageUrl = connectEntry.ImageUrl,
+                             UserName = connectEntry.UserName,
+                             Id = connectEntry.Id
+                        });
                     }
                 }
+            }
+
+            _data.PendingAuthorizations = pending;
+            CacheData();
+        }
+
+        public async Task RefreshUserInfos(CancellationToken cancellationToken)
+        {
+            await _operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await RefreshUserInfosInternal(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private readonly SemaphoreSlim _connectImageSemaphore = new SemaphoreSlim(5, 5);
+
+        private async Task RefreshUserInfosInternal(CancellationToken cancellationToken)
+        {
+            var users = _userManager.Users
+                .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) &&
+                    (i.Configuration.SyncConnectImage || i.Configuration.SyncConnectName))
+                .ToList();
+
+            foreach (var user in users)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var connectUser = await GetConnectUser(new ConnectUserQuery
+                {
+                    Id = user.ConnectUserId
+
+                }, cancellationToken).ConfigureAwait(false);
+
+                if (user.Configuration.SyncConnectName)
+                {
+                    var changed = !string.Equals(connectUser.Name, user.Name, StringComparison.OrdinalIgnoreCase);
+
+                    if (changed)
+                    {
+                        await user.Rename(connectUser.Name).ConfigureAwait(false);
+                    }
+                }
+
+                if (user.Configuration.SyncConnectImage)
+                {
+                    var imageUrl = connectUser.ImageUrl;
+
+                    if (!string.IsNullOrWhiteSpace(imageUrl))
+                    {
+                        var changed = false;
+
+                        if (!user.HasImage(ImageType.Primary))
+                        {
+                            changed = true;
+                        }
+                        else
+                        {
+                            using (var response = await _httpClient.SendAsync(new HttpRequestOptions
+                            {
+                                Url = imageUrl,
+                                CancellationToken = cancellationToken,
+                                BufferContent = false
+
+                            }, "HEAD").ConfigureAwait(false))
+                            {
+                                var length = response.ContentLength;
+
+                                if (length != new FileInfo(user.GetImageInfo(ImageType.Primary, 0).Path).Length)
+                                {
+                                    changed = true;
+                                }
+                            }
+                        }
+
+                        if (changed)
+                        {
+                            await _providerManager.SaveImage(user, imageUrl, _connectImageSemaphore, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                            
+                            await user.RefreshMetadata(new MetadataRefreshOptions
+                            {
+                                ForceSave = true,
+
+                            }, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task<List<ConnectAuthorization>> GetPendingGuests()
+        {
+            return _data.PendingAuthorizations.ToList();
+        }
+
+        public async Task CancelAuthorization(string id)
+        {
+            await _operationLock.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                await CancelAuthorizationInternal(id).ConfigureAwait(false);
+            }
+            finally
+            {
+                _operationLock.Release();
+            }
+        }
+
+        private async Task CancelAuthorizationInternal(string id)
+        {
+            var connectUserId = _data.PendingAuthorizations
+                .First(i => string.Equals(i.Id, id, StringComparison.Ordinal))
+                .ConnectUserId;
+
+            await CancelAuthorizationByConnectUserId(connectUserId).ConfigureAwait(false);
+
+            await RefreshAuthorizationsInternal(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task CancelAuthorizationByConnectUserId(string connectUserId)
+        {
+            var url = GetConnectUrl("ServerAuthorizations");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"userId", connectUserId}
+                };
+
+            options.SetPostData(postData);
+
+            SetServerAccessToken(options);
+
+            try
+            {
+                // No need to examine the response
+                using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
+                {
+                }
+            }
+            catch (HttpException ex)
+            {
+                // If connect says the auth doesn't exist, we can handle that gracefully since this is a remove operation
+
+                if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                {
+                    throw;
+                }
+
+                _logger.Debug("Connect returned a 404 when removing a user auth link. Handling it.");
             }
         }
     }

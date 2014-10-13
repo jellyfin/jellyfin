@@ -15,16 +15,12 @@
 
                     ApiClient.deleteUser(id).done(function () {
 
-                        loadUsers(page);
+                        loadData(page);
                     });
                 }
             });
 
         }).popup('close');
-    }
-
-    function closeUserMenu(page) {
-        $('.userMenu', page).popup('close').remove();
     }
 
     function showUserMenu(elem) {
@@ -141,20 +137,145 @@
         return html;
     }
 
-    function renderUsers(page, users) {
+    function renderUsersIntoElement(elem, users) {
 
-        var html = '';
+        var html = getUserSectionHtml(users);
 
-        html += getUserSectionHtml(users);
-
-        var elem = $('.users', page).html(html).trigger('create');
+        elem.html(html).trigger('create');
 
         $('.btnUserMenu', elem).on('click', function () {
             showUserMenu(this);
         });
     }
 
-    function loadUsers(page) {
+    function renderUsers(page, users) {
+
+        renderUsersIntoElement($('.users', page), users);
+    }
+
+    function showPendingUserMenu(elem) {
+
+        var card = $(elem).parents('.card');
+        var page = $(elem).parents('.page');
+        var id = card.attr('data-id');
+
+        $('.userMenu', page).popup("close").remove();
+
+        var html = '<div data-role="popup" class="userMenu" data-history="false" data-theme="a">';
+
+        html += '<ul data-role="listview" style="min-width: 180px;">';
+        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+
+        html += '<li><a href="#" class="btnDelete" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+
+        html += '</ul>';
+
+        html += '</div>';
+
+        page.append(html);
+
+        var flyout = $('.userMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+
+            $(this).off("popupafterclose").remove();
+
+        });
+
+        $('.btnDelete', flyout).on('click', function () {
+            cancelAuthorization(page, this.getAttribute('data-id'));
+            $('.userMenu', page).popup("close").remove();
+        });
+    }
+
+    function getPendingUserHtml(user) {
+
+        var html = '';
+
+        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+
+        html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
+
+        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="cardScalable">';
+
+        html += '<div class="cardPadder"></div>';
+
+        var href = "#";
+        html += '<a class="cardContent" href="' + href + '">';
+
+        var imgUrl = user.ImageUrl || 'css/images/userflyoutdefault.png';
+
+        html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
+
+        html += "</div>";
+
+        // cardContent
+        html += "</a>";
+
+        // cardScalable
+        html += "</div>";
+
+        html += '<div class="cardFooter">';
+
+        html += '<div class="cardText" style="text-align:right; float:right;">';
+
+        html += '<button class="btnUserMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
+        html += "</div>";
+
+        html += '<div class="cardText" style="margin-right: 30px; padding: 11px 0 10px;">';
+        html += user.UserName;
+        html += "</div>";
+
+        // cardFooter
+        html += "</div>";
+
+        // cardBox
+        html += "</div>";
+
+        // card
+        html += "</div>";
+
+        return html;
+    }
+
+    function renderPendingGuests(page, users) {
+
+        if (users.length) {
+            $('.sectionPendingGuests', page).show();
+        } else {
+            $('.sectionPendingGuests', page).hide();
+        }
+
+        var html = users.map(getPendingUserHtml).join('');
+
+        var elem = $('.pending', page).html(html).trigger('create');
+
+        $('.btnUserMenu', elem).on('click', function () {
+            showPendingUserMenu(this);
+        });
+    }
+
+    function cancelAuthorization(page, id) {
+        
+        Dashboard.showLoadingMsg();
+
+        // Add/Update connect info
+        ApiClient.ajax({
+
+            type: "DELETE",
+            url: ApiClient.getUrl('Connect/Pending', {
+
+                Id: id
+
+            })
+
+        }).done(function () {
+
+            loadData(page);
+
+        });
+    }
+
+    function loadData(page) {
 
         Dashboard.showLoadingMsg();
 
@@ -162,14 +283,57 @@
             renderUsers(page, users);
             Dashboard.hideLoadingMsg();
         });
+
+        ApiClient.getJSON(ApiClient.getUrl('Connect/Pending')).done(function(pending) {
+
+            renderPendingGuests(page, pending);
+        });
+    }
+
+    function inviteUser(page) {
+
+        Dashboard.showLoadingMsg();
+
+        // Add/Update connect info
+        ApiClient.ajax({
+
+            type: "POST",
+            url: ApiClient.getUrl('Connect/Invite', {
+
+                ConnectUsername: $('#txtConnectUsername', page).val(),
+                SendingUserId: Dashboard.getCurrentUserId()
+
+            }),
+            dataType: 'json'
+
+        }).done(function (result) {
+
+            $('#popupInvite').popup('close');
+            loadData(page);
+
+        });
+
     }
 
     $(document).on('pagebeforeshow', "#userProfilesPage", function () {
 
         var page = this;
 
-        loadUsers(page);
+        loadData(page);
     });
 
+    window.UserProfilesPage = {
+
+        onSubmit: function () {
+
+            var form = this;
+
+            var page = $(form).parents('.page');
+
+            inviteUser(page);
+
+            return false;
+        }
+    };
 
 })(document, window, jQuery);

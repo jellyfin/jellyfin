@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Session;
 using ServiceStack;
 using ServiceStack.Web;
 using System.Collections.Generic;
@@ -49,6 +50,27 @@ namespace MediaBrowser.Api.Devices
         public Stream RequestStream { get; set; }
     }
 
+    [Route("/Devices/Info", "GET", Summary = "Gets device info")]
+    public class GetDeviceInfo : IReturn<DeviceInfo>
+    {
+        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Devices/Capabilities", "GET", Summary = "Gets device capabilities")]
+    public class GetDeviceCapabilities : IReturn<ClientCapabilities>
+    {
+        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Devices/Options", "POST", Summary = "Updates device options")]
+    public class PostDeviceOptions : DeviceOptions, IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+    
     [Authenticated]
     public class DeviceService : BaseApiService
     {
@@ -59,6 +81,27 @@ namespace MediaBrowser.Api.Devices
             _deviceManager = deviceManager;
         }
 
+        public void Post(PostDeviceOptions request)
+        {
+            var task = _deviceManager.UpdateDeviceInfo(request.Id, new DeviceOptions
+            {
+                CustomName = request.CustomName,
+                CameraUploadPath = request.CameraUploadPath
+            });
+
+            Task.WaitAll(task);
+        }
+
+        public object Get(GetDeviceInfo request)
+        {
+            return ToOptimizedResult(_deviceManager.GetDevice(request.Id));
+        }
+
+        public object Get(GetDeviceCapabilities request)
+        {
+            return ToOptimizedResult(_deviceManager.GetCapabilities(request.Id));
+        }
+
         public object Get(GetDevices request)
         {
             var devices = _deviceManager.GetDevices();
@@ -67,7 +110,7 @@ namespace MediaBrowser.Api.Devices
             {
                 var val = request.SupportsContentUploading.Value;
 
-                devices = devices.Where(i => i.Capabilities.SupportsContentUploading == val);
+                devices = devices.Where(i => _deviceManager.GetCapabilities(i.Id).SupportsContentUploading == val);
             }
 
             return ToOptimizedResult(devices.ToList());

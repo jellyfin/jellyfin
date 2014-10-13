@@ -75,7 +75,7 @@
     "TabSecurity": "Security",
     "ButtonAddUser": "Add User",
     "ButtonAddLocalUser": "Add Local User",
-    "ButtonInviteMediaBrowserUser": "Invite Media Browser User",
+    "ButtonInviteUser": "Invite User",
     "ButtonSave": "Save",
     "ButtonResetPassword": "Reset Password",
     "LabelNewPassword": "New password:",
@@ -1225,5 +1225,11 @@
     "LabelCameraUploadPath": "Camera upload path:",
     "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used.",
     "LabelCreateCameraUploadSubfolder": "Create a subfolder for each device",
-    "LabelCreateCameraUploadSubfolderHelp": "Specific folders can be assigned to a device by clicking on it from the Devices page."
+    "LabelCreateCameraUploadSubfolderHelp": "Specific folders can be assigned to a device by clicking on it from the Devices page.",
+    "LabelCustomDeviceDisplayName": "Display name:",
+    "LabelCustomDeviceDisplayNameHelp": "Supply a custom display name or leave empty to use the name reported by the device.",
+    "HeaderInviteUser": "Invite User",
+    "LabelConnectInviteHelp": "This is the username or email used to sign in to the Media Browser website.",
+    "HeaderInviteUserHelp": "Sharing your media with friends is easier than ever before with Media Browser Connect.",
+    "ButtonSendInvitation": "Send Invitation"
 }

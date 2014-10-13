@@ -6,10 +6,10 @@ namespace MediaBrowser.Model.Connect
         /// <summary>
         /// The linked user
         /// </summary>
-        LinkedUser = 1,
+        LinkedUser = 0,
         /// <summary>
         /// The guest
         /// </summary>
-        Guest = 2
+        Guest = 1
     }
 }

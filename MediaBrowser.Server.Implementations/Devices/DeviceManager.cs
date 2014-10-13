@@ -1,8 +1,11 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -19,24 +22,31 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IConfigurationManager _config;
+        private readonly ILogger _logger;
 
-        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config)
+        /// <summary>
+        /// Occurs when [device options updated].
+        /// </summary>
+        public event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
+        
+        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger)
         {
             _repo = repo;
             _userManager = userManager;
             _fileSystem = fileSystem;
             _libraryMonitor = libraryMonitor;
             _config = config;
+            _logger = logger;
         }
 
-        public Task RegisterDevice(string reportedId, string name, string appName, string usedByUserId)
+        public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string usedByUserId)
         {
             var device = GetDevice(reportedId) ?? new DeviceInfo
             {
                 Id = reportedId
             };
 
-            device.Name = name;
+            device.ReportedName = name;
             device.AppName = appName;
 
             if (!string.IsNullOrWhiteSpace(usedByUserId))
@@ -49,7 +59,9 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             device.DateLastModified = DateTime.UtcNow;
 
-            return _repo.SaveDevice(device);
+            await _repo.SaveDevice(device).ConfigureAwait(false);
+
+            return device;
         }
 
         public Task SaveCapabilities(string reportedId, ClientCapabilities capabilities)
@@ -114,10 +126,13 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         private string GetUploadPath(string deviceId)
         {
-            var config = _config.GetUploadOptions();
-
             var device = GetDevice(deviceId);
+            if (!string.IsNullOrWhiteSpace(device.CameraUploadPath))
+            {
+                return device.CameraUploadPath;
+            }
 
+            var config = _config.GetUploadOptions();
             if (!string.IsNullOrWhiteSpace(config.CameraUploadPath))
             {
                 return config.CameraUploadPath;
@@ -131,6 +146,18 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             return path;
+        }
+
+        public async Task UpdateDeviceInfo(string id, DeviceOptions options)
+        {
+            var device = GetDevice(id);
+
+            device.CustomName = options.CustomName;
+            device.CameraUploadPath = options.CameraUploadPath;
+
+            await _repo.SaveDevice(device).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(DeviceOptionsUpdated, this, new GenericEventArgs<DeviceInfo>(device), _logger);
         }
     }
 

@@ -310,12 +310,23 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="watcher">The watcher.</param>
         private void DisposeWatcher(FileSystemWatcher watcher)
         {
-            Logger.Info("Stopping directory watching for path {0}", watcher.Path);
+            try
+            {
+                using (watcher)
+                {
+                    Logger.Info("Stopping directory watching for path {0}", watcher.Path);
 
-            watcher.EnableRaisingEvents = false;
-            watcher.Dispose();
-
-            RemoveWatcherFromList(watcher);
+                    watcher.EnableRaisingEvents = false;
+                }
+            }
+            catch
+            {
+                
+            }
+            finally
+            {
+                RemoveWatcherFromList(watcher);
+            }
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
@@ -129,6 +130,19 @@ namespace MediaBrowser.Server.Implementations.Session
             _httpClient = httpClient;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
+
+            _deviceManager.DeviceOptionsUpdated += _deviceManager_DeviceOptionsUpdated;
+        }
+
+        void _deviceManager_DeviceOptionsUpdated(object sender, GenericEventArgs<DeviceInfo> e)
+        {
+            foreach (var session in Sessions)
+            {
+                if (string.Equals(session.DeviceId, e.Argument.Id))
+                {
+                    session.DeviceName = e.Argument.Name;
+                }
+            }
         }
 
         /// <summary>
@@ -397,6 +411,7 @@ namespace MediaBrowser.Server.Implementations.Session
             try
             {
                 SessionInfo connection;
+                DeviceInfo device = null;
 
                 if (!_activeConnections.TryGetValue(key, out connection))
                 {
@@ -421,8 +436,15 @@ namespace MediaBrowser.Server.Implementations.Session
                     if (!string.IsNullOrEmpty(deviceId))
                     {
                         var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
-                        await _deviceManager.RegisterDevice(deviceId, deviceName, clientType, userIdString).ConfigureAwait(false);
+                        device = await _deviceManager.RegisterDevice(deviceId, deviceName, clientType, userIdString).ConfigureAwait(false);
                     }
+                }
+
+                device = device ?? _deviceManager.GetDevice(deviceId);
+
+                if (!string.IsNullOrEmpty(device.CustomName))
+                {
+                    deviceName = device.CustomName;
                 }
 
                 connection.DeviceName = deviceName;

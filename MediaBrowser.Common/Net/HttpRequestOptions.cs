@@ -129,7 +129,7 @@ namespace MediaBrowser.Common.Net
 
     public enum CacheMode
     {
-        None = 1,
-        Unconditional = 2
+        None = 0,
+        Unconditional = 1
     }
 }

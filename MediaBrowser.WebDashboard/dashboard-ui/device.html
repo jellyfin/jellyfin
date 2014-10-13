@@ -20,6 +20,11 @@
 
                         <ul data-role="listview" class="ulForm">
                             <li>
+                                <label for="txtCustomName">${LabelCustomDeviceDisplayName}</label>
+                                <input type="text" id="txtCustomName" data-mini="true" />
+                                <div class="fieldDescription">${LabelCustomDeviceDisplayNameHelp}</div>
+                            </li>
+                            <li id="fldCameraUploadPath" style="display:none;">
                                 <label for="txtUploadPath">${LabelCameraUploadPath}</label>
                                 <div style="display: inline-block; width: 92%;">
                                     <input type="text" id="txtUploadPath" data-mini="true" />
@@ -45,6 +50,9 @@
                 </div>
             </div>
         </div>
+        <script type="text/javascript">
+            $('.deviceForm').off('submit', DevicePage.onSubmit).on('submit', DevicePage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

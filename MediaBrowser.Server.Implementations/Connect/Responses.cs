@@ -36,5 +36,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         public bool IsActive { get; set; }
         public string AcceptStatus { get; set; }
         public string UserType { get; set; }
+        public string ImageUrl { get; set; }
+        public string UserName { get; set; }
     }
 }
