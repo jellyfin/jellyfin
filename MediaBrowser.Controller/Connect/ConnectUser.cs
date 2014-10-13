@@ -7,6 +7,7 @@ namespace MediaBrowser.Controller.Connect
         public string Name { get; set; }
         public string Email { get; set; }
         public bool IsActive { get; set; }
+        public string ImageUrl { get; set; }
     }
 
     public class ConnectUserQuery

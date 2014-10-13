@@ -92,6 +92,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\IApiClient.cs">
       <Link>ApiClient\IApiClient.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\IClientWebSocket.cs">
+      <Link>ApiClient\IClientWebSocket.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\IConnectionManager.cs">
       <Link>ApiClient\IConnectionManager.cs</Link>
     </Compile>
@@ -212,6 +215,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
       <Link>Configuration\XbmcMetadataOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthorization.cs">
+      <Link>Connect\ConnectAuthorization.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\UserLinkType.cs">
       <Link>Connect\UserLinkType.cs</Link>
     </Compile>
@@ -220,6 +226,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Devices\DeviceInfo.cs">
       <Link>Devices\DeviceInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\DeviceOptions.cs">
+      <Link>Devices\DeviceOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Devices\DevicesOptions.cs">
       <Link>Devices\DevicesOptions.cs</Link>

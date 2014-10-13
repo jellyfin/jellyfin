@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using MediaBrowser.Model.Connect;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Connect
 {
@@ -24,5 +26,26 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
         Task RemoveLink(string userId);
+
+        /// <summary>
+        /// Invites the user.
+        /// </summary>
+        /// <param name="sendingUserId">The sending user identifier.</param>
+        /// <param name="connectUsername">The connect username.</param>
+        /// <returns>Task&lt;UserLinkResult&gt;.</returns>
+        Task<UserLinkResult> InviteUser(string sendingUserId, string connectUsername);
+
+        /// <summary>
+        /// Gets the pending guests.
+        /// </summary>
+        /// <returns>Task&lt;List&lt;ConnectAuthorization&gt;&gt;.</returns>
+        Task<List<ConnectAuthorization>> GetPendingGuests();
+
+        /// <summary>
+        /// Cancels the authorization.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelAuthorization(string id);
     }
 }

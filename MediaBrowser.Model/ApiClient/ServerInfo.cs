@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.ApiClient
         public String UserId { get; set; }
         public String AccessToken { get; set; }
         public List<WakeOnLanInfo> WakeOnLanInfos { get; set; }
+        public DateTime DateLastAccessed { get; set; }
 
         public ServerInfo()
         {

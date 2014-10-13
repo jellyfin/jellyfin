@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Session;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,6 +11,11 @@ namespace MediaBrowser.Controller.Devices
     public interface IDeviceManager
     {
         /// <summary>
+        /// Occurs when [device options updated].
+        /// </summary>
+        event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
+
+        /// <summary>
         /// Registers the device.
         /// </summary>
         /// <param name="reportedId">The reported identifier.</param>
@@ -16,7 +23,7 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="appName">Name of the application.</param>
         /// <param name="usedByUserId">The used by user identifier.</param>
         /// <returns>Task.</returns>
-        Task RegisterDevice(string reportedId, string name, string appName, string usedByUserId);
+        Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string usedByUserId);
 
         /// <summary>
         /// Saves the capabilities.
@@ -39,6 +46,14 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceInfo.</returns>
         DeviceInfo GetDevice(string id);
+
+        /// <summary>
+        /// Updates the device information.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>Task.</returns>
+        Task UpdateDeviceInfo(string id, DeviceOptions options);
 
         /// <summary>
         /// Gets the devices.

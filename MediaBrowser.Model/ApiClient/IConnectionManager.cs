@@ -53,5 +53,17 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
         Task<ConnectionResult> Logout();
+
+        /// <summary>
+        /// Logins to connect.
+        /// </summary>
+        /// <returns>Task.</returns>
+        Task LoginToConnect(string username, string password);
+
+        /// <summary>
+        /// Gets the active api client instance
+        /// </summary>
+        [Obsolete]
+        IApiClient CurrentApiClient { get; }
     }
 }
