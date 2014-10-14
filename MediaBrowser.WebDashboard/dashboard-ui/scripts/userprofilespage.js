@@ -61,7 +61,7 @@
 
         var html = '';
 
-        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard alternateHover bottomPaddedCard";
 
         if (user.Configuration.IsDisabled) {
             cssClass += ' grayscale';
@@ -150,7 +150,13 @@
 
     function renderUsers(page, users) {
 
-        renderUsersIntoElement($('.users', page), users);
+        renderUsersIntoElement($('.localUsers', page), users.filter(function (u) {
+            return u.ConnectLinkType != 'Guest';
+        }));
+
+        renderUsersIntoElement($('.connectUsers', page), users.filter(function (u) {
+            return u.ConnectLinkType == 'Guest';
+        }));
     }
 
     function showPendingUserMenu(elem) {
@@ -190,7 +196,7 @@
 
         var html = '';
 
-        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard alternateHover bottomPaddedCard";
 
         html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
 
@@ -255,7 +261,7 @@
     }
 
     function cancelAuthorization(page, id) {
-        
+
         Dashboard.showLoadingMsg();
 
         // Add/Update connect info
@@ -284,7 +290,7 @@
             Dashboard.hideLoadingMsg();
         });
 
-        ApiClient.getJSON(ApiClient.getUrl('Connect/Pending')).done(function(pending) {
+        ApiClient.getJSON(ApiClient.getUrl('Connect/Pending')).done(function (pending) {
 
             renderPendingGuests(page, pending);
         });
@@ -315,7 +321,24 @@
 
     }
 
-    $(document).on('pagebeforeshow', "#userProfilesPage", function () {
+    function showInvitePopup(page) {
+
+        $('#popupInvite', page).popup('open');
+
+        $('#txtConnectUsername', page).val('');
+
+    }
+
+    $(document).on('pageinit', "#userProfilesPage", function () {
+
+        var page = this;
+
+        $('.btnInvite', page).on('click', function () {
+
+            showInvitePopup(page);
+        });
+
+    }).on('pagebeforeshow', "#userProfilesPage", function () {
 
         var page = this;
 

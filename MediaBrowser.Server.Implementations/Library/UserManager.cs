@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
+        private readonly Func<IConnectManager> _connectFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
@@ -68,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -76,6 +78,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _networkManager = networkManager;
             _imageProcessorFactory = imageProcessorFactory;
             _dtoServiceFactory = dtoServiceFactory;
+            _connectFactory = connectFactory;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
         }
@@ -143,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.Library
             Users = await LoadUsers().ConfigureAwait(false);
         }
 
-        public async Task<bool> AuthenticateUser(string username, string password, string remoteEndPoint)
+        public async Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -157,11 +160,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
-            var success = string.Equals(GetPasswordHash(user), password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+            var success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
 
             if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
             {
-                success = string.Equals(GetLocalPasswordHash(user), password.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -433,6 +436,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("user");
             }
 
+            if (user.ConnectLinkType.HasValue)
+            {
+                await _connectFactory().RemoveConnect(user.Id.ToString("N")).ConfigureAwait(false);
+            }
+
             var allUsers = Users.ToList();
 
             if (allUsers.FirstOrDefault(u => u.Id == user.Id) == null)
@@ -514,10 +522,12 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>User.</returns>
         private User InstantiateNewUser(string name)
         {
+            var idSalt = ("MBUser" + name);
+
             return new User
             {
                 Name = name,
-                Id = ("MBUser" + name).GetMD5(),
+                Id = idSalt.GetMD5(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
                 UsesIdForConfigurationPath = true

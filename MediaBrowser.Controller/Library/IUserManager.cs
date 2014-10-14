@@ -55,16 +55,16 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The identifier.</param>
         /// <returns>User.</returns>
         User GetUserById(string id);
-        
+
         /// <summary>
         /// Authenticates a User and returns a result indicating whether or not it succeeded
         /// </summary>
         /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
+        /// <param name="passwordSha1">The password sha1.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>Task{System.Boolean}.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<bool> AuthenticateUser(string username, string password, string remoteEndPoint);
+        Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint);
         
         /// <summary>
         /// Refreshes metadata for each user

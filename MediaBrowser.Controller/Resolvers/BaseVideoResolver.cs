@@ -38,19 +38,24 @@ namespace MediaBrowser.Controller.Resolvers
                 // http://wiki.xbmc.org/index.php?title=Media_stubs
                 var isPlaceHolder = EntityResolutionHelper.IsVideoPlaceHolder(args.Path);
 
-                if (EntityResolutionHelper.IsVideoFile(args.Path) || isPlaceHolder)
-                {
-                    var extension = Path.GetExtension(args.Path);
+                var extension = Path.GetExtension(args.Path);
 
+                var isShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+
+                if (EntityResolutionHelper.IsVideoFile(args.Path) || isPlaceHolder || isShortcut)
+                {
                     var type = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
                         VideoType.Iso : VideoType.VideoFile;
+
+                    var path = args.Path;
 
                     var video = new TVideoType
                     {
                         VideoType = type,
                         Path = args.Path,
                         IsInMixedFolder = true,
-                        IsPlaceHolder = isPlaceHolder
+                        IsPlaceHolder = isPlaceHolder,
+                        IsShortcut = isShortcut
                     };
 
                     if (isPlaceHolder)

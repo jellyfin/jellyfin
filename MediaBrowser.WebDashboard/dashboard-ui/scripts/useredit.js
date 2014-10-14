@@ -26,6 +26,12 @@
             $('#fldConnectInfo', page).hide();
         }
 
+        if (user.ConnectLinkType == 'Guest') {
+            $('#txtUserName', page).prop("disabled", "disabled");
+        } else {
+            $('#txtUserName', page).prop("disabled", "").removeAttr('disabled');
+        }
+
         if (!loggedInUser.Configuration.IsAdministrator || !user.Id) {
 
             $('.lnkEditUserPreferencesContainer', page).hide();
@@ -254,8 +260,6 @@
         var page = this;
 
         loadData(page);
-
-        $("form input:first", page).focus();
     });
 
 })(jQuery, window, document);

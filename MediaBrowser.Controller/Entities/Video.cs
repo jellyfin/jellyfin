@@ -128,6 +128,7 @@ namespace MediaBrowser.Controller.Entities
         public bool HasSubtitles { get; set; }
 
         public bool IsPlaceHolder { get; set; }
+        public bool IsShortcut { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.

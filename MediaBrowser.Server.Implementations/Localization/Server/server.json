@@ -1229,7 +1229,10 @@
     "LabelCustomDeviceDisplayName": "Display name:",
     "LabelCustomDeviceDisplayNameHelp": "Supply a custom display name or leave empty to use the name reported by the device.",
     "HeaderInviteUser": "Invite User",
-    "LabelConnectInviteHelp": "This is the username or email used to sign in to the Media Browser website.",
+    "LabelConnectInviteUserHelp": "This is the username or email that your friend uses to sign in to the Media Browser website.",
     "HeaderInviteUserHelp": "Sharing your media with friends is easier than ever before with Media Browser Connect.",
-    "ButtonSendInvitation": "Send Invitation"
+    "ButtonSendInvitation": "Send Invitation",
+    "HeaderGuests": "Guests",
+    "HeaderLocalUsers": "Local Users",
+    "HeaderPendingInvitations": "Pending Invitations"
 }

@@ -23,25 +23,27 @@
                     </p>
                 </div>
 
-                <h2 id="headerUploadNewImage" style="display: none;">${HeaderUploadNewImage}</h2>
-                <form id="uploadUserImageForm">
-                    <ul data-role="listview" class="ulForm">
-                        <li id="fldNewImage">
-                            <p>${ImageUploadAspectRatioHelp}</p>
-                            <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="UserImagePage.onFileUploadChange(this);" />
+                <div class="newImageSection" style="display:none;">
+                    <h2 id="headerUploadNewImage" style="display: none;">${HeaderUploadNewImage}</h2>
+                    <form id="uploadUserImageForm">
+                        <ul data-role="listview" class="ulForm">
+                            <li id="fldNewImage">
+                                <p>${ImageUploadAspectRatioHelp}</p>
+                                <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="UserImagePage.onFileUploadChange(this);" />
 
-                            <div id="userImageDropZone" class="imageDropZone">
-                                <h3>${LabelDropImageHere}</h3>
-                                <output id="userImageOutput"></output>
-                            </div>
+                                <div id="userImageDropZone" class="imageDropZone">
+                                    <h3>${LabelDropImageHere}</h3>
+                                    <output id="userImageOutput"></output>
+                                </div>
 
-                        </li>
-                        <li id="fldNewImagePreview"></li>
-                        <li id="fldUpload" style="display: none;">
-                            <button type="submit" data-icon="picture">${ButtonUpload}</button>
-                        </li>
-                    </ul>
-                </form>
+                            </li>
+                            <li id="fldNewImagePreview"></li>
+                            <li id="fldUpload" style="display: none;">
+                                <button type="submit" data-icon="picture">${ButtonUpload}</button>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
 
             </div>
         </div>

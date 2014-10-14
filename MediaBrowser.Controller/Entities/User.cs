@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string ConnectUserName { get; set; }
         public string ConnectUserId { get; set; }
-        public UserLinkType ConnectLinkType { get; set; }
+        public UserLinkType? ConnectLinkType { get; set; }
         public string ConnectAccessKey { get; set; }
 
         /// <summary>

@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
-                    refreshResult.AddImageProvidersRefreshed(result.Providers);
+                    refreshResult.AddMetadataProvidersRefreshed(result.Providers);
 
                     MergeIdentities(itemOfType, id);
                 }
@@ -479,7 +479,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
+                refreshResult.Status = ProviderRefreshStatus.Failure;
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.ErrorException("Error in {0}", ex, provider.Name);
             }

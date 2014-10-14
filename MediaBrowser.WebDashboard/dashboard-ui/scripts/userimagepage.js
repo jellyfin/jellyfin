@@ -23,10 +23,21 @@
                 });
 
                 $('#fldImage', page).show().html('').html("<img height='200px' src='" + imageUrl + "' />");
+            }
+
+            if (user.ConnectLinkType == 'Guest') {
+
+                $('.newImageSection', page).hide();
+                $('#fldDeleteImage', page).hide();
+            }
+            else if (user.PrimaryImageTag) {
 
                 $('#fldDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
+                $('.newImageSection', page).show();
+
             } else {
+                $('.newImageSection', page).show();
                 $('#fldImage', page).hide().html('');
                 $('#fldDeleteImage', page).hide();
                 $('#headerUploadNewImage', page).hide();

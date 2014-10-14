@@ -8,16 +8,22 @@
 
             Dashboard.setPageTitle(user.Name);
 
-            if (user.HasConfiguredPassword) {
+            if (user.ConnectLinkType == 'Guest') {
+                $('.localAccessSection', page).show().collapsible("option", "collapsed", false);
+                $('.passwordSection', page).hide();
+            }
+            else if (user.HasConfiguredPassword) {
                 $('#btnResetPassword', page).show();
                 $('#fldCurrentPassword', page).show();
                 $('.formheader', page).hide();
                 $('.localAccessSection', page).show();
+                $('.passwordSection', page).show();
             } else {
                 $('#btnResetPassword', page).hide();
                 $('#fldCurrentPassword', page).hide();
                 $('.formheader', page).show();
                 $('.localAccessSection', page).hide();
+                $('.passwordSection', page).show();
             }
 
             $('#chkEnableLocalAccessWithoutPassword', page).checked(user.Configuration.EnableLocalPassword).checkboxradio('refresh');
