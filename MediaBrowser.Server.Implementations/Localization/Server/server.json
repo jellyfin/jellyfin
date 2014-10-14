@@ -1234,5 +1234,6 @@
     "ButtonSendInvitation": "Send Invitation",
     "HeaderGuests": "Guests",
     "HeaderLocalUsers": "Local Users",
-    "HeaderPendingInvitations": "Pending Invitations"
+    "HeaderPendingInvitations": "Pending Invitations",
+    "TabParentalControl": "Parental Control"
 }
