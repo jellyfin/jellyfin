@@ -121,7 +121,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool Supports(IHasImages item)
         {
-            return item.LocationType == LocationType.FileSystem && item is Video;
+            var video = item as Video;
+
+            return item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut;
         }
 
         public int Order

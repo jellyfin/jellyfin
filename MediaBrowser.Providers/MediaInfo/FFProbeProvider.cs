@@ -132,7 +132,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            if (item.IsPlaceHolder)
+            if (item.IsPlaceHolder || item.IsShortcut)
             {
                 return _cachedTask;
             }

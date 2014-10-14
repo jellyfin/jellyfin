@@ -290,6 +290,7 @@ namespace MediaBrowser.Api
             }
 
             await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+
             await _userManager.DeleteUser(user).ConfigureAwait(false);
         }
 

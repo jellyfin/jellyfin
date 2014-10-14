@@ -70,7 +70,7 @@ namespace MediaBrowser.Api
 
         public void Delete(DeleteConnectLink request)
         {
-            var task = _connectManager.RemoveLink(request.Id);
+            var task = _connectManager.RemoveConnect(request.Id);
 
             Task.WaitAll(task);
         }
