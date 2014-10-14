@@ -207,15 +207,16 @@ namespace MediaBrowser.Api
         {
             var item = _libraryManager.GetItemById(new Guid(request.Id));
 
-            foreach (var key in request.ProviderIds)
-            {
-                var value = key.Value;
+            //foreach (var key in request.ProviderIds)
+            //{
+            //    var value = key.Value;
 
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    item.SetProviderId(key.Key, value);
-                }
-            }
+            //    if (!string.IsNullOrWhiteSpace(value))
+            //    {
+            //        item.SetProviderId(key.Key, value);
+            //    }
+            //}
+            item.ProviderIds = request.ProviderIds;
 
             var service = new ItemRefreshService(_libraryManager)
             {

@@ -4,32 +4,32 @@
     <title></title>
 </head>
 <body>
-    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage">
+    <div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage">
 
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">${TabImage}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" class="ui-btn-active">${TabParentalControl}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" class="ui-btn-active">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
-                <form class="userParentalControlForm">
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="selectMaxParentalRating">${LabelMaxParentalRating}</label>
-                            <select name="selectMaxParentalRating" id="selectMaxParentalRating" data-mini="true"></select>
-                            <div class="fieldDescription">${MaxParentalRatingHelp}</div>
-                        </li>
-                    </ul>
+                <form class="userLibraryAccessForm">
 
                     <div>
-                        <div class="blockUnratedItems">
+                        <div class="mediaFolderAccess">
                         </div>
+                        <div class="fieldDescription">${LibraryAccessHelp}</div>
                     </div>
                     <br />
+
+                    <div class="channelAccessContainer">
+                        <div class="channelAccess">
+                        </div>
+                        <div class="fieldDescription">${ChannelAccessHelp}</div>
+                        <br />
+                    </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
@@ -42,7 +42,7 @@
             </div>
         </div>
         <script type="text/javascript">
-            $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
+            $('.userLibraryAccessForm').off('submit', LibraryAccessPage.onSubmit).on('submit', LibraryAccessPage.onSubmit);
         </script>
     </div>
 </body>

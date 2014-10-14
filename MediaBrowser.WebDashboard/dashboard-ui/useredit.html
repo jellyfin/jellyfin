@@ -12,7 +12,8 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">${TabImage}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
                 <p class="lnkEditUserPreferencesContainer">
@@ -32,7 +33,7 @@
                                 <div>${LabelConnectUserNameHelp}</div>
                                 <div style="margin-top: .75em;"><a href="http://mediabrowser.tv/connect" target="_blank">${ButtonLearnMoreAboutMediaBrowserConnect}</a></div>
                             </div>
-                            <br/>
+                            <br />
                         </li>
                         <li id="fldIsAdmin" style="display: none;">
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />

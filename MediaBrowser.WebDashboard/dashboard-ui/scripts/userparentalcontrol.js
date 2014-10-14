@@ -38,62 +38,6 @@
         $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
     }
 
-    function loadMediaFolders(page, user, mediaFolders) {
-
-        var html = '';
-
-        html += '<fieldset data-role="controlgroup">';
-
-        html += '<legend>' + Globalize.translate('HeaderMediaFolders') + '</legend>';
-
-        for (var i = 0, length = mediaFolders.length; i < length; i++) {
-
-            var folder = mediaFolders[i];
-
-            var id = 'mediaFolder' + i;
-
-            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
-
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
-            html += '<label for="' + id + '">' + folder.Name + '</label>';
-        }
-
-        html += '</fieldset>';
-
-        $('.mediaFolderAccess', page).html(html).trigger('create');
-    }
-
-    function loadChannels(page, user, channels) {
-
-        var html = '';
-
-        html += '<fieldset data-role="controlgroup">';
-
-        html += '<legend>' + Globalize.translate('HeaderChannels') + '</legend>';
-
-        for (var i = 0, length = channels.length; i < length; i++) {
-
-            var folder = channels[i];
-
-            var id = 'channels' + i;
-
-            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
-
-            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
-            html += '<label for="' + id + '">' + folder.Name + '</label>';
-        }
-
-        html += '</fieldset>';
-
-        $('.channelAccess', page).show().html(html).trigger('create');
-
-        if (channels.length) {
-            $('.channelAccessContainer', page).show();
-        } else {
-            $('.channelAccessContainer', page).hide();
-        }
-    }
-
     function loadUnratedItems(page, user) {
 
         var items = [
@@ -132,12 +76,10 @@
         $('.blockUnratedItems', page).html(html).trigger('create');
     }
 
-    function loadUser(page, user, loggedInUser, allParentalRatings, mediaFolders, channels) {
+    function loadUser(page, user, loggedInUser, allParentalRatings) {
 
         Dashboard.setPageTitle(user.Name);
 
-        loadChannels(page, user, channels);
-        loadMediaFolders(page, user, mediaFolders);
         loadUnratedItems(page, user);
 
         populateRatings(allParentalRatings, page);
@@ -171,18 +113,6 @@
     function saveUser(user, page) {
 
         user.Configuration.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
-
-        user.Configuration.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
-
-            return this.getAttribute('data-foldername');
-
-        }).get();
-
-        user.Configuration.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
-
-            return this.getAttribute('data-foldername');
-
-        }).get();
 
         user.Configuration.BlockUnratedItems = $('.chkUnratedItem:checked', page).map(function () {
 
@@ -242,13 +172,9 @@
 
         var promise3 = ApiClient.getParentalRatings();
 
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false }));
+        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
 
-        var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
-
-        $.when(promise1, promise2, promise3, promise4, promise5).done(function (response1, response2, response3, response4, response5) {
-
-            loadUser(page, response1[0] || response1, response2[0], response3[0], response4[0].Items, response5[0].Items);
+            loadUser(page, response1[0] || response1, response2[0], response3[0]);
 
         });
     });

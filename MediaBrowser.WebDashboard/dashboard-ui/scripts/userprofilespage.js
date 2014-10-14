@@ -57,7 +57,7 @@
         });
     }
 
-    function getUserHtml(user) {
+    function getUserHtml(user, addConnectIndicator) {
 
         var html = '';
 
@@ -93,7 +93,7 @@
 
         html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
 
-        if (user.ConnectUserId) {
+        if (user.ConnectUserId && addConnectIndicator) {
             html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToMediaBrowserConnect') + '"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
         }
 
@@ -128,18 +128,22 @@
         return html;
     }
 
-    function getUserSectionHtml(users) {
+    function getUserSectionHtml(users, addConnectIndicator) {
 
         var html = '';
 
-        html += users.map(getUserHtml).join('');
+        html += users.map(function (u) {
+
+            return getUserHtml(u, addConnectIndicator);
+
+        }).join('');
 
         return html;
     }
 
-    function renderUsersIntoElement(elem, users) {
+    function renderUsersIntoElement(elem, users, addConnectIndicator) {
 
-        var html = getUserSectionHtml(users);
+        var html = getUserSectionHtml(users, addConnectIndicator);
 
         elem.html(html).trigger('create');
 
@@ -152,7 +156,7 @@
 
         renderUsersIntoElement($('.localUsers', page), users.filter(function (u) {
             return u.ConnectLinkType != 'Guest';
-        }));
+        }), true);
 
         renderUsersIntoElement($('.connectUsers', page), users.filter(function (u) {
             return u.ConnectLinkType == 'Guest';
