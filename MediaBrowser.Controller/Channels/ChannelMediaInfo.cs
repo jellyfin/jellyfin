@@ -1,6 +1,10 @@
-﻿using MediaBrowser.Model.MediaInfo;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -31,12 +35,76 @@ namespace MediaBrowser.Controller.Channels
 
         public long? RunTimeTicks { get; set; }
 
+        public string Id { get; set; }
+
         public ChannelMediaInfo()
         {
             RequiredHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // This is most common
             Protocol = MediaProtocol.Http;
+        }
+
+        public MediaSourceInfo ToMediaSource()
+        {
+            var id = Path.GetMD5().ToString("N");
+
+            var source = new MediaSourceInfo
+            {
+                MediaStreams = GetMediaStreams(this).ToList(),
+
+                Container = Container,
+                Protocol = Protocol,
+                Path = Path,
+                RequiredHttpHeaders = RequiredHttpHeaders,
+                RunTimeTicks = RunTimeTicks,
+                Name = id,
+                Id = id
+            };
+
+            var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);
+
+            if (bitrate > 0)
+            {
+                source.Bitrate = bitrate;
+            }
+
+            return source;
+        }
+
+        private IEnumerable<MediaStream> GetMediaStreams(ChannelMediaInfo info)
+        {
+            var list = new List<MediaStream>();
+
+            if (!string.IsNullOrWhiteSpace(info.VideoCodec) &&
+                !string.IsNullOrWhiteSpace(info.AudioCodec))
+            {
+                list.Add(new MediaStream
+                {
+                    Type = MediaStreamType.Video,
+                    Width = info.Width,
+                    RealFrameRate = info.Framerate,
+                    Profile = info.VideoProfile,
+                    Level = info.VideoLevel,
+                    Index = -1,
+                    Height = info.Height,
+                    Codec = info.VideoCodec,
+                    BitRate = info.VideoBitrate,
+                    AverageFrameRate = info.Framerate
+                });
+
+                list.Add(new MediaStream
+                {
+                    Type = MediaStreamType.Audio,
+                    Index = -1,
+                    Codec = info.AudioCodec,
+                    BitRate = info.AudioBitrate,
+                    Channels = info.AudioChannels,
+                    SampleRate = info.AudioSampleRate
+                });
+            }
+
+            return list;
         }
     }
 }

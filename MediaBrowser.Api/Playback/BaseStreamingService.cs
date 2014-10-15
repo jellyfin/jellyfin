@@ -859,19 +859,12 @@ namespace MediaBrowser.Api.Playback
 
                     state.LiveTvStreamId = streamInfo.Id;
 
-                    if (!string.IsNullOrEmpty(streamInfo.Path))
-                    {
-                        state.MediaPath = streamInfo.Path;
-                    }
-                    else if (!string.IsNullOrEmpty(streamInfo.Url))
-                    {
-                        state.MediaPath = streamInfo.Url;
-                    }
+                    state.MediaPath = streamInfo.Path;
+                    state.InputProtocol = streamInfo.Protocol;
 
                     await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
-                    
-                    state.InputProtocol = GetProtocol(state.MediaPath);
-                    AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
+
+                    AttachMediaStreamInfo(state, streamInfo, state.VideoRequest, state.RequestedUrl);
                     checkCodecs = true;
                 }
 
@@ -882,19 +875,12 @@ namespace MediaBrowser.Api.Playback
 
                     state.LiveTvStreamId = streamInfo.Id;
 
-                    if (!string.IsNullOrEmpty(streamInfo.Path))
-                    {
-                        state.MediaPath = streamInfo.Path;
-                    }
-                    else if (!string.IsNullOrEmpty(streamInfo.Url))
-                    {
-                        state.MediaPath = streamInfo.Url;
-                    }
+                    state.MediaPath = streamInfo.Path;
+                    state.InputProtocol = streamInfo.Protocol;
 
                     await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                     
-                    state.InputProtocol = GetProtocol(state.MediaPath);
-                    AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
+                    AttachMediaStreamInfo(state, streamInfo, state.VideoRequest, state.RequestedUrl);
                     checkCodecs = true;
                 }
 
@@ -1006,7 +992,7 @@ namespace MediaBrowser.Api.Playback
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.IsInputVideo && transcodingJob.Type == Api.TranscodingJobType.Progressive)
+            if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive)
             {
                 await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
 
@@ -1712,6 +1698,23 @@ namespace MediaBrowser.Api.Playback
             return state;
         }
 
+        private void AttachMediaStreamInfo(StreamState state,
+          ChannelMediaInfo mediaInfo,
+          VideoStreamRequest videoRequest,
+          string requestedUrl)
+        {
+            var mediaSource = mediaInfo.ToMediaSource();
+
+            state.InputProtocol = mediaSource.Protocol;
+            state.MediaPath = mediaSource.Path;
+            state.RunTimeTicks = mediaSource.RunTimeTicks;
+            state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+            state.InputBitrate = mediaSource.Bitrate;
+            state.InputFileSize = mediaSource.Size;
+
+            AttachMediaStreamInfo(state, mediaSource.MediaStreams, videoRequest, requestedUrl);
+        }
+        
         private void AttachMediaStreamInfo(StreamState state,
             List<MediaStream> mediaStreams,
             VideoStreamRequest videoRequest,

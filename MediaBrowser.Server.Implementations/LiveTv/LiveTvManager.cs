@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -344,24 +345,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
-        public async Task<LiveStreamInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
+        public async Task<ChannelMediaInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
             return await GetLiveStream(id, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<LiveStreamInfo> GetChannelStream(string id, CancellationToken cancellationToken)
+        public async Task<ChannelMediaInfo> GetChannelStream(string id, CancellationToken cancellationToken)
         {
             return await GetLiveStream(id, true, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<LiveStreamInfo> GetLiveStream(string id, bool isChannel, CancellationToken cancellationToken)
+        private async Task<ChannelMediaInfo> GetLiveStream(string id, bool isChannel, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
                 var service = ActiveService;
-                LiveStreamInfo info;
+                ChannelMediaInfo info;
 
                 if (isChannel)
                 {
@@ -406,55 +407,41 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private void Sanitize(LiveStreamInfo info)
+        private void Sanitize(ChannelMediaInfo info)
         {
             // Clean some bad data coming from providers
 
-            foreach (var stream in info.MediaStreams)
+            if (info.AudioBitrate.HasValue && info.AudioBitrate <= 0)
             {
-                if (stream.BitDepth.HasValue && stream.BitDepth <= 0)
-                {
-                    stream.BitDepth = null;
-                }
-                if (stream.BitRate.HasValue && stream.BitRate <= 0)
-                {
-                    stream.BitRate = null;
-                }
-                if (stream.Channels.HasValue && stream.Channels <= 0)
-                {
-                    stream.Channels = null;
-                }
-                if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
-                {
-                    stream.AverageFrameRate = null;
-                }
-                if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
-                {
-                    stream.RealFrameRate = null;
-                }
-                if (stream.Width.HasValue && stream.Width <= 0)
-                {
-                    stream.Width = null;
-                }
-                if (stream.Height.HasValue && stream.Height <= 0)
-                {
-                    stream.Height = null;
-                }
-                if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
-                {
-                    stream.SampleRate = null;
-                }
-                if (stream.Level.HasValue && stream.Level <= 0)
-                {
-                    stream.Level = null;
-                }
-                if (stream.PacketLength.HasValue && stream.PacketLength <= 0)
-                {
-                    stream.PacketLength = null;
-                }
-
-                // Don't trust the provider values
-                stream.Index = -1;
+                info.AudioBitrate = null;
+            }
+            if (info.VideoBitrate.HasValue && info.VideoBitrate <= 0)
+            {
+                info.VideoBitrate = null;
+            }
+            if (info.AudioChannels.HasValue && info.AudioChannels <= 0)
+            {
+                info.AudioChannels = null;
+            }
+            if (info.Framerate.HasValue && info.Framerate <= 0)
+            {
+                info.Framerate = null;
+            }
+            if (info.Width.HasValue && info.Width <= 0)
+            {
+                info.Width = null;
+            }
+            if (info.Height.HasValue && info.Height <= 0)
+            {
+                info.Height = null;
+            }
+            if (info.AudioSampleRate.HasValue && info.AudioSampleRate <= 0)
+            {
+                info.AudioSampleRate = null;
+            }
+            if (info.VideoLevel.HasValue && info.VideoLevel <= 0)
+            {
+                info.VideoLevel = null;
             }
         }
 
@@ -1702,7 +1689,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         class LiveStreamData
         {
-            internal LiveStreamInfo Info;
+            internal ChannelMediaInfo Info;
             internal int ConsumerCount;
             internal string ItemId;
             internal bool IsChannel;
