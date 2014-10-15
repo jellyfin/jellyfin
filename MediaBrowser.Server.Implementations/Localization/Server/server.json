@@ -1235,5 +1235,12 @@
     "HeaderGuests": "Guests",
     "HeaderLocalUsers": "Local Users",
     "HeaderPendingInvitations": "Pending Invitations",
-    "TabParentalControl": "Parental Control"
+    "TabParentalControl": "Parental Control",
+    "HeaderAccessSchedule": "Access Schedule",
+    "HeaderAccessScheduleHelp": "Create an access schedule to limit access to certain hours.",
+    "ButtonAddSchedule": "Add Schedule",
+    "LabelAccessDay": "Day of week:",
+    "LabelAccessStart": "Start time:",
+    "LabelAccessEnd": "End time:",
+    "HeaderSchedule": "Schedule"
 }

@@ -158,6 +158,9 @@
     <Compile Include="..\MediaBrowser.Model\Collections\CollectionCreationResult.cs">
       <Link>Collections\CollectionCreationResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\AccessSchedule.cs">
+      <Link>Configuration\AccessSchedule.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>
@@ -215,8 +218,26 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
       <Link>Configuration\XbmcMetadataOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthenticationResult.cs">
+      <Link>Connect\ConnectAuthenticationResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthorization.cs">
       <Link>Connect\ConnectAuthorization.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectUser.cs">
+      <Link>Connect\ConnectUser.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectUserQuery.cs">
+      <Link>Connect\ConnectUserQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\PinCreationResult.cs">
+      <Link>Connect\PinCreationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\PinExchangeResult.cs">
+      <Link>Connect\PinExchangeResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\PinStatusResult.cs">
+      <Link>Connect\PinStatusResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\UserLinkType.cs">
       <Link>Connect\UserLinkType.cs</Link>

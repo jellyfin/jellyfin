@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -132,14 +133,25 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            if (item.IsPlaceHolder || item.IsShortcut)
+            if (item.IsPlaceHolder)
             {
                 return _cachedTask;
             }
 
+            if (item.IsShortcut)
+            {
+                FetchShortcutInfo(item);
+                return Task.FromResult(ItemUpdateType.MetadataEdit);
+            }
+            
             var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager);
 
             return prober.ProbeVideo(item, options, cancellationToken);
+        }
+
+        private void FetchShortcutInfo(Video video)
+        {
+            video.ShortcutPath = File.ReadAllText(video.Path);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)

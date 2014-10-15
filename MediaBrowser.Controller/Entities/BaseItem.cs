@@ -564,6 +564,11 @@ namespace MediaBrowser.Controller.Entities
                 return PlayAccess.None;
             }
 
+            //if (!user.IsParentalScheduleAllowed())
+            //{
+            //    return PlayAccess.None;
+            //}
+
             return PlayAccess.Full;
         }
 
@@ -1465,8 +1470,6 @@ namespace MediaBrowser.Controller.Entities
 
                 image.Path = file.FullName;
                 image.DateModified = imageInfo.DateModified;
-                image.Width = imageInfo.Width;
-                image.Height = imageInfo.Height;
             }
         }
 
@@ -1639,26 +1642,12 @@ namespace MediaBrowser.Controller.Entities
 
         private ItemImageInfo GetImageInfo(FileSystemInfo file, ImageType type)
         {
-            var info = new ItemImageInfo
+            return new ItemImageInfo
             {
                 Path = file.FullName,
                 Type = type,
                 DateModified = FileSystem.GetLastWriteTimeUtc(file)
             };
-
-            try
-            {
-                var size = ImageProcessor.GetImageSize(info.Path);
-
-                info.Width = Convert.ToInt32(size.Width);
-                info.Height = Convert.ToInt32(size.Height);
-            }
-            catch
-            {
-                
-            }
-
-            return info;
         }
 
         /// <summary>

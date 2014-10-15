@@ -634,6 +634,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                             user.Configuration.SyncConnectImage = true;
                             user.Configuration.SyncConnectName = true;
+                            user.Configuration.IsHidden = true;
 
                             _userManager.UpdateConfiguration(user, user.Configuration);
                         }

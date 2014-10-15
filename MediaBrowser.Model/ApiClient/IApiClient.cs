@@ -715,10 +715,10 @@ namespace MediaBrowser.Model.ApiClient
         /// Authenticates a user and returns the result
         /// </summary>
         /// <param name="username">The username.</param>
-        /// <param name="sha1Hash">The sha1 hash.</param>
+        /// <param name="password">The password.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<AuthenticationResult> AuthenticateUserAsync(string username, byte[] sha1Hash);
+        Task<AuthenticationResult> AuthenticateUserAsync(string username, string password);
 
         /// <summary>
         /// Updates the server configuration async.

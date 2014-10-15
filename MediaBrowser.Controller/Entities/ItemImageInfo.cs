@@ -10,9 +10,5 @@ namespace MediaBrowser.Controller.Entities
         public ImageType Type { get; set; }
 
         public DateTime DateModified { get; set; }
-
-        public int? Width { get; set; }
-
-        public int? Height { get; set; }
     }
 }

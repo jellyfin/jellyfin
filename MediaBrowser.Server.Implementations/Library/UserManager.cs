@@ -234,6 +234,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 users.Add(user);
 
                 user.Configuration.IsAdministrator = true;
+                user.Configuration.EnableRemoteControlOfOtherUsers = true;
                 UpdateConfiguration(user, user.Configuration);
             }
 
