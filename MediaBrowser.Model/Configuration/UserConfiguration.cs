@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] BlockedChannels { get; set; }
 
         public string[] DisplayChannelsWithinViews { get; set; }
-        
+
         public string[] ExcludeFoldersFromGrouping { get; set; }
 
         public UnratedItem[] BlockUnratedItems { get; set; }
@@ -86,13 +86,14 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableCinemaMode { get; set; }
 
+        public AccessSchedule[] AccessSchedules { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
         public UserConfiguration()
         {
             PlayDefaultAudioTrack = true;
-            EnableRemoteControlOfOtherUsers = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
@@ -111,6 +112,8 @@ namespace MediaBrowser.Model.Configuration
             SyncConnectImage = true;
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
+
+            AccessSchedules = new AccessSchedule[] { };
         }
     }
 }

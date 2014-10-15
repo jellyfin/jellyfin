@@ -6,6 +6,7 @@ using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -258,6 +259,42 @@ namespace MediaBrowser.Controller.Entities
 
             Configuration = config;
             UserManager.UpdateConfiguration(this, Configuration);
+        }
+
+        public bool IsParentalScheduleAllowed()
+        {
+            return IsParentalScheduleAllowed(DateTime.UtcNow);
+        }
+
+        public bool IsParentalScheduleAllowed(DateTime date)
+        {
+            var schedules = Configuration.AccessSchedules;
+
+            if (schedules.Length == 0)
+            {
+                return true;
+            }
+
+            return schedules.Any(i => IsParentalScheduleAllowed(i, date));
+        }
+
+        private bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
+        {
+            if (date.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Utc date expected");
+            }
+
+            var localTime = date.ToLocalTime();
+
+            return localTime.DayOfWeek == schedule.DayOfWeek && IsWithinTime(schedule, localTime);
+        }
+
+        private bool IsWithinTime(AccessSchedule schedule, DateTime localTime)
+        {
+            var hour = localTime.TimeOfDay.TotalHours;
+
+            return hour >= schedule.StartHour && hour <= schedule.EndHour;
         }
     }
 }

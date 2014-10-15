@@ -869,22 +869,19 @@ namespace MediaBrowser.Dlna.Didl
 
             }
 
-            int? width = imageInfo.Width;
-            int? height = imageInfo.Height;
+            int? width = null;
+            int? height = null;
 
-            if (!height.HasValue && !width.HasValue)
+            try
             {
-                try
-                {
-                    var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
+                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
 
-                    width = Convert.ToInt32(size.Width);
-                    height = Convert.ToInt32(size.Height);
-                }
-                catch
-                {
+                width = Convert.ToInt32(size.Width);
+                height = Convert.ToInt32(size.Height);
+            }
+            catch
+            {
 
-                }
             }
 
             return new ImageDownloadInfo

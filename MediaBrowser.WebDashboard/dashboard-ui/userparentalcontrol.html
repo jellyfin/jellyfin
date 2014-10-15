@@ -30,7 +30,22 @@
                         </div>
                     </div>
                     <br />
-                    <br />
+
+                    <div class="accessScheduleSection" style="display:none;">
+                        <div data-role="collapsible">
+                            <h2>${HeaderAccessSchedule}</h2>
+                            <div>
+                                <p>${HeaderAccessScheduleHelp}</p>
+
+                                <button class="btnAddSchedule" type="button" data-icon="plus" data-mini="true">${ButtonAddSchedule}</button>
+
+                                <div class="accessScheduleList">
+
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                    </div>
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">
@@ -38,10 +53,56 @@
                             </button>
                         </li>
                     </ul>
+
                 </form>
+
+                <div data-role="popup" id="popupSchedule" data-theme="a">
+
+                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>
+
+                    <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
+                        <h3 style="margin: .5em;">${HeaderSchedule}</h3>
+                    </div>
+
+                    <div style="padding:10px 5px 0;">
+
+                        <form class="scheduleForm" style="min-width:210px;">
+
+                            <ul data-role="listview" class="ulForm" style="margin-bottom:10px!important;">
+                                <li>
+                                    <label for="selectDay">${LabelAccessDay}</label>
+                                    <select id="selectDay" data-mini="true">
+                                        <option value="Sunday">${OptionSunday}</option>
+                                        <option value="Monday">${OptionMonday}</option>
+                                        <option value="Tuesday">${OptionTuesday}</option>
+                                        <option value="Wednesday">${OptionWednesday}</option>
+                                        <option value="Thursday">${OptionThursday}</option>
+                                        <option value="Friday">${OptionFriday}</option>
+                                        <option value="Saturday">${OptionSaturday}</option>
+                                    </select>
+                                </li>
+                                <li>
+                                    <label for="selectStart">${LabelAccessStart}</label>
+                                    <select class="selectHour" id="selectStart" data-mini="true"></select>
+                                </li>
+                                <li>
+                                    <label for="selectEnd">${LabelAccessEnd}</label>
+                                    <select class="selectHour" id="selectEnd" data-mini="true"></select>
+                                </li>
+                                <li>
+                                    <input type="hidden" id="fldScheduleIndex" />
+                                    <button type="submit" data-icon="plus">${ButtonAdd}</button>
+                                </li>
+                            </ul>
+                        </form>
+
+                    </div>
+
+                </div>
             </div>
         </div>
         <script type="text/javascript">
+            $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
             $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
         </script>
     </div>

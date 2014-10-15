@@ -129,6 +129,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool IsPlaceHolder { get; set; }
         public bool IsShortcut { get; set; }
+        public string ShortcutPath { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
@@ -577,6 +578,28 @@ namespace MediaBrowser.Controller.Entities
                 Type = type,
                 PlayableStreamFileNames = i.PlayableStreamFileNames.ToList()
             };
+
+            if (i.IsShortcut)
+            {
+                info.Path = i.ShortcutPath;
+
+                if (info.Path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Protocol = MediaProtocol.Http;
+                }
+                else if (info.Path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Protocol = MediaProtocol.Rtmp;
+                }
+                else if (info.Path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Protocol = MediaProtocol.Rtsp;
+                }
+                else
+                {
+                    info.Protocol = MediaProtocol.File;
+                }
+            }
 
             if (string.IsNullOrEmpty(info.Container))
             {

@@ -36,9 +36,12 @@
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-        html += '<li><a href="#" class="btnDeleteUser" data-userid="' + userId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
-
         html += '<li><a href="useredit.html?userid=' + userId + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
+
+        html += '<li><a href="userlibraryaccess.html?userid=' + userId + '">' + Globalize.translate('ButtonLibraryAccess') + '</a></li>';
+        html += '<li><a href="userparentalcontrol.html?userid=' + userId + '">' + Globalize.translate('ButtonParentalControl') + '</a></li>';
+
+        html += '<li><a href="#" class="btnDeleteUser" data-userid="' + userId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
 
         html += '</ul>';
 

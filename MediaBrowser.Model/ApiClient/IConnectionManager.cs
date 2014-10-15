@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using System;
 using System.Threading;
@@ -65,5 +66,25 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         [Obsolete]
         IApiClient CurrentApiClient { get; }
+
+        /// <summary>
+        /// Creates the pin.
+        /// </summary>
+        /// <returns>Task&lt;PinCreationResult&gt;.</returns>
+        Task<PinCreationResult> CreatePin();
+
+        /// <summary>
+        /// Gets the pin status.
+        /// </summary>
+        /// <param name="pin">The pin.</param>
+        /// <returns>Task&lt;PinStatusResult&gt;.</returns>
+        Task<PinStatusResult> GetPinStatus(PinCreationResult pin);
+
+        /// <summary>
+        /// Exchanges the pin.
+        /// </summary>
+        /// <param name="pin">The pin.</param>
+        /// <returns>Task.</returns>
+        Task ExchangePin(PinCreationResult pin);
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -17,10 +18,12 @@ namespace MediaBrowser.Providers.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor
     {
         private readonly ILogger _logger;
+        private readonly IImageProcessor _imageProcessor;
 
-        public PhotoProvider(ILogger logger)
+        public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
         {
             _logger = logger;
+            _imageProcessor = imageProcessor;
         }
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -140,9 +143,18 @@ namespace MediaBrowser.Providers.Photos
             }
 
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
+            
+            try
+            {
+                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
 
-            item.Height = imageInfo.Height;
-            item.Width = imageInfo.Width;
+                item.Width = Convert.ToInt32(size.Width);
+                item.Height = Convert.ToInt32(size.Height);
+            }
+            catch
+            {
+
+            } 
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
             return Task.FromResult(result);

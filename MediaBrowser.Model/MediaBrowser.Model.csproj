@@ -89,6 +89,7 @@
     <Compile Include="Chapters\RemoteChapterInfo.cs" />
     <Compile Include="Chapters\RemoteChapterResult.cs" />
     <Compile Include="Collections\CollectionCreationResult.cs" />
+    <Compile Include="Configuration\AccessSchedule.cs" />
     <Compile Include="Configuration\ChannelOptions.cs" />
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
@@ -96,7 +97,13 @@
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
+    <Compile Include="Connect\ConnectAuthenticationResult.cs" />
     <Compile Include="Connect\ConnectAuthorization.cs" />
+    <Compile Include="Connect\ConnectUser.cs" />
+    <Compile Include="Connect\ConnectUserQuery.cs" />
+    <Compile Include="Connect\PinCreationResult.cs" />
+    <Compile Include="Connect\PinExchangeResult.cs" />
+    <Compile Include="Connect\PinStatusResult.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
     <Compile Include="Devices\DeviceOptions.cs" />
     <Compile Include="Devices\LocalFileInfo.cs" />

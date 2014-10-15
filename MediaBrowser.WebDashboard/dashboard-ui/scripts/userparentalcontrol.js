@@ -100,7 +100,65 @@
 
         $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
 
+        if (user.Configuration.IsAdministrator) {
+            $('.accessScheduleSection', page).hide();
+        } else {
+            $('.accessScheduleSection', page).show();
+        }
+
+        renderAccessSchedule(page, user.Configuration.AccessSchedules || []);
+
         Dashboard.hideLoadingMsg();
+    }
+
+    function getDisplayTime(hour) {
+
+        return new Date(2000, 1, 1, hour, 0, 0, 0).toLocaleTimeString();
+
+    }
+
+    function deleteAccessSchedule(page, schedules, index) {
+
+        schedules.splice(index, 1);
+
+        renderAccessSchedule(page, schedules);
+    }
+
+    function renderAccessSchedule(page, schedules) {
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="minus">';
+        var index = 0;
+
+        html += schedules.map(function (a) {
+
+            var itemHtml = '';
+
+            itemHtml += '<li class="liSchedule" data-day="' + a.DayOfWeek + '" data-start="' + a.StartHour + '" data-end="' + a.EndHour + '">';
+
+            itemHtml += '<a href="#">';
+            itemHtml += '<h3>' + a.DayOfWeek + '</h3>';
+            itemHtml += '<p>' + getDisplayTime(a.StartHour) + ' - ' + getDisplayTime(a.EndHour) + '</p>';
+            itemHtml += '</a>';
+
+            itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + index + '">';
+            itemHtml += '</a>';
+
+            itemHtml += '</li>';
+
+            index++;
+
+            return itemHtml;
+
+        }).join('');
+
+        html += '</ul>';
+
+        var elem = $('.accessScheduleList', page).html(html).trigger('create');
+
+        $('.btnDelete', elem).on('click', function () {
+
+            deleteAccessSchedule(page, schedules, parseInt(this.getAttribute('data-index')));
+        });
     }
 
     function onSaveComplete(page) {
@@ -119,6 +177,8 @@
             return this.getAttribute('data-itemtype');
 
         }).get();
+
+        user.Configuration.AccessSchedules = getSchedulesFromPage(page);
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page);
@@ -141,10 +201,101 @@
 
             // Disable default form submission
             return false;
+        },
+
+        onScheduleFormSubmit: function () {
+
+            var page = $(this).parents('.page');
+
+            saveSchedule(page);
+
+            // Disable default form submission
+            return false;
         }
     };
 
-    $(document).on('pageshow', "#userParentalControlPage", function () {
+    function populateHours(page) {
+
+        var html = '';
+
+        for (var i = 0; i < 24; i++) {
+
+            html += '<option value="' + i + '">' + getDisplayTime(i) + '</option>';
+        }
+
+        $('#selectStart', page).html(html).selectmenu('refresh');
+        $('#selectEnd', page).html(html).selectmenu('refresh');
+    }
+
+    function showSchedulePopup(page, schedule, index) {
+
+        schedule = schedule || {};
+
+        $('#popupSchedule', page).popup('open');
+
+        $('#fldScheduleIndex', page).val(index);
+
+        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday').selectmenu('refresh');
+        $('#selectStart', page).val(schedule.StartHour || 0).selectmenu('refresh');
+        $('#selectEnd', page).val(schedule.EndHour || 0).selectmenu('refresh');
+    }
+
+    function saveSchedule(page) {
+
+        var schedule = {
+            DayOfWeek: $('#selectDay', page).val(),
+            StartHour: $('#selectStart', page).val(),
+            EndHour: $('#selectEnd', page).val()
+        };
+
+        if (parseFloat(schedule.StartHour) >= parseFloat(schedule.EndHour)) {
+
+            alert(Globalize.translate('ErrorMessageStartHourGreaterThanEnd'));
+
+            return;
+        }
+
+        var schedules = getSchedulesFromPage(page);
+
+        var index = parseInt($('#fldScheduleIndex', page).val());
+
+        if (index == -1) {
+            index = schedules.length;
+        }
+
+        schedules[index] = schedule;
+
+        renderAccessSchedule(page, schedules);
+
+        $('#popupSchedule', page).popup('close');
+    }
+
+    function getSchedulesFromPage(page) {
+
+        return $('.liSchedule', page).map(function () {
+
+            return {
+                DayOfWeek: this.getAttribute('data-day'),
+                StartHour: this.getAttribute('data-start'),
+                EndHour: this.getAttribute('data-end')
+            };
+
+        }).get();
+    }
+
+    $(document).on('pageinit', "#userParentalControlPage", function () {
+
+        var page = this;
+
+
+        $('.btnAddSchedule', page).on('click', function () {
+
+            showSchedulePopup(page, {},  -1);
+        });
+
+        populateHours(page);
+
+    }).on('pageshow', "#userParentalControlPage", function () {
 
         var page = this;
 

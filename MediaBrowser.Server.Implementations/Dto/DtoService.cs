@@ -1429,35 +1429,21 @@ namespace MediaBrowser.Server.Implementations.Dto
             // See if we can avoid a file system lookup by looking for the file in ResolveArgs
             var dateModified = imageInfo.DateModified;
 
-            double? width = imageInfo.Width;
-            double? height = imageInfo.Height;
-
             ImageSize size;
 
-            if (!width.HasValue || !height.HasValue)
+            try
             {
-                try
-                {
-                    size = _imageProcessor.GetImageSize(path, dateModified);
-                }
-                catch (FileNotFoundException)
-                {
-                    _logger.Error("Image file does not exist: {0}", path);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
-                    return;
-                }
+                size = _imageProcessor.GetImageSize(path, dateModified);
             }
-            else
+            catch (FileNotFoundException)
             {
-                size = new ImageSize
-                {
-                    Height = height.Value,
-                    Width = width.Value
-                };
+                _logger.Error("Image file does not exist: {0}", path);
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                return;
             }
 
             dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;

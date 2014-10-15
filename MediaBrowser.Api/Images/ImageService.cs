@@ -321,6 +321,20 @@ namespace MediaBrowser.Api.Images
             {
                 var fileInfo = new FileInfo(info.Path);
 
+                int? width = null;
+                int? height = null;
+
+                try
+                {
+                    var size = _imageProcessor.GetImageSize(info.Path, info.DateModified);
+
+                    width = Convert.ToInt32(size.Width);
+                    height = Convert.ToInt32(size.Height);
+                }
+                catch
+                {
+
+                }
                 return new ImageInfo
                 {
                     Path = info.Path,
@@ -328,8 +342,8 @@ namespace MediaBrowser.Api.Images
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = fileInfo.Length,
-                    Width = info.Width ?? 0,
-                    Height = info.Height ?? 0
+                    Width = width,
+                    Height = height
                 };
             }
             catch (Exception ex)

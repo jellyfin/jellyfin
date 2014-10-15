@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             {
                 if (!_config.Configuration.InsecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    //SessionManager.ValidateSecurityToken(auth.Token);
+                    SessionManager.ValidateSecurityToken(auth.Token);
                 }
             }
 
@@ -80,9 +80,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 throw new ArgumentException("User with Id " + auth.UserId + " not found");
             }
 
-            if (user != null && user.Configuration.IsDisabled)
+            if (user != null)
             {
-                throw new AuthenticationException("User account has been disabled.");
+                if (user.Configuration.IsDisabled)
+                {
+                    throw new AuthenticationException("User account has been disabled.");
+                }
+
+                if (!user.Configuration.IsAdministrator && !user.IsParentalScheduleAllowed())
+                {
+                    throw new AuthenticationException("This user account is not allowed access at this time.");
+                }
             }
 
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
