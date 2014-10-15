@@ -176,7 +176,7 @@ namespace MediaBrowser.Model.Configuration
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
         public bool FindInternetTrailers { get; set; }
 
-        public string[] InsecureApps { get; set; }
+        public string[] InsecureApps2 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
 
@@ -226,12 +226,13 @@ namespace MediaBrowser.Model.Configuration
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            InsecureApps = new[]
+            InsecureApps2 = new[]
             {
                 "Roku",
                 "Chromecast",
                 "iOS",
-                "Android"
+                "Android",
+                "Windows Phone"
             };
 
             MetadataOptions = new[]
