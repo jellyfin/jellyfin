@@ -20,6 +20,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Channels", "GET", Summary = "Gets available live tv channels.")]
+    [Authenticated]
     public class GetChannels : IReturn<QueryResult<ChannelInfoDto>>
     {
         [ApiMember(Name = "Type", Description = "Optional filter by channel type.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -56,6 +57,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Channels/{Id}", "GET", Summary = "Gets a live tv channel")]
+    [Authenticated]
     public class GetChannel : IReturn<ChannelInfoDto>
     {
         /// <summary>
@@ -70,6 +72,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Recordings", "GET", Summary = "Gets live tv recordings")]
+    [Authenticated]
     public class GetRecordings : IReturn<QueryResult<RecordingInfoDto>>
     {
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -98,6 +101,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Recordings/Groups", "GET", Summary = "Gets live tv recording groups")]
+    [Authenticated]
     public class GetRecordingGroups : IReturn<QueryResult<RecordingGroupDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -105,6 +109,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Recordings/{Id}", "GET", Summary = "Gets a live tv recording")]
+    [Authenticated]
     public class GetRecording : IReturn<RecordingInfoDto>
     {
         [ApiMember(Name = "Id", Description = "Recording Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -115,6 +120,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Tuners/{Id}/Reset", "POST", Summary = "Resets a tv tuner")]
+    [Authenticated]
     public class ResetTuner : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Tuner Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -122,6 +128,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Timers/{Id}", "GET", Summary = "Gets a live tv timer")]
+    [Authenticated]
     public class GetTimer : IReturn<TimerInfoDto>
     {
         [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -129,6 +136,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Timers/Defaults", "GET", Summary = "Gets default values for a new timer")]
+    [Authenticated]
     public class GetDefaultTimer : IReturn<SeriesTimerInfoDto>
     {
         [ApiMember(Name = "ProgramId", Description = "Optional, to attach default values based on a program.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -136,6 +144,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Timers", "GET", Summary = "Gets live tv timers")]
+    [Authenticated]
     public class GetTimers : IReturn<QueryResult<TimerInfoDto>>
     {
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -146,6 +155,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Programs", "GET,POST", Summary = "Gets available live tv epgs..")]
+    [Authenticated]
     public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
     {
         [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -168,6 +178,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Programs/Recommended", "GET", Summary = "Gets available live tv epgs..")]
+    [Authenticated]
     public class GetRecommendedPrograms : IReturn<QueryResult<ProgramInfoDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -184,6 +195,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Programs/{Id}", "GET", Summary = "Gets a live tv program")]
+    [Authenticated]
     public class GetProgram : IReturn<ProgramInfoDto>
     {
         [ApiMember(Name = "Id", Description = "Program Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -195,6 +207,7 @@ namespace MediaBrowser.Api.LiveTv
 
 
     [Route("/LiveTv/Recordings/{Id}", "DELETE", Summary = "Deletes a live tv recording")]
+    [Authenticated]
     public class DeleteRecording : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Recording Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -202,6 +215,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Timers/{Id}", "DELETE", Summary = "Cancels a live tv timer")]
+    [Authenticated]
     public class CancelTimer : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -209,16 +223,19 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/Timers/{Id}", "POST", Summary = "Updates a live tv timer")]
+    [Authenticated]
     public class UpdateTimer : TimerInfoDto, IReturnVoid
     {
     }
 
     [Route("/LiveTv/Timers", "POST", Summary = "Creates a live tv timer")]
+    [Authenticated]
     public class CreateTimer : TimerInfoDto, IReturnVoid
     {
     }
 
     [Route("/LiveTv/SeriesTimers/{Id}", "GET", Summary = "Gets a live tv series timer")]
+    [Authenticated]
     public class GetSeriesTimer : IReturn<TimerInfoDto>
     {
         [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -226,6 +243,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/SeriesTimers", "GET", Summary = "Gets live tv series timers")]
+    [Authenticated]
     public class GetSeriesTimers : IReturn<QueryResult<SeriesTimerInfoDto>>
     {
         [ApiMember(Name = "SortBy", Description = "Optional. Sort by SortName or Priority", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -236,6 +254,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/SeriesTimers/{Id}", "DELETE", Summary = "Cancels a live tv series timer")]
+    [Authenticated]
     public class CancelSeriesTimer : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Timer Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -243,16 +262,19 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/SeriesTimers/{Id}", "POST", Summary = "Updates a live tv series timer")]
+    [Authenticated]
     public class UpdateSeriesTimer : SeriesTimerInfoDto, IReturnVoid
     {
     }
 
     [Route("/LiveTv/SeriesTimers", "POST", Summary = "Creates a live tv series timer")]
+    [Authenticated]
     public class CreateSeriesTimer : SeriesTimerInfoDto, IReturnVoid
     {
     }
 
     [Route("/LiveTv/Recordings/Groups/{Id}", "GET", Summary = "Gets a recording group")]
+    [Authenticated]
     public class GetRecordingGroup : IReturn<RecordingGroupDto>
     {
         [ApiMember(Name = "Id", Description = "Recording group Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -260,18 +282,19 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/GuideInfo", "GET", Summary = "Gets guide info")]
+    [Authenticated]
     public class GetGuideInfo : IReturn<GuideInfo>
     {
     }
 
     [Route("/LiveTv/Folder", "GET", Summary = "Gets the users live tv folder, along with configured images")]
+    [Authenticated]
     public class GetLiveTvFolder : IReturn<BaseItemDto>
     {
         [ApiMember(Name = "UserId", Description = "Optional attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
     }
 
-    [Authenticated]
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
