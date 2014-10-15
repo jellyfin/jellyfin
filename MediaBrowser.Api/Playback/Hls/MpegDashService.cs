@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Security;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -41,7 +42,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <value>The segment id.</value>
         public string SegmentId { get; set; }
     }
-    
+
     public class MpegDashService : BaseHlsService
     {
         protected INetworkManager NetworkManager { get; private set; }
@@ -104,8 +105,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var duration = "PT0H02M11.00S";
 
+            builder.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             builder.AppendFormat(
-                "<MPD type=\"static\" minBufferTime=\"PT2S\" mediaPresentationDuration=\"{0}\" profiles=\"urn:mpeg:dash:profile:mp2t-simple:2011\" xmlns=\"urn:mpeg:DASH:schema:MPD:2011\" maxSegmentDuration=\"PT{1}S\">",
+                "<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\" minBufferTime=\"PT2.00S\" mediaPresentationDuration=\"{0}\" maxSegmentDuration=\"PT{1}S\" type=\"static\" profiles=\"urn:mpeg:dash:profile:mp2t-simple:2011\">",
                 duration,
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture));
 
@@ -116,9 +118,13 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.Append("<AdaptationSet segmentAlignment=\"true\">");
 
             builder.Append("<ContentComponent id=\"1\" contentType=\"video\"/>");
-            builder.Append("<ContentComponent id=\"2\" contentType=\"audio\" lang=\"eng\"/>");
 
-            builder.Append(GetRepresentationOpenElement(state));
+            var lang = state.AudioStream != null ? state.AudioStream.Language : null;
+            if (string.IsNullOrWhiteSpace(lang)) lang = "und";
+
+            builder.AppendFormat("<ContentComponent id=\"2\" contentType=\"audio\" lang=\"{0}\"/>", lang);
+
+            builder.Append(GetRepresentationOpenElement(state, lang));
 
             AppendSegmentList(state, builder);
 
@@ -131,10 +137,97 @@ namespace MediaBrowser.Api.Playback.Hls
             return builder.ToString();
         }
 
-        private string GetRepresentationOpenElement(StreamState state)
+        private string GetRepresentationOpenElement(StreamState state, string language)
         {
-            return
-                "<Representation id=\"1\" mimeType=\"video/mp2t\" codecs=\"avc1.640028,mp4a.40.02\" width=\"1280\" height=\"1024\" sampleRate=\"44100\" numChannels=\"2\" lang=\"und\" startWithSAP=\"1\" bandwidth=\"317599\">";
+            var codecs = GetVideoCodecDescriptor(state) + "," + GetAudioCodecDescriptor(state);
+
+            var xml = "<Representation id=\"1\" mimeType=\"video/mp2t\" startWithSAP=\"1\" codecs=\"" + codecs + "\"";
+
+            if (state.OutputWidth.HasValue)
+            {
+                xml += " width=\"" + state.OutputWidth.Value.ToString(UsCulture) + "\"";
+            }
+            if (state.OutputHeight.HasValue)
+            {
+                xml += " height=\"" + state.OutputHeight.Value.ToString(UsCulture) + "\"";
+            }
+            if (state.OutputAudioSampleRate.HasValue)
+            {
+                xml += " sampleRate=\"" + state.OutputAudioSampleRate.Value.ToString(UsCulture) + "\"";
+            }
+
+            if (state.TotalOutputBitrate.HasValue)
+            {
+                xml += " bandwidth=\"" + state.TotalOutputBitrate.Value.ToString(UsCulture) + "\"";
+            }
+
+            xml += ">";
+
+            return xml;
+        }
+
+        private string GetVideoCodecDescriptor(StreamState state)
+        {
+            // https://developer.apple.com/library/ios/documentation/networkinginternet/conceptual/streamingmediaguide/FrequentlyAskedQuestions/FrequentlyAskedQuestions.html
+
+            var level = state.TargetVideoLevel ?? 0;
+            var profile = state.TargetVideoProfile ?? string.Empty;
+
+            if (profile.IndexOf("high", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                if (level >= 4.1)
+                {
+                    return "avc1.640028";
+                }
+
+                if (level >= 4)
+                {
+                    return "avc1.640028";
+                }
+
+                return "avc1.64001f";
+            }
+
+            if (profile.IndexOf("main", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                if (level >= 4)
+                {
+                    return "avc1.4d0028";
+                }
+
+                if (level >= 3.1)
+                {
+                    return "avc1.4d001f";
+                }
+
+                return "avc1.4d001e";
+            }
+
+            if (level >= 3.1)
+            {
+                return "avc1.42001f";
+            }
+
+            return "avc1.42001e";
+        }
+
+        private string GetAudioCodecDescriptor(StreamState state)
+        {
+            // https://developer.apple.com/library/ios/documentation/networkinginternet/conceptual/streamingmediaguide/FrequentlyAskedQuestions/FrequentlyAskedQuestions.html
+
+            if (string.Equals(state.OutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mp4a.40.34";
+            }
+
+            // AAC 5ch
+            if (state.OutputAudioChannels.HasValue && state.OutputAudioChannels.Value >= 5)
+            {
+                return "mp4a.40.5";
+            }
+
+            // AAC 2ch
+            return "mp4a.40.2";
         }
 
         public object Get(GetDashSegment request)
@@ -147,7 +240,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var seconds = TimeSpan.FromTicks(state.RunTimeTicks ?? 0).TotalSeconds;
 
             builder.Append("<SegmentList timescale=\"1000\" duration=\"10000\">");
-            
+
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
@@ -155,7 +248,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             while (seconds > 0)
             {
-                builder.AppendFormat("<SegmentURL media=\"{0}.ts{1}\"/>", index.ToString(UsCulture), queryString);
+                builder.AppendFormat("<SegmentURL media=\"{0}.ts{1}\"/>", index.ToString(UsCulture), SecurityElement.Escape(queryString));
 
                 seconds -= state.SegmentLength;
                 index++;
