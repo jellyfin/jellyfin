@@ -1,5 +1,5 @@
 #! /bin/sh
 
-# Start MBServer
-cd /MBServer
-mono MediaBrowser.Server.Mono.exe
+# Start MediaBrowser Server
+cd /opt/mediabrowser
+mono MediaBrowser.Server.Mono.exe -programdata /config

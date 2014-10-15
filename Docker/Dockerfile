@@ -22,18 +22,19 @@ RUN apt-get -q update
 RUN apt-get dist-upgrade -qy && apt-get -q update
 
 # Install MediaBrowser run dependencies
-RUN apt-get install -qy --force-yes libmono-cil-dev Libgdiplus unzip wget
+RUN apt-get install -qy --force-yes libmono-cil-dev Libgdiplus mediainfo wget
 
 # Download latest release from Dropbox
-RUN mkdir MBServer && cd MBServer &&  wget -O MBServer.Mono.zip https://www.dropbox.com/s/07hh1g4x9xo28jb/MBServer.Mono.zip?dl=1 && unzip MBServer.Mono.zip
+RUN wget https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/Releases/Server/mediabrowser.deb && dpkg -i mediabrowser.deb && apt-get install -f
 
 # Uncomment for unRAID
-RUN chown -R nobody:users /MBServer
+RUN chown -R nobody:users /opt/mediabrowser
 
 # Cleanup
-RUN apt-get -y autoremove && rm /MBServer/MBServer.Mono.zip
+RUN apt-get -y autoremove && rm mediabrowser.deb
+RUN mkdir /config && chown -R nobody:users /config
 
-VOLUME /MediaBrowser.Mono.docker/ProgramData-Server 
+VOLUME /config 
 
 ADD ./start.sh /start.sh
 RUN chmod u+x  /start.sh
@@ -44,5 +45,6 @@ EXPOSE 8096/tcp
 EXPOSE 7359/udp
 # ssdp port for UPnP / DLNA discovery
 EXPOSE 1900/udp
-
+# Run as default unRAID user nobody
+USER nobody
 ENTRYPOINT ["/start.sh"]
