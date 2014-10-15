@@ -825,6 +825,23 @@ namespace MediaBrowser.Api.Playback
             return MediaEncoder.GetInputArgument(inputPath, protocol);
         }
 
+        private MediaProtocol GetProtocol(string path)
+        {
+            if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaProtocol.Http;
+            }
+            if (path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaProtocol.Rtsp;
+            }
+            if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaProtocol.Rtmp;
+            }
+            return MediaProtocol.File;
+        }
+
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
             if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
@@ -845,16 +862,15 @@ namespace MediaBrowser.Api.Playback
                     if (!string.IsNullOrEmpty(streamInfo.Path))
                     {
                         state.MediaPath = streamInfo.Path;
-                        state.InputProtocol = MediaProtocol.File;
-
-                        await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else if (!string.IsNullOrEmpty(streamInfo.Url))
                     {
                         state.MediaPath = streamInfo.Url;
-                        state.InputProtocol = MediaProtocol.Http;
                     }
 
+                    await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
+                    
+                    state.InputProtocol = GetProtocol(state.MediaPath);
                     AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
                     checkCodecs = true;
                 }
@@ -869,16 +885,15 @@ namespace MediaBrowser.Api.Playback
                     if (!string.IsNullOrEmpty(streamInfo.Path))
                     {
                         state.MediaPath = streamInfo.Path;
-                        state.InputProtocol = MediaProtocol.File;
-
-                        await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else if (!string.IsNullOrEmpty(streamInfo.Url))
                     {
                         state.MediaPath = streamInfo.Url;
-                        state.InputProtocol = MediaProtocol.Http;
                     }
 
+                    await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
+                    
+                    state.InputProtocol = GetProtocol(state.MediaPath);
                     AttachMediaStreamInfo(state, streamInfo.MediaStreams, state.VideoRequest, state.RequestedUrl);
                     checkCodecs = true;
                 }
@@ -989,6 +1004,16 @@ namespace MediaBrowser.Api.Playback
             while (!File.Exists(outputPath) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+
+            if (state.IsInputVideo && transcodingJob.Type == Api.TranscodingJobType.Progressive)
+            {
+                await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+
+                if (state.ReadInputAtNativeFramerate)
+                {
+                    await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
             }
 
             return transcodingJob;
@@ -1609,11 +1634,6 @@ namespace MediaBrowser.Api.Playback
                     if (mediaSource.Timestamp.HasValue)
                     {
                         state.InputTimestamp = mediaSource.Timestamp.Value;
-                    }
-
-                    if (video.IsShortcut)
-                    {
-                        state.MediaPath = File.ReadAllText(video.Path);
                     }
                 }
 
