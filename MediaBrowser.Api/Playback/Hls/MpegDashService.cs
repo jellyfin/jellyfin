@@ -103,7 +103,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var builder = new StringBuilder();
 
-            var duration = "PT0H02M11.00S";
+            var time = TimeSpan.FromTicks(state.RunTimeTicks.Value);
+
+            var duration = "PT" + time.Hours.ToString("00", UsCulture) + "H" + time.Minutes.ToString("00", UsCulture) + "M" + time.Seconds.ToString("00", UsCulture) + ".00S";
 
             builder.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             builder.AppendFormat(
@@ -239,16 +241,17 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var seconds = TimeSpan.FromTicks(state.RunTimeTicks ?? 0).TotalSeconds;
 
-            builder.Append("<SegmentList timescale=\"1000\" duration=\"10000\">");
-
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
             var index = 0;
+            builder.Append("<SegmentList timescale=\"1000\" duration=\"10000\">");
 
             while (seconds > 0)
             {
-                builder.AppendFormat("<SegmentURL media=\"{0}.ts{1}\"/>", index.ToString(UsCulture), SecurityElement.Escape(queryString));
+                var segmentUrl = string.Format("{0}.ts{1}", index.ToString(UsCulture), SecurityElement.Escape(queryString));
+
+                builder.AppendFormat("<SegmentURL media=\"{0}\"/>", segmentUrl);
 
                 seconds -= state.SegmentLength;
                 index++;

@@ -181,7 +181,6 @@
     <Compile Include="LiveTv\RecordingGroup.cs" />
     <Compile Include="LiveTv\RecordingStatusChangedEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
-    <Compile Include="LiveTv\LiveStreamInfo.cs" />
     <Compile Include="LiveTv\LiveTvAudioRecording.cs" />
     <Compile Include="LiveTv\LiveTvChannel.cs" />
     <Compile Include="LiveTv\ChannelInfo.cs" />

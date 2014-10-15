@@ -359,69 +359,11 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private MediaSourceInfo GetMediaSource(IChannelMediaItem item, ChannelMediaInfo info)
         {
-            var id = info.Path.GetMD5().ToString("N");
+            var source = info.ToMediaSource();
 
-            var source = new MediaSourceInfo
-            {
-                MediaStreams = GetMediaStreams(info).ToList(),
-
-                Container = info.Container,
-                Protocol = info.Protocol,
-                Path = info.Path,
-                RequiredHttpHeaders = info.RequiredHttpHeaders,
-                RunTimeTicks = item.RunTimeTicks,
-                Name = id,
-                Id = id
-            };
-
-            var bitrate = (info.AudioBitrate ?? 0) + (info.VideoBitrate ?? 0);
-
-            if (bitrate > 0)
-            {
-                source.Bitrate = bitrate;
-            }
-
-            if (item is ChannelVideoItem && info.Protocol != MediaProtocol.Rtmp)
-            {
-                
-            }
+            source.RunTimeTicks = source.RunTimeTicks ?? item.RunTimeTicks;
 
             return source;
-        }
-
-        private IEnumerable<MediaStream> GetMediaStreams(ChannelMediaInfo info)
-        {
-            var list = new List<MediaStream>();
-
-            if (!string.IsNullOrWhiteSpace(info.VideoCodec) &&
-                !string.IsNullOrWhiteSpace(info.AudioCodec))
-            {
-                list.Add(new MediaStream
-                {
-                    Type = MediaStreamType.Video,
-                    Width = info.Width,
-                    RealFrameRate = info.Framerate,
-                    Profile = info.VideoProfile,
-                    Level = info.VideoLevel,
-                    Index = -1,
-                    Height = info.Height,
-                    Codec = info.VideoCodec,
-                    BitRate = info.VideoBitrate,
-                    AverageFrameRate = info.Framerate
-                });
-
-                list.Add(new MediaStream
-                {
-                    Type = MediaStreamType.Audio,
-                    Index = -1,
-                    Codec = info.AudioCodec,
-                    BitRate = info.AudioBitrate,
-                    Channels = info.AudioChannels,
-                    SampleRate = info.AudioSampleRate
-                });
-            }
-
-            return list;
         }
 
         private IEnumerable<ChannelMediaInfo> SortMediaInfoResults(IEnumerable<ChannelMediaInfo> channelMediaSources)
