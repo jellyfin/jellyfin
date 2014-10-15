@@ -65,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (!allowLocal || !req.IsLocal)
             {
-                if (!_config.Configuration.InsecureApps.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (!_config.Configuration.InsecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     SessionManager.ValidateSecurityToken(auth.Token);
                 }
