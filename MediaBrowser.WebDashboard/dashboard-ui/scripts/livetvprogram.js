@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var currentItem;
 
@@ -132,4 +132,4 @@
         currentItem = null;
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

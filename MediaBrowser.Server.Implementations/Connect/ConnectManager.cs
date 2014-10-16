@@ -427,13 +427,19 @@ namespace MediaBrowser.Server.Implementations.Connect
             var accessToken = Guid.NewGuid().ToString("N");
             var sendingUser = GetUser(sendingUserId);
 
+            var requesterUserName = sendingUser.ConnectUserName;
+            if (string.IsNullOrWhiteSpace(requesterUserName))
+            {
+                requesterUserName = sendingUser.Name;
+            }
+
             var postData = new Dictionary<string, string>
             {
                 {"serverId", ConnectServerId},
                 {"userId", connectUser.Id},
                 {"userType", "Guest"},
                 {"accessToken", accessToken},
-                {"requesterUserName", sendingUser.ConnectUserName}
+                {"requesterUserName", requesterUserName}
             };
 
             options.SetPostData(postData);
@@ -608,8 +614,6 @@ namespace MediaBrowser.Server.Implementations.Connect
                 }
             }
 
-            users = _userManager.Users.ToList();
-
             var pending = new List<ConnectAuthorization>();
 
             foreach (var connectEntry in list)
@@ -618,7 +622,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     if (string.Equals(connectEntry.AcceptStatus, "accepted", StringComparison.OrdinalIgnoreCase))
                     {
-                        var user = users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectEntry.UserId, StringComparison.OrdinalIgnoreCase));
+                        var user = _userManager.Users
+                            .FirstOrDefault(i => string.Equals(i.ConnectUserId, connectEntry.UserId, StringComparison.OrdinalIgnoreCase));
 
                         if (user == null)
                         {
@@ -635,6 +640,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                             user.Configuration.SyncConnectImage = true;
                             user.Configuration.SyncConnectName = true;
                             user.Configuration.IsHidden = true;
+                            user.Configuration.EnableLiveTvManagement = false;
+                            user.Configuration.IsAdministrator = false;
 
                             _userManager.UpdateConfiguration(user, user.Configuration);
                         }

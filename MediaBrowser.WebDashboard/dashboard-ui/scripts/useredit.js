@@ -260,6 +260,7 @@
         var page = this;
 
         loadData(page);
+
     });
 
 })(jQuery, window, document);

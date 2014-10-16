@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var query = {
 
@@ -60,7 +60,7 @@
 
         showLoadingMessage(page);
         
-        apiClient.getLiveTvChannels(query).done(function (result) {
+        ApiClient.getLiveTvChannels(query).done(function (result) {
 
             renderChannels(page, result);
 
@@ -134,4 +134,4 @@
         
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

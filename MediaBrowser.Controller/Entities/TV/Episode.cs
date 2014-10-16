@@ -146,7 +146,27 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public Season Season
         {
-            get { return FindParent<Season>(); }
+            get
+            {
+                var season = FindParent<Season>();
+
+                // Episodes directly in series folder
+                if (season == null)
+                {
+                    var series = FindParent<Series>();
+
+                    if (ParentIndexNumber.HasValue)
+                    {
+                        var findNumber = ParentIndexNumber.Value;
+
+                        season = series.Children
+                            .OfType<Season>()
+                            .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == findNumber);
+                    }
+                }
+
+                return season;
+            }
         }
 
         [IgnoreDataMember]
@@ -235,25 +255,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 if (season != null)
                 {
                     return season.Id;
-                }
-
-                var seasonNumber = ParentIndexNumber;
-
-                // Parent is a Series
-                if (seasonNumber.HasValue)
-                {
-                    var series = Series;
-
-                    if (series != null)
-                    {
-                        season = series.Children.OfType<Season>()
-                            .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber.Value);
-
-                        if (season != null)
-                        {
-                            return season.Id;
-                        }
-                    }
                 }
 
                 return null;

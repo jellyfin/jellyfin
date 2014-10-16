@@ -267,9 +267,14 @@ namespace MediaBrowser.Api.Playback
         /// Gets the number of threads.
         /// </summary>
         /// <returns>System.Int32.</returns>
-        /// <exception cref="System.Exception">Unrecognized MediaEncodingQuality value.</exception>
         protected int GetNumberOfThreads(StreamState state, bool isWebm)
         {
+            if (isWebm)
+            {
+                // Recommended per docs
+                return Math.Max(Environment.ProcessorCount - 1, 2);
+            }
+            
             // Use more when this is true. -re will keep cpu usage under control
             if (state.ReadInputAtNativeFramerate)
             {
@@ -907,9 +912,12 @@ namespace MediaBrowser.Api.Playback
         /// <param name="state">The state.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
+        /// <param name="workingDirectory">The working directory.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">ffmpeg was not found at  + MediaEncoder.EncoderPath</exception>
-        protected async Task<TranscodingJob> StartFfMpeg(StreamState state, string outputPath, CancellationTokenSource cancellationTokenSource)
+        protected async Task<TranscodingJob> StartFfMpeg(StreamState state, 
+            string outputPath, 
+            CancellationTokenSource cancellationTokenSource,
+            string workingDirectory = null)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -944,6 +952,11 @@ namespace MediaBrowser.Api.Playback
 
                 EnableRaisingEvents = true
             };
+
+            if (!string.IsNullOrWhiteSpace(workingDirectory))
+            {
+                process.StartInfo.WorkingDirectory = workingDirectory;
+            }
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 transcodingId,
@@ -1540,19 +1553,9 @@ namespace MediaBrowser.Api.Playback
                     state.MediaPath = mediaUrl;
                     state.InputProtocol = MediaProtocol.Http;
                 }
-                else
-                {
-                    // No media info, so this is probably needed
-                    state.DeInterlace = true;
-                }
-
-                if (recording.RecordingInfo.Status == RecordingStatus.InProgress)
-                {
-                    state.ReadInputAtNativeFramerate = true;
-                }
 
                 state.RunTimeTicks = recording.RunTimeTicks;
-
+                state.DeInterlace = true;
                 state.OutputAudioSync = "1000";
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
@@ -1566,9 +1569,8 @@ namespace MediaBrowser.Api.Playback
                 state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
                 mediaStreams = new List<MediaStream>();
 
-                state.ReadInputAtNativeFramerate = true;
-                state.OutputAudioSync = "1000";
                 state.DeInterlace = true;
+                state.OutputAudioSync = "1000";
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
 
@@ -1626,30 +1628,19 @@ namespace MediaBrowser.Api.Playback
                 state.RunTimeTicks = mediaSource.RunTimeTicks;
             }
 
-            // If it's a wtv and we don't have media info, we will probably need to deinterlace
-            if (string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) &&
-                mediaStreams.Count == 0)
-            {
-                state.DeInterlace = true;
-            }
-
-            if (state.InputProtocol == MediaProtocol.Rtmp)
-            {
-                state.ReadInputAtNativeFramerate = true;
-            }
-
             var videoRequest = request as VideoStreamRequest;
 
             AttachMediaStreamInfo(state, mediaStreams, videoRequest, url);
 
-            state.SegmentLength = state.ReadInputAtNativeFramerate ? 5 : 6;
-            state.HlsListSize = state.ReadInputAtNativeFramerate ? 100 : 1440;
+            state.SegmentLength = 6;
 
             var container = Path.GetExtension(state.RequestedUrl);
 
             if (string.IsNullOrEmpty(container))
             {
-                container = request.Static ? state.InputContainer : Path.GetExtension(GetOutputFilePath(state));
+                container = request.Static ? 
+                    state.InputContainer :
+                    (Path.GetExtension(GetOutputFilePath(state)) ?? string.Empty).TrimStart('.');
             }
 
             state.OutputContainer = (container ?? string.Empty).TrimStart('.');

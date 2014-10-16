@@ -97,6 +97,32 @@ var Dashboard = {
         return store.getItem('token');
     },
 
+    serverAddress: function (val) {
+
+        if (val != null) {
+            store.setItem('serverAddress', val);
+        }
+
+        var address = store.getItem('serverAddress');
+
+        if (!address) {
+            var loc = window.location;
+
+            address = loc.protocol + '//' + loc.hostname;
+
+            if (loc.port) {
+                address += ':' + loc.port;
+            }
+        }
+
+        return address;
+    },
+
+    changeServer: function () {
+
+
+    },
+
     getCurrentUserId: function () {
 
         var autoLoginUserId = getParameterByName('u');
@@ -1165,7 +1191,7 @@ var Dashboard = {
         alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
     }
 
-    window.ApiClient = MediaBrowser.ApiClient.create("Dashboard", window.dashboardVersion, MediaBrowser.ApiClient.generateDeviceName(), MediaBrowser.ApiClient.generateDeviceId());
+    window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), "Dashboard", window.dashboardVersion, MediaBrowser.ApiClient.generateDeviceName(), MediaBrowser.ApiClient.generateDeviceId());
 
     $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
         .on("websocketmessage", Dashboard.onWebSocketMessageReceived);

@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var currentItem;
     var programs;

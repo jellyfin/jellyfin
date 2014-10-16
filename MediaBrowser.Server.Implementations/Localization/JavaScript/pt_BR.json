@@ -594,12 +594,13 @@
     "DashboardTourNotifications": "Envie, automaticamente, notifica\u00e7\u00f5es de eventos do servidor para seus dispositivos m\u00f3veis, email e mais.",
     "DashboardTourScheduledTasks": "Gerencie facilmente opera\u00e7\u00f5es longas com tarefas agendadas. Decida quando executar e com que frequ\u00eancia.",
     "DashboardTourMobile": "O painel do M\u00e9dia Browser funciona perfeitamente em smartphones e tablets. Gerencie seu servidor da palma de sua m\u00e3o, a qualquer hora e em qualquer lugar.",
-    "MessageRefreshQueued": "Refresh queued",
-    "TabDevices": "Devices",
-    "DeviceLastUsedByUserName": "Last used by {0}",
-    "HeaderDeleteDevice": "Delete Device",
-    "DeleteDeviceConfirmation": "Are you sure you wish to delete this device? It will reappear the next time a user signs in with it.",
-    "LabelEnableCameraUploadFor": "Enable camera upload for:",
-    "HeaderSelectUploadPath": "Select Upload Path",
-    "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser."
+    "MessageRefreshQueued": "Atualiza\u00e7\u00e3o iniciada",
+    "TabDevices": "Dispositivos",
+    "DeviceLastUsedByUserName": "Utilizado por \u00faltimo por {0}",
+    "HeaderDeleteDevice": "Excluir Dispositivo",
+    "DeleteDeviceConfirmation": "Tem certeza de que deseja excluir este dispositivo? Ele reaparecer\u00e1 a pr\u00f3xima vez que um usu\u00e1rio utiliz\u00e1-lo.",
+    "LabelEnableCameraUploadFor": "Habilitar envio atrav\u00e9s de c\u00e2mera para:",
+    "HeaderSelectUploadPath": "Selecione o caminho para carga",
+    "LabelEnableCameraUploadForHelp": "Cargas ser\u00e3o executadas automaticamente em retaguarda quando logar no Media Browser.",
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
 }

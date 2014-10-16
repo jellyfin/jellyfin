@@ -1,4 +1,4 @@
-﻿(function (window, $, document, apiClient) {
+﻿(function (window, $, document) {
 
     var currentItem;
 
@@ -73,7 +73,7 @@
 
         var form = this;
 
-        apiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
+        ApiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
@@ -96,7 +96,7 @@
 
         var id = getParameterByName('id');
 
-        apiClient.getLiveTvTimer(id).done(function (result) {
+        ApiClient.getLiveTvTimer(id).done(function (result) {
 
             renderTimer(page, result);
 
@@ -133,4 +133,4 @@
 
     window.LiveTvTimerPage = new liveTvTimerPage();
 
-})(window, jQuery, document, ApiClient);
+})(window, jQuery, document);

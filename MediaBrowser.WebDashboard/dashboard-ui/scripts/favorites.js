@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function getSections() {
 
@@ -112,4 +112,4 @@
         loadSections(page, userId);
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

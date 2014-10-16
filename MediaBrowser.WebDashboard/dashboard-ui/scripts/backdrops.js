@@ -34,7 +34,7 @@
             var options = {
 
                 SortBy: "IsFavoriteOrLiked,Random",
-                Limit: 50,
+                Limit: 20,
                 Recursive: true,
                 IncludeItemTypes: types,
                 ImageTypes: "Backdrop",
@@ -61,7 +61,9 @@
 
     function showBackdrop(type) {
 
-        getBackdropItemIds(Dashboard.getCurrentUserId(), type, LibraryMenu.getTopParentId()).done(function (images) {
+        getBackdropItemIds(Dashboard.getCurrentUserId(),
+            type,
+            LibraryMenu.getTopParentId()).done(function (images) {
 
             if (images.length) {
 

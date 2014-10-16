@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var currentItem;
 
@@ -90,7 +90,7 @@
 
         var id = getParameterByName('id');
 
-        apiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (result) {
+        ApiClient.getLiveTvRecording(id, Dashboard.getCurrentUserId()).done(function (result) {
 
             renderRecording(page, result);
 
@@ -115,4 +115,4 @@
         currentItem = null;
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

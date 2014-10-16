@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function deleteTimer(page, id) {
 
@@ -100,7 +100,7 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvTimers().done(function (result) {
+        ApiClient.getLiveTvTimers().done(function (result) {
 
             renderTimers(page, result.Items);
 
@@ -114,4 +114,4 @@
         reload(page);
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

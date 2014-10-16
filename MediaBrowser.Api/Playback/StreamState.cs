@@ -64,7 +64,11 @@ namespace MediaBrowser.Api.Playback
         public string LiveTvStreamId { get; set; }
 
         public int SegmentLength = 10;
-        public int HlsListSize;
+
+        public int HlsListSize
+        {
+            get { return ReadInputAtNativeFramerate ? 100 : 1440; }
+        }
 
         public long? RunTimeTicks;
 
@@ -90,7 +94,11 @@ namespace MediaBrowser.Api.Playback
         public string InputVideoSync { get; set; }
 
         public bool DeInterlace { get; set; }
-        public bool ReadInputAtNativeFramerate { get; set; }
+
+        public bool ReadInputAtNativeFramerate
+        {
+            get { return InputProtocol == MediaProtocol.Rtmp || string.Equals(InputContainer, "wtv", StringComparison.OrdinalIgnoreCase); }
+        }
 
         public TransportStreamTimestamp InputTimestamp { get; set; }
 

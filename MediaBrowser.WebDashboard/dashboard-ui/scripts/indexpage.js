@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function getUserViews(userId) {
 
@@ -440,7 +440,7 @@
 
 })(jQuery, document, ApiClient);
 
-(function ($, document, apiClient) {
+(function ($, document) {
 
     function getDefaultSection(index) {
 
@@ -595,4 +595,4 @@
 
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

@@ -114,11 +114,13 @@ namespace MediaBrowser.Api.Playback.Hls
             var segmentPath = GetSegmentPath(playlistPath, index);
             var segmentLength = state.SegmentLength;
 
+            var segmentExtension = GetSegmentFileExtension(state);
+
             TranscodingJob job = null;
 
             if (File.Exists(segmentPath))
             {
-                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -127,23 +129,23 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (File.Exists(segmentPath))
                 {
-                    job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
+                    job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath);
+                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
 
                     if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType.Hls && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
+                            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
 
                             if (currentTranscodingIndex.HasValue)
                             {
-                                DeleteLastFile(playlistPath, 0);
+                                DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
                             var startSeconds = index * state.SegmentLength;
@@ -173,13 +175,13 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             Logger.Info("returning {0}", segmentPath);
-            job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType.Hls);
+            job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
             return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
         }
 
-        public int? GetCurrentTranscodingIndex(string playlist)
+        public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
-            var file = GetLastTranscodingFile(playlist, FileSystem);
+            var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
 
             if (file == null)
             {
@@ -193,14 +195,14 @@ namespace MediaBrowser.Api.Playback.Hls
             return int.Parse(indexString, NumberStyles.Integer, UsCulture);
         }
 
-        private void DeleteLastFile(string path, int retryCount)
+        private void DeleteLastFile(string path, string segmentExtension, int retryCount)
         {
             if (retryCount >= 5)
             {
                 return;
             }
 
-            var file = GetLastTranscodingFile(path, FileSystem);
+            var file = GetLastTranscodingFile(path, segmentExtension, FileSystem);
 
             if (file != null)
             {
@@ -213,7 +215,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
 
                     Thread.Sleep(100);
-                    DeleteLastFile(path, retryCount + 1);
+                    DeleteLastFile(path, segmentExtension, retryCount + 1);
                 }
                 catch (Exception ex)
                 {
@@ -222,7 +224,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private static FileInfo GetLastTranscodingFile(string playlist, IFileSystem fileSystem)
+        private static FileInfo GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
             var folder = Path.GetDirectoryName(playlist);
 
@@ -230,7 +232,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 return new DirectoryInfo(folder)
                     .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
-                    .Where(i => string.Equals(i.Extension, ".ts", StringComparison.OrdinalIgnoreCase))
+                    .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .FirstOrDefault();
             }

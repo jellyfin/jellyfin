@@ -272,8 +272,6 @@
             '' :
             getTopParentId() || '';
 
-        sessionStore.setItem('topParentId', id);
-
         $('.lnkMediaFolder').each(function () {
 
             var itemId = this.getAttribute('data-itemid');

@@ -7,8 +7,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -29,6 +27,11 @@ namespace MediaBrowser.Providers.Movies
         protected override void MergeData(Movie source, Movie target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || string.IsNullOrEmpty(target.TmdbCollectionName))
+            {
+                target.TmdbCollectionName = source.TmdbCollectionName;
+            }
         }
     }
 }

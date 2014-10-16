@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var currentProgram;
 
@@ -47,8 +47,8 @@
 
         var programId = getParameterByName('programid');
 
-        var promise1 = apiClient.getNewLiveTvTimerDefaults({ programId: programId });
-        var promise2 = apiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
+        var promise1 = ApiClient.getNewLiveTvTimerDefaults({ programId: programId });
+        var promise2 = ApiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
 
         $.when(promise1, promise2).done(function (response1, response2) {
 
@@ -108,7 +108,7 @@
 
         var programId = getParameterByName('programid');
 
-        apiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
+        ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
@@ -123,7 +123,7 @@
 
             if ($('#chkRecordSeries', form).checked()) {
 
-                apiClient.createLiveTvSeriesTimer(item).done(function () {
+                ApiClient.createLiveTvSeriesTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetvseriestimers.html');
@@ -131,7 +131,7 @@
                 });
 
             } else {
-                apiClient.createLiveTvTimer(item).done(function () {
+                ApiClient.createLiveTvTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetvtimers.html');
@@ -185,4 +185,4 @@
 
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

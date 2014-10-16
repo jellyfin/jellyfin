@@ -101,6 +101,7 @@
     <Compile Include="Connect\ConnectAuthorization.cs" />
     <Compile Include="Connect\ConnectUser.cs" />
     <Compile Include="Connect\ConnectUserQuery.cs" />
+    <Compile Include="Connect\ConnectUserServer.cs" />
     <Compile Include="Connect\PinCreationResult.cs" />
     <Compile Include="Connect\PinExchangeResult.cs" />
     <Compile Include="Connect\PinStatusResult.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Dto\VideoStreamOptions.cs" />
+    <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
     <Compile Include="Entities\SupporterInfo.cs" />
     <Compile Include="Entities\TrailerType.cs" />

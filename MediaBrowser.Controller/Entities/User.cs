@@ -287,7 +287,8 @@ namespace MediaBrowser.Controller.Entities
 
             var localTime = date.ToLocalTime();
 
-            return localTime.DayOfWeek == schedule.DayOfWeek && IsWithinTime(schedule, localTime);
+            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek) && 
+                IsWithinTime(schedule, localTime);
         }
 
         private bool IsWithinTime(AccessSchedule schedule, DateTime localTime)

@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function loadSections(page, userId) {
 
@@ -34,4 +34,4 @@
 
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

@@ -14,6 +14,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -1243,7 +1244,14 @@ namespace MediaBrowser.Server.Implementations.Session
         public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request,
             bool isLocal)
         {
-            var result = (isLocal && string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)) ||
+            var user = _userManager.Users
+                .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+
+            var allowWithoutPassword = isLocal &&
+                                       string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)
+                                       && !(user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest);
+
+            var result = allowWithoutPassword ||
                 await _userManager.AuthenticateUser(request.Username, request.Password, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)
@@ -1252,9 +1260,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 throw new AuthenticationException("Invalid user or password entered.");
             }
-
-            var user = _userManager.Users
-                .First(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);
 

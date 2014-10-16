@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function getRecordingGroupHtml(group) {
 
@@ -67,7 +67,7 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
             IsInProgress: true
@@ -78,7 +78,7 @@
 
         });
 
-        apiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
             limit: 12,
@@ -90,7 +90,7 @@
 
         });
 
-        apiClient.getLiveTvRecordingGroups({
+        ApiClient.getLiveTvRecordingGroups({
 
             userId: Dashboard.getCurrentUserId()
 
@@ -109,4 +109,4 @@
 
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     var query = {
 
@@ -93,7 +93,7 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvSeriesTimers(query).done(function (result) {
+        ApiClient.getLiveTvSeriesTimers(query).done(function (result) {
 
             renderTimers(page, result.Items);
 
@@ -143,4 +143,4 @@
         updateFilterControls(this);
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

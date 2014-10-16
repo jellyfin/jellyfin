@@ -58,6 +58,8 @@
 
     function loadUser(page, user, loggedInUser, mediaFolders, channels) {
 
+        $(page).trigger('userloaded', [user]);
+
         Dashboard.setPageTitle(user.Name);
 
         loadChannels(page, user, channels);

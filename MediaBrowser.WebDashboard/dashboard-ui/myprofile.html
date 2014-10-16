@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleMediaBrowser}</title>
+</head>
+<body>
+    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage" data-theme="b" data-contextname="${HeaderPreferences}">
+
+        <div class="libraryViewNav">
+            <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
+            <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
+            <a href="#" class="ui-btn-active lnkMyProfile">${TabProfile}</a>
+            <a href="#" class="lnkWebClientPreferences">${TabWebClient}</a>
+        </div>
+
+        <br />
+        <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
+            <div id="fldImage" style="display:inline-block;"></div>
+
+            <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
+                <h2 class="username" style="margin: 0;"></h2>
+                <button id="btnDeleteImage" type="button" data-icon="delete" style="display: none;margin-top:1em;">
+                    ${ButtonDeleteImage}
+                </button>
+            </div>
+        </div>
+
+        <form class="newImageForm" style="display:none;margin: 1em auto 0;">
+
+            <div data-role="collapsible">
+                <h2 id="headerUploadNewImage" style="display: none;">${HeaderUploadNewImage}</h2>
+                <div>
+                    <div id="fldNewImage">
+                        <p>${ImageUploadAspectRatioHelp}</p>
+                        <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="MyProfilePage.onFileUploadChange(this);" />
+
+                        <div id="userImageDropZone" class="imageDropZone">
+                            <h3>${LabelDropImageHere}</h3>
+                            <output id="userImageOutput"></output>
+                        </div>
+                    </div>
+                    <div id="fldNewImagePreview"></div>
+                    <div id="fldUpload" style="display: none;">
+                        <button type="submit" data-icon="check">${ButtonUpload}</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <script type="text/javascript">
+            $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -1,10 +1,10 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        apiClient.getLiveTvRecommendedPrograms({
+        ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
@@ -26,7 +26,7 @@
             $('.activeProgramItems', page).html(html).createCardMenus();
         });
 
-        apiClient.getLiveTvRecommendedPrograms({
+        ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
@@ -58,4 +58,4 @@
 
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -225,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var name = Environment.UserName;
 
-                var user = InstantiateNewUser(name);
+                var user = InstantiateNewUser(name, false);
 
                 user.DateLastSaved = DateTime.UtcNow;
 
@@ -403,7 +404,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             try
             {
-                var user = InstantiateNewUser(name);
+                var user = InstantiateNewUser(name, true);
 
                 var list = Users.ToList();
                 list.Add(user);
@@ -509,6 +510,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("user");
             }
 
+            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
+            {
+                throw new ArgumentException("Passwords for guests cannot be changed.");
+            }
+
             user.Password = string.IsNullOrEmpty(newPassword) ? GetSha1String(string.Empty) : GetSha1String(newPassword);
 
             await UpdateUser(user).ConfigureAwait(false);
@@ -520,15 +526,21 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Instantiates the new user.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="checkId">if set to <c>true</c> [check identifier].</param>
         /// <returns>User.</returns>
-        private User InstantiateNewUser(string name)
+        private User InstantiateNewUser(string name, bool checkId)
         {
-            var idSalt = ("MBUser" + name);
+            var id = ("MBUser" + name).GetMD5();
+
+            if (checkId && Users.Select(i => i.Id).Contains(id))
+            {
+                id = Guid.NewGuid();
+            }
 
             return new User
             {
                 Name = name,
-                Id = idSalt.GetMD5(),
+                Id = id,
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
                 UsesIdForConfigurationPath = true

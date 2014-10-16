@@ -10,6 +10,7 @@
 
         ApiClient.getUser(userId).done(function (user) {
 
+            $('.username', page).html(user.Name);
             $('#uploadUserImage', page).val('').trigger('change');
 
             Dashboard.setPageTitle(user.Name);
@@ -22,24 +23,24 @@
                     type: "Primary"
                 });
 
-                $('#fldImage', page).show().html('').html("<img height='200px' src='" + imageUrl + "' />");
+                $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
             }
 
             if (user.ConnectLinkType == 'Guest') {
 
-                $('.newImageSection', page).hide();
-                $('#fldDeleteImage', page).hide();
+                $('.newImageForm', page).hide();
+                $('#btnDeleteImage', page).hide();
             }
             else if (user.PrimaryImageTag) {
 
-                $('#fldDeleteImage', page).show();
+                $('#btnDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
-                $('.newImageSection', page).show();
+                $('.newImageForm', page).show();
 
             } else {
                 $('.newImageSection', page).show();
                 $('#fldImage', page).hide().html('');
-                $('#fldDeleteImage', page).hide();
+                $('#btnDeleteImage', page).hide();
                 $('#headerUploadNewImage', page).hide();
             }
 
@@ -139,11 +140,11 @@
         return false;
     }
 
-    function userImagePage() {
+    function myProfilePage() {
 
         var self = this;
 
-        self.onSubmit = function () {
+        self.onImageSubmit = function () {
 
             var file = currentFile;
 
@@ -164,29 +165,13 @@
             return false;
         };
 
-        self.deleteImage = function () {
-
-            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage'), function (result) {
-
-                if (result) {
-
-                    Dashboard.showLoadingMsg();
-
-                    var userId = getParameterByName("userId");
-
-                    ApiClient.deleteUserImage(userId, "primary").done(processImageChangeResult);
-                }
-
-            });
-        };
-
         self.onFileUploadChange = function (fileUpload) {
 
             setFiles($.mobile.activePage, fileUpload.files);
         };
     }
 
-    window.UserImagePage = new userImagePage();
+    window.MyProfilePage = new myProfilePage();
 
     $(document).on('pagebeforeshow', "#userImagePage", function () {
 
@@ -201,7 +186,7 @@
             }
         });
 
-    }).on('pageshow', "#userImagePage", function () {
+    }).on('pageinit', "#userImagePage", function () {
 
         var page = this;
 
@@ -209,11 +194,21 @@
 
         $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', onImageDrop);
 
-    }).on('pagehide', "#userImagePage", function () {
+        $('#btnDeleteImage', page).on('click', function () {
 
-        var page = this;
+            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage'), function (result) {
 
-        $("#userImageDropZone", page).off('dragover', onImageDragOver).off('drop', onImageDrop);
+                if (result) {
+
+                    Dashboard.showLoadingMsg();
+
+                    var userId = getParameterByName("userId");
+
+                    ApiClient.deleteUserImage(userId, "primary").done(processImageChangeResult);
+                }
+
+            });
+        });
     });
 
 

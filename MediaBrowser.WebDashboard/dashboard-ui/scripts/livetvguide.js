@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     // 30 mins
     var cellCurationMinutes = 30;
@@ -52,7 +52,7 @@
 
         channelQuery.userId = Dashboard.getCurrentUserId();
 
-        channelsPromise = channelsPromise || apiClient.getLiveTvChannels(channelQuery);
+        channelsPromise = channelsPromise || ApiClient.getLiveTvChannels(channelQuery);
 
         var date = currentDate;
 
@@ -62,7 +62,7 @@
         console.log(nextDay);
         channelsPromise.done(function (channelsResult) {
 
-            apiClient.getLiveTvPrograms({
+            ApiClient.getLiveTvPrograms({
                 UserId: Dashboard.getCurrentUserId(),
                 MaxStartDate: nextDay.toISOString(),
                 MinEndDate: date.toISOString(),
@@ -451,13 +451,13 @@
 
         var page = this;
 
-        apiClient.getLiveTvGuideInfo().done(function (guideInfo) {
+        ApiClient.getLiveTvGuideInfo().done(function (guideInfo) {
 
             setDateRange(page, guideInfo);
         });
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);
 
 (function ($, document, window) {
 

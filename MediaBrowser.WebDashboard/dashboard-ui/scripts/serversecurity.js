@@ -1,4 +1,4 @@
-﻿(function ($, document, apiClient) {
+﻿(function ($, document) {
 
     function revoke(page, key) {
 
@@ -10,7 +10,7 @@
 
                 ApiClient.ajax({
                     type: "DELETE",
-                    url: apiClient.getUrl('Auth/Keys/' + key)
+                    url: ApiClient.getUrl('Auth/Keys/' + key)
                     
                 }).done(function () {
 
@@ -125,7 +125,7 @@
 
             ApiClient.ajax({
                 type: "POST",
-                url: apiClient.getUrl('Auth/Keys/', {
+                url: ApiClient.getUrl('Auth/Keys/', {
                     
                     App: $('#txtAppName', form).val()
 
@@ -142,4 +142,4 @@
         }
     };
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

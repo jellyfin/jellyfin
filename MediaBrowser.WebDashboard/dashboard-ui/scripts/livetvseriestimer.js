@@ -1,4 +1,4 @@
-﻿(function (window, $, document, apiClient) {
+﻿(function (window, $, document) {
 
     var currentItem;
 
@@ -105,7 +105,7 @@
 
         var form = this;
 
-        apiClient.getLiveTvSeriesTimer(currentItem.Id).done(function (item) {
+        ApiClient.getLiveTvSeriesTimer(currentItem.Id).done(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
@@ -235,13 +235,13 @@
 
         var id = getParameterByName('id');
 
-        apiClient.getLiveTvSeriesTimer(id).done(function (result) {
+        ApiClient.getLiveTvSeriesTimer(id).done(function (result) {
 
             renderTimer(page, result);
 
         });
 
-        apiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
             seriesTimerId: id
@@ -252,7 +252,7 @@
 
         });
 
-        apiClient.getLiveTvTimers({
+        ApiClient.getLiveTvTimers({
 
             seriesTimerId: id
 
@@ -297,4 +297,4 @@
 
     window.LiveTvSeriesTimerPage = new liveTvSeriesTimerPage();
 
-})(window, jQuery, document, ApiClient);
+})(window, jQuery, document);

@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitCount = isLive ? 1 : GetSegmentWait();
+                        var waitCount = isLive ? 3 : 2;
                         await WaitForMinimumSegmentCount(playlist, waitCount, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
@@ -142,23 +142,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
-        }
-
-        /// <summary>
-        /// Gets the segment wait.
-        /// </summary>
-        /// <returns>System.Int32.</returns>
-        protected int GetSegmentWait()
-        {
-            var minimumSegmentCount = 2;
-            var quality = GetQualitySetting();
-
-            if (quality == EncodingQuality.HighSpeed || quality == EncodingQuality.HighQuality)
-            {
-                minimumSegmentCount = 2;
-            }
-
-            return minimumSegmentCount;
         }
 
         private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)

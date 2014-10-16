@@ -10,7 +10,6 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userimage.html', true);">${TabImage}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" class="ui-btn-active">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
@@ -79,7 +78,10 @@
                                         <option value="Thursday">${OptionThursday}</option>
                                         <option value="Friday">${OptionFriday}</option>
                                         <option value="Saturday">${OptionSaturday}</option>
-                                    </select>
+                                        <option value="Everyday">${OptionEveryday}</option>
+                                        <option value="Weekday">${OptionWeekdays}</option>
+                                        <option value="Weekend">${OptionWeekends}</option>
+                                   </select>
                                 </li>
                                 <li>
                                     <label for="selectStart">${LabelAccessStart}</label>
