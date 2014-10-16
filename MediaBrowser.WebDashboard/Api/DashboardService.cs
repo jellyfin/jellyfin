@@ -483,13 +483,21 @@ namespace MediaBrowser.WebDashboard.Api
 
             var builder = new StringBuilder();
 
-            using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath("thirdparty/mediabrowser.apiclient.js"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            foreach (var file in new[]
             {
-                using (var streamReader = new StreamReader(fs))
+                "thirdparty/apiclient/sha1.js",
+                "thirdparty/apiclient/mediabrowser.apiclient.js",
+                "thirdparty/apiclient/connectionmanager.js"
+            })
+            {
+                using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
-                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                    builder.Append(text);
-                    builder.Append(Environment.NewLine);
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
                 }
             }
 
@@ -668,7 +676,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "tvupcoming.js",
                                 "useredit.js",
                                 "userpassword.js",
-                                "userimagepage.js",
+                                "myprofile.js",
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",
                                 "userlibraryaccess.js",

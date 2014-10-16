@@ -595,11 +595,12 @@
     "DashboardTourScheduledTasks": "Beheer eenvoudig langlopende transacties met geplande taken. Beslis zelf wanneer ze worden uitgevoerd en hoe vaak.",
     "DashboardTourMobile": "Het dashboard van Media Browser werkt geweldig op smartphones en tablets. Uw server beheren vanuit de palm van uw hand, overal en altijd.",
     "MessageRefreshQueued": "Vernieuwen wachtrij",
-    "TabDevices": "Devices",
-    "DeviceLastUsedByUserName": "Last used by {0}",
-    "HeaderDeleteDevice": "Delete Device",
+    "TabDevices": "Apparaten",
+    "DeviceLastUsedByUserName": "Het laatste gebruikt door {0}",
+    "HeaderDeleteDevice": "Verwijder apparaat",
     "DeleteDeviceConfirmation": "Are you sure you wish to delete this device? It will reappear the next time a user signs in with it.",
     "LabelEnableCameraUploadFor": "Enable camera upload for:",
     "HeaderSelectUploadPath": "Select Upload Path",
-    "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser."
+    "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser.",
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
 }

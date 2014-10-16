@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.LiveTv
 {
+    /// <summary>
+    /// This is insecure right now to avoid windows phone refactoring
+    /// </summary>
     [Route("/LiveTv/Info", "GET", Summary = "Gets available live tv services.")]
     public class GetLiveTvInfo : IReturn<LiveTvInfo>
     {

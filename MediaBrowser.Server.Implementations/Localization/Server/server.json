@@ -830,7 +830,7 @@
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
     "ButtonDismiss": "Dismiss",
     "ButtonTakeTheTour": "Take the tour",
-    "ButtonEditOtherUserPreferences": "Edit this user's personal preferences.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile and personal preferences.",
     "LabelChannelStreamQuality": "Preferred internet stream quality:",
     "LabelChannelStreamQualityHelp": "In a low bandwidth environment, limiting quality can help ensure a smooth streaming experience.",
     "OptionBestAvailableStreamQuality": "Best available",
@@ -1242,5 +1242,8 @@
     "LabelAccessDay": "Day of week:",
     "LabelAccessStart": "Start time:",
     "LabelAccessEnd": "End time:",
-    "HeaderSchedule": "Schedule"
+    "HeaderSchedule": "Schedule",
+    "OptionEveryday": "Every day",
+    "OptionWeekdays": "Weekdays",
+    "OptionWeekends": "Weekends"
 }

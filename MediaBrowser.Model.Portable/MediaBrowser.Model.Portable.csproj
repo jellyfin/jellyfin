@@ -173,6 +173,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\DlnaOptions.cs">
       <Link>Configuration\DlnaOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\DynamicDayOfWeek.cs">
+      <Link>Configuration\DynamicDayOfWeek.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\EncodingQuality.cs">
       <Link>Configuration\EncodingQuality.cs</Link>
     </Compile>
@@ -229,6 +232,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectUserQuery.cs">
       <Link>Connect\ConnectUserQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectUserServer.cs">
+      <Link>Connect\ConnectUserServer.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\PinCreationResult.cs">
       <Link>Connect\PinCreationResult.cs</Link>

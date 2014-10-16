@@ -601,5 +601,6 @@
     "DeleteDeviceConfirmation": "\u00cates-vous s\u00fbr de vouloir supprimer ce p\u00e9riph\u00e9rique? La prochaine fois qu'un utilisateur se connecte au p\u00e9riph\u00e9rique, il sera ajout\u00e9 de nouveau.",
     "LabelEnableCameraUploadFor": "Autoriser l'upload de la cam\u00e9ra pour:",
     "HeaderSelectUploadPath": "S\u00e9lectionner le r\u00e9pertoire d'upload",
-    "LabelEnableCameraUploadForHelp": "Les uploads se lanceront automatiquement en arri\u00e8re plan apr\u00e8s l'authentification dans Media Browser."
+    "LabelEnableCameraUploadForHelp": "Les uploads se lanceront automatiquement en arri\u00e8re plan apr\u00e8s l'authentification dans Media Browser.",
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
 }

@@ -123,6 +123,7 @@
     <Compile Include="Entities\Book.cs" />
     <Compile Include="Configuration\IServerConfigurationManager.cs" />
     <Compile Include="Entities\Audio\MusicGenre.cs" />
+    <Compile Include="Entities\DayOfWeekHelper.cs" />
     <Compile Include="Entities\Extensions.cs" />
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />

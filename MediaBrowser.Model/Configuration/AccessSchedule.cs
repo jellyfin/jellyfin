@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace MediaBrowser.Model.Configuration
 {
     public class AccessSchedule
@@ -8,7 +7,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the day of week.
         /// </summary>
         /// <value>The day of week.</value>
-        public DayOfWeek DayOfWeek { get; set; }
+        public DynamicDayOfWeek DayOfWeek { get; set; }
         /// <summary>
         /// Gets or sets the start hour.
         /// </summary>

@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using ServiceStack;
@@ -190,16 +191,25 @@ namespace MediaBrowser.Api
 
         public object Get(GetPublicUsers request)
         {
-            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
-            var isDashboard = string.Equals(authInfo.Client, "Dashboard", StringComparison.OrdinalIgnoreCase);
-
-            if ((Request.IsLocal && isDashboard) ||
-                !_config.Configuration.IsStartupWizardCompleted)
+            // If the startup wizard hasn't been completed then just return all users
+            if (!_config.Configuration.IsStartupWizardCompleted)
             {
                 return Get(new GetUsers
                 {
                     IsDisabled = false
                 });
+            }
+
+            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+            var isDashboard = string.Equals(authInfo.Client, "Dashboard", StringComparison.OrdinalIgnoreCase);
+
+            if (Request.IsLocal && isDashboard)
+            {
+                var users = _userManager.Users
+                    .Where(i => !i.Configuration.IsDisabled && !(i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest))
+                    .ToList();
+
+                return ToOptimizedResult(users);
             }
 
             // TODO: Uncomment this once all clients can handle an empty user list.

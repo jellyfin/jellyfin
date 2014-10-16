@@ -601,5 +601,6 @@
     "DeleteDeviceConfirmation": "\u00bfEsta seguro de querer eliminar este dispositivo? Volver\u00e1 a aparecer la siguiente vez que un usuario inicie sesi\u00f3n en \u00e9l.",
     "LabelEnableCameraUploadFor": "Habilitar subida desde la c\u00e1mara para:",
     "HeaderSelectUploadPath": "Seleccionar trayectoria de subida",
-    "LabelEnableCameraUploadForHelp": "La subida ocurrir\u00e1 autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser."
+    "LabelEnableCameraUploadForHelp": "La subida ocurrir\u00e1 autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser.",
+    "ErrorMessageStartHourGreaterThanEnd": "El tiempo de fin debe ser mayor al tiempo de inicio"
 }
