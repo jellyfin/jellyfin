@@ -147,7 +147,12 @@ namespace MediaBrowser.Server.Implementations.Library
             Users = await LoadUsers().ConfigureAwait(false);
         }
 
-        public async Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint)
+        public Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint)
+        {
+            return AuthenticateUser(username, passwordSha1, null, remoteEndPoint);
+        }
+
+        public async Task<bool> AuthenticateUser(string username, string passwordSha1, string passwordMd5, string remoteEndPoint)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -161,11 +166,31 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
-            var success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+            var success = false;
 
-            if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
+            // Authenticate using local credentials if not a guest
+            if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest)
             {
-                success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                success = string.Equals(GetPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+
+                if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
+                {
+                    success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            // Maybe user accidently entered connect credentials. let's be flexible
+            if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(passwordMd5))
+            {
+                try
+                {
+                    await _connectFactory().Authenticate(user.ConnectUserName, passwordMd5).ConfigureAwait(false);
+                    success = true;
+                }
+                catch
+                {
+
+                }
             }
 
             // Update LastActivityDate and LastLoginDate, then save

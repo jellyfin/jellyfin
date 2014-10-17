@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Security.Cryptography;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -823,6 +825,25 @@ namespace MediaBrowser.Server.Implementations.Connect
                 }
 
                 _logger.Debug("Connect returned a 404 when removing a user auth link. Handling it.");
+            }
+        }
+
+        public async Task Authenticate(string username, string passwordMd5)
+        {
+            var request = new HttpRequestOptions
+            {
+                Url = GetConnectUrl("user/authenticate")
+            };
+
+            request.SetPostData(new Dictionary<string, string>
+                {
+                    {"userName",username},
+                    {"password",passwordMd5}
+                });
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.SendAsync(request, "POST").ConfigureAwait(false)).Content)
+            {
             }
         }
     }

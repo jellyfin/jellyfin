@@ -1252,7 +1252,7 @@ namespace MediaBrowser.Server.Implementations.Session
                                        && !(user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest);
 
             var result = allowWithoutPassword ||
-                await _userManager.AuthenticateUser(request.Username, request.Password, request.RemoteEndPoint).ConfigureAwait(false);
+                await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)
             {

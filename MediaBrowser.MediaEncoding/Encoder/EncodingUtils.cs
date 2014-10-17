@@ -20,6 +20,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return string.Format("\"{0}\"", url);
             }
+            if (protocol == MediaProtocol.Rtsp)
+            {
+                var url = inputFiles.First();
+
+                return string.Format("\"{0}\"", url);
+            }
 
             return GetConcatInputArgument(inputFiles);
         }

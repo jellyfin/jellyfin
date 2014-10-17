@@ -106,6 +106,9 @@ namespace MediaBrowser.Api
         /// <value>The password.</value>
         [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string Password { get; set; }
+
+        [ApiMember(Name = "PasswordMd5", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string PasswordMd5 { get; set; }
     }
 
     /// <summary>
@@ -351,7 +354,8 @@ namespace MediaBrowser.Api
                 AppVersion = auth.Version,
                 DeviceId = auth.DeviceId,
                 DeviceName = auth.Device,
-                Password = request.Password,
+                PasswordSha1 = request.Password,
+                PasswordMd5 = request.PasswordMd5,
                 RemoteEndPoint = Request.RemoteIp,
                 Username = request.Username
 
