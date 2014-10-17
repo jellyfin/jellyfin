@@ -17,7 +17,6 @@ namespace MediaBrowser.Model.ApiClient
         public ServerInfo()
         {
             WakeOnLanInfos = new List<WakeOnLanInfo>();
-            LocalAddress = "http://localhost:8096";
         }
     }
 }
