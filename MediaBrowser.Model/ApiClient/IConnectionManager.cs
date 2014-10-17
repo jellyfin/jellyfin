@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Connect;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using System;
@@ -86,5 +87,11 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="pin">The pin.</param>
         /// <returns>Task.</returns>
         Task ExchangePin(PinCreationResult pin);
+
+        /// <summary>
+        /// Gets the available servers.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken);
     }
 }
