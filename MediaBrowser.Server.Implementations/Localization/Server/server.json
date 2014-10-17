@@ -1245,5 +1245,6 @@
     "HeaderSchedule": "Schedule",
     "OptionEveryday": "Every day",
     "OptionWeekdays": "Weekdays",
-    "OptionWeekends": "Weekends"
+    "OptionWeekends": "Weekends",
+    "MessageProfileInfoSynced":  "User profile information synced with Media Browser Connect."
 }

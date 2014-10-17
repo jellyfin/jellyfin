@@ -47,5 +47,13 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelAuthorization(string id);
+
+        /// <summary>
+        /// Authenticates the specified username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="passwordMd5">The password MD5.</param>
+        /// <returns>Task.</returns>
+        Task Authenticate(string username, string passwordMd5);
     }
 }

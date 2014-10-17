@@ -30,18 +30,21 @@
 
                 $('.newImageForm', page).hide();
                 $('#btnDeleteImage', page).hide();
+                $('.connectMessage', page).show();
             }
             else if (user.PrimaryImageTag) {
 
                 $('#btnDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
                 $('.newImageForm', page).show();
+                $('.connectMessage', page).hide();
 
             } else {
                 $('.newImageSection', page).show();
                 $('#fldImage', page).hide().html('');
                 $('#btnDeleteImage', page).hide();
                 $('#headerUploadNewImage', page).hide();
+                $('.connectMessage', page).hide();
             }
 
             Dashboard.hideLoadingMsg();
