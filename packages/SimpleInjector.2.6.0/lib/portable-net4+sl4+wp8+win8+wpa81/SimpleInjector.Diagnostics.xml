@@ -34,7 +34,7 @@
             Diagnostic result for a warning about a concrete type that was not registered explicitly and was not 
             resolved using unregistered type resolution, but was created by the container using the transient 
             lifestyle.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=UnregisteredTypes.
+            For more information, see: https://simpleinjector.org/diaut.
             </summary>
         </member>
         <member name="T:SimpleInjector.Diagnostics.DiagnosticResult">
@@ -71,7 +71,7 @@
         </member>
         <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.GroupType">
             <summary>
-            Gets the base <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.DiagnosticType"/> that describes describes the service types of its 
+            Gets the base <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.DiagnosticType"/> that describes the service types of its 
             <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.Results"/>. The value often be either <see cref="T:System.Object"/> (in case this is a
             root group) or a partial generic type to allow hierarchical grouping of a large number of related
             generic types.
@@ -108,8 +108,8 @@
             Specifies the list of diagnostic types that are currently supported by the diagnostic 
             <see cref="T:SimpleInjector.Diagnostics.Analyzer"/>. Note that new diagnostic types might be added in future versions.
             For more information, please read the 
-            <a href="https://simpleinjector.codeplex.com/wikipage?title=Diagnostics">Diagnosing your configuration
-            using the Debug Diagnostic Services</a> wiki documentation.
+            <a href="https://simpleinjector.org/diagnostics">Diagnosing your configuration using the Diagnostic 
+            Services</a> wiki documentation.
             </summary>
         </member>
         <member name="F:SimpleInjector.Diagnostics.DiagnosticType.ContainerRegisteredComponent">
@@ -117,14 +117,14 @@
             Diagnostic type that warns about 
             a concrete type that was not registered explicitly and was not resolved using unregistered type 
             resolution, but was created by the container using the transient lifestyle.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=UnregisteredTypes.
+            For more information, see: https://simpleinjector.org/diaut.
             </summary>
         </member>
         <member name="F:SimpleInjector.Diagnostics.DiagnosticType.PotentialLifestyleMismatch">
             <summary>
             Diagnostic type that warns when a 
             component depends on a service with a lifestyle that is shorter than that of the component.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=PotentialLifestyleMismatches.
+            For more information, see: https://simpleinjector.org/dialm.
             </summary>
         </member>
         <member name="F:SimpleInjector.Diagnostics.DiagnosticType.ShortCircuitedDependency">
@@ -133,14 +133,14 @@
             component depends on an unregistered concrete type and this concrete type has a lifestyle that is 
             different than the lifestyle of an explicitly registered type that uses this concrete type as its 
             implementation.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=ShortCircuitedDependencies.
+            For more information, see: https://simpleinjector.org/diasc.
             </summary>
         </member>
         <member name="F:SimpleInjector.Diagnostics.DiagnosticType.SingleResponsibilityViolation">
             <summary>
             Diagnostic type that warns when a
             component depends on (too) many services.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=PotentialSingleResponsibilityViolations.
+            For more information, see: https://simpleinjector.org/diasr.
             </summary>
         </member>
         <member name="T:SimpleInjector.Diagnostics.PotentialLifestyleMismatchDiagnosticResult">

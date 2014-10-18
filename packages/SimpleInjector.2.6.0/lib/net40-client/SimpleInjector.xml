@@ -155,7 +155,7 @@
             </summary>
             <param name="parameter">The parameter.</param>
             <returns>An <see cref="T:System.Linq.Expressions.Expression"/> that describes the intend of creating that 
-            <paramref name="parameter"/>.</returns>
+            <paramref name="parameter"/>. This method never returns null.</returns>
         </member>
         <member name="T:SimpleInjector.Advanced.IConstructorResolutionBehavior">
             <summary>
@@ -173,7 +173,7 @@
             <param name="serviceType">Type of the abstraction that is requested.</param>
             <param name="implementationType">Type of the implementation to find a suitable constructor for.</param>
             <returns>
-            The <see cref="T:System.Reflection.ConstructorInfo"/>.
+            The <see cref="T:System.Reflection.ConstructorInfo"/>. This method never returns null.
             </returns>
             <exception cref="T:SimpleInjector.ActivationException">Thrown when no suitable constructor could be found.</exception>
         </member>
@@ -194,6 +194,23 @@
             </exception>
             <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="parameter"/> is a
             null reference.</exception>
+        </member>
+        <member name="T:SimpleInjector.Advanced.ILifestyleSelectionBehavior">
+            <summary>
+            Defines the container's behavior for selecting the lifestyle for a registration in case no lifestyle
+            is explicitly supplied.
+            Set the <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> 
+            property of the container's <see cref="P:SimpleInjector.Container.Options"/> property to change the default behavior 
+            of the container. By default, when no lifestyle is explicitly supplied, the 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see> lifestyle is used.
+            </summary>
+        </member>
+        <member name="M:SimpleInjector.Advanced.ILifestyleSelectionBehavior.SelectLifestyle(System.Type,System.Type)">
+            <summary>Selects the lifestyle based on the supplied type information.</summary>
+            <param name="serviceType">Type of the abstraction that is registered.</param>
+            <param name="implementationType">Type of the implementation to that is registered.</param>
+            <returns>The suited <see cref="T:SimpleInjector.Lifestyle"/> for the given type.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when either one of the arguments is a null reference.</exception>
         </member>
         <member name="T:SimpleInjector.Advanced.IPropertySelectionBehavior">
             <summary>
@@ -342,11 +359,14 @@
         <member name="M:SimpleInjector.Container.Register``1">
             <summary>
             Registers that a new instance of <typeparamref name="TConcrete"/> will be returned every time it 
-            is requested (transient). Note that calling this method is redundant in most scenarios, because
-            the container will return a new instance for unregistered concrete types. Registration is needed
-            when the security restrictions of the application's sandbox don't allow the container to create
-            such type.
+            is requested (transient).
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <typeparam name="TConcrete">The concrete type that will be registered.</typeparam>
             <exception cref="T:System.InvalidOperationException">
             Thrown when this container instance is locked and can not be altered, or when an 
@@ -372,8 +392,14 @@
         <member name="M:SimpleInjector.Container.Register``2">
             <summary>
             Registers that a new instance of <typeparamref name="TImplementation"/> will be returned every time a
-            <typeparamref name="TService"/> is requested.
+            <typeparamref name="TService"/> is requested (transient).
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <typeparam name="TService">The interface or base type that can be used to retrieve the instances.</typeparam>
             <typeparam name="TImplementation">The concrete type that will be registered.</typeparam>
             <exception cref="T:System.InvalidOperationException">
@@ -389,6 +415,12 @@
             <typeparamref name="TService"/>. The delegate is expected to always return a new instance on
             each call.
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <typeparam name="TService">The interface or base type that can be used to retrieve instances.</typeparam>
             <param name="instanceCreator">The delegate that allows building or creating new instances.</param>
             <exception cref="T:System.InvalidOperationException">
@@ -402,6 +434,12 @@
             Registers that a new instance of <paramref name="concreteType"/> will be returned every time it 
             is requested (transient).
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <param name="concreteType">The concrete type that will be registered.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="concreteType"/> is a null 
             references (Nothing in VB).</exception>
@@ -419,6 +457,12 @@
             <paramref name="serviceType"/> is requested. If <paramref name="serviceType"/> and 
             <paramref name="implementation"/> represent the same type, the type is registered by itself.
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <param name="serviceType">The base type or interface to register.</param>
             <param name="implementation">The actual type that will be returned when requested.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="serviceType"/> or 
@@ -436,6 +480,12 @@
             <summary>
             Registers the specified delegate that allows returning instances of <paramref name="serviceType"/>.
             </summary>
+            <remarks>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </remarks>
             <param name="serviceType">The base type or interface to register.</param>
             <param name="instanceCreator">The delegate that will be used for creating new instances.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when either <paramref name="serviceType"/> or 
@@ -790,7 +840,7 @@
             </para>
             <para>
             Note: The <paramref name="predicate"/> is <b>not</b> guaranteed to be called once per registration;
-            when a registration's instance is requested for the first time simultaniously over multiple thread,
+            when a registration's instance is requested for the first time simultaneously over multiple thread,
             the predicate might be called multiple times. The caller of this method is responsible of supplying
             a predicate that is thread-safe.
             </para>
@@ -830,9 +880,12 @@
         </member>
         <member name="M:SimpleInjector.Container.RegisterAll``1(System.Type[])">
             <summary>
-            Registers an collection of <paramref name="serviceTypes"/>, which instances will be resolved when
-            enumerating the set returned when a collection of <typeparamref name="TService"/> objects is 
-            requested. On enumeration the container is called for each type in the list.
+            Registers a collection of <paramref name="serviceTypes"/>, whose instances will be resolved lazily
+            each time the resolved collection of <typeparamref name="TService"/> is enumerated. 
+            The underlying collection is a stream that will return individual instances based on their 
+            specific registered lifestyle, for each call to <see cref="P:System.Collections.Generic.IEnumerator`1.Current"/>. 
+            The order in which the types appear in the collection is the exact same order that the items were 
+            registered, i.e the resolved collection is deterministic.   
             </summary>
             <typeparam name="TService">The base type or interface for elements in the collection.</typeparam>
             <param name="serviceTypes">The collection of <see cref="T:System.Type"/> objects whose instances
@@ -847,8 +900,12 @@
         </member>
         <member name="M:SimpleInjector.Container.RegisterAll``1(System.Collections.Generic.IEnumerable{System.Type})">
             <summary>
-            Registers a collection of instances of <paramref name="serviceTypes"/> to be returned when
-            a collection of <typeparamref name="TService"/> objects is requested.
+            Registers a collection of <paramref name="serviceTypes"/>, whose instances will be resolved lazily
+            each time the resolved collection of <typeparamref name="TService"/> is enumerated. 
+            The underlying collection is a stream that will return individual instances based on their 
+            specific registered lifestyle, for each call to <see cref="P:System.Collections.Generic.IEnumerator`1.Current"/>. 
+            The order in which the types appear in the collection is the exact same order that the items were 
+            registered, i.e the resolved collection is deterministic.   
             </summary>
             <typeparam name="TService">The base type or interface for elements in the collection.</typeparam>
             <param name="serviceTypes">The collection of <see cref="T:System.Type"/> objects whose instances
@@ -863,9 +920,12 @@
         </member>
         <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{System.Type})">
             <summary>
-            Registers an collection of <paramref name="serviceTypes"/>, which instances will be resolved when
-            enumerating the set returned when a collection of <paramref name="serviceType"/> objects is 
-            requested. On enumeration the container is called for each type in the list.
+            Registers a collection of <paramref name="serviceTypes"/>, whose instances will be resolved lazily
+            each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
+            The underlying collection is a stream that will return individual instances based on their 
+            specific registered lifestyle, for each call to <see cref="P:System.Collections.Generic.IEnumerator`1.Current"/>. 
+            The order in which the types appear in the collection is the exact same order that the items were 
+            registered, i.e the resolved collection is deterministic.   
             </summary>
             <param name="serviceType">The base type or interface for elements in the collection.</param>
             <param name="serviceTypes">The collection of <see cref="T:System.Type"/> objects whose instances
@@ -880,9 +940,12 @@
         </member>
         <member name="M:SimpleInjector.Container.RegisterAll(System.Type,SimpleInjector.Registration[])">
             <summary>
-            Registers an collection of <paramref name="registrations"/>, which instances will be resolved when
-            enumerating the set returned when a collection of <paramref name="serviceType"/> objects is 
-            requested. On enumeration the container is called for each type in the list.
+            Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
+            each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
+            The underlying collection is a stream that will return individual instances based on their 
+            specific registered lifestyle, for each call to <see cref="P:System.Collections.Generic.IEnumerator`1.Current"/>. 
+            The order in which the types appear in the collection is the exact same order that the items were 
+            registered, i.e the resolved collection is deterministic.   
             </summary>
             <param name="serviceType">The base type or interface for elements in the collection.</param>
             <param name="registrations">The collection of <see cref="T:SimpleInjector.Registration"/> objects whose instances
@@ -898,9 +961,12 @@
         </member>
         <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{SimpleInjector.Registration})">
             <summary>
-            Registers an collection of <paramref name="registrations"/>, which instances will be resolved when
-            enumerating the set returned when a collection of <paramref name="serviceType"/> objects is 
-            requested. On enumeration the container is called for each type in the list.
+            Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
+            each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
+            The underlying collection is a stream that will return individual instances based on their 
+            specific registered lifestyle, for each call to <see cref="P:System.Collections.Generic.IEnumerator`1.Current"/>. 
+            The order in which the types appear in the collection is the exact same order that the items were 
+            registered, i.e the resolved collection is deterministic.   
             </summary>
             <param name="serviceType">The base type or interface for elements in the collection.</param>
             <param name="registrations">The collection of <see cref="T:SimpleInjector.Registration"/> objects whose instances
@@ -981,7 +1047,7 @@
             <see cref="T:SimpleInjector.Registration"/> instance and are therefore applied once. <see cref="E:SimpleInjector.Container.ExpressionBuilt"/> 
             events on the other hand get applied to the <b>Expression</b> of the <see cref="T:SimpleInjector.InstanceProducer"/>.
             Since each <b>AddRegistration</b> gets its own instance producer (that wraps the 
-            <b>Registration</b> instance), this means that that <b>ExpressionBuilt</b> events will be 
+            <b>Registration</b> instance), this means that the <b>ExpressionBuilt</b> events will be 
             applied for each registered service type.
             </para>
             <para>
@@ -1130,8 +1196,7 @@
             <b>NOTE:</b> This method will be removed in a future release. To use property injection,
             implement a custom the <see cref="T:SimpleInjector.Advanced.IPropertySelectionBehavior"/> instead. For more information,
             read the 
-            <a href="https://simpleinjector.codeplex.com/wikipage?title=Extendibility-Points#Property-Injection">extendibility points</a> 
-            wiki.
+            <a href="https://simpleinjector.org/xtppr">extendibility points</a> wiki.
             </summary>
             <param name="instance">The instance whose properties will be injected.</param>
             <exception cref="T:System.ArgumentNullException">
@@ -1176,6 +1241,36 @@
             </para>
             </remarks>
             <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
+        </member>
+        <member name="M:SimpleInjector.Container.GetRootRegistrations">
+            <summary>
+            Returns an array with the current registrations for root objects. Root objects are registrations
+            that are in the root of the object graph, meaning that no other registration is depending on it.
+            </summary>
+            <remarks>
+            <para>
+            This method has a performance characteristic of O(n). Prevent from calling this in a performance
+            critical path of the application.
+            </para>
+            <para>
+            This list contains the root objects of all explicitly registered types, and all implicitly 
+            registered instances. Implicit registrations are all concrete unregistered types that have been 
+            requested, all types that have been resolved using unregistered type resolution (using the 
+            <see cref="E:SimpleInjector.Container.ResolveUnregisteredType"/> event), and requested unregistered collections. Note that 
+            the result of this method may change over time, because of these implicit registrations.
+            </para>
+            <para>
+            <b>Note:</b> This method is <i>not</i> guaranteed to always return the same 
+            <see cref="T:SimpleInjector.InstanceProducer"/> instance for a given registration. It will however either 
+            always return a producer that is able to return the expected instance. Because of this, do not 
+            compare sets of instances returned by different calls to <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> 
+            by reference. The way of comparing lists is by the actual type. The type of each instance is 
+            guaranteed to be unique in the returned list.
+            </para>
+            </remarks>
+            <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before
+            <see cref="M:SimpleInjector.Container.Verify"/> has been successfully called.</exception>
         </member>
         <member name="M:SimpleInjector.Container.Equals(System.Object)">
             <summary>Determines whether the specified System.Object is equal to the current System.Object.
@@ -1446,7 +1541,7 @@
             will result in an <see cref="T:System.Linq.Expressions.ConstantExpression"/>. Note that other <b>ExpressionBuilding</b> 
             registrations might have changed the <see cref="P:SimpleInjector.ExpressionBuildingEventArgs.Expression"/> 
             property and might have supplied an <see cref="T:System.Linq.Expressions.Expression"/> of a different type. The order in
-            which these events are registered might be of importantance to you.
+            which these events are registered might be of importance to you.
             </para>
             <para>
             <b>Thread-safety:</b> Please note that the container will not ensure that the hooked delegates
@@ -1520,6 +1615,12 @@
             <summary>Gets the container options.</summary>
             <value>The <see cref="T:SimpleInjector.ContainerOptions"/> instance for this container.</value>
         </member>
+        <member name="P:SimpleInjector.Container.SelectionBasedLifestyle">
+            <summary>
+            Gets the intermediate lifestyle that forwards CreateRegistration calls to the lifestyle that is 
+            returned from the registered container.Options.LifestyleSelectionBehavior.
+            </summary>
+        </member>
         <member name="T:SimpleInjector.Scope">
             <summary>Implements a cache for <see cref="T:SimpleInjector.ScopedLifestyle"/> implementations.</summary>
             <remarks>
@@ -1579,7 +1680,7 @@
             
             container.Register<ITimeProvider, DefaultTimeProvider>();
             
-            // Use of ContainerOptions clas here.
+            // Use of ContainerOptions class here.
             container.Options.AllowOverridingRegistrations = true;
             
             // Replaces the previous registration of ITimeProvider
@@ -1598,7 +1699,10 @@
             <value>The value indicating whether the container allows overriding registrations.</value>
         </member>
         <member name="P:SimpleInjector.ContainerOptions.ConstructorResolutionBehavior">
-            <summary>Gets or sets the constructor resolution behavior.</summary>
+            <summary>
+            Gets or sets the constructor resolution behavior. By default, the container only supports types
+            that have a single public constructor.
+            </summary>
             <value>The constructor resolution behavior.</value>
             <exception cref="T:System.NullReferenceException">Thrown when the supplied value is a null reference.</exception>
             <exception cref="T:System.InvalidOperationException">
@@ -1606,7 +1710,10 @@
             </exception>
         </member>
         <member name="P:SimpleInjector.ContainerOptions.ConstructorVerificationBehavior">
-            <summary>Gets or sets the constructor resolution behavior.</summary>
+            <summary>
+            Gets or sets the constructor verification behavior. The container's default behavior is to
+            disallow constructors with value types and strings.
+            </summary>
             <value>The constructor resolution behavior.</value>
             <exception cref="T:System.NullReferenceException">Thrown when the supplied value is a null reference.</exception>
             <exception cref="T:System.InvalidOperationException">
@@ -1622,8 +1729,21 @@
             </exception>
         </member>
         <member name="P:SimpleInjector.ContainerOptions.PropertySelectionBehavior">
-            <summary>Gets or sets the property selection behavior.</summary>
+            <summary>
+            Gets or sets the property selection behavior. The container's default behavior is to do no
+            property injection.
+            </summary>
             <value>The property selection behavior.</value>
+            <exception cref="T:System.NullReferenceException">Thrown when the supplied value is a null reference.</exception>
+            <exception cref="T:System.InvalidOperationException">
+            Thrown when the container already contains registrations.
+            </exception>
+        </member>
+        <member name="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">
+            <summary>
+            Gets or sets the lifestyle selection behavior. The container's default behavior is to make
+            registrations using the <see cref="F:SimpleInjector.Lifestyle.Transient"/> lifestyle.</summary>
+            <value>The lifestyle selection behavior.</value>
             <exception cref="T:System.NullReferenceException">Thrown when the supplied value is a null reference.</exception>
             <exception cref="T:System.InvalidOperationException">
             Thrown when the container already contains registrations.
@@ -1645,7 +1765,7 @@
             force more container instances to use dynamic assemblies. Note that creating an infinite number
             of <see cref="P:SimpleInjector.ContainerOptions.Container"/> instances (for instance one per web request) with this property set to
             <b>true</b> will result in a memory leak; dynamic assemblies take up memory and will only be
-            unloaded when the app domain is unloaded.
+            unloaded when the AppDomain is unloaded.
             </summary>
             <value>A boolean indicating whether the container should use a dynamic assembly for compilation.
             </value>
@@ -1704,7 +1824,7 @@
             Gets the collection of currently known relationships. This information is used by the Diagnostics 
             Debug View. Change the contents of this collection to represent the changes made to the
             <see cref="P:SimpleInjector.ExpressionBuildingEventArgs.Expression">Expression</see> property (if any). This allows
-            the Diagnostics Debug View to analyse those new relationships as well.
+            the Diagnostics Debug View to analyze those new relationships as well.
             </summary>
             <value>The collection of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances.</value>
         </member>
@@ -1740,7 +1860,7 @@
             Gets the collection of currently known relationships. This information is used by the Diagnostics 
             Debug View. Change the contents of this collection to represent the changes made to the
             <see cref="P:SimpleInjector.ExpressionBuiltEventArgs.Expression">Expression</see> property (if any). This allows
-            the Diagnostics Debug View to analyse those new relationships as well.
+            the Diagnostics Debug View to analyze those new relationships as well.
             </summary>
             <value>The collection of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances.</value>
         </member>
@@ -1758,6 +1878,43 @@
         <member name="M:SimpleInjector.Extensions.ArgumentMapping.GetHashCode">
             <summary>Overrides the default hash code. Needed for doing LINQ distinct operations.</summary>
             <returns>An 32 bit integer.</returns>
+        </member>
+        <member name="T:SimpleInjector.Extensions.DecoratorContext">
+            <summary>
+            An instance of this type can be injected into constructors of decorator classes that are registered
+            using <see cref="T:SimpleInjector.Extensions.DecoratorExtensions">RegisterDecorator</see>. This type contains 
+            contextual information about the applied decoration and it allows users to examine the given instance 
+            to make runtime decisions.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Extensions.DecoratorContext.ServiceType">
+            <summary>
+            Gets the closed generic service type for which the decorator is about to be applied. The original
+            service type will be returned, even if other decorators have already been applied to this type.
+            </summary>
+            <value>The closed generic service type.</value>
+        </member>
+        <member name="P:SimpleInjector.Extensions.DecoratorContext.ImplementationType">
+            <summary>
+            Gets the type of the implementation that is created by the container and for which the decorator
+            is about to be applied. The original implementation type will be returned, even if other decorators
+            have already been applied to this type. Please not that the implementation type can not always be
+            determined. In that case the closed generic service type will be returned.
+            </summary>
+            <value>The implementation type.</value>
+        </member>
+        <member name="P:SimpleInjector.Extensions.DecoratorContext.AppliedDecorators">
+            <summary>
+            Gets the list of the types of decorators that have already been applied to this instance.
+            </summary>
+            <value>The applied decorators.</value>
+        </member>
+        <member name="P:SimpleInjector.Extensions.DecoratorContext.Expression">
+            <summary>
+            Gets the current <see cref="P:SimpleInjector.Extensions.DecoratorContext.Expression"/> object that describes the intention to create a new
+            instance with its currently applied decorators.
+            </summary>
+            <value>The current expression that is about to be decorated.</value>
         </member>
         <member name="T:SimpleInjector.Extensions.DecoratorExtensions">
             <summary>
@@ -1974,11 +2131,17 @@
              original registered <paramref name="serviceType"/>, by injecting that service type into the 
              constructor of the supplied <paramref name="decoratorType"/>. Multiple decorators may be applied 
              to the same <paramref name="serviceType"/>. Decorators can be applied to both open, closed, and 
-             non-generic service types. A new <paramref name="decoratorType"/> will always be returned (the
-             <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see> lifestyle), independently of the lifestyle of the 
-             wrapped service.
+             non-generic service types. By default, a new <paramref name="decoratorType"/> instance will be 
+             returned on each request (according the <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see> lifestyle),
+             independently of the lifestyle of the wrapped service.
              </summary>
              <remarks>
+             <para>
+             This method uses the container's 
+             <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+             the exact lifestyle for the specified type. By default this will be 
+             <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+             </para>
              <para>
              The <b>RegisterDecorator</b> method works by hooking onto the container's
              <see cref="E:SimpleInjector.Container.ExpressionBuilt">ExpressionBuilt</see> event. This event fires after the
@@ -2164,11 +2327,17 @@
             <paramref name="serviceType"/>, by injecting that service type into the constructor of the 
             supplied <paramref name="decoratorType"/>. Multiple decorators may be applied to the same 
             <paramref name="serviceType"/>. Decorators can be applied to both open, closed, and non-generic 
-            service types. A new <paramref name="decoratorType"/> will always be returned (the
-            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see> lifestyle), independently of the lifestyle of the 
-            wrapped service.
+            service types. By default, a new <paramref name="decoratorType"/> instance will be returned on 
+            each request (according the <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see> lifestyle), 
+            independently of the lifestyle of the wrapped service.
             </summary>
             <remarks>
+            <para>
+            This method uses the container's 
+            <see cref="P:SimpleInjector.ContainerOptions.LifestyleSelectionBehavior">LifestyleSelectionBehavior</see> to select
+            the exact lifestyle for the specified type. By default this will be 
+            <see cref="F:SimpleInjector.Lifestyle.Transient">Transient</see>.
+            </para>
             <para>
             The <b>RegisterOpenGenericDecorator</b> method works by hooking onto the container's
             <see cref="E:SimpleInjector.Container.ExpressionBuilt">ExpressionBuilt</see> event. This event fires after the
@@ -2418,7 +2587,7 @@
             <see cref="E:SimpleInjector.Container.ExpressionBuilding">Container.ExpressionBuilding</see> event, 
             and the <paramref name="instanceCreator"/> will have been wrapped with a delegate that executes the
             registered <see cref="M:SimpleInjector.Container.RegisterInitializer``1(System.Action{``0})">initializers</see> 
-            that are appliable to the given <typeparamref name="TService"/> (if any).
+            that are applicable to the given <typeparamref name="TService"/> (if any).
             </summary>
             <typeparam name="TService">The interface or base type that can be used to retrieve instances.</typeparam>
             <param name="instanceCreator">
@@ -2447,7 +2616,7 @@
             <see cref="E:SimpleInjector.Container.ExpressionBuilding">Container.ExpressionBuilding</see> event, 
             and the <paramref name="instanceCreator"/> will have been wrapped with a delegate that executes the
             registered <see cref="M:SimpleInjector.Container.RegisterInitializer(System.Action{SimpleInjector.Advanced.InstanceInitializationData},System.Predicate{SimpleInjector.Advanced.InitializationContext})">initializers</see> that are 
-            appliable to the given <typeparamref name="TService"/> (if any).
+            applicable to the given <typeparamref name="TService"/> (if any).
             </summary>
             <typeparam name="TService">The interface or base type that can be used to retrieve instances.</typeparam>
             <param name="instanceCreator">
@@ -2542,6 +2711,16 @@
             closed generic service type.
             </example>
         </member>
+        <member name="T:SimpleInjector.Extensions.AccessibilityOption">
+            <summary>Defines the accessibility of the types to search.</summary>
+            <remarks>This type is not available in Silverlight.</remarks>
+        </member>
+        <member name="F:SimpleInjector.Extensions.AccessibilityOption.AllTypes">
+            <summary>Load both public as internal types from the given assemblies.</summary>
+        </member>
+        <member name="F:SimpleInjector.Extensions.AccessibilityOption.PublicTypesOnly">
+            <summary>Only load publicly exposed types from the given assemblies.</summary>
+        </member>
         <member name="T:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions">
             <summary>
             Provides a set of static (Shared in Visual Basic) methods for registration many concrete types at
@@ -2550,7 +2729,7 @@
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types in the given set of
+            Registers all concrete, non-generic, public and internal types in the given set of
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/> 
             with a transient lifetime.
             </summary>
@@ -2563,12 +2742,12 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types that are located in the given 
+            Registers all concrete, non-generic, public and internal types that are located in the given 
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/> 
             with a transient lifetime.
             </summary>
@@ -2581,12 +2760,12 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Lifestyle,System.Reflection.Assembly[])">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types in the given set of
+            Registers all concrete, non-generic, public and internal types in the given set of
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/> 
             with the supplied <paramref name="lifestyle"/>. When a found type implements multiple 
             closed-generic versions of the given <paramref name="openGenericServiceType"/>, both closed-generic
@@ -2603,12 +2782,12 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Lifestyle,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types that are located in the given 
+            Registers all concrete, non-generic, public and internal types that are located in the given 
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/> 
             with the supplied <paramref name="lifestyle"/>. When a found type implements multiple 
             closed-generic versions of the given <paramref name="openGenericServiceType"/>, both closed-generic
@@ -2625,12 +2804,12 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.BatchRegistrationCallback,System.Reflection.Assembly[])">
             <summary>
-            Allows registration of all concrete, public, non-generic types that are located in the given set of 
+            Allows registration of all concrete, public and internal, non-generic types that are located in the given set of 
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/>, 
             by supplying a <see cref="T:SimpleInjector.Extensions.BatchRegistrationCallback"/> delegate, that will be called for each 
             found closed generic implementation of the given <paramref name="openGenericServiceType"/>.
@@ -2648,7 +2827,7 @@
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.BatchRegistrationCallback,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
-            Allows registration of all concrete, public, non-generic types that are located in the given set of 
+            Allows registration of all concrete, public and internal, non-generic types that are located in the given set of 
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/>, 
             by supplying a <see cref="T:SimpleInjector.Extensions.BatchRegistrationCallback"/> delegate, that will be called for each 
             found closed generic implementation of the given <paramref name="openGenericServiceType"/>.
@@ -2666,7 +2845,7 @@
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManySinglesForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types that are located in the given 
+            Registers all concrete, non-generic, public and internal types that are located in the given 
             <paramref name="assemblies"/> that implement the given 
             <paramref name="openGenericServiceType"/> with a singleton lifetime.
             </summary>
@@ -2679,12 +2858,12 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManySinglesForOpenGeneric(SimpleInjector.Container,System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
-            Registers all concrete, non-generic, publicly exposed types that are located in the given 
+            Registers all concrete, non-generic, public and internal types that are located in the given 
             <paramref name="assemblies"/> that implement the given <paramref name="openGenericServiceType"/> 
             with a singleton lifetime.
             </summary>
@@ -2697,7 +2876,7 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
             an open generic type.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
-            <paramref name="assemblies"/> contain multiple publicly exposed types that implement the same 
+            <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Type[])">
@@ -2794,6 +2973,32 @@
             supplied <paramref name="openGenericServiceType"/>.
             </exception>
         </member>
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Lifestyle,System.Type[])">
+            <summary>
+            Registers all supplied <paramref name="typesToRegister"/> by a closed generic definition of the
+            given <paramref name="openGenericServiceType"/> with the supplied <paramref name="lifestyle"/>.
+            When a found type implements multiple 
+            closed-generic versions of the given <paramref name="openGenericServiceType"/>, both closed-generic
+            service types will return the exact same instance.
+            </summary>
+            <param name="container">The container to make the registrations in.</param>
+            <param name="openGenericServiceType">The definition of the open generic type.</param>
+            <param name="lifestyle">The lifestyle the registrations are made in.</param>
+            <param name="typesToRegister">The list of types that must be registered according to the given
+            <paramref name="openGenericServiceType"/> definition.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="container"/>, 
+            <paramref name="openGenericServiceType"/>, or <paramref name="typesToRegister"/> contain a null
+            reference (Nothing in VB).</exception>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="typesToRegister"/> contains a null
+            (Nothing in VB) element, when the <paramref name="openGenericServiceType"/> is not an open generic
+            type, or one of the types supplied in <paramref name="typesToRegister"/> does not implement a 
+            closed version of <paramref name="openGenericServiceType"/>.
+            </exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when there are multiple types in the given
+            <paramref name="typesToRegister"/> collection that implement the same closed version of the
+            supplied <paramref name="openGenericServiceType"/>.
+            </exception>
+        </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManySinglesForOpenGeneric(SimpleInjector.Container,System.Type,System.Collections.Generic.IEnumerable{System.Type})">
             <summary>
             Registers all supplied <paramref name="typesToRegister"/> by a closed generic definition of the
@@ -2819,143 +3024,31 @@
             supplied <paramref name="openGenericServiceType"/>.
             </exception>
         </member>
-        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(System.Type,System.Reflection.Assembly[])">
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Lifestyle,System.Collections.Generic.IEnumerable{System.Type})">
             <summary>
-            Returns all public types that are located in the supplied <paramref name="assemblies"/> 
-            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
+            Registers all supplied <paramref name="typesToRegister"/> by a closed generic definition of the
+            given <paramref name="openGenericServiceType"/> with the supplied <paramref name="lifestyle"/>
+            When a found type implements multiple 
+            closed-generic versions of the given <paramref name="openGenericServiceType"/>, both closed-generic
+            service types will return the exact same instance.
             </summary>
-            <remarks>
-            Use this method when you need influence the types that are registered using 
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
-            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
-            objects use this method to get the list of types that need to be registered. Instead of calling 
-            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
-            in a filtered result from this <b>GetTypesToRegister</b> method.
-            <code lang="cs"><![CDATA[
-            var container = new Container();
-            
-            var types = OpenGenericBatchRegistrationExtensions
-                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
-                .Where(type => !type.Name.EndsWith("Decorator"));
-            
-            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
-            ]]></code>
-            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
-            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
-            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
-            overload that takes a list of types to finish the
-            registration.
-            </remarks>
+            <param name="container">The container to make the registrations in.</param>
             <param name="openGenericServiceType">The definition of the open generic type.</param>
-            <param name="assemblies">A list of assemblies that will be searched.</param>
-            <returns>A list of types.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
-            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
-        </member>
-        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
-            <summary>
-            Returns all public types that are located in the supplied <paramref name="assemblies"/> 
-            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
-            </summary>
-            <remarks>
-            Use this method when you need influence the types that are registered using 
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
-            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
-            objects use this method to get the list of types that need to be registered. Instead of calling 
-            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
-            in a filtered result from this <b>GetTypesToRegister</b> method.
-            <code lang="cs"><![CDATA[
-            var container = new Container();
-            
-            var types = OpenGenericBatchRegistrationExtensions
-                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
-                .Where(type => !type.Name.EndsWith("Decorator"));
-            
-            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
-            ]]></code>
-            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
-            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
-            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
-            overload that takes a list of types to finish the registration.
-            </remarks>
-            <param name="openGenericServiceType">The definition of the open generic type.</param>
-            <param name="assemblies">A list of assemblies that will be searched.</param>
-            <returns>A list of types.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
-            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
-        </member>
-        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">
-            <summary>
-            Returns all public types that are located in the supplied <paramref name="assemblies"/> 
-            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
-            Types that are considered to be decorators are not returned.
-            </summary>
-            <remarks>
-            Use this method when you need influence the types that are registered using 
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
-            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
-            objects use this method to get the list of types that need to be registered. Instead of calling 
-            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
-            in a filtered result from this <b>GetTypesToRegister</b> method.
-            <code lang="cs"><![CDATA[
-            var container = new Container();
-            
-            var types = OpenGenericBatchRegistrationExtensions
-                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
-                .Where(type => !type.Name.EndsWith("Decorator"));
-            
-            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
-            ]]></code>
-            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
-            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
-            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
-            overload that takes a list of types to finish the
-            registration.
-            </remarks>
-            <param name="container">The container to use.</param>
-            <param name="openGenericServiceType">The definition of the open generic type.</param>
-            <param name="assemblies">A list of assemblies that will be searched.</param>
-            <returns>A list of types.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
-            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
-        </member>
-        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(SimpleInjector.Container,System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
-            <summary>
-            Returns all public types that are located in the supplied <paramref name="assemblies"/> 
-            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
-            Types that are considered to be decorators are not returned.
-            </summary>
-            <remarks>
-            Use this method when you need influence the types that are registered using 
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
-            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
-            objects use this method to get the list of types that need to be registered. Instead of calling 
-            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
-            in a filtered result from this <b>GetTypesToRegister</b> method.
-            <code lang="cs"><![CDATA[
-            var container = new Container();
-            
-            var types = OpenGenericBatchRegistrationExtensions
-                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
-                .Where(type => !type.Name.EndsWith("Decorator"));
-            
-            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
-            ]]></code>
-            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
-            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
-            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
-            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
-            overload that takes a list of types to finish the registration.
-            </remarks>
-            <param name="container">The container to use.</param>
-            <param name="openGenericServiceType">The definition of the open generic type.</param>
-            <param name="assemblies">A list of assemblies that will be searched.</param>
-            <returns>A list of types.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
-            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
+            <param name="lifestyle">The lifestyle the registrations are made in.</param>
+            <param name="typesToRegister">The list of types that must be registered according to the given
+            <paramref name="openGenericServiceType"/> definition.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="container"/>, 
+            <paramref name="openGenericServiceType"/>, or <paramref name="typesToRegister"/> contain a null
+            reference (Nothing in VB).</exception>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="typesToRegister"/> contains a null
+            (Nothing in VB) element, when the <paramref name="openGenericServiceType"/> is not an open generic
+            type, or one of the types supplied in <paramref name="typesToRegister"/> does not implement a 
+            closed version of <paramref name="openGenericServiceType"/>.
+            </exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when there are multiple types in the given
+            <paramref name="typesToRegister"/> collection that implement the same closed version of the
+            supplied <paramref name="openGenericServiceType"/>.
+            </exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,System.Reflection.Assembly[])">
             <summary>
@@ -2972,12 +3065,10 @@
             <paramref name="openGenericServiceType"/>, or <paramref name="assemblies"/> contain a null
             reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same closed generic 
             version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
@@ -2994,12 +3085,11 @@
             <paramref name="openGenericServiceType"/>, or <paramref name="assemblies"/> contain a null
             reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when the <paramref name="accessibility"/> argument contains an invalid
+            value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,SimpleInjector.Lifestyle,System.Reflection.Assembly[])">
             <summary>
@@ -3021,12 +3111,10 @@
             <paramref name="openGenericServiceType"/>, <paramref name="lifestyle"/> or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same closed generic 
             version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,SimpleInjector.Lifestyle,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
@@ -3048,12 +3136,10 @@
             <paramref name="openGenericServiceType"/>, <paramref name="lifestyle"/> or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,SimpleInjector.Extensions.BatchRegistrationCallback,System.Reflection.Assembly[])">
             <summary>
@@ -3074,9 +3160,7 @@
             <paramref name="openGenericServiceType"/>, <paramref name="callback"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,SimpleInjector.Extensions.BatchRegistrationCallback,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
@@ -3097,9 +3181,7 @@
             <paramref name="openGenericServiceType"/>, <paramref name="callback"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManySinglesForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,System.Reflection.Assembly[])">
             <summary>
@@ -3116,12 +3198,10 @@
             <paramref name="openGenericServiceType"/>, or <paramref name="assemblies"/> contain a null
             reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same closed generic 
             version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManySinglesForOpenGeneric(SimpleInjector.Container,System.Type,SimpleInjector.Extensions.AccessibilityOption,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
             <summary>
@@ -3138,12 +3218,10 @@
             <paramref name="openGenericServiceType"/>, or <paramref name="assemblies"/> contain a null
             reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="openGenericServiceType"/> is not
-            an open generic type.</exception>
+            an open generic type or when <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the given set of 
             <paramref name="assemblies"/> contain multiple types that implement the same 
             closed generic version of the given <paramref name="openGenericServiceType"/>.</exception>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
-            <paramref name="accessibility"/> contains an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(System.Type,SimpleInjector.Extensions.AccessibilityOption,System.Reflection.Assembly[])">
             <summary>
@@ -3178,7 +3256,7 @@
             <param name="accessibility">Defines which types should be used from the given assemblies.</param>
             <param name="assemblies">A list of assemblies that will be searched.</param>
             <returns>A list of types.</returns>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
+            <exception cref="T:System.ArgumentException">Thrown when 
             <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
@@ -3215,7 +3293,7 @@
             <param name="accessibility">Defines which types should be used from the given assemblies.</param>
             <param name="assemblies">A list of assemblies that will be searched.</param>
             <returns>A list of types.</returns>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
+            <exception cref="T:System.ArgumentException">Thrown when 
             <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
@@ -3254,7 +3332,7 @@
             <param name="accessibility">Defines which types should be used from the given assemblies.</param>
             <param name="assemblies">A list of assemblies that will be searched.</param>
             <returns>A list of types.</returns>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
+            <exception cref="T:System.ArgumentException">Thrown when 
             <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
@@ -3292,20 +3370,148 @@
             <param name="accessibility">Defines which types should be used from the given assemblies.</param>
             <param name="assemblies">A list of assemblies that will be searched.</param>
             <returns>A list of types.</returns>
-            <exception cref="T:System.ComponentModel.InvalidEnumArgumentException">Thrown when 
+            <exception cref="T:System.ArgumentException">Thrown when 
             <paramref name="accessibility"/> contains an invalid value.</exception>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
             <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
         </member>
-        <member name="T:SimpleInjector.Extensions.AccessibilityOption">
-            <summary>Defines the accessibility of the types to search.</summary>
-            <remarks>This type is not available in Silverlight.</remarks>
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(System.Type,System.Reflection.Assembly[])">
+            <summary>
+            Returns all public and internal types that are located in the supplied <paramref name="assemblies"/> 
+            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
+            </summary>
+            <remarks>
+            Use this method when you need influence the types that are registered using 
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
+            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
+            objects use this method to get the list of types that need to be registered. Instead of calling 
+            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
+            in a filtered result from this <b>GetTypesToRegister</b> method.
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            var types = OpenGenericBatchRegistrationExtensions
+                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
+                .Where(type => !type.Name.EndsWith("Decorator"));
+            
+            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
+            ]]></code>
+            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
+            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
+            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
+            overload that takes a list of types to finish the
+            registration.
+            </remarks>
+            <param name="openGenericServiceType">The definition of the open generic type.</param>
+            <param name="assemblies">A list of assemblies that will be searched.</param>
+            <returns>A list of types.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
+            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
         </member>
-        <member name="F:SimpleInjector.Extensions.AccessibilityOption.AllTypes">
-            <summary>Load both public as internal types from the given assemblies.</summary>
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Returns all public and internal types that are located in the supplied <paramref name="assemblies"/> 
+            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
+            </summary>
+            <remarks>
+            Use this method when you need influence the types that are registered using 
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
+            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
+            objects use this method to get the list of types that need to be registered. Instead of calling 
+            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
+            in a filtered result from this <b>GetTypesToRegister</b> method.
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            var types = OpenGenericBatchRegistrationExtensions
+                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
+                .Where(type => !type.Name.EndsWith("Decorator"));
+            
+            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
+            ]]></code>
+            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
+            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
+            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
+            overload that takes a list of types to finish the registration.
+            </remarks>
+            <param name="openGenericServiceType">The definition of the open generic type.</param>
+            <param name="assemblies">A list of assemblies that will be searched.</param>
+            <returns>A list of types.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
+            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
         </member>
-        <member name="F:SimpleInjector.Extensions.AccessibilityOption.PublicTypesOnly">
-            <summary>Only load publicly exposed types from the given assemblies.</summary>
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">
+            <summary>
+            Returns all public and internal types that are located in the supplied <paramref name="assemblies"/> 
+            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
+            Types that are considered to be decorators are not returned.
+            </summary>
+            <remarks>
+            Use this method when you need influence the types that are registered using 
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
+            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
+            objects use this method to get the list of types that need to be registered. Instead of calling 
+            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
+            in a filtered result from this <b>GetTypesToRegister</b> method.
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            var types = OpenGenericBatchRegistrationExtensions
+                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
+                .Where(type => !type.Name.EndsWith("Decorator"));
+            
+            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
+            ]]></code>
+            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
+            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
+            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
+            overload that takes a list of types to finish the
+            registration.
+            </remarks>
+            <param name="container">The container to use.</param>
+            <param name="openGenericServiceType">The definition of the open generic type.</param>
+            <param name="assemblies">A list of assemblies that will be searched.</param>
+            <returns>A list of types.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
+            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
+        </member>
+        <member name="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.GetTypesToRegister(SimpleInjector.Container,System.Type,System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Returns all public and internal types that are located in the supplied <paramref name="assemblies"/> 
+            and implement or inherit from the supplied <paramref name="openGenericServiceType"/>.
+            Types that are considered to be decorators are not returned.
+            </summary>
+            <remarks>
+            Use this method when you need influence the types that are registered using 
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>. 
+            The <b>RegisterManyForOpenGeneric</b> overloads that take a collection of <see cref="T:System.Reflection.Assembly"/> 
+            objects use this method to get the list of types that need to be registered. Instead of calling 
+            such overload, you can call an overload that takes a list of <see cref="T:System.Type"/> objects and pass 
+            in a filtered result from this <b>GetTypesToRegister</b> method.
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            var types = OpenGenericBatchRegistrationExtensions
+                .GetTypesToRegister(typeof(ICommandHandler<>), typeof(ICommandHandler<>).Assembly)
+                .Where(type => !type.Name.EndsWith("Decorator"));
+            
+            container.RegisterManyForOpenGeneric(typeof(ICommandHandler<>), types);
+            ]]></code>
+            This example calls the <b>GetTypesToRegister</b> method to request a list of concrete implementations
+            of the <b>ICommandHandler&lt;T&gt;</b> interface from the assembly of that interface. After that
+            all types which name ends with 'Decorator' are filtered out. This list is supplied to an
+            <see cref="M:SimpleInjector.Extensions.OpenGenericBatchRegistrationExtensions.RegisterManyForOpenGeneric(SimpleInjector.Container,System.Type,System.Reflection.Assembly[])">RegisterManyForOpenGeneric</see>
+            overload that takes a list of types to finish the registration.
+            </remarks>
+            <param name="container">The container to use.</param>
+            <param name="openGenericServiceType">The definition of the open generic type.</param>
+            <param name="assemblies">A list of assemblies that will be searched.</param>
+            <returns>A list of types.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="openGenericServiceType"/>, or 
+            <paramref name="assemblies"/> contain a null reference (Nothing in VB).</exception>
         </member>
         <member name="T:SimpleInjector.Extensions.OpenGenericPredicateContext">
             <summary>
@@ -4052,6 +4258,12 @@
             <param name="transientInstanceCreator">A factory for creating new instances.</param>
             <returns>A factory that returns cached instances.</returns>
         </member>
+        <member name="T:SimpleInjector.Lifestyles.LifestyleSelectionBehaviorProxyLifestyle">
+            <summary>
+            Forwards CreateRegistration calls to the lifestyle that is returned from the registered
+            container.Options.LifestyleSelectionBehavior.
+            </summary>
+        </member>
         <member name="T:SimpleInjector.ScopedLifestyle">
             <summary>
             Base class for scoped lifestyles. A scoped lifestyle caches instances for the duration of an implicitly
@@ -4123,7 +4335,7 @@
         </member>
         <member name="M:SimpleInjector.ScopedLifestyle.CreateCurrentScopeProvider(SimpleInjector.Container)">
             <summary>
-            Creates a delegate that that upon invocation return the current <see cref="T:SimpleInjector.Scope"/> for this
+            Creates a delegate that upon invocation return the current <see cref="T:SimpleInjector.Scope"/> for this
             lifestyle and the given <paramref name="container"/>, or null when the delegate is executed outside
             the context of such scope.
             </summary>
@@ -4258,6 +4470,18 @@
             </summary>
             <returns>An array of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances.</returns>
         </member>
+        <member name="M:SimpleInjector.InstanceProducer.VisualizeObjectGraph">
+            <summary>
+            Builds a string representation of the object graph with the current instance as root of the
+            graph.
+            </summary>
+            <returns>A string representation of the object graph.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before 
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> have been called. These calls can be
+            done directly and explicitly by the user on this instance, indirectly by calling
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> on an instance that depends on this
+            instance, or by calling <see cref="M:SimpleInjector.Container.Verify">Verify</see> on the container.</exception>
+        </member>
         <member name="P:SimpleInjector.InstanceProducer.Lifestyle">
             <summary>
             Gets the <see cref="P:SimpleInjector.InstanceProducer.Lifestyle"/> for this registration. The returned lifestyle can differ from the
@@ -4272,9 +4496,7 @@
             <value>A <see cref="T:System.Type"/> instance.</value>
         </member>
         <member name="P:SimpleInjector.InstanceProducer.Registration">
-            <summary>
-            Gets the <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance for this instance.
-            </summary>
+            <summary>Gets the <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance for this instance.</summary>
             <value>The <see cref="P:SimpleInjector.InstanceProducer.Registration"/>.</value>
         </member>
         <member name="T:SimpleInjector.StringResources">

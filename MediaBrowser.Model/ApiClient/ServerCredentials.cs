@@ -40,6 +40,10 @@ namespace MediaBrowser.Model.ApiClient
                     existing.AccessToken = server.AccessToken;
                     existing.UserId = server.UserId;
                 }
+                if (!string.IsNullOrEmpty(server.ExchangeToken))
+                {
+                    existing.ExchangeToken = server.ExchangeToken;
+                }
                 if (!string.IsNullOrEmpty(server.RemoteAddress))
                 {
                     existing.RemoteAddress = server.RemoteAddress;
