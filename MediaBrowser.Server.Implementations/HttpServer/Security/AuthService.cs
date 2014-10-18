@@ -68,7 +68,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 if (!string.IsNullOrWhiteSpace(auth.Token) ||
                     !_config.Configuration.InsecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    SessionManager.ValidateSecurityToken(auth.Token);
+                    if (!IsValidConnectKey(auth.Token))
+                    {
+                        SessionManager.ValidateSecurityToken(auth.Token);
+                    }
                 }
             }
 
@@ -113,6 +116,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     req.RemoteIp,
                     user);
             }
+        }
+
+        private bool IsValidConnectKey(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                return UserManager.Users.Any(u => string.Equals(token, u.ConnectAccessKey, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(u.ConnectAccessKey));
+            }
+
+            return false;
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)

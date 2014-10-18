@@ -30,7 +30,32 @@ namespace MediaBrowser.Model.ApiClient
 
             if (index != -1)
             {
-                list[index] = server;
+                var existing = list[index];
+
+                // Merge the data
+                existing.DateLastAccessed = new[] { existing.DateLastAccessed, server.DateLastAccessed }.Max();
+
+                if (!string.IsNullOrEmpty(server.AccessToken))
+                {
+                    existing.AccessToken = server.AccessToken;
+                    existing.UserId = server.UserId;
+                }
+                if (!string.IsNullOrEmpty(server.RemoteAddress))
+                {
+                    existing.RemoteAddress = server.RemoteAddress;
+                }
+                if (!string.IsNullOrEmpty(server.LocalAddress))
+                {
+                    existing.LocalAddress = server.LocalAddress;
+                }
+                if (!string.IsNullOrEmpty(server.Name))
+                {
+                    existing.Name = server.Name;
+                }
+                if (server.WakeOnLanInfos != null && server.WakeOnLanInfos.Count > 0)
+                {
+                    existing.WakeOnLanInfos = server.WakeOnLanInfos.ToList();
+                }
             }
             else
             {

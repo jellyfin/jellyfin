@@ -231,7 +231,6 @@ namespace MediaBrowser.Model.Configuration
                 "Roku",
                 "Chromecast",
                 "iOS",
-                "Android",
                 "Windows Phone"
             };
 

@@ -1,3 +1,5 @@
+!*
+
 #################
 ## Eclipse
 #################
@@ -145,8 +147,9 @@ publish/
 
 # NuGet Packages Directory
 ## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-packages/
+# packages/
 dlls/
+dllssigned/
 
 # Windows Azure Build Output
 csx
