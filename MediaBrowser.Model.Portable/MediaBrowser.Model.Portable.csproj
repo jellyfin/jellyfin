@@ -15,7 +15,6 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <FodyPath>..\packages\Fody.1.19.1.0</FodyPath>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -223,6 +222,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
       <Link>Configuration\XbmcMetadataOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthenticationExchangeResult.cs">
+      <Link>ApiClient\ConnectAuthenticationExchangeResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthenticationResult.cs">
       <Link>Connect\ConnectAuthenticationResult.cs</Link>
@@ -1114,7 +1116,6 @@
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\portable\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

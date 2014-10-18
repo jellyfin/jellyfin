@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>sharpcompress</id>
+    <version>0.10.2</version>
+    <title>SharpCompress - Pure C# Decompression/Compression</title>
+    <authors>Adam Hathcock</authors>
+    <owners>Adam Hathcock</owners>
+    <licenseUrl>http://sharpcompress.codeplex.com/license</licenseUrl>
+    <projectUrl>https://github.com/adamhathcock/sharpcompress</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>SharpCompress is a compression library for .NET/Mono/Silverlight/WP7/WindowsStore that can unrar, decompress 7zip, zip/unzip, tar/untar bzip2/unbzip2 and gzip/ungzip with forward-only reading and file random access APIs. Write support for zip/tar/bzip2/gzip is implemented.</description>
+    <releaseNotes>Fixed Rar Header reading for invalid extended time headers.
+Windows Store assembly is now strong named
+Known issues with Long Tar names being worked on
+Updated to VS2013
+Portable targets SL5 and Windows Phone 8 (up from SL4 and WP7)</releaseNotes>
+    <language>en-US</language>
+    <tags>rar unrar zip unzip bzip2 gzip tar 7zip</tags>
+  </metadata>
+</package>

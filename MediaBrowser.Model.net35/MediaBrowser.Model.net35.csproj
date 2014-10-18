@@ -13,7 +13,6 @@
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <FodyPath>..\packages\Fody.1.17.0.0</FodyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -189,6 +188,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\XbmcMetadataOptions.cs">
       <Link>Configuration\XbmcMetadataOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthenticationExchangeResult.cs">
+      <Link>Connect\ConnectAuthenticationExchangeResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthenticationResult.cs">
       <Link>Connect\ConnectAuthenticationResult.cs</Link>
@@ -1065,7 +1067,6 @@
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net35\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

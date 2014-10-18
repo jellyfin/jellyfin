@@ -11,7 +11,6 @@
     <AssemblyName>MediaBrowser.Model</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <FodyPath>..\packages\Fody.1.19.1.0</FodyPath>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
@@ -98,6 +97,7 @@
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
+    <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />
     <Compile Include="Connect\ConnectAuthenticationResult.cs" />
     <Compile Include="Connect\ConnectAuthorization.cs" />
     <Compile Include="Connect\ConnectUser.cs" />
@@ -424,7 +424,6 @@
 xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
   <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
