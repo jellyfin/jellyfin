@@ -74,6 +74,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual bool AlwaysScanInternalMetadataPath
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>

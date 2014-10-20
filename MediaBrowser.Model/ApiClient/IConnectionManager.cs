@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Connect;
+﻿using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,12 +14,29 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [connected].
         /// </summary>
         event EventHandler<GenericEventArgs<ConnectionResult>> Connected;
+        /// <summary>
+        /// Occurs when [local user sign in].
+        /// </summary>
+        event EventHandler<GenericEventArgs<UserDto>> LocalUserSignIn;
+        /// <summary>
+        /// Occurs when [connect user sign in].
+        /// </summary>
+        event EventHandler<GenericEventArgs<ConnectUser>> ConnectUserSignIn;
+        /// <summary>
+        /// Occurs when [local user sign out].
+        /// </summary>
+        event EventHandler<EventArgs> LocalUserSignOut;
+        /// <summary>
+        /// Occurs when [connect user sign out].
+        /// </summary>
+        event EventHandler<EventArgs> ConnectUserSignOut;
 
         /// <summary>
-        /// Occurs when [remote logged out].
+        /// Gets the connect user.
         /// </summary>
-        event EventHandler<EventArgs> RemoteLoggedOut;
-        
+        /// <value>The connect user.</value>
+        ConnectUser ConnectUser { get; }
+
         /// <summary>
         /// Gets the API client.
         /// </summary>

@@ -472,7 +472,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var item = _itemRepo.RetrieveItem(id) as LiveTvChannel;
 
-            if (item == null)
+            if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 item = new LiveTvChannel
                 {

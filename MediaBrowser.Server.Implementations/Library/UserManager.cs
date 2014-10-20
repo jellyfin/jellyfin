@@ -159,7 +159,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("username");
             }
 
-            var user = Users.First(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
+            var user = Users.FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (user == null)
+            {
+                throw new AuthenticationException("Invalid username or password entered.");
+            }
 
             if (user.Configuration.IsDisabled)
             {

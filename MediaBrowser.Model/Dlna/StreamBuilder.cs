@@ -674,7 +674,7 @@ namespace MediaBrowser.Model.Dlna
                         }
                     case ProfileConditionValue.VideoProfile:
                         {
-                            item.VideoProfile = value;
+                            item.VideoProfile = (value ?? string.Empty).Split('|')[0];
                             break;
                         }
                     case ProfileConditionValue.Height:

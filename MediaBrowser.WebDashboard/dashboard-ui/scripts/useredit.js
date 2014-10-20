@@ -76,73 +76,14 @@
             if (currentConnectUsername == enteredConnectUsername) {
                 Dashboard.alert(Globalize.translate('SettingsSaved'));
             } else {
-                updateConnectInfo(page, user);
+
+                ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
+
+                    loadData(page);
+                });
             }
         } else {
             Dashboard.navigate("userprofiles.html");
-        }
-    }
-
-    function updateConnectInfo(page, user) {
-
-        var currentConnectUsername = currentUser.ConnectUserName || '';
-        var enteredConnectUsername = $('#txtConnectUserName', page).val();
-
-        var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
-
-        if (currentConnectUsername && !enteredConnectUsername) {
-
-            // Remove connect info
-            // Add/Update connect info
-            ApiClient.ajax({
-
-                type: "DELETE",
-                url: linkUrl
-
-            }).done(function () {
-
-                Dashboard.alert({
-
-                    message: Globalize.translate('MessageMediaBrowserAccontRemoved'),
-                    title: Globalize.translate('HeaderMediaBrowserAccountRemoved'),
-
-                    callback: function () {
-
-                        loadData(page);
-                    }
-
-                });
-            });
-
-        }
-        else if (currentConnectUsername != enteredConnectUsername) {
-
-            // Add/Update connect info
-            ApiClient.ajax({
-
-                type: "POST",
-                url: linkUrl,
-                data: {
-                    ConnectUsername: enteredConnectUsername
-                },
-                dataType: 'json'
-
-            }).done(function (result) {
-
-                var msgKey = result.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
-
-                Dashboard.alert({
-
-                    message: Globalize.translate(msgKey),
-                    title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
-
-                    callback: function () {
-
-                        loadData(page);
-                    }
-
-                });
-            });
         }
     }
 
@@ -264,3 +205,72 @@
     });
 
 })(jQuery, window, document);
+
+(function () {
+
+    window.ConnectHelper = {
+
+        updateUserInfo: function (user, newConnectUsername, actionCallback, noActionCallback) {
+
+            var currentConnectUsername = user.ConnectUserName || '';
+            var enteredConnectUsername = newConnectUsername;
+
+            var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
+
+            if (currentConnectUsername && !enteredConnectUsername) {
+
+                // Remove connect info
+                // Add/Update connect info
+                ApiClient.ajax({
+
+                    type: "DELETE",
+                    url: linkUrl
+
+                }).done(function () {
+
+                    Dashboard.alert({
+
+                        message: Globalize.translate('MessageMediaBrowserAccontRemoved'),
+                        title: Globalize.translate('HeaderMediaBrowserAccountRemoved'),
+
+                        callback: actionCallback
+
+                    });
+                });
+
+            }
+            else if (currentConnectUsername != enteredConnectUsername) {
+
+                // Add/Update connect info
+                ApiClient.ajax({
+                    type: "POST",
+                    url: linkUrl,
+                    data: {
+                        ConnectUsername: enteredConnectUsername
+                    },
+                    dataType: 'json'
+
+                }).done(function(result) {
+
+                    var msgKey = result.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
+
+                    Dashboard.alert({
+                        message: Globalize.translate(msgKey),
+                        title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
+
+                        callback: actionCallback
+
+                    });
+                });
+            } else {
+                if (noActionCallback) {
+                    noActionCallback();
+                }
+            }
+
+        }
+
+    };
+
+
+})();

@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;

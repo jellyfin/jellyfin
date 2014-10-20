@@ -1,7 +1,12 @@
 ﻿(function ($, document, window) {
 
+    function getUsers() {
+        return ApiClient.getUsers({IsGuest: false});
+    }
+
     function onSaveComplete(user) {
 
+        var page = $.mobile.activePage;
         var userId = user.Id;
 
         var metadataKey = "xbmcmetadata";
@@ -14,8 +19,43 @@
 
             ApiClient.updateNamedConfiguration(metadataKey, config).done(function () {
 
-                Dashboard.navigate('wizardlibrary.html');
             });
+        });
+
+        var callback = function() {
+
+            Dashboard.navigate('wizardlibrary.html');
+        };
+
+        ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), callback, callback);
+    }
+
+    function submit(form) {
+
+        Dashboard.showLoadingMsg();
+
+        getUsers().done(function (users) {
+
+            var user;
+
+            if (users.length) {
+
+                user = users[0];
+
+                user.Name = $('#txtUsername', form).val();
+
+                ApiClient.updateUser(user).done(function () {
+
+                    onSaveComplete(user);
+                });
+
+            } else {
+
+                user = { Name: $('#txtUsername', form).val() };
+
+                ApiClient.createUser(user).done(onSaveComplete);
+            }
+
         });
     }
 
@@ -24,33 +64,10 @@
         var self = this;
 
         self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
             var form = this;
 
-            ApiClient.getUsers().done(function (users) {
 
-                var user;
-
-                if (users.length) {
-
-                    user = users[0];
-
-                    user.Name = $('#txtUsername', form).val();
-
-                    ApiClient.updateUser(user).done(function () {
-
-                        onSaveComplete(user);
-                    });
-
-                } else {
-
-                    user = { Name: $('#txtUsername', form).val() };
-
-                    ApiClient.createUser(user).done(onSaveComplete);
-                }
-
-            });
+            submit(form);
 
             return false;
         };
@@ -62,11 +79,12 @@
 
         var page = this;
 
-        ApiClient.getUsers().done(function (users) {
+        getUsers().done(function (users) {
 
-            var user = users[0] || { Name: "User" };
+            var user = users[0];
 
             $('#txtUsername', page).val(user.Name);
+            $('#txtConnectUserName', page).val(user.ConnectUserName);
 
             Dashboard.hideLoadingMsg();
         });

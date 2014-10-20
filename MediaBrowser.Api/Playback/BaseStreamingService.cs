@@ -830,23 +830,6 @@ namespace MediaBrowser.Api.Playback
             return MediaEncoder.GetInputArgument(inputPath, protocol);
         }
 
-        private MediaProtocol GetProtocol(string path)
-        {
-            if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaProtocol.Http;
-            }
-            if (path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaProtocol.Rtsp;
-            }
-            if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaProtocol.Rtmp;
-            }
-            return MediaProtocol.File;
-        }
-
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
         {
             if (state.VideoType == VideoType.Iso && state.IsoType.HasValue && IsoManager.CanMount(state.MediaPath))
@@ -1788,9 +1771,23 @@ namespace MediaBrowser.Api.Playback
             }
 
             // If client is requesting a specific video profile, it must match the source
-            if (!string.IsNullOrEmpty(request.Profile) && !string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(request.Profile))
             {
-                return false;
+                if (string.IsNullOrEmpty(videoStream.Profile))
+                {
+                    return false;
+                }
+
+                if (!string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+                {
+                    var currentScore = GetVideoProfileScore(videoStream.Profile);
+                    var requestedScore = GetVideoProfileScore(request.Profile);
+
+                    if (currentScore == -1 || currentScore > requestedScore)
+                    {
+                        return false;
+                    }
+                }
             }
 
             // Video width must fall within requested value
@@ -1870,6 +1867,22 @@ namespace MediaBrowser.Api.Playback
             return request.EnableAutoStreamCopy;
         }
 
+        private int GetVideoProfileScore(string profile)
+        {
+            var list = new List<string>
+            {
+                "Constrained Baseline",
+                "Baseline",
+                "Extended",
+                "Main",
+                "High",
+                "Progressive High",
+                "Constrained High"
+            };
+
+            return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
+        }
+
         private bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
             // Source and target codecs must match
@@ -1942,19 +1955,9 @@ namespace MediaBrowser.Api.Playback
                 return;
             }
 
-            var audioCodec = state.OutputAudioCodec;
+            var audioCodec = state.ActualOutputAudioCodec;
 
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
-            {
-                audioCodec = state.AudioStream.Codec;
-            }
-
-            var videoCodec = state.OutputVideoCodec;
-
-            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
-            {
-                videoCodec = state.VideoStream.Codec;
-            }
+            var videoCodec = state.ActualOutputVideoCodec;
 
             var mediaProfile = state.VideoRequest == null ?
                 profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate) :
@@ -2022,12 +2025,7 @@ namespace MediaBrowser.Api.Playback
                 profile = DlnaManager.GetDefaultProfile();
             }
 
-            var audioCodec = state.OutputAudioCodec;
-
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.AudioStream != null)
-            {
-                audioCodec = state.AudioStream.Codec;
-            }
+            var audioCodec = state.ActualOutputAudioCodec;
 
             if (state.VideoRequest == null)
             {
@@ -2045,12 +2043,7 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                var videoCodec = state.OutputVideoCodec;
-
-                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.VideoStream != null)
-                {
-                    videoCodec = state.VideoStream.Codec;
-                }
+                var videoCodec = state.ActualOutputVideoCodec;
 
                 responseHeaders["contentFeatures.dlna.org"] = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(

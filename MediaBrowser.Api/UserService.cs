@@ -29,6 +29,9 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "IsDisabled", Description = "Optional filter by IsDisabled=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsDisabled { get; set; }
+
+        [ApiMember(Name = "IsGuest", Description = "Optional filter by IsGuest=true or false", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsGuest { get; set; }
     }
 
     [Route("/Users/Public", "GET", Summary = "Gets a list of publicly visible users for display on a login screen.")]
@@ -253,6 +256,12 @@ namespace MediaBrowser.Api
             if (request.IsHidden.HasValue)
             {
                 users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
+            }
+
+            if (request.IsGuest.HasValue)
+            {
+
+                users = users.Where(i => (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest) == request.IsGuest.Value);
             }
 
             var result = users

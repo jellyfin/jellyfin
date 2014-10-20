@@ -605,7 +605,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var codec = state.OutputAudioCodec;
 
-            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
             }
@@ -636,7 +636,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var codec = state.OutputVideoCodec;
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
             }
