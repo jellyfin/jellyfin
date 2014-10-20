@@ -1546,11 +1546,7 @@ namespace MediaBrowser.Server.Implementations.Session
             if (musicVideo != null)
             {
                 info.Album = musicVideo.Album;
-
-                if (!string.IsNullOrWhiteSpace(musicVideo.Artist))
-                {
-                    info.Artists.Add(musicVideo.Artist);
-                }
+                info.Artists = musicVideo.Artists.ToList();
             }
 
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;

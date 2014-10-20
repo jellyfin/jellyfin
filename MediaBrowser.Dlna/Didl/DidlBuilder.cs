@@ -671,10 +671,10 @@ namespace MediaBrowser.Dlna.Didl
 
             if (musicVideo != null)
             {
-                if (!string.IsNullOrEmpty(musicVideo.Artist))
+                foreach (var artist in musicVideo.Artists)
                 {
-                    AddValue(element, "upnp", "artist", musicVideo.Artist, NS_UPNP);
-                    AddAlbumArtist(element, musicVideo.Artist);
+                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
+                    AddAlbumArtist(element, artist);
                 }
 
                 if (!string.IsNullOrEmpty(musicVideo.Album))

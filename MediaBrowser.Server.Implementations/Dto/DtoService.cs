@@ -72,22 +72,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
-                IEnumerable<BaseItem> libraryItems;
-
-                var artist = item as MusicArtist;
-
-                if (artist == null || artist.IsAccessedByName)
-                {
-                    libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user) :
-                       _libraryManager.RootFolder.RecursiveChildren;
-                }
-                else
-                {
-                    libraryItems = user != null ?
-                       artist.GetRecursiveChildren(user) :
-                       artist.RecursiveChildren;
-                }
+                var libraryItems = user != null ?
+                   user.RootFolder.GetRecursiveChildren(user) :
+                   _libraryManager.RootFolder.RecursiveChildren;
 
                 SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
 
@@ -398,7 +385,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.Album = item.Album;
-            dto.Artists = string.IsNullOrEmpty(item.Artist) ? new List<string>() : new List<string> { item.Artist };
+            dto.Artists = item.Artists;
         }
 
         private void SetGameProperties(BaseItemDto dto, Game item)
@@ -1231,6 +1218,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.ChannelId = channelItem.ChannelId;
                 dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
+            }
+
+            var channelMediaItem = item as IChannelMediaItem;
+            if (channelMediaItem != null)
+            {
+                dto.ExtraType = channelMediaItem.ExtraType;
             }
         }
 

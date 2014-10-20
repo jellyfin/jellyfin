@@ -78,9 +78,9 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (musicVideo != null)
             {
-                if (!string.IsNullOrEmpty(musicVideo.Artist))
+                if (musicVideo.Artists.Count > 0)
                 {
-                    builder.Append("<Artist>" + SecurityElement.Escape(musicVideo.Artist) + "</Artist>");
+                    builder.Append("<Artist>" + SecurityElement.Escape(string.Join(";", musicVideo.Artists.ToArray())) + "</Artist>");
                 }
                 if (!string.IsNullOrEmpty(musicVideo.Album))
                 {

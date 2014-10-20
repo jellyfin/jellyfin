@@ -324,6 +324,41 @@ namespace MediaBrowser.ServerApplication
         private void PerformVersionMigration()
         {
             DeleteDeprecatedModules();
+
+            if (!ServerConfigurationManager.Configuration.PlaylistImagesDeleted)
+            {
+                DeletePlaylistImages();
+                ServerConfigurationManager.Configuration.PlaylistImagesDeleted = true;
+                ServerConfigurationManager.SaveConfiguration();
+            }
+        }
+
+        private void DeletePlaylistImages()
+        {
+            try
+            {
+                var path = Path.Combine(ApplicationPaths.DataPath, "playlists");
+
+                var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories)
+                    .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i) ?? string.Empty))
+                    .ToList();
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (IOException)
+                    {
+
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                
+            }
         }
 
         private void DeleteDeprecatedModules()

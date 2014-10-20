@@ -3,8 +3,6 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
@@ -215,9 +213,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             DisableMetadataService(typeof(Movie), Configuration, service);
             DisableMetadataService(typeof(Episode), Configuration, service);
-            DisableMetadataService(typeof(Season), Configuration, service);
             DisableMetadataService(typeof(Series), Configuration, service);
-            DisableMetadataService(typeof(Video), Configuration, service);
         }
 
         private void DisableMetadataService(Type type, ServerConfiguration config, string service)

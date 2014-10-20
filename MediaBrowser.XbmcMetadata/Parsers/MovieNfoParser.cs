@@ -66,7 +66,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            movie.Artist = val;
+                            movie.Artists.Add(val);
                         }
 
                         break;

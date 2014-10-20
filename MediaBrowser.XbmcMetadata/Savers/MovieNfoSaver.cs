@@ -74,9 +74,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (musicVideo != null)
             {
-                if (!string.IsNullOrEmpty(musicVideo.Artist))
+                foreach (var artist in musicVideo.Artists)
                 {
-                    writer.WriteElementString("artist", musicVideo.Artist);
+                    writer.WriteElementString("artist", artist);
                 }
                 if (!string.IsNullOrEmpty(musicVideo.Album))
                 {

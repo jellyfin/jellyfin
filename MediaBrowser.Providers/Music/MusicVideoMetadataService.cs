@@ -1,15 +1,13 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -36,9 +34,9 @@ namespace MediaBrowser.Providers.Music
                 target.Album = source.Album;
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.Artist))
+            if (replaceData || target.Artists.Count == 0)
             {
-                target.Artist = source.Artist;
+                target.Artists = source.Artists.ToList();
             }
         }
     }
