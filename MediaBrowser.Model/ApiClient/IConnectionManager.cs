@@ -30,7 +30,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [connect user sign out].
         /// </summary>
         event EventHandler<EventArgs> ConnectUserSignOut;
-
+        [Obsolete]
+        event EventHandler<EventArgs> RemoteLoggedOut;
+        
         /// <summary>
         /// Gets the connect user.
         /// </summary>

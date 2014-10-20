@@ -598,7 +598,8 @@
         if (item.Type == "Movie") {
             promise = ApiClient.getSimilarMovies(item.Id, options);
         }
-        else if (item.Type == "Trailer") {
+        else if (item.Type == "Trailer" ||
+            (item.Type == "ChannelVideoItem" && item.ExtraType == "Trailer")) {
             promise = ApiClient.getSimilarTrailers(item.Id, options);
         }
         else if (item.Type == "MusicAlbum") {

@@ -760,6 +760,9 @@
         var action = elem.getAttribute('data-action');
         var elemWithAttributes = elem.getAttribute('data-itemid') ? elem : elem.parentNode;
 
+        var index;
+        var itemsContainer;
+
         var itemId = elemWithAttributes.getAttribute('data-itemid');
 
         if (action == 'play') {
@@ -767,12 +770,21 @@
         }
         else if (action == 'playallfromhere') {
 
-            var index = elemWithAttributes.getAttribute('data-index');
-            var itemsContainer = $(elem).parents('.itemsContainer');
+            index = elemWithAttributes.getAttribute('data-index');
+            itemsContainer = $(elem).parents('.itemsContainer');
 
             closeContextMenu();
 
             itemsContainer.trigger('playallfromhere', [index]);
+        }
+        else if (action == 'photoslideshow') {
+
+            itemsContainer = $(elem).parents('.itemsContainer');
+            index = $('.card', itemsContainer).get().indexOf(elem);
+
+            closeContextMenu();
+
+            itemsContainer.trigger('photoslideshow', [index]);
         }
 
         return false;
@@ -861,6 +873,10 @@
     function onUserDataChanged(userData) {
 
         var cssClass = LibraryBrowser.getUserDataCssClass(userData.Key);
+        
+        if (!cssClass) {
+            return;
+        }
 
         $('.' + cssClass).each(function () {
 

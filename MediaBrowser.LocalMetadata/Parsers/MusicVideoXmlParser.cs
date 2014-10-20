@@ -1,7 +1,8 @@
-﻿using System.Xml;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using System;
+using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -26,8 +27,17 @@ namespace MediaBrowser.LocalMetadata.Parsers
             switch (reader.Name)
             {
                 case "Artist":
-                    item.Artist = reader.ReadElementContentAsString();
-                    break;
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            var artists = val.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            item.Artists.AddRange(artists);
+                        }
+
+                        break;
+                    }
 
                 case "Album":
                     item.Album = reader.ReadElementContentAsString();

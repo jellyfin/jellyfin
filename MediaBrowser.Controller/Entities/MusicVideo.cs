@@ -12,12 +12,6 @@ namespace MediaBrowser.Controller.Entities
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasProductionLocations, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
-        /// Gets or sets the artist.
-        /// </summary>
-        /// <value>The artist.</value>
-        public string Artist { get; set; }
-
-        /// <summary>
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
@@ -35,27 +29,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
         public List<string> ProductionLocations { get; set; }
+        public List<string> Artists { get; set; }
 
         public MusicVideo()
         {
             ProductionLocations = new List<string>();
-        }
-
-        [IgnoreDataMember]
-        public List<string> Artists
-        {
-            get
-            {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(Artist))
-                {
-                    list.Add(Artist);
-                }
-
-                return list;
-
-            }
+            Artists = new List<string>();
         }
 
         [IgnoreDataMember]
@@ -63,15 +42,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                var list = new List<string>();
-
-                if (!string.IsNullOrEmpty(Artist))
-                {
-                    list.Add(Artist);
-                }
-
-                return list;
-
+                return Artists;
             }
         }
 
@@ -82,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
         public bool HasArtist(string name)
         {
-            return string.Equals(Artist, name, StringComparison.OrdinalIgnoreCase);
+            return AllArtists.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
         
         /// <summary>

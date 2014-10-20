@@ -1169,6 +1169,17 @@
         $('#selectImageRefreshMode', page).val('missing').selectmenu('refresh');
     }
 
+    function performSimpleRefresh(page) {
+
+        refreshWithOptions(page, {
+
+            Recursive: true,
+            ImageRefreshMode: 'FullRefresh',
+            MetadataRefreshMode: 'FullRefresh',
+            ReplaceAllMetadata: true
+        });
+    }
+
     function refreshFromPopupOptions(page) {
 
         var metadataRefreshMode = $('#selectMetadataRefreshMode', page).val();
@@ -1206,6 +1217,11 @@
         $('.btnRefreshAdvanced', this).on('click', function () {
 
             performAdvancedRefresh(page);
+        });
+
+        $('.btnSimpleRefresh', this).on('click', function () {
+
+            performSimpleRefresh(page);
         });
 
         $('#btnIdentify', page).on('click', function () {

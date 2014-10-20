@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="Api\ConfigurationPageInfo.cs" />
     <Compile Include="Api\DashboardService.cs" />
+    <Compile Include="Api\PackageCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerEntryPoint.cs" />
   </ItemGroup>
