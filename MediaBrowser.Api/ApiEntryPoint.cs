@@ -172,19 +172,8 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
-                var audioCodec = state.Request.AudioCodec;
-                var videoCodec = state.VideoRequest == null ? null : state.VideoRequest.VideoCodec;
-
-                if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrEmpty(audioCodec))
-                {
-                    audioCodec = state.OutputAudioCodec;
-                }
-                if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrEmpty(videoCodec))
-                {
-                    videoCodec = state.OutputVideoCodec;
-                }
+                var audioCodec = state.ActualOutputVideoCodec;
+                var videoCodec = state.ActualOutputVideoCodec;
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {

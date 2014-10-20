@@ -172,6 +172,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns>System.String.</returns>
         string GetInternalMetadataPath();
+
+        /// <summary>
+        /// Gets a value indicating whether [always scan internal metadata path].
+        /// </summary>
+        /// <value><c>true</c> if [always scan internal metadata path]; otherwise, <c>false</c>.</value>
+        bool AlwaysScanInternalMetadataPath { get; }
     }
 
     public static class HasImagesExtensions

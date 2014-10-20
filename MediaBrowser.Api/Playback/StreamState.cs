@@ -188,6 +188,50 @@ namespace MediaBrowser.Api.Playback
         public int? OutputAudioBitrate;
         public int? OutputVideoBitrate;
 
+        public string ActualOutputVideoCodec
+        {
+            get
+            {
+                var codec = OutputVideoCodec;
+
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stream = VideoStream;
+
+                    if (stream != null)
+                    {
+                        return stream.Codec;
+                    }
+
+                    return null;
+                }
+
+                return codec;
+            }
+        }
+
+        public string ActualOutputAudioCodec
+        {
+            get
+            {
+                var codec = OutputAudioCodec;
+
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var stream = AudioStream;
+
+                    if (stream != null)
+                    {
+                        return stream.Codec;
+                    }
+
+                    return null;
+                }
+
+                return codec;
+            }
+        }
+
         public string OutputContainer { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }

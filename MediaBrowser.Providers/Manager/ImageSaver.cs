@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -63,7 +64,12 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">mimeType</exception>
-        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        public Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
+        {
+            return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
+        }
+
+        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -108,6 +114,10 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+            if (!string.IsNullOrEmpty(internalCacheKey))
+            {
+                saveLocally = false;
+            }
 
             if (!imageIndex.HasValue && item.AllowsMultipleImages(type))
             {
@@ -116,7 +126,9 @@ namespace MediaBrowser.Providers.Manager
 
             var index = imageIndex ?? 0;
 
-            var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
+            var paths = !string.IsNullOrEmpty(internalCacheKey) ?
+                new[] { GetCacheKeyPath(item, type, mimeType, internalCacheKey) } :
+                GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
             // If there are more than one output paths, the stream will need to be seekable
             if (paths.Length > 1 && !source.CanSeek)
@@ -178,6 +190,12 @@ namespace MediaBrowser.Providers.Manager
                     _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
                 }
             }
+        }
+
+        private string GetCacheKeyPath(IHasImages item, ImageType type, string mimeType, string key)
+        {
+            var extension = MimeTypes.ToExtension(mimeType);
+            return Path.Combine(item.GetInternalMetadataPath(), type.ToString().ToLower() + "_key_" + key + extension);
         }
 
         /// <summary>
@@ -300,7 +318,7 @@ namespace MediaBrowser.Providers.Manager
         private string GetStandardSavePath(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
             string filename;
-            
+
             switch (type)
             {
                 case ImageType.Art:
@@ -399,13 +417,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var season = item as Season;
 
-            var extension = mimeType.Split('/').Last();
-
-            if (string.Equals(extension, "jpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                extension = "jpg";
-            }
-            extension = "." + extension.ToLower();
+            var extension = MimeTypes.ToExtension(mimeType);
 
             // Backdrop paths
             if (type == ImageType.Backdrop)

@@ -15,7 +15,17 @@ namespace MediaBrowser.Controller.Playlists
     {
         public string OwnerUserId { get; set; }
 
+        [IgnoreDataMember]
         protected override bool FilterLinkedChildrenPerUser
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool AlwaysScanInternalMetadataPath
         {
             get
             {

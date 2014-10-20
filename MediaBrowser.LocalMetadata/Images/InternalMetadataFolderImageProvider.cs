@@ -38,7 +38,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 return true;
             }
 
-            if (item.SupportsLocalMetadata)
+            if (item.SupportsLocalMetadata && !item.AlwaysScanInternalMetadataPath)
             {
                 return false;
             }
@@ -59,14 +59,9 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var path = item.GetInternalMetadataPath();
 
-            if (item is IChannelItem)
-            {
-                var b = true;
-            }
-
             try
             {
-                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
+                return new LocalImageProvider(_fileSystem).GetImages(item, path, true, directoryService);
             }
             catch (DirectoryNotFoundException)
             {

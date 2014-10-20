@@ -1,44 +1,115 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Entities;
-using MoreLinq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MoreLinq;
 
-namespace MediaBrowser.Server.Implementations.Playlists
+namespace MediaBrowser.Server.Implementations.Photos
 {
-    public class PlaylistImageEnhancer : IImageEnhancer
+    public class PhotoAlbumImageProvider : ICustomMetadataProvider<PhotoAlbum>, IHasChangeMonitor
     {
         private readonly IFileSystem _fileSystem;
+        private readonly IProviderManager _provider;
 
-        public PlaylistImageEnhancer(IFileSystem fileSystem)
+        public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager provider)
         {
             _fileSystem = fileSystem;
+            _provider = provider;
         }
 
-        public bool Supports(IHasImages item, ImageType imageType)
+        public async Task<ItemUpdateType> FetchAsync(PhotoAlbum item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            return (imageType == ImageType.Primary || imageType == ImageType.Thumb) && item is Playlist;
+            var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
+            var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
+
+            return primaryResult | thumbResult;
         }
 
-        public MetadataProviderPriority Priority
+        private Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            get { return MetadataProviderPriority.First; }
+            var items = GetItemsWithImages(item);
+            var cacheKey = GetConfigurationCacheKey(items);
+
+            if (!HasChanged(item, imageType, cacheKey))
+            {
+                return Task.FromResult(ItemUpdateType.None);
+            }
+
+            return FetchAsyncInternal(item, imageType, cacheKey, options, cancellationToken);
+        }
+
+        private async Task<ItemUpdateType> FetchAsyncInternal(IHasImages item, ImageType imageType, string cacheKey, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            var img = await CreateImageAsync(item, imageType, 0).ConfigureAwait(false);
+
+            if (img == null)
+            {
+                return ItemUpdateType.None;
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                img.Save(ms, ImageFormat.Png);
+
+                ms.Position = 0;
+
+                await _provider.SaveImage(item, ms, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+            }
+
+            return ItemUpdateType.ImageUpdate;
+        }
+
+        private bool HasChanged(IHasImages item, ImageType type, string cacheKey)
+        {
+            var image = item.GetImageInfo(type, 0);
+
+            if (image != null)
+            {
+                if (!_fileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                {
+                    return false;
+                }
+
+                var currentPathCacheKey = (Path.GetFileNameWithoutExtension(image.Path) ?? string.Empty).Split('_').LastOrDefault();
+
+                if (string.Equals(cacheKey, currentPathCacheKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private const string Version = "3";
+
+        public string GetConfigurationCacheKey(List<BaseItem> items)
+        {
+            return (Version + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
         }
 
         private List<BaseItem> GetItemsWithImages(IHasImages item)
         {
+            var photoAlbum = item as PhotoAlbum;
+            if (photoAlbum != null)
+            {
+                return GetFinalItems(photoAlbum.RecursiveChildren.Where(i => i is Photo).ToList());
+            }
+
             var playlist = (Playlist)item;
 
             var items = playlist.GetManageableItems()
@@ -78,6 +149,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 .DistinctBy(i => i.Id)
                 .ToList();
 
+            return GetFinalItems(items);
+        }
+
+        private List<BaseItem> GetFinalItems(List<BaseItem> items)
+        {
             // Rotate the images no more than once per day
             var random = new Random(DateTime.Now.DayOfYear).Next();
 
@@ -88,66 +164,18 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 .ToList();
         }
 
-        private const string Version = "3";
-
-        public string GetConfigurationCacheKey(List<BaseItem> items)
-        {
-            return Version + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray());
-        }
-
-        public string GetConfigurationCacheKey(IHasImages item, ImageType imageType)
-        {
-            var items = GetItemsWithImages(item);
-
-            return GetConfigurationCacheKey(items);
-        }
-
-        private const int SquareImageSize = 800;
-        private const int ThumbImageWidth = 1600;
-        private const int ThumbImageHeight = 900;
-
-        public ImageSize GetEnhancedImageSize(IHasImages item, ImageType imageType, int imageIndex, ImageSize originalImageSize)
+        public async Task<Image> CreateImageAsync(IHasImages item, ImageType imageType, int imageIndex)
         {
             var items = GetItemsWithImages(item);
 
             if (items.Count == 0)
             {
-                return originalImageSize;
+                return null;
             }
 
-            if (imageType == ImageType.Thumb)
-            {
-                return new ImageSize
-                {
-                    Height = ThumbImageHeight,
-                    Width = ThumbImageWidth
-                };
-            }
-
-            return new ImageSize
-            {
-                Height = SquareImageSize,
-                Width = SquareImageSize
-            };
-        }
-
-        public async Task<Image> EnhanceImageAsync(IHasImages item, Image originalImage, ImageType imageType, int imageIndex)
-        {
-            var items = GetItemsWithImages(item);
-
-            if (items.Count == 0)
-            {
-                return originalImage;
-            }
-
-            var img = imageType == ImageType.Thumb  ?
+            return imageType == ImageType.Thumb ?
                 await GetThumbCollage(items).ConfigureAwait(false) :
                 await GetSquareCollage(items).ConfigureAwait(false);
-
-            using (originalImage)
-            {
-                return img;
-            }
         }
 
         private Task<Image> GetThumbCollage(List<BaseItem> items)
@@ -216,6 +244,10 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
             return img;
         }
+
+        private const int SquareImageSize = 800;
+        private const int ThumbImageWidth = 1600;
+        private const int ThumbImageHeight = 900;
 
         private async Task<Image> GetSquareCollage(List<string> files)
         {
@@ -287,6 +319,19 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
                 return Image.FromStream(memoryStream, true, false);
             }
+        }
+
+        public string Name
+        {
+            get { return "Dynamic Image Provider"; }
+        }
+
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        {
+            var items = GetItemsWithImages(item);
+            var cacheKey = GetConfigurationCacheKey(items);
+
+            return HasChanged(item, ImageType.Primary, cacheKey) || HasChanged(item, ImageType.Thumb, cacheKey);
         }
     }
 }
