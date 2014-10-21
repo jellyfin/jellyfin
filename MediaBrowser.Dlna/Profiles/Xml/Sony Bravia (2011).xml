@@ -33,6 +33,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
   </XmlRootAttributes>

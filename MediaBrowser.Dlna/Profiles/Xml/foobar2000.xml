@@ -31,6 +31,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />

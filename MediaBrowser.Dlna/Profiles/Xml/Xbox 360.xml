@@ -32,6 +32,8 @@
   <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />

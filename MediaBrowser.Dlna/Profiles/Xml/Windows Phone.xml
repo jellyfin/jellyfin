@@ -25,6 +25,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4,mov" audioCodec="aac,mp3" videoCodec="h264" type="Video" />
