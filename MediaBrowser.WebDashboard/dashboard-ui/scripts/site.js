@@ -147,16 +147,26 @@ var Dashboard = {
         Dashboard.getUserPromise = null;
     },
 
+    isConnectMode: function () {
+
+        return getWindowUrl().toLowerCase().indexOf('mediabrowser.tv') != -1;
+    },
+
     logout: function (logoutWithServer) {
 
+        ConnectionManager.logoutFromConnect();
         store.removeItem("userId");
         store.removeItem("token");
 
+        var loginPage = !Dashboard.isConnectMode() ?
+            'login.html' :
+            'connectlogin.html';
+
         if (logoutWithServer === false) {
-            window.location = "login.html";
+            window.location = loginPage;
         } else {
             ApiClient.logout().done(function () {
-                window.location = "login.html";
+                window.location = loginPage;
             });
 
         }
@@ -308,14 +318,14 @@ var Dashboard = {
 
     reloadPage: function () {
 
-        var currentUrl = window.location.toString().toLowerCase();
+        var currentUrl = getWindowUrl().toLowerCase();
 
         // If they're on a plugin config page just go back to the dashboard
         // The plugin may not have been loaded yet, or could have been uninstalled
         if (currentUrl.indexOf('configurationpage') != -1) {
             window.location.href = "dashboard.html";
         } else {
-            window.location.href = window.location.href;
+            window.location.href = getWindowUrl();
         }
     },
 
@@ -1318,6 +1328,18 @@ $(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 
+    var isConnectMode = Dashboard.isConnectMode();
+
+    if (isConnectMode && !page.hasClass('connectLoginPage')) {
+        
+        if (!ConnectionManager.isLoggedIntoConnect()) {
+
+            console.log('Not logged into connect. Redirecting to login.');
+            Dashboard.logout();
+            return;
+        }
+    }
+
     if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
 
         Dashboard.getCurrentUser().done(function (user) {
@@ -1334,8 +1356,10 @@ $(document).on('pagebeforeshow', ".page", function () {
     }
 
     else {
-        if (this.id !== "loginPage" && !page.hasClass('wizardPage')) {
 
+        if (this.id !== "loginPage" && !page.hasClass('wizardPage') && !isConnectMode) {
+
+            console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
             return;
         }

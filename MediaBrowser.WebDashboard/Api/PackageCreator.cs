@@ -246,6 +246,7 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/md5.js", newLineBytes).ConfigureAwait(false);
 
             await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
@@ -344,6 +345,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "channelslatest.js",
                                 "channelitems.js",
                                 "channelsettings.js",
+                                "connectlogin.js",
                                 "dashboardgeneral.js",
                                 "dashboardpage.js",
                                 "dashboardsync.js",

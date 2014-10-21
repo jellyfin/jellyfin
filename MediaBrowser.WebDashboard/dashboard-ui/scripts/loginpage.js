@@ -39,7 +39,7 @@
 
     isLocalhost: function () {
 
-        var location = window.location.toString().toLowerCase();
+        var location = getWindowUrl().toString().toLowerCase();
         return location.indexOf('localhost') != -1 || location.indexOf('127.0.0.1') != -1;
     },
     

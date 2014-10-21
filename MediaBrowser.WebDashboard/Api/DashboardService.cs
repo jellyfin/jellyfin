@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -286,7 +287,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var culture = "en-US";
 
-            var appVersion = _appHost.ApplicationVersion.ToString();
+            var appVersion = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
 
             await DumpHtml(creator.DashboardUIPath, path, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, culture, appVersion);
