@@ -541,7 +541,6 @@ namespace MediaBrowser.Dlna
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
     }
 }

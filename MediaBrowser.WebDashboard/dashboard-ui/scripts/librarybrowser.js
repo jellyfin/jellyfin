@@ -486,7 +486,7 @@
                 }
 
                 if (item.CollectionType == 'trailers') {
-                    return 'movietrailers.html?topParentId=' + item.Id;
+                    return "itemlist.html?parentId=" + item.Id;
                 }
 
                 if (item.CollectionType == 'movies') {

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.IO;
+using System.Text;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -79,21 +81,42 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                // Need to handle a url after the xml data
+                // http://kodi.wiki/view/NFO_files/movies
+
+                var xml = streamReader.ReadToEnd();
+
+                var index = xml.LastIndexOf('>');
+
+                if (index != -1)
                 {
-                    reader.MoveToContent();
+                    xml = xml.Substring(0, index + 1);
+                }
 
-                    // Loop through each element
-                    while (reader.Read())
+                using (var ms = new MemoryStream())
+                {
+                    var bytes = Encoding.UTF8.GetBytes(xml);
+
+                    ms.Write(bytes, 0, bytes.Length);
+                    ms.Position = 0;
+
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(ms, settings))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        reader.MoveToContent();
 
-                        if (reader.NodeType == XmlNodeType.Element)
+                        // Loop through each element
+                        while (reader.Read())
                         {
-                            FetchDataFromXmlNode(reader, item, userDataList);
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                FetchDataFromXmlNode(reader, item, userDataList);
+                            }
                         }
                     }
+
                 }
             }
         }

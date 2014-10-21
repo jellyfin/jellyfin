@@ -47,6 +47,21 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// TODO: Remove
+        /// </summary>
+        public string Artist
+        {
+            get { return Artists.FirstOrDefault(); }
+            set
+            {
+                if (!string.IsNullOrEmpty(value) && !Artists.Contains(value, StringComparer.OrdinalIgnoreCase))
+                {
+                    Artists.Add(value);
+                }
+            }
+        }
+
+        /// <summary>
         /// Determines whether the specified name has artist.
         /// </summary>
         /// <param name="name">The name.</param>

@@ -248,13 +248,17 @@
             $('a', elem).removeClass('ui-btn-active');
             $('.lnkHomeLatest', page).addClass('ui-btn-active');
         }
-        else if (context == 'movies' || item.Type == 'Movie') {
+        else if (context == 'movies' || item.Type == 'Movie' || context == 'movies-trailers') {
             elem = $('#movieTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
 
             if (item.Type == 'BoxSet') {
                 $('.lnkCollections', page).addClass('ui-btn-active');
-            } else {
+            }
+            else if (context == 'movies-trailers') {
+                $('.lnkMovieTrailers', page).addClass('ui-btn-active');
+            }
+            else {
                 $('.lnkMovies', page).addClass('ui-btn-active');
             }
         }

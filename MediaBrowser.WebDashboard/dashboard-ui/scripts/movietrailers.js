@@ -42,8 +42,7 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false,
-                addSelectionButton: true
+                showLimit: false
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -55,8 +54,7 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'movies',
-                    selectionPanel: true,
+                    context: 'movies-trailers',
                     lazy: true,
                     overlayText: true
                 });
@@ -68,7 +66,7 @@
                     items: result.Items,
                     shape: "banner",
                     preferBanner: true,
-                    context: 'movies',
+                    context: 'movies-trailers',
                     lazy: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
@@ -77,7 +75,7 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'movies',
+                    context: 'movies-trailers',
                     sortBy: query.SortBy
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
@@ -86,10 +84,9 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    context: 'movies',
+                    context: 'movies-trailers',
                     showTitle: false,
                     centerText: true,
-                    selectionPanel: true,
                     lazy: true,
                     overlayText: true
                 });
@@ -99,11 +96,10 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    context: 'movies',
+                    context: 'movies-trailers',
                     showTitle: true,
                     timeline: true,
                     centerText: true,
-                    selectionPanel: true,
                     lazy: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
