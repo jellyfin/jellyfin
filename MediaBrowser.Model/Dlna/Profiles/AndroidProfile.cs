@@ -6,8 +6,14 @@ namespace MediaBrowser.Model.Dlna.Profiles
     [XmlRoot("Profile")]
     public class AndroidProfile : DefaultProfile
     {
-        public AndroidProfile(bool supportsHls, 
-            bool supportsMpegDash, 
+        public AndroidProfile()
+            : this(true, true, new[] { "baseline", "constrained baseline" })
+        {
+
+        }
+
+        public AndroidProfile(bool supportsHls,
+            bool supportsMpegDash,
             string[] supportedH264Profiles)
         {
             Name = "Android";

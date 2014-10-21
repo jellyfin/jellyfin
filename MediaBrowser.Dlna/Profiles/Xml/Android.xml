@@ -25,6 +25,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4" audioCodec="aac" videoCodec="h264,mpeg4" type="Video" />
@@ -36,33 +38,42 @@
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
-    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Static" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="baseline" context="Static" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="EqualsAny" property="VideoProfile" value="baseline|constrained baseline" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
     <CodecProfile type="Video">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
-        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
-        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="Audio" codec="aac">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="Audio" codec="mp3">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
-        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="320000" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="320000" isRequired="false" />
       </Conditions>
     </CodecProfile>
   </CodecProfiles>

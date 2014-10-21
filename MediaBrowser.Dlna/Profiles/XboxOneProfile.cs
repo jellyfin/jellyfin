@@ -10,8 +10,18 @@ namespace MediaBrowser.Dlna.Profiles
         public XboxOneProfile()
         {
             Name = "Xbox One";
+
+            ModelName = "Windows Media Player Sharing";
+            ModelNumber = "12.0";
+            ModelUrl = "http://www.microsoft.com/";
+            Manufacturer = "Microsoft Corporation";
+            ManufacturerUrl = "http://www.microsoft.com/";
             XDlnaDoc = "DMS-1.50";
 
+            TimelineOffsetSeconds = 40;
+            RequiresPlainFolders = true;
+            RequiresPlainVideoItems = true;
+            
             Identification = new DeviceIdentification
             {
                 ModelName = "Xbox One",

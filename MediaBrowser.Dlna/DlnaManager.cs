@@ -3,6 +3,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
@@ -37,8 +38,6 @@ namespace MediaBrowser.Dlna
             _appPaths = appPaths;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-
-            //DumpProfiles();
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()
@@ -53,44 +52,6 @@ namespace MediaBrowser.Dlna
                 .OrderBy(i => i.Name));
 
             return list;
-        }
-
-        private void DumpProfiles()
-        {
-            var list = new List<DeviceProfile>
-            {
-                new SamsungSmartTvProfile(),
-                new Xbox360Profile(),
-                new XboxOneProfile(),
-                new SonyPs3Profile(),
-                new SonyBravia2010Profile(),
-                new SonyBravia2011Profile(),
-                new SonyBravia2012Profile(),
-                new SonyBravia2013Profile(),
-                new SonyBlurayPlayer2013Profile(),
-                new SonyBlurayPlayerProfile(),
-                new PanasonicVieraProfile(),
-                new WdtvLiveProfile(),
-                new DenonAvrProfile(),
-                new LinksysDMA2100Profile(),
-                new LgTvProfile(),
-                new Foobar2000Profile(),
-                new MediaMonkeyProfile(),
-                new Windows81Profile(),
-                //new WindowsMediaCenterProfile(),
-                new WindowsPhoneProfile(),
-                new AndroidProfile(true, true, new[]{"baseline", "constrained baseline"}),
-                new DirectTvProfile(),
-                new DishHopperJoeyProfile(),
-                new DefaultProfile()
-            };
-
-            foreach (var item in list)
-            {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
-
-                _xmlSerializer.SerializeToFile(item, path);
-            }
         }
 
         private bool _extracted;
@@ -519,6 +480,68 @@ namespace MediaBrowser.Dlna
                 Format = format,
                 Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
             };
+        }
+    }
+
+    class DlnaProfileEntryPoint : IServerEntryPoint
+    {
+        private readonly IApplicationPaths _appPaths;
+        private readonly IXmlSerializer _xmlSerializer;
+        private readonly IFileSystem _fileSystem;
+
+        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        {
+            _appPaths = appPaths;
+            _xmlSerializer = xmlSerializer;
+            _fileSystem = fileSystem;
+        }
+
+        public void Run()
+        {
+            //DumpProfiles();
+        }
+
+        private void DumpProfiles()
+        {
+            var list = new List<DeviceProfile>
+            {
+                new SamsungSmartTvProfile(),
+                new Xbox360Profile(),
+                new XboxOneProfile(),
+                new SonyPs3Profile(),
+                new SonyBravia2010Profile(),
+                new SonyBravia2011Profile(),
+                new SonyBravia2012Profile(),
+                new SonyBravia2013Profile(),
+                new SonyBlurayPlayer2013Profile(),
+                new SonyBlurayPlayerProfile(),
+                new PanasonicVieraProfile(),
+                new WdtvLiveProfile(),
+                new DenonAvrProfile(),
+                new LinksysDMA2100Profile(),
+                new LgTvProfile(),
+                new Foobar2000Profile(),
+                new MediaMonkeyProfile(),
+                new Windows81Profile(),
+                //new WindowsMediaCenterProfile(),
+                new WindowsPhoneProfile(),
+                new AndroidProfile(),
+                new DirectTvProfile(),
+                new DishHopperJoeyProfile(),
+                new DefaultProfile()
+            };
+
+            foreach (var item in list)
+            {
+                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
+
+                _xmlSerializer.SerializeToFile(item, path);
+            }
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
