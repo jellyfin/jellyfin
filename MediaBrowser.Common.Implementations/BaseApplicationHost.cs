@@ -296,6 +296,16 @@ namespace MediaBrowser.Common.Implementations
             logger.Info("64-Bit Process: {0}", Environment.Is64BitProcess);
             logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
 
+            Type type = Type.GetType("Mono.Runtime");
+            if (type != null)
+            {
+                MethodInfo displayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
+                if (displayName != null)
+                {
+                    logger.Info("Mono: " + displayName.Invoke(null, null));
+                }
+            } 
+            
             logger.Info("Application Path: {0}", appPaths.ApplicationPath);
 
             logger.Info("*** When reporting issues please include the entire log file. ***".ToUpper());
