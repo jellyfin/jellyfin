@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             request.Method = method;
-            request.Timeout = 20000;
+            request.Timeout = options.TimeoutMs;
 
             if (!string.IsNullOrEmpty(options.Host))
             {
@@ -390,7 +390,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 if (!options.BufferContent)
                 {
-                    var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+                    var response = await GetResponseAsync(httpWebRequest, TimeSpan.FromMilliseconds(options.TimeoutMs)).ConfigureAwait(false);
 
                     var httpResponse = (HttpWebResponse)response;
 
@@ -401,7 +401,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse), httpResponse);
                 }
 
-                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
+                using (var response = await GetResponseAsync(httpWebRequest, TimeSpan.FromMilliseconds(options.TimeoutMs)).ConfigureAwait(false))
                 {
                     var httpResponse = (HttpWebResponse)response;
 
@@ -842,6 +842,48 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
         {
             return Post(url, postData, null, cancellationToken);
+        }
+
+        private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
+        {
+            var taskCompletion = new TaskCompletionSource<WebResponse>();
+
+            Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+
+            ThreadPool.RegisterWaitForSingleObject((asyncTask as IAsyncResult).AsyncWaitHandle, TimeoutCallback, request, timeout, true);
+            asyncTask.ContinueWith(task =>
+            {
+                taskCompletion.TrySetResult(task.Result);
+
+            }, TaskContinuationOptions.NotOnFaulted);
+
+            // Handle errors
+            asyncTask.ContinueWith(task =>
+            {
+                if (task.Exception != null)
+                {
+                    taskCompletion.TrySetException(task.Exception);
+                }
+                else
+                {
+                    taskCompletion.TrySetException(new List<Exception>());
+                }
+
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            return taskCompletion.Task;
+        }
+
+        private static void TimeoutCallback(object state, bool timedOut)
+        {
+            if (timedOut)
+            {
+                WebRequest request = (WebRequest)state;
+                if (state != null)
+                {
+                    request.Abort();
+                }
+            }
         }
     }
 }
