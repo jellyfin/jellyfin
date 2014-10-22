@@ -37,6 +37,49 @@ namespace MediaBrowser.Dlna.Profiles
 
             SonyAggregationFlags = "10";
             XDlnaDoc = "DMS-1.50";
+            DidlAlbumArtLimit = 1;
+
+            DirectPlayProfiles = new[]
+            {
+                new DirectPlayProfile
+                {
+                    Container = "avi",
+                    Type = DlnaProfileType.Video,
+                    VideoCodec = "mpeg4",
+                    AudioCodec = "mp2,mp3"
+                },
+                new DirectPlayProfile
+                {
+                    Container = "ts",
+                    Type = DlnaProfileType.Video,
+                    VideoCodec = "mpeg1video,mpeg2video,h264",
+                    AudioCodec = "ac3,mp2,mp3,aac"
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mpeg",
+                    Type = DlnaProfileType.Video,
+                    VideoCodec = "mpeg1video,mpeg2video",
+                    AudioCodec = "mp2"
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp4",
+                    Type = DlnaProfileType.Video,
+                    VideoCodec = "h264,mpeg4",
+                    AudioCodec = "aac,ac3"
+                },
+                new DirectPlayProfile
+                {
+                    Container = "aac,mp3,wav",
+                    Type = DlnaProfileType.Audio
+                },
+                new DirectPlayProfile
+                {
+                    Container = "jpeg,png,gif,bmp,tiff",
+                    Type = DlnaProfileType.Photo
+                }
+            };
 
             TranscodingProfiles = new[]
             {
@@ -183,28 +226,6 @@ namespace MediaBrowser.Dlna.Profiles
                             Property = ProfileConditionValue.AudioProfile,
                             Value = "he-aac",
                             IsRequired = false
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.VideoAudio,
-                    Codec = "aac",
-
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "2"
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.NotEquals,
-                            Property = ProfileConditionValue.AudioProfile,
-                            Value = "he-aac"
                         }
                     }
                 }

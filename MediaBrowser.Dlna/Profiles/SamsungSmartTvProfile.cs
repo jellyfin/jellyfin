@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna.Profiles;
-using MediaBrowser.Model.MediaInfo;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -342,12 +341,6 @@ namespace MediaBrowser.Dlna.Profiles
 
             SubtitleProfiles = new[]
             {
-                new SubtitleProfile
-                {
-                    Format = "smi",
-                    Method = SubtitleDeliveryMethod.External,
-                    DidlMode = "CaptionInfoEx"
-                },
                 new SubtitleProfile
                 {
                     Format = "srt",

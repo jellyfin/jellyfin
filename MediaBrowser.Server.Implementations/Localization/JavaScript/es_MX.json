@@ -75,6 +75,7 @@
     "ButtonClose": "Cerrar",
     "LabelAllPlaysSentToPlayer": "Todas las reproducciones se enviaran al reproductor seleccionado.",
     "MessageInvalidUser": "Usuario o contrase\u00f1a inv\u00e1lidos.",
+    "HeaderLoginFailure": "Login Failure",
     "HeaderAllRecordings": "Todas las Grabaciones",
     "RecommendationBecauseYouLike": "Porque te gust\u00f3 {0}",
     "RecommendationBecauseYouWatched": "Porque viste {0}",
@@ -589,7 +590,7 @@
     "DashboardTourUsers": "Cree cuentas f\u00e1cilmente para sus amigos y familia, cada una con sus propios permisos, accesos a la biblioteca, controles parentales y m\u00e1s.",
     "DashboardTourCinemaMode": "El modo cine trae la experiencia del cine directo a su sala de TV con la capacidad de reproducir avances e intros personalizados antes de la presentaci\u00f3n estelar.",
     "DashboardTourChapters": "Active la generaci\u00f3n de im\u00e1genes de cap\u00edtulos de sus videos para una presentaci\u00f3n m\u00e1s agradable al desplegar.",
-    "DashboardTourSubtitles": "Descargue autom\u00e1ticamente subt\u00edtulos para sus videos en cualquier lenguaje.",
+    "DashboardTourSubtitles": "Descargue autom\u00e1ticamente subt\u00edtulos para sus videos en cualquier idioma.",
     "DashboardTourPlugins": "Instale complementos como canales de video de Internet, TV en vivo, buscadores de metadatos y m\u00e1s.",
     "DashboardTourNotifications": "Env\u00ede notificaciones automatizadas de eventos del servidor a sus dispositivos m\u00f3viles, correo electr\u00f3nico y m\u00e1s.",
     "DashboardTourScheduledTasks": "Administre f\u00e1cilmente operaciones de larga duraci\u00f3n con tareas programadas. Decida cuando se ejecutar\u00e1n y con que periodicidad.",
@@ -600,7 +601,9 @@
     "HeaderDeleteDevice": "Eliminar Dispositivo",
     "DeleteDeviceConfirmation": "\u00bfEsta seguro de querer eliminar este dispositivo? Volver\u00e1 a aparecer la siguiente vez que un usuario inicie sesi\u00f3n en \u00e9l.",
     "LabelEnableCameraUploadFor": "Habilitar subida desde la c\u00e1mara para:",
-    "HeaderSelectUploadPath": "Seleccionar trayectoria de subida",
+    "HeaderSelectUploadPath": "Seleccionar ruta de subida",
     "LabelEnableCameraUploadForHelp": "La subida ocurrir\u00e1 autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser.",
-    "ErrorMessageStartHourGreaterThanEnd": "El tiempo de fin debe ser mayor al tiempo de inicio"
+    "ErrorMessageStartHourGreaterThanEnd": "El horario de fin debe ser mayor al de comienzo.",
+    "ButtonLibraryAccess": "Acceso a biblioteca",
+    "ButtonParentalControl": "Control parental"
 }

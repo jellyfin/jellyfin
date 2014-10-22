@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna.Profiles;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -10,13 +10,6 @@ namespace MediaBrowser.Dlna.Profiles
         public XboxOneProfile()
         {
             Name = "Xbox One";
-
-            ModelName = "Windows Media Player Sharing";
-            ModelNumber = "12.0";
-            ModelUrl = "http://www.microsoft.com/";
-            Manufacturer = "Microsoft Corporation";
-            ManufacturerUrl = "http://www.microsoft.com/";
-            XDlnaDoc = "DMS-1.50";
 
             TimelineOffsetSeconds = 40;
             RequiresPlainFolders = true;
@@ -38,9 +31,15 @@ namespace MediaBrowser.Dlna.Profiles
                 },
                 new TranscodingProfile
                 {
+                    Container = "jpeg",
+                    VideoCodec = "jpeg",
+                    Type = DlnaProfileType.Photo
+                },
+                new TranscodingProfile
+                {
                     Container = "ts",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
                     EstimateContentLength = true
                 }
@@ -124,6 +123,28 @@ namespace MediaBrowser.Dlna.Profiles
 
             CodecProfiles = new[]
             {
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        }
+                    }
+                },
+
                 new CodecProfile
                 {
                     Type = CodecType.Video,

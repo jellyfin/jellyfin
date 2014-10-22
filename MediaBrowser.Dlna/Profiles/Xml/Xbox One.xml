@@ -7,14 +7,15 @@
     <Headers />
   </Identification>
   <FriendlyName>Media Browser</FriendlyName>
-  <Manufacturer>Microsoft Corporation</Manufacturer>
-  <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
-  <ModelName>Windows Media Player Sharing</ModelName>
+  <Manufacturer>Media Browser</Manufacturer>
+  <ManufacturerUrl>http://mediabrowser.tv/</ManufacturerUrl>
+  <ModelName>Media Browser</ModelName>
   <ModelDescription>Media Browser</ModelDescription>
-  <ModelNumber>12.0</ModelNumber>
-  <ModelUrl>http://www.microsoft.com/</ModelUrl>
+  <ModelNumber>Media Browser</ModelNumber>
+  <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <DidlAlbumArtLimit xsi:nil="true" />
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
@@ -45,7 +46,8 @@
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
@@ -55,6 +57,12 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
     <CodecProfile type="Video" codec="mpeg4">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />

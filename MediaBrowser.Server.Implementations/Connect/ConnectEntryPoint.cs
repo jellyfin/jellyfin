@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             LoadCachedAddress();
 
-            _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(10), TimeSpan.FromHours(12));
+            _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(10), TimeSpan.FromHours(6));
         }
 
         private async void TimerCallback(object state)

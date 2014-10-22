@@ -67,6 +67,12 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             throw new Error("Must supply a serverAddress");
         }
 
+        console.log('ApiClient serverAddress: ' + serverAddress);
+        console.log('ApiClient clientName: ' + clientName);
+        console.log('ApiClient applicationVersion: ' + applicationVersion);
+        console.log('ApiClient deviceName: ' + deviceName);
+        console.log('ApiClient deviceId: ' + deviceId);
+
         var self = this;
         var currentUserId;
         var accessToken;
@@ -181,9 +187,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return url;
         };
 
-        self.openWebSocket = function (webSocketAddress) {
+        self.openWebSocket = function () {
 
-            var url = webSocketAddress + self.apiPrefix();
+            var url = serverAddress + self.apiPrefix();
+
+            url = url.replace('http', 'ws');
 
             webSocket = new WebSocket(url);
 

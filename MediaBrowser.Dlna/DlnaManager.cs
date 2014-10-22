@@ -528,7 +528,8 @@ namespace MediaBrowser.Dlna
                 new AndroidProfile(),
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
-                new DefaultProfile()
+                new DefaultProfile(),
+                new PopcornHourProfile()
             };
 
             foreach (var item in list)

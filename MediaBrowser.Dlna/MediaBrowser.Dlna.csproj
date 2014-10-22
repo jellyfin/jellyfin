@@ -75,6 +75,7 @@
     <Compile Include="PlayTo\PlayToController.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
+    <Compile Include="Profiles\PopcornHourProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
     <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
@@ -193,6 +194,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Dish Hopper-Joey.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

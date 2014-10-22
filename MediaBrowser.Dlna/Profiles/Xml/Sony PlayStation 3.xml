@@ -17,6 +17,7 @@
   <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <DidlAlbumArtLimit>1</DidlAlbumArtLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_TN</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
@@ -37,8 +38,12 @@
   <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="mp3,wma" type="Audio" />
-    <DirectPlayProfile container="avi,mp4" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="mp2,mp3" videoCodec="mpeg4" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="ac3,mp2,mp3,aac" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="mpeg" audioCodec="mp2" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="aac,mp3,wav" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
@@ -77,12 +82,6 @@
     <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="false" />
-      </Conditions>
-    </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="aac">
-      <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
-        <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="true" />
       </Conditions>
     </CodecProfile>
   </CodecProfiles>

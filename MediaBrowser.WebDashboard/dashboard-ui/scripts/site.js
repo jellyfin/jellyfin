@@ -100,6 +100,9 @@ var Dashboard = {
     serverAddress: function (val) {
 
         if (val != null) {
+
+            console.log('Setting server address to: ' + val);
+
             store.setItem('serverAddress', val);
         }
 
@@ -776,15 +779,7 @@ var Dashboard = {
             return;
         }
 
-        var location = window.location;
-
-        var webSocketUrl = "ws://" + location.hostname;
-
-        if (location.port) {
-            webSocketUrl += ':' + location.port;
-        }
-
-        ApiClient.openWebSocket(webSocketUrl);
+        ApiClient.openWebSocket();
     },
 
     onWebSocketOpened: function () {

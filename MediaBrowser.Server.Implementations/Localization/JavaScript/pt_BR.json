@@ -74,7 +74,8 @@
     "ButtonMarkTheseRead": "Marcar como lida",
     "ButtonClose": "Fechar",
     "LabelAllPlaysSentToPlayer": "Todas as reprodu\u00e7\u00f5es ser\u00e3o enviadas para o reprodutor selecionado.",
-    "MessageInvalidUser": "Usu\u00e1rio ou senha inv\u00e1lido",
+    "MessageInvalidUser": "Invalid username or password. Please try again.",
+    "HeaderLoginFailure": "Login Failure",
     "HeaderAllRecordings": "Todas as Grava\u00e7\u00f5es",
     "RecommendationBecauseYouLike": "Porque voc\u00ea gosta de {0}",
     "RecommendationBecauseYouWatched": "Porque voc\u00ea assistiu {0}",
@@ -602,5 +603,7 @@
     "LabelEnableCameraUploadFor": "Habilitar envio atrav\u00e9s de c\u00e2mera para:",
     "HeaderSelectUploadPath": "Selecione o caminho para carga",
     "LabelEnableCameraUploadForHelp": "Cargas ser\u00e3o executadas automaticamente em retaguarda quando logar no Media Browser.",
-    "ErrorMessageStartHourGreaterThanEnd": "O tempo final deve ser maior que o tempo inicial."
+    "ErrorMessageStartHourGreaterThanEnd": "O tempo final deve ser maior que o tempo inicial.",
+    "ButtonLibraryAccess": "Library access",
+    "ButtonParentalControl": "Parental control"
 }

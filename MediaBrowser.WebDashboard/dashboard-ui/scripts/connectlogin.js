@@ -37,6 +37,7 @@
 
         }).done(function (result) {
 
+            Dashboard.serverAddress(server.Url);
             Dashboard.setCurrentUser(result.LocalUserId, result.AccessToken);
 
             window.location = 'index.html';
