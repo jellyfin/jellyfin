@@ -205,8 +205,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = _supportsNativeWebSocket && NativeWebSocket.IsSupported
-                ? _listener = new HttpListenerServer(_logger, OnRequestReceived)
-                //? _listener = new WebSocketSharpListener(_logger, OnRequestReceived)
+                //? _listener = new HttpListenerServer(_logger, OnRequestReceived)
+                ? _listener = new WebSocketSharpListener(_logger, OnRequestReceived)
                 : _listener = new WebSocketSharpListener(_logger, OnRequestReceived);
 
             _listener.WebSocketHandler = WebSocketHandler;
