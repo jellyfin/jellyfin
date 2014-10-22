@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -63,25 +64,31 @@ namespace MediaBrowser.Dlna.Didl
 
             result.AppendChild(didl);
 
-            result.DocumentElement.AppendChild(GetItemElement(result, item, context, deviceId, filter, streamInfo));
+            result.DocumentElement.AppendChild(GetItemElement(result, item, context, null, deviceId, filter, streamInfo));
 
             return result.DocumentElement.OuterXml;
         }
 
-        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
+            var clientId = GetClientId(item, null);
+
             var element = doc.CreateElement(string.Empty, "item", NS_DIDL);
             element.SetAttribute("restricted", "1");
-            element.SetAttribute("id", item.Id.ToString("N"));
+            element.SetAttribute("id", clientId);
 
-            if (item.Parent != null)
+            if (context != null)
             {
-                element.SetAttribute("parentID", item.Parent.Id.ToString("N"));
+                element.SetAttribute("parentID", GetClientId(context, contextStubType));
+            }
+            else if (item.Parent != null)
+            {
+                element.SetAttribute("parentID", GetClientId(item.Parent, null));
             }
 
             //AddBookmarkInfo(item, user, element);
 
-            AddGeneralProperties(item, context, element, filter);
+            AddGeneralProperties(item, null, context, element, filter);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -111,14 +118,14 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _user == null ? video.GetMediaSources(true).ToList() : video.GetMediaSources(true, _user).ToList();
 
-               streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
-               {
-                   ItemId = video.Id.ToString("N"),
-                   MediaSources = sources,
-                   Profile = _profile,
-                   DeviceId = deviceId,
-                   MaxBitrate = _profile.MaxStreamingBitrate
-               });
+                streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+                {
+                    ItemId = GetClientId(video),
+                    MediaSources = sources,
+                    Profile = _profile,
+                    DeviceId = deviceId,
+                    MaxBitrate = _profile.MaxStreamingBitrate
+                });
             }
 
             var targetWidth = streamInfo.TargetWidth;
@@ -311,7 +318,7 @@ namespace MediaBrowser.Dlna.Didl
 
             return item.Name;
         }
-        
+
         private void AddAudioResource(XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
@@ -322,7 +329,7 @@ namespace MediaBrowser.Dlna.Didl
 
                 streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
                {
-                   ItemId = audio.Id.ToString("N"),
+                   ItemId = GetClientId(audio),
                    MediaSources = sources,
                    Profile = _profile,
                    DeviceId = deviceId
@@ -403,8 +410,8 @@ namespace MediaBrowser.Dlna.Didl
 
         public static bool IsIdRoot(string id)
         {
-            if (string.IsNullOrWhiteSpace(id) || 
-                
+            if (string.IsNullOrWhiteSpace(id) ||
+
                 string.Equals(id, "0", StringComparison.OrdinalIgnoreCase)
 
                 // Samsung sometimes uses 1 as root
@@ -416,12 +423,14 @@ namespace MediaBrowser.Dlna.Didl
             return false;
         }
 
-        public XmlElement GetFolderElement(XmlDocument doc, BaseItem folder, int childCount, Filter filter, string requestedId = null)
+        public XmlElement GetFolderElement(XmlDocument doc, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
             var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
             container.SetAttribute("restricted", "0");
             container.SetAttribute("searchable", "1");
             container.SetAttribute("childCount", childCount.ToString(_usCulture));
+
+            var clientId = GetClientId(folder, stubType);
 
             if (string.Equals(requestedId, "0"))
             {
@@ -430,20 +439,20 @@ namespace MediaBrowser.Dlna.Didl
             }
             else
             {
-                container.SetAttribute("id", folder.Id.ToString("N"));
+                container.SetAttribute("id", clientId);
 
-                var parent = folder.Parent;
+                var parent = context ?? folder.Parent;
                 if (parent == null)
                 {
                     container.SetAttribute("parentID", "0");
                 }
                 else
                 {
-                    container.SetAttribute("parentID", parent.Id.ToString("N"));
+                    container.SetAttribute("parentID", GetClientId(parent, null));
                 }
             }
 
-            AddCommonFields(folder, null, container, filter);
+            AddCommonFields(folder, stubType, null, container, filter);
 
             AddCover(folder, container);
 
@@ -466,10 +475,11 @@ namespace MediaBrowser.Dlna.Didl
         /// Adds fields used by both items and folders
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="itemStubType">Type of the item stub.</param>
         /// <param name="context">The context.</param>
         /// <param name="element">The element.</param>
         /// <param name="filter">The filter.</param>
-        private void AddCommonFields(BaseItem item, BaseItem context, XmlElement element, Filter filter)
+        private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlElement element, Filter filter)
         {
             // Don't filter on dc:title because not all devices will include it in the filter
             // MediaMonkey for example won't display content without a title
@@ -478,7 +488,7 @@ namespace MediaBrowser.Dlna.Didl
                 AddValue(element, "dc", "title", GetDisplayName(item, context), NS_DC);
             }
 
-            element.AppendChild(CreateObjectClass(element.OwnerDocument, item));
+            element.AppendChild(CreateObjectClass(element.OwnerDocument, item, itemStubType));
 
             if (filter.Contains("dc:date"))
             {
@@ -539,14 +549,14 @@ namespace MediaBrowser.Dlna.Didl
             AddPeople(item, element);
         }
 
-        private XmlElement CreateObjectClass(XmlDocument result, BaseItem item)
+        private XmlElement CreateObjectClass(XmlDocument result, BaseItem item, StubType? stubType)
         {
             // More types here
             // http://oss.linn.co.uk/repos/Public/LibUpnpCil/DidlLite/UpnpAv/Test/TestDidlLite.cs
 
             var objectClass = result.CreateElement("upnp", "class", NS_UPNP);
 
-            if (item.IsFolder)
+            if (item.IsFolder || stubType.HasValue)
             {
                 string classType = null;
 
@@ -560,7 +570,7 @@ namespace MediaBrowser.Dlna.Didl
                     {
                         classType = "object.container.person.musicArtist";
                     }
-                    else if (item is Series || item is Season || item is BoxSet)
+                    else if (item is Series || item is Season || item is BoxSet || item is Video)
                     {
                         classType = "object.container.album.videoAlbum";
                     }
@@ -628,9 +638,9 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddGeneralProperties(BaseItem item, BaseItem context, XmlElement element, Filter filter)
+        private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlElement element, Filter filter)
         {
-            AddCommonFields(item, context, element, filter);
+            AddCommonFields(item, itemStubType, context, element, filter);
 
             var audio = item as Audio;
 
@@ -773,20 +783,26 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddImageResElement(item, element, 4096, 4096, playbackPercentage, "jpg", "JPEG_LRG");
-            AddImageResElement(item, element, 4096, 4096, playbackPercentage, "png", "PNG_LRG");
-            AddImageResElement(item, element, 1024, 768, playbackPercentage, "jpg", "JPEG_MED");
-            AddImageResElement(item, element, 640, 480, playbackPercentage, "jpg", "JPEG_SM");
+            var imageLimit = _profile.DidlAlbumArtLimit ?? 100;
+
             AddImageResElement(item, element, 160, 160, playbackPercentage, "jpg", "JPEG_TN");
-            AddImageResElement(item, element, 160, 160, playbackPercentage, "png", "PNG_TN");
+
+            if (imageLimit > 1)
+            {
+                AddImageResElement(item, element, 4096, 4096, playbackPercentage, "jpg", "JPEG_LRG");
+                AddImageResElement(item, element, 1024, 768, playbackPercentage, "jpg", "JPEG_MED");
+                AddImageResElement(item, element, 640, 480, playbackPercentage, "jpg", "JPEG_SM");
+                AddImageResElement(item, element, 4096, 4096, playbackPercentage, "png", "PNG_LRG");
+                AddImageResElement(item, element, 160, 160, playbackPercentage, "png", "PNG_TN");
+            }
         }
 
-        private void AddImageResElement(BaseItem item, 
-            XmlElement element, 
-            int maxWidth, 
-            int maxHeight, 
+        private void AddImageResElement(BaseItem item,
+            XmlElement element,
+            int maxWidth,
+            int maxHeight,
             int playbackPercentage,
-            string format, 
+            string format,
             string org_Pn)
         {
             var imageInfo = GetImageInfo(item);
@@ -918,6 +934,25 @@ namespace MediaBrowser.Dlna.Didl
 
             internal int? Width;
             internal int? Height;
+        }
+
+        public static string GetClientId(BaseItem item, StubType? stubType)
+        {
+            var id = item.Id.ToString("N");
+
+            if (stubType.HasValue)
+            {
+                id = stubType.Value.ToString().ToLower() + "_" + id;
+            }
+
+            return id;
+        }
+
+        public static string GetClientId(IHasMediaSources item)
+        {
+            var id = item.Id.ToString("N");
+
+            return id;
         }
 
         private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, int playbackPercentage, string format)

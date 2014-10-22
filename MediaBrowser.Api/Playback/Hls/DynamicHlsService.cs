@@ -367,16 +367,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
-            if (string.Equals(request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Audio codec copy is not allowed here.");
-            }
-
-            if (string.Equals(request.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Video codec copy is not allowed here.");
-            }
-
             if (string.IsNullOrEmpty(request.MediaSourceId))
             {
                 throw new ArgumentException("MediaSourceId is required");
@@ -638,7 +628,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
+                return state.VideoStream != null && IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",

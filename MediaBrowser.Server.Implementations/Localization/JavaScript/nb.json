@@ -74,7 +74,8 @@
     "ButtonMarkTheseRead": "Maker disse som lest",
     "ButtonClose": "Lukk",
     "LabelAllPlaysSentToPlayer": "All avspill vil bli sendt til den valgte spilleren.",
-    "MessageInvalidUser": "Ugyldig bruker eller passord.",
+    "MessageInvalidUser": "Invalid username or password. Please try again.",
+    "HeaderLoginFailure": "Login Failure",
     "HeaderAllRecordings": "Alle Opptak",
     "RecommendationBecauseYouLike": "Fordi du liker {0}",
     "RecommendationBecauseYouWatched": "Fordi du s\u00e5 {0}",
@@ -602,5 +603,7 @@
     "LabelEnableCameraUploadFor": "Enable camera upload for:",
     "HeaderSelectUploadPath": "Select Upload Path",
     "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser.",
-    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time.",
+    "ButtonLibraryAccess": "Library access",
+    "ButtonParentalControl": "Parental control"
 }

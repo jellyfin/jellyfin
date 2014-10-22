@@ -94,6 +94,8 @@ namespace MediaBrowser.Common.Net
         public CacheMode CacheMode { get; set; }
         public TimeSpan CacheLength { get; set; }
 
+        public int TimeoutMs { get; set; }
+
         private string GetHeaderValue(string name)
         {
             string value;
@@ -115,6 +117,8 @@ namespace MediaBrowser.Common.Net
 
             LogRequest = true;
             CacheMode = CacheMode.None;
+
+            TimeoutMs = 20000;
         }
 
         public void SetPostData(IDictionary<string,string> values)

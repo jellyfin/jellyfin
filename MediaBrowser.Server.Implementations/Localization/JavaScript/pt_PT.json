@@ -74,7 +74,8 @@
     "ButtonMarkTheseRead": "Mark these read",
     "ButtonClose": "Close",
     "LabelAllPlaysSentToPlayer": "All plays will be sent to the selected player.",
-    "MessageInvalidUser": "Invalid user or password.",
+    "MessageInvalidUser": "Invalid username or password. Please try again.",
+    "HeaderLoginFailure": "Login Failure",
     "HeaderAllRecordings": "Todas as Grava\u00e7\u00f5es",
     "RecommendationBecauseYouLike": "Because you like {0}",
     "RecommendationBecauseYouWatched": "Because you watched {0}",
@@ -602,5 +603,7 @@
     "LabelEnableCameraUploadFor": "Enable camera upload for:",
     "HeaderSelectUploadPath": "Select Upload Path",
     "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser.",
-    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time.",
+    "ButtonLibraryAccess": "Library access",
+    "ButtonParentalControl": "Parental control"
 }

@@ -1254,5 +1254,6 @@
     "HeaderTrailerReelHelp": "Start a trailer reel to play a long running playlist of trailers.",
     "MessageNoTrailersFound": "No trailers found. Install the Trailer channel plugin to import a library of internet trailers.",
     "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "ButtonSignUp": "Sign up",
+    "ButtonForgotPassword": "Forgot password?"
 }

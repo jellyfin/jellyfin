@@ -75,6 +75,7 @@
     "ButtonClose": "Zav\u0159\u00edt",
     "LabelAllPlaysSentToPlayer": "All plays will be sent to the selected player.",
     "MessageInvalidUser": "Neplatn\u00e9 u\u017eivatelsk\u00e9 jm\u00e9no nebo heslo.",
+    "HeaderLoginFailure": "Login Failure",
     "HeaderAllRecordings": "V\u0161echna nahr\u00e1v\u00e1n\u00ed",
     "RecommendationBecauseYouLike": "Proto\u017ee se v\u00e1m l\u00edb\u00ed {0}",
     "RecommendationBecauseYouWatched": "Proto\u017ee jste sledovali {0}",
@@ -602,5 +603,7 @@
     "LabelEnableCameraUploadFor": "Enable camera upload for:",
     "HeaderSelectUploadPath": "Select Upload Path",
     "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser.",
-    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time."
+    "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time.",
+    "ButtonLibraryAccess": "Library access",
+    "ButtonParentalControl": "Parental control"
 }
