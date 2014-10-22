@@ -12,8 +12,6 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Xbox One";
 
             TimelineOffsetSeconds = 40;
-            RequiresPlainFolders = true;
-            RequiresPlainVideoItems = true;
             
             Identification = new DeviceIdentification
             {
