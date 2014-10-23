@@ -81,6 +81,12 @@ namespace MediaBrowser.Controller.Session
         public DateTime LastActivityDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the last playback check in.
+        /// </summary>
+        /// <value>The last playback check in.</value>
+        public DateTime LastPlaybackCheckIn { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>

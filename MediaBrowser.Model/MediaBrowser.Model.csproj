@@ -402,7 +402,6 @@
     <Compile Include="Updates\PackageInfo.cs" />
     <Compile Include="Updates\PackageVersionInfo.cs" />
     <Compile Include="Users\AuthenticationResult.cs" />
-    <Compile Include="Weather\WeatherUnits.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
     <None Include="MediaBrowser.Model.snk" />

@@ -44,6 +44,10 @@
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
         };
 
+        self.getCurrentSrc = function (mediaElement) {
+            return mediaElement.currentSrc;
+        };
+
         self.getCurrentTicks = function (mediaElement) {
 
             var playerTime = Math.floor(10000000 * (mediaElement || self.currentMediaElement).currentTime);
@@ -262,7 +266,7 @@
                 return false;
             }
 
-            if (mediaSource.Protocol.toLowerCase() == "rtmp") {
+            if (mediaSource.Protocol.toLowerCase() == "rtmp" || mediaSource.Protocol.toLowerCase() == "rtsp") {
                 //console.log('Transcoding because the content is not a video file');
                 return false;
             }
@@ -286,6 +290,11 @@
 
             if (subtitleStream && (subtitleStream.IsGraphicalSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
+                return false;
+            }
+
+            if (videoStream.IsCabac != null && !videoStream.IsCabac) {
+                console.log('Video not CABAC');
                 return false;
             }
 
@@ -770,13 +779,17 @@
             self.setVolume(self.getSavedVolume() * 100);
         };
 
+        self.volume = function() {
+            return self.currentMediaElement.volume * 100;
+        };
+
         self.toggleMute = function () {
 
             if (self.currentMediaElement) {
 
                 console.log('MediaPlayer toggling mute');
 
-                if (self.currentMediaElement.volume) {
+                if (self.volume()) {
                     self.mute();
                 } else {
                     self.unMute();
@@ -787,14 +800,14 @@
         self.volumeDown = function () {
 
             if (self.currentMediaElement) {
-                self.setVolume(Math.max(self.currentMediaElement.volume - .02, 0) * 100);
+                self.setVolume(Math.max(self.volume() - 2, 0));
             }
         };
 
         self.volumeUp = function () {
 
             if (self.currentMediaElement) {
-                self.setVolume(Math.min(self.currentMediaElement.volume + .02, 1) * 100);
+                self.setVolume(Math.min(self.volume() + 2, 100));
             }
         };
 

@@ -452,7 +452,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "tvstudios.js",
                                 "tvupcoming.js",
                                 "useredit.js",
-                                "userpassword.js",
                                 "myprofile.js",
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",

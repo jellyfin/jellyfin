@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
 using System;
@@ -49,9 +48,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            var task = WriteToAsync(responseStream);
-
-            Task.WaitAll(task);
+            WriteToInternal(responseStream);
         }
 
         /// <summary>
@@ -59,12 +56,12 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
         /// <returns>Task.</returns>
-        public async Task WriteToAsync(Stream responseStream)
+        private void WriteToInternal(Stream responseStream)
         {
             try
             {
-                await new ProgressiveFileCopier(_fileSystem, _job)
-                    .StreamFile(Path, responseStream).ConfigureAwait(false);
+                new ProgressiveFileCopier(_fileSystem, _job)
+                    .StreamFile(Path, responseStream);
             }
             catch (Exception ex)
             {
@@ -95,16 +92,16 @@ namespace MediaBrowser.Api.Playback.Progressive
             _job = job;
         }
 
-        public async Task StreamFile(string path, Stream outputStream)
+        public void StreamFile(string path, Stream outputStream)
         {
             var eofCount = 0;
             long position = 0;
 
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, false))
             {
                 while (eofCount < 15)
                 {
-                    await CopyToAsyncInternal(fs, outputStream, 81920, CancellationToken.None).ConfigureAwait(false);
+                    CopyToInternal(fs, outputStream, 81920);
 
                     var fsPosition = fs.Position;
 
@@ -118,7 +115,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                         {
                             eofCount++;
                         }
-                        await Task.Delay(100).ConfigureAwait(false);
+                        var task = Task.Delay(100);
+                        Task.WaitAll(task);
                     }
                     else
                     {
@@ -130,13 +128,13 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
         }
 
-        private async Task CopyToAsyncInternal(Stream source, Stream destination, int bufferSize, CancellationToken cancellationToken)
+        private void CopyToInternal(Stream source, Stream destination, int bufferSize)
         {
             byte[] array = new byte[bufferSize];
             int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((count = source.Read(array, 0, array.Length)) != 0)
             {
-                await destination.WriteAsync(array, 0, count, cancellationToken).ConfigureAwait(false);
+                destination.Write(array, 0, count);
 
                 _bytesWritten += count;
 

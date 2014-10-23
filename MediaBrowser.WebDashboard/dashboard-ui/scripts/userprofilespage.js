@@ -322,10 +322,40 @@
         }).done(function (result) {
 
             $('#popupInvite').popup('close');
-            loadData(page);
+
+            Dashboard.hideLoadingMsg();
+
+            showNewUserInviteMessage(page, result);
 
         });
 
+    }
+
+    function showNewUserInviteMessage(page, result) {
+
+        if (!result.IsNewUserInvitation && !result.IsPending) {
+
+            // It was immediately approved
+            loadData(page);
+            return;
+        }
+
+        var message = result.IsNewUserInvitation ?
+            Globalize.translate('MessageInvitationSentToNewUser', result.GuestDisplayName) :
+            Globalize.translate('MessageInvitationSentToUser', result.GuestDisplayName);
+
+        // Need a timeout because jquery mobile will not show a popup while a previous one is in the act of closing
+        setTimeout(function () {
+
+            Dashboard.alert({
+                message: message,
+                title: Globalize.translate('HeaderInvitationSent'),
+                callback: function () {
+                    loadData(page);
+                }
+            });
+
+        }, 300);
     }
 
     function showInvitePopup(page) {

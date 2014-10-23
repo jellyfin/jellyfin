@@ -1088,9 +1088,6 @@
     <Compile Include="..\MediaBrowser.Model\Users\AuthenticationResult.cs">
       <Link>Users\AuthenticationResult.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
-      <Link>Weather\WeatherUnits.cs</Link>
-    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>

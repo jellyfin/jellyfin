@@ -53,8 +53,68 @@
 
         </form>
 
+        <br />
+
+        <form class="updatePasswordForm passwordSection" style="display:none;margin: 0 auto 2em;">
+
+            <div data-role="collapsible" data-collapsed="false">
+                <h2>${HeaderPassword}</h2>
+                <div>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li id="fldCurrentPassword" style="display: none;">
+                            <label for="txtCurrentPassword">${LabelCurrentPassword}</label>
+                            <input type="password" id="txtCurrentPassword" name="txtCurrentPassword" />
+                        </li>
+                        <li>
+                            <label for="txtNewPassword">${LabelNewPassword}</label>
+                            <input type="password" id="txtNewPassword" name="txtNewPassword" />
+                        </li>
+                        <li>
+                            <label for="txtNewPasswordConfirm">${LabelNewPasswordConfirm}</label>
+                            <input type="password" id="txtNewPasswordConfirm" name="txtNewPasswordConfirm" />
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                            <div id="btnResetPassword" style="display: none;">
+                                <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();">
+                                    ${ButtonResetPassword}
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+        <form class="localAccessForm localAccessSection" style="margin: 0 auto;">
+            <div data-role="collapsible">
+                <h2>${HeaderLocalAccess}</h2>
+                <div>
+                    <br />
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="chkEnableLocalAccessWithoutPassword">${LabelAllowLocalAccessWithoutPassword}</label>
+                            <input type="checkbox" id="chkEnableLocalAccessWithoutPassword" />
+                            <div class="fieldDescription">${LabelAllowLocalAccessWithoutPasswordHelp}</div>
+                        </li>
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check">
+                                ${ButtonSave}
+                            </button>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </form>
+
         <script type="text/javascript">
             $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
+            $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);
+            $('.localAccessForm').off('submit', UpdatePasswordPage.onLocalAccessSubmit).on('submit', UpdatePasswordPage.onLocalAccessSubmit);
         </script>
     </div>
 </body>

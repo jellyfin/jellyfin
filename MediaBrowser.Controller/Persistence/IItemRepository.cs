@@ -33,13 +33,20 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task DeleteItem(Guid id, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the critic reviews.
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <returns>Task{IEnumerable{ItemReview}}.</returns>
         IEnumerable<ItemReview> GetCriticReviews(Guid itemId);
+
+        /// <summary>
+        /// Gets the children items.
+        /// </summary>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> GetChildrenItems(Guid parentId);
 
         /// <summary>
         /// Saves the critic reviews.
@@ -101,7 +108,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="type">The type.</param>
         /// <returns>IEnumerable{Guid}.</returns>
         IEnumerable<BaseItem> GetItemsOfType(Type type);
-        
+
         /// <summary>
         /// Saves the children.
         /// </summary>

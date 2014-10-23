@@ -26,6 +26,15 @@
     height: auto;
 }
 
+.videoCanvas {
+    background-color: #000;
+    position: fixed;
+    top: 200px;
+    bottom: 200px;
+    left: 200px;
+    right: 200px;
+}
+
 .videoControls {
     padding: 0 .5em;
     background-color: rgba(0, 0, 0, .8);

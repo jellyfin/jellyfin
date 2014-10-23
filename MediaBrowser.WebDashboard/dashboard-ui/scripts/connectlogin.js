@@ -16,15 +16,29 @@
 
     function connectToServerInstance(server) {
 
-        var url = server.Url;
+        connectToServerAtUrl(server, server.Url).fail(function () {
+
+            if (server.LocalAddress) {
+                connectToServerAtUrl(server, server.LocalAddress).fail(showServerConnectionFailure);
+
+            } else {
+                showServerConnectionFailure();
+            }
+        });
+    }
+
+    function showServerConnectionFailure() {
+        alert('Unable to communicate with your server.');
+    }
+
+    function connectToServerAtUrl(server, url) {
+
         var exchangeToken = server.AccessKey;
 
-        url += "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + ConnectionManager.connectUserId();
-
-        $.ajax({
+        return $.ajax({
 
             type: "GET",
-            url: url,
+            url: url + "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + ConnectionManager.connectUserId(),
             dataType: "json",
 
             error: function () {
@@ -37,14 +51,10 @@
 
         }).done(function (result) {
 
-            Dashboard.serverAddress(server.Url);
+            Dashboard.serverAddress(url);
             Dashboard.setCurrentUser(result.LocalUserId, result.AccessToken);
 
             window.location = 'index.html';
-
-        }).fail(function (result) {
-
-            alert('Error talking to MBS');
 
         });
     }

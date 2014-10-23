@@ -1282,6 +1282,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
             }
 
+            if (stream.IsCabac != null) {
+                attributes.push(createAttribute(Globalize.translate('CABAC'), (stream.IsCabac ? 'Yes' : 'No')));
+            }
+
             html += attributes.join('<br/>');
 
             html += '</div>';

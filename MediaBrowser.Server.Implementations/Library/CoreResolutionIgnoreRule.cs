@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 

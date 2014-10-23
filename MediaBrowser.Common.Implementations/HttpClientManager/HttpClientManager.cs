@@ -434,21 +434,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 throw exception;
             }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (WebException ex)
-            {
-                throw GetException(ex, options);
-            }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw;
+                throw GetException(ex, options);
             }
             finally
             {
@@ -636,21 +624,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     return GetResponseInfo(httpResponse, tempFile, contentLength);
                 }
             }
-            catch (OperationCanceledException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
-            catch (WebException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
             catch (Exception ex)
             {
-                throw GetTempFileException(ex, options, tempFile);
+                DeleteTempFile(tempFile);
+                throw GetException(ex, options);
             }
             finally
             {
@@ -675,44 +652,25 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Handles the temp file exception.
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="tempFile">The temp file.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="HttpException"></exception>
-        private Exception GetTempFileException(Exception ex, HttpRequestOptions options, string tempFile)
+        private Exception GetException(Exception ex, HttpRequestOptions options)
         {
-            var operationCanceledException = ex as OperationCanceledException;
+            var webException = ex as WebException
+                ?? ex.InnerException as WebException;
+
+            if (webException != null)
+            {
+                return GetException(webException, options);
+            }
+
+            var operationCanceledException = ex as OperationCanceledException
+                ?? ex.InnerException as OperationCanceledException;
 
             if (operationCanceledException != null)
             {
-                // Cleanup
-                DeleteTempFile(tempFile);
-
                 return GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
             }
 
             _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-            // Cleanup
-            DeleteTempFile(tempFile);
-
-            var httpRequestException = ex as HttpRequestException;
-
-            if (httpRequestException != null)
-            {
-                return new HttpException(ex.Message, ex);
-            }
-
-            var webException = ex as WebException;
-
-            if (webException != null)
-            {
-                throw GetException(webException, options);
-            }
 
             return ex;
         }
