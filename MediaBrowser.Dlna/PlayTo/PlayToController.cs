@@ -452,19 +452,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private void AddItemFromId(Guid id, List<BaseItem> list)
         {
             var item = _libraryManager.GetItemById(id);
-            if (item.IsFolder)
+            if (item.MediaType == MediaType.Audio || item.MediaType == MediaType.Video)
             {
-                foreach (var childId in _itemRepository.GetChildren(item.Id))
-                {
-                    AddItemFromId(childId, list);
-                }
-            }
-            else
-            {
-                if (item.MediaType == MediaType.Audio || item.MediaType == MediaType.Video)
-                {
-                    list.Add(item);
-                }
+                list.Add(item);
             }
         }
 
@@ -537,6 +527,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic,
+                    streamInfo.IsTargetCabac,
                     streamInfo.TargetRefFrames);
 
                 return list.FirstOrDefault();

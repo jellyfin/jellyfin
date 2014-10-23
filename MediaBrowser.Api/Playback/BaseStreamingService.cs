@@ -1978,6 +1978,7 @@ namespace MediaBrowser.Api.Playback
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
+                state.IsTargetCabac,
                 state.TargetRefFrames);
 
             if (mediaProfile != null)
@@ -2067,6 +2068,7 @@ namespace MediaBrowser.Api.Playback
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic,
+                    state.IsTargetCabac,
                     state.TargetRefFrames
 
                     ).FirstOrDefault() ?? string.Empty;

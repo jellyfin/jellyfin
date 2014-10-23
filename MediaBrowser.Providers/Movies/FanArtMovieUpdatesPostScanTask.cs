@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Movies
 {
     class FanartMovieUpdatesPostScanTask : ILibraryPostScanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmovies/{0}/{1}/";
+        private const string UpdatesUrl = "http://webservice.fanart.tv/v3/movies/latest?api_key={0}&date={1}";
 
         /// <summary>
         /// The _HTTP client
@@ -118,11 +118,26 @@ namespace MediaBrowser.Providers.Movies
                         return new List<string>();
                     }
 
-                    var updates = _jsonSerializer.DeserializeFromString<List<FanartUpdatesPostScanTask.FanArtUpdate>>(json);
+                    var updates = _jsonSerializer.DeserializeFromString<List<RootObject>>(json);
 
                     var existingDictionary = existingIds.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-                    return updates.Select(i => i.id).Where(existingDictionary.ContainsKey);
+                    return updates.SelectMany(i =>
+                    {
+                        var list = new List<string>();
+
+                        if (!string.IsNullOrWhiteSpace(i.imdb_id))
+                        {
+                            list.Add(i.imdb_id);
+                        }
+                        if (!string.IsNullOrWhiteSpace(i.tmdb_id))
+                        {
+                            list.Add(i.tmdb_id);
+                        }
+
+                        return list;
+
+                    }).Where(existingDictionary.ContainsKey);
                 }
             }
         }
@@ -136,7 +151,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 _logger.Info("Updating movie " + id);
 
-                await FanartMovieImageProvider.Current.DownloadMovieXml(id, cancellationToken).ConfigureAwait(false);
+                await FanartMovieImageProvider.Current.DownloadMovieJson(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -157,9 +172,10 @@ namespace MediaBrowser.Providers.Movies
             return (dateTime - new DateTime(1970, 1, 1).ToUniversalTime()).TotalSeconds;
         }
 
-        public class FanArtUpdate
+        public class RootObject
         {
-            public string id { get; set; }
+            public string tmdb_id { get; set; }
+            public string imdb_id { get; set; }
             public string name { get; set; }
             public string new_images { get; set; }
             public string total_images { get; set; }

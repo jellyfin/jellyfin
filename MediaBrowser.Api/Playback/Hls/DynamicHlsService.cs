@@ -501,7 +501,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private void AppendPlaylist(StringBuilder builder, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + bitrate.ToString(UsCulture);
+            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(UsCulture);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {

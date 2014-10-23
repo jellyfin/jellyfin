@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.TV
 {
     class FanArtTvUpdatesPostScanTask : ILibraryPostScanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newtv/{0}/{1}/";
+        private const string UpdatesUrl = "http://webservice.fanart.tv/v3/tv/latest?api_key={0}&date={1}";
 
         /// <summary>
         /// The _HTTP client
@@ -150,7 +150,7 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("Updating series " + id);
 
-                await FanartSeriesProvider.Current.DownloadSeriesXml(id, cancellationToken).ConfigureAwait(false);
+                await FanartSeriesProvider.Current.DownloadSeriesJson(id, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

@@ -456,6 +456,19 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public bool? IsTargetCabac
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? null : TargetVideoStream.IsCabac;
+                }
+
+                return true;
+            }
+        }
+
         public int? TargetWidth
         {
             get

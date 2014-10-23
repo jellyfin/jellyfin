@@ -246,7 +246,7 @@ namespace MediaBrowser.Controller.Resolvers
 
             if (config.UseFileCreationTimeForDateAdded)
             {
-                item.DateModified = fileSystem.GetCreationTimeUtc(info);
+                item.DateCreated = fileSystem.GetCreationTimeUtc(info);
             }
             else
             {

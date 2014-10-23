@@ -2,7 +2,6 @@
 using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -41,22 +40,7 @@ namespace MediaBrowser.Api.Playback
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            var task = WriteToAsync(responseStream);
-
-            Task.WaitAll(task);
-        }
-
-        /// <summary>
-        /// Writes to async.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <returns>Task.</returns>
-        public async Task WriteToAsync(Stream responseStream)
-        {
-            using (_response)
-            {
-                await _response.Content.CopyToAsync(responseStream, 819200).ConfigureAwait(false);
-            }
+            _response.Content.CopyTo(responseStream, 819200);
         }
     }
 }

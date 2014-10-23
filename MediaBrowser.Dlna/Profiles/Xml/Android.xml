@@ -51,6 +51,7 @@
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
         <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="Equals" property="IsCabac" value="true" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="Video">
