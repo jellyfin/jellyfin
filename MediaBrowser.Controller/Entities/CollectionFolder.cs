@@ -74,7 +74,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 FileInfo = new DirectoryInfo(path),
                 Path = path,
-                Parent = Parent
+                Parent = Parent,
+                CollectionType = CollectionType
             };
 
             // Gather child folder and files

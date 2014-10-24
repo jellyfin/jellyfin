@@ -284,7 +284,7 @@ namespace MediaBrowser.Controller.Library
                 {
                     if (IsSeasonFolder(child.FullName, directoryService, fileSystem))
                     {
-                        logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
+                        //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
                         return true;
                     }
 

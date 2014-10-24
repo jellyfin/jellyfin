@@ -141,6 +141,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
+                var localAddress = _appHost.GetSystemInfo().LocalAddress;
+
                 var hasExistingRecord = !string.IsNullOrWhiteSpace(ConnectServerId) &&
                                   !string.IsNullOrWhiteSpace(ConnectAccessKey);
 
@@ -150,11 +152,12 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     try
                     {
-                        await UpdateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                        await UpdateServerRegistration(wanApiAddress, localAddress).ConfigureAwait(false);
                     }
                     catch (HttpException ex)
                     {
-                        if (!ex.StatusCode.HasValue || !new[] { HttpStatusCode.NotFound, HttpStatusCode.Unauthorized }.Contains(ex.StatusCode.Value))
+                        if (!ex.StatusCode.HasValue ||
+                            !new[] { HttpStatusCode.NotFound, HttpStatusCode.Unauthorized }.Contains(ex.StatusCode.Value))
                         {
                             throw;
                         }
@@ -165,7 +168,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (createNewRegistration)
                 {
-                    await CreateServerRegistration(wanApiAddress).ConfigureAwait(false);
+                    await CreateServerRegistration(wanApiAddress, localAddress).ConfigureAwait(false);
                 }
 
                 await RefreshAuthorizationsInternal(true, CancellationToken.None).ConfigureAwait(false);
@@ -176,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private async Task CreateServerRegistration(string wanApiAddress)
+        private async Task CreateServerRegistration(string wanApiAddress, string localAddress)
         {
             var url = "Servers";
             url = GetConnectUrl(url);
@@ -187,6 +190,11 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {"url", wanApiAddress}, 
                 {"systemId", _appHost.SystemId}
             };
+
+            if (!string.IsNullOrWhiteSpace(localAddress))
+            {
+                postData["localAddress"] = localAddress;
+            }
 
             using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
             {
@@ -199,11 +207,23 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private async Task UpdateServerRegistration(string wanApiAddress)
+        private async Task UpdateServerRegistration(string wanApiAddress, string localAddress)
         {
             var url = "Servers";
             url = GetConnectUrl(url);
             url += "?id=" + ConnectServerId;
+
+            var postData = new Dictionary<string, string>
+            {
+                {"name", _appHost.FriendlyName},
+                {"url", wanApiAddress},
+                {"systemId", _appHost.SystemId}
+            };
+
+            if (!string.IsNullOrWhiteSpace(localAddress))
+            {
+                postData["localAddress"] = localAddress;
+            }
 
             var options = new HttpRequestOptions
             {
@@ -211,12 +231,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 CancellationToken = CancellationToken.None
             };
 
-            options.SetPostData(new Dictionary<string, string>
-            {
-                {"name", _appHost.FriendlyName}, 
-                {"url", wanApiAddress}, 
-                {"systemId", _appHost.SystemId}
-            });
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
 
@@ -405,15 +420,46 @@ namespace MediaBrowser.Server.Implementations.Connect
                 throw new ArgumentNullException("connectUsername");
             }
 
-            var connectUser = await GetConnectUser(new ConnectUserQuery
-            {
-                Name = connectUsername
+            string connectUserId = null;
+            var result = new UserLinkResult();
 
-            }, CancellationToken.None).ConfigureAwait(false);
-
-            if (!connectUser.IsActive)
+            try
             {
-                throw new ArgumentException("The Media Browser account has been disabled.");
+                var connectUser = await GetConnectUser(new ConnectUserQuery
+                {
+                    Name = connectUsername
+
+                }, CancellationToken.None).ConfigureAwait(false);
+
+                if (!connectUser.IsActive)
+                {
+                    throw new ArgumentException("The Media Browser account has been disabled.");
+                }
+
+                connectUserId = connectUser.Id;
+                result.GuestDisplayName = connectUser.Name;
+            }
+            catch (HttpException ex)
+            {
+                if (!ex.StatusCode.HasValue ||
+                    ex.StatusCode.Value != HttpStatusCode.NotFound ||
+                    !Validator.EmailIsValid(connectUsername))
+                {
+                    throw;
+                }
+            }
+
+            var sendingUser = GetUser(sendingUserId);
+            var requesterUserName = sendingUser.ConnectUserName;
+
+            if (string.IsNullOrWhiteSpace(requesterUserName))
+            {
+                requesterUserName = sendingUser.Name;
+            }
+
+            if (string.IsNullOrWhiteSpace(connectUserId))
+            {
+                return await SendNewUserInvitation(requesterUserName, connectUsername).ConfigureAwait(false);
             }
 
             var url = GetConnectUrl("ServerAuthorizations");
@@ -425,18 +471,11 @@ namespace MediaBrowser.Server.Implementations.Connect
             };
 
             var accessToken = Guid.NewGuid().ToString("N");
-            var sendingUser = GetUser(sendingUserId);
-
-            var requesterUserName = sendingUser.ConnectUserName;
-            if (string.IsNullOrWhiteSpace(requesterUserName))
-            {
-                requesterUserName = sendingUser.Name;
-            }
 
             var postData = new Dictionary<string, string>
             {
                 {"serverId", ConnectServerId},
-                {"userId", connectUser.Id},
+                {"userId", connectUserId},
                 {"userType", "Guest"},
                 {"accessToken", accessToken},
                 {"requesterUserName", requesterUserName}
@@ -445,8 +484,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
-
-            var result = new UserLinkResult();
 
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
@@ -459,6 +496,36 @@ namespace MediaBrowser.Server.Implementations.Connect
             await RefreshAuthorizationsInternal(false, CancellationToken.None).ConfigureAwait(false);
 
             return result;
+        }
+
+        private async Task<UserLinkResult> SendNewUserInvitation(string fromName, string email)
+        {
+            var url = GetConnectUrl("users/invite");
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            var postData = new Dictionary<string, string>
+            {
+                {"email", email},
+                {"requesterUserName", fromName}
+            };
+
+            options.SetPostData(postData);
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
+            {
+            }
+            
+            return new UserLinkResult
+            {
+                IsNewUserInvitation = true,
+                GuestDisplayName = email
+            };
         }
 
         public Task RemoveConnect(string userId)
@@ -586,6 +653,9 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                     if (connectEntry == null)
                     {
+                        var deleteUser = user.ConnectLinkType.HasValue &&
+                                         user.ConnectLinkType.Value == UserLinkType.Guest;
+
                         user.ConnectUserId = null;
                         user.ConnectAccessKey = null;
                         user.ConnectUserName = null;
@@ -593,7 +663,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                         await _userManager.UpdateUser(user).ConfigureAwait(false);
 
-                        if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
+                        if (deleteUser)
                         {
                             _logger.Debug("Deleting guest user {0}", user.Name);
                             await _userManager.DeleteUser(user).ConfigureAwait(false);

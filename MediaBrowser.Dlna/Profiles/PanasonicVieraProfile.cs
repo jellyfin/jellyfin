@@ -202,6 +202,17 @@ namespace MediaBrowser.Dlna.Profiles
                     Method = SubtitleDeliveryMethod.External
                 }
             };
+
+            ResponseProfiles = new[]
+            {
+                new ResponseProfile
+                {
+                    Type = DlnaProfileType.Video,
+                    Container = "ts",
+                    OrgPn = "MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
+                    MimeType = "video/vnd.dlna.mpeg-tts"
+                }
+            };
         }
     }
 }

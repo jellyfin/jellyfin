@@ -104,6 +104,15 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override BaseItem DisplayParent
+        {
+            get
+            {
+                return Season ?? Parent;
+            }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -153,7 +162,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 // Episodes directly in series folder
                 if (season == null)
                 {
-                    var series = FindParent<Series>();
+                    var series = Series;
 
                     if (ParentIndexNumber.HasValue)
                     {

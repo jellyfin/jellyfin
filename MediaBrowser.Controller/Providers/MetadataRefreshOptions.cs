@@ -14,10 +14,6 @@ namespace MediaBrowser.Controller.Providers
 
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
-        /// <summary>
-        /// TODO: deprecate. Keeping this for now, for api compatibility
-        /// </summary>
-        [Obsolete]
         public bool ForceSave { get; set; }
 
         public MetadataRefreshOptions()

@@ -44,6 +44,7 @@ namespace MediaBrowser.Dlna.Profiles
             Manufacturer = "Microsoft Corporation";
             ManufacturerUrl = "http://www.microsoft.com/";
             SonyAggregationFlags = "10";
+            DidlAlbumArtLimit = 1;
 
             TranscodingProfiles = new[]
             {

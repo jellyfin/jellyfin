@@ -16,6 +16,7 @@
   <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
+  <DidlAlbumArtLimit xsi:nil="true" />
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
@@ -31,6 +32,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:sec" value="http://www.sec.co.kr/" />
   </XmlRootAttributes>
@@ -109,7 +112,6 @@
     </ResponseProfile>
   </ResponseProfiles>
   <SubtitleProfiles>
-    <SubtitleProfile format="smi" method="External" didlMode="CaptionInfoEx" />
     <SubtitleProfile format="srt" method="External" didlMode="CaptionInfoEx" />
   </SubtitleProfiles>
 </Profile>

@@ -135,12 +135,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
+        public string GetSavePath(IHasMetadata item)
+        {
+            return GetLocalSavePath(item);
+        }
+        
         /// <summary>
         /// Gets the save path.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        public abstract string GetSavePath(IHasMetadata item);
+        protected abstract string GetLocalSavePath(IHasMetadata item);
 
         /// <summary>
         /// Gets the name of the root element.

@@ -119,6 +119,7 @@
     <Compile Include="Connect\ConnectData.cs" />
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
+    <Compile Include="Connect\Validator.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />

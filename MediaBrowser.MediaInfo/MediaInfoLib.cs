@@ -24,6 +24,12 @@ namespace MediaBrowser.MediaInfo
                 result.IsInterlaced = text.IndexOf("interlac", StringComparison.OrdinalIgnoreCase) != -1;
             }
 
+            text = GetValue(lib, videoStreamIndex, new[] { "Format_Settings_CABAC", "Format_Settings_CABAC/String" });
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                result.IsCabac = string.Equals(text, "yes", StringComparison.OrdinalIgnoreCase);
+            }
+
             int bitDepth;
             text = GetValue(lib, videoStreamIndex, new[] { "BitDepth", "BitDepth/String" });
 
@@ -51,6 +57,7 @@ namespace MediaBrowser.MediaInfo
 
     public class MediaInfoResult
     {
+        public bool? IsCabac { get; set; }
         public bool? IsInterlaced { get; set; }
         public int? BitDepth { get; set; }
         public int? RefFrames { get; set; }

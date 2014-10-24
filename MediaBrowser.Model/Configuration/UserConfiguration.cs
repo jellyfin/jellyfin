@@ -88,6 +88,8 @@ namespace MediaBrowser.Model.Configuration
 
         public AccessSchedule[] AccessSchedules { get; set; }
 
+        public bool EnableUserPreferenceAccess { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -112,6 +114,7 @@ namespace MediaBrowser.Model.Configuration
             SyncConnectImage = true;
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
+            EnableUserPreferenceAccess = true;
 
             AccessSchedules = new AccessSchedule[] { };
         }

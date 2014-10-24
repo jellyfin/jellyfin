@@ -226,7 +226,9 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.OfType<IHasArtist>().Where(i => i.HasArtist(Name)).Cast<BaseItem>();
+            return inputItems.OfType<IHasArtist>()
+                .Where(i => i.HasArtist(Name))
+                .Cast<BaseItem>();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
         }
 
-        public override string GetSavePath(IHasMetadata item)
+        protected override string GetLocalSavePath(IHasMetadata item)
         {
             return Path.Combine(item.Path, "album.nfo");
         }

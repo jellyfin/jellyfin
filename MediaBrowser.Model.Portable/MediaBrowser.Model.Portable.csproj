@@ -413,6 +413,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\GameSystemSummary.cs">
       <Link>Dto\GameSystemSummary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\IHasServerId.cs">
+      <Link>Dto\IHasServerId.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\IItemDto.cs">
       <Link>Dto\IItemDto.cs</Link>
     </Compile>
@@ -1087,9 +1090,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\AuthenticationResult.cs">
       <Link>Users\AuthenticationResult.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Weather\WeatherUnits.cs">
-      <Link>Weather\WeatherUnits.cs</Link>
     </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>

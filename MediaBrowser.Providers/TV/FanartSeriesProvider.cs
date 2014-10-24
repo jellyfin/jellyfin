@@ -8,16 +8,15 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -27,16 +26,19 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _json;
 
-        protected string FanArtBaseUrl = "http://api.fanart.tv/webservice/series/{0}/{1}/xml/all/1/1";
+        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
+        // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartSeriesProvider Current { get; private set; }
 
-        public FanartSeriesProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartSeriesProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IJsonSerializer json)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _json = json;
 
             Current = this;
         }
@@ -79,13 +81,13 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(id))
             {
-                await EnsureSeriesXml(id, cancellationToken).ConfigureAwait(false);
+                await EnsureSeriesJson(id, cancellationToken).ConfigureAwait(false);
 
-                var xmlPath = GetFanartXmlPath(id);
+                var path = GetFanartJsonPath(id);
 
                 try
                 {
-                    AddImages(list, xmlPath, cancellationToken);
+                    AddImages(list, path, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -122,203 +124,72 @@ namespace MediaBrowser.Providers.TV
                 .ThenByDescending(i => i.VoteCount ?? 0);
         }
 
-        private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, string path, CancellationToken cancellationToken)
         {
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
-                {
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true,
-                    ValidationType = ValidationType.None
-                }))
-                {
-                    reader.MoveToContent();
+            var root = _json.DeserializeFromFile<RootObject>(path);
 
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "series":
-                                    {
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            AddImages(list, subReader, cancellationToken);
-                                        }
-                                        break;
-                                    }
-
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
+            AddImages(list, root, cancellationToken);
         }
 
-        private void AddImages(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, RootObject obj, CancellationToken cancellationToken)
         {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "hdtvlogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Logo, 800, 310);
-                                }
-                                break;
-                            }
-                        case "hdcleararts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Art, 1000, 562);
-                                }
-                                break;
-                            }
-                        case "clearlogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Logo, 400, 155);
-                                }
-                                break;
-                            }
-                        case "cleararts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Art, 500, 281);
-                                }
-                                break;
-                            }
-                        case "showbackgrounds":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Backdrop, 1920, 1080, true);
-                                }
-                                break;
-                            }
-                        case "seasonthumbs":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Thumb, 500, 281);
-                                }
-                                break;
-                            }
-                        case "tvthumbs":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Thumb, 500, 281);
-                                }
-                                break;
-                            }
-                        case "tvbanners":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Banner, 1000, 185);
-                                }
-                                break;
-                            }
-                        case "tvposters":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Primary, 1000, 1426);
-                                }
-                                break;
-                            }
-                        default:
-                            {
-                                using (reader.ReadSubtree())
-                                {
-                                }
-                                break;
-                            }
-                    }
-                }
-            }
+            PopulateImages(list, obj.hdtvlogo, ImageType.Logo, 800, 310);
+            PopulateImages(list, obj.hdclearart, ImageType.Art, 1000, 562);
+            PopulateImages(list, obj.clearlogo, ImageType.Logo, 400, 155);
+            PopulateImages(list, obj.clearart, ImageType.Art, 500, 281);
+            PopulateImages(list, obj.showbackground, ImageType.Backdrop, 1920, 1080, true);
+            PopulateImages(list, obj.seasonthumb, ImageType.Thumb, 500, 281);
+            PopulateImages(list, obj.tvthumb, ImageType.Thumb, 500, 281);
+            PopulateImages(list, obj.tvbanner, ImageType.Banner, 1000, 185);
+            PopulateImages(list, obj.tvposter, ImageType.Primary, 1000, 1426);
         }
 
-        private void PopulateImageCategory(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken, ImageType type, int width, int height, bool allowSeasonAll = false)
+        private void PopulateImages(List<RemoteImageInfo> list, 
+            List<Image> images, 
+            ImageType type, 
+            int width, 
+            int height,
+            bool allowSeasonAll = false)
         {
-            reader.MoveToContent();
-
-            while (reader.Read())
+            if (images == null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "hdtvlogo":
-                        case "hdclearart":
-                        case "clearlogo":
-                        case "clearart":
-                        case "showbackground":
-                        case "seasonthumb":
-                        case "tvthumb":
-                        case "tvbanner":
-                        case "tvposter":
-                            {
-                                var url = reader.GetAttribute("url");
-                                var season = reader.GetAttribute("season");
-
-                                var isSeasonValid = string.IsNullOrEmpty(season) ||
-                                    (allowSeasonAll && string.Equals(season, "all", StringComparison.OrdinalIgnoreCase));
-
-                                if (!string.IsNullOrEmpty(url) && isSeasonValid)
-                                {
-                                    var likesString = reader.GetAttribute("likes");
-                                    int likes;
-
-                                    var info = new RemoteImageInfo
-                                    {
-                                        RatingType = RatingType.Likes,
-                                        Type = type,
-                                        Width = width,
-                                        Height = height,
-                                        ProviderName = Name,
-                                        Url = url,
-                                        Language = reader.GetAttribute("lang")
-                                    };
-
-                                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
-                                    {
-                                        info.CommunityRating = likes;
-                                    }
-
-                                    list.Add(info);
-                                }
-
-                                break;
-                            }
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
+                return;
             }
+
+            list.AddRange(images.Select(i =>
+            {
+                var url = i.url;
+                var season = i.season;
+
+                var isSeasonValid = string.IsNullOrEmpty(season) ||
+                    (allowSeasonAll && string.Equals(season, "all", StringComparison.OrdinalIgnoreCase));
+
+                if (!string.IsNullOrEmpty(url) && isSeasonValid)
+                {
+                    var likesString = i.likes;
+                    int likes;
+
+                    var info = new RemoteImageInfo
+                    {
+                        RatingType = RatingType.Likes,
+                        Type = type,
+                        Width = width,
+                        Height = height,
+                        ProviderName = Name,
+                        Url = url,
+                        Language = i.lang
+                    };
+
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                    {
+                        info.CommunityRating = likes;
+                    }
+
+                    return info;
+                }
+
+                return null;
+            }).Where(i => i != null));
         }
 
         public int Order
@@ -361,23 +232,23 @@ namespace MediaBrowser.Providers.TV
             return dataPath;
         }
 
-        public string GetFanartXmlPath(string tvdbId)
+        public string GetFanartJsonPath(string tvdbId)
         {
             var dataPath = GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
-            return Path.Combine(dataPath, "fanart.xml");
+            return Path.Combine(dataPath, "fanart.json");
         }
 
         private readonly SemaphoreSlim _ensureSemaphore = new SemaphoreSlim(1, 1);
-        internal async Task EnsureSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        internal async Task EnsureSeriesJson(string tvdbId, CancellationToken cancellationToken)
         {
-            var xmlPath = GetFanartXmlPath(tvdbId);
+            var path = GetFanartJsonPath(tvdbId);
 
             // Only allow one thread in here at a time since every season will be calling this method, possibly concurrently
             await _ensureSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+                var fileInfo = _fileSystem.GetFileSystemInfo(path);
 
                 if (fileInfo.Exists)
                 {
@@ -387,7 +258,7 @@ namespace MediaBrowser.Providers.TV
                     }
                 }
 
-                await DownloadSeriesXml(tvdbId, cancellationToken).ConfigureAwait(false);
+                await DownloadSeriesJson(tvdbId, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -396,20 +267,20 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Downloads the series XML.
+        /// Downloads the series json.
         /// </summary>
-        /// <param name="tvdbId">The TVDB id.</param>
+        /// <param name="tvdbId">The TVDB identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadSeriesXml(string tvdbId, CancellationToken cancellationToken)
+        internal async Task DownloadSeriesJson(string tvdbId, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tvdbId);
 
-            var xmlPath = GetFanartXmlPath(tvdbId);
+            var path = GetFanartJsonPath(tvdbId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
@@ -419,9 +290,9 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
-                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                    await response.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
             }
         }
@@ -438,14 +309,41 @@ namespace MediaBrowser.Providers.TV
             if (!String.IsNullOrEmpty(tvdbId))
             {
                 // Process images
-                var imagesXmlPath = GetFanartXmlPath(tvdbId);
+                var imagesFilePath = GetFanartJsonPath(tvdbId);
 
-                var fileInfo = new FileInfo(imagesXmlPath);
+                var fileInfo = new FileInfo(imagesFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
 
             return false;
+        }
+
+        public class Image
+        {
+            public string id { get; set; }
+            public string url { get; set; }
+            public string lang { get; set; }
+            public string likes { get; set; }
+            public string season { get; set; }
+        }
+
+        public class RootObject
+        {
+            public string name { get; set; }
+            public string thetvdb_id { get; set; }
+            public List<Image> clearlogo { get; set; }
+            public List<Image> hdtvlogo { get; set; }
+            public List<Image> clearart { get; set; }
+            public List<Image> showbackground { get; set; }
+            public List<Image> tvthumb { get; set; }
+            public List<Image> seasonposter { get; set; }
+            public List<Image> seasonthumb { get; set; }
+            public List<Image> hdclearart { get; set; }
+            public List<Image> tvbanner { get; set; }
+            public List<Image> characterart { get; set; }
+            public List<Image> tvposter { get; set; }
+            public List<Image> seasonbanner { get; set; }
         }
     }
 }
