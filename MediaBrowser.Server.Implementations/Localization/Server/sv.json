@@ -1151,6 +1151,7 @@
     "OptionSaveMetadataAsHidden": "Spara metadata och bilder som dolda filer",
     "LabelExtractChaptersDuringLibraryScan": "Extrahera kapitelbildrutor vid genoms\u00f6kning av biblioteket",
     "LabelExtractChaptersDuringLibraryScanHelp": "Om aktiverat extraheras kapitelbildrutor n\u00e4r videor importeras vid genoms\u00f6kning av biblioteket. Om avaktiverat kommer extrahering att ske vid schemalagd kapitelbildrutebehandling, f\u00f6r att snabba upp den regelbundna genoms\u00f6kningen av biblioteket.",
+    "LabelConnectGuestUserName": "Their Media Browser username or email address:",
     "LabelConnectUserName": "Media Browser-anv\u00e4ndarnamn\/email:",
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from Media Browser any app without having to know the server ip address.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "L\u00e4s mer om  Media Browser Connect",
@@ -1213,7 +1214,7 @@
     "LabelCustomDeviceDisplayName": "Visningsnamn:",
     "LabelCustomDeviceDisplayNameHelp": "Ange ett anpassat enhetsnamn. L\u00e4mna blankt f\u00f6r att anv\u00e4nda det namn enheten sj\u00e4lv rapporterar.",
     "HeaderInviteUser": "Bjud in anv\u00e4ndare",
-    "LabelConnectInviteUserHelp": "Det anv\u00e4ndarnamn eller e-postadress din v\u00e4n anv\u00e4nder p\u00e5 Media Browsers hemsida.",
+    "LabelConnectGuestUserNameHelp": "This is the username that your friend uses to sign in to the Media Browser website, or their email address.",
     "HeaderInviteUserHelp": "Att dela dina media med v\u00e4nner \u00e4r enklare \u00e4n n\u00e5gonsin med Media Browser Connect.",
     "ButtonSendInvitation": "Skicka inbjudan",
     "HeaderGuests": "G\u00e4ster",
@@ -1238,5 +1239,6 @@
     "HeaderTrailerReelHelp": "Start a trailer reel to play a long running playlist of trailers.",
     "MessageNoTrailersFound": "No trailers found. Install the Trailer channel plugin to import a library of internet trailers.",
     "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "ButtonSignUp": "Sign up",
+    "ButtonForgotPassword": "Forgot password?"
 }

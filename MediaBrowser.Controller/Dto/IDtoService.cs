@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dto
@@ -12,14 +10,6 @@ namespace MediaBrowser.Controller.Dto
     /// </summary>
     public interface IDtoService
     {
-        /// <summary>
-        /// Gets the user dto.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>UserDto.</returns>
-        [Obsolete]
-        UserDto GetUserDto(User user);
-
         /// <summary>
         /// Gets the dto id.
         /// </summary>

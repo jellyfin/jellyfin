@@ -246,7 +246,7 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/md5.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
 
             await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
@@ -262,7 +262,10 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in new[]
             {
+                "thirdparty/apiclient/md5.js",
                 "thirdparty/apiclient/sha1.js",
+                "thirdparty/apiclient/store.js",
+                "thirdparty/apiclient/credentials.js",
                 "thirdparty/apiclient/mediabrowser.apiclient.js",
                 "thirdparty/apiclient/connectionmanager.js"
             })

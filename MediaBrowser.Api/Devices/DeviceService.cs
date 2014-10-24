@@ -44,8 +44,8 @@ namespace MediaBrowser.Api.Devices
         [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Name { get; set; }
 
-        [ApiMember(Name = "FullPath", Description = "FullPath", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string FullPath { get; set; }
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
 
         public Stream RequestStream { get; set; }
     }
@@ -132,7 +132,7 @@ namespace MediaBrowser.Api.Devices
         {
             var deviceId = Request.QueryString["DeviceId"];
             var album = Request.QueryString["Album"];
-            var fullPath = Request.QueryString["FullPath"];
+            var id = Request.QueryString["Id"];
             var name = Request.QueryString["Name"];
 
             var task = _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Devices
                 MimeType = Request.ContentType,
                 Album = album,
                 Name = name,
-                FullPath = fullPath
+                Id = id
             });
 
             Task.WaitAll(task);

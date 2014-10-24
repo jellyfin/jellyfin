@@ -23,7 +23,7 @@
                         <li>
                             <label for="txtMetadataPath">${LabelMetadataPath}</label>
                             <div style="display: inline-block; width: 92%;">
-                                <input type="text" id="txtMetadataPath" name="txtMetadataPath" />
+                                <input type="text" id="txtMetadataPath" />
                             </div>
                             <button id="btnSelectMetadataPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                             <div class="fieldDescription">${LabelMetadataPathHelp}</div>
@@ -34,7 +34,7 @@
                         </li>
                         <li>
                             <label for="selectDateAdded">${LabelDateAddedBehavior}</label>
-                            <select data-mini="true" id="selectDateAdded">
+                            <select id="selectDateAdded" data-mini="true">
                                 <option value="0">${OptionDateAddedImportTime}</option>
                                 <option value="1">${OptionDateAddedFileTime}</option>
                             </select>

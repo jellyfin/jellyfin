@@ -605,5 +605,8 @@
     "LabelEnableCameraUploadForHelp": "Uppladdning sker automatiskt i bakgrunden n\u00e4r man \u00e4r inloggad i Media Browser.",
     "ErrorMessageStartHourGreaterThanEnd": "Sluttiden m\u00e5ste vara senare \u00e4n starttiden.",
     "ButtonLibraryAccess": "Library access",
-    "ButtonParentalControl": "Parental control"
+    "ButtonParentalControl": "Parental control",
+    "HeaderInvitationSent": "Invitation Sent",
+    "MessageInvitationSentToUser": "An email has been sent to {0}, inviting them to accept your sharing invitation.",
+    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser."
 }

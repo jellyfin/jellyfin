@@ -59,6 +59,8 @@
         $('#chkEnableLiveTvAccess', page).checked(user.Configuration.EnableLiveTvAccess || false).checkboxradio("refresh");
         $('#chkEnableContentDeletion', page).checked(user.Configuration.EnableContentDeletion || false).checkboxradio("refresh");
 
+        $('#chkDisableUserPreferences', page).checked((!user.Configuration.EnableUserPreferenceAccess) || false).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -102,6 +104,7 @@
         user.Configuration.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
         user.Configuration.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
         user.Configuration.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
+        user.Configuration.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
 
         var userId = getParameterByName("userId");
 

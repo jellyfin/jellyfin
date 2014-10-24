@@ -605,5 +605,8 @@
     "LabelEnableCameraUploadForHelp": "Uploads will occur automatically in the background when signed into Media Browser.",
     "ErrorMessageStartHourGreaterThanEnd": "End time must be greater than the start time.",
     "ButtonLibraryAccess": "Library access",
-    "ButtonParentalControl": "Parental control"
+    "ButtonParentalControl": "Parental control",
+    "HeaderInvitationSent": "Invitation Sent",
+    "MessageInvitationSentToUser": "An email has been sent to {0}, inviting them to accept your sharing invitation.",
+    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser."
 }

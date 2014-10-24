@@ -1151,6 +1151,7 @@
     "OptionSaveMetadataAsHidden": "Salvare i metadati e le immagini come file nascosti",
     "LabelExtractChaptersDuringLibraryScan": "Estrarre immagini capitolo durante la scansione biblioteca",
     "LabelExtractChaptersDuringLibraryScanHelp": "Se abilitata, le immagini capitolo verranno estratti quando i video vengono importati durante la scansione della libreria. Se disabilitata verranno estratti durante le immagini dei capitoli programmati compito, permettendo la scansione biblioteca regolare per completare pi\u00f9 velocemente.",
+    "LabelConnectGuestUserName": "Their Media Browser username or email address:",
     "LabelConnectUserName": "Media Browser username\/email:",
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from Media Browser any app without having to know the server ip address.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "Scopri di pi\u00f9 su Media Browser Connect",
@@ -1213,7 +1214,7 @@
     "LabelCustomDeviceDisplayName": "Nome da visualizzare:",
     "LabelCustomDeviceDisplayNameHelp": "Fornire un nome di visualizzazione personalizzato o lasciare vuoto per utilizzare il nome riportato dal dispositivo.",
     "HeaderInviteUser": "Invita utente",
-    "LabelConnectInviteUserHelp": "Questo \u00e8 il nome utente o e-mail che il tuo amico utilizza per accedere al sito Web Media Browser.",
+    "LabelConnectGuestUserNameHelp": "This is the username that your friend uses to sign in to the Media Browser website, or their email address.",
     "HeaderInviteUserHelp": "Condividere i tuoi contenuti multimediali con gli amici \u00e8 pi\u00f9 facile che mai con il Browser Media Connect.",
     "ButtonSendInvitation": "Invia Invito",
     "HeaderGuests": "ospiti",
@@ -1238,5 +1239,6 @@
     "HeaderTrailerReelHelp": "Start a trailer reel to play a long running playlist of trailers.",
     "MessageNoTrailersFound": "No trailers found. Install the Trailer channel plugin to import a library of internet trailers.",
     "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "ButtonSignUp": "Sign up",
+    "ButtonForgotPassword": "Forgot password?"
 }

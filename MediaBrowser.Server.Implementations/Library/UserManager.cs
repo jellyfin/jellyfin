@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly Func<IConnectManager> _connectFactory;
+        private readonly IApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
@@ -71,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IApplicationHost appHost)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -80,6 +82,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _imageProcessorFactory = imageProcessorFactory;
             _dtoServiceFactory = dtoServiceFactory;
             _connectFactory = connectFactory;
+            _appHost = appHost;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
         }
@@ -298,7 +301,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 Configuration = user.Configuration,
                 ConnectLinkType = user.ConnectLinkType,
                 ConnectUserId = user.ConnectUserId,
-                ConnectUserName = user.ConnectUserName
+                ConnectUserName = user.ConnectUserName,
+                ServerId = _appHost.SystemId
             };
 
             var image = user.GetImageInfo(ImageType.Primary, 0);

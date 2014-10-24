@@ -1151,6 +1151,7 @@
     "OptionSaveMetadataAsHidden": "Speichere Metadaten und Bilder als versteckte Dateien",
     "LabelExtractChaptersDuringLibraryScan": "Erzeuge Kapitelbilder w\u00e4hrend des scannens der Bibliothek",
     "LabelExtractChaptersDuringLibraryScanHelp": "Fall aktiviert, werden Kapitelbilder w\u00e4hrend des Imports von Videos beim Bibliothekenscan erzeugt. Falls deaktiviert, werden die Kapitelbilder w\u00e4hrend einer eigens daf\u00fcr geplanten Aufgabe erstellt, was den Bibliothekenscan beschleunigt.",
+    "LabelConnectGuestUserName": "Ihr Media Browser Benutzername oder E-Mail-Adresse:",
     "LabelConnectUserName": "Media Browser Benutzername \/ E-Mail:",
     "LabelConnectUserNameHelp": "Verbinde diesen Benutzer mit einem Media Browser Account, um einen einfachen Zugang von jeder App aus zu aktivieren, ohne die Server IP-Adresse daf\u00fcr kennen zu m\u00fcssen.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "Erfahre mehr \u00fcber Media Browser Connect",
@@ -1213,7 +1214,7 @@
     "LabelCustomDeviceDisplayName": "Angezeigter Name:",
     "LabelCustomDeviceDisplayNameHelp": "Lege einen individuellen Anzeigenamen fest oder lasse das Feld leer, um den vom ger\u00e4t \u00fcbermittelten Namen zu nutzen.",
     "HeaderInviteUser": "Lade Benutzer ein",
-    "LabelConnectInviteUserHelp": "Dies ist der Benutzername oder die E-Mail die dein Freund nutzt, um sich f\u00fcr die Media Browser Website anzumelden.",
+    "LabelConnectGuestUserNameHelp": "Dies ist der Benutzername oder die E-Mail Adresse, die dein Freund benutzt, um sich auf der Media Browser Website anzumelden.",
     "HeaderInviteUserHelp": "Mit Media Browser ist es leichter als je zuvor, deine Medien mit deinen Freunden zu teilen.",
     "ButtonSendInvitation": "Sende Einladung",
     "HeaderGuests": "G\u00e4ste",
@@ -1224,8 +1225,8 @@
     "HeaderAccessScheduleHelp": "Erstelle einen Zugangsplan, um den Zugriff auf bestimmte Zeiten zu limitieren.",
     "ButtonAddSchedule": "Plan hinzuf\u00fcgen",
     "LabelAccessDay": "Wochentag:",
-    "LabelAccessStart": "Start time:",
-    "LabelAccessEnd": "End time:",
+    "LabelAccessStart": "Startzeit:",
+    "LabelAccessEnd": "Endzeit:",
     "HeaderSchedule": "Zeitplan",
     "OptionEveryday": "T\u00e4glich",
     "OptionWeekdays": "W\u00f6chentlich",
@@ -1237,6 +1238,7 @@
     "OptionPlayUnwatchedTrailersOnly": "Spiele nur bisher nicht gesehene Trailer",
     "HeaderTrailerReelHelp": "Starte eine Trailer Rolle, um dir eine lang andauernde Playlist mit Trailern anzuschauen.",
     "MessageNoTrailersFound": "Keine Trailer gefunden. Installiere das Trailer Channel Plugin, um eine Bibliothek aus Trailern vom Internet zu importieren.",
-    "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "HeaderNewUsers": "Neue Benutzer",
+    "ButtonSignUp": "Anmeldung",
+    "ButtonForgotPassword": "Passwort vergessen?"
 }

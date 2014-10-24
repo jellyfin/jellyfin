@@ -1,55 +1,4 @@
-﻿(function (window) {
-
-    function myStore(defaultObject) {
-
-        var self = this;
-        self.localData = {};
-
-        var isDefaultAvailable;
-
-        if (defaultObject) {
-            try {
-                defaultObject.setItem('_test', '0');
-                isDefaultAvailable = true;
-            } catch (e) {
-
-            }
-        }
-
-        self.setItem = function (name, value) {
-
-            if (isDefaultAvailable) {
-                defaultObject.setItem(name, value);
-            } else {
-                self.localData[name] = value;
-            }
-        };
-
-        self.getItem = function (name) {
-
-            if (isDefaultAvailable) {
-                return defaultObject.getItem(name);
-            }
-
-            return self.localData[name];
-        };
-
-        self.removeItem = function (name) {
-
-            if (isDefaultAvailable) {
-                defaultObject.removeItem(name);
-            } else {
-                self.localData[name] = null;
-            }
-        };
-    }
-
-    window.store = new myStore(window.localStorage);
-    window.sessionStore = new myStore(window.sessionStorage);
-
-})(window);
-
-if (!window.MediaBrowser) {
+﻿if (!window.MediaBrowser) {
     window.MediaBrowser = {};
 }
 
@@ -115,6 +64,16 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         self.deviceId = function () {
             return deviceId;
+        };
+
+        self.clearAuthenticationInfo = function () {
+            accessToken = null;
+            currentUserId = null;
+        };
+
+        self.setAuthenticationInfo = function (accessKey, userId) {
+            accessToken = accessKey;
+            currentUserId = userId;
         };
 
         self.encodeName = function (name) {
@@ -185,6 +144,10 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             }
 
             return url;
+        };
+
+        self.enableAutomaticNetworking = function(server, connectionMode) {
+
         };
 
         self.openWebSocket = function () {
@@ -2117,11 +2080,14 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             });
         };
 
-        function supportsWebP() {
+        var supportsWebP = false;
+        self.supportsWebP = function(val) {
 
-            // TODO: Improve with http://webpjs.appspot.com/
-            return $.browser.chrome;
-        }
+            if (val != null) {
+                supportsWebP = val;
+            }
+            return supportsWebP;
+        };
 
         function normalizeImageOptions(options) {
 
@@ -2149,7 +2115,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
 
-            if (supportsWebP()) {
+            if (self.supportsWebP()) {
                 options.format = 'webp';
             }
         }
@@ -2225,7 +2191,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             delete options.type;
             delete options.index;
 
-            if (supportsWebP()) {
+            if (self.supportsWebP()) {
                 options.format = 'webp';
             }
 
@@ -2297,6 +2263,11 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 data: JSON.stringify(postData),
                 dataType: "json",
                 contentType: "application/json"
+
+            }).done(function(result) {
+
+
+                $(self).trigger('authenticated', [result]);
             });
         };
 
@@ -3222,94 +3193,4 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         return sha1(keys.join('|'));
     };
 
-    MediaBrowser.ApiClient.generateDeviceName = function () {
-
-        var name = "Web Browser";
-
-        if ($.browser.chrome) {
-            name = "Chrome";
-        } else if ($.browser.safari) {
-            name = "Safari";
-        } else if ($.browser.webkit) {
-            name = "WebKit";
-        } else if ($.browser.msie) {
-            name = "Internet Explorer";
-        } else if ($.browser.opera) {
-            name = "Opera";
-        } else if ($.browser.firefox || $.browser.mozilla) {
-            name = "Firefox";
-        }
-
-        if ($.browser.version) {
-            name += " " + $.browser.version;
-        }
-
-        if ($.browser.ipad) {
-            name += " Ipad";
-        } else if ($.browser.iphone) {
-            name += " Iphone";
-        } else if ($.browser.android) {
-            name += " Android";
-        }
-        return name;
-    };
-
 })(window.store);
-
-(function (jQuery, window, undefined) {
-    "use strict";
-
-    var matched, browser;
-
-    jQuery.uaMatch = function (ua) {
-        ua = ua.toLowerCase();
-
-        var match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||
-            /(webkit)[ \/]([\w.]+)/.exec(ua) ||
-            /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
-            /(msie) ([\w.]+)/.exec(ua) ||
-            ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||
-            [];
-
-        var platform_match = /(ipad)/.exec(ua) ||
-            /(iphone)/.exec(ua) ||
-            /(android)/.exec(ua) ||
-            [];
-
-        var browser = match[1] || "";
-
-        if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1) {
-            browser = "msie";
-        }
-
-        return {
-            browser: browser,
-            version: match[2] || "0",
-            platform: platform_match[0] || ""
-        };
-    };
-
-    matched = jQuery.uaMatch(window.navigator.userAgent);
-    browser = {};
-
-    if (matched.browser) {
-        browser[matched.browser] = true;
-        browser.version = matched.version;
-    }
-
-    if (matched.platform) {
-        browser[matched.platform] = true;
-    }
-
-    // Chrome is Webkit, but Webkit is also Safari.
-    if (browser.chrome) {
-        browser.webkit = true;
-    } else if (browser.webkit) {
-        browser.safari = true;
-    }
-
-    browser.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-
-    jQuery.browser = browser;
-
-})(jQuery, window);

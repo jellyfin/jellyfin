@@ -86,9 +86,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    </Content>
     <Content Include="dashboard-ui\channelitems.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -908,7 +908,16 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\connectionmanager.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\thirdparty\apiclient\credentials.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\sha1.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\apiclient\store.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\browser.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\cast_sender.js">
@@ -1541,7 +1550,7 @@
     <Content Include="dashboard-ui\livetvsuggested.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\md5.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\md5.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\swipebox-master\css\swipebox.css">

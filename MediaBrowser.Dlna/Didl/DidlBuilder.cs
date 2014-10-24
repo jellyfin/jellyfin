@@ -81,9 +81,13 @@ namespace MediaBrowser.Dlna.Didl
             {
                 element.SetAttribute("parentID", GetClientId(context, contextStubType));
             }
-            else if (item.Parent != null)
+            else
             {
-                element.SetAttribute("parentID", GetClientId(item.Parent, null));
+                var parent = item.DisplayParent;
+                if (parent != null)
+                {
+                    element.SetAttribute("parentID", GetClientId(parent, null));
+                }
             }
 
             //AddBookmarkInfo(item, user, element);
@@ -443,7 +447,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 container.SetAttribute("id", clientId);
 
-                var parent = context ?? folder.Parent;
+                var parent = context ?? folder.DisplayParent;
                 if (parent == null)
                 {
                     container.SetAttribute("parentID", "0");
