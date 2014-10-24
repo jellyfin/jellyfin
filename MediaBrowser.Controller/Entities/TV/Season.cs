@@ -44,6 +44,12 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override BaseItem DisplayParent
+        {
+            get { return Series ?? Parent; }
+        }
+
         /// <summary>
         /// We want to group into our Series
         /// </summary>

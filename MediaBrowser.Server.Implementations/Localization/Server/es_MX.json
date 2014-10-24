@@ -1151,6 +1151,7 @@
     "OptionSaveMetadataAsHidden": "Guardar metadatos e im\u00e1genes como archivos ocultos",
     "LabelExtractChaptersDuringLibraryScan": "Extraer im\u00e1genes de cap\u00edtulos durante el escaneo de la biblioteca",
     "LabelExtractChaptersDuringLibraryScanHelp": "Si se activa, las im\u00e1genes de cap\u00edtulos ser\u00e1n extra\u00eddas cuando los videos sean importados durante el escaneo de la biblioteca. Si se deshabilita, ser\u00e1n extra\u00eddas durante la ejecuci\u00f3n de la tarea programada de extracci\u00f3n de im\u00e1genes de cap\u00edtulos, permiti\u00e9ndo que el escaneo normal de la biblioteca se complete m\u00e1s r\u00e1pidamente.",
+    "LabelConnectGuestUserName": "Su nombre de usuario de Media Browser o direcci\u00f3n de correo electr\u00f3nico:",
     "LabelConnectUserName": "Nombre de Usuario\/email de Media Browser:",
     "LabelConnectUserNameHelp": "Conectar este usuario a una cuenta de Media Browser para habilitar un un inicio de sesi\u00f3n simplificado de Media Browser en cualquier aplicaci\u00f3n sin tener que conocer la direcci\u00f3n IP del servidor.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "Conocer m\u00e1s sobre Media Browser Connect.",
@@ -1213,7 +1214,7 @@
     "LabelCustomDeviceDisplayName": "Nombre a Desplegar:",
     "LabelCustomDeviceDisplayNameHelp": "Proporcione un nombre a desplegar personalizado o d\u00e9jelo vac\u00edo para usar el nombre reportado por el dispositivo.",
     "HeaderInviteUser": "Invitar Usuario",
-    "LabelConnectInviteUserHelp": "Este es el nombre de usuario o correo electr\u00f3nico que usa su amigo para iniciar sesi\u00f3n en el sitio web de Media Browser.",
+    "LabelConnectGuestUserNameHelp": "This is the username that your friend uses to sign in to the Media Browser website, or their email address.",
     "HeaderInviteUserHelp": "Compartir sus medios con amigos es m\u00e1s f\u00e1cil que nunca con Media Browser Connect.",
     "ButtonSendInvitation": "Enviar invitaci\u00f3n",
     "HeaderGuests": "Invitados",
@@ -1237,6 +1238,7 @@
     "OptionPlayUnwatchedTrailersOnly": "Reproducir \u00fanicamente avances no vistos",
     "HeaderTrailerReelHelp": "Iniciar un carrete de avances para reproducir una lista de reproducci\u00f3n de larga duraci\u00f3n de avances.",
     "MessageNoTrailersFound": "No se encontraron avances. Instalar el complemento \"Canal trailers\" para importar una biblioteca de avances de internet.",
-    "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "HeaderNewUsers": "Nuevos Usuarios",
+    "ButtonSignUp": "Registrarse",
+    "ButtonForgotPassword": "\u00bfOlvidaste la contrase\u00f1a?"
 }

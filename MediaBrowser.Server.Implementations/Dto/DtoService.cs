@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -40,8 +41,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private readonly Func<IChannelManager> _channelManagerFactory;
         private readonly ISyncManager _syncManager;
+        private readonly IApplicationHost _appHost;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -53,6 +55,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _providerManager = providerManager;
             _channelManagerFactory = channelManagerFactory;
             _syncManager = syncManager;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -96,7 +99,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 throw new ArgumentNullException("fields");
             }
 
-            var dto = new BaseItemDto();
+            var dto = new BaseItemDto
+            {
+                ServerId = _appHost.SystemId
+            };
 
             dto.SupportsPlaylists = item.SupportsAddingToPlaylist;
 
@@ -258,43 +264,6 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             return folder.GetChildren(user, true)
                 .Count();
-        }
-
-        public UserDto GetUserDto(User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-
-            var dto = new UserDto
-            {
-                Id = user.Id.ToString("N"),
-                Name = user.Name,
-                HasPassword = !String.IsNullOrEmpty(user.Password),
-                LastActivityDate = user.LastActivityDate,
-                LastLoginDate = user.LastLoginDate,
-                Configuration = user.Configuration
-            };
-
-            var image = user.GetImageInfo(ImageType.Primary, 0);
-
-            if (image != null)
-            {
-                dto.PrimaryImageTag = GetImageCacheTag(user, image);
-
-                try
-                {
-                    AttachPrimaryImageAspectRatio(dto, user);
-                }
-                catch (Exception ex)
-                {
-                    // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
-                }
-            }
-
-            return dto;
         }
 
         /// <summary>
@@ -893,9 +862,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            if (item.Parent != null && fields.Contains(ItemFields.ParentId))
+            if (fields.Contains(ItemFields.ParentId))
             {
-                dto.ParentId = GetDtoId(item.Parent);
+                var displayParent = item.DisplayParent;
+                if (displayParent != null)
+                {
+                    dto.ParentId = GetDtoId(displayParent);
+                }
             }
 
             dto.ParentIndexNumber = item.ParentIndexNumber;

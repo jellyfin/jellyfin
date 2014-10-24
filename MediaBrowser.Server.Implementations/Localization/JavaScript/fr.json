@@ -74,8 +74,8 @@
     "ButtonMarkTheseRead": "Marquer comme lus",
     "ButtonClose": "Fermer",
     "LabelAllPlaysSentToPlayer": "Toutes les lectures seront envoy\u00e9es au lecteur s\u00e9lectionn\u00e9.",
-    "MessageInvalidUser": "Invalid username or password. Please try again.",
-    "HeaderLoginFailure": "Login Failure",
+    "MessageInvalidUser": "Nom d'utilisateur ou mot de passe incorrect. R\u00e9essayer.",
+    "HeaderLoginFailure": "\u00c9chec de la connection",
     "HeaderAllRecordings": "Tous les enregistrements",
     "RecommendationBecauseYouLike": "Parce-que vous aimez {0}",
     "RecommendationBecauseYouWatched": "Parce que vous avez regard\u00e9 {0}",
@@ -604,6 +604,9 @@
     "HeaderSelectUploadPath": "S\u00e9lectionner le r\u00e9pertoire d'upload",
     "LabelEnableCameraUploadForHelp": "Les uploads se lanceront automatiquement en arri\u00e8re plan apr\u00e8s l'authentification dans Media Browser.",
     "ErrorMessageStartHourGreaterThanEnd": "Le temps de fin doit \u00eatre plus grand que le temps de d\u00e9part.",
-    "ButtonLibraryAccess": "Library access",
-    "ButtonParentalControl": "Parental control"
+    "ButtonLibraryAccess": "Acc\u00e8s \u00e0 la biblioth\u00e8que",
+    "ButtonParentalControl": "Contr\u00f4le parental",
+    "HeaderInvitationSent": "Invitation envoy\u00e9",
+    "MessageInvitationSentToUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 accepter votre invitation de partage.",
+    "MessageInvitationSentToNewUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 s'inscrire sur Media Browser."
 }

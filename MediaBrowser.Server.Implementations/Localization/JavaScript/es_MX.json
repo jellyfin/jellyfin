@@ -74,8 +74,8 @@
     "ButtonMarkTheseRead": "Marcar como le\u00eddos",
     "ButtonClose": "Cerrar",
     "LabelAllPlaysSentToPlayer": "Todas las reproducciones se enviaran al reproductor seleccionado.",
-    "MessageInvalidUser": "Usuario o contrase\u00f1a inv\u00e1lidos.",
-    "HeaderLoginFailure": "Login Failure",
+    "MessageInvalidUser": "Usuario o contrase\u00f1a inv\u00e1lidos. Por favor intenta de nuevo.",
+    "HeaderLoginFailure": "Fall\u00f3 el Inicio de Sesi\u00f3n",
     "HeaderAllRecordings": "Todas las Grabaciones",
     "RecommendationBecauseYouLike": "Porque te gust\u00f3 {0}",
     "RecommendationBecauseYouWatched": "Porque viste {0}",
@@ -605,5 +605,8 @@
     "LabelEnableCameraUploadForHelp": "La subida ocurrir\u00e1 autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser.",
     "ErrorMessageStartHourGreaterThanEnd": "El horario de fin debe ser mayor al de comienzo.",
     "ButtonLibraryAccess": "Acceso a biblioteca",
-    "ButtonParentalControl": "Control parental"
+    "ButtonParentalControl": "Control parental",
+    "HeaderInvitationSent": "Invitaci\u00f3n Enviada",
+    "MessageInvitationSentToUser": "Se ha enviado un correo electr\u00f3nico a {0}, invit\u00e1ndolo a aceptar tu invitaci\u00f3n para compartir.",
+    "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser."
 }

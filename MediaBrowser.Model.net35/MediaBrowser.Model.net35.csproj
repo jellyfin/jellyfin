@@ -378,6 +378,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\GameSystemSummary.cs">
       <Link>Dto\GameSystemSummary.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\IHasServerId.cs">
+      <Link>Dto\IHasServerId.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\IItemDto.cs">
       <Link>Dto\IItemDto.cs</Link>
     </Compile>

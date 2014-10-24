@@ -1151,6 +1151,7 @@
     "OptionSaveMetadataAsHidden": "Save metadata and images as hidden files",
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
+    "LabelConnectGuestUserName": "Their Media Browser username or email address:",
     "LabelConnectUserName": "Media Browser username\/email:",
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from Media Browser any app without having to know the server ip address.",
     "ButtonLearnMoreAboutMediaBrowserConnect": "Learn more about Media Browser Connect",
@@ -1213,7 +1214,7 @@
     "LabelCustomDeviceDisplayName": "Display name:",
     "LabelCustomDeviceDisplayNameHelp": "Supply a custom display name or leave empty to use the name reported by the device.",
     "HeaderInviteUser": "Invite User",
-    "LabelConnectInviteUserHelp": "This is the username or email that your friend uses to sign in to the Media Browser website.",
+    "LabelConnectGuestUserNameHelp": "This is the username that your friend uses to sign in to the Media Browser website, or their email address.",
     "HeaderInviteUserHelp": "Sharing your media with friends is easier than ever before with Media Browser Connect.",
     "ButtonSendInvitation": "Send Invitation",
     "HeaderGuests": "Guests",
@@ -1238,5 +1239,6 @@
     "HeaderTrailerReelHelp": "Start a trailer reel to play a long running playlist of trailers.",
     "MessageNoTrailersFound": "No trailers found. Install the Trailer channel plugin to import a library of internet trailers.",
     "HeaderNewUsers": "New Users",
-    "ButtonSignUp": "Sign up"
+    "ButtonSignUp": "Sign up",
+    "ButtonForgotPassword": "Forgot password?"
 }
