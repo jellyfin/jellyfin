@@ -419,27 +419,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             var time = result.EndTimeUtc - result.StartTimeUtc;
             var runningTime = string.Format(_localization.GetLocalizedString("LabelRunningTimeValue"), ToUserFriendlyString(time));
 
-            if (result.Status == TaskCompletionStatus.Cancelled)
-            {
-                return;
-                CreateLogEntry(new ActivityLogEntry
-                {
-                    Name = string.Format(_localization.GetLocalizedString("ScheduledTaskCancelledWithName"), task.Name),
-                    Type = "ScheduledTaskCancelled",
-                    ShortOverview = runningTime
-                });
-            }
-            else if (result.Status == TaskCompletionStatus.Completed)
-            {
-                return;
-                CreateLogEntry(new ActivityLogEntry
-                {
-                    Name = string.Format(_localization.GetLocalizedString("ScheduledTaskCompletedWithName"), task.Name),
-                    Type = "ScheduledTaskCompleted",
-                    ShortOverview = runningTime
-                });
-            }
-            else if (result.Status == TaskCompletionStatus.Failed)
+            if (result.Status == TaskCompletionStatus.Failed)
             {
                 var vals = new List<string>();
 

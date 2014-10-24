@@ -530,20 +530,12 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null)
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null, string collectionType = null)
         {
-            return ResolvePath(fileInfo, new DirectoryService(_logger), parent);
+            return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
         }
 
-        /// <summary>
-        /// Resolves a path into a BaseItem
-        /// </summary>
-        /// <param name="fileInfo">The file info.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <param name="parent">The parent.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException">fileInfo</exception>
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null)
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
         {
             if (fileInfo == null)
             {
@@ -554,7 +546,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 Parent = parent,
                 Path = fileInfo.FullName,
-                FileInfo = fileInfo
+                FileInfo = fileInfo,
+                CollectionType = collectionType
             };
 
             // Return null if ignore rules deem that we should do so
@@ -622,15 +615,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        /// <summary>
-        /// Resolves a set of files into a list of BaseItem
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="files">The files.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <param name="parent">The parent.</param>
-        /// <returns>List{``0}.</returns>
-        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent)
+        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
             where T : BaseItem
         {
             var list = new List<T>();
@@ -639,7 +624,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 try
                 {
-                    var item = ResolvePath(f, directoryService, parent) as T;
+                    var item = ResolvePath(f, directoryService, parent, collectionType) as T;
 
                     if (item != null)
                     {
@@ -1190,6 +1175,20 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
+        public BaseItem GetMemoryItemById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            BaseItem item;
+
+            LibraryItemsCache.TryGetValue(id, out item);
+
+            return item;
+        }
+        
         /// <summary>
         /// Gets the intros.
         /// </summary>
@@ -1497,14 +1496,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 return null;
             }
 
-            var collectionTypes = _userManager.Users
-                .Select(i => i.RootFolder)
-                .Distinct()
-                .SelectMany(i => i.Children)
+            var collectionTypes = GetUserRootFolder().Children
                 .OfType<ICollectionFolder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
+                .Where(i => !string.IsNullOrEmpty(i.CollectionType) && (string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path)))
                 .Select(i => i.CollectionType)
-                .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct()
                 .ToList();
 

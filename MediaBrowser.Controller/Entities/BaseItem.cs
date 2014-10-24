@@ -429,6 +429,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual BaseItem DisplayParent
+        {
+            get { return Parent; }
+        }
+
         /// <summary>
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
@@ -548,7 +554,7 @@ namespace MediaBrowser.Controller.Entities
                     return CustomRating;
                 }
 
-                var parent = Parent;
+                var parent = DisplayParent;
                 if (parent != null)
                 {
                     return parent.CustomRatingForComparison;

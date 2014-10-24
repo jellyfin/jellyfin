@@ -13,7 +13,6 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
                 <p class="lnkEditUserPreferencesContainer">
                     <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
@@ -60,10 +59,15 @@
                             <label for="chkDisabled">${OptionDisableUser}</label>
                             <div class="fieldDescription">${OptionDisableUserHelp}</div>
                         </div>
-                        <p id="fldIsHidden">
+                        <div style="margin: 1em 0;">
+                            <input type="checkbox" id="chkDisableUserPreferences" data-mini="true" />
+                            <label for="chkDisableUserPreferences">${OptionDisableUserPreferences}</label>
+                            <div class="fieldDescription">${OptionDisableUserPreferencesHelp}</div>
+                        </div>
+                        <div id="fldIsHidden" style="margin: 2em 0 1em;">
                             <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
                             <label for="chkIsHidden">${OptionHideUser}</label>
-                        </p>
+                        </div>
                     </div>
                     <br />
                     <ul data-role="listview" class="ulForm">

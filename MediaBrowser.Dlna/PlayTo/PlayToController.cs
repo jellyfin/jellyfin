@@ -139,16 +139,21 @@ namespace MediaBrowser.Dlna.PlayTo
             try
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager);
-                var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
+                if (streamInfo.Item != null)
+                {
+                    var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
 
-                var positionTicks = progress.PositionTicks;
+                    var positionTicks = progress.PositionTicks;
 
-                ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+                    ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+                }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager);
-                progress = GetProgressInfo(e.NewMediaInfo, streamInfo);
+                if (streamInfo.Item == null) return;
+                
+                var newItemProgress = GetProgressInfo(e.NewMediaInfo, streamInfo);
 
-                await _sessionManager.OnPlaybackStart(progress).ConfigureAwait(false);
+                await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -161,6 +166,9 @@ namespace MediaBrowser.Dlna.PlayTo
             try
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
+
+                if (streamInfo.Item == null) return;
+
                 var progress = GetProgressInfo(e.MediaInfo, streamInfo);
 
                 var positionTicks = progress.PositionTicks;
@@ -219,9 +227,14 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var info = GetProgressInfo(e.MediaInfo);
+                var info = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
 
-                await _sessionManager.OnPlaybackStart(info).ConfigureAwait(false);
+                if (info.Item != null)
+                {
+                    var progress = GetProgressInfo(e.MediaInfo, info);
+
+                    await _sessionManager.OnPlaybackStart(progress).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -233,21 +246,19 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var info = GetProgressInfo(e.MediaInfo);
+                var info = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager);
 
-                await _sessionManager.OnPlaybackProgress(info).ConfigureAwait(false);
+                if (info.Item != null)
+                {
+                    var progress = GetProgressInfo(e.MediaInfo, info);
+
+                    await _sessionManager.OnPlaybackProgress(progress).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error reporting progress", ex);
             }
-        }
-
-        private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo)
-        {
-            var info = StreamParams.ParseFromUrl(mediaInfo.Url, _libraryManager);
-
-            return GetProgressInfo(mediaInfo, info);
         }
 
         private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo, StreamParams info)
@@ -441,19 +452,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private void AddItemFromId(Guid id, List<BaseItem> list)
         {
             var item = _libraryManager.GetItemById(id);
-            if (item.IsFolder)
+            if (item.MediaType == MediaType.Audio || item.MediaType == MediaType.Video)
             {
-                foreach (var childId in _itemRepository.GetChildren(item.Id))
-                {
-                    AddItemFromId(childId, list);
-                }
-            }
-            else
-            {
-                if (item.MediaType == MediaType.Audio || item.MediaType == MediaType.Video)
-                {
-                    list.Add(item);
-                }
+                list.Add(item);
             }
         }
 
@@ -526,6 +527,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic,
+                    streamInfo.IsTargetCabac,
                     streamInfo.TargetRefFrames);
 
                 return list.FirstOrDefault();
@@ -736,10 +738,10 @@ namespace MediaBrowser.Dlna.PlayTo
             if (media != null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
-                var progress = GetProgressInfo(media, info);
 
                 if (info.Item != null)
                 {
+                    var progress = GetProgressInfo(media, info);
                     var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
@@ -762,10 +764,10 @@ namespace MediaBrowser.Dlna.PlayTo
             if (media != null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager);
-                var progress = GetProgressInfo(media, info);
 
                 if (info.Item != null)
                 {
+                    var progress = GetProgressInfo(media, info);
                     var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
@@ -829,7 +831,9 @@ namespace MediaBrowser.Dlna.PlayTo
                     ItemId = GetItemId(url)
                 };
 
-                if (string.IsNullOrWhiteSpace(request.ItemId))
+                Guid parsedId;
+
+                if (string.IsNullOrWhiteSpace(request.ItemId) || !Guid.TryParse(request.ItemId, out parsedId))
                 {
                     return request;
                 }
@@ -882,7 +886,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 request.Item = string.IsNullOrWhiteSpace(request.ItemId)
                     ? null
-                    : libraryManager.GetItemById(new Guid(request.ItemId));
+                    : libraryManager.GetItemById(parsedId);
 
                 var hasMediaSources = request.Item as IHasMediaSources;
 

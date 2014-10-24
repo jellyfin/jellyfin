@@ -230,29 +230,18 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Gets the name of the meta file by.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public FileSystemInfo GetMetaFileByName(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException();
-            }
-
-            return GetFileSystemEntryByName(name);
-        }
-
-        /// <summary>
         /// Determines whether [contains meta file by name] [the specified name].
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns><c>true</c> if [contains meta file by name] [the specified name]; otherwise, <c>false</c>.</returns>
         public bool ContainsMetaFileByName(string name)
         {
-            return GetMetaFileByName(name) != null;
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException();
+            }
+
+            return GetFileSystemEntryByName(name) != null;
         }
 
         /// <summary>
@@ -265,19 +254,12 @@ namespace MediaBrowser.Controller.Library
             return GetFileSystemEntryByName(name) != null;
         }
 
-        private bool _collectionTypeDiscovered;
-        private string _collectionType;
-
         public string GetCollectionType()
         {
-            if (!_collectionTypeDiscovered)
-            {
-                _collectionType = Parent == null ? null : _libraryManager.FindCollectionType(Parent);
-                _collectionTypeDiscovered = true;
-            }
-
-            return _collectionType;
+            return CollectionType;
         }
+
+        public string CollectionType { get; set; }
 
         #region Equality Overrides
 

@@ -359,6 +359,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             session.NowPlayingItem = info.Item;
             session.LastActivityDate = DateTime.UtcNow;
+            session.LastPlaybackCheckIn = DateTime.UtcNow;
 
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
@@ -498,6 +499,65 @@ namespace MediaBrowser.Server.Implementations.Session
             return users;
         }
 
+        private Timer _idleTimer;
+
+        private void StartIdleCheckTimer()
+        {
+            if (_idleTimer == null)
+            {
+                _idleTimer = new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            }
+        }
+        private void StopIdleCheckTimer()
+        {
+            if (_idleTimer != null)
+            {
+                _idleTimer.Dispose();
+                _idleTimer = null;
+            }
+        }
+
+        private async void CheckForIdlePlayback(object state)
+        {
+            var playingSessions = Sessions.Where(i => i.NowPlayingItem != null)
+                .ToList();
+
+            if (playingSessions.Count > 0)
+            {
+                var idle = playingSessions
+                    .Where(i => (DateTime.UtcNow - i.LastPlaybackCheckIn).TotalMinutes > 5)
+                    .ToList();
+
+                foreach (var session in idle)
+                {
+                    _logger.Debug("Session {0} has gone idle while playing", session.Id);
+
+                    try
+                    {
+                        await OnPlaybackStopped(new PlaybackStopInfo
+                        {
+                            Item = session.NowPlayingItem,
+                            ItemId = (session.NowPlayingItem == null ? null : session.NowPlayingItem.Id),
+                            SessionId = session.Id,
+                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId)
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Debug("Error calling OnPlaybackStopped", ex);
+                    }
+                }
+
+                playingSessions = Sessions.Where(i => i.NowPlayingItem != null)
+                    .ToList();
+            }
+
+            if (playingSessions.Count == 0)
+            {
+                StopIdleCheckTimer();
+            }
+        }
+
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
@@ -553,6 +613,8 @@ namespace MediaBrowser.Server.Implementations.Session
             }, _logger);
 
             await SendPlaybackStartNotification(session, CancellationToken.None).ConfigureAwait(false);
+
+            StartIdleCheckTimer();
         }
 
         /// <summary>
@@ -623,6 +685,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 DeviceId = session.DeviceId
 
             }, _logger);
+
+            StartIdleCheckTimer();
         }
 
         private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
@@ -1546,11 +1610,7 @@ namespace MediaBrowser.Server.Implementations.Session
             if (musicVideo != null)
             {
                 info.Album = musicVideo.Album;
-
-                if (!string.IsNullOrWhiteSpace(musicVideo.Artist))
-                {
-                    info.Artists.Add(musicVideo.Artist);
-                }
+                info.Artists = musicVideo.Artists.ToList();
             }
 
             var backropItem = item.HasImage(ImageType.Backdrop) ? item : null;

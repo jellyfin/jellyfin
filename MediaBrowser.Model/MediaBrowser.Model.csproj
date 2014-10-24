@@ -121,6 +121,7 @@
     <Compile Include="Dlna\SubtitleDeliveryMethod.cs" />
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
+    <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Dto\VideoStreamOptions.cs" />
@@ -402,7 +403,6 @@
     <Compile Include="Updates\PackageInfo.cs" />
     <Compile Include="Updates\PackageVersionInfo.cs" />
     <Compile Include="Users\AuthenticationResult.cs" />
-    <Compile Include="Weather\WeatherUnits.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
     <None Include="MediaBrowser.Model.snk" />

@@ -100,6 +100,9 @@ var Dashboard = {
     serverAddress: function (val) {
 
         if (val != null) {
+
+            console.log('Setting server address to: ' + val);
+
             store.setItem('serverAddress', val);
         }
 
@@ -147,16 +150,26 @@ var Dashboard = {
         Dashboard.getUserPromise = null;
     },
 
+    isConnectMode: function () {
+
+        return getWindowUrl().toLowerCase().indexOf('mediabrowser.tv') != -1;
+    },
+
     logout: function (logoutWithServer) {
 
+        ConnectionManager.logoutFromConnect();
         store.removeItem("userId");
         store.removeItem("token");
 
+        var loginPage = !Dashboard.isConnectMode() ?
+            'login.html' :
+            'connectlogin.html';
+
         if (logoutWithServer === false) {
-            window.location = "login.html";
+            window.location = loginPage;
         } else {
             ApiClient.logout().done(function () {
-                window.location = "login.html";
+                window.location = loginPage;
             });
 
         }
@@ -308,14 +321,14 @@ var Dashboard = {
 
     reloadPage: function () {
 
-        var currentUrl = window.location.toString().toLowerCase();
+        var currentUrl = getWindowUrl().toLowerCase();
 
         // If they're on a plugin config page just go back to the dashboard
         // The plugin may not have been loaded yet, or could have been uninstalled
         if (currentUrl.indexOf('configurationpage') != -1) {
             window.location.href = "dashboard.html";
         } else {
-            window.location.href = window.location.href;
+            window.location.href = getWindowUrl();
         }
     },
 
@@ -538,7 +551,10 @@ var Dashboard = {
 
             html += '<form>';
 
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+            if (user.Configuration.EnableUserPreferenceAccess) {
+                html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+            }
+
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
             html += '</form>';
@@ -766,15 +782,7 @@ var Dashboard = {
             return;
         }
 
-        var location = window.location;
-
-        var webSocketUrl = "ws://" + location.hostname;
-
-        if (location.port) {
-            webSocketUrl += ':' + location.port;
-        }
-
-        ApiClient.openWebSocket(webSocketUrl);
+        ApiClient.openWebSocket();
     },
 
     onWebSocketOpened: function () {
@@ -1186,20 +1194,79 @@ var Dashboard = {
 
 (function () {
 
+    function generateDeviceName() {
+
+        var name = "Web Browser";
+
+        if ($.browser.chrome) {
+            name = "Chrome";
+        } else if ($.browser.safari) {
+            name = "Safari";
+        } else if ($.browser.webkit) {
+            name = "WebKit";
+        } else if ($.browser.msie) {
+            name = "Internet Explorer";
+        } else if ($.browser.opera) {
+            name = "Opera";
+        } else if ($.browser.firefox || $.browser.mozilla) {
+            name = "Firefox";
+        }
+
+        if ($.browser.version) {
+            name += " " + $.browser.version;
+        }
+
+        if ($.browser.ipad) {
+            name += " Ipad";
+        } else if ($.browser.iphone) {
+            name += " Iphone";
+        } else if ($.browser.android) {
+            name += " Android";
+        }
+        return name;
+    }
+
     if (!window.WebSocket) {
 
         alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
     }
 
-    window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), "Dashboard", window.dashboardVersion, MediaBrowser.ApiClient.generateDeviceName(), MediaBrowser.ApiClient.generateDeviceId());
+    var appName = "Dashboard";
+    var appVersion = window.dashboardVersion;
+    var deviceName = generateDeviceName();
+    var deviceId = MediaBrowser.ApiClient.generateDeviceId();
+
+    window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
+    window.ConnectionManager = new MediaBrowser.ConnectionManager(new MediaBrowser.CredentialProvider(), appName, appVersion, deviceName, deviceId);
 
     $(ApiClient).on("websocketopen", Dashboard.onWebSocketOpened)
         .on("websocketmessage", Dashboard.onWebSocketMessageReceived);
 
+    // TODO: Improve with http://webpjs.appspot.com/
+    ApiClient.supportsWebP($.browser.chrome);
+
     ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+
+    //test();
 
 })();
 
+function test() {
+
+    ConnectionManager.loginToConnect("luke", "ac501ac7111a1e5").done(function (result) {
+
+        var promise = ConnectionManager.connect();
+
+        promise.done(function (r) {
+            alert(JSON.stringify(r));
+
+        }).fail(function() {
+            
+            alert('fail');
+        });
+    });
+
+}
 
 $(function () {
 
@@ -1318,6 +1385,18 @@ $(document).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 
+    var isConnectMode = Dashboard.isConnectMode();
+
+    if (isConnectMode && !page.hasClass('connectLoginPage')) {
+
+        if (!ConnectionManager.isLoggedIntoConnect()) {
+
+            console.log('Not logged into connect. Redirecting to login.');
+            Dashboard.logout();
+            return;
+        }
+    }
+
     if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
 
         Dashboard.getCurrentUser().done(function (user) {
@@ -1334,8 +1413,10 @@ $(document).on('pagebeforeshow', ".page", function () {
     }
 
     else {
-        if (this.id !== "loginPage" && !page.hasClass('wizardPage')) {
 
+        if (this.id !== "loginPage" && !page.hasClass('wizardPage') && !isConnectMode) {
+
+            console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
             return;
         }

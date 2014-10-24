@@ -19,7 +19,17 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getItems(userId, query).done(function (result) {
+        var parentItemPromise = query.ParentId ?
+           ApiClient.getItem(userId, query.ParentId) :
+           ApiClient.getRootFolder(userId);
+
+        var itemsPromise = ApiClient.getItems(userId, query);
+
+        $.when(parentItemPromise, itemsPromise).done(function(r1, r2) {
+
+            var item = r1[0];
+            currentItem = item;
+            var result = r2[0];
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
@@ -43,6 +53,8 @@
                 context = 'folders';
             }
 
+            var defaultAction = currentItem.Type == 'PhotoAlbum' ? 'photoslideshow' : null;
+
             if (view == "Backdrop") {
 
                 html = LibraryBrowser.getPosterViewHtml({
@@ -51,7 +63,8 @@
                     showTitle: true,
                     centerText: true,
                     preferBackdrop: true,
-                    context: context
+                    context: context,
+                    defaultAction: defaultAction
                 });
             }
             else if (view == "Poster") {
@@ -60,7 +73,8 @@
                     shape: "auto",
                     showTitle: true,
                     centerText: true,
-                    context: context
+                    context: context,
+                    defaultAction: defaultAction
                 });
             }
 
@@ -80,17 +94,6 @@
 
             LibraryBrowser.saveQueryValues(getParameterByName('parentId'), query);
 
-            Dashboard.hideLoadingMsg();
-        });
-
-        var promise = query.ParentId ?
-            ApiClient.getItem(userId, query.ParentId) :
-            ApiClient.getRootFolder(userId);
-
-        promise.done(function (item) {
-
-            currentItem = item;
-
             var name = item.Name;
 
             if (item.IndexNumber != null) {
@@ -109,6 +112,7 @@
                 item: item
             }]);
 
+            Dashboard.hideLoadingMsg();
         });
 
         Dashboard.getCurrentUser().done(function (user) {
@@ -150,6 +154,48 @@
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+    }
+
+    function startSlideshow(page, index) {
+
+        index += (query.StartIndex || 0);
+
+        var userId = Dashboard.getCurrentUserId();
+
+        var localQuery = $.extend({}, query);
+        localQuery.StartIndex = 0;
+        localQuery.Limit = null;
+        localQuery.MediaTypes = "Photo";
+        localQuery.Recursive = true;
+        localQuery.Filters = "IsNotFolder";
+
+        ApiClient.getItems(userId, localQuery).done(function(result) {
+
+            showSlideshow(page, result.Items, index);
+        });
+    }
+
+    function showSlideshow(page, items, index) {
+
+        var slideshowItems = items.map(function (item) {
+
+            var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                
+                tag: item.ImageTags.Primary,
+                type: 'Primary'
+
+            });
+
+            return {
+                title: item.Name,
+                href: imgUrl
+            };
+        });
+
+        $.swipebox(slideshowItems, {
+            initialIndexOnArray: index || 0,
+            hideBarsDelay: 30000
+        });
     }
 
     $(document).on('pageinit', "#itemListPage", function () {
@@ -217,6 +263,10 @@
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
+        });
+
+        $('.itemsContainer', page).on('photoslideshow', function (e, index) {
+            startSlideshow(page, index);
         });
 
     }).on('pageshow', "#itemListPage", function () {

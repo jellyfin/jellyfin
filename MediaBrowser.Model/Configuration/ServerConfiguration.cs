@@ -180,6 +180,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveMetadataHidden { get; set; }
 
+        public bool PlaylistImagesDeleted { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

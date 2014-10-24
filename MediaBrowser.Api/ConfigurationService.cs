@@ -122,51 +122,10 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        const string XbmcMetadata = "Xbmc Nfo";
-        const string MediaBrowserMetadata = "Media Browser Xml";
-
         public void Post(AutoSetMetadataOptions request)
         {
-            var service = AutoDetectMetadataService();
-
-            Logger.Info("Setting preferred metadata format to " + service);
-
-            var serviceToDisable = string.Equals(service, XbmcMetadata) ?
-                MediaBrowserMetadata :
-                XbmcMetadata;
-
-            _configurationManager.DisableMetadataService(serviceToDisable);
+            _configurationManager.DisableMetadataService("Media Browser Xml");
             _configurationManager.SaveConfiguration();
-        }
-
-        private string AutoDetectMetadataService()
-        {
-            try
-            {
-                var paths = _libraryManager.GetDefaultVirtualFolders()
-                   .SelectMany(i => i.Locations)
-                   .Distinct(StringComparer.OrdinalIgnoreCase)
-                   .Select(i => new DirectoryInfo(i))
-                   .ToList();
-
-                if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                    .Any())
-                {
-                    return XbmcMetadata;
-                }
-
-                if (paths.SelectMany(i => i.EnumerateFiles("*.xml", SearchOption.AllDirectories))
-                    .Any(i => string.Equals(i.Name, "series.xml", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "movie.xml", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return MediaBrowserMetadata;
-                }
-            }
-            catch (Exception)
-            {
-                
-            }
-            
-            return XbmcMetadata;
         }
 
         /// <summary>

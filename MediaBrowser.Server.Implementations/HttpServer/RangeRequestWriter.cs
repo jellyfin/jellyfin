@@ -173,9 +173,64 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     ThrottleCallback = ThrottleCallback
                 };
             }
-            var task = WriteToAsync(responseStream);
+            WriteToInternal(responseStream);
+        }
 
-            Task.WaitAll(task);
+        /// <summary>
+        /// Writes to async.
+        /// </summary>
+        /// <param name="responseStream">The response stream.</param>
+        /// <returns>Task.</returns>
+        private void WriteToInternal(Stream responseStream)
+        {
+            try
+            {
+                // Headers only
+                if (IsHeadRequest)
+                {
+                    return;
+                }
+
+                using (var source = SourceStream)
+                {
+                    // If the requested range is "0-", we can optimize by just doing a stream copy
+                    if (RangeEnd >= TotalContentLength - 1)
+                    {
+                        source.CopyTo(responseStream);
+                    }
+                    else
+                    {
+                        CopyToInternal(source, responseStream, Convert.ToInt32(RangeLength));
+                    }
+                }
+            }
+            finally
+            {
+                if (OnComplete != null)
+                {
+                    OnComplete();
+                }
+            }
+        }
+
+        private void CopyToInternal(Stream source, Stream destination, int copyLength)
+        {
+            const int bufferSize = 81920;
+            var array = new byte[bufferSize];
+            int count;
+            while ((count = source.Read(array, 0, array.Length)) != 0)
+            {
+                var bytesToCopy = Math.Min(count, copyLength);
+
+                destination.Write(array, 0, bytesToCopy);
+
+                copyLength -= bytesToCopy;
+
+                if (copyLength <= 0)
+                {
+                    break;
+                }
+            }
         }
 
         /// <summary>

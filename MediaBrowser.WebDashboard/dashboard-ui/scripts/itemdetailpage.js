@@ -248,13 +248,17 @@
             $('a', elem).removeClass('ui-btn-active');
             $('.lnkHomeLatest', page).addClass('ui-btn-active');
         }
-        else if (context == 'movies' || item.Type == 'Movie') {
+        else if (context == 'movies' || item.Type == 'Movie' || context == 'movies-trailers') {
             elem = $('#movieTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
 
             if (item.Type == 'BoxSet') {
                 $('.lnkCollections', page).addClass('ui-btn-active');
-            } else {
+            }
+            else if (context == 'movies-trailers') {
+                $('.lnkMovieTrailers', page).addClass('ui-btn-active');
+            }
+            else {
                 $('.lnkMovies', page).addClass('ui-btn-active');
             }
         }
@@ -598,7 +602,8 @@
         if (item.Type == "Movie") {
             promise = ApiClient.getSimilarMovies(item.Id, options);
         }
-        else if (item.Type == "Trailer") {
+        else if (item.Type == "Trailer" ||
+            (item.Type == "ChannelVideoItem" && item.ExtraType == "Trailer")) {
             promise = ApiClient.getSimilarTrailers(item.Id, options);
         }
         else if (item.Type == "MusicAlbum") {
@@ -1275,6 +1280,10 @@
 
             if (stream.Type == "Video" && version.Timestamp) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
+            }
+
+            if (stream.IsCabac != null) {
+                attributes.push(createAttribute(Globalize.translate('CABAC'), (stream.IsCabac ? 'Yes' : 'No')));
             }
 
             html += attributes.join('<br/>');

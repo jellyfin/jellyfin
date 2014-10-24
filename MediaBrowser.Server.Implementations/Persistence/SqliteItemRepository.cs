@@ -257,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _writeLock.Release();
             }
         }
-
+        
         /// <summary>
         /// Internal retrieve from items or users table
         /// </summary>
@@ -473,6 +473,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public IEnumerable<BaseItem> GetChildrenItems(Guid parentId)
+        {
+            if (parentId == Guid.Empty)
+            {
+                throw new ArgumentNullException("parentId");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select type,data from TypedBaseItems where guid in (select ItemId from ChildrenIds where ParentId = @ParentId)";
+
+                cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var item = GetItem(reader);
+
+                        if (item != null)
+                        {
+                            yield return item;
+                        }
+                    }
+                }
+            }
+        }
+        
         public IEnumerable<BaseItem> GetItemsOfType(Type type)
         {
             if (type == null)

@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleSignIn}</title>
+</head>
+<body>
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage">
+
+        <div data-role="content">
+
+            <form class="connectLoginForm" style="text-align: center; margin: 0 auto;">
+
+                <h2 style="text-align: left;">${HeaderPleaseSignIn}</h2>
+
+                <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
+                <input type="text" id="txtManualName" required="required" />
+
+                <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
+                <input type="password" id="txtManualPassword" placeholder="password" required="required" />
+                <button type="submit" data-icon="check">
+                    ${ButtonSignIn}
+                </button>
+                <p>
+                    <a href="http://mediabrowser.tv/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
+                </p>
+
+                <br /><br /><br />
+                <h2 style="text-align: left;">${HeaderNewUsers}</h2>
+                <a data-role="button" data-icon="action" href="http://mediabrowser.tv/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
+            </form>
+        </div>
+
+        <script type="text/javascript">
+            $('.connectLoginForm').off('submit', ConnectLoginPage.onSubmit).on('submit', ConnectLoginPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

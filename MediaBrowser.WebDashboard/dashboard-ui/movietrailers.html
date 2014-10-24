@@ -4,7 +4,18 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="movieTrailersPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b">
+    <div id="movieTrailersPage" data-role="page" class="page libraryPage" data-theme="b">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="movieslatest.html">${TabLatest}</a>
+            <a href="moviesrecommended.html">${TabSuggested}</a>
+            <a href="movies.html">${TabMovies}</a>
+            <a href="#" class="ui-btn-active">${TabTrailers}</a>
+            <a href="collections.html?context=movies">${TabCollections}</a>
+            <a href="moviegenres.html">${TabGenres}</a>
+            <a href="moviepeople.html">${TabPeople}</a>
+            <a href="moviestudios.html">${TabStudios}</a>
+        </div>
 
         <div class="alphabetPicker">
         </div>
@@ -12,8 +23,10 @@
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
+                <button class="btnTrailerReel" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonTrailerReel}</button>
             </div>
             <div id="items" class="itemsContainer"></div>
+            <p class="noItemsMessage" style="display:none;">${MessageNoTrailersFound}</p>
         </div>
 
         <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
@@ -28,14 +41,6 @@
                 <div class="tabView viewTab">
 
                     <div>
-                        <label for="selectView">${LabelView}</label>
-                        <select id="selectView">
-                            <option value="Poster">${OptionPoster}</option>
-                            <option value="List">${OptionList}</option>
-                        </select>
-                    </div>
-                    <br />
-                    <div>
                         <label for="selectPageSize">${LabelPageSize}</label>
                         <select id="selectPageSize"></select>
                     </div>
@@ -43,7 +48,9 @@
                 </div>
                 <div class="tabFilter viewTab">
                     <fieldset data-role="controlgroup">
-                        <legend>${HeaderFilters}</legend>
+                        <legend>
+                            ${HeaderFilters}
+                        </legend>
                         <input class="chkStandardFilter" type="checkbox" name="chkPlayed" id="chkPlayed" data-filter="IsPlayed" data-mini="true">
                         <label for="chkPlayed">${OptionPlayed}</label>
 
@@ -61,7 +68,6 @@
 
                         <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
                         <label for="chkDislikes">${OptionDislikes}</label>
-
                     </fieldset>
 
                 </div>
@@ -74,33 +80,25 @@
                         <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
                         <label for="radioSortName">${OptionNameSort}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioBudget" value="off" data-sortby="Budget" data-mini="true">
-                        <label for="radioBudget">${OptionBudget}</label>
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
+                        <label for="radioCommunityRating">${OptionImdbRating}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
-                        <label for="radioCommunityRating">${OptionCommunityRating}</label>
-
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCriticRating" value="off" data-sortby="CriticRating" data-mini="true">
-                        <label for="radioCriticRating">${OptionCriticRating}</label>
-
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated,SortName" data-mini="true">
                         <label for="radioDateCreated">${OptionDateAdded}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed" data-mini="true">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDatePlayed" value="off" data-sortby="DatePlayed,SortName" data-mini="true">
                         <label for="radioDatePlayed">${OptionDatePlayed}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount" data-mini="true">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioContentRating" value="off" data-sortby="OfficialRating,SortName" data-mini="true">
+                        <label for="radioContentRating">${OptionParentalRating}</label>
+
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPlayCount" value="off" data-sortby="PlayCount,SortName" data-mini="true">
                         <label for="radioPlayCount">${OptionPlayCount}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate" data-mini="true">
+                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPremiereDate" value="off" data-sortby="PremiereDate,SortName" data-mini="true">
                         <label for="radioPremiereDate">${OptionReleaseDate}</label>
-
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRevenue" value="off" data-sortby="Revenue" data-mini="true">
-                        <label for="radioRevenue">${OptionRevenue}</label>
-
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioRuntime" value="off" data-sortby="Runtime" data-mini="true">
-                        <label for="radioRuntime">${OptionRuntime}</label>
                     </fieldset>
+
                     <fieldset data-role="controlgroup">
                         <legend>
                             ${HeaderSortOrder}
@@ -115,6 +113,38 @@
                 </div>
             </form>
         </div>
+
+        <div data-role="popup" class="popup popupTrailerReel" data-theme="a">
+
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3 style="margin: .5em;">${HeaderTrailerReel}</h3>
+            </div>
+
+            <div data-role="content">
+
+                <form class="popupTrailerReelForm" style="min-width: 200px;">
+
+                    <p>${HeaderTrailerReelHelp}</p>
+                    <div>
+                        <label for="chkUnwatchedOnly">${OptionPlayUnwatchedTrailersOnly}</label>
+                        <input id="chkUnwatchedOnly" data-mini="true" type="checkbox" />
+                    </div>
+                    <br />
+                    <p>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                            ${ButtonCancel}
+                        </button>
+                    </p>
+                </form>
+            </div>
+
+        </div>
+        <script type="text/javascript">
+            $('.popupTrailerReelForm').off('submit', MovieTrailerPage.onSubmit).on('submit', MovieTrailerPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

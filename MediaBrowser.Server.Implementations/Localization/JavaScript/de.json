@@ -74,7 +74,8 @@
     "ButtonMarkTheseRead": "Als gelesen markieren",
     "ButtonClose": "Schlie\u00dfen",
     "LabelAllPlaysSentToPlayer": "Alle Wiedergaben werden zum ausgew\u00e4hlten Abspielger\u00e4t gesendet.",
-    "MessageInvalidUser": "Falscher Benutzername oder Passwort.",
+    "MessageInvalidUser": "Falscher Benutzername oder Passwort. Bitte versuche es noch einmal.",
+    "HeaderLoginFailure": "Login Fehler",
     "HeaderAllRecordings": "Alle Aufnahmen",
     "RecommendationBecauseYouLike": "Weil du auch {0} magst",
     "RecommendationBecauseYouWatched": "Weil du auch {0} angesehen hast",
@@ -602,5 +603,10 @@
     "LabelEnableCameraUploadFor": "Aktiviere den Kamera-Upload f\u00fcr:",
     "HeaderSelectUploadPath": "W\u00e4hle Upload Pfad",
     "LabelEnableCameraUploadForHelp": "Uploads werden automatisch im Hintergrund durchgef\u00fchrt wenn du in Media Browser eingeloggt bist.",
-    "ErrorMessageStartHourGreaterThanEnd": "Die Endzeit muss gr\u00f6\u00dfer als die Startzeit sein."
+    "ErrorMessageStartHourGreaterThanEnd": "Die Endzeit muss gr\u00f6\u00dfer als die Startzeit sein.",
+    "ButtonLibraryAccess": "Bibliothekszugang",
+    "ButtonParentalControl": "Kindersicherung",
+    "HeaderInvitationSent": "Einladung verschickt",
+    "MessageInvitationSentToUser": "Eine E-Mail mit der Einladung zum Sharing ist an {0} geschickt worden.",
+    "MessageInvitationSentToNewUser": "Eine E-Mail mit der Einladung zur Anmeldung am Media Browser ist an {0} geschickt worden."
 }

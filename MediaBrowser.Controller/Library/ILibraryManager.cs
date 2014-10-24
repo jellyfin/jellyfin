@@ -18,29 +18,13 @@ namespace MediaBrowser.Controller.Library
     public interface ILibraryManager
     {
         /// <summary>
-        /// Resolves the item.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>BaseItem.</returns>
-        BaseItem ResolveItem(ItemResolveArgs args);
-
-        /// <summary>
-        /// Resolves a path into a BaseItem
-        /// </summary>
-        /// <param name="fileInfo">The file info.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <param name="parent">The parent.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null);
-
-        /// <summary>
         /// Resolves the path.
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null);
+        BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null, string collectionType = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
@@ -49,8 +33,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="files">The files.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="parent">The parent.</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <returns>List{``0}.</returns>
-        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent)
+        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
             where T : BaseItem;
 
         /// <summary>
@@ -151,6 +136,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>BaseItem.</returns>
         BaseItem GetItemById(Guid id);
 
+        /// <summary>
+        /// Gets the memory item by identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem GetMemoryItemById(Guid id);
+        
         /// <summary>
         /// Gets the intros.
         /// </summary>

@@ -736,7 +736,9 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), directoryService, this);
+            var collectionType = LibraryManager.FindCollectionType(this);
+
+            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
         }
 
         /// <summary>
@@ -745,7 +747,16 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            return ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null);
+            var childrenItems = ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
+
+            //var children = ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null).ToList();
+
+            //if (children.Count != childrenItems.Count)
+            //{
+            //    var b = this;
+            //}
+
+            return childrenItems;
         }
 
         /// <summary>
@@ -765,6 +776,29 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 item.Parent = this;
+            }
+
+            return item;
+        }
+
+        private BaseItem RetrieveChild(BaseItem child)
+        {
+            var item = LibraryManager.GetMemoryItemById(child.Id);
+
+            if (item != null)
+            {
+                if (item is IByReferenceItem)
+                {
+                    return LibraryManager.GetOrAddByReferenceItem(item);
+                }
+
+                item.Parent = this;
+            }
+            else
+            {
+                child.Parent = this;
+                LibraryManager.RegisterItem(child);
+                item = child;
             }
 
             return item;

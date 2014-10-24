@@ -10,6 +10,7 @@
   <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <DidlAlbumArtLimit xsi:nil="true" />
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
@@ -25,6 +26,8 @@
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
+  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
+  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4,mov" audioCodec="aac,mp3" videoCodec="h264" type="Video" />

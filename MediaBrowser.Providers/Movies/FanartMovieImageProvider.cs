@@ -1,25 +1,22 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -29,16 +26,19 @@ namespace MediaBrowser.Providers.Movies
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _json;
 
-        private const string FanArtBaseUrl = "http://api.fanart.tv/webservice/movie/{0}/{1}/xml/all/1/1";
+        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3/movies/{1}?api_key={0}";
+        // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartMovieImageProvider Current;
 
-        public FanartMovieImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartMovieImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IJsonSerializer json)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _json = json;
 
             Current = this;
         }
@@ -88,13 +88,13 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                await EnsureMovieXml(movieId, cancellationToken).ConfigureAwait(false);
+                await EnsureMovieJson(movieId, cancellationToken).ConfigureAwait(false);
 
-                var xmlPath = GetFanartXmlPath(movieId);
+                var path = GetFanartJsonPath(movieId);
 
                 try
                 {
-                    AddImages(list, xmlPath, cancellationToken);
+                    AddImages(list, path, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -130,198 +130,63 @@ namespace MediaBrowser.Providers.Movies
                 .ThenByDescending(i => i.CommunityRating ?? 0);
         }
 
-        private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, string path, CancellationToken cancellationToken)
         {
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
-                {
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true,
-                    ValidationType = ValidationType.None
-                }))
-                {
-                    reader.MoveToContent();
+            var root = _json.DeserializeFromFile<RootObject>(path);
 
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "movie":
-                                    {
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            AddImages(list, subReader, cancellationToken);
-                                        }
-                                        break;
-                                    }
-
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
+            AddImages(list, root, cancellationToken);
         }
 
-        private void AddImages(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, RootObject obj, CancellationToken cancellationToken)
         {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "hdmoviecleararts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Art, 1000, 562);
-                                }
-                                break;
-                            }
-                        case "hdmovielogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Logo, 800, 310);
-                                }
-                                break;
-                            }
-                        case "moviediscs":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Disc, 1000, 1000);
-                                }
-                                break;
-                            }
-                        case "movieposters":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Primary, 1000, 1426);
-                                }
-                                break;
-                            }
-                        case "movielogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Logo, 400, 155);
-                                }
-                                break;
-                            }
-                        case "moviearts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Art, 500, 281);
-                                }
-                                break;
-                            }
-                        case "moviethumbs":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Thumb, 1000, 562);
-                                }
-                                break;
-                            }
-                        case "moviebanners":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Banner, 1000, 185);
-                                }
-                                break;
-                            }
-                        case "moviebackgrounds":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    PopulateImageCategory(list, subReader, cancellationToken, ImageType.Backdrop, 1920, 1080);
-                                }
-                                break;
-                            }
-                        default:
-                            {
-                                using (reader.ReadSubtree())
-                                {
-                                }
-                                break;
-                            }
-                    }
-                }
-            }
+            PopulateImages(list, obj.hdmovieclearart, ImageType.Art, 1000, 562);
+            PopulateImages(list, obj.hdmovielogo, ImageType.Logo, 800, 310);
+            PopulateImages(list, obj.moviedisc, ImageType.Disc, 1000, 1000);
+            PopulateImages(list, obj.movieposter, ImageType.Primary, 1000, 1426);
+            PopulateImages(list, obj.movielogo, ImageType.Logo, 400, 155);
+            PopulateImages(list, obj.movieart, ImageType.Art, 500, 281);
+            PopulateImages(list, obj.moviethumb, ImageType.Thumb, 1000, 562);
+            PopulateImages(list, obj.moviebanner, ImageType.Banner, 1000, 185);
+            PopulateImages(list, obj.moviebackground, ImageType.Backdrop, 1920, 1080);
         }
 
-        private void PopulateImageCategory(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken, ImageType type, int width, int height)
+        private void PopulateImages(List<RemoteImageInfo> list, List<Image> images, ImageType type, int width, int height)
         {
-            reader.MoveToContent();
-
-            while (reader.Read())
+            if (images == null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "hdmovielogo":
-                        case "moviedisc":
-                        case "hdmovieclearart":
-                        case "movieposter":
-                        case "movielogo":
-                        case "movieart":
-                        case "moviethumb":
-                        case "moviebanner":
-                        case "moviebackground":
-                            {
-                                var url = reader.GetAttribute("url");
-
-                                if (!string.IsNullOrEmpty(url))
-                                {
-                                    var likesString = reader.GetAttribute("likes");
-                                    int likes;
-
-                                    var info = new RemoteImageInfo
-                                    {
-                                        RatingType = RatingType.Likes,
-                                        Type = type,
-                                        Width = width,
-                                        Height = height,
-                                        ProviderName = Name,
-                                        Url = url,
-                                        Language = reader.GetAttribute("lang")
-                                    };
-
-                                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
-                                    {
-                                        info.CommunityRating = likes;
-                                    }
-
-                                    list.Add(info);
-                                }
-                                break;
-                            }
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
+                return;
             }
+
+            list.AddRange(images.Select(i =>
+            {
+                var url = i.url;
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    var likesString = i.likes;
+                    int likes;
+
+                    var info = new RemoteImageInfo
+                    {
+                        RatingType = RatingType.Likes,
+                        Type = type,
+                        Width = width,
+                        Height = height,
+                        ProviderName = Name,
+                        Url = url,
+                        Language = i.lang
+                    };
+
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
+                    {
+                        info.CommunityRating = likes;
+                    }
+
+                    return info;
+                }
+
+                return null;
+            }).Where(i => i != null));
         }
 
         public int Order
@@ -347,13 +212,17 @@ namespace MediaBrowser.Providers.Movies
             }
 
             var id = item.GetProviderId(MetadataProviders.Tmdb);
+            if (string.IsNullOrEmpty(id))
+            {
+                id = item.GetProviderId(MetadataProviders.Imdb);
+            }
 
             if (!string.IsNullOrEmpty(id))
             {
                 // Process images
-                var xmlPath = GetFanartXmlPath(id);
+                var path = GetFanartJsonPath(id);
 
-                var fileInfo = new FileInfo(xmlPath);
+                var fileInfo = new FileInfo(path);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
@@ -364,12 +233,12 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Gets the movie data path.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="tmdbId">The TMDB id.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="id">The identifier.</param>
         /// <returns>System.String.</returns>
-        internal static string GetMovieDataPath(IApplicationPaths appPaths, string tmdbId)
+        internal static string GetMovieDataPath(IApplicationPaths appPaths, string id)
         {
-            var dataPath = Path.Combine(GetMoviesDataPath(appPaths), tmdbId);
+            var dataPath = Path.Combine(GetMoviesDataPath(appPaths), id);
 
             return dataPath;
         }
@@ -386,27 +255,27 @@ namespace MediaBrowser.Providers.Movies
             return dataPath;
         }
 
-        public string GetFanartXmlPath(string tmdbId)
+        public string GetFanartJsonPath(string id)
         {
-            var movieDataPath = GetMovieDataPath(_config.ApplicationPaths, tmdbId);
-            return Path.Combine(movieDataPath, "fanart.xml");
+            var movieDataPath = GetMovieDataPath(_config.ApplicationPaths, id);
+            return Path.Combine(movieDataPath, "fanart.json");
         }
 
         /// <summary>
-        /// Downloads the movie XML.
+        /// Downloads the movie json.
         /// </summary>
-        /// <param name="tmdbId">The TMDB id.</param>
+        /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        internal async Task DownloadMovieXml(string tmdbId, CancellationToken cancellationToken)
+        internal async Task DownloadMovieJson(string id, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tmdbId);
+            var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, id);
 
-            var xmlPath = GetFanartXmlPath(tmdbId);
+            var path = GetFanartJsonPath(id);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
@@ -416,17 +285,17 @@ namespace MediaBrowser.Providers.Movies
 
             }).ConfigureAwait(false))
             {
-                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
-                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                    await response.CopyToAsync(fileStream).ConfigureAwait(false);
                 }
             }
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureMovieXml(string tmdbId, CancellationToken cancellationToken)
+        internal Task EnsureMovieJson(string id, CancellationToken cancellationToken)
         {
-            var path = GetFanartXmlPath(tmdbId);
+            var path = GetFanartJsonPath(id);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(path);
 
@@ -438,7 +307,31 @@ namespace MediaBrowser.Providers.Movies
                 }
             }
 
-            return DownloadMovieXml(tmdbId, cancellationToken);
+            return DownloadMovieJson(id, cancellationToken);
+        }
+
+        public class Image
+        {
+            public string id { get; set; }
+            public string url { get; set; }
+            public string lang { get; set; }
+            public string likes { get; set; }
+        }
+
+        public class RootObject
+        {
+            public string name { get; set; }
+            public string tmdb_id { get; set; }
+            public string imdb_id { get; set; }
+            public List<Image> hdmovielogo { get; set; }
+            public List<Image> moviedisc { get; set; }
+            public List<Image> movielogo { get; set; }
+            public List<Image> movieposter { get; set; }
+            public List<Image> hdmovieclearart { get; set; }
+            public List<Image> movieart { get; set; }
+            public List<Image> moviebackground { get; set; }
+            public List<Image> moviebanner { get; set; }
+            public List<Image> moviethumb { get; set; }
         }
     }
 }

@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Dto
     /// Class UserDto
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, HasPassword = {HasPassword}")]
-    public class UserDto : IHasPropertyChangedEvent, IItemDto
+    public class UserDto : IHasPropertyChangedEvent, IItemDto, IHasServerId
     {
         /// <summary>
         /// Gets or sets the name.
@@ -20,6 +20,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
+        
         /// <summary>
         /// Gets or sets the name of the connect user.
         /// </summary>

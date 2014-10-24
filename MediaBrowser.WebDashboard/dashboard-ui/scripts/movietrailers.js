@@ -1,24 +1,39 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+
     // The base query options
     var query = {
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        IncludeItemTypes: "Trailer",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SortName",
         StartIndex: 0
     };
+
+    function getSavedQueryKey() {
+
+        return 'trailers' + (query.ParentId || '');
+    }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        query.UserId = Dashboard.getCurrentUserId();
+
+        ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
+
+            if (result.Items.length) {
+                $('.noItemsMessage', page).hide();
+            }
+            else {
+                $('.noItemsMessage', page).show();
+            }
 
             var html = '';
 
@@ -34,17 +49,65 @@
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "portrait",
-                context: 'movies',
-                showTitle: false,
-                centerText: true
-            });
+            if (view == "Thumb") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'movies-trailers',
+                    lazy: true,
+                    overlayText: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Banner") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "banner",
+                    preferBanner: true,
+                    context: 'movies-trailers',
+                    lazy: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    context: 'movies-trailers',
+                    sortBy: query.SortBy
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies-trailers',
+                    showTitle: false,
+                    centerText: true,
+                    lazy: true,
+                    overlayText: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Timeline") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies-trailers',
+                    showTitle: true,
+                    timeline: true,
+                    centerText: true,
+                    lazy: true
+                });
+                $('.itemsContainer', page).addClass('timelineItemsContainer');
+            }
 
             html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -56,7 +119,16 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues('movietrailers', query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                if (user.Configuration.EnableMediaPlayback && result.Items.length) {
+                    $('.btnTrailerReel', page).show();
+                } else {
+                    $('.btnTrailerReel', page).hide();
+                }
+            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -86,8 +158,31 @@
 
         }).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+    }
+
+    function playReel(page) {
+
+        $('.popupTrailerReel', page).popup('close');
+
+        var reelQuery = {
+            UserId: Dashboard.getCurrentUserId(),
+            SortBy: 'Random',
+            Limit: 50,
+            Fields: "MediaSources,Chapters"
+        };
+
+        if ($('#chkUnwatchedOnly', page).checked()) {
+            reelQuery.Filters = "IsPlayed";
+        }
+
+        ApiClient.getJSON(ApiClient.getUrl('Trailers', reelQuery)).done(function (result) {
+
+            MediaController.play({
+                items: result.Items
+            });
+        });
     }
 
     $(document).on('pageinit', "#movieTrailersPage", function () {
@@ -137,14 +232,29 @@
             reloadItems(page);
         });
 
+        $('.itemsContainer', page).on('needsrefresh', function () {
+
+            reloadItems(page);
+
+        });
+
         $('#selectPageSize', page).on('change', function () {
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
         });
 
+        $('.btnTrailerReel', page).on('click', function () {
+
+            $('.popupTrailerReel', page).popup('open');
+
+        });
+
     }).on('pagebeforeshow', "#movieTrailersPage", function () {
 
+        query.ParentId = LibraryMenu.getTopParentId();
+
+        var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset
@@ -153,13 +263,33 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues('movietrailers', query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#movieTrailersPage", function () {
 
         updateFilterControls(this);
     });
+
+    window.MovieTrailerPage = {
+
+        onSubmit: function () {
+
+            var page = $(this).parents('.page');
+
+            playReel(page);
+            return false;
+        }
+    };
 
 })(jQuery, document);

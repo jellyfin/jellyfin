@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
 
             request.Method = method;
-            request.Timeout = 20000;
+            request.Timeout = options.TimeoutMs;
 
             if (!string.IsNullOrEmpty(options.Host))
             {
@@ -390,7 +390,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 if (!options.BufferContent)
                 {
-                    var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false);
+                    var response = await GetResponseAsync(httpWebRequest, TimeSpan.FromMilliseconds(options.TimeoutMs)).ConfigureAwait(false);
 
                     var httpResponse = (HttpWebResponse)response;
 
@@ -401,7 +401,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     return GetResponseInfo(httpResponse, httpResponse.GetResponseStream(), GetContentLength(httpResponse), httpResponse);
                 }
 
-                using (var response = await httpWebRequest.GetResponseAsync().ConfigureAwait(false))
+                using (var response = await GetResponseAsync(httpWebRequest, TimeSpan.FromMilliseconds(options.TimeoutMs)).ConfigureAwait(false))
                 {
                     var httpResponse = (HttpWebResponse)response;
 
@@ -434,21 +434,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 throw exception;
             }
-            catch (HttpRequestException ex)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw new HttpException(ex.Message, ex);
-            }
-            catch (WebException ex)
-            {
-                throw GetException(ex, options);
-            }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-                throw;
+                throw GetException(ex, options);
             }
             finally
             {
@@ -636,21 +624,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     return GetResponseInfo(httpResponse, tempFile, contentLength);
                 }
             }
-            catch (OperationCanceledException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
-            catch (WebException ex)
-            {
-                throw GetTempFileException(ex, options, tempFile);
-            }
             catch (Exception ex)
             {
-                throw GetTempFileException(ex, options, tempFile);
+                DeleteTempFile(tempFile);
+                throw GetException(ex, options);
             }
             finally
             {
@@ -675,44 +652,25 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Handles the temp file exception.
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="tempFile">The temp file.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="HttpException"></exception>
-        private Exception GetTempFileException(Exception ex, HttpRequestOptions options, string tempFile)
+        private Exception GetException(Exception ex, HttpRequestOptions options)
         {
-            var operationCanceledException = ex as OperationCanceledException;
+            var webException = ex as WebException
+                ?? ex.InnerException as WebException;
+
+            if (webException != null)
+            {
+                return GetException(webException, options);
+            }
+
+            var operationCanceledException = ex as OperationCanceledException
+                ?? ex.InnerException as OperationCanceledException;
 
             if (operationCanceledException != null)
             {
-                // Cleanup
-                DeleteTempFile(tempFile);
-
                 return GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
             }
 
             _logger.ErrorException("Error getting response from " + options.Url, ex);
-
-            // Cleanup
-            DeleteTempFile(tempFile);
-
-            var httpRequestException = ex as HttpRequestException;
-
-            if (httpRequestException != null)
-            {
-                return new HttpException(ex.Message, ex);
-            }
-
-            var webException = ex as WebException;
-
-            if (webException != null)
-            {
-                throw GetException(webException, options);
-            }
 
             return ex;
         }
@@ -842,6 +800,48 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         public Task<Stream> Post(string url, Dictionary<string, string> postData, CancellationToken cancellationToken)
         {
             return Post(url, postData, null, cancellationToken);
+        }
+
+        private Task<WebResponse> GetResponseAsync(WebRequest request, TimeSpan timeout)
+        {
+            var taskCompletion = new TaskCompletionSource<WebResponse>();
+
+            Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
+
+            ThreadPool.RegisterWaitForSingleObject((asyncTask as IAsyncResult).AsyncWaitHandle, TimeoutCallback, request, timeout, true);
+            asyncTask.ContinueWith(task =>
+            {
+                taskCompletion.TrySetResult(task.Result);
+
+            }, TaskContinuationOptions.NotOnFaulted);
+
+            // Handle errors
+            asyncTask.ContinueWith(task =>
+            {
+                if (task.Exception != null)
+                {
+                    taskCompletion.TrySetException(task.Exception);
+                }
+                else
+                {
+                    taskCompletion.TrySetException(new List<Exception>());
+                }
+
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            return taskCompletion.Task;
+        }
+
+        private static void TimeoutCallback(object state, bool timedOut)
+        {
+            if (timedOut)
+            {
+                WebRequest request = (WebRequest)state;
+                if (state != null)
+                {
+                    request.Abort();
+                }
+            }
         }
     }
 }

@@ -237,7 +237,7 @@ namespace MediaBrowser.Api
 
             if (musicVideo != null)
             {
-                musicVideo.Artist = request.Artists[0];
+                musicVideo.Artists = request.Artists.ToList();
                 musicVideo.Album = request.Album;
             }
 

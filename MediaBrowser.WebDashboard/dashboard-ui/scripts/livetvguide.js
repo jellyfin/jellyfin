@@ -151,11 +151,7 @@
             var localTime = program.StartDateLocal.getTime();
             if ((localTime >= cellStart || cellIndex == 0) && localTime < cellEnd && program.EndDateLocal > cellStart) {
 
-                return {
-
-                    index: i,
-                    program: program
-                };
+                return program;
 
             }
         }
@@ -198,7 +194,6 @@
 
         html += '<div class="channelPrograms">';
 
-        var programIndex = 0;
         var cellIndex = 0;
 
         while (date.getDate() == dateNumber) {
@@ -206,12 +201,7 @@
             // Add 30 mins
             var cellEndDate = new Date(date.getTime() + cellDurationMs);
 
-            var program = findProgramStartingInCell(programs, programIndex, date, cellEndDate, cellIndex);
-
-            if (program) {
-                programIndex = program.index + 1;
-                program = program.program;
-            }
+            var program = findProgramStartingInCell(programs, 0, date, cellEndDate, cellIndex);
 
             html += '<div class="timeslotCell">';
 

@@ -633,7 +633,7 @@
                 return currentStream.Type == "Audio";
             });
 
-            var currentIndex = getParameterByName('AudioStreamIndex', self.currentMediaElement.currentSrc);
+            var currentIndex = getParameterByName('AudioStreamIndex', self.getCurrentSrc(self.currentMediaElement));
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
@@ -789,7 +789,7 @@
 
         function getQualityFlyoutHtml() {
 
-            var currentSrc = self.currentMediaElement.currentSrc.toLowerCase();
+            var currentSrc = self.getCurrentSrc(self.currentMediaElement).toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
             var options = getVideoQualityOptions(self.currentMediaSource.MediaStreams);

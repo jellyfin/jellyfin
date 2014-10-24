@@ -714,8 +714,10 @@ namespace MediaBrowser.Api.Playback
         /// <returns><c>true</c> if the specified stream is H264; otherwise, <c>false</c>.</returns>
         protected bool IsH264(MediaStream stream)
         {
-            return stream.Codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 ||
-                   stream.Codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
+            var codec = stream.Codec ?? string.Empty;
+
+            return codec.IndexOf("264", StringComparison.OrdinalIgnoreCase) != -1 ||
+                   codec.IndexOf("avc", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         /// <summary>
@@ -1976,6 +1978,7 @@ namespace MediaBrowser.Api.Playback
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
+                state.IsTargetCabac,
                 state.TargetRefFrames);
 
             if (mediaProfile != null)
@@ -2065,6 +2068,7 @@ namespace MediaBrowser.Api.Playback
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic,
+                    state.IsTargetCabac,
                     state.TargetRefFrames
 
                     ).FirstOrDefault() ?? string.Empty;

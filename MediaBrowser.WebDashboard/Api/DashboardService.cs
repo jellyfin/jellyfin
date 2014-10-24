@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -14,10 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using WebMarkupMin.Core.Minifiers;
-using WebMarkupMin.Core.Settings;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -47,6 +45,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+    }
+
+    [Route("/web/Package", "GET")]
+    [Route("/dashboard/Package", "GET")]
+    public class GetDashboardPackage
+    {
     }
 
     /// <summary>
@@ -121,35 +125,6 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Gets the dashboard UI path.
-        /// </summary>
-        /// <value>The dashboard UI path.</value>
-        public string DashboardUIPath
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.DashboardSourcePath))
-                {
-                    return _serverConfigurationManager.Configuration.DashboardSourcePath;
-                }
-
-                var runningDirectory = Path.GetDirectoryName(_serverConfigurationManager.ApplicationPaths.ApplicationPath);
-
-                return Path.Combine(runningDirectory, "dashboard-ui");
-            }
-        }
-
-        /// <summary>
-        /// Gets the dashboard resource path.
-        /// </summary>
-        /// <param name="virtualPath">The virtual path.</param>
-        /// <returns>System.String.</returns>
-        private string GetDashboardResourcePath(string virtualPath)
-        {
-            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -158,7 +133,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => ModifyHtml(page.GetHtmlStream(), null));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null));
         }
 
         /// <summary>
@@ -228,7 +203,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     Request.Response.Redirect("wizardstart.html");
                     return null;
-                }    
+                }
             }
 
             path = path.Replace("scripts/jquery.mobile-1.4.4.min.map", "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.map", StringComparison.OrdinalIgnoreCase);
@@ -241,7 +216,7 @@ namespace MediaBrowser.WebDashboard.Api
                 !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
                 !contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
             {
-                return ResultFactory.GetResult(GetResourceStream(path, isHtml, localizationCulture).Result, contentType);
+                return ResultFactory.GetResult(GetResourceStream(path, localizationCulture).Result, contentType);
             }
 
             TimeSpan? cacheDuration = null;
@@ -257,7 +232,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var cacheKey = (assembly.Version + (localizationCulture ?? string.Empty) + path).GetMD5();
 
-            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, isHtml, localizationCulture));
+            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, localizationCulture));
         }
 
         private string GetLocalizationCulture()
@@ -269,47 +244,17 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets the resource stream.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="isHtml">if set to <c>true</c> [is HTML].</param>
         /// <param name="localizationCulture">The localization culture.</param>
         /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetResourceStream(string path, bool isHtml, string localizationCulture)
+        private Task<Stream> GetResourceStream(string path, string localizationCulture)
         {
-            Stream resourceStream;
-
-            if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
-            {
-                resourceStream = await GetAllJavascript().ConfigureAwait(false);
-            }
-            else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
-            {
-                resourceStream = await GetAllCss().ConfigureAwait(false);
-            }
-            else
-            {
-                resourceStream = GetRawResourceStream(path);
-            }
-
-            if (resourceStream != null)
-            {
-                // Don't apply any caching for html pages
-                // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (isHtml)
-                {
-                    resourceStream = await ModifyHtml(resourceStream, localizationCulture).ConfigureAwait(false);
-                }
-            }
-
-            return resourceStream;
+            return GetPackageCreator()
+                .GetResource(path, localizationCulture, _appHost.ApplicationVersion.ToString());
         }
 
-        /// <summary>
-        /// Gets the raw resource stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>Task{Stream}.</returns>
-        private Stream GetRawResourceStream(string path)
+        private PackageCreator GetPackageCreator()
         {
-            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            return new PackageCreator(_fileSystem, _localization, Logger, _serverConfigurationManager, _jsonSerializer);
         }
 
         /// <summary>
@@ -322,466 +267,81 @@ namespace MediaBrowser.WebDashboard.Api
             return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Modifies the HTML by adding common meta tags, css and js.
-        /// </summary>
-        /// <param name="sourceStream">The source stream.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="localizationCulture">The localization culture.</param>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture)
+        public async Task<object> Get(GetDashboardPackage request)
         {
-            using (sourceStream)
-            {
-                string html;
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    html = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-                    if (!string.IsNullOrWhiteSpace(localizationCulture))
-                    {
-                        var lang = localizationCulture.Split('-').FirstOrDefault();
-
-                        html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
-
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
-                    }
-
-                    //try
-                    //{
-                    //    var minifier = new HtmlMinifier(new HtmlMinificationSettings(true));
-
-                    //    html = minifier.Minify(html).MinifiedContent;
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Logger.ErrorException("Error minifying html", ex);
-                    //}
-                }
-
-                var version = GetType().Assembly.GetName().Version;
-
-                html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
-
-                var bytes = Encoding.UTF8.GetBytes(html);
-
-                return new MemoryStream(bytes);
-            }
-        }
-
-        private string GetLocalizationToken(string phrase)
-        {
-            return "${" + phrase + "}";
-        }
-
-        /// <summary>
-        /// Gets the meta tags.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private static string GetMetaTags()
-        {
-            var sb = new StringBuilder();
-
-            sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
-            sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
-            //sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
-            sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
-            sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
-            //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
-
-            sb.Append("<link rel=\"icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-
-            // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-            sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
-            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
-            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
-            sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets the common CSS.
-        /// </summary>
-        /// <param name="version">The version.</param>
-        /// <returns>System.String.</returns>
-        private static string GetCommonCss(Version version)
-        {
-            var versionString = "?v=" + version;
-
-            var files = new[]
-                            {
-                                "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.css",
-                                "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
-                                "css/all.css" + versionString
-                            };
-
-            var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
-
-            return string.Join(string.Empty, tags);
-        }
-
-        /// <summary>
-        /// Gets the common javascript.
-        /// </summary>
-        /// <param name="version">The version.</param>
-        /// <returns>System.String.</returns>
-        private static string GetCommonJavascript(Version version)
-        {
-            var builder = new StringBuilder();
-
-            var versionString = "?v=" + version;
-
-            var files = new[]
-                            {
-                                "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js",
-                                "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
-            };
-
-            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
-
-            builder.Append(string.Join(string.Empty, tags));
-
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// Gets a stream containing all concatenated javascript
-        /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllJavascript()
-        {
-            var memoryStream = new MemoryStream();
-            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
-
-            // jQuery + jQuery mobile
-            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
-
-            // This script produces errors in older versions of safari
-            if ((Request.UserAgent ?? string.Empty).IndexOf("chrome/", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
-            }
-            
-            await AppendLocalization(memoryStream).ConfigureAwait(false);
-            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-
-            // Write the version string for the dashboard comparison function
-            var versionString = string.Format("window.dashboardVersion='{0}';", _appHost.ApplicationVersion);
-            var versionBytes = Encoding.UTF8.GetBytes(versionString);
-
-            await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
-            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-
-            var builder = new StringBuilder();
-
-            foreach (var file in new[]
-            {
-                "thirdparty/apiclient/sha1.js",
-                "thirdparty/apiclient/mediabrowser.apiclient.js",
-                "thirdparty/apiclient/connectionmanager.js"
-            })
-            {
-                using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            foreach (var file in GetScriptFiles())
-            {
-                var path = GetDashboardResourcePath("scripts/" + file);
-
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            var js = builder.ToString();
+            var path = Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath,
+                "webclient-dump");
 
             try
             {
-                var result = new CrockfordJsMinifier().Minify(js, false, Encoding.UTF8);
-
-                js = result.MinifiedContent;
+                Directory.Delete(path, true);
             }
-            catch (Exception ex)
+            catch (IOException)
             {
-                Logger.ErrorException("Error minifying javascript", ex);
+
             }
 
-            var bytes = Encoding.UTF8.GetBytes(js);
-            await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            var creator = GetPackageCreator();
 
-            memoryStream.Position = 0;
-            return memoryStream;
+            CopyDirectory(creator.DashboardUIPath, path);
+
+            var culture = "en-US";
+
+            var appVersion = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+
+            await DumpHtml(creator.DashboardUIPath, path, culture, appVersion);
+            await DumpJs(creator.DashboardUIPath, path, culture, appVersion);
+
+            await DumpFile("scripts/all.js", Path.Combine(path, "scripts", "all.js"), culture, appVersion).ConfigureAwait(false);
+            await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), culture, appVersion).ConfigureAwait(false);
+ 
+            return "";
         }
 
-        private IEnumerable<string> GetScriptFiles()
+        private async Task DumpHtml(string source, string destination, string culture, string appVersion)
         {
-            return new[]
-                            {
-                                "extensions.js",
-                                "site.js",
-                                "librarybrowser.js",
-                                "librarylist.js",
-                                "editorsidebar.js",
-                                "librarymenu.js",
-                                "mediacontroller.js",
-                                "chromecast.js",
-                                "backdrops.js",
-                                "sync.js",
-                                "playlistmanager.js",
-
-                                "mediaplayer.js",
-                                "mediaplayer-video.js",
-                                "nowplayingbar.js",
-                                "nowplayingpage.js",
-
-                                "ratingdialog.js",
-                                "aboutpage.js",
-                                "alphapicker.js",
-                                "addpluginpage.js",
-                                "advancedconfigurationpage.js",
-                                "metadataadvanced.js",
-                                "autoorganizetv.js",
-                                "autoorganizelog.js",
-                                "channels.js",
-                                "channelslatest.js",
-                                "channelitems.js",
-                                "channelsettings.js",
-                                "dashboardgeneral.js",
-                                "dashboardpage.js",
-                                "dashboardsync.js",
-                                "device.js",
-                                "devices.js",
-                                "devicesupload.js",
-                                "directorybrowser.js",
-                                "dlnaprofile.js",
-                                "dlnaprofiles.js",
-                                "dlnasettings.js",
-                                "dlnaserversettings.js",
-                                "editcollectionitems.js",
-                                "edititemmetadata.js",
-                                "edititemimages.js",
-                                "edititemsubtitles.js",
-
-                                "playbackconfiguration.js",
-                                "cinemamodeconfiguration.js",
-                                "encodingsettings.js",
-
-                                "externalplayer.js",
-                                "favorites.js",
-                                "gamesrecommendedpage.js",
-                                "gamesystemspage.js",
-                                "gamespage.js",
-                                "gamegenrepage.js",
-                                "gamestudiospage.js",
-                                "homelatest.js",
-                                "indexpage.js",
-                                "itembynamedetailpage.js",
-                                "itemdetailpage.js",
-                                "itemgallery.js",
-                                "itemlistpage.js",
-                                "librarypathmapping.js",
-                                "reports.js",
-                                "librarysettings.js",
-                                "livetvchannel.js",
-                                "livetvchannels.js",
-                                "livetvguide.js",
-                                "livetvnewrecording.js",
-                                "livetvprogram.js",
-                                "livetvrecording.js",
-                                "livetvrecordinglist.js",
-                                "livetvrecordings.js",
-                                "livetvtimer.js",
-                                "livetvseriestimer.js",
-                                "livetvseriestimers.js",
-                                "livetvsettings.js",
-                                "livetvsuggested.js",
-                                "livetvstatus.js",
-                                "livetvtimers.js",
-
-                                "loginpage.js",
-                                "logpage.js",
-                                "medialibrarypage.js",
-                                "metadataconfigurationpage.js",
-                                "metadataimagespage.js",
-                                "metadatasubtitles.js",
-                                "metadatakodi.js",
-                                "moviegenres.js",
-                                "moviecollections.js",
-                                "movies.js",
-                                "movieslatest.js",
-                                "moviepeople.js",
-                                "moviesrecommended.js",
-                                "moviestudios.js",
-                                "movietrailers.js",
-                                "musicalbums.js",
-                                "musicalbumartists.js",
-                                "musicartists.js",
-                                "musicgenres.js",
-                                "musicrecommended.js",
-                                "musicvideos.js",
-
-                                "mypreferencesdisplay.js",
-                                "mypreferenceslanguages.js",
-                                "mypreferenceswebclient.js",
-
-                                "notifications.js",
-                                "notificationlist.js",
-                                "notificationsetting.js",
-                                "notificationsettings.js",
-                                "playlist.js",
-                                "playlists.js",
-                                "playlistedit.js",
-
-                                "plugincatalogpage.js",
-                                "pluginspage.js",
-                                "remotecontrol.js",
-                                "scheduledtaskpage.js",
-                                "scheduledtaskspage.js",
-                                "search.js",
-                                "serversecurity.js",
-                                "songs.js",
-                                "supporterkeypage.js",
-                                "supporterpage.js",
-                                "episodes.js",
-                                "thememediaplayer.js",
-                                "tvgenres.js",
-                                "tvlatest.js",
-                                "tvpeople.js",
-                                "tvrecommended.js",
-                                "tvshows.js",
-                                "tvstudios.js",
-                                "tvupcoming.js",
-                                "useredit.js",
-                                "userpassword.js",
-                                "myprofile.js",
-                                "userprofilespage.js",
-                                "userparentalcontrol.js",
-                                "userlibraryaccess.js",
-                                "wizardfinishpage.js",
-                                "wizardservice.js",
-                                "wizardstartpage.js",
-                                "wizardsettings.js",
-                                "wizarduserpage.js"
-                            };
-        }
-
-        private async Task AppendLocalization(Stream stream)
-        {
-            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(GetLocalizationCulture()));
-
-            var bytes = Encoding.UTF8.GetBytes(js);
-            await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Gets all CSS.
-        /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllCss()
-        {
-            var files = new[]
-                                  {
-                                      "site.css",
-                                      "chromecast.css",
-                                      "mediaplayer.css",
-                                      "mediaplayer-video.css",
-                                      "librarymenu.css",
-                                      "librarybrowser.css",
-                                      "detailtable.css",
-                                      "card.css",
-                                      "tileitem.css",
-                                      "metadataeditor.css",
-                                      "notifications.css",
-                                      "search.css",
-                                      "pluginupdates.css",
-                                      "remotecontrol.css",
-                                      "userimage.css",
-                                      "livetv.css",
-                                      "nowplaying.css",
-                                      "icons.css"
-                                  };
-
-            var builder = new StringBuilder();
-
-            foreach (var file in files)
+            foreach (var file in Directory.GetFiles(source, "*.html", SearchOption.TopDirectoryOnly))
             {
-                var path = GetDashboardResourcePath("css/" + file);
+                var filename = Path.GetFileName(file);
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                await DumpFile(filename, Path.Combine(destination, filename), culture, appVersion).ConfigureAwait(false);
+            }
+        }
+
+        private async Task DumpJs(string source, string destination, string culture, string appVersion)
+        {
+            foreach (var file in Directory.GetFiles(source, "*.js", SearchOption.TopDirectoryOnly))
+            {
+                var filename = Path.GetFileName(file);
+
+                await DumpFile("scripts/" + filename, Path.Combine(destination, "scripts", filename), culture, appVersion).ConfigureAwait(false);
+            }
+        }
+
+        private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string culture, string appVersion)
+        {
+            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, culture, appVersion).ConfigureAwait(false))
+            {
+                using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
+                    stream.CopyTo(fs);
                 }
             }
-
-            var css = builder.ToString();
-
-            //try
-            //{
-            //    var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
-
-            //    css = result.MinifiedContent;
-            //}
-            //catch (Exception ex)
-            //{
-            //    Logger.ErrorException("Error minifying css", ex);
-            //}
-
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
-
-            memoryStream.Position = 0;
-            return memoryStream;
         }
 
-        /// <summary>
-        /// Appends the resource.
-        /// </summary>
-        /// <param name="outputStream">The output stream.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="newLineBytes">The new line bytes.</param>
-        /// <returns>Task.</returns>
-        private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
+        private void CopyDirectory(string source, string destination)
         {
-            path = GetDashboardResourcePath(path);
+            Directory.CreateDirectory(destination);
 
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                using (var streamReader = new StreamReader(fs))
-                {
-                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                    var bytes = Encoding.UTF8.GetBytes(text);
-                    await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                }
-            }
+            //Now Create all of the directories
+            foreach (string dirPath in Directory.GetDirectories(source, "*",
+                SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(source, destination));
 
-            await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            //Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(source, "*.*",
+                SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(source, destination), true);
         }
     }
 

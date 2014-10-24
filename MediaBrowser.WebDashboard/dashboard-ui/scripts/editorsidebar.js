@@ -319,7 +319,7 @@
                 return;
             }
 
-            var url = window.location.hash || window.location.toString();
+            var url = window.location.hash || getWindowUrl();
 
             var id = getParameterByName('id', url);
 

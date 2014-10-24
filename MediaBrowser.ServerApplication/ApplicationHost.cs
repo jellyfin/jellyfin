@@ -324,6 +324,41 @@ namespace MediaBrowser.ServerApplication
         private void PerformVersionMigration()
         {
             DeleteDeprecatedModules();
+
+            if (!ServerConfigurationManager.Configuration.PlaylistImagesDeleted)
+            {
+                DeletePlaylistImages();
+                ServerConfigurationManager.Configuration.PlaylistImagesDeleted = true;
+                ServerConfigurationManager.SaveConfiguration();
+            }
+        }
+
+        private void DeletePlaylistImages()
+        {
+            try
+            {
+                var path = Path.Combine(ApplicationPaths.DataPath, "playlists");
+
+                var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories)
+                    .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i) ?? string.Empty))
+                    .ToList();
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (IOException)
+                    {
+
+                    }
+                }
+            }
+            catch (IOException)
+            {
+                
+            }
         }
 
         private void DeleteDeprecatedModules()
@@ -412,7 +447,7 @@ namespace MediaBrowser.ServerApplication
             //SyncRepository = await GetSyncRepository().ConfigureAwait(false);
             //RegisterSingleInstance(SyncRepository);
 
-            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager);
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
@@ -451,7 +486,7 @@ namespace MediaBrowser.ServerApplication
             SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"));
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager);
+            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();

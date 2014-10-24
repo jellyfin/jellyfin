@@ -116,6 +116,7 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength,
             TranscodeSeekInfo transcodeSeekInfo,
             bool? isAnamorphic,
+            bool? isCabac,
             int? refFrames)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
@@ -156,6 +157,7 @@ namespace MediaBrowser.Model.Dlna
                 packetLength,
                 timestamp,
                 isAnamorphic,
+                isCabac,
                 refFrames);
 
             List<string> orgPnValues = new List<string>();

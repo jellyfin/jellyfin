@@ -286,6 +286,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         var result = new MediaInfoLib().GetVideoInfo(video.Path);
 
+                        videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
                         videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
                         videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
                         videoStream.RefFrames = result.RefFrames;

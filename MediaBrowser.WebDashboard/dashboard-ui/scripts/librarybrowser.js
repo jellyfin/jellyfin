@@ -26,7 +26,7 @@
             // Chrome seems to have virtualization built-in and can handle large lists easily
             var isChrome = $.browser.chrome;
 
-            if (window.location.toString().toLowerCase().indexOf('localhost') != -1) {
+            if (getWindowUrl().toString().toLowerCase().indexOf('localhost') != -1) {
                 return isChrome ? 200 : 100;
             }
 
@@ -486,7 +486,7 @@
                 }
 
                 if (item.CollectionType == 'trailers') {
-                    return 'movietrailers.html?topParentId=' + item.Id;
+                    return "itemlist.html?parentId=" + item.Id;
                 }
 
                 if (item.CollectionType == 'movies') {
