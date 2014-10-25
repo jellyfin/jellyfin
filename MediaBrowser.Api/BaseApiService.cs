@@ -107,7 +107,7 @@ namespace MediaBrowser.Api
             return ResultFactory.GetStaticFileResult(Request, path);
         }
 
-        private readonly char[] _dashReplaceChars = { '?', '/' };
+        private readonly char[] _dashReplaceChars = { '?', '/', '&' };
         private const char SlugChar = '-';
 
         protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)

@@ -608,5 +608,7 @@
     "ButtonParentalControl": "Parental control",
     "HeaderInvitationSent": "Invitation Sent",
     "MessageInvitationSentToUser": "An email has been sent to {0}, inviting them to accept your sharing invitation.",
-    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser."
+    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser.",
+    "HeaderConnectionFailure": "Connection Failure",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
 }

@@ -608,5 +608,7 @@
     "ButtonParentalControl": "Kindersicherung",
     "HeaderInvitationSent": "Einladung verschickt",
     "MessageInvitationSentToUser": "Eine E-Mail mit der Einladung zum Sharing ist an {0} geschickt worden.",
-    "MessageInvitationSentToNewUser": "Eine E-Mail mit der Einladung zur Anmeldung am Media Browser ist an {0} geschickt worden."
+    "MessageInvitationSentToNewUser": "Eine E-Mail mit der Einladung zur Anmeldung am Media Browser ist an {0} geschickt worden.",
+    "HeaderConnectionFailure": "Connection Failure",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
 }

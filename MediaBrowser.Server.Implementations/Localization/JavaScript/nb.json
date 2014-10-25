@@ -436,7 +436,7 @@
     "HeaderPluginInstallation": "Programtillegg installasjon",
     "MessageAlreadyInstalled": "Denne versjonen er allerede installert.",
     "ValueReviewCount": "{0} Anmeldelser",
-    "MessageYouHaveVersionInstalled": "You currently have version {0} installed.",
+    "MessageYouHaveVersionInstalled": "Du har for \u00f8yeblikket versjon {0} installert",
     "MessageTrialExpired": "Pr\u00f8veperioden for denne funksjonen er utl\u00f8pt",
     "MessageTrialWillExpireIn": "Pr\u00f8veperioden for denne funksjonen utl\u00f8per om {0} dag (er)",
     "MessageInstallPluginFromApp": "Dette programtillegget m\u00e5 installeres direkte i appen du har tenkt \u00e5 bruke den i.",
@@ -608,5 +608,7 @@
     "ButtonParentalControl": "Parental control",
     "HeaderInvitationSent": "Invitation Sent",
     "MessageInvitationSentToUser": "An email has been sent to {0}, inviting them to accept your sharing invitation.",
-    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser."
+    "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Media Browser.",
+    "HeaderConnectionFailure": "Connection Failure",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
 }

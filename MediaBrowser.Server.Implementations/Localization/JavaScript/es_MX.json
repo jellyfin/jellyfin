@@ -600,13 +600,15 @@
     "DeviceLastUsedByUserName": "\u00daltimo usado por {0}",
     "HeaderDeleteDevice": "Eliminar Dispositivo",
     "DeleteDeviceConfirmation": "\u00bfEsta seguro de querer eliminar este dispositivo? Volver\u00e1 a aparecer la siguiente vez que un usuario inicie sesi\u00f3n en \u00e9l.",
-    "LabelEnableCameraUploadFor": "Habilitar subida desde la c\u00e1mara para:",
+    "LabelEnableCameraUploadFor": "Habilitar subir desde la c\u00e1mara para:",
     "HeaderSelectUploadPath": "Seleccionar ruta de subida",
-    "LabelEnableCameraUploadForHelp": "La subida ocurrir\u00e1 autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser.",
+    "LabelEnableCameraUploadForHelp": "Las subidas ocurrir\u00e1n autom\u00e1ticamente en segundo plano al iniciar sesi\u00f3n en Media Browser.",
     "ErrorMessageStartHourGreaterThanEnd": "El horario de fin debe ser mayor al de comienzo.",
     "ButtonLibraryAccess": "Acceso a biblioteca",
     "ButtonParentalControl": "Control parental",
     "HeaderInvitationSent": "Invitaci\u00f3n Enviada",
     "MessageInvitationSentToUser": "Se ha enviado un correo electr\u00f3nico a {0}, invit\u00e1ndolo a aceptar tu invitaci\u00f3n para compartir.",
-    "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser."
+    "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser.",
+    "HeaderConnectionFailure": "Connection Failure",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
 }

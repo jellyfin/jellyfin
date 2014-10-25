@@ -17,9 +17,12 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the metadata.
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MetadataResult{`0}}.</returns>
-        Task<LocalMetadataResult<TItemType>> GetMetadata(ItemInfo info, CancellationToken cancellationToken);
+        Task<LocalMetadataResult<TItemType>> GetMetadata(ItemInfo info, 
+            IDirectoryService directoryService,
+            CancellationToken cancellationToken);
     }
 
     public class ItemInfo

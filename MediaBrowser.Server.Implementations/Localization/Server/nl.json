@@ -1240,5 +1240,9 @@
     "MessageNoTrailersFound": "Geen trailers gevonden. Installeer het trailer kanaal om internet trailers te importeren.",
     "HeaderNewUsers": "Nieuwe gebruikers",
     "ButtonSignUp": "Aanmelden",
-    "ButtonForgotPassword": "Wachtwoord vergeten?"
+    "ButtonForgotPassword": "Wachtwoord vergeten?",
+    "OptionDisableUserPreferences": "Disable access to user preferences",
+    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
+    "HeaderSelectServer": "Select Server",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
 }

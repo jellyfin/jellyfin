@@ -9,35 +9,47 @@ namespace MediaBrowser.Controller.Providers
 {
     public interface IDirectoryService
     {
-        List<FileSystemInfo> GetFileSystemEntries(string path);
+        IEnumerable<FileSystemInfo> GetFileSystemEntries(string path);
         IEnumerable<FileSystemInfo> GetFiles(string path);
         IEnumerable<FileSystemInfo> GetFiles(string path, bool clearCache);
         FileSystemInfo GetFile(string path);
+        Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path);
     }
 
     public class DirectoryService : IDirectoryService
     {
         private readonly ILogger _logger;
 
-        private readonly ConcurrentDictionary<string, List<FileSystemInfo>> _cache = new ConcurrentDictionary<string, List<FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Dictionary<string,FileSystemInfo>> _cache =
+            new ConcurrentDictionary<string, Dictionary<string, FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
 
         public DirectoryService(ILogger logger)
         {
             _logger = logger;
         }
 
-        public List<FileSystemInfo> GetFileSystemEntries(string path)
+        public DirectoryService()
+            : this(new NullLogger())
+        {
+        }
+
+        public IEnumerable<FileSystemInfo> GetFileSystemEntries(string path)
         {
             return GetFileSystemEntries(path, false);
         }
 
-        private List<FileSystemInfo> GetFileSystemEntries(string path, bool clearCache)
+        public Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path)
         {
-            List<FileSystemInfo> entries;
+            return GetFileSystemDictionary(path, false);
+        }
+
+        private Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path, bool clearCache)
+        {
+            Dictionary<string, FileSystemInfo> entries;
 
             if (clearCache)
             {
-                List<FileSystemInfo> removed;
+                Dictionary<string, FileSystemInfo> removed;
 
                 _cache.TryRemove(path, out removed);
             }
@@ -46,19 +58,34 @@ namespace MediaBrowser.Controller.Providers
             {
                 //_logger.Debug("Getting files for " + path);
 
+                entries = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
+                
                 try
                 {
-                    entries = new DirectoryInfo(path).EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly).ToList();
+                    var list = new DirectoryInfo(path)
+                        .EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+
+                    // Seeing dupes on some users file system for some reason
+                    foreach (var item in list)
+                    {
+                        entries[item.FullName] = item;
+                    }
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    entries = new List<FileSystemInfo>();
                 }
+
+                //var group = entries.ToLookup(i => Path.GetDirectoryName(i.FullName)).ToList();
 
                 _cache.TryAdd(path, entries);
             }
 
             return entries;
+        }
+
+        private IEnumerable<FileSystemInfo> GetFileSystemEntries(string path, bool clearCache)
+        {
+            return GetFileSystemDictionary(path, clearCache).Values;
         }
 
         public IEnumerable<FileSystemInfo> GetFiles(string path)
@@ -74,9 +101,13 @@ namespace MediaBrowser.Controller.Providers
         public FileSystemInfo GetFile(string path)
         {
             var directory = Path.GetDirectoryName(path);
-            var filename = Path.GetFileName(path);
 
-            return GetFiles(directory).FirstOrDefault(i => string.Equals(i.Name, filename, StringComparison.OrdinalIgnoreCase));
+            var dict = GetFileSystemDictionary(directory, false);
+
+            FileSystemInfo entry;
+            dict.TryGetValue(path, out entry);
+
+            return entry;
         }
     }
 }

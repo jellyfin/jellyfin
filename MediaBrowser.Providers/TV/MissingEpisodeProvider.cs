@@ -122,11 +122,13 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var series in group)
                 {
-                    await series.RefreshMetadata(new MetadataRefreshOptions
+                    var directoryService = new DirectoryService();
+
+                    await series.RefreshMetadata(new MetadataRefreshOptions(directoryService)
                     {
                     }, cancellationToken).ConfigureAwait(false);
 
-                    await series.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), true)
+                    await series.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(directoryService), true)
                         .ConfigureAwait(false);
                 }
             }
@@ -469,7 +471,9 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Season}.</returns>
-        private async Task<Season> AddSeason(Series series, int seasonNumber, CancellationToken cancellationToken)
+        private async Task<Season> AddSeason(Series series, 
+            int seasonNumber, 
+            CancellationToken cancellationToken)
         {
             _logger.Info("Creating Season {0} entry for {1}", seasonNumber, series.Name);
 

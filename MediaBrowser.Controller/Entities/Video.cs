@@ -398,9 +398,8 @@ namespace MediaBrowser.Controller.Entities
             var currentImagePath = video.GetImagePath(ImageType.Primary);
             var ownerImagePath = this.GetImagePath(ImageType.Primary);
 
-            var newOptions = new MetadataRefreshOptions
+            var newOptions = new MetadataRefreshOptions(options.DirectoryService)
             {
-                DirectoryService = options.DirectoryService,
                 ImageRefreshMode = options.ImageRefreshMode,
                 MetadataRefreshMode = options.MetadataRefreshMode,
                 ReplaceAllMetadata = options.ReplaceAllMetadata

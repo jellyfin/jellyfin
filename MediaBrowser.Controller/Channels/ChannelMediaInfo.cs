@@ -37,6 +37,8 @@ namespace MediaBrowser.Controller.Channels
 
         public string Id { get; set; }
 
+        public bool ReadAtNativeFramerate { get; set; }
+
         public ChannelMediaInfo()
         {
             RequiredHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -59,7 +61,8 @@ namespace MediaBrowser.Controller.Channels
                 RequiredHttpHeaders = RequiredHttpHeaders,
                 RunTimeTicks = RunTimeTicks,
                 Name = id,
-                Id = id
+                Id = id,
+                ReadAtNativeFramerate = ReadAtNativeFramerate
             };
 
             var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);

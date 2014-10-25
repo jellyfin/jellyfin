@@ -13,7 +13,6 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -1545,6 +1544,7 @@ namespace MediaBrowser.Api.Playback
                 state.InputVideoSync = "-1";
                 state.InputAudioSync = "1";
                 state.InputContainer = recording.Container;
+                state.ReadInputAtNativeFramerate = source.ReadAtNativeFramerate;
             }
             else if (item is LiveTvChannel)
             {
@@ -1572,6 +1572,7 @@ namespace MediaBrowser.Api.Playback
                 state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
                 state.InputBitrate = mediaSource.Bitrate;
                 state.InputFileSize = mediaSource.Size;
+                state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
                 mediaStreams = mediaSource.MediaStreams;
             }
             else
@@ -1588,6 +1589,7 @@ namespace MediaBrowser.Api.Playback
                 state.InputContainer = mediaSource.Container;
                 state.InputFileSize = mediaSource.Size;
                 state.InputBitrate = mediaSource.Bitrate;
+                state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
 
                 var video = item as Video;
 
@@ -1687,6 +1689,7 @@ namespace MediaBrowser.Api.Playback
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.InputBitrate = mediaSource.Bitrate;
             state.InputFileSize = mediaSource.Size;
+            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
 
             AttachMediaStreamInfo(state, mediaSource.MediaStreams, videoRequest, requestedUrl);
         }

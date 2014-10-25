@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Savers;
 using System;
 using System.IO;
@@ -15,11 +14,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
     {
         protected IFileSystem FileSystem;
 
-        public async Task<LocalMetadataResult<T>> GetMetadata(ItemInfo info, CancellationToken cancellationToken)
+        public async Task<LocalMetadataResult<T>> GetMetadata(ItemInfo info,
+            IDirectoryService directoryService,
+            CancellationToken cancellationToken)
         {
             var result = new LocalMetadataResult<T>();
 
-            var file = GetXmlFile(info, new DirectoryService(new NullLogger()));
+            var file = GetXmlFile(info, directoryService);
 
             if (file == null)
             {

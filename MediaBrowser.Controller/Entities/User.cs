@@ -179,7 +179,7 @@ namespace MediaBrowser.Controller.Entities
 
             Name = newName;
 
-            return RefreshMetadata(new MetadataRefreshOptions
+            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService())
             {
                 ReplaceAllMetadata = true,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,

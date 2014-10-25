@@ -766,7 +766,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
-            return RefreshMetadata(new MetadataRefreshOptions(), cancellationToken);
+            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), cancellationToken);
         }
 
         /// <summary>
@@ -783,8 +783,6 @@ namespace MediaBrowser.Controller.Entities
 
             if (IsFolder || Parent != null)
             {
-                options.DirectoryService = options.DirectoryService ?? new DirectoryService(Logger);
-
                 try
                 {
                     var files = locationType != LocationType.Remote && locationType != LocationType.Virtual ?
@@ -1360,10 +1358,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
-        /// <param name="userManager">The user manager.</param>
+        /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataManager userManager)
+        public virtual async Task MarkPlayed(User user, 
+            DateTime? datePlayed,
+            bool resetPosition)
         {
             if (user == null)
             {
@@ -1372,7 +1372,7 @@ namespace MediaBrowser.Controller.Entities
 
             var key = GetUserDataKey();
 
-            var data = userManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user.Id, key);
 
             if (datePlayed.HasValue)
             {
@@ -1383,20 +1383,24 @@ namespace MediaBrowser.Controller.Entities
             // Ensure it's at least one
             data.PlayCount = Math.Max(data.PlayCount, 1);
 
+            if (resetPosition)
+            {
+                data.PlaybackPositionTicks = 0;
+            }
+
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
             data.Played = true;
 
-            await userManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
+            await UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Marks the unplayed.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task MarkUnplayed(User user, IUserDataManager userManager)
+        public virtual async Task MarkUnplayed(User user)
         {
             if (user == null)
             {
@@ -1405,7 +1409,7 @@ namespace MediaBrowser.Controller.Entities
 
             var key = GetUserDataKey();
 
-            var data = userManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user.Id, key);
 
             //I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
@@ -1415,7 +1419,7 @@ namespace MediaBrowser.Controller.Entities
             data.LastPlayedDate = null;
             data.Played = false;
 
-            await userManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
+            await UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

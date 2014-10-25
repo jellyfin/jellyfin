@@ -530,7 +530,9 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null, string collectionType = null)
+        public BaseItem ResolvePath(FileSystemInfo fileInfo, 
+            Folder parent = null, 
+            string collectionType = null)
         {
             return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
         }

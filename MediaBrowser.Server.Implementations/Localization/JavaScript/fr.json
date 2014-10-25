@@ -24,7 +24,7 @@
     "UninstallPluginConfirmation": "\u00cates-vous s\u00fbr de vouloir d\u00e9sinstaller {0}?",
     "NoPluginConfigurationMessage": "Ce plugin n'a rien \u00e0 configurer.",
     "NoPluginsInstalledMessage": "Vous n'avez aucun plugin install\u00e9.",
-    "BrowsePluginCatalogMessage": "Explorer notre catalogue de Plugins disponibles.",
+    "BrowsePluginCatalogMessage": "Explorer notre catalogue des plugins pour voir les plugins disponibles.",
     "MessageKeyEmailedTo": "Cl\u00e9 envoy\u00e9e par courriel \u00e0 {0}",
     "MessageKeysLinked": "Cl\u00e9s associ\u00e9es.",
     "HeaderConfirmation": "Confirmation",
@@ -573,7 +573,7 @@
     "LabelShortRatingDescription": "Evaluation courte:",
     "OptionIRecommendThisItem": "Je recommande cet article",
     "WebClientTourContent": "Voir les medias ajout\u00e9s r\u00e9cemment, les prochains \u00e9pisodes et bien plus. Les cercles verts indiquent le nombre d'items que vous n'avez pas vu.",
-    "WebClientTourMovies": "Lire les films, bandes-annonces et plus depuis n'importe quel p\u00e9riph\u00e9rique depuis un navigateur web",
+    "WebClientTourMovies": "Lire les films, bandes-annonces et plus depuis n'importe quel p\u00e9riph\u00e9rique avec un navigateur Web",
     "WebClientTourMouseOver": "Laisser la souris au dessus des posters pour un acc\u00e8s rapide aux informations essentiels",
     "WebClientTourTapHold": "Maintenir cliqu\u00e9 ou faire un clic droit sur n'importe quel poster pour le menu contextuel",
     "WebClientTourMetadataManager": "Cliquer sur modifier pour ouvrir l'\u00e9diteur de m\u00e9dadonn\u00e9es",
@@ -608,5 +608,7 @@
     "ButtonParentalControl": "Contr\u00f4le parental",
     "HeaderInvitationSent": "Invitation envoy\u00e9",
     "MessageInvitationSentToUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 accepter votre invitation de partage.",
-    "MessageInvitationSentToNewUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 s'inscrire sur Media Browser."
+    "MessageInvitationSentToNewUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 s'inscrire sur Media Browser.",
+    "HeaderConnectionFailure": "Connection Failure",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
 }

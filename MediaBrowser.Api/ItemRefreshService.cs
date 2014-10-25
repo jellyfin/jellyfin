@@ -152,7 +152,7 @@ namespace MediaBrowser.Api
 
         private MetadataRefreshOptions GetRefreshOptions(BaseRefreshRequest request)
         {
-            return new MetadataRefreshOptions
+            return new MetadataRefreshOptions(new DirectoryService())
             {
                 MetadataRefreshMode = request.MetadataRefreshMode,
                 ImageRefreshMode = request.ImageRefreshMode,
