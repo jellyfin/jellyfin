@@ -375,11 +375,11 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (wasPlayed)
             {
-                await item.MarkPlayed(user, datePlayed, _userDataRepository).ConfigureAwait(false);
+                await item.MarkPlayed(user, datePlayed, true).ConfigureAwait(false);
             }
             else
             {
-                await item.MarkUnplayed(user, _userDataRepository).ConfigureAwait(false);
+                await item.MarkUnplayed(user).ConfigureAwait(false);
             }
 
             return _userDataRepository.GetUserDataDto(item, user);

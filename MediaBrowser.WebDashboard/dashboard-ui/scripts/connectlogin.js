@@ -2,89 +2,41 @@
 
     function onLoggedIn() {
 
-        ConnectionManager.getServers().done(function (result) {
+        ConnectionManager.connect().done(function (result) {
 
-            if (result.length) {
+            Dashboard.hideLoadingMsg();
 
-                connectToServerInstance(result[0]);
+            switch (result.State) {
 
-            } else {
-                Dashboard.alert('Coming soon');
+                case MediaBrowser.ConnectionState.Unavilable:
+                    // Login succeeded so this should never happen
+                    break;
+                case MediaBrowser.ConnectionState.ServerSelection:
+                    window.location = 'selectserver.html';
+                    break;
+                case MediaBrowser.ConnectionState.ServerSignIn:
+                    // This should never happen in connect mode
+                    break;
+                case MediaBrowser.ConnectionState.SignedIn:
+                    window.location = 'selectserver.html';
+                    break;
+                default:
+                    break;
             }
-        });
-    }
-
-    function connectToServerInstance(server) {
-
-        connectToServerAtUrl(server, server.Url).fail(function () {
-
-            if (server.LocalAddress) {
-                connectToServerAtUrl(server, server.LocalAddress).fail(showServerConnectionFailure);
-
-            } else {
-                showServerConnectionFailure();
-            }
-        });
-    }
-
-    function showServerConnectionFailure() {
-        alert('Unable to communicate with your server.');
-    }
-
-    function connectToServerAtUrl(server, url) {
-
-        var exchangeToken = server.AccessKey;
-
-        return $.ajax({
-
-            type: "GET",
-            url: url + "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + ConnectionManager.connectUserId(),
-            dataType: "json",
-
-            error: function () {
-                // Don't show normal dashboard errors
-            },
-            headers: {
-                "X-MediaBrowser-Token": exchangeToken
-            }
-
-
-        }).done(function (result) {
-
-            Dashboard.serverAddress(url);
-            Dashboard.setCurrentUser(result.LocalUserId, result.AccessToken);
-
-            window.location = 'index.html';
-
         });
     }
 
     function login(page, username, password) {
 
-        var md5 = CryptoJS.MD5(password).toString();
+        Dashboard.showLoadingMsg();
 
-        $.ajax({
-            type: "POST",
-            url: "https://connect.mediabrowser.tv/service/user/authenticate",
-            data: {
-                userName: username,
-                password: md5
-            },
-            dataType: "json",
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-
-            error: function () {
-                // Don't show normal dashboard errors
-            }
-
-
-        }).done(function (result) {
-
-            ConnectionManager.onConnectAuthenticated(result);
+        ConnectionManager.loginToConnect(username, password).done(function () {
 
             onLoggedIn();
 
-        }).fail(function (result) {
+        }).fail(function () {
+
+            Dashboard.hideLoadingMsg();
 
             Dashboard.alert({
                 message: Globalize.translate('MessageInvalidUser'),

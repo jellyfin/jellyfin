@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -7,6 +8,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
@@ -88,7 +90,18 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieId))
             {
-                await EnsureMovieJson(movieId, cancellationToken).ConfigureAwait(false);
+                // Bad id entered
+                try
+                {
+                    await EnsureMovieJson(movieId, cancellationToken).ConfigureAwait(false);
+                }
+                catch (HttpException ex)
+                {
+                    if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                    {
+                        throw;
+                    }
+                }
 
                 var path = GetFanartJsonPath(movieId);
 

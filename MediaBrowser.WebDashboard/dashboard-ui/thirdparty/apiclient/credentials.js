@@ -26,6 +26,11 @@ MediaBrowser.CredentialProvider = function (store) {
             store.setItem('servercredentials', JSON.stringify(get()));
         }
 
+        self.clear = function() {
+            credentials = null;
+            store.removeItem('servercredentials');
+        };
+
         self.credentials = function (data) {
 
             if (data) {

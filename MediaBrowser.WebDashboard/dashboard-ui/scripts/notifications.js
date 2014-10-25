@@ -10,7 +10,13 @@
 
         self.getNotificationsSummary = function () {
 
-            self.getNotificationsSummaryPromise = self.getNotificationsSummaryPromise || ApiClient.getNotificationSummary(Dashboard.getCurrentUserId());
+            var apiClient = ConnectionManager.currentApiClient();
+
+            if (!apiClient) {
+                return;
+            }
+
+            self.getNotificationsSummaryPromise = self.getNotificationsSummaryPromise || apiClient.getNotificationSummary(Dashboard.getCurrentUserId());
 
             return self.getNotificationsSummaryPromise;
         };
@@ -21,7 +27,13 @@
                 return;
             }
 
-            self.getNotificationsSummary().done(function (summary) {
+            var promise = self.getNotificationsSummary();
+
+            if (!promise) {
+                return;
+            }
+
+            promise.done(function (summary) {
 
                 var item = $('.btnNotificationsInner').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
 
@@ -95,11 +107,15 @@
 
     function refreshNotifications(startIndex, limit, elem, btn, showPaging) {
 
-        return ApiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
+        var apiClient = ConnectionManager.currentApiClient();
 
-            listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn, showPaging);
+        if (apiClient) {
+            return apiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
 
-        });
+                listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn, showPaging);
+
+            });
+        }
     }
 
     function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn, showPaging) {
@@ -201,22 +217,33 @@
 
     $(document).on('headercreated', function (e) {
 
-        $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertAfter($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
-
-        Notifications.updateNotificationCount();
-    });
-
-    $(ApiClient).on("websocketmessage", function (e, msg) {
-
-
-        if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
-
-            Notifications.getNotificationsSummaryPromise = null;
+        if (ConnectionManager.currentApiClient()) {
+            $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertAfter($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
 
             Notifications.updateNotificationCount();
         }
-
     });
 
+    function initializeApiClient(apiClient) {
+        $(apiClient).on("websocketmessage", function (e, msg) {
+
+
+            if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
+
+                Notifications.getNotificationsSummaryPromise = null;
+
+                Notifications.updateNotificationCount();
+            }
+
+        });
+    }
+
+    $(function () {
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
+    });
 
 })(jQuery, document, Dashboard, LibraryBrowser);

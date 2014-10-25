@@ -4,12 +4,9 @@
 
         var page = this;
         
-        ApiClient.getSystemInfo().done(function (info) {
+        var elem = $('#appVersionNumber', page);
 
-            var elem = $('#appVersionNumber', page);
-            
-            elem.html(elem.html().replace('{0}', info.Version));
-        });
+        elem.html(elem.html().replace('{0}', ConnectionManager.appVersion()));
     });
 
 })(jQuery, document);

@@ -12,16 +12,16 @@
     margin-left: .5em;
 }
 
-.libraryPage {
+.libraryPage[data-theme='b'] {
     background-color: #202020;
 }
 
 .backdropPage {
-    background-color: rgba(15, 15,15, .86) !important;
+    background-color: rgba(20, 20,20, .86) !important;
 }
 
     .backdropPage:not(.lightBackdropPage) {
-        background-color: rgba(15, 15,15, .94) !important;
+        background-color: rgba(20, 20,20, .94) !important;
     }
 
 .backdropContainer {

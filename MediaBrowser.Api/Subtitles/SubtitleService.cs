@@ -254,7 +254,7 @@ namespace MediaBrowser.Api.Subtitles
                     await _subtitleManager.DownloadSubtitles(video, request.SubtitleId, CancellationToken.None)
                         .ConfigureAwait(false);
 
-                    await video.RefreshMetadata(new MetadataRefreshOptions(), CancellationToken.None).ConfigureAwait(false);
+                    await video.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

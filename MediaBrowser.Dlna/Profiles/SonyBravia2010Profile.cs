@@ -47,7 +47,7 @@ namespace MediaBrowser.Dlna.Profiles
             ProtocolInfo =
                 "http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000";
 
-            DidlAlbumArtLimit = 1;
+            EnableSingleAlbumArtLimit = true;
             
             TranscodingProfiles = new[]
             {

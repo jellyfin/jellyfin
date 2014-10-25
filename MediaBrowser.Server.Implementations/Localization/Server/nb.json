@@ -1147,10 +1147,10 @@
     "HeaderXmlSettings": "Xml innstillinger",
     "HeaderXmlDocumentAttributes": "Xml dokument attributter",
     "HeaderXmlDocumentAttribute": "Xml dokument attributt",
-    "XmlDocumentAttributeListHelp": "These attributes are applied to the root element of every xml response.",
+    "XmlDocumentAttributeListHelp": "Disse attributtene p\u00e5f\u00f8res rot elementet for alle xml responser.",
     "OptionSaveMetadataAsHidden": "Lagre metadata og bilder som skjulte filer",
-    "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
-    "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
+    "LabelExtractChaptersDuringLibraryScan": "Hent ut kapittel bilder under bibliotek skann",
+    "LabelExtractChaptersDuringLibraryScanHelp": "Hvis aktivert, vil kapittel bilder bli hentet ut mens videoer importeres under bibliotek skanning.\nHvis deaktivert, vil de bli hentet ut under planlagte oppgaver for kapittel bilder, som medf\u00f8rer at vanlig bibliotek skanning blir fortere ferdig.",
     "LabelConnectGuestUserName": "Their Media Browser username or email address:",
     "LabelConnectUserName": "Media Browser brukernavn\/e-post",
     "LabelConnectUserNameHelp": "Connect this user to a Media Browser account to enable easy sign-in access from Media Browser any app without having to know the server ip address.",
@@ -1240,5 +1240,9 @@
     "MessageNoTrailersFound": "No trailers found. Install the Trailer channel plugin to import a library of internet trailers.",
     "HeaderNewUsers": "New Users",
     "ButtonSignUp": "Sign up",
-    "ButtonForgotPassword": "Forgot password?"
+    "ButtonForgotPassword": "Forgot password?",
+    "OptionDisableUserPreferences": "Disable access to user preferences",
+    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
+    "HeaderSelectServer": "Select Server",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
 }

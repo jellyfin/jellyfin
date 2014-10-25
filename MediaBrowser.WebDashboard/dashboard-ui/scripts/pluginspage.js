@@ -19,6 +19,18 @@
         });
     },
 
+    showNoConfigurationMessage: function() {
+        Dashboard.alert({
+            message: Globalize.translate('NoPluginConfigurationMessage')
+        });
+    },
+
+    showConnectMessage: function () {
+        Dashboard.alert({
+            message: Globalize.translate('MessagePluginConfigurationRequiresLocalAccess')
+        });
+    },
+
     populateList: function (page, plugins, pluginConfigurationPages) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
@@ -39,10 +51,14 @@
 
             html += "<li>";
 
-            if (configPage) {
+            if (Dashboard.isConnectMode()) {
+                html += "<a onclick='PluginsPage.showConnectMessage();' href='#'>";
+            }
+            else if (configPage) {
                 html += "<a href='" + Dashboard.getConfigurationPageUrl(configPage.Name) + "'>";
-            } else {
-                html += "<a onclick='Dashboard.alert(\"" + Globalize.translate('NoPluginConfigurationMessage') + "\");' href='#'>";
+            }
+            else {
+                html += "<a onclick='PluginsPage.showNoConfigurationMessage();' href='#'>";
             }
 
             html += "<h3>" + plugin.Name + "</h3>";

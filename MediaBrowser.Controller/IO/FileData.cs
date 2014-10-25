@@ -25,7 +25,13 @@ namespace MediaBrowser.Controller.IO
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public static Dictionary<string, FileSystemInfo> GetFilteredFileSystemEntries(IDirectoryService directoryService, string path, IFileSystem fileSystem, ILogger logger, ItemResolveArgs args, int flattenFolderDepth = 0, bool resolveShortcuts = true)
+        public static Dictionary<string, FileSystemInfo> GetFilteredFileSystemEntries(IDirectoryService directoryService, 
+            string path, 
+            IFileSystem fileSystem, 
+            ILogger logger, 
+            ItemResolveArgs args, 
+            int flattenFolderDepth = 0, 
+            bool resolveShortcuts = true)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -36,20 +42,12 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException("args");
             }
 
-            var entries = directoryService.GetFileSystemEntries(path);
-
             if (!resolveShortcuts && flattenFolderDepth == 0)
             {
-                // Seeing dupes on some users file system for some reason
-                var dictionary = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var info in entries)
-                {
-                    dictionary[info.FullName] = info;
-                }
-
-                return dictionary;
+                return directoryService.GetFileSystemDictionary(path);
             }
+
+            var entries = directoryService.GetFileSystemEntries(path);
 
             var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
 

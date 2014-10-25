@@ -873,7 +873,7 @@
     function onUserDataChanged(userData) {
 
         var cssClass = LibraryBrowser.getUserDataCssClass(userData.Key);
-        
+
         if (!cssClass) {
             return;
         }
@@ -904,6 +904,16 @@
 
     }
 
-    $(ApiClient).on('websocketmessage', onWebSocketMessage);
+    function initializeApiClient(apiClient) {
+        $(apiClient).off('websocketmessage.librarylist', onWebSocketMessage).on('websocketmessage.librarylist', onWebSocketMessage);
+    }
+
+    $(function () {
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
+    });
 
 })(jQuery, document, window);

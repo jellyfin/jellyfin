@@ -17,7 +17,7 @@
   <ModelUrl>http://mediabrowser.tv/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
-  <DidlAlbumArtLimit xsi:nil="true" />
+  <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_SM</AlbumArtPn>
   <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
@@ -72,7 +72,11 @@
       </Conditions>
     </CodecProfile>
   </CodecProfiles>
-  <ResponseProfiles />
+  <ResponseProfiles>
+    <ResponseProfile container="ts" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+      <Conditions />
+    </ResponseProfile>
+  </ResponseProfiles>
   <SubtitleProfiles>
     <SubtitleProfile format="srt" method="External" />
   </SubtitleProfiles>

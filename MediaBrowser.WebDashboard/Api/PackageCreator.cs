@@ -441,6 +441,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "scheduledtaskpage.js",
                                 "scheduledtaskspage.js",
                                 "search.js",
+                                "selectserver.js",
                                 "serversecurity.js",
                                 "songs.js",
                                 "supporterkeypage.js",

@@ -438,7 +438,7 @@
         loadlibraryButtons: loadlibraryButtons
     };
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);
 
 (function ($, document) {
 

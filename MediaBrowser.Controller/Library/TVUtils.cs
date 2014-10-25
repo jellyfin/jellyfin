@@ -213,38 +213,38 @@ namespace MediaBrowser.Controller.Library
                 return false;
             }
 
-            // It's a season folder if it's named as such and does not contain any audio files, apart from theme.mp3
-            foreach (var fileSystemInfo in directoryService.GetFileSystemEntries(path))
-            {
-                var attributes = fileSystemInfo.Attributes;
+            //// It's a season folder if it's named as such and does not contain any audio files, apart from theme.mp3
+            //foreach (var fileSystemInfo in directoryService.GetFileSystemEntries(path))
+            //{
+            //    var attributes = fileSystemInfo.Attributes;
 
-                if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    continue;
-                }
+            //    if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+            //    {
+            //        continue;
+            //    }
 
-                // Can't enforce this because files saved by Bitcasa are always marked System
-                //if ((attributes & FileAttributes.System) == FileAttributes.System)
-                //{
-                //    continue;
-                //}
+            //    // Can't enforce this because files saved by Bitcasa are always marked System
+            //    //if ((attributes & FileAttributes.System) == FileAttributes.System)
+            //    //{
+            //    //    continue;
+            //    //}
 
-                if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                {
-                    //if (IsBadFolder(fileSystemInfo.Name))
-                    //{
-                    //    return false;
-                    //}
-                }
-                else
-                {
-                    if (EntityResolutionHelper.IsAudioFile(fileSystemInfo.FullName) &&
-                        !string.Equals(fileSystem.GetFileNameWithoutExtension(fileSystemInfo), BaseItem.ThemeSongFilename))
-                    {
-                        return false;
-                    }
-                }
-            }
+            //    if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            //    {
+            //        //if (IsBadFolder(fileSystemInfo.Name))
+            //        //{
+            //        //    return false;
+            //        //}
+            //    }
+            //    else
+            //    {
+            //        if (EntityResolutionHelper.IsAudioFile(fileSystemInfo.FullName) &&
+            //            !string.Equals(fileSystem.GetFileNameWithoutExtension(fileSystemInfo), BaseItem.ThemeSongFilename))
+            //        {
+            //            return false;
+            //        }
+            //    }
+            //}
 
             return true;
         }

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,18 +16,24 @@ namespace MediaBrowser.Controller.Providers
         public bool ForceSave { get; set; }
 
         public MetadataRefreshOptions()
+            : this(new DirectoryService())
+        {
+        }
+
+        public MetadataRefreshOptions(IDirectoryService directoryService)
+            : base(directoryService)
         {
             MetadataRefreshMode = MetadataRefreshMode.Default;
         }
 
-        public MetadataRefreshOptions(MetadataRefreshOptions copy)
+        public MetadataRefreshOptions( MetadataRefreshOptions copy)
+            : base(copy.DirectoryService)
         {
             MetadataRefreshMode = copy.MetadataRefreshMode;
             ForceSave = copy.ForceSave;
             ReplaceAllMetadata = copy.ReplaceAllMetadata;
 
             ImageRefreshMode = copy.ImageRefreshMode;
-            DirectoryService = copy.DirectoryService;
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages.ToList();
         }
@@ -37,15 +42,16 @@ namespace MediaBrowser.Controller.Providers
     public class ImageRefreshOptions
     {
         public ImageRefreshMode ImageRefreshMode { get; set; }
-        public IDirectoryService DirectoryService { get; set; }
+        public IDirectoryService DirectoryService { get; private set; }
 
         public bool ReplaceAllImages { get; set; }
 
         public List<ImageType> ReplaceImages { get; set; }
 
-        public ImageRefreshOptions()
+        public ImageRefreshOptions(IDirectoryService directoryService)
         {
             ImageRefreshMode = ImageRefreshMode.Default;
+            DirectoryService = directoryService;
 
             ReplaceImages = new List<ImageType>();
         }

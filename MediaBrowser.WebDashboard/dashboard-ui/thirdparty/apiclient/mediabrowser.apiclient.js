@@ -10,7 +10,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    return function (serverAddress, clientName, applicationVersion, deviceName, deviceId) {
+    return function (serverAddress, clientName, applicationVersion, deviceName, deviceId, capabilities) {
 
         if (!serverAddress) {
             throw new Error("Must supply a serverAddress");
@@ -26,6 +26,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         var currentUserId;
         var accessToken;
         var webSocket;
+        var serverInfo;
 
         /**
          * Gets the server address.
@@ -38,6 +39,13 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         self.apiPrefix = function () {
 
             return "/mediabrowser";
+        };
+
+        self.serverInfo = function (info) {
+
+            serverInfo = info || serverInfo;
+
+            return serverInfo;
         };
 
         /**
@@ -89,27 +97,29 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
-        self.ajax = function (request) {
+        self.ajax = function (request, includeAuthorization) {
 
             if (!request) {
                 throw new Error("Request cannot be null");
             }
 
-            if (clientName) {
+            if (includeAuthorization !== false) {
+                if (clientName) {
 
-                var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
+                    var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
 
-                if (currentUserId) {
-                    auth += ', UserId="' + currentUserId + '"';
+                    if (currentUserId) {
+                        auth += ', UserId="' + currentUserId + '"';
+                    }
+
+                    request.headers = {
+                        Authorization: auth
+                    };
                 }
 
-                request.headers = {
-                    Authorization: auth
-                };
-            }
-
-            if (accessToken) {
-                request.headers['X-MediaBrowser-Token'] = accessToken;
+                if (accessToken) {
+                    request.headers['X-MediaBrowser-Token'] = accessToken;
+                }
             }
 
             return $.ajax(request);
@@ -146,7 +156,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
             return url;
         };
 
-        self.enableAutomaticNetworking = function(server, connectionMode) {
+        self.enableAutomaticNetworking = function (server, connectionMode) {
 
         };
 
@@ -170,6 +180,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 setTimeout(function () {
 
                     self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
+
+                    self.reportCapabilities(capabilities);
 
                     $(self).trigger("websocketopen");
 
@@ -846,6 +858,21 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 url: url,
                 dataType: "json"
             });
+        };
+
+        /**
+         * Gets the current server status
+         */
+        self.getPublicSystemInfo = function () {
+
+            var url = self.getUrl("System/Info/Public");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+
+            }, false);
         };
 
         self.getInstantMixFromSong = function (itemId, options) {
@@ -2049,7 +2076,8 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 type: "GET",
                 url: url,
                 dataType: "json"
-            });
+
+            }, false);
         };
 
         /**
@@ -2081,7 +2109,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
         };
 
         var supportsWebP = false;
-        self.supportsWebP = function(val) {
+        self.supportsWebP = function (val) {
 
             if (val != null) {
                 supportsWebP = val;
@@ -2264,7 +2292,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
                 dataType: "json",
                 contentType: "application/json"
 
-            }).done(function(result) {
+            }).done(function (result) {
 
 
                 $(self).trigger('authenticated', [result]);
@@ -3170,7 +3198,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
 (function (store) {
 
-    MediaBrowser.ApiClient.generateDeviceId = function() {
+    MediaBrowser.ApiClient.generateDeviceId = function () {
 
         var keys = [];
 

@@ -89,11 +89,6 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
-            if (refreshOptions.DirectoryService == null)
-            {
-                refreshOptions.DirectoryService = new DirectoryService(Logger);
-            }
-
             var itemOfType = (TItemType)item;
             var config = ProviderManager.GetMetadataOptions(item);
 
@@ -324,7 +319,12 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, TIdType id, MetadataRefreshOptions options, List<IMetadataProvider> providers, ItemImageProvider imageService, CancellationToken cancellationToken)
+        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, 
+            TIdType id, 
+            MetadataRefreshOptions options, 
+            List<IMetadataProvider> providers, 
+            ItemImageProvider imageService, 
+            CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
             {
@@ -369,7 +369,7 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var localItem = await provider.GetMetadata(itemInfo, cancellationToken).ConfigureAwait(false);
+                    var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
 
                     if (localItem.HasMetadata)
                     {

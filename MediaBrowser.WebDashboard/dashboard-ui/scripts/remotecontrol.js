@@ -164,22 +164,28 @@
 
             var deferred = $.Deferred();
 
-            ApiClient.getSessions().done(function (sessions) {
+            var apiClient = ConnectionManager.currentApiClient();
 
-                var currentTargetId = MediaController.getPlayerInfo().id;
+            if (apiClient) {
+                apiClient.getSessions().done(function (sessions) {
 
-                // Update existing data
-                //updateSessionInfo(popup, msg.Data);
-                var session = sessions.filter(function (s) {
-                    return s.Id == currentTargetId;
-                })[0];
+                    var currentTargetId = MediaController.getPlayerInfo().id;
 
-                if (session) {
-                    session = getPlayerState(session);
-                }
+                    // Update existing data
+                    //updateSessionInfo(popup, msg.Data);
+                    var session = sessions.filter(function (s) {
+                        return s.Id == currentTargetId;
+                    })[0];
 
-                deferred.resolveWith(null, [session]);
-            });
+                    if (session) {
+                        session = getPlayerState(session);
+                    }
+
+                    deferred.resolveWith(null, [session]);
+                });
+            } else {
+                deferred.resolveWith(null, [{}]);
+            }
 
             return deferred.promise();
         };
@@ -236,31 +242,37 @@
                 ControllableByUserId: Dashboard.getCurrentUserId()
             };
 
-            ApiClient.getSessions(sessionQuery).done(function (sessions) {
+            var apiClient = ConnectionManager.currentApiClient();
 
-                var targets = sessions.filter(function (s) {
+            if (apiClient) {
+                apiClient.getSessions(sessionQuery).done(function (sessions) {
 
-                    return s.DeviceId != ApiClient.deviceId();
+                    var targets = sessions.filter(function (s) {
 
-                }).map(function (s) {
-                    return {
-                        name: s.DeviceName,
-                        deviceName: s.DeviceName,
-                        id: s.Id,
-                        playerName: self.name,
-                        appName: s.Client,
-                        playableMediaTypes: s.PlayableMediaTypes,
-                        isLocalPlayer: false,
-                        supportedCommands: s.SupportedCommands
-                    };
+                        return s.DeviceId != apiClient.deviceId();
+
+                    }).map(function (s) {
+                        return {
+                            name: s.DeviceName,
+                            deviceName: s.DeviceName,
+                            id: s.Id,
+                            playerName: self.name,
+                            appName: s.Client,
+                            playableMediaTypes: s.PlayableMediaTypes,
+                            isLocalPlayer: false,
+                            supportedCommands: s.SupportedCommands
+                        };
+                    });
+
+                    deferred.resolveWith(null, [targets]);
+
+                }).fail(function () {
+
+                    deferred.reject();
                 });
-
-                deferred.resolveWith(null, [targets]);
-
-            }).fail(function () {
-
-                deferred.reject();
-            });
+            } else {
+                deferred.resolveWith(null, []);
+            }
 
             return deferred.promise();
         };
@@ -290,6 +302,8 @@
 
     function onWebSocketMessageReceived(e, msg) {
 
+        var apiClient = this;
+
         if (msg.MessageType === "Sessions") {
 
             var currentTargetId = MediaController.getPlayerInfo().id;
@@ -314,7 +328,7 @@
         }
         else if (msg.MessageType === "PlaybackStart") {
 
-            if (msg.Data.DeviceId != ApiClient.deviceId()) {
+            if (msg.Data.DeviceId != apiClient.deviceId()) {
                 if (MediaController.getPlayerInfo().id == msg.Data.Id) {
                     firePlaybackEvent('playbackstart', msg.Data);
                 }
@@ -322,7 +336,7 @@
         }
         else if (msg.MessageType === "PlaybackStopped") {
 
-            if (msg.Data.DeviceId != ApiClient.deviceId()) {
+            if (msg.Data.DeviceId != apiClient.deviceId()) {
                 if (MediaController.getPlayerInfo().id == msg.Data.Id) {
                     firePlaybackEvent('playbackstop', msg.Data);
                 }
@@ -330,6 +344,17 @@
         }
     }
 
-    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
+
+    function initializeApiClient(apiClient) {
+        $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
+    }
+
+    $(function () {
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
+    });
 
 })(window, document, jQuery);

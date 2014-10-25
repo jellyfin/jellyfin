@@ -319,7 +319,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions());
+            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService()));
         }
 
         /// <summary>
@@ -332,8 +332,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true)
         {
-            metadataRefreshOptions.DirectoryService = metadataRefreshOptions.DirectoryService ?? new DirectoryService(Logger);
-
             return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
         }
 
@@ -1141,12 +1139,16 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
-        /// <param name="userManager">The user manager.</param>
+        /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override async Task MarkPlayed(User user, DateTime? datePlayed, IUserDataManager userManager)
+        public override async Task MarkPlayed(User user,
+            DateTime? datePlayed,
+            bool resetPosition)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual).Select(c => c.MarkPlayed(user, datePlayed, userManager));
+            var tasks = GetRecursiveChildren(user, true)
+                .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+                .Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -1155,12 +1157,13 @@ namespace MediaBrowser.Controller.Entities
         /// Marks the unplayed.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <returns>Task.</returns>
-        public override async Task MarkUnplayed(User user, IUserDataManager userManager)
+        public override async Task MarkUnplayed(User user)
         {
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, true).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual).Select(c => c.MarkUnplayed(user, userManager));
+            var tasks = GetRecursiveChildren(user, true)
+                .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+                .Select(c => c.MarkUnplayed(user));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
@@ -1195,14 +1198,14 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsPlayed(User user)
         {
-            return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+            return GetRecursiveChildren(user)
+                .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
                 .All(i => i.IsPlayed(user));
         }
 
         public override bool IsUnplayed(User user)
         {
-            return GetRecursiveChildren(user).Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual)
-                .All(i => i.IsUnplayed(user));
+            return !IsPlayed(user);
         }
 
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)

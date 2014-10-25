@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.Subtitles
                 _monitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            return _libraryManager.GetItemById(itemId).RefreshMetadata(new MetadataRefreshOptions
+            return _libraryManager.GetItemById(itemId).RefreshMetadata(new MetadataRefreshOptions(new DirectoryService())
             {
                 ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                 MetadataRefreshMode = MetadataRefreshMode.ValidationOnly

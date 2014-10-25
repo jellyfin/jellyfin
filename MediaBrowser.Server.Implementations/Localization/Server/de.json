@@ -1240,5 +1240,9 @@
     "MessageNoTrailersFound": "Keine Trailer gefunden. Installiere das Trailer Channel Plugin, um eine Bibliothek aus Trailern vom Internet zu importieren.",
     "HeaderNewUsers": "Neue Benutzer",
     "ButtonSignUp": "Anmeldung",
-    "ButtonForgotPassword": "Passwort vergessen?"
+    "ButtonForgotPassword": "Passwort vergessen?",
+    "OptionDisableUserPreferences": "Disable access to user preferences",
+    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
+    "HeaderSelectServer": "Select Server",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
 }

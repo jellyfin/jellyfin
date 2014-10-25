@@ -23,25 +23,31 @@
         html += '<span class="icon-bar"></span>';
         html += '</div>';
         html += '</button>';
-        
+
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+        if (user.localUser) {
 
-        html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
+            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+
+            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
+        } else {
+            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+
+        }
 
         html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
         var userButtonHeight = 21;
-        if (user.PrimaryImageTag) {
+        if (user.imageUrl) {
 
-            var url = ApiClient.getUserImageUrl(user.Id, {
-                height: userButtonHeight,
-                tag: user.PrimaryImageTag,
-                type: "Primary"
-            });
+            var url = user.imageUrl;
+
+            if (user.supportsImageParams) {
+                url += "height=" + userButtonHeight;
+            }
 
             html += '<img src="' + url + '" style="height:' + userButtonHeight + 'px;" />';
         } else {
@@ -50,7 +56,7 @@
 
         html += '</a>';
 
-        if (user.Configuration.IsAdministrator) {
+        if (user.canManageServer) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight"><img src="css/images/items/folders/settings.png" /></a>';
         }
 
@@ -118,9 +124,17 @@
 
     function updateLibraryMenu(panel) {
 
+        var apiClient = ConnectionManager.currentApiClient();
+
+        if (!apiClient) {
+
+            $('.adminMenuOptions').hide();
+            return;
+        }
+
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getUserViews(userId).done(function (result) {
+        apiClient.getUserViews(userId).done(function (result) {
 
             var items = result.Items;
 
@@ -136,7 +150,7 @@
                 else if (i.CollectionType == "livetv") {
                     itemId = "livetv";
                 }
-                
+
                 if (i.Type == 'Channel') {
                     viewMenuCssClass = 'channelsViewMenu';
                 }
@@ -166,7 +180,7 @@
 
     var requiresLibraryMenuRefresh = false;
 
-    function getLibraryMenu() {
+    function getLibraryMenu(user) {
 
         var panel = $('#libraryPanel');
 
@@ -178,7 +192,10 @@
 
             html += '<div style="margin: 0 -1em;">';
 
-            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="index.html">' + Globalize.translate('ButtonHome') + '</a>';
+            var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
+
+            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="' + homeHref + '">' + Globalize.translate('ButtonHome') + '</a>';
+
             html += '<div class="libraryMenuDivider"></div>';
 
             html += getViewsHtml();
@@ -364,7 +381,7 @@
         var page = this;
         if (!$('.viewMenuBar').length) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            ConnectionManager.user().done(function (user) {
 
                 renderHeader(user);
 
@@ -379,7 +396,7 @@
         }
 
         var jpage = $(page);
-        
+
         if (jpage.hasClass('libraryPage')) {
             $(document.body).addClass('libraryDocument').removeClass('dashboardDocument');
         }
@@ -413,13 +430,20 @@
         }
     });
 
+    function initializeApiClient(apiClient) {
+        $(apiClient).off('websocketmessage.librarymenu', onWebSocketMessage).on('websocketmessage.librarymenu', onWebSocketMessage);
+    }
+
     $(function () {
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon();
         });
 
-        $(ApiClient).on('websocketmessage', onWebSocketMessage);
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
     });
 
 })(window, document, jQuery);

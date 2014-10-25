@@ -16,7 +16,7 @@ MediaBrowser.ConnectionManager = function (store) {
         Remote: 1
     };
 
-    return function (credentialProvider, appName, applicationVersion, deviceName, deviceId) {
+    return function (credentialProvider, appName, applicationVersion, deviceName, deviceId, capabilities) {
 
         var self = this;
         var apiClients = [];
@@ -77,6 +77,34 @@ MediaBrowser.ConnectionManager = function (store) {
             return connectUser;
         };
 
+        self.appVersion = function() {
+            return applicationVersion;
+        };
+
+        self.deviceId = function () {
+            return deviceId;
+        };
+
+        self.currentApiClient = function () {
+
+            return apiClients[0];
+        };
+
+        self.addApiClient = function (apiClient) {
+
+            apiClients.push(apiClient);
+
+            apiClient.getPublicSystemInfo().done(function (systemInfo) {
+
+                var server = {};
+                updateServerInfo(server, systemInfo);
+
+                apiClient.serverInfo(server);
+                $(this).trigger('apiclientcreated', [apiClient]);
+            });
+
+        };
+
         function onConnectAuthenticated(user) {
 
             connectUser = user;
@@ -91,23 +119,27 @@ MediaBrowser.ConnectionManager = function (store) {
 
                 var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-                apiClient = new MediaBrowser.ApiClient(url, appName, applicationVersion, deviceName, deviceId);
+                apiClient = new MediaBrowser.ApiClient(url, appName, applicationVersion, deviceName, deviceId, capabilities);
 
                 apiClients.push(apiClient);
+
+                apiClient.serverInfo(server);
 
                 $(apiClient).on('authenticated', function (e, result) {
                     onLocalAuthenticated(this, result);
                 });
 
+                $(this).trigger('apiclientcreated', [apiClient]);
+
             }
 
-            if (!server.accessToken) {
+            if (!server.AccessToken) {
 
                 apiClient.clearAuthenticationInfo();
             }
             else {
 
-                apiClient.setAuthenticationInfo(server.accessToken, server.userId);
+                apiClient.setAuthenticationInfo(server.AccessToken, server.UserId);
             }
 
             return apiClient;
@@ -152,10 +184,7 @@ MediaBrowser.ConnectionManager = function (store) {
 
             var deferred = $.Deferred();
 
-            if (self.isLoggedIntoConnect()) {
-                deferred.resolveWith(null, [[]]);
-
-            } else {
+            if (self.isLoggedIntoConnect() && !connectUser) {
                 getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).done(function (user) {
 
                     onConnectAuthenticated(user);
@@ -165,6 +194,9 @@ MediaBrowser.ConnectionManager = function (store) {
 
                     deferred.resolveWith(null, [[]]);
                 });
+
+            } else {
+                deferred.resolveWith(null, [[]]);
             }
 
             return deferred.promise();
@@ -172,7 +204,7 @@ MediaBrowser.ConnectionManager = function (store) {
 
         function getConnectUser(userId, accessToken) {
 
-            var url = "https://connect.mediabrowser.tv/service/user?userId=" + userId;
+            var url = "https://connect.mediabrowser.tv/service/user?id=" + userId;
 
             return $.ajax({
                 type: "GET",
@@ -281,6 +313,79 @@ MediaBrowser.ConnectionManager = function (store) {
             return deferred.promise();
         }
 
+        function getImageUrl(localUser) {
+            
+            if (connectUser && connectUser.ImageUrl) {
+                return {
+                    url: connectUser.ImageUrl
+                };
+            }
+            if (localUser.PrimaryImageTag) {
+
+                var apiClient = self.getApiClient(localUser);
+
+                var url = apiClient.getUserImageUrl(localUser.Id, {
+                    tag: localUser.PrimaryImageTag,
+                    type: "Primary"
+                });
+
+                return {
+                    url: url,
+                    supportsImageParams: true
+                };
+            }
+
+            return {
+                url: null,
+                supportsImageParams: false
+            };
+        }
+
+        self.user = function() {
+
+            var deferred = $.Deferred();
+
+            var localUser;
+
+            function onLocalUserDone() {
+
+                var image = getImageUrl(localUser);
+
+                deferred.resolveWith(null, [
+                {
+                    connectUser: connectUser,
+                    localUser: localUser,
+                    name: connectUser ? connectUser.Name : localUser.Name,
+                    canManageServer: localUser && localUser.Configuration.IsAdministrator,
+                    imageUrl: image.url,
+                    supportsImageParams: image.supportsParams
+                }]);
+            }
+
+            function onEnsureConnectUserDone() {
+                
+                var apiClient = self.currentApiClient();
+                if (apiClient && apiClient.getCurrentUserId()) {
+                    apiClient.getUser(apiClient.getCurrentUserId()).done(function (u) {
+                        localUser = u;
+                    }).always(onLocalUserDone);
+                } else {
+                    onLocalUserDone();
+                }
+            }
+
+            var credentials = credentialProvider.credentials();
+
+            if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
+                ensureConnectUser(credentials).always(onEnsureConnectUserDone);
+            } else {
+                onEnsureConnectUserDone();
+            }
+
+            return deferred.promise();
+
+        };
+
         self.isLoggedIntoConnect = function () {
 
             return self.connectToken() && self.connectUserId();
@@ -383,6 +488,10 @@ MediaBrowser.ConnectionManager = function (store) {
 
                 var newList = mergeServers(servers, result);
 
+                newList.sort(function (a, b) {
+                    return b.DateLastAccessed - a.DateLastAccessed;
+                });
+
                 deferred.resolveWith(null, [newList]);
 
                 credentials.servers = newList;
@@ -413,12 +522,10 @@ MediaBrowser.ConnectionManager = function (store) {
 
             var deferred = $.Deferred();
 
-            servers.sort(function (a, b) {
-                return b.DateLastAccessed - a.DateLastAccessed;
-            });
-
             if (servers.length == 1) {
-                if (!servers[0].DateLastAccessed && !self.connectUser()) {
+
+                if (!servers[0].DateLastAccessed && !self.connectUserId()) {
+
                     deferred.resolveWith(null, [
                         {
                             Servers: servers,
@@ -426,23 +533,29 @@ MediaBrowser.ConnectionManager = function (store) {
                             ConnectUser: self.connectUser()
                         }
                     ]);
+
+                } else {
+
+                    self.connectToServer(servers[0]).done(function (result) {
+
+                        if (result.State == MediaBrowser.ConnectionState.Unavailable) {
+                            result.State = MediaBrowser.ConnectionState.ServerSelection;
+                        }
+
+                        deferred.resolveWith(null, [result]);
+
+                    }).fail(function () {
+
+                        deferred.resolveWith(null, [
+                            {
+                                Servers: servers,
+                                State: MediaBrowser.ConnectionState.ServerSelection,
+                                ConnectUser: self.connectUser()
+                            }
+                        ]);
+
+                    });
                 }
-
-                self.connectToServer(servers[0]).done(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-
-                }).fail(function () {
-
-                    deferred.resolveWith(null, [
-                        {
-                            Servers: servers,
-                            State: MediaBrowser.ConnectionState.ServerSelection,
-                            ConnectUser: self.connectUser()
-                        }
-                    ]);
-
-                });
 
             } else {
 
@@ -468,10 +581,11 @@ MediaBrowser.ConnectionManager = function (store) {
 
                     });
                 } else {
+
                     deferred.resolveWith(null, [
                     {
                         Servers: servers,
-                        State: servers.length ? MediaBrowser.ConnectionState.ServerSelection : MediaBrowser.ConnectionState.Unavailable,
+                        State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.Unavailable : MediaBrowser.ConnectionState.ServerSelection,
                         ConnectUser: self.connectUser()
                     }]);
                 }
@@ -576,6 +690,7 @@ MediaBrowser.ConnectionManager = function (store) {
 
             if (server.LocalAddress) {
 
+                //onLocalTestDone();
                 // Try to connect to the local address
                 tryConnect(server.LocalAddress).done(function (result) {
 
@@ -657,8 +772,16 @@ MediaBrowser.ConnectionManager = function (store) {
 
         self.getApiClient = function (item) {
 
-            // TODO: accept string + objet
-            return apiClients[0];
+            // Accept string + object
+            if (item.ServerId) {
+                item = item.ServerId;
+            }
+
+            return apiClients.filter(function (a) {
+
+                return a.serverInfo().Id = item;
+
+            })[0];
         };
     };
 

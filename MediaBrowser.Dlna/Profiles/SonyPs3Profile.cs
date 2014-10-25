@@ -37,7 +37,7 @@ namespace MediaBrowser.Dlna.Profiles
 
             SonyAggregationFlags = "10";
             XDlnaDoc = "DMS-1.50";
-            DidlAlbumArtLimit = 1;
+            EnableSingleAlbumArtLimit = true;
 
             DirectPlayProfiles = new[]
             {

@@ -86,6 +86,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard-ui\scripts\selectserver.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\selectserver.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -437,7 +437,19 @@
         }
     }
 
-    $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
+
+
+    function initializeApiClient(apiClient) {
+        $(apiClient).on("websocketmessage", onWebSocketMessageReceived);
+    }
+
+    $(function () {
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
+    });
 
     function getTargetsHtml(targets) {
 

@@ -422,7 +422,7 @@
 
         closePlayMenu();
 
-        var html = '<div data-role="popup" class="externalPlayerFlyout" data-history="false" data-theme="a">';
+        var html = '<div data-role="popup" class="externalPlayerFlyout" data-theme="a">';
 
         html += '<ul data-role="listview" style="min-width: 200px;">';
         html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderSelectExternalPlayer') + '</li>';

@@ -789,11 +789,9 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            var imageLimit = _profile.DidlAlbumArtLimit ?? 100;
-
             AddImageResElement(item, element, 160, 160, playbackPercentage, "jpg", "JPEG_TN");
 
-            if (imageLimit > 1)
+            if (!_profile.EnableSingleAlbumArtLimit)
             {
                 AddImageResElement(item, element, 4096, 4096, playbackPercentage, "jpg", "JPEG_LRG");
                 AddImageResElement(item, element, 1024, 768, playbackPercentage, "jpg", "JPEG_MED");

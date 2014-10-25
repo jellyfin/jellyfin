@@ -3,7 +3,7 @@
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 100px !important;
+        padding-top: 95px !important;
     }
 
 .libraryMenuDivider {
@@ -149,23 +149,19 @@
     left: 0;
     z-index: 1000;
     top: 0;
-    background-image: linear-gradient(#262626,#111);
-    border-bottom: 1px solid #111;
     border-top: 0;
     border-left: 0;
     border-right: 0;
 }
 
 .libraryViewNav {
-    height: 48px;
+    height: 45px;
     overflow: hidden;
     position: fixed;
     right: 0;
     left: 0;
-    top: 51px;
+    top: 50px;
     z-index: 1000;
-    background-image: linear-gradient(#1a1a1a,#1a1a1a);
-    border-bottom: 1px solid #111;
     text-align: center;
     font-size: 14px;
     white-space: nowrap;
@@ -175,6 +171,14 @@
     overflow: -moz-scrollbars-none;
 }
 
+.viewMenuBar {
+    background-color: #000;
+}
+
+.libraryViewNav {
+    background-color: #111;
+}
+
 .libraryViewNav::-webkit-scrollbar {
     height: 0 !important;
     display: none;
@@ -182,7 +186,7 @@
 
 .viewMenuLink {
     text-decoration: none;
-    color: #ccc !important;
+    color: #eee !important;
     padding: 7px .5em 6px;
     display: inline-block;
     vertical-align: middle;
@@ -213,13 +217,13 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .6em .5em .6em 38px !important;
-    font-size: 15px;
+    padding: .65em .5em .55em 38px !important;
+    font-size: 14px;
     font-weight: 300 !important;
     font-family: Roboto;
     background-repeat: no-repeat;
-    background-size: 14px 14px;
-    background-position: 13px center;
+    background-size: 13px 13px;
+    background-position: 12px center;
 }
 
 .musicViewMenu {
@@ -227,7 +231,10 @@
 }
 
 .homeViewMenu {
-    background-image: url(images/items/folders/home.png);
+    background-image: url(images/mblogoicon.png);
+    background-size: 39px 26px;
+    background-position: 10px center;
+    padding-left: 60px !important;
 }
 
 .tvshowsViewMenu, .livetvViewMenu {
@@ -315,7 +322,7 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 5px solid transparent;
+    border-bottom: 4px solid transparent;
 }
 
     .libraryViewNav a:not(.ui-btn-active):hover {
@@ -324,17 +331,7 @@
 
 .libraryViewNavLinkContent {
     display: inline-block;
-    padding: 2px 15px 2px 15px;
-}
-
-.libraryViewNav a + a .libraryViewNavLinkContent {
-    padding-left: 17px;
-}
-
-.libraryViewNav a + a .libraryViewNavLinkContent {
-    border-left: 1px solid #333;
-    position: relative;
-    left: -2px;
+    padding: 1px 13px 1px 13px;
 }
 
 @media all and (max-width: 500px) {

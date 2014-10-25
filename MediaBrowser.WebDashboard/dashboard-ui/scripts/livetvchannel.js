@@ -335,4 +335,4 @@
         programs = null;
     });
 
-})(jQuery, document, ApiClient);
+})(jQuery, document);

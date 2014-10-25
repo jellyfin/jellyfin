@@ -95,15 +95,7 @@ namespace MediaBrowser.Api.Playback
 
         public bool DeInterlace { get; set; }
 
-        public bool ReadInputAtNativeFramerate
-        {
-            get { 
-                
-                return InputProtocol == MediaProtocol.Rtmp || 
-                    string.Equals(InputContainer, "wtv", StringComparison.OrdinalIgnoreCase) ||
-                    !string.IsNullOrEmpty(LiveTvStreamId); 
-            }
-        }
+        public bool ReadInputAtNativeFramerate { get; set; }
 
         public TransportStreamTimestamp InputTimestamp { get; set; }
 

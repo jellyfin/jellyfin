@@ -27,7 +27,7 @@
 
             var targets = [{
                 name: 'My Browser',
-                id: ApiClient.deviceId(),
+                id: ConnectionManager.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
                 isLocalPlayer: true,

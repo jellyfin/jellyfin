@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Net;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
@@ -72,7 +74,18 @@ namespace MediaBrowser.Providers.TV
 
                 if (!string.IsNullOrEmpty(id) && season.IndexNumber.HasValue)
                 {
-                    await FanartSeriesProvider.Current.EnsureSeriesJson(id, cancellationToken).ConfigureAwait(false);
+                    // Bad id entered
+                    try
+                    {
+                        await FanartSeriesProvider.Current.EnsureSeriesJson(id, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (HttpException ex)
+                    {
+                        if (!ex.StatusCode.HasValue || ex.StatusCode.Value != HttpStatusCode.NotFound)
+                        {
+                            throw;
+                        }
+                    }
 
                     var path = FanartSeriesProvider.Current.GetFanartJsonPath(id);
 
