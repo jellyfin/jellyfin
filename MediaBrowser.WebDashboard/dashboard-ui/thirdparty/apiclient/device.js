@@ -1,6 +1,10 @@
-﻿(function (store) {
+﻿if (!window.MediaBrowser) {
+    window.MediaBrowser = {};
+}
 
-    MediaBrowser.ApiClient.generateDeviceId = function () {
+(function (store) {
+
+    MediaBrowser.generateDeviceId = function () {
 
         var keys = [];
 

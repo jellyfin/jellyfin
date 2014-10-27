@@ -610,5 +610,7 @@
     "MessageInvitationSentToUser": "Um email foi enviado para {0}, convidando para aceitar seu convite de compartilhamento.",
     "MessageInvitationSentToNewUser": "Um email foi enviado para {0}, convidando para inscrever-se no Media Browser.",
     "HeaderConnectionFailure": "Connection Failure",
-    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later.",
+    "ButtonSelectServer": "Select server",
+    "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly."
 }

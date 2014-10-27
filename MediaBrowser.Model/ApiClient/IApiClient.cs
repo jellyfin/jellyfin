@@ -718,7 +718,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="password">The password.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">userId</exception>
-        Task<AuthenticationResult> AuthenticateUserAsync(string username, string password);
+        Task<AuthenticationResult> AuthenticateUserAsync(string username, 
+            string password);
 
         /// <summary>
         /// Updates the server configuration async.

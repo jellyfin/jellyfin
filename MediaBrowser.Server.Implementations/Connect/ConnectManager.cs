@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
@@ -104,6 +105,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             _config = config;
             _userManager = userManager;
             _providerManager = providerManager;
+
+            _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
 
             LoadCachedData();
         }
@@ -913,6 +916,59 @@ namespace MediaBrowser.Server.Implementations.Connect
             using (var stream = (await _httpClient.SendAsync(request, "POST").ConfigureAwait(false)).Content)
             {
             }
+        }
+
+        async void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        {
+            var user = e.Argument;
+
+            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(user.ConnectUserId))
+            {
+                return;
+            }
+            if (string.IsNullOrEmpty(ConnectAccessKey))
+            {
+                return;
+            }
+
+            var obj = ConnectUserPreferences.FromUserConfiguration(user.Configuration);
+            var json = _json.SerializeToString(obj);
+
+            var url = GetConnectUrl("user/preferences");
+            url += "?userId=" + user.ConnectUserId;
+            url += "&key=userpreferences";
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                RequestContent = json,
+                RequestContentType = "application/json"
+            };
+
+            SetServerAccessToken(options);
+
+            try
+            {
+                // No need to examine the response
+                using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
+                {
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error uploading user preferences", ex);
+            }
+        }
+
+        private async Task DownloadUserPreferences(User user, CancellationToken cancellationToken)
+        {
+            
         }
     }
 }

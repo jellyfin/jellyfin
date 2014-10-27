@@ -610,5 +610,7 @@
     "MessageInvitationSentToUser": "Een email is verzonden naar {0} om je uitnodiging om media te delen te accepteren.",
     "MessageInvitationSentToNewUser": "Een email is verzonden naar {0} om je uitnodiging aan te melden bij Media Browser",
     "HeaderConnectionFailure": "Connection Failure",
-    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later."
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later.",
+    "ButtonSelectServer": "Select server",
+    "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly."
 }

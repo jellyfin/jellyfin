@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Model.System;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.ApiClient
@@ -19,5 +20,36 @@ namespace MediaBrowser.Model.ApiClient
         {
             WakeOnLanInfos = new List<WakeOnLanInfo>();
         }
+
+        public void ImportInfo(PublicSystemInfo systemInfo)
+        {
+            Name = systemInfo.ServerName;
+            Id = systemInfo.Id;
+
+            if (!string.IsNullOrEmpty(systemInfo.LocalAddress))
+            {
+                LocalAddress = systemInfo.LocalAddress;
+            }
+            if (!string.IsNullOrEmpty(systemInfo.WanAddress))
+            {
+                RemoteAddress = systemInfo.WanAddress;
+            }
+
+            var fullSystemInfo = systemInfo as SystemInfo;
+
+            if (fullSystemInfo != null)
+            {
+                WakeOnLanInfos = new List<WakeOnLanInfo>();
+
+                if (!string.IsNullOrEmpty(fullSystemInfo.MacAddress))
+                {
+                    WakeOnLanInfos.Add(new WakeOnLanInfo
+                    {
+                        MacAddress = fullSystemInfo.MacAddress
+                    });
+                }
+            }
+        }
+
     }
 }

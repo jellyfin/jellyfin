@@ -121,11 +121,6 @@ var Dashboard = {
         return address;
     },
 
-    changeServer: function () {
-
-
-    },
-
     getCurrentUserId: function () {
 
         var autoLoginUserId = getParameterByName('u');
@@ -156,7 +151,10 @@ var Dashboard = {
 
     isConnectMode: function () {
 
-        return getWindowUrl().toLowerCase().indexOf('mediabrowser.tv') != -1;
+        var url = getWindowUrl().toLowerCase();
+
+        return url.indexOf('mediabrowser.tv') != -1 ||
+			url.indexOf('mediabrowser.github') != -1;
     },
 
     logout: function (logoutWithServer) {
@@ -554,6 +552,10 @@ var Dashboard = {
 
             if (user.localUser && user.localUser.Configuration.EnableUserPreferenceAccess) {
                 html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+            }
+
+            if (Dashboard.isConnectMode()) {
+                html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
             }
 
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
@@ -1178,7 +1180,7 @@ var Dashboard = {
 
     },
 
-    isServerlessPage: function() {
+    isServerlessPage: function () {
         var url = getWindowUrl().toLowerCase();
         return url.indexOf('connectlogin.html') != -1 || url.indexOf('selectserver.html') != -1;
     }
@@ -1234,7 +1236,7 @@ var Dashboard = {
     var appName = "Dashboard";
     var appVersion = window.dashboardVersion;
     var deviceName = generateDeviceName();
-    var deviceId = MediaBrowser.ApiClient.generateDeviceId();
+    var deviceId = MediaBrowser.generateDeviceId();
     var credentialProvider = new MediaBrowser.CredentialProvider();
 
     var capabilities = {

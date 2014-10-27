@@ -10,7 +10,7 @@
 
         var promise1 = ApiClient.getInstalledPlugins();
 
-        var promise2 = ApiClient.getJSON("configurationpages?pageType=PluginConfiguration");
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration");
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

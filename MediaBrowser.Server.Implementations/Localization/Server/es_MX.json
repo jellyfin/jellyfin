@@ -1241,8 +1241,8 @@
     "HeaderNewUsers": "Nuevos Usuarios",
     "ButtonSignUp": "Registrarse",
     "ButtonForgotPassword": "\u00bfOlvidaste la contrase\u00f1a?",
-    "OptionDisableUserPreferences": "Disable access to user preferences",
-    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
-    "HeaderSelectServer": "Select Server",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
+    "OptionDisableUserPreferences": "Desactivar acceso a las preferencias de usuario",
+    "OptionDisableUserPreferencesHelp": "Al activarse, s\u00f3lo los administradores podr\u00e1n configurar las im\u00e1genes del perfil del usuario, contrase\u00f1as y preferencias de idioma.",
+    "HeaderSelectServer": "Seleccionar Servidor",
+    "MessageNoServersAvailableToConnect": "No hay servidores disponibles para conectarse. Si se le ha invitado a compartir un servidor, aseg\u00farese de confirmarlo haciendo clic en la liga del correo electr\u00f3nico."
 }

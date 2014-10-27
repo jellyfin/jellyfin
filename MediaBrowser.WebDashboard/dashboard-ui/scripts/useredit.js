@@ -113,8 +113,9 @@
                 onSaveComplete(page, user);
             });
         } else {
-            ApiClient.createUser(user).done(function () {
-                onSaveComplete(page, user);
+            ApiClient.createUser(user).done(function (newUser) {
+                Dashboard.navigate("useredit.html?userId=" + newUser.Id);
+
             });
         }
     }
