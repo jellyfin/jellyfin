@@ -37,12 +37,6 @@ namespace MediaBrowser.Model.Configuration
         public string SubtitleLanguagePreference { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use forced subtitles only].
-        /// </summary>
-        /// <value><c>true</c> if [use forced subtitles only]; otherwise, <c>false</c>.</value>
-        public bool UseForcedSubtitlesOnly { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is hidden.
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>

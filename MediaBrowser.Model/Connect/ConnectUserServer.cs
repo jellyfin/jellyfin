@@ -8,5 +8,6 @@ namespace MediaBrowser.Model.Connect
         public string Name { get; set; }
         public string AccessKey { get; set; }
         public string SystemId { get; set; }
+        public string LocalAddress { get; set; }
     }
 }

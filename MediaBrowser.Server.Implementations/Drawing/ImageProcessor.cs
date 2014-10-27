@@ -86,6 +86,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
+
+            LogWebPVersion();
         }
 
         private string ResizedImageCachePath
@@ -210,9 +212,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newWidth = Convert.ToInt32(newSize.Width);
                             var newHeight = Convert.ToInt32(newSize.Height);
 
+                            var selectedOutputFormat = options.OutputFormat == ImageOutputFormat.Webp && !_webpAvailable
+                                ? ImageOutputFormat.Png
+                                : options.OutputFormat;
+
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
                             // Also, Webp only supports Format32bppArgb and Format32bppRgb
-                            var pixelFormat = options.OutputFormat == ImageOutputFormat.Webp
+                            var pixelFormat = selectedOutputFormat == ImageOutputFormat.Webp
                                 ? PixelFormat.Format32bppArgb
                                 : PixelFormat.Format32bppPArgb;
 
@@ -241,16 +247,16 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                                     DrawIndicator(thumbnailGraph, newWidth, newHeight, options);
 
-                                    var outputFormat = GetOutputFormat(originalImage, options.OutputFormat);
+                                    var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
                                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                                     // Save to the cache location
                                     using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                     {
-                                        if (options.OutputFormat == ImageOutputFormat.Webp)
+                                        if (selectedOutputFormat == ImageOutputFormat.Webp)
                                         {
-                                            new SimpleEncoder().Encode(thumbnail, cacheFileStream, quality, false);
+                                            SaveToWebP(thumbnail, cacheFileStream, quality);
                                         }
                                         else
                                         {
@@ -270,6 +276,25 @@ namespace MediaBrowser.Server.Implementations.Drawing
             finally
             {
                 semaphore.Release();
+            }
+        }
+
+        private void SaveToWebP(Bitmap thumbnail, Stream toStream, int quality)
+        {
+            new SimpleEncoder().Encode(thumbnail, toStream, quality);
+        }
+
+        private bool _webpAvailable = true;
+        private void LogWebPVersion()
+        {
+            try
+            {
+                _logger.Info("libwebp version: " + SimpleEncoder.GetEncoderVersion());
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error loading libwebp: ", ex);
+                _webpAvailable = false;
             }
         }
 
@@ -658,15 +683,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return result.Item1;
         }
 
-        private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image, 
-            IHasImages item, 
+        private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image,
+            IHasImages item,
             int imageIndex,
             List<IImageEnhancer> enhancers)
         {
             var originalImagePath = image.Path;
             var dateModified = image.DateModified;
             var imageType = image.Type;
-            
+
             try
             {
                 var cacheGuid = GetImageCacheTag(item, image, enhancers);
@@ -701,10 +726,10 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="cacheGuid">The cache unique identifier.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
-        private async Task<string> GetEnhancedImageInternal(string originalImagePath, 
-            IHasImages item, 
-            ImageType imageType, 
-            int imageIndex, 
+        private async Task<string> GetEnhancedImageInternal(string originalImagePath,
+            IHasImages item,
+            ImageType imageType,
+            int imageIndex,
             IEnumerable<IImageEnhancer> supportedEnhancers,
             string cacheGuid)
         {

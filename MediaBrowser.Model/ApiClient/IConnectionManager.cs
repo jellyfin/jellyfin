@@ -40,6 +40,12 @@ namespace MediaBrowser.Model.ApiClient
         ConnectUser ConnectUser { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [save local credentials].
+        /// </summary>
+        /// <value><c>true</c> if [save local credentials]; otherwise, <c>false</c>.</value>
+        bool SaveLocalCredentials { get; set; }
+
+        /// <summary>
         /// Gets the API client.
         /// </summary>
         /// <param name="item">The item.</param>
