@@ -2,7 +2,7 @@
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ConnectionManager = function (store) {
+MediaBrowser.ConnectionManager = function ($) {
 
     MediaBrowser.ConnectionState = {
         Unavilable: 0,
@@ -67,7 +67,9 @@ MediaBrowser.ConnectionManager = function (store) {
                 dataType: "json",
 
                 error: function () {
-                }
+                },
+
+                timeout: 5000
 
             });
         }
@@ -126,7 +128,7 @@ MediaBrowser.ConnectionManager = function (store) {
                 apiClient.serverInfo(server);
 
                 $(apiClient).on('authenticated', function (e, result) {
-                    onLocalAuthenticated(this, result);
+                    onLocalAuthenticated(this, result, true);
                 });
 
                 $(this).trigger('apiclientcreated', [apiClient]);
@@ -145,7 +147,7 @@ MediaBrowser.ConnectionManager = function (store) {
             return apiClient;
         }
 
-        function onLocalAuthenticated(apiClient, result) {
+        function onLocalAuthenticated(apiClient, result, saveCredentials) {
 
             apiClient.getSystemInfo().done(function (systemInfo) {
 
@@ -155,8 +157,14 @@ MediaBrowser.ConnectionManager = function (store) {
                 var credentials = credentialProvider.credentials();
 
                 server.DateLastAccessed = new Date().getTime();
-                server.UserId = result.User.Id;
-                server.AccessToken = result.AccessToken;
+
+                if (saveCredentials) {
+                    server.UserId = result.User.Id;
+                    server.AccessToken = result.AccessToken;
+                } else {
+                    server.UserId = null;
+                    server.AccessToken = null;
+                }
 
                 credentials.addOrUpdateServer(credentials.servers, server);
                 credentialProvider.credentials(credentials);
@@ -785,4 +793,4 @@ MediaBrowser.ConnectionManager = function (store) {
         };
     };
 
-}(window.store);
+}(jQuery);

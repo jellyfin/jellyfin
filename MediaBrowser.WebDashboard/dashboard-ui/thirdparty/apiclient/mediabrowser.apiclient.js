@@ -2,7 +2,7 @@
     window.MediaBrowser = {};
 }
 
-MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, window, FileReader) {
+MediaBrowser.ApiClient = function ($, JSON, WebSocket, setTimeout, devicePixelRatio, FileReader) {
 
     /**
      * Creates a new api client instance
@@ -2119,7 +2119,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
         function normalizeImageOptions(options) {
 
-            var ratio = window.devicePixelRatio || 1;
+            var ratio = devicePixelRatio || 1;
 
             if (ratio) {
 
@@ -3194,7 +3194,7 @@ MediaBrowser.ApiClient = function ($, navigator, JSON, WebSocket, setTimeout, wi
 
     };
 
-}(jQuery, navigator, window.JSON, window.WebSocket, setTimeout, window, window.FileReader);
+}(jQuery, window.JSON, window.WebSocket, setTimeout, window.devicePixelRatio, window.FileReader);
 
 (function (store) {
 
