@@ -523,7 +523,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
             {
             }
-            
+
             return new UserLinkResult
             {
                 IsNewUserInvitation = true,
@@ -922,7 +922,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var user = e.Argument;
 
-            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
@@ -937,7 +937,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
 
             var obj = ConnectUserPreferences.FromUserConfiguration(user.Configuration);
-            var json = _json.SerializeToString(obj);
+            var json = _json.SerializeToString(new UserPreferencesDto<ConnectUserPreferences> { data = obj });
 
             var url = GetConnectUrl("user/preferences");
             url += "?userId=" + user.ConnectUserId;
@@ -968,7 +968,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task DownloadUserPreferences(User user, CancellationToken cancellationToken)
         {
-            
+
         }
     }
 }

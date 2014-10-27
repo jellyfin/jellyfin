@@ -26,12 +26,12 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the local images.
         /// </summary>
         /// <returns>IEnumerable&lt;LocalFileInfo&gt;.</returns>
-        IEnumerable<LocalFileInfo> GetLocalPhotos();
+        Task<IEnumerable<LocalFileInfo>> GetLocalPhotos();
         /// <summary>
         /// Gets the local videos.
         /// </summary>
         /// <returns>IEnumerable&lt;LocalFileInfo&gt;.</returns>
-        IEnumerable<LocalFileInfo> GetLocalVideos();
+        Task<IEnumerable<LocalFileInfo>> GetLocalVideos();
         /// <summary>
         /// Uploads the file.
         /// </summary>

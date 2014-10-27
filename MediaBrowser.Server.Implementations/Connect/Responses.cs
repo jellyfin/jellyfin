@@ -72,4 +72,9 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         }
     }
+
+    public class UserPreferencesDto<T>
+    {
+        public T data { get; set; }
+    }
 }
