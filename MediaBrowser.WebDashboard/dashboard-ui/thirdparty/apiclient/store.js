@@ -1,4 +1,4 @@
-﻿(function (window) {
+﻿(function (globalScope, localStorage, sessionStorage) {
 
     function myStore(defaultObject) {
 
@@ -44,7 +44,7 @@
         };
     }
 
-    window.store = new myStore(window.localStorage);
-    window.sessionStore = new myStore(window.sessionStorage);
+    globalScope.store = new myStore(localStorage);
+    globalScope.sessionStore = new myStore(sessionStorage);
 
-})(window);
+})(window, window.localStorage, window.sessionStorage);

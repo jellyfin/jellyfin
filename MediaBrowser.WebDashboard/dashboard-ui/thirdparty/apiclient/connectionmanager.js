@@ -1,22 +1,22 @@
-﻿if (!window.MediaBrowser) {
-    window.MediaBrowser = {};
-}
+﻿(function (globalScope, $) {
 
-MediaBrowser.ConnectionManager = function ($) {
+    if (!globalScope.MediaBrowser) {
+        globalScope.MediaBrowser = {};
+    }
 
-    MediaBrowser.ConnectionState = {
+    globalScope.MediaBrowser.ConnectionState = {
         Unavilable: 0,
         ServerSelection: 1,
         ServerSignIn: 2,
         SignedIn: 3
     };
 
-    MediaBrowser.ConnectionMode = {
+    globalScope.MediaBrowser.ConnectionMode = {
         Local: 0,
         Remote: 1
     };
 
-    return function (credentialProvider, appName, applicationVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, applicationVersion, deviceName, deviceId, capabilities) {
 
         var self = this;
         var apiClients = [];
@@ -79,7 +79,7 @@ MediaBrowser.ConnectionManager = function ($) {
             return connectUser;
         };
 
-        self.appVersion = function() {
+        self.appVersion = function () {
             return applicationVersion;
         };
 
@@ -178,7 +178,7 @@ MediaBrowser.ConnectionManager = function ($) {
 
         function ensureWebSocket(apiClient) {
 
-            if (!apiClient.isWebSocketOpenOrConnecting) {
+            if (!apiClient.isWebSocketOpenOrConnecting && apiClient.isWebSocketSupported()) {
                 apiClient.openWebSocket();
             }
         }
@@ -322,7 +322,7 @@ MediaBrowser.ConnectionManager = function ($) {
         }
 
         function getImageUrl(localUser) {
-            
+
             if (connectUser && connectUser.ImageUrl) {
                 return {
                     url: connectUser.ImageUrl
@@ -349,7 +349,7 @@ MediaBrowser.ConnectionManager = function ($) {
             };
         }
 
-        self.user = function() {
+        self.user = function () {
 
             var deferred = $.Deferred();
 
@@ -371,7 +371,7 @@ MediaBrowser.ConnectionManager = function ($) {
             }
 
             function onEnsureConnectUserDone() {
-                
+
                 var apiClient = self.currentApiClient();
                 if (apiClient && apiClient.getCurrentUserId()) {
                     apiClient.getUser(apiClient.getCurrentUserId()).done(function (u) {
@@ -793,4 +793,4 @@ MediaBrowser.ConnectionManager = function ($) {
         };
     };
 
-}(jQuery);
+})(window, jQuery);

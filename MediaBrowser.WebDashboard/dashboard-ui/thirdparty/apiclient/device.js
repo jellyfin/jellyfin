@@ -1,10 +1,10 @@
-﻿if (!window.MediaBrowser) {
-    window.MediaBrowser = {};
-}
+﻿(function (globalScope, store) {
 
-(function (store) {
+    if (!globalScope.MediaBrowser) {
+        globalScope.MediaBrowser = {};
+    }
 
-    MediaBrowser.generateDeviceId = function () {
+    globalScope.MediaBrowser.generateDeviceId = function () {
 
         var keys = [];
 
@@ -27,4 +27,4 @@
         return sha1(keys.join('|'));
     };
 
-})(store);
+})(window, store);

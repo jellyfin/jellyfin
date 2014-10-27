@@ -1,10 +1,10 @@
-﻿if (!window.MediaBrowser) {
-    window.MediaBrowser = {};
-}
+﻿(function (globalScope, store, JSON) {
 
-MediaBrowser.CredentialProvider = function (store) {
+    if (!globalScope.MediaBrowser) {
+        globalScope.MediaBrowser = {};
+    }
 
-    return function () {
+    globalScope.MediaBrowser.CredentialProvider = function () {
 
         var self = this;
         var credentials;
@@ -26,7 +26,7 @@ MediaBrowser.CredentialProvider = function (store) {
             store.setItem('servercredentials', JSON.stringify(get()));
         }
 
-        self.clear = function() {
+        self.clear = function () {
             credentials = null;
             store.removeItem('servercredentials');
         };
@@ -40,40 +40,33 @@ MediaBrowser.CredentialProvider = function (store) {
             return get();
         };
 
-        self.addOrUpdateServer = function(list, server) {
+        self.addOrUpdateServer = function (list, server) {
 
-            var existing = list.filter(function(s) {
+            var existing = list.filter(function (s) {
                 return s.Id == server.Id;
             })[0];
 
-            if (existing)
-            {
+            if (existing) {
                 // Merge the data
                 existing.DateLastAccessed = Math.max(existing.DateLastAccessed || 0, server.DateLastAccessed || 0, new Date().getTime());
 
-                if (server.AccessToken)
-                {
+                if (server.AccessToken) {
                     existing.AccessToken = server.AccessToken;
                     existing.UserId = server.UserId;
                 }
-                if (server.ExchangeToken)
-                {
+                if (server.ExchangeToken) {
                     existing.ExchangeToken = server.ExchangeToken;
                 }
-                if (server.RemoteAddress)
-                {
+                if (server.RemoteAddress) {
                     existing.RemoteAddress = server.RemoteAddress;
                 }
-                if (server.LocalAddress)
-                {
+                if (server.LocalAddress) {
                     existing.LocalAddress = server.LocalAddress;
                 }
-                if (server.Name)
-                {
+                if (server.Name) {
                     existing.Name = server.Name;
                 }
-                if (server.WakeOnLanInfos && server.WakeOnLanInfos.length)
-                {
+                if (server.WakeOnLanInfos && server.WakeOnLanInfos.length) {
                     existing.WakeOnLanInfos = server.WakeOnLanInfos;
                 }
             }
@@ -83,4 +76,4 @@ MediaBrowser.CredentialProvider = function (store) {
         };
     };
 
-}(window.store);
+})(window, store, window.JSON);

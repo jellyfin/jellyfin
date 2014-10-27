@@ -772,12 +772,7 @@ var Dashboard = {
 
     ensureWebSocket: function () {
 
-        if (!("WebSocket" in window)) {
-            // Not supported by the browser
-            return;
-        }
-
-        if (ApiClient.isWebSocketOpenOrConnecting()) {
+        if (ApiClient.isWebSocketOpenOrConnecting() || !ApiClient.isWebSocketSupported()) {
             return;
         }
 
