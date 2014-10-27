@@ -265,6 +265,7 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/md5.js",
                 "thirdparty/apiclient/sha1.js",
                 "thirdparty/apiclient/store.js",
+                "thirdparty/apiclient/device.js",
                 "thirdparty/apiclient/credentials.js",
                 "thirdparty/apiclient/mediabrowser.apiclient.js",
                 "thirdparty/apiclient/connectionmanager.js"
