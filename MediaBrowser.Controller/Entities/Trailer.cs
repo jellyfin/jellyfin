@@ -12,18 +12,11 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasPreferredMetadataLanguage, IHasMetascore, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasMetascore, IHasLookupInfo<TrailerInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }
 
-        public string PreferredMetadataLanguage { get; set; }
         public List<string> ProductionLocations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         public Trailer()
         {

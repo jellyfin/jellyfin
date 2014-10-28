@@ -50,6 +50,11 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Gets or sets the number.
         /// </summary>

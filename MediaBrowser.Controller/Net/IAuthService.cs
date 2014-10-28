@@ -1,5 +1,4 @@
 ﻿using ServiceStack.Web;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -8,7 +7,6 @@ namespace MediaBrowser.Controller.Net
         void Authenticate(IRequest request, 
             IResponse response, 
             object requestDto, 
-            bool allowLocal, 
-            string[] roles);
+            IAuthenticated authAttribtues);
     }
 }

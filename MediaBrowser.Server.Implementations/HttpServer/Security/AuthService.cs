@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -45,8 +44,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         public void Authenticate(IRequest request,
             IResponse response,
             object requestDto,
-            bool allowLocal,
-            string[] roles)
+            IAuthenticated authAttribtues)
         {
             if (HostContext.HasValidAuthSecret(request))
                 return;
@@ -54,16 +52,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             //ExecuteBasic(req, res, requestDto); //first check if session is authenticated
             //if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
 
-            ValidateUser(request, allowLocal, roles);
+            ValidateUser(request, response, authAttribtues);
         }
 
-        private void ValidateUser(IRequest req, bool allowLocal,
-            IEnumerable<string> roles)
+        private void ValidateUser(IRequest req, IResponse response, IAuthenticated authAttribtues)
         {
             // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (!allowLocal || !req.IsLocal)
+            if (!authAttribtues.AllowLocal || !req.IsLocal)
             {
                 if (!string.IsNullOrWhiteSpace(auth.Token) ||
                     !_config.Configuration.InsecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
@@ -91,11 +88,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     throw new AuthenticationException("User account has been disabled.");
                 }
 
-                if (!user.Configuration.IsAdministrator && !user.IsParentalScheduleAllowed())
+                if (!user.Configuration.IsAdministrator &&
+                    !authAttribtues.EscapeParentalControl &&
+                    !user.IsParentalScheduleAllowed())
                 {
+                    response.AddHeader("X-Application-Error-Code", "ParentalControl");
                     throw new AuthenticationException("This user account is not allowed access at this time.");
                 }
             }
+
+            var roles = authAttribtues.GetRoles().ToList();
 
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {

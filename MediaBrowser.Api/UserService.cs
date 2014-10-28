@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
     /// Class GetUser
     /// </summary>
     [Route("/Users/{Id}", "GET", Summary = "Gets a user by Id")]
-    [Authenticated]
+    [Authenticated(EscapeParentalControl = true)]
     public class GetUser : IReturn<UserDto>
     {
         /// <summary>

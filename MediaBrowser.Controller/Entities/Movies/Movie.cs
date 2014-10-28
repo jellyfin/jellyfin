@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasPreferredMetadataLanguage, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
+    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -29,14 +29,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         [IgnoreDataMember]
         public List<Guid> BoxSetIdList { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
-
-        public string PreferredMetadataLanguage { get; set; }
 
         public Movie()
         {

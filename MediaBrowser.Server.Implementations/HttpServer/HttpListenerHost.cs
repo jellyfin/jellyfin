@@ -235,14 +235,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     return;
                 }
-
+                
                 var errorResponse = new ErrorResponse
                 {
                     ResponseStatus = new ResponseStatus
                     {
                         ErrorCode = ex.GetType().GetOperationName(),
                         Message = ex.Message,
-                        StackTrace = ex.StackTrace,
+                        StackTrace = ex.StackTrace
                     }
                 };
 

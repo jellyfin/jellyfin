@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="inString">The in string.</param>
         /// <returns>System.String.</returns>
-        private static string RemoveControlCharacters(string inString)
+        public static string RemoveControlCharacters(string inString)
         {
             if (inString == null) return null;
 

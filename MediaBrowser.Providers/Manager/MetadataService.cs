@@ -350,6 +350,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var remoteResult = await ExecuteRemoteProviders(item, temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
+
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
                 refreshResult.Status = remoteResult.Status;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
@@ -359,8 +360,9 @@ namespace MediaBrowser.Providers.Manager
 
             var hasLocalMetadata = false;
             var userDataList = new List<UserItemData>();
+            var localProviders = providers.OfType<ILocalMetadataProvider<TItemType>>().ToList();
 
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
+            foreach (var provider in localProviders)
             {
                 var providerName = provider.GetType().Name;
                 Logger.Debug("Running {0} for {1}", providerName, logName);
@@ -426,6 +428,16 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 }
                 successfulProviderCount += remoteResult.Successes;
+            }
+
+            // If no local providers and doing a full refresh, take data from item itself
+            if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh &&
+                localProviders.Count == 0 &&
+                refreshResult.UpdateType > ItemUpdateType.None)
+            {
+                // TODO: If the new metadata from above has some blank data, this
+                // can cause old data to get filled into those empty fields
+                MergeData(item, temp, new List<MetadataFields>(), false, true);
             }
 
             if (refreshResult.UpdateType > ItemUpdateType.None)
@@ -598,7 +610,11 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(TItemType source, TItemType target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings);
+        protected abstract void MergeData(TItemType source, 
+            TItemType target, 
+            List<MetadataFields> lockedFields, 
+            bool replaceData, 
+            bool mergeMetadataSettings);
 
         public virtual int Order
         {

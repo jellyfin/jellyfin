@@ -60,6 +60,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Activity\ActivityLogEntry.cs" />
+    <Compile Include="ApiClient\ApiHelpers.cs" />
     <Compile Include="ApiClient\ConnectionMode.cs" />
     <Compile Include="ApiClient\ConnectionResult.cs" />
     <Compile Include="ApiClient\ConnectionState.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="ApiClient\IDevice.cs" />
     <Compile Include="ApiClient\IServerEvents.cs" />
     <Compile Include="ApiClient\GeneralCommandEventArgs.cs" />
+    <Compile Include="ApiClient\RemoteLogoutReason.cs" />
     <Compile Include="ApiClient\ServerCredentials.cs" />
     <Compile Include="ApiClient\ServerDiscoveryInfo.cs" />
     <Compile Include="ApiClient\ServerInfo.cs" />
