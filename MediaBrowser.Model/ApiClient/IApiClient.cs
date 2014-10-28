@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [remote logged out].
         /// </summary>
-        event EventHandler<EventArgs> RemoteLoggedOut;
+        event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
 
         /// <summary>
         /// Occurs when [authenticated].

@@ -1,10 +1,11 @@
 ﻿using ServiceStack.Web;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Controller.Net
 {
-    public class AuthenticatedAttribute : Attribute, IHasRequestFilter
+    public class AuthenticatedAttribute : Attribute, IHasRequestFilter, IAuthenticated
     {
         public IAuthService AuthService { get; set; }
 
@@ -14,7 +15,17 @@ namespace MediaBrowser.Controller.Net
         /// <value><c>true</c> if [allow local]; otherwise, <c>false</c>.</value>
         public bool AllowLocal { get; set; }
 
+        /// <summary>
+        /// Gets or sets the roles.
+        /// </summary>
+        /// <value>The roles.</value>
         public string Roles { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [escape parental control].
+        /// </summary>
+        /// <value><c>true</c> if [escape parental control]; otherwise, <c>false</c>.</value>
+        public bool EscapeParentalControl { get; set; }
 
         /// <summary>
         /// The request filter is executed before the service.
@@ -24,11 +35,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            var roles = (Roles ?? string.Empty).Split(',')
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToArray();
-
-            AuthService.Authenticate(request, response, requestDto, AllowLocal, roles);
+            AuthService.Authenticate(request, response, requestDto, this);
         }
 
         /// <summary>
@@ -50,5 +57,20 @@ namespace MediaBrowser.Controller.Net
         {
             get { return 0; }
         }
+
+
+        public IEnumerable<string> GetRoles()
+        {
+            return (Roles ?? string.Empty).Split(',')
+                .Where(i => !string.IsNullOrWhiteSpace(i));
+        }
+    }
+
+    public interface IAuthenticated
+    {
+        bool EscapeParentalControl { get; }
+
+        bool AllowLocal { get; }
+        IEnumerable<string> GetRoles();
     }
 }

@@ -54,6 +54,9 @@
     <Compile Include="..\mediabrowser.model\activity\ActivityLogEntry.cs">
       <Link>Activity\ActivityLogEntry.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ApiHelpers.cs">
+      <Link>ApiClient\ApiHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionMode.cs">
       <Link>ApiClient\ConnectionMode.cs</Link>
     </Compile>
@@ -68,6 +71,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
       <Link>ApiClient\IServerEvents.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\RemoteLogoutReason.cs">
+      <Link>ApiClient\RemoteLogoutReason.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ServerCredentials.cs">
       <Link>ApiClient\ServerCredentials.cs</Link>

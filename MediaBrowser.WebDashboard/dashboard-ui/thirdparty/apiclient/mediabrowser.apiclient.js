@@ -94,6 +94,24 @@
             return val.substring(val.indexOf('=') + 1).replace("'", '%27');
         };
 
+        function onRequestFail(e) {
+
+            $(self).trigger('requestfail', [
+            {
+                url: this.url,
+                status: e.status,
+                errorCode: e.getResponseHeader("X-Application-Error-Code")
+            }]);
+        }
+
+        function onRetryRequestFail(request) {
+
+            $(self).trigger('requestfail', [
+            {
+                url: request.url
+            }]);
+        }
+
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
@@ -122,20 +140,33 @@
                 }
             }
 
-            if (!self.enableAutomaticNetwork) {
-                return $.ajax(request);
+            if (!self.enableAutomaticNetwork || !self.serverInfo() || self.connectionMode == null) {
+                return $.ajax(request).fail(onRequestFail);
             }
 
             var deferred = $.Deferred();
-            self.ajaxWithFailover(request, deferred);
+            self.ajaxWithFailover(request, deferred, true);
             return deferred.promise();
         };
 
-        function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
+        function switchConnectionMode(connectionMode) {
 
-            if (connectionMode == null) {
-                connectionMode = self.connectionMode;
+            var newConnectionMode;
+
+            if (connectionMode == MediaBrowser.ConnectionMode.Local && serverInfo.RemoteAddress) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Remote;
             }
+            else if (connectionMode == MediaBrowser.ConnectionMode.Remote && serverInfo.LocalAddress) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Local;
+            }
+            else {
+                newConnectionMode = connectionMode;
+            }
+
+            return newConnectionMode;
+        }
+
+        function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
 
             var url = connectionMode == MediaBrowser.ConnectionMode.Local ?
                 self.serverInfo().LocalAddress :
@@ -147,36 +178,24 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                error: function () {
-                },
-
                 timeout: 3000
 
             }).done(function () {
 
                 self.connectionMode = connectionMode;
+                self.serverAddress(url);
 
                 deferred.resolve();
 
             }).fail(function () {
 
-                currentRetryCount = currentRetryCount || 0;
-
                 if (currentRetryCount <= 6) {
 
-                    var newConnectionMode;
+                    var newConnectionMode = switchConnectionMode(connectionMode);
 
-                    if (connectionMode == MediaBrowser.ConnectionMode.Local && serverInfo.RemoteAddress) {
-                        newConnectionMode = MediaBrowser.ConnectionMode.Remote;
-                    }
-                    else if (connectionMode == MediaBrowser.ConnectionMode.Remote && serverInfo.LocalAddress) {
-                        newConnectionMode = MediaBrowser.ConnectionMode.Local;
-                    }
-                    else {
-                        newConnectionMode = connectionMode;
-                    }
-
-                    tryReconnectInternal(deferred, newConnectionMode, currentRetryCount + 1);
+                    setTimeout(function () {
+                        tryReconnectInternal(deferred, newConnectionMode, currentRetryCount + 1);
+                    }, 500);
 
                 } else {
                     deferred.reject();
@@ -187,7 +206,9 @@
         function tryReconnect() {
 
             var deferred = $.Deferred();
-            tryReconnectInternal(deferred);
+            setTimeout(function () {
+                tryReconnectInternal(deferred, self.connectionMode, 0);
+            }, 500);
             return deferred.promise();
         }
 
@@ -204,12 +225,9 @@
 
         self.ajaxWithFailover = function (request, deferred, enableReconnection, replaceUrl) {
 
-            // Stop global error handlers
-            request.error = function () { };
-
             if (replaceUrl) {
 
-                var baseUrl = connectionMode == MediaBrowser.ConnectionMode.Local ?
+                var baseUrl = self.connectionMode == MediaBrowser.ConnectionMode.Local ?
                     self.serverInfo().LocalAddress :
                     self.serverInfo().RemoteAddress;
 
@@ -220,22 +238,23 @@
 
                 deferred.resolveWith(null, [response]);
 
-            }).fail(function () {
+            }).fail(function (e, textStatus) {
 
-                if (enableReconnection !== false) {
+                // http://api.jquery.com/jQuery.ajax/
+                if (enableReconnection && textStatus == "timeout") {
                     tryReconnect().done(function () {
 
                         self.ajaxWithFailover(request, deferred, false, true);
 
                     }).fail(function () {
 
-                        // TODO: Make sure global ajax error handlers fire
+                        onRetryRequestFail(request);
                         deferred.reject();
 
                     });
                 } else {
 
-                    // TODO: Make sure global ajax error handlers fire
+                    onRetryRequestFail(request);
                     deferred.reject();
                 }
             });
@@ -277,6 +296,12 @@
             self.serverInfo(server);
             self.connectionMode = connectionMode;
             self.enableAutomaticNetwork = true;
+
+            var url = connectionMode == MediaBrowser.ConnectionMode.Local ?
+                self.serverInfo().LocalAddress :
+                self.serverInfo().RemoteAddress;
+
+            self.serverAddress(url);
         };
 
         self.isWebSocketSupported = function () {

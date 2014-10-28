@@ -1,54 +1,21 @@
 ﻿(function () {
 
-    function onAuthFailure(data, textStatus, xhr) {
-
-        var url = (this.url || '').toLowerCase();
-
-        // Bounce to the login screen, but not if a password entry fails, obviously
-        if (url.indexOf('/password') == -1 &&
-            url.indexOf('/authenticate') == -1 &&
-            !$($.mobile.activePage).is('.standalonePage')) {
-
-            Dashboard.logout(false);
-        }
-    }
-
     $.ajaxSetup({
-        crossDomain: true,
-
-        statusCode: {
-
-            401: onAuthFailure
-        },
-
-        error: function (event) {
-
-            Dashboard.hideLoadingMsg();
-
-            if (!Dashboard.suppressAjaxErrors) {
-                setTimeout(function () {
-
-                    var msg = event.getResponseHeader("X-Application-Error-Code") || Dashboard.defaultErrorMessage;
-                    Dashboard.showError(msg);
-
-                }, 500);
-            }
-        }
+        crossDomain: true
     });
 
+    if ($.browser.msie) {
 
+        // This is unfortunately required due to IE's over-aggressive caching. 
+        // https://github.com/MediaBrowser/MediaBrowser/issues/179
+        $.ajaxSetup({
+            cache: false
+        });
+    }
 
 })();
 
-if ($.browser.msie) {
-
-    // This is unfortuantely required due to IE's over-aggressive caching. 
-    // https://github.com/MediaBrowser/MediaBrowser/issues/179
-    $.ajaxSetup({
-        cache: false
-    });
-}
-
+// TODO: Deprecated in 1.9
 $.support.cors = true;
 
 $(document).one('click', WebNotifications.requestPermission);
@@ -69,6 +36,50 @@ var Dashboard = {
         $.mobile.popup.prototype.options.transition = "fade";
         $.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
+    },
+
+    onRequestFail: function (e, data) {
+
+        if (data.status == 401) {
+
+            var url = data.url.toLowerCase();
+
+            // Bounce to the login screen, but not if a password entry fails, obviously
+            if (url.indexOf('/password') == -1 &&
+                url.indexOf('/authenticate') == -1 &&
+                !$($.mobile.activePage).is('.standalonePage')) {
+
+                if (data.errorCode == "ParentalControl") {
+
+                    //alert(Globalize.translate('MessageLoggedOutParentalControl'));
+
+
+                    Dashboard.alert({
+                        message: Globalize.translate('MessageLoggedOutParentalControl'),
+                        callback: function() {
+                            Dashboard.logout(false);
+                        }
+                    });
+
+                } else {
+                    Dashboard.logout(false);
+                }
+            }
+            return;
+        }
+
+        Dashboard.hideLoadingMsg();
+
+        if (!Dashboard.suppressAjaxErrors) {
+
+            setTimeout(function () {
+
+                var msg = data.errorCode || Dashboard.defaultErrorMessage;
+
+                Dashboard.showError(msg);
+
+            }, 500);
+        }
     },
 
     getCurrentUser: function () {
@@ -161,6 +172,7 @@ var Dashboard = {
 
         store.removeItem("userId");
         store.removeItem("token");
+        store.removeItem("serverAddress");
 
         var loginPage = !Dashboard.isConnectMode() ?
             'login.html' :
@@ -1222,7 +1234,9 @@ var Dashboard = {
 
     function initializeApiClient(apiClient) {
 
-        $(apiClient).off('.dashboard').on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived);
+        $(apiClient).off('.dashboard')
+            .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
+            .on('requestfail.dashboard', Dashboard.onRequestFail);
 
         // TODO: Improve with http://webpjs.appspot.com/
         apiClient.supportsWebP($.browser.chrome);
@@ -1255,7 +1269,7 @@ var Dashboard = {
 
             initializeApiClient(ApiClient);
 
-            ConnectionManager.addApiClient(ApiClient);
+            ConnectionManager.addApiClient(ApiClient, true);
         }
 
     } else {

@@ -66,9 +66,6 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                error: function () {
-                },
-
                 timeout: 5000
 
             });
@@ -92,17 +89,26 @@
             return apiClients[0];
         };
 
-        self.addApiClient = function (apiClient) {
+        self.addApiClient = function (apiClient, enableAutomaticNetworking) {
 
             apiClients.push(apiClient);
 
             apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
-                var server = {};
+                var server = credentialProvider.credentials().servers.filter(function (s) {
+
+                    return s.Id == systemInfo.Id;
+
+                })[0] || {};
+
                 updateServerInfo(server, systemInfo);
 
                 apiClient.serverInfo(server);
                 $(this).trigger('apiclientcreated', [apiClient]);
+
+                if (enableAutomaticNetworking) {
+                    self.connectToServer(server);
+                }
             });
 
         };
@@ -220,10 +226,6 @@
                 dataType: "json",
                 headers: {
                     "X-Connect-UserToken": accessToken
-                },
-
-                error: function () {
-
                 }
 
             });
@@ -241,10 +243,6 @@
                 dataType: "json",
                 headers: {
                     "X-MediaBrowser-Token": server.ExchangeToken
-                },
-
-                error: function () {
-
                 }
 
             }).done(function (auth) {
@@ -272,10 +270,6 @@
                 dataType: "json",
                 headers: {
                     "X-MediaBrowser-Token": server.AccessToken
-                },
-
-                error: function () {
-
                 }
 
             }).done(function (systemInfo) {
@@ -291,10 +285,6 @@
                         dataType: "json",
                         headers: {
                             "X-MediaBrowser-Token": server.AccessToken
-                        },
-
-                        error: function () {
-
                         }
 
                     }).done(function (user) {
@@ -413,7 +403,7 @@
                 }
             }
 
-            return $.when(promises).done(function () {
+            var done = function () {
 
                 var credentials = credentialProvider.credentials();
 
@@ -431,8 +421,9 @@
                 connectUser = null;
 
                 $(self).trigger('signedout');
+            };
 
-            });
+            return $.when(promises).done(done);
         };
 
         self.connectUserId = function () {
@@ -456,10 +447,6 @@
                 dataType: "json",
                 headers: {
                     "X-Connect-UserToken": self.connectToken()
-                },
-
-                error: function () {
-
                 }
 
             }).done(function (servers) {
@@ -758,11 +745,7 @@
                     password: md5
                 },
                 dataType: "json",
-                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-
-                error: function () {
-                    // Don't show normal dashboard errors
-                }
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
 
 
             }).done(function (result) {

@@ -8,7 +8,11 @@ namespace MediaBrowser.Providers.Manager
 {
     public static class ProviderUtils
     {
-        public static void MergeBaseItemData(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public static void MergeBaseItemData(BaseItem source, 
+            BaseItem target, 
+            List<MetadataFields> lockedFields, 
+            bool replaceData, 
+            bool mergeMetadataSettings)
         {
             if (!lockedFields.Contains(MetadataFields.Name))
             {
@@ -191,36 +195,42 @@ namespace MediaBrowser.Providers.Manager
 
             if (mergeMetadataSettings)
             {
-                target.ForcedSortName = source.ForcedSortName;
-                target.LockedFields = source.LockedFields;
-                target.IsLocked = source.IsLocked;
-                target.DisplayMediaType = source.DisplayMediaType;
-
-                // Grab the value if it's there, but if not then don't overwrite the default
-                if (source.DateCreated != default(DateTime))
-                {
-                    target.DateCreated = source.DateCreated;
-                }
-
-                var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;
-                var targetHasLanguageSettings = target as IHasPreferredMetadataLanguage;
-
-                if (sourceHasLanguageSettings != null && targetHasLanguageSettings != null)
-                {
-                    targetHasLanguageSettings.PreferredMetadataCountryCode = sourceHasLanguageSettings.PreferredMetadataCountryCode;
-                    targetHasLanguageSettings.PreferredMetadataLanguage = sourceHasLanguageSettings.PreferredMetadataLanguage;
-                }
-
-                var sourceHasDisplayOrder = source as IHasDisplayOrder;
-                var targetHasDisplayOrder = target as IHasDisplayOrder;
-
-                if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
-                {
-                    targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
-                }
+                MergeMetadataSettings(source, target);
             }
         }
 
+        public static void MergeMetadataSettings(BaseItem source,
+           BaseItem target)
+        {
+            target.ForcedSortName = source.ForcedSortName;
+            target.LockedFields = source.LockedFields;
+            target.IsLocked = source.IsLocked;
+            target.DisplayMediaType = source.DisplayMediaType;
+
+            // Grab the value if it's there, but if not then don't overwrite the default
+            if (source.DateCreated != default(DateTime))
+            {
+                target.DateCreated = source.DateCreated;
+            }
+
+            var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;
+            var targetHasLanguageSettings = target as IHasPreferredMetadataLanguage;
+
+            if (sourceHasLanguageSettings != null && targetHasLanguageSettings != null)
+            {
+                targetHasLanguageSettings.PreferredMetadataCountryCode = sourceHasLanguageSettings.PreferredMetadataCountryCode;
+                targetHasLanguageSettings.PreferredMetadataLanguage = sourceHasLanguageSettings.PreferredMetadataLanguage;
+            }
+
+            var sourceHasDisplayOrder = source as IHasDisplayOrder;
+            var targetHasDisplayOrder = target as IHasDisplayOrder;
+
+            if (sourceHasDisplayOrder != null && targetHasDisplayOrder != null)
+            {
+                targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
+            }
+        }
+        
         private static void MergeShortOverview(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
         {
             var sourceHasShortOverview = source as IHasShortOverview;

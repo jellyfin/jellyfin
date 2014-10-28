@@ -33,6 +33,11 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetPlayableItems(user);
