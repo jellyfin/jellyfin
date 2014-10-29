@@ -1241,8 +1241,8 @@
     "HeaderNewUsers": "Nieuwe gebruikers",
     "ButtonSignUp": "Aanmelden",
     "ButtonForgotPassword": "Wachtwoord vergeten?",
-    "OptionDisableUserPreferences": "Disable access to user preferences",
-    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
-    "HeaderSelectServer": "Select Server",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
+    "OptionDisableUserPreferences": "Voorkom toegang tot gebruikers voorkeuren",
+    "OptionDisableUserPreferencesHelp": "Indien ingeschakeld kunnen alleen beheerders profiel afbeeldingen, wachtwoorden en taalinstellingen wijzigen.",
+    "HeaderSelectServer": "Selecteer server",
+    "MessageNoServersAvailableToConnect": "Er zijn geen servers beschikbaar om mee te verbinden. Als je uitgenodigd bent om een server te delen, verifieer dit door op de link in het emailbericht te klikken."
 }

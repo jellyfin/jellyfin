@@ -611,6 +611,6 @@
     "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser.",
     "HeaderConnectionFailure": "Falla de Conexi\u00f3n",
     "MessageUnableToConnectToServer": "No fue posible conectarse a lo que se ha seleccionado en este momento. Por favor int\u00e9ntelo m\u00e1s tarde.",
-    "ButtonSelectServer": "Select server",
-    "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly."
+    "ButtonSelectServer": "Seleccionar servidor",
+    "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este complemento por favor inicie sesi\u00f3n en su servidor local directamente."
 }

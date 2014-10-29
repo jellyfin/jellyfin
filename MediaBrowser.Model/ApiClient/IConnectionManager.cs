@@ -30,7 +30,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [connect user sign out].
         /// </summary>
         event EventHandler<EventArgs> ConnectUserSignOut;
-        [Obsolete]
+        /// <summary>
+        /// Occurs when [remote logged out].
+        /// </summary>
         event EventHandler<EventArgs> RemoteLoggedOut;
         
         /// <summary>
@@ -90,7 +92,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the active api client instance
         /// </summary>
-        [Obsolete]
         IApiClient CurrentApiClient { get; }
 
         /// <summary>
