@@ -530,8 +530,8 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, 
-            Folder parent = null, 
+        public BaseItem ResolvePath(FileSystemInfo fileInfo,
+            Folder parent = null,
             string collectionType = null)
         {
             return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
@@ -1190,7 +1190,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return item;
         }
-        
+
         /// <summary>
         /// Gets the intros.
         /// </summary>
@@ -1508,26 +1508,21 @@ namespace MediaBrowser.Server.Implementations.Library
             return collectionTypes.Count == 1 ? collectionTypes[0] : null;
         }
 
-        public Task<UserView> GetNamedView(string name, string type, string sortName, CancellationToken cancellationToken)
-        {
-            return GetNamedView(name, null, type, sortName, cancellationToken);
-        }
-
-        public async Task<UserView> GetNamedView(string name, string category, string type, string sortName, CancellationToken cancellationToken)
+        public async Task<UserView> GetNamedView(string name,
+            string type,
+            string sortName,
+            CancellationToken cancellationToken)
         {
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
                 "views");
-
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                path = Path.Combine(path, _fileSystem.GetValidFilename(category));
-            }
 
             path = Path.Combine(path, _fileSystem.GetValidFilename(type));
 
             var id = (path + "_namedview_" + name).GetMBId(typeof(UserView));
 
             var item = GetItemById(id) as UserView;
+
+            var refresh = false;
 
             if (item == null ||
                 !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
@@ -1546,7 +1541,89 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-                await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                refresh = true;
+            }
+
+            if (!refresh && item != null)
+            {
+                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+            }
+
+            if (refresh)
+            {
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ForceSave = true
+
+                }, cancellationToken).ConfigureAwait(false);
+            }
+
+            return item;
+        }
+
+        public async Task<UserView> GetSpecialFolder(User user,
+            string name,
+            string parentId,
+            string viewType,
+            string sortName,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            if (string.IsNullOrWhiteSpace(parentId))
+            {
+                throw new ArgumentNullException("parentId");
+            }
+
+            if (string.IsNullOrWhiteSpace(viewType))
+            {
+                throw new ArgumentNullException("viewType");
+            }
+
+            var id = ("7_namedview_" + name + user.Id.ToString("N") + parentId).GetMBId(typeof(UserView));
+
+            var path = BaseItem.GetInternalMetadataPathForId(id);
+
+            var item = GetItemById(id) as UserView;
+
+            var refresh = false;
+
+            if (item == null)
+            {
+                Directory.CreateDirectory(path);
+
+                item = new UserView
+                {
+                    Path = path,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    ViewType = viewType,
+                    ForcedSortName = sortName,
+                    UserId = user.Id,
+                    ParentId = new Guid(parentId)
+                };
+
+                await CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                refresh = true;
+            }
+
+            if (!refresh && item != null)
+            {
+                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+            }
+
+            if (refresh)
+            {
+                await item.RefreshMetadata(new MetadataRefreshOptions
+                {
+                    ForceSave = true
+
+                }, cancellationToken).ConfigureAwait(false);
             }
 
             return item;

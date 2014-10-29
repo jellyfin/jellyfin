@@ -112,7 +112,14 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            return item is UserView || item is ICollectionFolder;
+            var view = item as UserView;
+
+            if (view != null)
+            {
+                return !view.UserId.HasValue;
+            }
+            
+            return item is ICollectionFolder;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

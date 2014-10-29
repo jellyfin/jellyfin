@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -15,6 +14,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
                         return GetResult(result);
                     }
 
-                case CollectionType.LiveTvChannels:
+                case SpecialFolder.LiveTvChannels:
                     {
                         var result = await _liveTvManager.GetInternalChannels(new LiveTvChannelQuery
                         {
@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller.Entities
                         return GetResult(result);
                     }
 
-                case CollectionType.LiveTvNowPlaying:
+                case SpecialFolder.LiveTvNowPlaying:
                     {
                         var result = await _liveTvManager.GetRecommendedProgramsInternal(new RecommendedProgramQuery
                         {
@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
                         return GetResult(result);
                     }
 
-                case CollectionType.LiveTvRecordingGroups:
+                case SpecialFolder.LiveTvRecordingGroups:
                     {
                         var result = await _liveTvManager.GetInternalRecordings(new RecordingQuery
                         {
@@ -128,85 +128,85 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.Movies:
                     return await GetMovieFolders(parent, user, query).ConfigureAwait(false);
 
-                case CollectionType.GameGenres:
+                case SpecialFolder.GameGenres:
                     return GetGameGenres(parent, user, query);
 
-                case CollectionType.GameSystems:
+                case SpecialFolder.GameSystems:
                     return GetGameSystems(parent, user, query);
 
-                case CollectionType.LatestGames:
+                case SpecialFolder.LatestGames:
                     return GetLatestGames(parent, user, query);
 
-                case CollectionType.RecentlyPlayedGames:
+                case SpecialFolder.RecentlyPlayedGames:
                     return GetRecentlyPlayedGames(parent, user, query);
 
-                case CollectionType.GameFavorites:
+                case SpecialFolder.GameFavorites:
                     return GetFavoriteGames(parent, user, query);
 
-                case CollectionType.TvShowSeries:
+                case SpecialFolder.TvShowSeries:
                     return GetTvSeries(parent, user, query);
 
-                case CollectionType.TvGenres:
+                case SpecialFolder.TvGenres:
                     return GetTvGenres(parent, user, query);
 
-                case CollectionType.TvResume:
+                case SpecialFolder.TvResume:
                     return GetTvResume(parent, user, query);
 
-                case CollectionType.TvNextUp:
+                case SpecialFolder.TvNextUp:
                     return GetTvNextUp(parent, query);
 
-                case CollectionType.TvLatest:
+                case SpecialFolder.TvLatest:
                     return GetTvLatest(parent, user, query);
 
-                case CollectionType.MovieFavorites:
+                case SpecialFolder.MovieFavorites:
                     return GetFavoriteMovies(parent, user, query);
 
-                case CollectionType.MovieLatest:
+                case SpecialFolder.MovieLatest:
                     return GetMovieLatest(parent, user, query);
 
-                case CollectionType.MovieGenres:
+                case SpecialFolder.MovieGenres:
                     return GetMovieGenres(parent, user, query);
 
-                case CollectionType.MovieResume:
+                case SpecialFolder.MovieResume:
                     return GetMovieResume(parent, user, query);
 
-                case CollectionType.MovieMovies:
+                case SpecialFolder.MovieMovies:
                     return GetMovieMovies(parent, user, query);
 
-                case CollectionType.MovieCollections:
+                case SpecialFolder.MovieCollections:
                     return GetMovieCollections(parent, user, query);
 
-                case CollectionType.MusicLatest:
+                case SpecialFolder.MusicLatest:
                     return GetMusicLatest(parent, user, query);
 
-                case CollectionType.MusicAlbums:
+                case SpecialFolder.MusicAlbums:
                     return GetMusicAlbums(parent, user, query);
 
-                case CollectionType.MusicAlbumArtists:
+                case SpecialFolder.MusicAlbumArtists:
                     return GetMusicAlbumArtists(parent, user, query);
 
-                case CollectionType.MusicArtists:
+                case SpecialFolder.MusicArtists:
                     return GetMusicArtists(parent, user, query);
 
-                case CollectionType.MusicSongs:
+                case SpecialFolder.MusicSongs:
                     return GetMusicSongs(parent, user, query);
 
-                case CollectionType.TvFavoriteEpisodes:
+                case SpecialFolder.TvFavoriteEpisodes:
                     return GetFavoriteEpisodes(parent, user, query);
 
-                case CollectionType.TvFavoriteSeries:
+                case SpecialFolder.TvFavoriteSeries:
                     return GetFavoriteSeries(parent, user, query);
 
-                case CollectionType.MusicFavorites:
+                case SpecialFolder.MusicFavorites:
                     return await GetMusicFavorites(parent, user, query).ConfigureAwait(false);
 
-                case CollectionType.MusicFavoriteAlbums:
+                case SpecialFolder.MusicFavoriteAlbums:
                     return GetFavoriteAlbums(parent, user, query);
 
-                case CollectionType.MusicFavoriteArtists:
+                case SpecialFolder.MusicFavoriteArtists:
                     return GetFavoriteArtists(parent, user, query);
 
-                case CollectionType.MusicFavoriteSongs:
+                case SpecialFolder.MusicFavoriteSongs:
                     return GetFavoriteSongs(parent, user, query);
 
                 default:
@@ -228,15 +228,13 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var category = "music";
-
-            list.Add(await GetUserView(category, CollectionType.MusicLatest, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicAlbums, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicAlbumArtists, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicSongs, user, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(CollectionType.MusicArtists, user, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(CollectionType.MusicGenres, user, "5", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicFavorites, user, "6", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicLatest, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbums, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicSongs, user, "3", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "3", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.MusicGenres, user, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavorites, user, "6", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -245,11 +243,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<BaseItem>();
 
-            var category = "music";
-
-            list.Add(await GetUserView(category, CollectionType.MusicFavoriteAlbums, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicFavoriteArtists, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MusicFavoriteSongs, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteAlbums, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteArtists, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteSongs, user, "2", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -353,13 +349,11 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var category = "movies";
-
-            list.Add(await GetUserView(category, CollectionType.MovieResume, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MovieLatest, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MovieMovies, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MovieCollections, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.MovieFavorites, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieResume, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieLatest, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieMovies, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieCollections, user, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieFavorites, user, "4", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(CollectionType.MovieGenres, user, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
@@ -461,15 +455,13 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var category = "tvshows";
-
-            list.Add(await GetUserView(category, CollectionType.TvResume, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvNextUp, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvLatest, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvShowSeries, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvFavoriteSeries, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.TvFavoriteEpisodes, user, "5", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(CollectionType.TvGenres, user, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvResume, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvNextUp, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvLatest, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvShowSeries, user, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvFavoriteSeries, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvFavoriteEpisodes, user, "5", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.TvGenres, user, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -483,13 +475,11 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            var category = "games";
-
-            list.Add(await GetUserView(category, CollectionType.LatestGames, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.RecentlyPlayedGames, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.GameFavorites, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(category, CollectionType.GameSystems, user, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(CollectionType.GameGenres, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LatestGames, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.RecentlyPlayedGames, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.GameFavorites, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.GameSystems, user, "3", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.GameGenres, user, "4", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -1491,24 +1481,19 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<BaseItem>();
 
-            list.Add(await _userViewManager.GetUserView("livetv", CollectionType.LiveTvNowPlaying, user, "0", CancellationToken.None).ConfigureAwait(false));
-            list.Add(await _userViewManager.GetUserView("livetv", CollectionType.LiveTvChannels, user, string.Empty, CancellationToken.None).ConfigureAwait(false));
-            list.Add(await _userViewManager.GetUserView("livetv", CollectionType.LiveTvRecordingGroups, user, string.Empty, CancellationToken.None).ConfigureAwait(false));
+            var parent = user.RootFolder;
+
+            list.Add(await GetUserView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, parent).ConfigureAwait(false));
 
             return list;
         }
 
-        private async Task<UserView> GetUserView(string category, string type, User user, string sortName, Folder parent)
+        private async Task<UserView> GetUserView(string type, User user, string sortName, Folder parent)
         {
-            var view = await _userViewManager.GetUserView(category, type, user, sortName, CancellationToken.None)
+            var view = await _userViewManager.GetUserView(parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
                         .ConfigureAwait(false);
-
-            if (parent.Id != view.ParentId)
-            {
-                view.ParentId = parent.Id;
-                await view.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None)
-                        .ConfigureAwait(false);
-            }
 
             return view;
         }

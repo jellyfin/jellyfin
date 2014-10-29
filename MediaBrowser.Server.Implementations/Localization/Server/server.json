@@ -830,7 +830,7 @@
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
     "ButtonDismiss": "Dismiss",
     "ButtonTakeTheTour": "Take the tour",
-    "ButtonEditOtherUserPreferences": "Edit this user's profile and personal preferences.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, password and personal preferences.",
     "LabelChannelStreamQuality": "Preferred internet stream quality:",
     "LabelChannelStreamQualityHelp": "In a low bandwidth environment, limiting quality can help ensure a smooth streaming experience.",
     "OptionBestAvailableStreamQuality": "Best available",
@@ -1260,5 +1260,8 @@
     "OptionDisableUserPreferences": "Disable access to user preferences",
     "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
     "HeaderSelectServer": "Select Server",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email.",
+    "TitleNewUser": "New User",
+    "ButtonConfigurePassword": "Configure Password",
+    "HeaderDashboardUserPassword": "User passwords are managed within each user's personal profile settings."
 }
