@@ -3,7 +3,7 @@
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 95px !important;
+        padding-top: 98px !important;
     }
 
 .libraryMenuDivider {
@@ -155,7 +155,7 @@
 }
 
 .libraryViewNav {
-    height: 45px;
+    height: 48px;
     overflow: hidden;
     position: fixed;
     right: 0;
@@ -322,7 +322,7 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 4px solid transparent;
+    border-bottom: 5px solid transparent;
 }
 
     .libraryViewNav a:not(.ui-btn-active):hover {
@@ -331,7 +331,7 @@
 
 .libraryViewNavLinkContent {
     display: inline-block;
-    padding: 1px 13px 1px 13px;
+    padding: 2px 13px 2px 13px;
 }
 
 @media all and (max-width: 500px) {

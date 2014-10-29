@@ -537,7 +537,7 @@
 
                 // Find the first server with a saved access token
                 var currentServer = servers.filter(function (s) {
-                    return s.AccessToken || (s.ExchangeToken && self.connectUser());
+                    return s.AccessToken;
                 })[0];
 
                 if (currentServer) {
