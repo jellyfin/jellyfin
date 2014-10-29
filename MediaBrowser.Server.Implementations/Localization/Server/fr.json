@@ -385,7 +385,7 @@
     "LabelEnableRealtimeMonitor": "Activer la surveillance en temps r\u00e9el",
     "LabelEnableRealtimeMonitorHelp": "Les changements seront trait\u00e9s dans l'imm\u00e9diat, sur les syst\u00e8mes de fichiers support\u00e9s.",
     "ButtonScanLibrary": "Balayer Biblioth\u00e8que",
-    "HeaderNumberOfPlayers": "Lecteurs:",
+    "HeaderNumberOfPlayers": "Lecteurs :",
     "OptionAnyNumberOfPlayers": "N'importe quel:",
     "Option1Player": "1+",
     "Option2Player": "2+",
@@ -540,7 +540,7 @@
     "ButtonUpdateNow": "Mettre \u00e0 jour maintenant",
     "PleaseUpdateManually": "Merci d'\u00e9teindre le serveur et de le mettre \u00e0 jour manuellement.",
     "NewServerVersionAvailable": "Une nouvelle version de Media Browser Server est disponible!",
-    "ServerUpToDate": "Media Browser est \u00e0 jour",
+    "ServerUpToDate": "Media Browser Server est \u00e0 jour",
     "ErrorConnectingToMediaBrowserRepository": "Une erreur est survenue avec la connexion au r\u00e9f\u00e9rentiel de donn\u00e9es de Media Browser.",
     "LabelComponentsUpdated": "Les composants suivants ont \u00e9t\u00e9 install\u00e9s ou mis \u00e0 jour.",
     "MessagePleaseRestartServerToFinishUpdating": "Merci de red\u00e9marrer le serveur pour appliquer les mises \u00e0 jour.",
@@ -1241,8 +1241,8 @@
     "HeaderNewUsers": "Nouveaux utilisateurs",
     "ButtonSignUp": "S'inscrire",
     "ButtonForgotPassword": "Mot de passe oubli\u00e9 ?",
-    "OptionDisableUserPreferences": "Disable access to user preferences",
-    "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
-    "HeaderSelectServer": "Select Server",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email."
+    "OptionDisableUserPreferences": "D\u00e9sactiver l'acc\u00e8s au pr\u00e9f\u00e9rences utilisateurs",
+    "OptionDisableUserPreferencesHelp": "Si activ\u00e9, seulement les administrateurs seront capable de configurer les images du profil utilisateurs, les mots de passes, et les langues pr\u00e9f\u00e9r\u00e9es",
+    "HeaderSelectServer": "S\u00e9lectionner le serveur",
+    "MessageNoServersAvailableToConnect": "Aucun serveurs n'est disponible pour se connecter. Si vous avez \u00e9t\u00e9 invit\u00e9 \u00e0 partager un serveur, soyez s\u00fbr de le confirmer en cliquant le lien dans le courriel."
 }
