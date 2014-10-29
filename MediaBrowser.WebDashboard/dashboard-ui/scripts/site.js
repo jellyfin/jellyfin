@@ -56,7 +56,7 @@ var Dashboard = {
 
                     Dashboard.alert({
                         message: Globalize.translate('MessageLoggedOutParentalControl'),
-                        callback: function() {
+                        callback: function () {
                             Dashboard.logout(false);
                         }
                     });
@@ -80,6 +80,11 @@ var Dashboard = {
 
             }, 500);
         }
+    },
+
+    onApiClientServerAddressChanged: function () {
+
+        Dashboard.serverAddress(ApiClient.serverAddress());
     },
 
     getCurrentUser: function () {
@@ -1236,7 +1241,8 @@ var Dashboard = {
 
         $(apiClient).off('.dashboard')
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
-            .on('requestfail.dashboard', Dashboard.onRequestFail);
+            .on('requestfail.dashboard', Dashboard.onRequestFail)
+            .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
 
         // TODO: Improve with http://webpjs.appspot.com/
         apiClient.supportsWebP($.browser.chrome);

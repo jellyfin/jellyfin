@@ -1,5 +1,22 @@
 ﻿var MediaLibraryPage = {
 
+    onPageInit: function () {
+
+        var page = this;
+        $('#selectCollectionType', page).on('change', function() {
+
+            var index = this.selectedIndex;
+            if (index != -1) {
+
+                var name = this.options[index].innerHTML
+                    .replace('*', '')
+                    .replace('&amp;', '&');
+
+                $('#txtValue', page).val(name);
+            }
+        });
+    },
+
     onPageShow: function () {
 
         var page = this;
@@ -112,7 +129,7 @@
 
         $('.collectionTypeFieldDescription').show();
 
-        MediaLibraryPage.getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('HeaderAddMediaFolderHelp'), "", true, function (name, type) {
+        MediaLibraryPage.getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('LabelName'), "", true, function (name, type) {
 
             MediaLibraryPage.lastVirtualFolderName = name;
 
@@ -170,9 +187,7 @@
 
         $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('').selectmenu('refresh');
 
-        popup.on("popupafteropen", function () {
-            $('#textEntryForm input:first', this).focus();
-        }).on("popupafterclose", function () {
+        popup.on("popupafterclose", function () {
             $(this).off("popupafterclose").off("click");
             $('#textEntryForm', this).off("submit");
         }).popup("open");
@@ -322,7 +337,7 @@
     }
 };
 
-$(document).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+$(document).on('pageinit', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
 
 var WizardLibraryPage = {
 

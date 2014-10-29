@@ -16,7 +16,7 @@
         return Math.floor(Math.random() * (max - min) + min);
     }
 
-    function getBackdropItemIds(userId, types, parentId) {
+    function getBackdropItemIds(apiClient, userId, types, parentId) {
 
         var key = 'backdrops2_' + userId + (types || '') + (parentId || '');
 
@@ -42,7 +42,7 @@
                 ParentId: parentId
             };
 
-            ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+            apiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
                 var images = result.Items.map(function (i) {
                     return {
@@ -61,31 +61,37 @@
 
     function showBackdrop(type) {
 
-        getBackdropItemIds(Dashboard.getCurrentUserId(),
+        var apiClient = ConnectionManager.currentApiClient();
+
+        if (!apiClient) {
+            return;
+        }
+
+        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(),
             type,
             LibraryMenu.getTopParentId()).done(function (images) {
 
-            if (images.length) {
+                if (images.length) {
 
-                var index = getRandom(0, images.length - 1);
-                var item = images[index];
+                    var index = getRandom(0, images.length - 1);
+                    var item = images[index];
 
-                var screenWidth = $(window).width();
+                    var screenWidth = $(window).width();
 
-                var imgUrl = ApiClient.getScaledImageUrl(item.id, {
-                    type: "Backdrop",
-                    tag: item.tag,
-                    maxWidth: screenWidth,
-                    quality: 80
-                });
+                    var imgUrl = apiClient.getScaledImageUrl(item.id, {
+                        type: "Backdrop",
+                        tag: item.tag,
+                        maxWidth: screenWidth,
+                        quality: 80
+                    });
 
-                getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+                    getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
 
-            } else {
+                } else {
 
-                clearBackdrop();
-            }
-        });
+                    clearBackdrop();
+                }
+            });
     }
 
     function clearBackdrop() {

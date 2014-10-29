@@ -1195,7 +1195,9 @@
                     cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
                 }
 
-                if (options.showChildCountIndicator && item.ChildCount) {
+                // The click through hasn't been working on chrome android
+                // The > 1 can be removed once this is resolved
+                if (options.showChildCountIndicator && item.ChildCount > 1) {
                     cssClass += ' groupedCard';
 
                     if (item.Type == 'Series') {
@@ -1466,6 +1468,10 @@
         },
 
         getPosterViewDisplayName: function (item, displayAsSpecial, includeParentInfo) {
+
+            if (!item) {
+                throw new Error("null item passed into getPosterViewDisplayName");
+            }
 
             var name = item.EpisodeTitle || item.Name;
 

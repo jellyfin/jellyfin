@@ -15,16 +15,22 @@
 
             Dashboard.setPageTitle(user.Name);
 
+            var imageUrl;
+
             if (user.PrimaryImageTag) {
 
-                var imageUrl = ApiClient.getUserImageUrl(user.Id, {
+                imageUrl = ApiClient.getUserImageUrl(user.Id, {
                     height: 200,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
                 });
 
-                $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
+            } else {
+                imageUrl = "css/images/logindefault.png";
             }
+
+            $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
+
 
             if (user.ConnectLinkType == 'Guest') {
 
@@ -40,10 +46,9 @@
                 $('.connectMessage', page).hide();
 
             } else {
-                $('.newImageSection', page).show();
-                $('#fldImage', page).hide().html('');
+                $('.newImageForm', page).show();
                 $('#btnDeleteImage', page).hide();
-                $('#headerUploadNewImage', page).hide();
+                $('#headerUploadNewImage', page).show();
                 $('.connectMessage', page).hide();
             }
 

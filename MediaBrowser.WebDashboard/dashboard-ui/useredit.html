@@ -9,10 +9,11 @@
         <div data-role="content">
             <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" style="display: none;" data-mini="true">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" id="lnkParentalControl" style="display: none;">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
                 <p class="lnkEditUserPreferencesContainer">
                     <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
@@ -33,7 +34,7 @@
                             </div>
                             <br />
                         </li>
-                        <li id="fldIsAdmin" style="display: none;">
+                        <li>
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />
                             <label for="chkIsAdmin">${OptionAllowUserToManageServer}</label>
                         </li>
@@ -52,7 +53,7 @@
                         <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
                     </fieldset>
                     <br />
-                    <div id="accessControlDiv" style="display: none" data-role="collapsible">
+                    <div id="accessControlDiv" data-role="collapsible">
                         <h2>${HeaderAdvancedControl}</h2>
                         <div id="fldIsEnabled" style="margin: 1em 0 2em;">
                             <input type="checkbox" id="chkDisabled" name="chkDisabled" data-mini="true" />

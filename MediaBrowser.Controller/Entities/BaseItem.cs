@@ -373,6 +373,15 @@ namespace MediaBrowser.Controller.Entities
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }
 
+        public static string GetInternalMetadataPathForId(Guid id)
+        {
+            var idString = id.ToString("N");
+
+            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+
+            return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>

@@ -468,7 +468,7 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new T()
             {
-                Path = "C:\\",
+                Path = BaseItem.GetInternalMetadataPathForId(Guid.NewGuid()),
 
                 // Dummy this up to fool the local trailer check
                 Parent = new Folder()

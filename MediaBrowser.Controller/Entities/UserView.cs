@@ -12,12 +12,21 @@ namespace MediaBrowser.Controller.Entities
         public string ViewType { get; set; }
         public Guid ParentId { get; set; }
 
+        public Guid? UserId { get; set; }
+
         public static ITVSeriesManager TVSeriesManager;
 
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
+            var parent = this as Folder;
+
+            if (ParentId != Guid.Empty)
+            {
+                parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
+            }
+
             return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, CollectionManager)
-                .GetUserItems(this, ViewType, query);
+                .GetUserItems(parent, ViewType, query);
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)

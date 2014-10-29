@@ -8,7 +8,8 @@
         Unavilable: 0,
         ServerSelection: 1,
         ServerSignIn: 2,
-        SignedIn: 3
+        SignedIn: 3,
+        ConnectSignIn: 4
     };
 
     globalScope.MediaBrowser.ConnectionMode = {
@@ -519,60 +520,41 @@
 
             if (servers.length == 1) {
 
-                if (!servers[0].DateLastAccessed && !self.connectUserId()) {
+                self.connectToServer(servers[0]).done(function (result) {
 
-                    deferred.resolveWith(null, [
-                        {
-                            Servers: servers,
-                            State: MediaBrowser.ConnectionState.ServerSelection,
-                            ConnectUser: self.connectUser()
-                        }
-                    ]);
+                    if (result.State == MediaBrowser.ConnectionState.Unavailable) {
 
-                } else {
+                        result.State = result.ConnectUser == null ?
+                            MediaBrowser.ConnectionState.ConnectSignIn :
+                            MediaBrowser.ConnectionState.ServerSelection;
+                    }
 
-                    self.connectToServer(servers[0]).done(function (result) {
+                    deferred.resolveWith(null, [result]);
 
-                        if (result.State == MediaBrowser.ConnectionState.Unavailable) {
-                            result.State = MediaBrowser.ConnectionState.ServerSelection;
-                        }
-
-                        deferred.resolveWith(null, [result]);
-
-                    }).fail(function () {
-
-                        deferred.resolveWith(null, [
-                            {
-                                Servers: servers,
-                                State: MediaBrowser.ConnectionState.ServerSelection,
-                                ConnectUser: self.connectUser()
-                            }
-                        ]);
-
-                    });
-                }
+                });
 
             } else {
 
                 // Find the first server with a saved access token
                 var currentServer = servers.filter(function (s) {
-                    return s.AccessToken;
+                    return s.AccessToken || (s.ExchangeToken && self.connectUser());
                 })[0];
 
                 if (currentServer) {
                     self.connectToServer(currentServer).done(function (result) {
 
-                        deferred.resolveWith(null, [result]);
+                        if (result.State == MediaBrowser.ConnectionState.SignedIn) {
 
-                    }).fail(function () {
+                            deferred.resolveWith(null, [result]);
 
-                        deferred.resolveWith(null, [
+                        } else {
+                            deferred.resolveWith(null, [
                             {
                                 Servers: servers,
-                                State: MediaBrowser.ConnectionState.ServerSelection,
+                                State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
                                 ConnectUser: self.connectUser()
-                            }
-                        ]);
+                            }]);
+                        }
 
                     });
                 } else {
@@ -580,7 +562,7 @@
                     deferred.resolveWith(null, [
                     {
                         Servers: servers,
-                        State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.Unavailable : MediaBrowser.ConnectionState.ServerSelection,
+                        State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
                         ConnectUser: self.connectUser()
                     }]);
                 }

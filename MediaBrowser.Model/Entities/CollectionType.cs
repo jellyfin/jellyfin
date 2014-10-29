@@ -25,7 +25,10 @@
         public const string LiveTv = "livetv";
         public const string Playlists = "playlists";
         public const string Folders = "folders";
+    }
 
+    public static class SpecialFolder
+    {
         public const string LiveTvNowPlaying = "LiveTvNowPlaying";
         public const string LiveTvChannels = "LiveTvChannels";
         public const string LiveTvRecordingGroups = "LiveTvRecordingGroups";
@@ -44,7 +47,7 @@
         public const string MovieCollections = "MovieCollections";
         public const string MovieFavorites = "MovieFavorites";
         public const string MovieGenres = "MovieGenres";
-        
+
         public const string LatestGames = "LatestGames";
         public const string RecentlyPlayedGames = "RecentlyPlayedGames";
         public const string GameSystems = "GameSystems";

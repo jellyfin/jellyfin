@@ -31,7 +31,18 @@
         /**
          * Gets the server address.
          */
-        self.serverAddress = function () {
+        self.serverAddress = function (val) {
+
+            if (val != null) {
+
+                var changed = val != serverAddress;
+
+                serverAddress = val;
+
+                if (changed) {
+                    $(this).trigger('serveraddresschanged');
+                }
+            }
 
             return serverAddress;
         };
@@ -141,6 +152,7 @@
             }
 
             if (!self.enableAutomaticNetwork || !self.serverInfo() || self.connectionMode == null) {
+                console.log('Requesting url without automatic networking: ' + request.url);
                 return $.ajax(request).fail(onRequestFail);
             }
 
@@ -172,6 +184,8 @@
                 self.serverInfo().LocalAddress :
                 self.serverInfo().RemoteAddress;
 
+            console.log("Attempting reconnection to " + url);
+
             $.ajax({
 
                 type: "GET",
@@ -182,12 +196,16 @@
 
             }).done(function () {
 
+                console.log("Reconnect succeeeded to " + url);
+
                 self.connectionMode = connectionMode;
                 self.serverAddress(url);
 
                 deferred.resolve();
 
             }).fail(function () {
+
+                console.log("Reconnect attempt failed to " + url);
 
                 if (currentRetryCount <= 6) {
 
@@ -234,20 +252,31 @@
                 request.url = replaceServerAddress(request.url, baseUrl);
             }
 
+            console.log("Requesting " + request.url);
+
+            request.timeout = 3000;
+
             $.ajax(request).done(function (response) {
 
-                deferred.resolveWith(null, [response]);
+                deferred.resolve(response, 0);
 
             }).fail(function (e, textStatus) {
 
+                console.log("Request failed with textStatus " + textStatus + " to " + request.url);
+
+                var statusCode = parseInt(e.status || '0');
+                var isUserErrorCode = statusCode >= 400 && statusCode < 500;
+
                 // http://api.jquery.com/jQuery.ajax/
-                if (enableReconnection && textStatus == "timeout") {
+                if (enableReconnection && !isUserErrorCode) {
                     tryReconnect().done(function () {
 
+                        console.log("Reconnect succeesed");
                         self.ajaxWithFailover(request, deferred, false, true);
 
                     }).fail(function () {
 
+                        console.log("Reconnect failed");
                         onRetryRequestFail(request);
                         deferred.reject();
 

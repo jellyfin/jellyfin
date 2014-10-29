@@ -2,47 +2,21 @@
 
     var currentUser;
 
-    function loadUser(page, user, loggedInUser) {
+    function loadUser(page, user) {
 
         currentUser = user;
 
-        if (!loggedInUser.Configuration.IsAdministrator) {
-
-            $('#fldIsAdmin', page).hide();
-            $('#featureAccessFields', page).hide();
-            $('#accessControlDiv', page).hide();
-
-        } else {
-
-            $('#accessControlDiv', page).show();
-            $('#fldIsAdmin', page).show();
-            $('#featureAccessFields', page).show();
-            $('.lnkEditUserPreferencesContainer', page).show();
-        }
-
-        if (user.Id && loggedInUser.Configuration.IsAdministrator && user.ConnectLinkType != 'Guest') {
-            $('#fldConnectInfo', page).show();
-        } else {
-            $('#fldConnectInfo', page).hide();
-        }
-
         if (user.ConnectLinkType == 'Guest') {
+            $('#fldConnectInfo', page).hide();
             $('#txtUserName', page).prop("disabled", "disabled");
         } else {
             $('#txtUserName', page).prop("disabled", "").removeAttr('disabled');
+            $('#fldConnectInfo', page).show();
         }
 
-        if (!loggedInUser.Configuration.IsAdministrator || !user.Id) {
+        $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + user.Id);
 
-            $('.lnkEditUserPreferencesContainer', page).hide();
-
-        } else {
-
-            $('.lnkEditUserPreferencesContainer', page).show();
-            $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + user.Id);
-        }
-
-        Dashboard.setPageTitle(user.Name || Globalize.translate('AddUser'));
+        Dashboard.setPageTitle(user.Name);
 
         $('#txtUserName', page).val(user.Name);
         $('#txtConnectUserName', page).val(currentUser.ConnectUserName);
@@ -68,24 +42,17 @@
 
         Dashboard.hideLoadingMsg();
 
-        var userId = getParameterByName("userId");
+        var currentConnectUsername = currentUser.ConnectUserName || '';
+        var enteredConnectUsername = $('#txtConnectUserName', page).val();
 
-        if (userId) {
-
-            var currentConnectUsername = currentUser.ConnectUserName || '';
-            var enteredConnectUsername = $('#txtConnectUserName', page).val();
-
-            if (currentConnectUsername == enteredConnectUsername) {
-                Dashboard.alert(Globalize.translate('SettingsSaved'));
-            } else {
-
-                ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
-
-                    loadData(page);
-                });
-            }
+        if (currentConnectUsername == enteredConnectUsername) {
+            Dashboard.alert(Globalize.translate('SettingsSaved'));
         } else {
-            Dashboard.navigate("userprofiles.html");
+
+            ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
+
+                loadData(page);
+            });
         }
     }
 
@@ -106,18 +73,9 @@
         user.Configuration.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
         user.Configuration.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
 
-        var userId = getParameterByName("userId");
-
-        if (userId) {
-            ApiClient.updateUser(user).done(function () {
-                onSaveComplete(page, user);
-            });
-        } else {
-            ApiClient.createUser(user).done(function (newUser) {
-                Dashboard.navigate("useredit.html?userId=" + newUser.Id);
-
-            });
-        }
+        ApiClient.updateUser(user).done(function () {
+            onSaveComplete(page, user);
+        });
     }
 
     function editUserPage() {
@@ -143,36 +101,16 @@
 
         var userId = getParameterByName("userId");
 
-        if (userId) {
-
-            return ApiClient.getUser(userId);
-        }
-
-        var deferred = $.Deferred();
-
-        deferred.resolveWith(null, [{
-            Configuration: {
-                IsAdministrator: false,
-                EnableLiveTvManagement: true,
-                EnableLiveTvAccess: true,
-                EnableRemoteControlOfOtherUsers: true,
-                EnableMediaPlayback: true
-            }
-        }]);
-
-        return deferred.promise();
+        return ApiClient.getUser(userId);
     }
 
     function loadData(page) {
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = getUser();
-        var promise2 = Dashboard.getCurrentUser();
+        getUser().done(function (user) {
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadUser(page, response1[0] || response1, response2[0]);
+            loadUser(page, user);
 
         });
     }
@@ -180,27 +118,6 @@
     window.EditUserPage = new editUserPage();
 
     $(document).on('pagebeforeshow', "#editUserPage", function () {
-
-        var page = this;
-
-        var userId = getParameterByName("userId");
-
-        if (userId) {
-            $('#userProfileNavigation', page).show();
-        } else {
-            $('#userProfileNavigation', page).hide();
-        }
-
-        Dashboard.getCurrentUser().done(function (loggedInUser) {
-
-            if (loggedInUser.Configuration.IsAdministrator) {
-                $('#lnkParentalControl', page).show();
-            } else {
-                $('#lnkParentalControl', page).hide();
-            }
-        });
-
-    }).on('pageshow', "#editUserPage", function () {
 
         var page = this;
 
@@ -254,7 +171,7 @@
                     },
                     dataType: 'json'
 
-                }).done(function(result) {
+                }).done(function (result) {
 
                     var msgKey = result.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
 

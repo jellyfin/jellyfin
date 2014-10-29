@@ -2,28 +2,7 @@
 
     function onLoggedIn() {
 
-        ConnectionManager.connect().done(function (result) {
-
-            Dashboard.hideLoadingMsg();
-
-            switch (result.State) {
-
-                case MediaBrowser.ConnectionState.Unavilable:
-                    // Login succeeded so this should never happen
-                    break;
-                case MediaBrowser.ConnectionState.ServerSelection:
-                    window.location = 'selectserver.html';
-                    break;
-                case MediaBrowser.ConnectionState.ServerSignIn:
-                    // This should never happen in connect mode
-                    break;
-                case MediaBrowser.ConnectionState.SignedIn:
-                    window.location = 'selectserver.html';
-                    break;
-                default:
-                    break;
-            }
-        });
+        window.location = 'selectserver.html';
     }
 
     function login(page, username, password) {

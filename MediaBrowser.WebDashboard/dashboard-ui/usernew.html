@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleNewUser}</title>
+</head>
+<body>
+    <div id="newUserPage" data-role="page" class="page type-interior userProfilesPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <form id="newUserProfileForm">
+                    <ul data-role="listview" class="ulForm">
+                        <li id="fldUserName">
+                            <label for="txtUserName">${LabelName}</label>
+                            <input id="txtUserName" required="required" type="text" />
+                        </li>
+                    </ul>
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('#newUserProfileForm').on('submit', NewUserPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>
