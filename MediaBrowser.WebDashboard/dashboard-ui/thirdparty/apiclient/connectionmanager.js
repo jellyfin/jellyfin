@@ -392,10 +392,9 @@
 
         self.logout = function () {
 
-            var i, length;
             var promises = [];
 
-            for (i = 0, length = apiClients.length; i < length; i++) {
+            for (var i = 0, length = apiClients.length; i < length; i++) {
 
                 var apiClient = apiClients[i];
 
@@ -404,16 +403,21 @@
                 }
             }
 
-            var done = function () {
+            return $.when(promises).done(function () {
 
                 var credentials = credentialProvider.credentials();
 
-                for (i = 0, length = credentials.servers.length; i < length; i++) {
-                    credentials.servers[i].UserId = null;
-                    credentials.servers[i].AccessToken = null;
-                    credentials.servers[i].ExchangeToken = null;
+                var servers = credentials.servers.filter(function (u) {
+                    return u.UserLinkType != "Guest";
+                });
+
+                for (var j = 0, numServers = servers.length; j < numServers; j++) {
+                    servers[j].UserId = null;
+                    servers[j].AccessToken = null;
+                    servers[j].ExchangeToken = null;
                 }
 
+                credentials.servers = servers;
                 credentials.ConnectAccessToken = null;
                 credentials.ConnectUserId = null;
 
@@ -422,9 +426,7 @@
                 connectUser = null;
 
                 $(self).trigger('signedout');
-            };
-
-            return $.when(promises).done(done);
+            });
         };
 
         self.connectUserId = function () {
@@ -458,7 +460,8 @@
                         Id: i.SystemId,
                         Name: i.Name,
                         RemoteAddress: i.Url,
-                        LocalAddress: null
+                        LocalAddress: i.LocalAddress,
+                        UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
                     };
                 });
 

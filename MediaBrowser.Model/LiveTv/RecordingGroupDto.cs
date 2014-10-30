@@ -1,6 +1,7 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -8,8 +9,14 @@ namespace MediaBrowser.Model.LiveTv
     /// Class RecordingGroupDto.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Count = {RecordingCount}")]
-    public class RecordingGroupDto : IHasPropertyChangedEvent
+    public class RecordingGroupDto : IHasPropertyChangedEvent, IHasServerId
     {
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

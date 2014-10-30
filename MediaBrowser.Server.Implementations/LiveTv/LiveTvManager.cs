@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
@@ -60,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer)
+        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -74,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger);
+            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, appHost);
         }
 
         /// <summary>

@@ -35,6 +35,8 @@ namespace MediaBrowser.Model.ApiClient
                 // Merge the data
                 existing.DateLastAccessed = new[] { existing.DateLastAccessed, server.DateLastAccessed }.Max();
 
+                existing.UserLinkType = server.UserLinkType;
+
                 if (!string.IsNullOrEmpty(server.AccessToken))
                 {
                     existing.AccessToken = server.AccessToken;

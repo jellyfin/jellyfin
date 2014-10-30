@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.System;
+﻿using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +16,7 @@ namespace MediaBrowser.Model.ApiClient
         public List<WakeOnLanInfo> WakeOnLanInfos { get; set; }
         public DateTime DateLastAccessed { get; set; }
         public String ExchangeToken { get; set; }
+        public UserLinkType? UserLinkType { get; set; }
 
         public ServerInfo()
         {

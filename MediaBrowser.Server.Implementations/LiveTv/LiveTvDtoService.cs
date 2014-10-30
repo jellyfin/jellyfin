@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -22,13 +23,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
+        private readonly IApplicationHost _appHost;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger)
+        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost)
         {
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _appHost = appHost;
         }
 
         public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
@@ -53,7 +56,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ServiceName = service.Name,
                 ExternalProgramId = info.ProgramId,
                 Priority = info.Priority,
-                RunTimeTicks = (info.EndDate - info.StartDate).Ticks
+                RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
+                ServerId = _appHost.SystemId
             };
 
             if (!string.IsNullOrEmpty(info.ProgramId))
@@ -99,7 +103,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalChannelId = info.ChannelId,
                 ExternalProgramId = info.ProgramId,
                 ServiceName = service.Name,
-                ChannelName = channelName
+                ChannelName = channelName,
+                ServerId = _appHost.SystemId
             };
 
             if (!string.IsNullOrEmpty(info.ChannelId))
@@ -219,7 +224,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
                 OriginalAirDate = info.OriginalAirDate,
 
-                MediaSources = recording.GetMediaSources(true).ToList()
+                MediaSources = recording.GetMediaSources(true).ToList(),
+                ServerId = _appHost.SystemId
             };
 
             dto.MediaStreams = dto.MediaSources.SelectMany(i => i.MediaStreams).ToList();
@@ -314,7 +320,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Id = info.Id.ToString("N"),
                 MediaType = info.MediaType,
                 ExternalId = info.ExternalId,
-                MediaSources = info.GetMediaSources(true).ToList()
+                MediaSources = info.GetMediaSources(true).ToList(),
+                ServerId = _appHost.SystemId
             };
 
             if (user != null)
@@ -368,7 +375,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsKids = item.IsKids,
                 IsPremiere = item.IsPremiere,
                 Type = "Program",
-                MediaType = item.MediaType
+                MediaType = item.MediaType,
+                ServerId = _appHost.SystemId
             };
 
             if (item.EndDate.HasValue)
