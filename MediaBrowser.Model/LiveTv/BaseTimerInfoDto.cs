@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
-    public class BaseTimerInfoDto : IHasPropertyChangedEvent
+    public class BaseTimerInfoDto : IHasPropertyChangedEvent, IHasServerId
     {
         /// <summary>
         /// Occurs when a property value changes.
@@ -15,6 +16,12 @@ namespace MediaBrowser.Model.LiveTv
         /// Id of the recording.
         /// </summary>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
 
         /// <summary>
         /// Gets or sets the external identifier.

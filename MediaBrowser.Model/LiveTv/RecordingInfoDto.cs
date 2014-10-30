@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, ChannelName = {ChannelName}")]
-    public class RecordingInfoDto : IHasPropertyChangedEvent, IItemDto
+    public class RecordingInfoDto : IHasPropertyChangedEvent, IItemDto, IHasServerId
     {
         /// <summary>
         /// Id of the recording.
@@ -23,6 +23,12 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The primary image aspect ratio.</value>
         public double? PrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
 
         /// <summary>
         /// Gets or sets the original primary image aspect ratio.

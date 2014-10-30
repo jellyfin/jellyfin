@@ -13,14 +13,20 @@ namespace MediaBrowser.Model.LiveTv
     /// Class ChannelInfoDto
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Number = {Number}")]
-    public class ChannelInfoDto : IHasPropertyChangedEvent, IItemDto
+    public class ChannelInfoDto : IHasPropertyChangedEvent, IItemDto, IHasServerId
     {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the server identifier.
+        /// </summary>
+        /// <value>The server identifier.</value>
+        public string ServerId { get; set; }
+
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
