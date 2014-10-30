@@ -51,9 +51,7 @@
 
             } else {
 
-                user = { Name: $('#txtUsername', form).val() };
-
-                ApiClient.createUser(user).done(onSaveComplete);
+                ApiClient.createUser($('#txtUsername', form).val()).done(onSaveComplete);
             }
 
         });

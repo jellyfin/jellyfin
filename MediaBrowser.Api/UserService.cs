@@ -165,6 +165,17 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
+    /// Class CreateUser
+    /// </summary>
+    [Route("/Users/New", "POST", Summary = "Creates a user")]
+    [Authenticated]
+    public class CreateUserByName : IReturn<UserDto>
+    {
+        [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Name { get; set; }
+    }
+
+    /// <summary>
     /// Class UsersService
     /// </summary>
     public class UserService : BaseApiService, IHasAuthorization
@@ -478,6 +489,22 @@ namespace MediaBrowser.Api
             var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
             newUser.UpdateConfiguration(dtoUser.Configuration);
+
+            var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
+
+            return ToOptimizedResult(result);
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
+        public object Post(CreateUserByName request)
+        {
+            var dtoUser = request;
+
+            var newUser = _userManager.CreateUser(dtoUser.Name).Result;
 
             var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
 

@@ -16,13 +16,35 @@
                             <input id="txtUserName" required="required" type="text" />
                         </li>
                     </ul>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderLibraryAccess}</h2>
+                        <div>
+                            <br />
+                            <div class="mediaFolderAccess">
+                            </div>
+                            <div class="fieldDescription">${LibraryAccessHelp}</div>
+                            <br />
+                        </div>
+                    </div>
+                    <div data-role="collapsible" class="channelAccessContainer" style="display:none;">
+                        <h2>${HeaderChannelAccess}</h2>
+                        <div>
+                            <br />
+                            <div class="channelAccess">
+                            </div>
+                            <div class="fieldDescription">${ChannelAccessHelp}</div>
+                            <br />
+                        </div>
+                    </div>
+
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
-                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
+                            <button type="button" onclick="history.back();" data-icon="delete">
                                 ${ButtonCancel}
                             </button>
                         </li>

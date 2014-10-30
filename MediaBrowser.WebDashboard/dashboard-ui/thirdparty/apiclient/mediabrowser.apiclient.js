@@ -2603,20 +2603,17 @@
          * Creates a user
          * @param {Object} user
          */
-        self.createUser = function (user) {
+        self.createUser = function (name) {
 
-            if (!user) {
-                throw new Error("null user");
-            }
-
-            var url = self.getUrl("Users");
+            var url = self.getUrl("Users/New");
 
             return self.ajax({
                 type: "POST",
                 url: url,
-                data: JSON.stringify(user),
-                dataType: "json",
-                contentType: "application/json"
+                data: {
+                    Name: name
+                },
+                dataType: "json"
             });
         };
 
