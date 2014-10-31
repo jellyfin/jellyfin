@@ -1265,5 +1265,9 @@
     "ButtonConfigurePassword": "Configure Password",
     "HeaderDashboardUserPassword": "User passwords are managed within each user's personal profile settings.",
     "HeaderLibraryAccess": "Library Access",
-    "HeaderChannelAccess": "Channel Access"
+    "HeaderChannelAccess": "Channel Access",
+    "HeaderLatestItems": "Latest Items",
+    "LabelSelectLastestItemsFolders": "Include media from the following sections in Latest Items",
+    "HeaderShareMediaFolders": "Share Media Folders",
+    "MessageGuestSharingPermissionsHelp": "Most features are initially unavailable to guests but can be enabled as needed."
 }

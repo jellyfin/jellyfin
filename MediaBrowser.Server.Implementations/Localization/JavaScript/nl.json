@@ -612,5 +612,6 @@
     "HeaderConnectionFailure": "Verbindingsfout",
     "MessageUnableToConnectToServer": "Er kan momenteel niet met de geselecteerde verbonden worden, probeer het svp. later nog eens.",
     "ButtonSelectServer": "Selecteer server",
-    "MessagePluginConfigurationRequiresLocalAccess": "Meld svp. op de lokale server aan om deze plugin te configureren."
+    "MessagePluginConfigurationRequiresLocalAccess": "Meld svp. op de lokale server aan om deze plugin te configureren.",
+    "MessageLoggedOutParentalControl": "Toegang is momenteel bepertk, probeer later opnieuw."
 }

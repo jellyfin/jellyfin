@@ -1,17 +1,15 @@
 ﻿
 namespace MediaBrowser.Model.Connect
 {
-    public class ConnectAuthorization
+    public class ConnectAuthorizationRequest
     {
-        public string ConnectUserId { get; set; }
-        public string UserName { get; set; }
-        public string ImageUrl { get; set; }
-        public string Id { get; set; }
+        public string SendingUserId { get; set; }
+        public string ConnectUserName { get; set; }
         public string[] ExcludedLibraries { get; set; }
         public bool EnableLiveTv { get; set; }
         public string[] ExcludedChannels { get; set; }
 
-        public ConnectAuthorization()
+        public ConnectAuthorizationRequest()
         {
             ExcludedLibraries = new string[] { };
             ExcludedChannels = new string[] { };

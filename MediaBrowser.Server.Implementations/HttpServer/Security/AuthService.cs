@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             if (!authAttribtues.AllowLocal || !req.IsLocal)
             {
                 if (!string.IsNullOrWhiteSpace(auth.Token) ||
-                    !_config.Configuration.InsecureApps2.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    !_config.Configuration.InsecureApps3.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     if (!IsValidConnectKey(auth.Token))
                     {

@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             get
             {
-                return true;
+                return base.IsHidden || !Children.Any();
             }
         }
 

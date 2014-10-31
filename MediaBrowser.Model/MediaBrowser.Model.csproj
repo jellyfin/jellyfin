@@ -103,6 +103,8 @@
     <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />
     <Compile Include="Connect\ConnectAuthenticationResult.cs" />
     <Compile Include="Connect\ConnectAuthorization.cs" />
+    <Compile Include="Connect\ConnectAuthorizationRequest.cs" />
+    <Compile Include="Connect\ConnectPassword.cs" />
     <Compile Include="Connect\ConnectUser.cs" />
     <Compile Include="Connect\ConnectUserQuery.cs" />
     <Compile Include="Connect\ConnectUserServer.cs" />

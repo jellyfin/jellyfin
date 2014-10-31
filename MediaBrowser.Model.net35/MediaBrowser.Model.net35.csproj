@@ -204,6 +204,12 @@
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthorization.cs">
       <Link>Connect\ConnectAuthorization.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectAuthorizationRequest.cs">
+      <Link>Connect\ConnectAuthorizationRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Connect\ConnectPassword.cs">
+      <Link>Connect\ConnectPassword.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Connect\ConnectUser.cs">
       <Link>Connect\ConnectUser.cs</Link>
     </Compile>

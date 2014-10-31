@@ -402,13 +402,13 @@ namespace MediaBrowser.Server.Implementations.Connect
             return result;
         }
 
-        public async Task<UserLinkResult> InviteUser(string sendingUserId, string connectUsername)
+        public async Task<UserLinkResult> InviteUser(ConnectAuthorizationRequest request)
         {
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                return await InviteUserInternal(sendingUserId, connectUsername).ConfigureAwait(false);
+                return await InviteUserInternal(request).ConfigureAwait(false);
             }
             finally
             {
@@ -416,8 +416,11 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private async Task<UserLinkResult> InviteUserInternal(string sendingUserId, string connectUsername)
+        private async Task<UserLinkResult> InviteUserInternal(ConnectAuthorizationRequest request)
         {
+            var connectUsername = request.ConnectUserName;
+            var sendingUserId = request.SendingUserId;
+
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
@@ -494,6 +497,19 @@ namespace MediaBrowser.Server.Implementations.Connect
                 var response = _json.DeserializeFromStream<ServerUserAuthorizationResponse>(stream);
 
                 result.IsPending = string.Equals(response.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase);
+
+                _data.PendingAuthorizations.Add(new ConnectAuthorization
+                {
+                    ConnectUserId = response.UserId,
+                    Id = response.Id,
+                    ImageUrl = response.UserImageUrl,
+                    UserName = response.UserName,
+                    ExcludedLibraries = request.ExcludedLibraries,
+                    ExcludedChannels = request.ExcludedChannels,
+                    EnableLiveTv = request.EnableLiveTv
+                });
+
+                CacheData();
             }
 
             await RefreshAuthorizationsInternal(false, CancellationToken.None).ConfigureAwait(false);
@@ -687,12 +703,15 @@ namespace MediaBrowser.Server.Implementations.Connect
                 }
             }
 
-            var pending = new List<ConnectAuthorization>();
+            var currentPendingList = _data.PendingAuthorizations.ToList();
+            var newPendingList = new List<ConnectAuthorization>();
 
             foreach (var connectEntry in list)
             {
                 if (string.Equals(connectEntry.UserType, "guest", StringComparison.OrdinalIgnoreCase))
                 {
+                    var currentPendingEntry = currentPendingList.FirstOrDefault(i => string.Equals(i.Id, connectEntry.Id, StringComparison.OrdinalIgnoreCase));
+
                     if (string.Equals(connectEntry.AcceptStatus, "accepted", StringComparison.OrdinalIgnoreCase))
                     {
                         var user = _userManager.Users
@@ -714,25 +733,35 @@ namespace MediaBrowser.Server.Implementations.Connect
                             user.Configuration.SyncConnectName = true;
                             user.Configuration.IsHidden = true;
                             user.Configuration.EnableLiveTvManagement = false;
+                            user.Configuration.EnableContentDeletion = false;
+                            user.Configuration.EnableRemoteControlOfOtherUsers = false;
                             user.Configuration.IsAdministrator = false;
+
+                            if (currentPendingEntry != null)
+                            {
+                                user.Configuration.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
+                                user.Configuration.BlockedMediaFolders = currentPendingEntry.ExcludedLibraries;
+                                user.Configuration.BlockedChannels = currentPendingEntry.ExcludedChannels;
+                            }
 
                             _userManager.UpdateConfiguration(user, user.Configuration);
                         }
                     }
                     else if (string.Equals(connectEntry.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase))
                     {
-                        pending.Add(new ConnectAuthorization
-                        {
-                            ConnectUserId = connectEntry.UserId,
-                            ImageUrl = connectEntry.UserImageUrl,
-                            UserName = connectEntry.UserName,
-                            Id = connectEntry.Id
-                        });
+                        currentPendingEntry = currentPendingEntry ?? new ConnectAuthorization();
+
+                        currentPendingEntry.ConnectUserId = connectEntry.UserId;
+                        currentPendingEntry.ImageUrl = connectEntry.UserImageUrl;
+                        currentPendingEntry.UserName = connectEntry.UserName;
+                        currentPendingEntry.Id = connectEntry.Id;
+
+                        newPendingList.Add(currentPendingEntry);
                     }
                 }
             }
 
-            _data.PendingAuthorizations = pending;
+            _data.PendingAuthorizations = newPendingList;
             CacheData();
 
             await RefreshGuestNames(list, refreshImages).ConfigureAwait(false);
@@ -922,7 +951,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var user = e.Argument;
 
-            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)

@@ -8,6 +8,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using MoreLinq;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -259,7 +260,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "GroupItems", Description = "Whether or not to group items into a parent container.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool GroupItems { get; set; }
-        
+
         public GetLatestMedia()
         {
             Limit = 20;
@@ -314,17 +315,20 @@ namespace MediaBrowser.Api.UserLibrary
             var user = _userManager.GetUserById(request.UserId);
 
             // Avoid implicitly captured closure
-            var libraryItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OrderByDescending(i => i.DateCreated)
+            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
+                GetItemsConfiguredForLatest(user) :
+                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId);
+
+            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated)
                 .Where(i => i.LocationType != LocationType.Virtual);
 
 
             //if (request.IsFolder.HasValue)
             //{
-                //var val = request.IsFolder.Value;
-                libraryItems = libraryItems.Where(f => f.IsFolder == false);
+            //var val = request.IsFolder.Value;
+            libraryItems = libraryItems.Where(f => f.IsFolder == false);
             //}
-            
+
             if (!string.IsNullOrEmpty(request.IncludeItemTypes))
             {
                 var vals = request.IncludeItemTypes.Split(',');
@@ -341,7 +345,7 @@ namespace MediaBrowser.Api.UserLibrary
                 libraryItems = libraryItems.Where(f => f.IsPlayed(currentUser) == val)
                     .Take(takeLimit);
             }
-            
+
             // Avoid implicitly captured closure
             var items = libraryItems
                 .ToList();
@@ -398,6 +402,15 @@ namespace MediaBrowser.Api.UserLibrary
             });
 
             return ToOptimizedResult(dtos.ToList());
+        }
+
+        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user)
+        {
+            return user.RootFolder.GetChildren(user, true)
+                .OfType<Folder>()
+                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                .SelectMany(i => i.GetRecursiveChildren(user))
+                .DistinctBy(i => i.Id);
         }
 
         public async Task<object> Get(GetUserViews request)
