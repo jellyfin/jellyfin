@@ -612,5 +612,6 @@
     "HeaderConnectionFailure": "Falla de Conexi\u00f3n",
     "MessageUnableToConnectToServer": "No fue posible conectarse a lo que se ha seleccionado en este momento. Por favor int\u00e9ntelo m\u00e1s tarde.",
     "ButtonSelectServer": "Seleccionar servidor",
-    "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este complemento por favor inicie sesi\u00f3n en su servidor local directamente."
+    "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este complemento por favor inicie sesi\u00f3n en su servidor local directamente.",
+    "MessageLoggedOutParentalControl": "El acceso esta restringido en este momento. Por favor intenta de nuevo mas tarde."
 }

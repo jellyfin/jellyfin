@@ -612,5 +612,6 @@
     "HeaderConnectionFailure": "Errore di connessione",
     "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later.",
     "ButtonSelectServer": "Selezionare il server",
-    "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly."
+    "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly.",
+    "MessageLoggedOutParentalControl": "Access is currently restricted. Please try again later."
 }

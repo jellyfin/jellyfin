@@ -30,10 +30,9 @@ namespace MediaBrowser.Controller.Connect
         /// <summary>
         /// Invites the user.
         /// </summary>
-        /// <param name="sendingUserId">The sending user identifier.</param>
-        /// <param name="connectUsername">The connect username.</param>
+        /// <param name="request">The request.</param>
         /// <returns>Task&lt;UserLinkResult&gt;.</returns>
-        Task<UserLinkResult> InviteUser(string sendingUserId, string connectUsername);
+        Task<UserLinkResult> InviteUser(ConnectAuthorizationRequest request);
 
         /// <summary>
         /// Gets the pending guests.

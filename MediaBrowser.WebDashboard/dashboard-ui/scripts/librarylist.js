@@ -908,12 +908,9 @@
         $(apiClient).off('websocketmessage.librarylist', onWebSocketMessage).on('websocketmessage.librarylist', onWebSocketMessage);
     }
 
-    $(function () {
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-
-            initializeApiClient(apiClient);
-        });
+        initializeApiClient(apiClient);
     });
 
 })(jQuery, document, window);

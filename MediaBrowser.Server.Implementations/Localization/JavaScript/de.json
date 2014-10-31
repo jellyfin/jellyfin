@@ -612,5 +612,6 @@
     "HeaderConnectionFailure": "Verbindungsfehler",
     "MessageUnableToConnectToServer": "Wir konnten leider keine Verbindung mit dem ausgew\u00e4hlten Server herstellen. Bitte versuche es noch einmal sp\u00e4ter.",
     "ButtonSelectServer": "W\u00e4hle Server",
-    "MessagePluginConfigurationRequiresLocalAccess": "Melde dich bitte direkt an deinem lokalen Server an, um dieses Plugin konfigurieren zu k\u00f6nnen."
+    "MessagePluginConfigurationRequiresLocalAccess": "Melde dich bitte direkt an deinem lokalen Server an, um dieses Plugin konfigurieren zu k\u00f6nnen.",
+    "MessageLoggedOutParentalControl": "Access is currently restricted. Please try again later."
 }

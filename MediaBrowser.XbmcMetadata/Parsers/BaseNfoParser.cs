@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Text;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -9,7 +7,9 @@ using MediaBrowser.XbmcMetadata.Savers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Xml;
 
@@ -90,6 +90,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 if (index != -1)
                 {
+                    var endingXml = xml.Substring(index);
+
+                    var imdbId = endingXml.Split('/')
+                        .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
+
+                    if (!string.IsNullOrWhiteSpace(imdbId))
+                    {
+                        item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                    }
+
                     xml = xml.Substring(0, index + 1);
                 }
 

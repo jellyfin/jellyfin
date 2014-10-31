@@ -27,6 +27,33 @@
         $('.folderGroupList', page).html(folderHtml).trigger('create');
     }
 
+    function renderLatestItems(page, user, result) {
+
+        var folderHtml = '';
+
+        folderHtml += '<div data-role="controlgroup">';
+        folderHtml += result.Items.map(function (i) {
+
+            var currentHtml = '';
+
+            var id = 'chkIncludeInLatest' + i.Id;
+
+            currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
+
+            var isChecked = user.Configuration.LatestItemsExcludes.indexOf(i.Id) == -1;
+            var checkedHtml = isChecked ? ' checked="checked"' : '';
+
+            currentHtml += '<input class="chkIncludeInLatest" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
+
+            return currentHtml;
+
+        }).join('');
+
+        folderHtml += '</div>';
+
+        $('.latestItemsList', page).html(folderHtml).trigger('create');
+    }
+
     function renderChannels(page, user, result) {
 
         var folderHtml = '';
@@ -117,6 +144,7 @@
         $.when(promise1, promise2, promise3).done(function (r1, r2, r3) {
 
             renderViews(page, user, r1[0]);
+            renderLatestItems(page, user, r1[0]);
             renderChannels(page, user, r2[0]);
             renderViewOrder(page, user, r3[0]);
 
@@ -136,6 +164,11 @@
         user.Configuration.DisplayFoldersView = $('#chkDisplayFolderView', page).checked();
 
         user.Configuration.IncludeTrailersInSuggestions = $('#chkDisplayTrailersWithinMovieSuggestions', page).checked();
+
+        user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest:not(:checked)", page).get().map(function (i) {
+
+            return i.getAttribute('data-folderid');
+        });
 
         user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
 

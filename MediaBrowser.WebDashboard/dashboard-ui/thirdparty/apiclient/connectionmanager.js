@@ -105,7 +105,7 @@
                 updateServerInfo(server, systemInfo);
 
                 apiClient.serverInfo(server);
-                $(this).trigger('apiclientcreated', [apiClient]);
+                $(self).trigger('apiclientcreated', [apiClient]);
 
                 if (enableAutomaticNetworking) {
                     self.connectToServer(server);
@@ -138,7 +138,7 @@
                     onLocalAuthenticated(this, result, true);
                 });
 
-                $(this).trigger('apiclientcreated', [apiClient]);
+                $(self).trigger('apiclientcreated', [apiClient]);
 
             }
 
@@ -199,7 +199,14 @@
 
             var deferred = $.Deferred();
 
-            if (self.isLoggedIntoConnect() && !connectUser) {
+            if (connectUser != null && connectUser.Id == credentials.ConnectUserId) {
+                deferred.resolveWith(null, [[]]);
+            }
+
+            else if (self.connectToken() && self.connectUserId()) {
+
+                connectUser = null;
+
                 getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).done(function (user) {
 
                     onConnectAuthenticated(user);
@@ -352,7 +359,6 @@
 
                 deferred.resolveWith(null, [
                 {
-                    connectUser: connectUser,
                     localUser: localUser,
                     name: connectUser ? connectUser.Name : localUser.Name,
                     canManageServer: localUser && localUser.Configuration.IsAdministrator,
@@ -375,14 +381,13 @@
 
             var credentials = credentialProvider.credentials();
 
-            if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
+            if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(self.currentApiClient() && self.currentApiClient().getCurrentUserId())) {
                 ensureConnectUser(credentials).always(onEnsureConnectUserDone);
             } else {
                 onEnsureConnectUserDone();
             }
 
             return deferred.promise();
-
         };
 
         self.isLoggedIntoConnect = function () {
@@ -608,7 +613,7 @@
 
                 deferred.resolveWith(null, [result]);
 
-                $(this).trigger('connected', [result]);
+                $(self).trigger('connected', [result]);
             }
 
             function onExchangeTokenDone() {
@@ -720,7 +725,7 @@
 
         self.loginToConnect = function (username, password) {
 
-            var md5 = CryptoJS.MD5(password).toString();
+            var md5 = self.getConnectPasswordHash(password);
 
             return $.ajax({
                 type: "POST",
@@ -746,6 +751,23 @@
             });
         };
 
+        self.getConnectPasswordHash = function (password) {
+
+            password = password || '';
+
+            password = password
+                .replace("&", "&amp;")
+                .replace("/", "&#092;")
+                .replace("!", "&#33;")
+                .replace("$", "&#036;")
+                .replace("\"", "&quot;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("'", "&#39;");
+
+            return CryptoJS.MD5(password).toString();
+        };
+
         self.getApiClient = function (item) {
 
             // Accept string + object
@@ -755,7 +777,10 @@
 
             return apiClients.filter(function (a) {
 
-                return a.serverInfo().Id = item;
+                var serverInfo = a.serverInfo();
+
+                // We have to keep this hack in here because of the addApiClient method
+                return !serverInfo || serverInfo.Id == item;
 
             })[0];
         };

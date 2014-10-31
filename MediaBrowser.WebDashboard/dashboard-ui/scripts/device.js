@@ -3,12 +3,13 @@
     function load(page, device, capabilities) {
 
         if (capabilities.SupportsContentUploading) {
-            $('.fldCameraUploadPath', page).show();
+            $('#fldCameraUploadPath', page).show();
         } else {
-            $('.fldCameraUploadPath', page).hide();
+            $('#fldCameraUploadPath', page).hide();
         }
 
         $('#txtCustomName', page).val(device.CustomName || '');
+        $('.reportedName', page).html(device.ReportedName || '');
     }
 
     function loadData(page) {
@@ -75,7 +76,6 @@
         var page = this;
 
         loadData(page);
-
     });
 
     window.DevicePage = {

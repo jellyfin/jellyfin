@@ -431,8 +431,14 @@
     });
 
     function initializeApiClient(apiClient) {
+
         $(apiClient).off('websocketmessage.librarymenu', onWebSocketMessage).on('websocketmessage.librarymenu', onWebSocketMessage);
     }
+
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+        initializeApiClient(apiClient);
+    });
 
     $(function () {
 
@@ -440,10 +446,6 @@
             updateCastIcon();
         });
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-
-            initializeApiClient(apiClient);
-        });
     });
 
 })(window, document, jQuery);

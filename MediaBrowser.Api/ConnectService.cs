@@ -34,11 +34,20 @@ namespace MediaBrowser.Api
     [Authenticated(Roles = "Admin")]
     public class CreateConnectInvite : IReturn<UserLinkResult>
     {
-        [ApiMember(Name = "ConnectUsername", Description = "Connect username", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "ConnectUsername", Description = "Connect username", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string ConnectUsername { get; set; }
 
-        [ApiMember(Name = "SendingUserId", Description = "Sending User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        [ApiMember(Name = "SendingUserId", Description = "Sending User Id", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string SendingUserId { get; set; }
+
+        [ApiMember(Name = "ExcludeLibraries", Description = "ExcludeLibraries", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string ExcludedLibraries { get; set; }
+
+        [ApiMember(Name = "ExcludedChannels", Description = "ExcludedChannels", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string ExcludedChannels { get; set; }
+
+        [ApiMember(Name = "EnableLiveTv", Description = "EnableLiveTv", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public bool EnableLiveTv { get; set; }
     }
 
 
@@ -83,7 +92,24 @@ namespace MediaBrowser.Api
 
         public object Post(CreateConnectInvite request)
         {
-            return _connectManager.InviteUser(request.SendingUserId, request.ConnectUsername);
+            var excludeLibraries = (request.ExcludedLibraries ?? string.Empty)
+                .Split(',')
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToArray();
+
+            var excludedChannels = (request.ExcludedChannels ?? string.Empty)
+                .Split(',')
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToArray();
+
+            return _connectManager.InviteUser(new ConnectAuthorizationRequest
+            {
+                ConnectUserName = request.ConnectUsername,
+                SendingUserId = request.SendingUserId,
+                ExcludedLibraries = excludeLibraries,
+                ExcludedChannels = excludedChannels,
+                EnableLiveTv = request.EnableLiveTv
+            });
         }
 
         public void Delete(DeleteConnectLink request)

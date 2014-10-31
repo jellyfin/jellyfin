@@ -213,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newHeight = Convert.ToInt32(newSize.Height);
 
                             var selectedOutputFormat = options.OutputFormat == ImageOutputFormat.Webp && !_webpAvailable
-                                ? ImageOutputFormat.Png
+                                ? GetFallbackImageFormat(originalImagePath)
                                 : options.OutputFormat;
 
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
@@ -277,6 +277,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 semaphore.Release();
             }
+        }
+
+        private ImageOutputFormat GetFallbackImageFormat(string originalImagePath)
+        {
+            return ImageOutputFormat.Png;
         }
 
         private void SaveToWebP(Bitmap thumbnail, Stream toStream, int quality)

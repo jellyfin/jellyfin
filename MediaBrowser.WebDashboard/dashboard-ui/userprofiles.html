@@ -41,6 +41,8 @@
 
             <div data-role="popup" id="popupInvite" data-theme="a">
 
+                <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>
+
                 <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
                     <h3 style="margin: .5em;">${HeaderInviteUser}</h3>
                 </div>
@@ -58,8 +60,20 @@
                             </div>
 
                             <br />
-                            <button type="submit" data-icon="mail" data-theme="b">${ButtonSendInvitation}</button>
-                            <a href="#" data-rel="back" data-icon="delete" data-role="button">${ButtonCancel}</a>
+
+                            <div data-role="collapsible" data-mini="true">
+                                <h2>${HeaderShareMediaFolders}</h2>
+                                <div>
+                                    <div class="librarySharingList" style="margin-top:1em;">
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin:1.25em 0;" class="fieldDescription">${MessageGuestSharingPermissionsHelp}</div>
+                            <div>
+                                <button type="submit" data-icon="mail" data-theme="b" data-mini="true">${ButtonSendInvitation}</button>
+                                <a href="#" data-rel="back" data-icon="delete" data-role="button" data-mini="true">${ButtonCancel}</a>
+                            </div>
                         </div>
                     </form>
 

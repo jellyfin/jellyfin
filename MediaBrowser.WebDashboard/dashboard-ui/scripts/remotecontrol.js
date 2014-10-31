@@ -349,12 +349,9 @@
         $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
     }
 
-    $(function () {
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-
-            initializeApiClient(apiClient);
-        });
+        initializeApiClient(apiClient);
     });
 
 })(window, document, jQuery);

@@ -123,11 +123,9 @@
 
     function loadRecentlyAdded(elem, userId, context) {
 
-        var screenWidth = $(window).width();
-
         var options = {
 
-            Limit: screenWidth >= 2400 ? 24 : (screenWidth >= 1600 ? 20 : (screenWidth >= 1440 ? 12 : (screenWidth >= 800 ? 9 : 8))),
+            Limit: 24,
             Fields: "PrimaryImageAspectRatio",
             IsPlayed: false
         };
@@ -137,7 +135,10 @@
             var html = '';
 
             if (items.length) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
+                html += '<div>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
+                html += '<a href="mypreferencesdisplay.html" data-role="button" data-icon="edit" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton">d</a>';
+                html += '</div>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,

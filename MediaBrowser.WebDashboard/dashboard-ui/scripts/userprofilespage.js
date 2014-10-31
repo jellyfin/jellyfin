@@ -1,5 +1,33 @@
 ﻿(function (document, window, $) {
 
+    function renderLibrarySharingList(page, result) {
+
+        var folderHtml = '';
+
+        folderHtml += '<div data-role="controlgroup">';
+
+        folderHtml += result.Items.map(function (i) {
+
+            var currentHtml = '';
+
+            var id = 'chkShareFolder' + i.Id;
+
+            currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
+
+            var isChecked = true;
+            var checkedHtml = isChecked ? ' checked="checked"' : '';
+
+            currentHtml += '<input data-mini="true" class="chkShareFolder" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
+
+            return currentHtml;
+
+        }).join('');
+
+        folderHtml += '</div>';
+
+        $('.librarySharingList', page).html(folderHtml).trigger('create');
+    }
+
     function deleteUser(page, id) {
 
         $('.userMenu', page).on("popupafterclose.deleteuser", function () {
@@ -301,34 +329,49 @@
 
             renderPendingGuests(page, pending);
         });
+
+        ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false })).done(function (result) {
+
+            renderLibrarySharingList(page, result);
+        });
     }
 
     function inviteUser(page) {
 
         Dashboard.showLoadingMsg();
 
-        // Add/Update connect info
-        ApiClient.ajax({
+        ApiClient.getJSON(ApiClient.getUrl("Channels", {})).done(function (channelsResult) {
 
-            type: "POST",
-            url: ApiClient.getUrl('Connect/Invite', {
+            var shareExcludes = $(".chkShareFolder:not(:checked)", page).get().map(function (i) {
 
-                ConnectUsername: $('#txtConnectUsername', page).val(),
-                SendingUserId: Dashboard.getCurrentUserId()
+                return i.getAttribute('data-folderid');
+            });
 
-            }),
-            dataType: 'json'
+            // Add/Update connect info
+            ApiClient.ajax({
 
-        }).done(function (result) {
+                type: "POST",
+                url: ApiClient.getUrl('Connect/Invite'),
+                dataType: 'json',
+                data: {
 
-            $('#popupInvite').popup('close');
+                    ConnectUsername: $('#txtConnectUsername', page).val(),
+                    ExcludedLibraries: shareExcludes.join(','),
+                    ExcludedChannels: channelsResult.Items.map(function (c) { return c.Id; }).join(','),
+                    SendingUserId: Dashboard.getCurrentUserId(),
+                    EnableLiveTv: false
+                }
 
-            Dashboard.hideLoadingMsg();
+            }).done(function (result) {
 
-            showNewUserInviteMessage(page, result);
+                $('#popupInvite').popup('close');
 
+                Dashboard.hideLoadingMsg();
+
+                showNewUserInviteMessage(page, result);
+
+            });
         });
-
     }
 
     function showNewUserInviteMessage(page, result) {

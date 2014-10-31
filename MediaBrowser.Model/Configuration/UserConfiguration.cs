@@ -83,6 +83,8 @@ namespace MediaBrowser.Model.Configuration
         public AccessSchedule[] AccessSchedules { get; set; }
 
         public bool EnableUserPreferenceAccess { get; set; }
+
+        public string[] LatestItemsExcludes { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -94,6 +96,7 @@ namespace MediaBrowser.Model.Configuration
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
 
+            LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
             BlockedMediaFolders = new string[] { };
             DisplayChannelsWithinViews = new string[] { };

@@ -443,12 +443,9 @@
         $(apiClient).on("websocketmessage", onWebSocketMessageReceived);
     }
 
-    $(function () {
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-
-            initializeApiClient(apiClient);
-        });
+        initializeApiClient(apiClient);
     });
 
     function getTargetsHtml(targets) {

@@ -80,7 +80,7 @@
 
 .sectionHeaderButton {
     vertical-align: middle;
-    margin: 0 0 0 1.5em;
+    margin: 0 0 .25em 1.5em;
     position: relative;
     top: 8px;
 }
