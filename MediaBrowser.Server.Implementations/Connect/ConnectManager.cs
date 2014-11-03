@@ -498,7 +498,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 result.IsPending = string.Equals(response.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase);
 
-                _data.PendingAuthorizations.Add(new ConnectAuthorization
+                _data.PendingAuthorizations.Add(new ConnectAuthorizationInternal
                 {
                     ConnectUserId = response.UserId,
                     Id = response.Id,
@@ -506,7 +506,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                     UserName = response.UserName,
                     ExcludedLibraries = request.ExcludedLibraries,
                     ExcludedChannels = request.ExcludedChannels,
-                    EnableLiveTv = request.EnableLiveTv
+                    EnableLiveTv = request.EnableLiveTv,
+                    AccessToken = accessToken
                 });
 
                 CacheData();
@@ -704,7 +705,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
 
             var currentPendingList = _data.PendingAuthorizations.ToList();
-            var newPendingList = new List<ConnectAuthorization>();
+            var newPendingList = new List<ConnectAuthorizationInternal>();
 
             foreach (var connectEntry in list)
             {
@@ -749,12 +750,13 @@ namespace MediaBrowser.Server.Implementations.Connect
                     }
                     else if (string.Equals(connectEntry.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase))
                     {
-                        currentPendingEntry = currentPendingEntry ?? new ConnectAuthorization();
+                        currentPendingEntry = currentPendingEntry ?? new ConnectAuthorizationInternal();
 
                         currentPendingEntry.ConnectUserId = connectEntry.UserId;
                         currentPendingEntry.ImageUrl = connectEntry.UserImageUrl;
                         currentPendingEntry.UserName = connectEntry.UserName;
                         currentPendingEntry.Id = connectEntry.Id;
+                        currentPendingEntry.AccessToken = connectEntry.AccessToken;
 
                         newPendingList.Add(currentPendingEntry);
                     }
@@ -860,7 +862,17 @@ namespace MediaBrowser.Server.Implementations.Connect
                 }
             }
 
-            return _data.PendingAuthorizations.ToList();
+            return _data.PendingAuthorizations.Select(i => new ConnectAuthorization
+            {
+                ConnectUserId = i.ConnectUserId,
+                EnableLiveTv = i.EnableLiveTv,
+                ExcludedChannels = i.ExcludedChannels,
+                ExcludedLibraries = i.ExcludedLibraries,
+                Id = i.Id,
+                ImageUrl = i.ImageUrl,
+                UserName = i.UserName
+
+            }).ToList();
         }
 
         public async Task CancelAuthorization(string id)
@@ -951,7 +963,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var user = e.Argument;
 
-            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
@@ -998,6 +1010,31 @@ namespace MediaBrowser.Server.Implementations.Connect
         private async Task DownloadUserPreferences(User user, CancellationToken cancellationToken)
         {
 
+        }
+
+        public async Task<User> GetLocalUser(string connectUserId)
+        {
+            var user = _userManager.Users
+                .FirstOrDefault(i => string.Equals(i.ConnectUserId, connectUserId, StringComparison.OrdinalIgnoreCase));
+
+            if (user == null)
+            {
+                await RefreshAuthorizations(CancellationToken.None).ConfigureAwait(false);
+            }
+
+            return _userManager.Users
+                .FirstOrDefault(i => string.Equals(i.ConnectUserId, connectUserId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool IsAuthorizationTokenValid(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new ArgumentNullException("token");
+            }
+
+            return _userManager.Users.Any(u => string.Equals(token, u.ConnectAccessKey, StringComparison.OrdinalIgnoreCase)) ||
+                _data.PendingAuthorizations.Select(i => i.AccessToken).Contains(token, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

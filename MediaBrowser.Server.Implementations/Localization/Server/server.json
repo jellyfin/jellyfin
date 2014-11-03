@@ -889,7 +889,7 @@
     "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device.",
     "TabKodiMetadata": "Kodi",
     "HeaderKodiMetadataHelp": "Media Browser includes native support for Kodi Nfo metadata and images. To enable or disable Kodi metadata, use the Advanced tab to configure options for your media types.",
-    "LabelKodiMetadataUser": "Add user watch data to nfo's for:",
+    "LabelKodiMetadataUser": "Sync user watch data to nfo's for:",
     "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Media Browser and Kodi.",
     "LabelKodiMetadataDateFormat": "Release date format:",
     "LabelKodiMetadataDateFormatHelp": "All dates within nfo's will be read and written to using this format.",

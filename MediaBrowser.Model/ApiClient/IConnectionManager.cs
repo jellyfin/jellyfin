@@ -81,7 +81,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Logouts this instance.
         /// </summary>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Logout();
+        Task Logout();
 
         /// <summary>
         /// Logins to connect.

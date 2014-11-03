@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -15,10 +16,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config)
+        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
+            ConnectManager = connectManager;
             SessionManager = sessionManager;
             UserManager = userManager;
         }
@@ -26,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         public IUserManager UserManager { get; private set; }
         public ISessionManager SessionManager { get; private set; }
         public IAuthorizationContext AuthorizationContext { get; private set; }
+        public IConnectManager ConnectManager { get; private set; }
 
         /// <summary>
         /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
@@ -65,7 +68,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 if (!string.IsNullOrWhiteSpace(auth.Token) ||
                     !_config.Configuration.InsecureApps3.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    if (!IsValidConnectKey(auth.Token))
+                    var valid = IsValidConnectKey(auth.Token);
+
+                    if (!valid)
                     {
                         SessionManager.ValidateSecurityToken(auth.Token);
                     }
@@ -122,12 +127,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         private bool IsValidConnectKey(string token)
         {
-            if (!string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token))
             {
-                return UserManager.Users.Any(u => string.Equals(token, u.ConnectAccessKey, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(u.ConnectAccessKey));
+                return false;
             }
 
-            return false;
+            return ConnectManager.IsAuthorizationTokenValid(token);
         }
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)

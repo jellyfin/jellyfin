@@ -107,7 +107,7 @@ namespace MediaBrowser.ServerApplication
             cmdRestart,
             toolStripSeparator1,
             cmdApiDocs,
-            cmdLogWindow,
+            //cmdLogWindow,
             cmdCommunity,
             cmdExit});
             contextMenuStrip1.Name = "contextMenuStrip1";
@@ -286,7 +286,7 @@ namespace MediaBrowser.ServerApplication
 
         void cmdBrowse_Click(object sender, EventArgs e)
         {
-            BrowserLauncher.OpenWebClient(_userManager, _configurationManager, _appHost, _logger);
+            BrowserLauncher.OpenWebClient(_appHost, _logger);
         }
 
         void cmdCommunity_Click(object sender, EventArgs e)
@@ -296,7 +296,7 @@ namespace MediaBrowser.ServerApplication
 
         void cmdConfigure_Click(object sender, EventArgs e)
         {
-            BrowserLauncher.OpenDashboard(_userManager, _configurationManager, _appHost, _logger);
+            BrowserLauncher.OpenDashboard(_appHost, _logger);
         }
 
         void cmdLogWindow_Click(object sender, EventArgs e)
@@ -323,7 +323,7 @@ namespace MediaBrowser.ServerApplication
 
         void cmdSwagger_Click(object sender, EventArgs e)
         {
-            BrowserLauncher.OpenSwagger(_configurationManager, _appHost, _logger);
+            BrowserLauncher.OpenSwagger(_appHost, _logger);
         }
 
         ~ServerNotifyIcon()

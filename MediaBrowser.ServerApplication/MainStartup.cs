@@ -300,7 +300,7 @@ namespace MediaBrowser.ServerApplication
         {
             if (e.Reason == SessionSwitchReason.SessionLogon)
             {
-                BrowserLauncher.OpenDashboard(_appHost.UserManager, _appHost.ServerConfigurationManager, _appHost, _logger);
+                BrowserLauncher.OpenDashboard(_appHost, _logger);
             }
         }
 
