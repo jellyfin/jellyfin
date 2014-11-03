@@ -846,7 +846,7 @@
                 var query = {
                     UserId: userId,
                     Fields: getItemFields,
-                    Limit: 50,
+                    Limit: 100,
                     Filters: "IsNotFolder",
                     Recursive: true,
                     SortBy: "Random"
@@ -889,13 +889,14 @@
             ApiClient.getItem(userId, id).done(function (item) {
 
                 var promise;
+                var itemLimit = 100;
 
                 if (item.Type == "MusicArtist") {
 
                     promise = ApiClient.getInstantMixFromArtist({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50,
+                        Limit: itemLimit,
                         Id: id
                     });
 
@@ -905,7 +906,7 @@
                     promise = ApiClient.getInstantMixFromMusicGenre({
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50,
+                        Limit: itemLimit,
                         Id: id
                     });
 
@@ -915,7 +916,7 @@
                     promise = ApiClient.getInstantMixFromAlbum(id, {
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: itemLimit
                     });
 
                 }
@@ -924,7 +925,7 @@
                     promise = ApiClient.getInstantMixFromSong(id, {
                         UserId: Dashboard.getCurrentUserId(),
                         Fields: getItemFields,
-                        Limit: 50
+                        Limit: itemLimit
                     });
 
                 }

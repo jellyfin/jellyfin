@@ -15,11 +15,13 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        var apiClient = ApiClient;
+
+        apiClient.getServerConfiguration().done(function (config) {
 
             config.UICulture = $('#selectLocalizationLanguage', page).val();
 
-            ApiClient.updateServerConfiguration(config).done(function (result) {
+            apiClient.updateServerConfiguration(config).done(function (result) {
 
                 Dashboard.navigate('wizarduser.html');
 
@@ -28,26 +30,28 @@
 
     }
 
-    $(document).on('pagebeforeshow', "#wizardStartPage", function () {
+    $(document).on('pageshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
         var page = this;
 
-        ApiClient.getPublicUsers().done(function (u) {
+        var apiClient = ApiClient;
+
+        apiClient.getPublicUsers().done(function (u) {
 
             var user = u.filter(function (i) {
                 return i.Configuration.IsAdministrator;
             })[0];
 
-            ApiClient.authenticateUserByName(user.Name, '').done(function (result) {
+            apiClient.authenticateUserByName(user.Name, '').done(function (result) {
 
                 user = result.User;
 
                 Dashboard.setCurrentUser(user.Id, result.AccessToken);
 
-                var promise1 = ApiClient.getServerConfiguration();
+                var promise1 = apiClient.getServerConfiguration();
 
-                var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
+                var promise2 = apiClient.getJSON(apiClient.getUrl("Localization/Options"));
 
                 $.when(promise1, promise2).done(function (response1, response2) {
 

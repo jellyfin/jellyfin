@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Connect;
 using ServiceStack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -133,10 +132,9 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        public object Get(GetLocalUser request)
+        public async Task<object> Get(GetLocalUser request)
         {
-            var user = _userManager.Users
-                .FirstOrDefault(i => string.Equals(i.ConnectUserId, request.ConnectUserId, StringComparison.OrdinalIgnoreCase));
+            var user = await _connectManager.GetLocalUser(request.ConnectUserId).ConfigureAwait(false);
 
             if (user == null)
             {

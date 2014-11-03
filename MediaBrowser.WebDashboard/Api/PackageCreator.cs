@@ -195,7 +195,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.css",
+                                "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
                                 "css/all.css" + versionString
                             };
@@ -241,7 +241,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 

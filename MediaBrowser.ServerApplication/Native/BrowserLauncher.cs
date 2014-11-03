@@ -1,11 +1,7 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -18,13 +14,11 @@ namespace MediaBrowser.ServerApplication.Native
         /// Opens the dashboard page.
         /// </summary>
         /// <param name="page">The page.</param>
-        /// <param name="loggedInUser">The logged in user.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
-        public static void OpenDashboardPage(string page, User loggedInUser, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        public static void OpenDashboardPage(string page, IServerApplicationHost appHost, ILogger logger)
         {
-            var url = "http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
+            var url = "http://localhost:" + appHost.HttpServerPort + "/" +
                       appHost.WebApplicationName + "/web/" + page;
 
             OpenUrl(url, logger);
@@ -51,38 +45,31 @@ namespace MediaBrowser.ServerApplication.Native
         /// <summary>
         /// Opens the web client.
         /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
-        public static void OpenWebClient(IUserManager userManager, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        public static void OpenWebClient(IServerApplicationHost appHost, ILogger logger)
         {
-            var user = userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            OpenDashboardPage("index.html", user, configurationManager, appHost, logger);
+            OpenDashboardPage("index.html", appHost, logger);
         }
 
         /// <summary>
         /// Opens the dashboard.
         /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
-        public static void OpenDashboard(IUserManager userManager, IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        public static void OpenDashboard(IServerApplicationHost appHost, ILogger logger)
         {
-            var user = userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-            OpenDashboardPage("dashboard.html", user, configurationManager, appHost, logger);
+            OpenDashboardPage("dashboard.html", appHost, logger);
         }
 
         /// <summary>
         /// Opens the swagger.
         /// </summary>
-        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="appHost">The app host.</param>
         /// <param name="logger">The logger.</param>
-        public static void OpenSwagger(IServerConfigurationManager configurationManager, IServerApplicationHost appHost, ILogger logger)
+        public static void OpenSwagger(IServerApplicationHost appHost, ILogger logger)
         {
-            OpenUrl("http://localhost:" + configurationManager.Configuration.HttpServerPortNumber + "/" +
+            OpenUrl("http://localhost:" + appHost.HttpServerPort + "/" +
                       appHost.WebApplicationName + "/swagger-ui/index.html", logger);
         }
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Connect;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Connect;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -54,5 +55,19 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="passwordMd5">The password MD5.</param>
         /// <returns>Task.</returns>
         Task Authenticate(string username, string passwordMd5);
+
+        /// <summary>
+        /// Gets the local user.
+        /// </summary>
+        /// <param name="connectUserId">The connect user identifier.</param>
+        /// <returns>Task&lt;User&gt;.</returns>
+        Task<User> GetLocalUser(string connectUserId);
+
+        /// <summary>
+        /// Determines whether [is authorization token valid] [the specified token].
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns><c>true</c> if [is authorization token valid] [the specified token]; otherwise, <c>false</c>.</returns>
+        bool IsAuthorizationTokenValid(string token);
     }
 }

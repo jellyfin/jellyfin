@@ -1,10 +1,7 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.ServerApplication.Native;
-using System.Linq;
 
 namespace MediaBrowser.ServerApplication.EntryPoints
 {
@@ -20,22 +17,17 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// <summary>
         /// The _user manager
         /// </summary>
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
-
-        private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StartupWizard" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="userManager">The user manager.</param>
-        public StartupWizard(IServerApplicationHost appHost, IUserManager userManager, IServerConfigurationManager configurationManager, ILogger logger)
+        /// <param name="logger">The logger.</param>
+        public StartupWizard(IServerApplicationHost appHost, ILogger logger)
         {
             _appHost = appHost;
             _logger = logger;
-            _userManager = userManager;
-            _configurationManager = configurationManager;
         }
 
         /// <summary>
@@ -54,9 +46,7 @@ namespace MediaBrowser.ServerApplication.EntryPoints
         /// </summary>
         private void LaunchStartupWizard()
         {
-            var user = _userManager.Users.FirstOrDefault(u => u.Configuration.IsAdministrator);
-
-            BrowserLauncher.OpenDashboardPage("wizardstart.html", user, _configurationManager, _appHost, _logger);
+            BrowserLauncher.OpenDashboardPage("wizardstart.html", _appHost, _logger);
         }
 
         /// <summary>

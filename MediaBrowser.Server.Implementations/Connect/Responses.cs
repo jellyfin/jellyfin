@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Connect;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
@@ -76,5 +77,10 @@ namespace MediaBrowser.Server.Implementations.Connect
     public class UserPreferencesDto<T>
     {
         public T data { get; set; }
+    }
+
+    public class ConnectAuthorizationInternal : ConnectAuthorization
+    {
+        public string AccessToken { get; set; }
     }
 }

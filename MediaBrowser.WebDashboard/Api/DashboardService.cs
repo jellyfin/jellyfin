@@ -206,7 +206,7 @@ namespace MediaBrowser.WebDashboard.Api
                 }
             }
 
-            path = path.Replace("scripts/jquery.mobile-1.4.4.min.map", "thirdparty/jquerymobile-1.4.4/jquery.mobile-1.4.4.min.map", StringComparison.OrdinalIgnoreCase);
+            path = path.Replace("scripts/jquery.mobile-1.4.5.min.map", "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.map", StringComparison.OrdinalIgnoreCase);
 
             var localizationCulture = GetLocalizationCulture();
 
