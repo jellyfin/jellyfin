@@ -184,6 +184,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task CreateServerRegistration(string wanApiAddress, string localAddress)
         {
+            if (string.IsNullOrWhiteSpace(wanApiAddress))
+            {
+                throw new ArgumentNullException("wanApiAddress");
+            }
+            
             var url = "Servers";
             url = GetConnectUrl(url);
 
@@ -212,6 +217,16 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task UpdateServerRegistration(string wanApiAddress, string localAddress)
         {
+            if (string.IsNullOrWhiteSpace(wanApiAddress))
+            {
+                throw new ArgumentNullException("wanApiAddress");
+            }
+
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                throw new ArgumentNullException("ConnectServerId");
+            }
+
             var url = "Servers";
             url = GetConnectUrl(url);
             url += "?id=" + ConnectServerId;
@@ -331,9 +346,17 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task<UserLinkResult> LinkUserInternal(string userId, string connectUsername)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
+            }
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                throw new ArgumentNullException("ConnectServerId");
             }
 
             var connectUser = await GetConnectUser(new ConnectUserQuery
@@ -424,6 +447,10 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
+            }
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                throw new ArgumentNullException("ConnectServerId");
             }
 
             string connectUserId = null;
@@ -590,6 +617,10 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 url = url + "?name=" + WebUtility.UrlEncode(query.Email);
             }
+            else
+            {
+                throw new ArgumentException("Empty ConnectUserQuery supplied");
+            }
 
             var options = new HttpRequestOptions
             {
@@ -616,6 +647,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private void SetServerAccessToken(HttpRequestOptions options)
         {
+            if (string.IsNullOrWhiteSpace(ConnectAccessKey))
+            {
+                throw new ArgumentNullException("ConnectAccessKey");
+            }
+            
             options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
         }
 
@@ -635,6 +671,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task RefreshAuthorizationsInternal(bool refreshImages, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                throw new ArgumentNullException("ConnectServerId");
+            }
+            
             var url = GetConnectUrl("ServerAuthorizations");
 
             url += "?serverId=" + ConnectServerId;
@@ -906,6 +947,15 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task CancelAuthorizationByConnectUserId(string connectUserId)
         {
+            if (string.IsNullOrWhiteSpace(connectUserId))
+            {
+                throw new ArgumentNullException("connectUserId");
+            }
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                throw new ArgumentNullException("ConnectServerId");
+            }
+     
             var url = GetConnectUrl("ServerAuthorizations");
 
             var options = new HttpRequestOptions
@@ -946,6 +996,16 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task Authenticate(string username, string passwordMd5)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentNullException("username");
+            }
+
+            if (string.IsNullOrWhiteSpace(passwordMd5))
+            {
+                throw new ArgumentNullException("passwordMd5");
+            }
+            
             var request = new HttpRequestOptions
             {
                 Url = GetConnectUrl("user/authenticate")
@@ -972,6 +1032,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            
             if (string.IsNullOrEmpty(user.ConnectUserId))
             {
                 return;
