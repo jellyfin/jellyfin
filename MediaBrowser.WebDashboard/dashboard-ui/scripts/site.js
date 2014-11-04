@@ -437,7 +437,7 @@ var Dashboard = {
         Dashboard.alert("Settings saved.");
     },
 
-    defaultErrorMessage: "There was an error processing the request.",
+    defaultErrorMessage: Globalize.translate('DefaultErrorMessage'),
 
     processServerConfigurationUpdateResult: function (result) {
 
@@ -567,11 +567,13 @@ var Dashboard = {
 
             html += '<form>';
 
+            var isConnectMode = Dashboard.isConnectMode();
+
             if (user.localUser && user.localUser.Configuration.EnableUserPreferenceAccess) {
                 html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
             }
 
-            if (Dashboard.isConnectMode()) {
+            if (isConnectMode) {
                 html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
             }
 

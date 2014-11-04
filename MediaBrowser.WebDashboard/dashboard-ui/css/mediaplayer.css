@@ -90,7 +90,7 @@
 }
 
 .sliderContainer .ui-slider-track {
-    margin-left: 15px !important;
+    margin: 0 15px !important;
 }
 
 .volumeSliderContainer .ui-slider-track {

@@ -89,6 +89,11 @@
     background: #fff;
 }
 
+.visualCardBox-b {
+    border-radius: 3px;
+    background: #111;
+}
+
 .cardScalable {
     position: relative;
 }
@@ -125,7 +130,7 @@
     right: 0;
 }
 
-    /*.cardContent:hover {
+/*.cardContent:hover {
         -moz-box-shadow: 0 0 0 5px #38c;
         -webkit-box-shadow: 0 0 0 5px #38c;
         box-shadow: 0 0 0 5px #38c;

@@ -621,5 +621,8 @@
     "MessageUnableToConnectToServer": "We're unable to connect to the selected right now. Please try again later.",
     "ButtonSelectServer": "Select server",
     "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly.",
-    "MessageLoggedOutParentalControl": "Access is currently restricted. Please try again later."
+    "MessageLoggedOutParentalControl": "Access is currently restricted. Please try again later.",
+    "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
+    "ButtonAccept": "Accept",
+    "ButtonReject": "Reject"
 }

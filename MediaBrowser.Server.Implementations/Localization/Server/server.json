@@ -1260,7 +1260,7 @@
     "OptionDisableUserPreferences": "Disable access to user preferences",
     "OptionDisableUserPreferencesHelp": "If enabled, only administrators will be able to configure user profile images, passwords, and language preferences.",
     "HeaderSelectServer": "Select Server",
-    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to confirm it by clicking the link in the email.",
+    "MessageNoServersAvailableToConnect": "No servers are available to connect to. If you've been invited to share a server, make sure to accept it below or by clicking the link in the email.",
     "TitleNewUser": "New User",
     "ButtonConfigurePassword": "Configure Password",
     "HeaderDashboardUserPassword": "User passwords are managed within each user's personal profile settings.",
@@ -1269,5 +1269,6 @@
     "HeaderLatestItems": "Latest Items",
     "LabelSelectLastestItemsFolders": "Include media from the following sections in Latest Items",
     "HeaderShareMediaFolders": "Share Media Folders",
-    "MessageGuestSharingPermissionsHelp": "Most features are initially unavailable to guests but can be enabled as needed."
+    "MessageGuestSharingPermissionsHelp": "Most features are initially unavailable to guests but can be enabled as needed.",
+    "HeaderInvitations": "Invitations"
 }

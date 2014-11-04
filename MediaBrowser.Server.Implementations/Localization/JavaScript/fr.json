@@ -613,5 +613,8 @@
     "MessageUnableToConnectToServer": "Nous sommes incapable de se connecter \u00e0 la s\u00e9lection pour le moment. S.V.P. r\u00e9essayer plus tard.",
     "ButtonSelectServer": "S\u00e9lectionner le serveur",
     "MessagePluginConfigurationRequiresLocalAccess": "Pour configurer ce plugin, S.v.p. connecter vous \u00e0 votre serveur local directement.",
-    "MessageLoggedOutParentalControl": "L'acc\u00e8s est actuellement limit\u00e9. S.v.p. r\u00e9essayez plus tard"
+    "MessageLoggedOutParentalControl": "L'acc\u00e8s est actuellement limit\u00e9. S.v.p. r\u00e9essayez plus tard",
+    "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
+    "ButtonAccept": "Accept",
+    "ButtonReject": "Reject"
 }

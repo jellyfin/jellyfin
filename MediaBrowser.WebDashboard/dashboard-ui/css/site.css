@@ -42,7 +42,7 @@
 
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
 .ui-mini {
-    margin: .5em 0;
+    margin-left: 0;
 }
 
 * {

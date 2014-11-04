@@ -368,6 +368,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Czech", Value="cs"},
                 new LocalizatonOption{ Name="Danish", Value="da"},
                 new LocalizatonOption{ Name="Dutch", Value="nl"},
+                new LocalizatonOption{ Name="Finnish", Value="fi"},
                 new LocalizatonOption{ Name="French", Value="fr"},
                 new LocalizatonOption{ Name="German", Value="de"},
                 new LocalizatonOption{ Name="Greek", Value="el"},

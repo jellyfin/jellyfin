@@ -390,5 +390,22 @@ namespace MediaBrowser.Common.Implementations.IO
         {
             return Path.GetFileNameWithoutExtension(path);
         }
+
+        public bool IsPathFile(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            //if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
+            //    !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    return false;
+            //}
+            //return true;
+
+            return Path.IsPathRooted(path);
+        }
     }
 }

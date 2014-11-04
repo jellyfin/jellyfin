@@ -338,7 +338,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var connectUser = await GetConnectUser(new ConnectUserQuery
             {
-                Name = connectUsername
+                NameOrEmail = connectUsername
 
             }, CancellationToken.None).ConfigureAwait(false);
 
@@ -433,7 +433,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var connectUser = await GetConnectUser(new ConnectUserQuery
                 {
-                    Name = connectUsername
+                    NameOrEmail = connectUsername
 
                 }, CancellationToken.None).ConfigureAwait(false);
 
@@ -577,6 +577,10 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (!string.IsNullOrWhiteSpace(query.Id))
             {
                 url = url + "?id=" + WebUtility.UrlEncode(query.Id);
+            }
+            else if (!string.IsNullOrWhiteSpace(query.NameOrEmail))
+            {
+                url = url + "?nameOrEmail=" + WebUtility.UrlEncode(query.NameOrEmail);
             }
             else if (!string.IsNullOrWhiteSpace(query.Name))
             {
@@ -963,7 +967,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var user = e.Argument;
 
-            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)

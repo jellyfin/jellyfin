@@ -108,6 +108,13 @@
     top: 3px;
 }
 
+@media all and (min-width: 600px) {
+
+    .ehsContent {
+        width: 95%;
+    }
+}
+
 @media all and (min-width: 1200px) {
 
     .ehsContent {

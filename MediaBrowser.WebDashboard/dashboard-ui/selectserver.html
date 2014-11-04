@@ -8,13 +8,22 @@
 
         <div data-role="content">
 
-            <div class="readOnlyContent" style="margin: 0 auto;">
-                <h1>${HeaderSelectServer}</h1>
+            <div class="ehsContent" style="margin: 0 auto;">
+                <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderSelectServer}</h1>
 
                 <div class="serverList"></div>
                 <br />
-                <div class="noServersMessage" style="display:none;">
+                <div class="noServersMessage" style="display:none;padding-left:5px;">
                     ${MessageNoServersAvailableToConnect}
+                </div>
+
+                <div class="invitationSection" style="display:none;">
+                    <br />
+                    <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderInvitations}</h1>
+
+                    <div class="invitationList">
+
+                    </div>
                 </div>
             </div>
 

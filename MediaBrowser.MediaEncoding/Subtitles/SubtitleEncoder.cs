@@ -58,23 +58,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                // Return the original without any conversions, if possible
-                if (startTimeTicks == 0 &&
-                    !endTimeTicks.HasValue &&
-                    string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
-                {
-                    await stream.CopyToAsync(ms, 81920, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    var trackInfo = await GetTrackInfo(stream, inputFormat, cancellationToken).ConfigureAwait(false);
+                var trackInfo = await GetTrackInfo(stream, inputFormat, cancellationToken).ConfigureAwait(false);
 
-                    FilterEvents(trackInfo, startTimeTicks, endTimeTicks, false);
+                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, false);
 
-                    var writer = GetWriter(outputFormat);
+                var writer = GetWriter(outputFormat);
 
-                    writer.Write(trackInfo, ms, cancellationToken);
-                }
+                writer.Write(trackInfo, ms, cancellationToken);
                 ms.Position = 0;
             }
             catch
@@ -239,10 +229,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 await ConvertTextSubtitleToSrt(subtitleStream.Path, outputPath, subtitleStream.Language, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new Tuple<string, string, bool>(outputPath, "srt", false);
+                return new Tuple<string, string, bool>(outputPath, "srt", true);
             }
 
-            return new Tuple<string, string, bool>(subtitleStream.Path, currentFormat, false);
+            return new Tuple<string, string, bool>(subtitleStream.Path, currentFormat, true);
         }
 
         private async Task<SubtitleTrackInfo> GetTrackInfo(Stream stream,

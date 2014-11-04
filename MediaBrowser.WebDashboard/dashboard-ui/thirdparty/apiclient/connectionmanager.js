@@ -751,19 +751,25 @@
             });
         };
 
+        function replaceAll(str, find, replace) {
+
+            return str.split(find).join(replace);
+
+            //return str.replace(new RegExp(find, 'g'), replace);
+        }
+
         self.getConnectPasswordHash = function (password) {
 
             password = password || '';
 
-            password = password
-                .replace("&", "&amp;")
-                .replace("/", "&#092;")
-                .replace("!", "&#33;")
-                .replace("$", "&#036;")
-                .replace("\"", "&quot;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("'", "&#39;");
+            password = replaceAll(password, "&", "&amp;");
+            password = replaceAll(password, "/", "&#092;");
+            password = replaceAll(password, "!", "&#33;");
+            password = replaceAll(password, "$", "&#036;");
+            password = replaceAll(password, "\"", "&quot;");
+            password = replaceAll(password, "<", "&lt;");
+            password = replaceAll(password, ">", "&gt;");
+            password = replaceAll(password, "'", "&#39;");
 
             return CryptoJS.MD5(password).toString();
         };
@@ -784,6 +790,50 @@
 
             })[0];
         };
+
+        self.getUserInvitations = function () {
+
+            var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
+
+            return $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json",
+                headers: {
+                    "X-Connect-UserToken": self.connectToken()
+                }
+
+            });
+        };
+
+        self.deleteServer = function (serverId) {
+
+            var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+
+            return $.ajax({
+                type: "DELETE",
+                url: url,
+                headers: {
+                    "X-Connect-UserToken": self.connectToken()
+                }
+
+            });
+        };
+
+        self.acceptServer = function (authorizationId) {
+
+            var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?id=" + authorizationId;
+
+            return $.ajax({
+                type: "GET",
+                url: url,
+                headers: {
+                    "X-Connect-UserToken": self.connectToken()
+                }
+
+            });
+        };
+
     };
 
 })(window, jQuery);

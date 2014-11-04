@@ -17,6 +17,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
+using System.Globalization;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
@@ -229,6 +230,8 @@ namespace XmlRpcHandler
             XMLwrt.WriteEndElement();//array
             XMLwrt.WriteEndElement();//value
         }
+        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        
         private static IXmlRpcValue ReadValue(XmlReader xmlReader)
         {
             while (xmlReader.Read())
@@ -242,7 +245,7 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "int" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(int.Parse(xmlReader.ReadString()), XmlRpcBasicValueType.Int);
+                        return new XmlRpcValueBasic(int.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Int);
                     }
                     else if (xmlReader.Name == "boolean" && xmlReader.IsStartElement())
                     {
@@ -250,17 +253,17 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "double" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(double.Parse(xmlReader.ReadString()), XmlRpcBasicValueType.Double);
+                        return new XmlRpcValueBasic(double.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Double);
                     }
                     else if (xmlReader.Name == "dateTime.iso8601" && xmlReader.IsStartElement())
                     {
                         string date = xmlReader.ReadString();
-                        int year = int.Parse(date.Substring(0, 4));
-                        int month = int.Parse(date.Substring(4, 2));
-                        int day = int.Parse(date.Substring(6, 2));
-                        int hour = int.Parse(date.Substring(9, 2));
-                        int minute = int.Parse(date.Substring(12, 2));//19980717T14:08:55
-                        int sec = int.Parse(date.Substring(15, 2));
+                        int year = int.Parse(date.Substring(0, 4), UsCulture);
+                        int month = int.Parse(date.Substring(4, 2), UsCulture);
+                        int day = int.Parse(date.Substring(6, 2), UsCulture);
+                        int hour = int.Parse(date.Substring(9, 2), UsCulture);
+                        int minute = int.Parse(date.Substring(12, 2), UsCulture);//19980717T14:08:55
+                        int sec = int.Parse(date.Substring(15, 2), UsCulture);
                         DateTime time = new DateTime(year, month, day, hour, minute, sec);
                         return new XmlRpcValueBasic(time, XmlRpcBasicValueType.dateTime_iso8601);
                     }

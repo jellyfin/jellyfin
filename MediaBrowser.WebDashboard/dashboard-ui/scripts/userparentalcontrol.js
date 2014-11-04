@@ -111,12 +111,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function getDisplayTime(hour) {
-
-        return new Date(2000, 1, 1, hour, 0, 0, 0).toLocaleTimeString();
-
-    }
-
     function deleteAccessSchedule(page, schedules, index) {
 
         schedules.splice(index, 1);
@@ -214,6 +208,19 @@
         }
     };
 
+    function getDisplayTime(hours) {
+
+        var minutes = 0;
+
+        var pct = hours % 1;
+
+        if (pct) {
+            minutes = parseInt(pct * 60);
+        }
+
+        return new Date(2000, 1, 1, hours, minutes, 0, 0).toLocaleTimeString();
+    }
+
     function populateHours(page) {
 
         var html = '';
@@ -222,6 +229,8 @@
 
             html += '<option value="' + i + '">' + getDisplayTime(i) + '</option>';
         }
+
+        html += '<option value="24">' + getDisplayTime(0) + '</option>';
 
         $('#selectStart', page).html(html).selectmenu('refresh');
         $('#selectEnd', page).html(html).selectmenu('refresh');
@@ -290,7 +299,7 @@
 
         $('.btnAddSchedule', page).on('click', function () {
 
-            showSchedulePopup(page, {},  -1);
+            showSchedulePopup(page, {}, -1);
         });
 
         populateHours(page);

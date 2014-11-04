@@ -111,7 +111,7 @@
         html += '</ul>';
 
         if (addPathMappingInfo) {
-            html += '<p style="margin:1.5em 0;">'+Globalize.translate('LabelPathSubstitutionHelp')+'</p>';
+            html += '<div class="fieldDescription" style="margin:.5em 0 1.5em;">' + Globalize.translate('LabelPathSubstitutionHelp') + '</div>';
         }
 
         html += '<p>';

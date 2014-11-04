@@ -87,6 +87,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard-ui\css\images\server.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\scripts\selectserver.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

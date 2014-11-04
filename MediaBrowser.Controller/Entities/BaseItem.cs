@@ -202,12 +202,12 @@ namespace MediaBrowser.Controller.Entities
                     return LocationType.Offline;
                 }
 
-                if (string.IsNullOrEmpty(Path))
+                if (string.IsNullOrWhiteSpace(Path))
                 {
                     return LocationType.Virtual;
                 }
 
-                return System.IO.Path.IsPathRooted(Path) ? LocationType.FileSystem : LocationType.Remote;
+                return FileSystem.IsPathFile(Path) ? LocationType.FileSystem : LocationType.Remote;
             }
         }
 
