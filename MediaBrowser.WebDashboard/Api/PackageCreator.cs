@@ -269,6 +269,7 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/device.js",
                 "thirdparty/apiclient/credentials.js",
                 "thirdparty/apiclient/mediabrowser.apiclient.js",
+                "thirdparty/apiclient/connectservice.js",
                 "thirdparty/apiclient/connectionmanager.js"
             })
             {

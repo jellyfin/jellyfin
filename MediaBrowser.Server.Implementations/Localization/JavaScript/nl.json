@@ -614,7 +614,7 @@
     "ButtonSelectServer": "Selecteer server",
     "MessagePluginConfigurationRequiresLocalAccess": "Meld svp. op de lokale server aan om deze plugin te configureren.",
     "MessageLoggedOutParentalControl": "Toegang is momenteel bepertk, probeer later opnieuw.",
-    "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
-    "ButtonAccept": "Accept",
-    "ButtonReject": "Reject"
+    "DefaultErrorMessage": "Er is een fout opgetreden. Probeer later opnieuw.",
+    "ButtonAccept": "Accepteren",
+    "ButtonReject": "Weigeren"
 }

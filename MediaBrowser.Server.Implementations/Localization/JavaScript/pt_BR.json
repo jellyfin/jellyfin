@@ -614,7 +614,7 @@
     "ButtonSelectServer": "Selecionar servidor",
     "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este plugin, por favor entre em seu servidor local diretamente.",
     "MessageLoggedOutParentalControl": "O acesso est\u00e1 atualmente restrito. Por favor, tente mais tarde.",
-    "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
-    "ButtonAccept": "Accept",
-    "ButtonReject": "Reject"
+    "DefaultErrorMessage": "Ocorreu um erro ao processar o pedido. Por favor, tente novamente mais tarde.",
+    "ButtonAccept": "Aceitar",
+    "ButtonReject": "Rejeitar"
 }
