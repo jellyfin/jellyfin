@@ -226,6 +226,13 @@
 
         function getConnectUser(userId, accessToken) {
 
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!accessToken) {
+                throw new Error("null accessToken");
+            }
+
             var url = "https://connect.mediabrowser.tv/service/user?id=" + userId;
 
             return $.ajax({
@@ -444,6 +451,13 @@
         };
 
         function getConnectServers() {
+
+            if (!self.connectToken()) {
+                throw new Error("null connectToken");
+            }
+            if (!self.connectUserId()) {
+                throw new Error("null connectUserId");
+            }
 
             var deferred = $.Deferred();
 
@@ -725,6 +739,13 @@
 
         self.loginToConnect = function (username, password) {
 
+            if (!username) {
+                throw new Error("null username");
+            }
+            if (!password) {
+                throw new Error("null password");
+            }
+
             var md5 = self.getConnectPasswordHash(password);
 
             return $.ajax({
@@ -776,6 +797,13 @@
 
         self.getUserInvitations = function () {
 
+            if (!self.connectToken()) {
+                throw new Error("null connectToken");
+            }
+            if (!self.connectUserId()) {
+                throw new Error("null connectUserId");
+            }
+
             var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
 
             return $.ajax({
@@ -791,6 +819,16 @@
 
         self.deleteServer = function (serverId) {
 
+            if (!serverId) {
+                throw new Error("null serverId");
+            }
+            if (!self.connectToken()) {
+                throw new Error("null connectToken");
+            }
+            if (!self.connectUserId()) {
+                throw new Error("null connectUserId");
+            }
+
             var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
             return $.ajax({
@@ -804,6 +842,16 @@
         };
 
         self.acceptServer = function (serverId) {
+
+            if (!serverId) {
+                throw new Error("null serverId");
+            }
+            if (!self.connectToken()) {
+                throw new Error("null connectToken");
+            }
+            if (!self.connectUserId()) {
+                throw new Error("null connectUserId");
+            }
 
             var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
