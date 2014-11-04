@@ -407,6 +407,8 @@
     <EmbeddedResource Include="Localization\Server\hr.json" />
     <EmbeddedResource Include="Localization\JavaScript\zh_CN.json" />
     <EmbeddedResource Include="Localization\Server\zh_CN.json" />
+    <EmbeddedResource Include="Localization\JavaScript\fi.json" />
+    <EmbeddedResource Include="Localization\Server\fi.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

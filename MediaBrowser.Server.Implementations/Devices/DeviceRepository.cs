@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using System;
@@ -19,6 +20,7 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
+        private ILogger _logger;
 
         private ConcurrentBag<DeviceInfo> _devices;
 
@@ -69,7 +71,8 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public DeviceInfo GetDevice(string id)
         {
-            return GetDevices().FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            return GetDevices()
+                .FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
 
         public IEnumerable<DeviceInfo> GetDevices()
@@ -96,7 +99,19 @@ namespace MediaBrowser.Server.Implementations.Devices
                 return new DirectoryInfo(path)
                     .EnumerateFiles("*", SearchOption.AllDirectories)
                     .Where(i => string.Equals(i.Name, "device.json", StringComparison.OrdinalIgnoreCase))
-                    .Select(i => _json.DeserializeFromFile<DeviceInfo>(i.FullName))
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            return _json.DeserializeFromFile<DeviceInfo>(i.FullName);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error reading {0}", ex, i.FullName);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
                     .ToList();
             }
             catch (IOException)

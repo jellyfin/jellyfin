@@ -126,5 +126,12 @@ namespace MediaBrowser.Common.IO
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
         string GetFileNameWithoutExtension(string path);
+
+        /// <summary>
+        /// Determines whether [is path file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is path file] [the specified path]; otherwise, <c>false</c>.</returns>
+        bool IsPathFile(string path);
     }
 }
