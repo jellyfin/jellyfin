@@ -731,12 +731,11 @@
                 type: "POST",
                 url: "https://connect.mediabrowser.tv/service/user/authenticate",
                 data: {
-                    userName: username,
+                    nameOrEmail: username,
                     password: md5
                 },
                 dataType: "json",
                 contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
-
 
             }).done(function (result) {
 
@@ -751,25 +750,9 @@
             });
         };
 
-        function replaceAll(str, find, replace) {
-
-            return str.split(find).join(replace);
-
-            //return str.replace(new RegExp(find, 'g'), replace);
-        }
-
         self.getConnectPasswordHash = function (password) {
 
-            password = password || '';
-
-            password = replaceAll(password, "&", "&amp;");
-            password = replaceAll(password, "/", "&#092;");
-            password = replaceAll(password, "!", "&#33;");
-            password = replaceAll(password, "$", "&#036;");
-            password = replaceAll(password, "\"", "&quot;");
-            password = replaceAll(password, "<", "&lt;");
-            password = replaceAll(password, ">", "&gt;");
-            password = replaceAll(password, "'", "&#39;");
+            password = globalScope.MediaBrowser.ConnectService.cleanPassword(password);
 
             return CryptoJS.MD5(password).toString();
         };
@@ -820,9 +803,9 @@
             });
         };
 
-        self.acceptServer = function (authorizationId) {
+        self.acceptServer = function (serverId) {
 
-            var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?id=" + authorizationId;
+            var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
             return $.ajax({
                 type: "GET",
