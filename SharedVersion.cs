@@ -3,6 +3,6 @@
 #if (DEBUG)
 [assembly: AssemblyVersion("3.0.*")]
 #else
-//[assembly: AssemblyVersion("3.0.*")]
-[assembly: AssemblyVersion("3.0.5421.0")]
+[assembly: AssemblyVersion("3.0.*")]
+//[assembly: AssemblyVersion("3.0.5421.0")]
 #endif
