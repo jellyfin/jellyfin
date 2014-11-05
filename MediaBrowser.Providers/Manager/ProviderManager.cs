@@ -710,7 +710,7 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
-                Path = "C:\\",
+                Path = BaseItem.GetInternalMetadataPathForId(Guid.NewGuid()),
 
                 // Dummy this up to fool the local trailer check
                 Parent = new Folder()
@@ -737,13 +737,20 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var provider in providers)
             {
-                var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
-
-                var list = results.ToList();
-
-                if (list.Count > 0)
+                try
                 {
-                    return list.Take(10);
+                    var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+
+                    var list = results.ToList();
+
+                    if (list.Count > 0)
+                    {
+                        return list.Take(10);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Logged at lower levels
                 }
             }
 

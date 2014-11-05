@@ -763,7 +763,7 @@ namespace MediaBrowser.Api.Library
 
             if (!inherit)
             {
-                return null;
+                return new List<Guid>();
             }
 
             hasSoundtracks = item.Parents.OfType<IHasSoundtracks>().FirstOrDefault();
