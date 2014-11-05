@@ -528,20 +528,30 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task ResetPassword(User user)
         {
-            return ChangePassword(user, string.Empty);
+            return ChangePassword(user, GetSha1String(string.Empty));
         }
 
         /// <summary>
         /// Changes the password.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="newPassword">The new password.</param>
+        /// <param name="newPasswordSha1">The new password sha1.</param>
         /// <returns>Task.</returns>
-        public async Task ChangePassword(User user, string newPassword)
+        /// <exception cref="System.ArgumentNullException">
+        /// user
+        /// or
+        /// newPassword
+        /// </exception>
+        /// <exception cref="System.ArgumentException">Passwords for guests cannot be changed.</exception>
+        public async Task ChangePassword(User user, string newPasswordSha1)
         {
             if (user == null)
             {
                 throw new ArgumentNullException("user");
+            }
+            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+            {
+                throw new ArgumentNullException("newPasswordSha1");
             }
 
             if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
@@ -549,7 +559,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentException("Passwords for guests cannot be changed.");
             }
 
-            user.Password = string.IsNullOrEmpty(newPassword) ? GetSha1String(string.Empty) : GetSha1String(newPassword);
+            user.Password = newPasswordSha1;
 
             await UpdateUser(user).ConfigureAwait(false);
 

@@ -122,7 +122,7 @@ namespace MediaBrowser.Api.System
             {
                 files = new DirectoryInfo(_appPaths.LogDirectoryPath)
                     .EnumerateFiles("*", SearchOption.AllDirectories)
-                    .Where(i => string.Equals(i.Extension, ".txt", global::System.StringComparison.OrdinalIgnoreCase))
+                    .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
             catch (DirectoryNotFoundException)
@@ -149,7 +149,7 @@ namespace MediaBrowser.Api.System
         {
             var file = new DirectoryInfo(_appPaths.LogDirectoryPath)
                 .EnumerateFiles("*", SearchOption.AllDirectories)
-                .First(i => string.Equals(i.Name, request.Name, global::System.StringComparison.OrdinalIgnoreCase));
+                .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
         }

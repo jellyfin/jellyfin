@@ -303,12 +303,12 @@
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
                 Dashboard.showError(Globalize.translate('PasswordMatchError'));
-                return false;
+            } else {
+                
+                Dashboard.showLoadingMsg();
+                savePassword(page);
             }
 
-            Dashboard.showLoadingMsg();
-
-            savePassword(page);
 
             // Disable default form submission
             return false;

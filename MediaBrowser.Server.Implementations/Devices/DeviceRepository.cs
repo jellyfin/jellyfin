@@ -20,14 +20,15 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         private ConcurrentBag<DeviceInfo> _devices;
 
-        public DeviceRepository(IApplicationPaths appPaths, IJsonSerializer json)
+        public DeviceRepository(IApplicationPaths appPaths, IJsonSerializer json, ILogger logger)
         {
             _appPaths = appPaths;
             _json = json;
+            _logger = logger;
         }
 
         private string GetDevicesPath()

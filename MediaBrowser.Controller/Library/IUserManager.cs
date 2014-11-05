@@ -120,9 +120,9 @@ namespace MediaBrowser.Controller.Library
         /// Changes the password.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="newPassword">The new password.</param>
+        /// <param name="newPasswordSha1">The new password sha1.</param>
         /// <returns>Task.</returns>
-        Task ChangePassword(User user, string newPassword);
+        Task ChangePassword(User user, string newPasswordSha1);
 
         /// <summary>
         /// Gets the user dto.

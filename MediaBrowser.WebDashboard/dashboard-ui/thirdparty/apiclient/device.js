@@ -24,7 +24,7 @@
         }
 
         keys.push(randomId);
-        return sha1(keys.join('|'));
+        return CryptoJS.SHA1(keys.join('|')).toString();
     };
 
 })(window, store);

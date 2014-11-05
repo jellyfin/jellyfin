@@ -2458,7 +2458,7 @@
             var url = self.getUrl("Users/authenticatebyname");
 
             var postData = {
-                password: sha1(password || ""),
+                password: CryptoJS.SHA1(password || "").toString(),
                 Username: name
             };
 
@@ -2490,20 +2490,13 @@
 
             var url = self.getUrl("Users/" + userId + "/Password");
 
-            var postData = {
-
-            };
-
-            postData.currentPassword = sha1(currentPassword);
-
-            if (newPassword) {
-                postData.newPassword = newPassword;
-            }
-
             return self.ajax({
                 type: "POST",
                 url: url,
-                data: postData
+                data: {
+                    currentPassword: CryptoJS.SHA1(currentPassword).toString(),
+                    newPassword: CryptoJS.SHA1(newPassword).toString()
+                }
             });
         };
 
