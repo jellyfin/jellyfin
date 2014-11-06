@@ -65,6 +65,9 @@ namespace MediaBrowser.Dlna.ContentDirectory
             if (string.Equals(methodName, "GetSortCapabilities", StringComparison.OrdinalIgnoreCase))
                 return HandleGetSortCapabilities();
 
+            if (string.Equals(methodName, "GetSortExtensionCapabilities", StringComparison.OrdinalIgnoreCase))
+                return HandleGetSortExtensionCapabilities();
+
             if (string.Equals(methodName, "GetSystemUpdateID", StringComparison.OrdinalIgnoreCase))
                 return HandleGetSystemUpdateID();
 
@@ -73,6 +76,9 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             if (string.Equals(methodName, "X_GetFeatureList", StringComparison.OrdinalIgnoreCase))
                 return HandleXGetFeatureList();
+
+            if (string.Equals(methodName, "GetFeatureList", StringComparison.OrdinalIgnoreCase))
+                return HandleGetFeatureList();
 
             if (string.Equals(methodName, "X_SetBookmark", StringComparison.OrdinalIgnoreCase))
                 return HandleXSetBookmark(methodParams, user);
@@ -110,7 +116,18 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortCapabilities()
         {
-            return new Headers(true) { { "SortCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" } };
+            return new Headers(true)
+            {
+                { "SortCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" }
+            };
+        }
+
+        private IEnumerable<KeyValuePair<string, string>> HandleGetSortExtensionCapabilities()
+        {
+            return new Headers(true)
+            {
+                { "SortExtensionCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" }
+            };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
@@ -120,9 +137,20 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return headers;
         }
 
+        private IEnumerable<KeyValuePair<string, string>> HandleGetFeatureList()
+        {
+            return new Headers(true)
+            {
+                { "FeatureList", GetFeatureListXml() }
+            };
+        }
+
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()
         {
-            return new Headers(true) { { "FeatureList", GetFeatureListXml() } };
+            return new Headers(true)
+            {
+                { "FeatureList", GetFeatureListXml() }
+            };
         }
 
         private string GetFeatureListXml()

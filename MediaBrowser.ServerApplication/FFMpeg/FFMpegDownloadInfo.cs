@@ -47,7 +47,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20140827";
+                                    return "20140923";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
@@ -61,13 +61,13 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                             switch (arg)
                             {
                                 case "Version":
-                                    return "20131121";
+                                    return "20140910";
                                 case "FFMpegFilename":
                                     return "ffmpeg";
                                 case "FFProbeFilename":
                                     return "ffprobe";
                                 case "ArchiveType":
-                                    return "gz";
+                                    return "7z";
                             }
                         }
                     }
@@ -150,7 +150,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                         return new[]
                         {
-                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-osx-20131121.gz"
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.4.2.7z"
                         };
                     }
 
@@ -158,7 +158,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                     {
                         return new[]
                         {
-                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.3.3.7z"
+                            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.4.1.7z"
                         };
                     }
 
