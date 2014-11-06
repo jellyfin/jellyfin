@@ -51,9 +51,6 @@ var Dashboard = {
 
                 if (data.errorCode == "ParentalControl") {
 
-                    //alert(Globalize.translate('MessageLoggedOutParentalControl'));
-
-
                     Dashboard.alert({
                         message: Globalize.translate('MessageLoggedOutParentalControl'),
                         callback: function () {

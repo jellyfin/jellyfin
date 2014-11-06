@@ -9,7 +9,6 @@ Requirements
 * PowerShell 3
 * Git
 * VS2013 Desktop (for MSBuild)
-* Mono 3.2.3 for Windows
 * Portable Library Tools 2 (http://visualstudiogallery.msdn.microsoft.com/b0e0b5e9-e138-410b-ad10-00cb3caf4981)
 * Internet Connection
 
