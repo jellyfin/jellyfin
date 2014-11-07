@@ -159,14 +159,6 @@
       <Link>MediaInfo\osx\libmediainfo.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\ThirdParty\SQLite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
-      <Link>sqlite3\linux\lib\libsqlite3.so.0.8.6</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\ThirdParty\SQLite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
-      <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="app.config" />
     <None Include="Imazen.WebP.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -177,6 +169,7 @@
     <None Include="packages.config" />
     <None Include="System.Data.SQLite.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
 </Project>
