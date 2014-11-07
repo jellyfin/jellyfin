@@ -167,10 +167,6 @@
       <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\ThirdParty\SQLite3\mac\universal\3.8.2\libsqlite3.0.dylib">
-      <Link>sqlite3\mac\libsqlite3.0.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="app.config" />
     <None Include="Imazen.WebP.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -182,11 +178,5 @@
     <None Include="System.Data.SQLite.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\ThirdParty\SQLite3\windows\x86\3.8.2\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
