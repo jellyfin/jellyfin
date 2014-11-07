@@ -61,9 +61,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.91.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Data.SQLite.Core.1.0.91.3\lib\net45\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\packages\System.Data.SQLite.Core.MSIL.1.0.94.0\lib\net45\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,13 +70,6 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Data.SQLite" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq" Condition=" '$(ConfigurationName)' == 'Release Mono' ">
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
     </Reference>
@@ -409,16 +401,13 @@
     <EmbeddedResource Include="Localization\Server\zh_CN.json" />
     <EmbeddedResource Include="Localization\JavaScript\fi.json" />
     <EmbeddedResource Include="Localization\Server\fi.json" />
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\ThirdParty\libwebp\windows\x86\libwebp.dll">
-      <Link>libwebp.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\highlight.default.css">
       <Link>swagger-ui\css\highlight.default.css</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -500,23 +489,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Localization\iso6392.txt" />
-    <Content Include="x64\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\SQLite.Interop.dll" Condition=" '$(ConfigurationName)' != 'Release Mono' ">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll" Condition=" '$(ConfigurationName)' == 'Release Mono'">
-      <Link>System.Data.SQLite.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll" Condition=" '$(ConfigurationName)' == 'Release Mono'">
-      <Link>System.Data.SQLite.Linq.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
