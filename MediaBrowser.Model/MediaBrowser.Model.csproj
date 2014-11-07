@@ -425,9 +425,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent Condition=" '$(ConfigurationName)' != 'Release Mono' ">if '$(ConfigurationName)' == 'Release' (
-xcopy "$(TargetPath)" "$(SolutionDir)\Nuget\dlls\net45\" /y /d /r /i
-)</PostBuildEvent>
+    <PostBuildEvent />
   </PropertyGroup>
   <Import Project="Fody.targets" />
   <PropertyGroup>

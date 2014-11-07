@@ -176,6 +176,10 @@
       <Link>libwebp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\ThirdParty\MediaInfo\windows\x86\MediaInfo.dll">
+      <Link>MediaInfo.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Images\Icon.ico" />
     <Content Include="Resources\Images\mb3logo800.png" />
   </ItemGroup>
