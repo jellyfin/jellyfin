@@ -1027,7 +1027,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var user = e.Argument;
 
-            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
@@ -1046,9 +1046,6 @@ namespace MediaBrowser.Server.Implementations.Connect
                 return;
             }
 
-            var obj = ConnectUserPreferences.FromUserConfiguration(user.Configuration);
-            var json = _json.SerializeToString(new UserPreferencesDto<ConnectUserPreferences> { data = obj });
-
             var url = GetConnectUrl("user/preferences");
             url += "?userId=" + user.ConnectUserId;
             url += "&key=userpreferences";
@@ -1056,10 +1053,12 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = cancellationToken,
-                RequestContent = json,
-                RequestContentType = "application/json"
+                CancellationToken = cancellationToken
             };
+
+            var postData = new Dictionary<string, string>();
+            postData["data"] = _json.SerializeToString(ConnectUserPreferences.FromUserConfiguration(user.Configuration));
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
 

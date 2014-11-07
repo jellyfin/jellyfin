@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("dbPath");
             }
 
-            logger.Info("Opening {0}", dbPath);
+            logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, dbPath);
 
             var connectionstr = new SQLiteConnectionStringBuilder
             {
