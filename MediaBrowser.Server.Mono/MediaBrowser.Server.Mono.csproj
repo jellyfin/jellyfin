@@ -31,8 +31,9 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <Externalconsole>true</Externalconsole>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -43,6 +44,9 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Release Mono</OutputPath>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Mono|x86'">
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
@@ -140,16 +144,6 @@
       <Project>{23499896-B135-4527-8574-C26E926EA99E}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.dll">
-      <Link>System.Data.SQLite.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\System.Data.SQLite.ManagedOnly\x86\1.0.90.0\net40\System.Data.SQLite.Linq.dll">
-      <Link>System.Data.SQLite.Linq.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
