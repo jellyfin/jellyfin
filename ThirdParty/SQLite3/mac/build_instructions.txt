@@ -1,9 +1,0 @@
-Instruction for compiling sqlite universal for mac
-
-1. Get source(autoconf version) from: http://www.sqlite.org/download.html
-2. Extract somewhere
-3. $ ./configure LDFLAGS="-arch i686 -arch x86_64" CFLAGS="-arch i686 -arch x86_64"
-4. $ make
-5. Copy .libs/libsqlite3.0.dylib to ThirdParty/SQLite3/mac/universal/3.8.2/libsqlite3.0.dylib
-
-Don't forget to update System.Data.SQLite.dll.config

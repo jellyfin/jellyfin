@@ -97,23 +97,23 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             try
             {
-                return new DirectoryInfo(path)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
-                    .Where(i => string.Equals(i.Name, "device.json", StringComparison.OrdinalIgnoreCase))
+                return Directory
+                    .EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                    .Where(i => string.Equals(Path.GetFileName(i), "device.json", StringComparison.OrdinalIgnoreCase))
+                    .ToList()
                     .Select(i =>
                     {
                         try
                         {
-                            return _json.DeserializeFromFile<DeviceInfo>(i.FullName);
+                            return _json.DeserializeFromFile<DeviceInfo>(i);
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error reading {0}", ex, i.FullName);
+                            _logger.ErrorException("Error reading {0}", ex, i);
                             return null;
                         }
                     })
-                    .Where(i => i != null)
-                    .ToList();
+                    .Where(i => i != null);
             }
             catch (IOException)
             {

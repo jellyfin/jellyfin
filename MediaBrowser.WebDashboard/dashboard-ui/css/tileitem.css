@@ -490,7 +490,7 @@
 @media all and (min-width: 1000px) {
 
     .myLibraryPosterItem {
-        width: 24%;
+        width: 23.5%;
         /* Specify a min width just in case the container doesn't have a width */
         min-width: 220px;
     }

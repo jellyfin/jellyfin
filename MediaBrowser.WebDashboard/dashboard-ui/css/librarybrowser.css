@@ -108,7 +108,7 @@
     top: 3px;
 }
 
-@media all and (min-width: 600px) {
+@media all and (min-width: 500px) {
 
     .ehsContent {
         width: 95%;

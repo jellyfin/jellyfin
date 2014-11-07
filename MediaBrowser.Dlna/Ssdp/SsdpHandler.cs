@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Server;
@@ -8,11 +6,13 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
@@ -247,6 +247,10 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             catch (ObjectDisposedException)
             {
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug("Error in BeginReceiveFrom", ex);
             }
         }
 
