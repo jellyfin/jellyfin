@@ -880,7 +880,7 @@
     "LabelProtocolInfoHelp": "Der Wert, der f\u00fcr die Beantwortung von GetProtocolInfo Anfragen durch die Endger\u00e4te benutzt wird.",
     "TabKodiMetadata": "Kodi",
     "HeaderKodiMetadataHelp": "Media Browser bietet eine native Unterst\u00fctzung f\u00fcr Kodi NFO Metadaten und Bilder. Um Kodi Metadaten zu aktivieren oder zu deaktivieren und um Optionen f\u00fcr deine Medientypen zu konfigurieren, verwende die Registerkarte Erweitert.",
-    "LabelKodiMetadataUser": "F\u00fcge \"Gesehen\" Daten von Benutzer in NFO Dateien hinzu f\u00fcr:",
+    "LabelKodiMetadataUser": "Synchronisiere den \"Gesehen\" Status von Benutzern in NFO's f\u00fcr:",
     "LabelKodiMetadataUserHelp": "Aktiviere diese Option, um den \"Gesehen\" Status zwischen Media Browser und Kodi synchron zu halten.",
     "LabelKodiMetadataDateFormat": "Ver\u00f6ffentlichungsdatum Format:",
     "LabelKodiMetadataDateFormatHelp": "Alle Daten in den NFO's werde unter Benutzung dieses Format gelesen und geschrieben.",
@@ -1244,7 +1244,7 @@
     "OptionDisableUserPreferences": "Deaktiviere den Zugriff auf Benutzereinstellungen",
     "OptionDisableUserPreferencesHelp": "Falls aktiviert, werden nur Administratoren die M\u00f6glichkeit haben, Benutzerbilder, Passw\u00f6rter und Spracheinstellungen zu bearbeiten.",
     "HeaderSelectServer": "W\u00e4hle Server",
-    "MessageNoServersAvailableToConnect": "Keine Server sind f\u00fcr eine Verbindung verf\u00fcgbar. Falls du dazu eingeladen wurdest einen Server zu teilen, best\u00e4tige die Einladung bitte durch einen Aufruf des Links in der E-Mail.",
+    "MessageNoServersAvailableToConnect": "Keine Server sind f\u00fcr eine Verbindung verf\u00fcgbar. Falls du dazu eingeladen wurdest einen Server zu teilen, best\u00e4tige bitte die Einladung unten oder durch einen Aufruf des Links in der E-Mail.",
     "TitleNewUser": "Neuer Benutzer",
     "ButtonConfigurePassword": "Passwort konfigurieren",
     "HeaderDashboardUserPassword": "Benutzerpassw\u00f6rter werden in den pers\u00f6nlichen Profileinstellungen der einzelnen Benutzer verwaltet.",
@@ -1254,5 +1254,5 @@
     "LabelSelectLastestItemsFolders": "Beziehe Medien aus folgenden Sektionen in \"Neueste Medien\" mit ein",
     "HeaderShareMediaFolders": "Teile Medienverzeichnisse",
     "MessageGuestSharingPermissionsHelp": "Die meisten Funktionen sind f\u00fcr G\u00e4ste zun\u00e4chst nicht verf\u00fcgbar, k\u00f6nnen aber je nach Bedarf aktiviert werden.",
-    "HeaderInvitations": "Invitations"
+    "HeaderInvitations": "Einladungen"
 }

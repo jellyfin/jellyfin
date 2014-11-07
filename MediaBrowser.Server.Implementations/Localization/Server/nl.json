@@ -1244,7 +1244,7 @@
     "OptionDisableUserPreferences": "Voorkom toegang tot gebruikers voorkeuren",
     "OptionDisableUserPreferencesHelp": "Indien ingeschakeld kunnen alleen beheerders profiel afbeeldingen, wachtwoorden en taalinstellingen wijzigen.",
     "HeaderSelectServer": "Selecteer server",
-    "MessageNoServersAvailableToConnect": "Er zijn geen servers beschikbaar om mee te verbinden. Als je uitgenodigd bent om een server te delen, verifieer dit door op de link in het emailbericht te klikken.",
+    "MessageNoServersAvailableToConnect": "Er zijn geen servers beschikbaar om mee te verbinden. Als je uitgenodigd bent om een server te delen accepteer dit hieronder of door op de link in het emailbericht te klikken.",
     "TitleNewUser": "Nieuwe gebruiker",
     "ButtonConfigurePassword": "Configureer wachtwoord",
     "HeaderDashboardUserPassword": "Wachtwoorden van gebruikers worden door de gebruiker in het gebruikersprofiel beheerd.",
