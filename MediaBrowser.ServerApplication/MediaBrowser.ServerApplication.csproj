@@ -172,6 +172,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\packages\System.Data.SQLite.Core.1.0.94.0\build\net45\x64\SQLite.Interop.dll">
+      <Link>x64\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\System.Data.SQLite.Core.1.0.94.0\build\net45\x86\SQLite.Interop.dll">
+      <Link>x86\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\libwebp\windows\x86\libwebp.dll">
       <Link>libwebp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
