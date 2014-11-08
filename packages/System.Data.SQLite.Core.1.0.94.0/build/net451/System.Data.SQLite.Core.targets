@@ -1,0 +1,77 @@
+<!--
+ *
+ * System.Data.SQLite.Core.targets -
+ *
+ * WARNING: This MSBuild file requires MSBuild 4.0 features.
+ *
+ * Written by Joe Mistachkin and David Archer.
+ * Released to the public domain, use at your own risk!
+ *
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  ******************************************************************************
+  **                    SQLite Interop Library Build Items                    **
+  ******************************************************************************
+  -->
+
+  <ItemGroup>
+    <SQLiteInteropFiles Condition="'$(MSBuildThisFileDirectory)' != '' And
+                                   HasTrailingSlash('$(MSBuildThisFileDirectory)')"
+                        Include="$(MSBuildThisFileDirectory)**\SQLite.Interop.*" />
+  </ItemGroup>
+
+  <!--
+  ******************************************************************************
+  **                   SQLite Interop Library Build Targets                   **
+  ******************************************************************************
+  -->
+
+  <Target Name="CopySQLiteInteropFiles"
+          Condition="'$(CopySQLiteInteropFiles)' != 'false' And
+                     '$(OutputPath)' != '' And
+                     HasTrailingSlash('$(OutputPath)') And
+                     Exists('$(OutputPath)')"
+          Inputs="@(SQLiteInteropFiles)"
+          Outputs="@(SQLiteInteropFiles -> '$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')">
+    <!--
+        NOTE: Copy "SQLite.Interop.dll" and all related files, for every
+              architecture that we support, to the build output directory.
+    -->
+    <Copy SourceFiles="@(SQLiteInteropFiles)"
+          DestinationFiles="@(SQLiteInteropFiles -> '$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <Target Name="CleanSQLiteInteropFiles"
+          Condition="'$(CleanSQLiteInteropFiles)' != 'false' And
+                     '$(OutputPath)' != '' And
+                     HasTrailingSlash('$(OutputPath)') And
+                     Exists('$(OutputPath)')">
+    <!--
+        NOTE: Delete "SQLite.Interop.dll" and all related files, for every
+              architecture that we support, from the build output directory.
+    -->
+    <Delete Files="@(SQLiteInteropFiles -> '$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <!--
+  ******************************************************************************
+  **                 SQLite Interop Library Build Properties                  **
+  ******************************************************************************
+  -->
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      CopySQLiteInteropFiles;
+    </BuildDependsOn>
+    <CleanDependsOn>
+      $(CleanDependsOn);
+      CleanSQLiteInteropFiles;
+    </CleanDependsOn>
+  </PropertyGroup>
+</Project>
