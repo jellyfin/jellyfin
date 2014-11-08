@@ -39,11 +39,15 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\Release Mono</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Mono|x86'">
     <Prefer32Bit>false</Prefer32Bit>
@@ -162,8 +166,20 @@
       <Link>MediaInfo\osx\libmediainfo.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\ThirdParty\SQLite3\linux\x86\3.8.2\libsqlite3.so.0.8.6">
+      <Link>sqlite3\linux\lib\libsqlite3.so.0.8.6</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ThirdParty\SQLite3\linux\x86_64\3.8.2\libsqlite3.so.0.8.6">
+      <Link>sqlite3\linux\lib64\libsqlite3.so.0.8.6</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
-      <Link>sqlite3\osx\libsqlite3.0.dylib</Link>
+      <Link>libsqlite3.0.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <Link>libsqlite3.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="app.config" />
@@ -179,4 +195,5 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup />
 </Project>
