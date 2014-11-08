@@ -105,7 +105,6 @@ namespace MediaBrowser.Model.Configuration
 
             ExcludeFoldersFromGrouping = new string[] { };
             DisplayCollectionsView = true;
-            DisplayFoldersView = true;
 
             SyncConnectName = true;
             SyncConnectImage = true;
