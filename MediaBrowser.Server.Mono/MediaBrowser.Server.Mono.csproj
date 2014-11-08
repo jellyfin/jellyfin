@@ -150,6 +150,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\ThirdParty\libgdiplus\osx\libgdiplus.dylib">
+      <Link>libgdiplus.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
       <Link>libwebp\linux\lib\libwebp.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
