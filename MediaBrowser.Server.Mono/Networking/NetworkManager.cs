@@ -3,11 +3,9 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
-namespace MediaBrowser.ServerApplication.Networking
+namespace MediaBrowser.Server.Mono.Networking
 {
     /// <summary>
     /// Class NetUtils

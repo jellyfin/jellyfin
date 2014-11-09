@@ -2,7 +2,8 @@
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.ServerApplication.IO;
+using MediaBrowser.Server.Startup.Common;
+using MediaBrowser.Server.Startup.Common.Browser;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.ServerApplication.Updates;
@@ -211,21 +212,25 @@ namespace MediaBrowser.ServerApplication
         {
             var fileSystem = new NativeFileSystem(logManager.GetLogger("FileSystem"), false);
 
-            _appHost = new ApplicationHost(appPaths, 
-                logManager, 
-                true, 
-                runService, 
-                options, 
-                fileSystem, 
+            var nativeApp = new WindowsApp
+            {
+                IsRunningAsService = runService
+            };
+
+            _appHost = new ApplicationHost(appPaths,
+                logManager,
+                options,
+                fileSystem,
                 "MBServer",
-                true);
+                true,
+                nativeApp);
 
             var initProgress = new Progress<double>();
 
             if (!runService)
             {
                 if (!options.ContainsOption("-nosplash")) ShowSplashScreen(_appHost.ApplicationVersion, initProgress, logManager.GetLogger("Splash"));
-                
+
                 // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
                 SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
@@ -245,11 +250,11 @@ namespace MediaBrowser.ServerApplication
 
                 SystemEvents.SessionEnding += SystemEvents_SessionEnding;
                 SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-   
+
                 HideSplashScreen();
 
                 ShowTrayIcon();
-                
+
                 task = ApplicationTaskCompletionSource.Task;
                 Task.WaitAll(task);
             }
@@ -260,7 +265,7 @@ namespace MediaBrowser.ServerApplication
         {
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
-            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.UserManager, _appHost.LibraryManager, _appHost.JsonSerializer, _appHost.LocalizationManager, _appHost.UserViewManager);
+            _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.LocalizationManager);
             Application.Run();
         }
 
@@ -274,7 +279,7 @@ namespace MediaBrowser.ServerApplication
 
                 _splash.ShowDialog();
             });
-           
+
             thread.SetApartmentState(ApartmentState.STA);
             thread.IsBackground = true;
             thread.Start();

@@ -1,67 +1,189 @@
-﻿using MediaBrowser.Server.Mono;
-using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Updates;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Updates;
+using MediaBrowser.Server.Mono.Networking;
+using MediaBrowser.Server.Startup.Common;
+using Mono.Unix.Native;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
-namespace MediaBrowser.ServerApplication.Native
+namespace MediaBrowser.Server.Mono.Native
 {
     /// <summary>
     /// Class NativeApp
     /// </summary>
-    public static class NativeApp
+    public class NativeApp : INativeApp
     {
         /// <summary>
         /// Shutdowns this instance.
         /// </summary>
-        public static void Shutdown()
+        public void Shutdown()
         {
-			MainClass.Shutdown ();
+            MainClass.Shutdown();
         }
 
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public static void Restart()
+        public void Restart()
         {
-			MainClass.Restart ();
-		}
+            MainClass.Restart();
+        }
 
-		/// <summary>
-		/// Determines whether this instance [can self restart].
-		/// </summary>
-		/// <returns><c>true</c> if this instance [can self restart]; otherwise, <c>false</c>.</returns>
-		public static bool CanSelfRestart
-		{
-			get
-			{
-				return MainClass.CanSelfRestart;
-			}
-		}
-
-		/// <summary>
-		/// Gets a value indicating whether this instance can self update.
-		/// </summary>
-		/// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-		public static bool CanSelfUpdate
-		{
-			get
-			{
-				return MainClass.CanSelfUpdate;
-			}
-		}
-
-		public static bool SupportsAutoRunAtStartup
-		{
-			get { return false; }
-		}
-
-        public static void PreventSystemStandby()
+        /// <summary>
+        /// Determines whether this instance [can self restart].
+        /// </summary>
+        /// <returns><c>true</c> if this instance [can self restart]; otherwise, <c>false</c>.</returns>
+        public bool CanSelfRestart
         {
-            
+            get
+            {
+                return MainClass.CanSelfRestart;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can self update.
+        /// </summary>
+        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
+        public bool CanSelfUpdate
+        {
+            get
+            {
+                return MainClass.CanSelfUpdate;
+            }
+        }
+
+        public bool SupportsAutoRunAtStartup
+        {
+            get { return false; }
+        }
+
+        public void PreventSystemStandby()
+        {
+
+        }
+
+        public List<Assembly> GetAssembliesWithParts()
+        {
+            var list = new List<Assembly>();
+
+            if (Environment.OperatingSystem == Startup.Common.OperatingSystem.Linux)
+            {
+                list.AddRange(GetLinuxAssemblies());
+            }
+
+            list.Add(GetType().Assembly);
+
+            return list;
+        }
+
+        private List<Assembly> GetLinuxAssemblies()
+        {
+            var list = new List<Assembly>();
+
+            list.Add(typeof(LinuxIsoManager).Assembly);
+
+            return list;
+        }
+
+        public void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int udpPort, string tempDirectory)
+        {
+        }
+
+        private NativeEnvironment _nativeEnvironment;
+        public NativeEnvironment Environment
+        {
+            get { return _nativeEnvironment ?? (_nativeEnvironment = GetEnvironmentInfo()); }
+        }
+
+        public bool SupportsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public bool IsRunningAsService
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public void ConfigureAutoRun(bool autorun)
+        {
+        }
+
+        public INetworkManager CreateNetworkManager(ILogger logger)
+        {
+            return new NetworkManager(logger);
+        }
+
+        private NativeEnvironment GetEnvironmentInfo()
+        {
+            var info = new NativeEnvironment
+            {
+                OperatingSystem = Startup.Common.OperatingSystem.Linux
+            };
+
+            var uname = GetUnixName();
+
+            var sysName = uname.sysname ?? string.Empty;
+
+            if (string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase))
+            {
+                info.OperatingSystem = Startup.Common.OperatingSystem.Osx;
+            }
+            else if (string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase))
+            {
+                info.OperatingSystem = Startup.Common.OperatingSystem.Linux;
+            }
+            else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO: How to detect BSD?
+                info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
+            }
+
+            var archX86 = new Regex("(i|I)[3-6]86");
+
+            if (archX86.IsMatch(uname.machine))
+            {
+                info.SystemArchitecture = Architecture.X86;
+            }
+            else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
+            {
+                info.SystemArchitecture = Architecture.X86_X64;
+            }
+            else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
+            {
+                info.SystemArchitecture = Architecture.Arm;
+            }
+
+            return info;
+        }
+
+        private static Uname GetUnixName()
+        {
+            var uname = new Uname();
+            Utsname utsname;
+            var callResult = Syscall.uname(out utsname);
+            if (callResult == 0)
+            {
+                uname.sysname = utsname.sysname;
+                uname.machine = utsname.machine;
+            }
+            return uname;
+        }
+
+        public class Uname
+        {
+            public string sysname = string.Empty;
+            public string machine = string.Empty;
         }
     }
 }

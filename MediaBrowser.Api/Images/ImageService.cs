@@ -658,7 +658,7 @@ namespace MediaBrowser.Api.Images
 
         private ImageOutputFormat[] GetClientSupportedFormats()
         {
-            if (Request.AcceptTypes.Contains("image/webp", StringComparer.OrdinalIgnoreCase))
+            if ((Request.AcceptTypes ?? new string[] { }).Contains("image/webp", StringComparer.OrdinalIgnoreCase))
             {
                 return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
             }

@@ -63,10 +63,6 @@
     <Reference Include="MediaBrowser.IsoMounter">
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
-    </Reference>
     <Reference Include="NLog, Version=3.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
@@ -98,28 +94,14 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="ApplicationHost.cs" />
     <Compile Include="BackgroundService.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
-    <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="FFMpeg\FFMpegDownloader.cs" />
-    <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
-    <Compile Include="FFMpeg\FFMpegInfo.cs" />
-    <Compile Include="IO\NativeFileSystem.cs" />
-    <Compile Include="IO\StartupOptions.cs" />
-    <Compile Include="Logging\LogForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Logging\LogForm.Designer.cs">
-      <DependentUpon>LogForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Logging\WindowTraceListener.cs" />
+    <Compile Include="Native\NativeFileSystem.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,11 +109,10 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainStartup.cs" />
-    <Compile Include="Native\Assemblies.cs" />
     <Compile Include="Native\Autorun.cs" />
-    <Compile Include="Native\BrowserLauncher.cs" />
-    <Compile Include="Native\NativeApp.cs" />
+    <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
+    <Compile Include="Native\WindowsApp.cs" />
     <Compile Include="Networking\NativeMethods.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Networking\NetworkShares.cs" />
@@ -157,9 +138,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Logging\LogForm.resx">
-      <DependentUpon>LogForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -231,6 +209,10 @@
     <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
+      <Project>{b90ab8f2-1bff-4568-a3fd-2a338a435a75}</Project>
+      <Name>MediaBrowser.Server.Startup.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624b7b5-b5a7-41d8-9f10-cc5611109619}</Project>

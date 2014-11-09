@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.ServerApplication.Native;
+using MediaBrowser.Server.Startup.Common.Browser;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Startup.Common.EntryPoints
 {
     /// <summary>
     /// Class StartupWizard

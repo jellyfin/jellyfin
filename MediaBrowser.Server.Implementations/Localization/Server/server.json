@@ -1274,7 +1274,10 @@
     "LabelForgotPasswordUsernameHelp": "Enter your username, if you remember it.",
     "HeaderForgotPassword": "Forgot Password",
     "TitleForgotPassword": "Forgot Password",
-    "TitlePasswordReset":  "Password Reset",
+    "TitlePasswordReset": "Password Reset",
     "LabelPasswordRecoveryPinCode": "Pin code:",
-    "HeaderPasswordReset":  "Password Reset"
+    "HeaderPasswordReset": "Password Reset",
+    "HeaderParentalRatings": "Parental Ratings",
+    "HeaderVideoTypes": "Video Types",
+    "HeaderYears": "Years"
 }

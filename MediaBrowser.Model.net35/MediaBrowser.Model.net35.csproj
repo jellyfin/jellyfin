@@ -882,6 +882,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\PersonsQuery.cs">
       <Link>Querying\PersonsQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\QueryFilters.cs">
+      <Link>Querying\QueryFilters.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\QueryResult.cs">
       <Link>Querying\QueryResult.cs</Link>
     </Compile>

@@ -86,12 +86,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] SortRemoveWords { get; set; }
 
         /// <summary>
-        /// Show an output log window for debugging
-        /// </summary>
-        /// <value><c>true</c> if [show log window]; otherwise, <c>false</c>.</value>
-        public bool ShowLogWindow { get; set; }
-
-        /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
         /// </summary>
         /// <value>The min resume PCT.</value>
