@@ -44,9 +44,10 @@ namespace MediaBrowser.Api.System
     /// This is currently not authenticated because the uninstaller needs to be able to shutdown the server.
     /// </summary>
     [Route("/System/Shutdown", "POST", Summary = "Shuts down the application")]
-    [Authenticated(AllowLocal = true)]
     public class ShutdownApplication
     {
+        // TODO: This is not currently authenticated due to uninstaller
+        // Improve later
     }
 
     [Route("/System/Logs", "GET", Summary = "Gets a list of available server log files")]

@@ -74,8 +74,6 @@
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\TrailerXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />
-    <Compile Include="Savers\AlbumXmlSaver.cs" />
-    <Compile Include="Savers\ArtistXmlSaver.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\ChannelXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />

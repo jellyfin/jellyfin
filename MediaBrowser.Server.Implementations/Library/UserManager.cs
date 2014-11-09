@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
@@ -17,9 +18,11 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Users;
 using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -65,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly Func<IConnectManager> _connectFactory;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager" /> class.
@@ -73,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IApplicationHost appHost)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -85,6 +88,8 @@ namespace MediaBrowser.Server.Implementations.Library
             _appHost = appHost;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
+
+            DeletePinFile();
         }
 
         #region UserUpdated Event
@@ -143,6 +148,16 @@ namespace MediaBrowser.Server.Implementations.Library
         public User GetUserById(string id)
         {
             return GetUserById(new Guid(id));
+        }
+
+        public User GetUserByName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            return Users.FirstOrDefault(u => string.Equals(u.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task Initialize()
@@ -599,5 +614,157 @@ namespace MediaBrowser.Server.Implementations.Library
 
             EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
         }
+
+        private string PasswordResetFile
+        {
+            get { return Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "passwordreset.txt"); }
+        }
+
+        private string _lastPin;
+        private PasswordPinCreationResult _lastPasswordPinCreationResult;
+        private int _pinAttempts;
+
+        private PasswordPinCreationResult CreatePasswordResetPin()
+        {
+            var num = new Random().Next(1, 9999);
+
+            var path = PasswordResetFile;
+
+            var pin = num.ToString("0000", CultureInfo.InvariantCulture);
+            _lastPin = pin;
+
+            var time = TimeSpan.FromMinutes(5);
+            var expiration = DateTime.UtcNow.Add(time);
+
+            var text = new StringBuilder();
+
+            var info = _appHost.GetSystemInfo();
+            var localAddress = info.LocalAddress ?? string.Empty;
+
+            text.AppendLine("Use your web browser to visit:");
+            text.AppendLine(string.Empty);
+            text.AppendLine(localAddress + "/mediabrowser/web/forgotpasswordpin.html");
+            text.AppendLine(string.Empty);
+            text.AppendLine("Enter the following pin code:");
+            text.AppendLine(string.Empty);
+            text.AppendLine(pin);
+            text.AppendLine(string.Empty);
+            text.AppendLine("The pin code will expire at " + expiration.ToLocalTime().ToShortDateString() + " " + expiration.ToLocalTime().ToShortTimeString());
+
+            File.WriteAllText(path, text.ToString(), Encoding.UTF8);
+
+            var result = new PasswordPinCreationResult
+            {
+                PinFile = path,
+                ExpirationDate = expiration
+            };
+
+            _lastPasswordPinCreationResult = result;
+            _pinAttempts = 0;
+
+            return result;
+        }
+
+        public ForgotPasswordResult StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
+        {
+            DeletePinFile();
+
+            var user = string.IsNullOrWhiteSpace(enteredUsername) ?
+                null :
+                GetUserByName(enteredUsername);
+
+            if (user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
+            {
+                throw new ArgumentException("Unable to process forgot password request for guests.");
+            }
+
+            var action = ForgotPasswordAction.InNetworkRequired;
+            string pinFile = null;
+            DateTime? expirationDate = null;
+
+            if (user != null && !user.Configuration.IsAdministrator)
+            {
+                action = ForgotPasswordAction.ContactAdmin;
+            }
+            else
+            {
+                if (isInNetwork)
+                {
+                    action = ForgotPasswordAction.PinCode;
+                }
+
+                var result = CreatePasswordResetPin();
+                pinFile = result.PinFile;
+                expirationDate = result.ExpirationDate;
+            }
+
+            return new ForgotPasswordResult
+            {
+                Action = action,
+                PinFile = pinFile,
+                PinExpirationDate = expirationDate
+            };
+        }
+
+        public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
+        {
+            DeletePinFile();
+
+            var usersReset = new List<string>();
+
+            var valid = !string.IsNullOrWhiteSpace(_lastPin) && 
+                string.Equals(_lastPin, pin, StringComparison.OrdinalIgnoreCase) &&
+                _lastPasswordPinCreationResult != null &&
+                _lastPasswordPinCreationResult.ExpirationDate > DateTime.UtcNow;
+
+            if (valid)
+            {
+                _lastPin = null;
+                _lastPasswordPinCreationResult = null;
+
+                var users = Users.Where(i => !i.ConnectLinkType.HasValue || i.ConnectLinkType.Value != UserLinkType.Guest)
+                        .ToList();
+
+                foreach (var user in users)
+                {
+                    await ResetPassword(user).ConfigureAwait(false);
+                    usersReset.Add(user.Name);
+                }
+            }
+            else
+            {
+                _pinAttempts++;
+                if (_pinAttempts >= 3)
+                {
+                    _lastPin = null;
+                    _lastPasswordPinCreationResult = null;
+                }
+            }
+
+            return new PinRedeemResult
+            {
+                Success = valid,
+                UsersReset = usersReset.ToArray()
+            };
+        }
+
+        private void DeletePinFile()
+        {
+            try
+            {
+                File.Delete(PasswordResetFile);
+            }
+            catch
+            {
+
+            }
+        }
+
+        class PasswordPinCreationResult
+        {
+            public string PinFile { get; set; }
+            public DateTime ExpirationDate { get; set; }
+        }
+
     }
 }

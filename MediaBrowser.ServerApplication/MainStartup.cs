@@ -36,7 +36,9 @@ namespace MediaBrowser.ServerApplication
             var options = new StartupOptions();
             _isRunningAsService = options.ContainsOption("-service");
 
-            var applicationPath = Process.GetCurrentProcess().MainModule.FileName;
+            var currentProcess = Process.GetCurrentProcess();
+
+            var applicationPath = currentProcess.MainModule.FileName;
 
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
@@ -83,8 +85,6 @@ namespace MediaBrowser.ServerApplication
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             RunServiceInstallationIfNeeded(applicationPath);
-
-            var currentProcess = Process.GetCurrentProcess();
 
             if (IsAlreadyRunning(applicationPath, currentProcess))
             {

@@ -598,6 +598,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
 
+            args += " -r 24 -g 24";
+
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
@@ -615,6 +617,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
         {
+            // test url http://192.168.1.2:8096/mediabrowser/videos/233e8905d559a8f230db9bffd2ac9d6d/master.mpd?mediasourceid=233e8905d559a8f230db9bffd2ac9d6d&videocodec=h264&audiocodec=aac&maxwidth=1280&videobitrate=500000&audiobitrate=128000&profile=baseline&level=3
+            // Good info on i-frames http://blog.streamroot.io/encode-multi-bitrate-videos-mpeg-dash-mse-based-media-players/
+
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
@@ -624,7 +629,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentFilename = Path.GetFileNameWithoutExtension(outputPath) + "%03d" + GetSegmentFileExtension(state);
 
-            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -f ssegment -segment_time {6} -segment_format_options movflags=+faststart -segment_list_size {8} -segment_list \"{9}\" {10}",
+            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f ssegment -segment_time {6} -segment_list_size {8} -segment_list \"{9}\" {10}",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,

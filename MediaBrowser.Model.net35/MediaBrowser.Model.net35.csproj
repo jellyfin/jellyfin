@@ -1062,6 +1062,15 @@
     <Compile Include="..\MediaBrowser.Model\Users\AuthenticationResult.cs">
       <Link>Users\AuthenticationResult.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\ForgotPasswordAction.cs">
+      <Link>Users\ForgotPasswordAction.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\ForgotPasswordResult.cs">
+      <Link>Users\ForgotPasswordResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\PinRedeemResult.cs">
+      <Link>Users\PinRedeemResult.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>

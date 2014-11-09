@@ -10,12 +10,6 @@ namespace MediaBrowser.Controller.Net
         public IAuthService AuthService { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether or not to allow local unauthenticated access.
-        /// </summary>
-        /// <value><c>true</c> if [allow local]; otherwise, <c>false</c>.</value>
-        public bool AllowLocal { get; set; }
-
-        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>The roles.</value>
@@ -70,7 +64,6 @@ namespace MediaBrowser.Controller.Net
     {
         bool EscapeParentalControl { get; }
 
-        bool AllowLocal { get; }
         IEnumerable<string> GetRoles();
     }
 }

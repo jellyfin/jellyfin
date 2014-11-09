@@ -223,9 +223,8 @@ namespace MediaBrowser.Controller.Session
         /// Authenticates the new session.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
-        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request, bool isLocal);
+        Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
 
         /// <summary>
         /// Reports the capabilities.
