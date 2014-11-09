@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
-namespace MediaBrowser.ServerApplication.IO
+namespace MediaBrowser.ServerApplication.Native
 {
     public class NativeFileSystem : CommonFileSystem
     {

@@ -1,23 +1,25 @@
-﻿using MediaBrowser.Controller.Plugins;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.ServerApplication.Native;
 using System;
 using System.Linq;
 using System.Threading;
 
-namespace MediaBrowser.ServerApplication.EntryPoints
+namespace MediaBrowser.Server.Startup.Common.EntryPoints
 {
     public class KeepServerAwake : IServerEntryPoint
     {
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
         private Timer _timer;
+        private readonly IServerApplicationHost _appHost;
 
-        public KeepServerAwake(ISessionManager sessionManager, ILogger logger)
+        public KeepServerAwake(ISessionManager sessionManager, ILogger logger, IServerApplicationHost appHost)
         {
             _sessionManager = sessionManager;
             _logger = logger;
+            _appHost = appHost;
         }
 
         public void Run()
@@ -35,9 +37,11 @@ namespace MediaBrowser.ServerApplication.EntryPoints
 
         private void KeepAlive()
         {
+            var nativeApp = ((ApplicationHost)_appHost).NativeApp;
+
             try
             {
-                NativeApp.PreventSystemStandby();
+                nativeApp.PreventSystemStandby();
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.ServerApplication.FFMpeg
+﻿namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {
     /// <summary>
     /// Class FFMpegInfo

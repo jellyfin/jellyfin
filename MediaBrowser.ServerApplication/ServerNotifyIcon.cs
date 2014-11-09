@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.ServerApplication.Logging;
+using MediaBrowser.Server.Startup.Common.Browser;
 using MediaBrowser.ServerApplication.Native;
 using System;
 using System.Diagnostics;
@@ -25,7 +25,6 @@ namespace MediaBrowser.ServerApplication
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem cmdRestart;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem cmdLogWindow;
         private System.Windows.Forms.ToolStripMenuItem cmdCommunity;
         private System.Windows.Forms.ToolStripMenuItem cmdApiDocs;
         private System.Windows.Forms.ToolStripMenuItem cmdSwagger;
@@ -33,14 +32,8 @@ namespace MediaBrowser.ServerApplication
 
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly ILogManager _logManager;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly IUserViewManager _userViewManager;
         private readonly ILocalizationManager _localization;
-        private LogForm _logForm;
 
         public bool Visible
         {
@@ -57,20 +50,13 @@ namespace MediaBrowser.ServerApplication
 
         public ServerNotifyIcon(ILogManager logManager, 
             IServerApplicationHost appHost, 
-            IServerConfigurationManager configurationManager, 
-            IUserManager userManager, ILibraryManager libraryManager, 
-            IJsonSerializer jsonSerializer, 
-            ILocalizationManager localization, IUserViewManager userViewManager)
+            IServerConfigurationManager configurationManager,
+            ILocalizationManager localization)
         {
             _logger = logManager.GetLogger("MainWindow");
             _localization = localization;
-            _userViewManager = userViewManager;
             _appHost = appHost;
-            _logManager = logManager;
             _configurationManager = configurationManager;
-            _userManager = userManager;
-            _libraryManager = libraryManager;
-            _jsonSerializer = jsonSerializer;
             
             var components = new System.ComponentModel.Container();
             
@@ -80,7 +66,6 @@ namespace MediaBrowser.ServerApplication
             
             cmdExit = new System.Windows.Forms.ToolStripMenuItem();
             cmdCommunity = new System.Windows.Forms.ToolStripMenuItem();
-            cmdLogWindow = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -107,7 +92,6 @@ namespace MediaBrowser.ServerApplication
             cmdRestart,
             toolStripSeparator1,
             cmdApiDocs,
-            //cmdLogWindow,
             cmdCommunity,
             cmdExit});
             contextMenuStrip1.Name = "contextMenuStrip1";
@@ -124,12 +108,6 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdCommunity.Name = "cmdCommunity";
             cmdCommunity.Size = new System.Drawing.Size(208, 22);
-            // 
-            // cmdLogWindow
-            // 
-            cmdLogWindow.CheckOnClick = true;
-            cmdLogWindow.Name = "cmdLogWindow";
-            cmdLogWindow.Size = new System.Drawing.Size(208, 22);
             // 
             // toolStripSeparator1
             // 
@@ -176,7 +154,6 @@ namespace MediaBrowser.ServerApplication
 
             cmdExit.Click += cmdExit_Click;
             cmdRestart.Click += cmdRestart_Click;
-            cmdLogWindow.Click += cmdLogWindow_Click;
             cmdConfigure.Click += cmdConfigure_Click;
             cmdCommunity.Click += cmdCommunity_Click;
             cmdBrowse.Click += cmdBrowse_Click;
@@ -184,8 +161,6 @@ namespace MediaBrowser.ServerApplication
             cmdSwagger.Click += cmdSwagger_Click;
             cmdGtihub.Click += cmdGtihub_Click;
 
-            LoadLogWindow(null, EventArgs.Empty);
-            _logManager.LoggerLoaded += LoadLogWindow;
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 
             LocalizeText();
@@ -210,7 +185,6 @@ namespace MediaBrowser.ServerApplication
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
-            cmdLogWindow.Text = _localization.GetLocalizedString("LabelShowLogWindow");
         }
 
         private string _uiCulture;
@@ -225,62 +199,6 @@ namespace MediaBrowser.ServerApplication
                     StringComparison.OrdinalIgnoreCase))
             {
                 LocalizeText();
-            }
-
-            Action action = () =>
-            {
-                var isLogWindowOpen = _logForm != null;
-
-                if ((!isLogWindowOpen && _configurationManager.Configuration.ShowLogWindow) ||
-                    (isLogWindowOpen && !_configurationManager.Configuration.ShowLogWindow))
-                {
-                    _logManager.ReloadLogger(_configurationManager.Configuration.EnableDebugLevelLogging
-                        ? LogSeverity.Debug
-                        : LogSeverity.Info);
-                }
-            };
-
-            contextMenuStrip1.Invoke(action);
-        }
-
-        /// <summary>
-        /// Loads the log window.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void LoadLogWindow(object sender, EventArgs args)
-        {
-            CloseLogWindow();
-
-            Action action = () =>
-            {
-                // Add our log window if specified
-                if (_configurationManager.Configuration.ShowLogWindow)
-                {
-                    _logForm = new LogForm(_logManager);
-
-                    Trace.Listeners.Add(new WindowTraceListener(_logForm));
-                }
-                else
-                {
-                    Trace.Listeners.Remove("MBLogWindow");
-                }
-
-                // Set menu option indicator
-                cmdLogWindow.Checked = _configurationManager.Configuration.ShowLogWindow;
-            };
-
-            contextMenuStrip1.Invoke(action);
-        }
-
-        /// <summary>
-        /// Closes the log window.
-        /// </summary>
-        void CloseLogWindow()
-        {
-            if (_logForm != null)
-            {
-                _logForm.ShutDown();
             }
         }
 
@@ -297,13 +215,6 @@ namespace MediaBrowser.ServerApplication
         void cmdConfigure_Click(object sender, EventArgs e)
         {
             BrowserLauncher.OpenDashboard(_appHost, _logger);
-        }
-
-        void cmdLogWindow_Click(object sender, EventArgs e)
-        {
-            _configurationManager.Configuration.ShowLogWindow = !_configurationManager.Configuration.ShowLogWindow;
-            _configurationManager.SaveConfiguration();
-            LoadLogWindow(sender, e);
         }
 
         void cmdRestart_Click(object sender, EventArgs e)

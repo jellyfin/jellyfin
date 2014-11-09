@@ -3,7 +3,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
 
-namespace MediaBrowser.ServerApplication.Native
+namespace MediaBrowser.Server.Startup.Common.Browser
 {
     /// <summary>
     /// Class BrowserLauncher
@@ -100,7 +100,7 @@ namespace MediaBrowser.ServerApplication.Native
             {
                 logger.ErrorException("Error launching url: {0}", ex, url);
 
-                Console.WriteLine("Error launching browser");
+                Console.WriteLine(string.Format("Error launching url: {0}", ex));
                 Console.WriteLine(ex.Message);
 
 //#if !__MonoCS__

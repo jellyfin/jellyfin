@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.ServerApplication.IO
+namespace MediaBrowser.Server.Startup.Common
 {
     public class StartupOptions
     {

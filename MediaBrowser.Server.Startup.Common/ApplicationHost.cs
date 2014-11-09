@@ -81,10 +81,7 @@ using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.TV;
-using MediaBrowser.ServerApplication.FFMpeg;
-using MediaBrowser.ServerApplication.IO;
-using MediaBrowser.ServerApplication.Native;
-using MediaBrowser.ServerApplication.Networking;
+using MediaBrowser.Server.Startup.Common.FFMpeg;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using System;
@@ -96,7 +93,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ServerApplication
+namespace MediaBrowser.Server.Startup.Common
 {
     /// <summary>
     /// Class CompositionRoot
@@ -193,7 +190,7 @@ namespace MediaBrowser.ServerApplication
 
         private ILiveTvManager LiveTvManager { get; set; }
 
-        internal ILocalizationManager LocalizationManager { get; set; }
+        public ILocalizationManager LocalizationManager { get; set; }
 
         private IEncodingManager EncodingManager { get; set; }
         private IChannelManager ChannelManager { get; set; }
@@ -228,40 +225,42 @@ namespace MediaBrowser.ServerApplication
 
         private readonly bool _supportsNativeWebSocket;
 
+        internal INativeApp NativeApp { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
-        /// <param name="supportsRunningAsService">if set to <c>true</c> [supports running as service].</param>
-        /// <param name="isRunningAsService">if set to <c>true</c> [is running as service].</param>
         /// <param name="options">The options.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="remotePackageName">Name of the remote package.</param>
+        /// <param name="supportsNativeWebSocket">if set to <c>true</c> [supports native web socket].</param>
+        /// <param name="nativeApp">The native application.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths, 
             ILogManager logManager, 
-            bool supportsRunningAsService, 
-            bool isRunningAsService,
             StartupOptions options, 
             IFileSystem fileSystem,
             string remotePackageName, 
-            bool supportsNativeWebSocket)
+            bool supportsNativeWebSocket, 
+            INativeApp nativeApp)
             : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
             _remotePackageName = remotePackageName;
             _supportsNativeWebSocket = supportsNativeWebSocket;
-            _isRunningAsService = isRunningAsService;
-            SupportsRunningAsService = supportsRunningAsService;
+            NativeApp = nativeApp;
         }
 
-        private readonly bool _isRunningAsService;
         public override bool IsRunningAsService
         {
-            get { return _isRunningAsService; }
+            get { return NativeApp.IsRunningAsService; }
         }
 
-        public bool SupportsRunningAsService { get; private set; }
+        public bool SupportsRunningAsService
+        {
+            get { return NativeApp.SupportsRunningAsService; }
+        }
 
         /// <summary>
         /// Gets the name.
@@ -582,7 +581,7 @@ namespace MediaBrowser.ServerApplication
 
         protected override INetworkManager CreateNetworkManager(ILogger logger)
         {
-            return new NetworkManager(logger);
+            return NativeApp.CreateNetworkManager(logger);
         }
 
         /// <summary>
@@ -591,7 +590,8 @@ namespace MediaBrowser.ServerApplication
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder(IProgress<double> progress)
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager).GetFFMpegInfo(_startupOptions, progress).ConfigureAwait(false);
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager)
+                .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), JsonSerializer, info.EncoderPath, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);
@@ -915,7 +915,7 @@ namespace MediaBrowser.ServerApplication
             // Xbmc 
             list.Add(typeof(ArtistNfoProvider).Assembly);
 
-            list.AddRange(Assemblies.GetAssembliesWithParts());
+            list.AddRange(NativeApp.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
             list.Add(GetType().Assembly);
@@ -1088,7 +1088,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                ServerAuthorization.AuthorizeServer(
+                NativeApp.AuthorizeServer(
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
                     HttpServerUrlPrefixes.First(),
                     UdpServerEntryPoint.PortNumber,
@@ -1173,7 +1173,7 @@ namespace MediaBrowser.ServerApplication
         {
             if (SupportsAutoRunAtStartup)
             {
-                Autorun.Configure(autorun);
+                NativeApp.ConfigureAutoRun(autorun);
             }
         }
     }

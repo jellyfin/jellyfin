@@ -302,6 +302,7 @@
     <Compile Include="Entities\BaseItemInfo.cs" />
     <Compile Include="Querying\LatestItemsQuery.cs" />
     <Compile Include="Querying\NextUpQuery.cs" />
+    <Compile Include="Querying\QueryFilters.cs" />
     <Compile Include="Querying\QueryResult.cs" />
     <Compile Include="Querying\SeasonQuery.cs" />
     <Compile Include="Querying\SessionQuery.cs" />

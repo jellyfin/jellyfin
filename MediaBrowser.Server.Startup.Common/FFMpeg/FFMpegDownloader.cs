@@ -4,7 +4,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using MediaBrowser.ServerApplication.IO;
 using Mono.Unix.Native;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.ServerApplication.FFMpeg
+namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {
     public class FFMpegDownloader
     {
@@ -38,7 +37,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             _fileSystem = fileSystem;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo(StartupOptions options, IProgress<double> progress)
+        public async Task<FFMpegInfo> GetFFMpegInfo(NativeEnvironment environment, StartupOptions options, IProgress<double> progress)
         {
             var customffMpegPath = options.GetOption("-ffmpeg");
             var customffProbePath = options.GetOption("-ffprobe");
@@ -53,14 +52,16 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 };
             }
 
-            var version = FFMpegDownloadInfo.Version;
+            var downloadInfo = FFMpegDownloadInfo.GetInfo(environment);
+
+            var version = downloadInfo.Version;
 
             if (string.Equals(version, "path", StringComparison.OrdinalIgnoreCase))
             {
                 return new FFMpegInfo
                 {
-                    ProbePath = FFMpegDownloadInfo.FFProbeFilename,
-                    EncoderPath = FFMpegDownloadInfo.FFMpegFilename,
+                    ProbePath = downloadInfo.FFProbeFilename,
+                    EncoderPath = downloadInfo.FFMpegFilename,
                     Version = version
                 };
             }
@@ -70,8 +71,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             var info = new FFMpegInfo
             {
-                ProbePath = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFProbeFilename),
-                EncoderPath = Path.Combine(versionedDirectoryPath, FFMpegDownloadInfo.FFMpegFilename),
+                ProbePath = Path.Combine(versionedDirectoryPath, downloadInfo.FFProbeFilename),
+                EncoderPath = Path.Combine(versionedDirectoryPath, downloadInfo.FFMpegFilename),
                 Version = version
             };
 
@@ -87,14 +88,14 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                 // No older version. Need to download and block until complete
                 if (existingVersion == null)
                 {
-                    await DownloadFFMpeg(versionedDirectoryPath, progress).ConfigureAwait(false);
+                    await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
                 }
                 else
                 {
                     // Older version found. 
                     // Start with that. Download new version in the background.
                     var newPath = versionedDirectoryPath;
-                    Task.Run(() => DownloadFFMpegInBackground(newPath));
+                    Task.Run(() => DownloadFFMpegInBackground(downloadInfo, newPath));
 
                     info = existingVersion;
                     versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
@@ -162,11 +163,11 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             return null;
         }
 
-        private async void DownloadFFMpegInBackground(string directory)
+        private async void DownloadFFMpegInBackground(FFMpegDownloadInfo downloadinfo, string directory)
         {
             try
             {
-                await DownloadFFMpeg(directory, new Progress<double>()).ConfigureAwait(false);
+                await DownloadFFMpeg(downloadinfo, directory, new Progress<double>()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -174,9 +175,9 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             }
         }
 
-        private async Task DownloadFFMpeg(string directory, IProgress<double> progress)
+        private async Task DownloadFFMpeg(FFMpegDownloadInfo downloadinfo, string directory, IProgress<double> progress)
         {
-            foreach (var url in FFMpegDownloadInfo.GetDownloadUrls())
+            foreach (var url in downloadinfo.DownloadUrls)
             {
                 progress.Report(0);
 
@@ -190,7 +191,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
                     }).ConfigureAwait(false);
 
-                    ExtractFFMpeg(tempFile, directory);
+                    ExtractFFMpeg(downloadinfo, tempFile, directory);
                     return;
                 }
                 catch (Exception ex)
@@ -202,7 +203,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             throw new ApplicationException("Unable to download required components. Please try again later.");
         }
 
-        private void ExtractFFMpeg(string tempFile, string targetFolder)
+        private void ExtractFFMpeg(FFMpegDownloadInfo downloadinfo, string tempFile, string targetFolder)
         {
             _logger.Info("Extracting ffmpeg from {0}", tempFile);
 
@@ -212,7 +213,7 @@ namespace MediaBrowser.ServerApplication.FFMpeg
 
             try
             {
-                ExtractArchive(tempFile, tempFolder);
+                ExtractArchive(downloadinfo, tempFile, tempFolder);
 
                 var files = Directory.EnumerateFiles(tempFolder, "*", SearchOption.AllDirectories).ToList();
 
@@ -221,8 +222,8 @@ namespace MediaBrowser.ServerApplication.FFMpeg
                         var filename = Path.GetFileName(i);
 
                         return
-                            string.Equals(filename, FFMpegDownloadInfo.FFProbeFilename, StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(filename, FFMpegDownloadInfo.FFMpegFilename, StringComparison.OrdinalIgnoreCase);
+                            string.Equals(filename, downloadinfo.FFProbeFilename, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(filename, downloadinfo.FFMpegFilename, StringComparison.OrdinalIgnoreCase);
                     }))
                 {
                     File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
@@ -245,15 +246,15 @@ namespace MediaBrowser.ServerApplication.FFMpeg
             }
         }
 
-        private void ExtractArchive(string archivePath, string targetPath)
+        private void ExtractArchive(FFMpegDownloadInfo downloadinfo, string archivePath, string targetPath)
         {
             _logger.Info("Extracting {0} to {1}", archivePath, targetPath);
-            
-            if (string.Equals(FFMpegDownloadInfo.ArchiveType, "7z", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(downloadinfo.ArchiveType, "7z", StringComparison.OrdinalIgnoreCase))
             {
                 _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
             }
-            else if (string.Equals(FFMpegDownloadInfo.ArchiveType, "gz", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(downloadinfo.ArchiveType, "gz", StringComparison.OrdinalIgnoreCase))
             {
                 _zipClient.ExtractAllFromTar(archivePath, targetPath, true);
             }

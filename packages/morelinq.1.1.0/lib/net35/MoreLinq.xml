@@ -242,6 +242,100 @@
             <returns>A sequence of projections on equally sized buckets containing elements of the source collection.</returns>
             <remarks> This operator uses deferred execution and streams its results (buckets and bucket content).</remarks>
         </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Merges two ordered sequences into one. Where the elements equal
+            in both sequences, the element from the first sequence is 
+            returned in the resulting sequence.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IComparer{``0})">
+            <summary>
+            Merges two ordered sequences into one with an additional 
+            parameter specifying how to compare the elements of the 
+            sequences. Where the elements equal in both sequences, the 
+            element from the first sequence is returned in the resulting 
+            sequence.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``2(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+            Merges two ordered sequences into one with an additional 
+            parameter specifying the element key by which the sequences are 
+            ordered. Where the keys equal in both sequences, the 
+            element from the first sequence is returned in the resulting 
+            sequence.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered (by key) as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Func{``0,``2},System.Func{``0,``2},System.Func{``0,``0,``2})">
+            <summary>
+            Merges two ordered sequences into one. Additional parameters
+            specify the element key by which the sequences are ordered, 
+            the result when element is found in first sequence but not in 
+            the second, the result when element is found in second sequence 
+            but not in the first and the result when elements are found in 
+            both sequences.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered (by key) as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Func{``0,``2},System.Func{``0,``2},System.Func{``0,``0,``2},System.Collections.Generic.IComparer{``1})">
+            <summary>
+            Merges two ordered sequences into one. Additional parameters
+            specify the element key by which the sequences are ordered, 
+            the result when element is found in first sequence but not in 
+            the second, the result when element is found in second sequence 
+            but not in the first, the result when elements are found in 
+            both sequences and a method for comparing keys.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered (by key) as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``4(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},System.Func{``0,``2},System.Func{``1,``2},System.Func{``0,``3},System.Func{``1,``3},System.Func{``0,``1,``3})">
+            <summary>
+            Merges two heterogeneous sequences ordered by a common key type 
+            into a homogeneous one. Additional parameters specify the 
+            element key by which the sequences are ordered, the result when 
+            element is found in first sequence but not in the second and  
+            the result when element is found in second sequence but not in 
+            the first, the result when elements are found in both sequences.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered (by key) as inputs.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.OrderedMerge``4(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},System.Func{``0,``2},System.Func{``1,``2},System.Func{``0,``3},System.Func{``1,``3},System.Func{``0,``1,``3},System.Collections.Generic.IComparer{``2})">
+            <summary>
+            Merges two heterogeneous sequences ordered by a common key type 
+            into a homogeneous one. Additional parameters specify the 
+            element key by which the sequences are ordered, the result when 
+            element is found in first sequence but not in the second, 
+            the result when element is found in second sequence but not in 
+            the first, the result when elements are found in both sequences 
+            and a method for comparing keys.
+            </summary>
+            <remarks>
+            This method uses deferred execution. The behavior is undefined 
+            if the sequences are unordered (by key) as inputs.
+            </remarks>
+        </member>
         <member name="M:MoreLinq.MoreEnumerable.Index``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
             Returns a sequence of <see cref="T:System.Collections.Generic.KeyValuePair`2"/> 
@@ -288,7 +382,7 @@
             IEnumerable&lt;int&gt; result = numbers.TakeLast(2);
             </code>
             The <c>result</c> variable, when iterated over, will yield 
-            34, 56 and 78 in turn.
+            56 and 78 in turn.
             </example>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.TakeUntil``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
@@ -819,7 +913,7 @@
         <member name="M:MoreLinq.MoreEnumerable.DistinctBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
             <summary>
             Returns all distinct elements of the given source, where "distinctness"
-            is determined via a projection and the default eqaulity comparer for the projected type.
+            is determined via a projection and the default equality comparer for the projected type.
             </summary>
             <remarks>
             This operator uses deferred execution and streams the results, although
@@ -1115,6 +1209,28 @@
             <param name="transformation">Transformation operation</param>
             <returns>The scanned sequence</returns>
             <exception cref="T:System.InvalidOperationException">If <paramref name="source"/> is empty.</exception>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.Scan``2(System.Collections.Generic.IEnumerable{``0},``1,System.Func{``1,``0,``1})">
+            <summary>
+            Like <see cref="M:System.Linq.Enumerable.Aggregate``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``0,``0})"/> except returns 
+            the sequence of intermediate results as well as the final one. 
+            An additional parameter specifies a seed.
+            </summary>
+            <remarks>
+            This operator uses deferred execution and streams its result.
+            </remarks>
+            <example>
+            <code>
+            var result = Enumerable.Range(1, 5).Scan(0, (a, b) =&gt; a + b);
+            </code>
+            When iterated, <c>result</c> will yield <c>{ 0, 1, 3, 6, 10, 15 }</c>.
+            </example>
+            <typeparam name="TSource">Type of elements in source sequence</typeparam>
+            <typeparam name="TState">Type of state</typeparam>
+            <param name="source">Source sequence</param>
+            <param name="seed">Initial state to seed</param>
+            <param name="transformation">Transformation operation</param>
+            <returns>The scanned sequence</returns>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.Split``1(System.Collections.Generic.IEnumerable{``0},``0)">
             <summary>
@@ -1437,6 +1553,13 @@
             <exception cref="T:System.InvalidOperationException">The sequence has more than one element</exception>
             <returns>The single element in the sequence, or the result of calling the
             fallback delegate if the sequence is empty.</returns>
+            <example>
+            <code>
+            var numbers = { 123, 456, 789 };
+            var result = numbers.Where(x =&gt; x == 100).SingleOrFallback(() =&gt; -1);
+            </code>
+            The <c>result</c> variable will contain <c>-1</c>.
+            </example>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>

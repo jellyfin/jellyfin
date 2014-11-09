@@ -3,8 +3,8 @@ using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.ServerApplication;
-using MediaBrowser.ServerApplication.IO;
+using MediaBrowser.Server.Mono.Native;
+using MediaBrowser.Server.Startup.Common;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -114,7 +114,9 @@ namespace MediaBrowser.Server.Mono
 
 		    var fileSystem = new CommonFileSystem(logManager.GetLogger("FileSystem"), false, true);
 
-            _appHost = new ApplicationHost(appPaths, logManager, false, false, options, fileSystem, "MBServer.Mono", false);
+		    var nativeApp = new NativeApp();
+
+            _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", false, nativeApp);
 			
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (_appHost.ApplicationVersion.ToString());

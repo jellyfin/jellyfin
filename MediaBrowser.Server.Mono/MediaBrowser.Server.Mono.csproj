@@ -66,40 +66,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MediaBrowser.ServerApplication\IO\StartupOptions.cs">
-      <Link>IO\StartupOptions.cs</Link>
-    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\MediaBrowser.ServerApplication\EntryPoints\StartupWizard.cs">
-      <Link>EntryPoints\StartupWizard.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ServerApplication\Native\BrowserLauncher.cs">
-      <Link>Native\BrowserLauncher.cs</Link>
-    </Compile>
-    <Compile Include="Native\Autorun.cs" />
-    <Compile Include="Native\ServerAuthorization.cs" />
-    <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegInfo.cs">
-      <Link>FFMpeg\FFMpegInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ServerApplication\ApplicationHost.cs">
-      <Link>ApplicationHost.cs</Link>
-    </Compile>
-    <Compile Include="Native\Assemblies.cs" />
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
-    <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloader.cs">
-      <Link>FFMpeg\FFMpegDownloader.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.ServerApplication\FFMpeg\FFMpegDownloadInfo.cs">
-      <Link>FFMpeg\FFMpegDownloadInfo.cs</Link>
-    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
+      <Project>{b90ab8f2-1bff-4568-a3fd-2a338a435a75}</Project>
+      <Name>MediaBrowser.Server.Startup.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
       <Project>{5624B7B5-B5A7-41D8-9F10-CC5611109619}</Project>
       <Name>MediaBrowser.WebDashboard</Name>

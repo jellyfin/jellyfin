@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaInfo", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", "MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj", "{175A9388-F352-4586-A6B4-070DED62B644}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Startup.Common", "MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj", "{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Ubuntu|Any CPU = Debug_Ubuntu|Any CPU
@@ -773,6 +775,41 @@ Global
 		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x64.ActiveCfg = Release|Any CPU
 		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.ActiveCfg = Release|x86
 		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.Build.0 = Release|x86
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|Any CPU.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|Any CPU.Build.0 = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|Win32.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|x64.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug_Ubuntu|x86.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|Mixed Platforms.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|Win32.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|x64.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release Mono|x86.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|Any CPU.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|Any CPU.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|Mixed Platforms.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|Win32.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|x64.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release_Ubuntu|x86.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Win32.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|x64.ActiveCfg = Release|Any CPU
+		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
