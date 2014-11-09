@@ -129,6 +129,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
         }
 
+        public ImageOutputFormat[] GetSupportedImageOutputFormats()
+        {
+            if (_webpAvailable)
+            {
+                return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Gif, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+            }
+            return new[] { ImageOutputFormat.Gif, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+        }
+
         public async Task<string> ProcessImage(ImageProcessingOptions options)
         {
             if (options == null)
@@ -212,9 +221,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             var newWidth = Convert.ToInt32(newSize.Width);
                             var newHeight = Convert.ToInt32(newSize.Height);
 
-                            var selectedOutputFormat = options.OutputFormat == ImageOutputFormat.Webp && !_webpAvailable
-                                ? GetFallbackImageFormat(originalImagePath)
-                                : options.OutputFormat;
+                            var selectedOutputFormat = options.OutputFormat;
+
+                            _logger.Debug("Processing image to {0}", selectedOutputFormat);
 
                             // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
                             // Also, Webp only supports Format32bppArgb and Format32bppRgb
@@ -277,11 +286,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 semaphore.Release();
             }
-        }
-
-        private ImageOutputFormat GetFallbackImageFormat(string originalImagePath)
-        {
-            return ImageOutputFormat.Png;
         }
 
         private void SaveToWebP(Bitmap thumbnail, Stream toStream, int quality)
@@ -479,10 +483,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             filename += "datemodified=" + dateModified.Ticks;
 
-            if (format != ImageOutputFormat.Original)
-            {
-                filename += "f=" + format;
-            }
+            filename += "f=" + format;
 
             var hasIndicator = false;
 

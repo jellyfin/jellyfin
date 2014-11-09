@@ -1270,5 +1270,11 @@
     "LabelSelectLastestItemsFolders": "Include media from the following sections in Latest Items",
     "HeaderShareMediaFolders": "Share Media Folders",
     "MessageGuestSharingPermissionsHelp": "Most features are initially unavailable to guests but can be enabled as needed.",
-    "HeaderInvitations": "Invitations"
+    "HeaderInvitations": "Invitations",
+    "LabelForgotPasswordUsernameHelp": "Enter your username, if you remember it.",
+    "HeaderForgotPassword": "Forgot Password",
+    "TitleForgotPassword": "Forgot Password",
+    "TitlePasswordReset":  "Password Reset",
+    "LabelPasswordRecoveryPinCode": "Pin code:",
+    "HeaderPasswordReset":  "Password Reset"
 }

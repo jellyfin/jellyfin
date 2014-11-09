@@ -230,7 +230,7 @@ namespace MediaBrowser.Providers.Subtitles
             }
 
             Utilities.HttpClient = _httpClient;
-            OpenSubtitles.SetUserAgent("OS Test User Agent");
+            OpenSubtitles.SetUserAgent("mediabrowser.tv");
 
             await Login(cancellationToken).ConfigureAwait(false);
 

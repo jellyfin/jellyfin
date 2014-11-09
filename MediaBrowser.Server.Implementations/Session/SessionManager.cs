@@ -1300,23 +1300,16 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Authenticates the new session.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <param name="isLocal">if set to <c>true</c> [is local].</param>
         /// <returns>Task{SessionInfo}.</returns>
         /// <exception cref="AuthenticationException">Invalid user or password entered.</exception>
         /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
         /// <exception cref="UnauthorizedAccessException">Invalid user or password entered.</exception>
-        public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request,
-            bool isLocal)
+        public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
         {
             var user = _userManager.Users
                 .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
-            var allowWithoutPassword = isLocal &&
-                                       string.Equals(request.App, "Dashboard", StringComparison.OrdinalIgnoreCase)
-                                       && !(user != null && user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest);
-
-            var result = allowWithoutPassword ||
-                await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
+            var result = await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)
             {

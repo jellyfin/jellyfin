@@ -407,6 +407,9 @@
     <Compile Include="Updates\PackageInfo.cs" />
     <Compile Include="Updates\PackageVersionInfo.cs" />
     <Compile Include="Users\AuthenticationResult.cs" />
+    <Compile Include="Users\ForgotPasswordAction.cs" />
+    <Compile Include="Users\ForgotPasswordResult.cs" />
+    <Compile Include="Users\PinRedeemResult.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
     <None Include="MediaBrowser.Model.snk" />

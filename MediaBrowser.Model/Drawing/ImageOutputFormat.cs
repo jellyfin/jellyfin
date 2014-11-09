@@ -7,10 +7,6 @@ namespace MediaBrowser.Model.Drawing
     public enum ImageOutputFormat
     {
         /// <summary>
-        /// The original
-        /// </summary>
-        Original,
-        /// <summary>
         /// The BMP
         /// </summary>
         Bmp,
@@ -26,6 +22,9 @@ namespace MediaBrowser.Model.Drawing
         /// The PNG
         /// </summary>
         Png,
+        /// <summary>
+        /// The webp
+        /// </summary>
         Webp
     }
 }

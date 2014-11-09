@@ -89,5 +89,11 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{System.String}.</returns>
         Task<string> GetEnhancedImage(IHasImages item, ImageType imageType, int imageIndex);
+
+        /// <summary>
+        /// Gets the supported image output formats.
+        /// </summary>
+        /// <returns>ImageOutputFormat[].</returns>
+        ImageOutputFormat[] GetSupportedImageOutputFormats();
     }
 }

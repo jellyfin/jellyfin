@@ -2285,15 +2285,6 @@
             });
         };
 
-        var supportsWebP = false;
-        self.supportsWebP = function (val) {
-
-            if (val != null) {
-                supportsWebP = val;
-            }
-            return supportsWebP;
-        };
-
         function normalizeImageOptions(options) {
 
             var ratio = devicePixelRatio || 1;
@@ -2319,10 +2310,6 @@
             }
 
             options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
-
-            if (self.supportsWebP()) {
-                options.format = 'webp';
-            }
         }
 
         /**
@@ -2395,10 +2382,6 @@
             // Don't put these on the query string
             delete options.type;
             delete options.index;
-
-            if (self.supportsWebP()) {
-                options.format = 'webp';
-            }
 
             return self.getUrl(url, options);
         };

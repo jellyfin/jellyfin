@@ -6,12 +6,6 @@
 
         var page = this;
 
-        if (LoginPage.isLocalhost()) {
-            $('.localhostMessage', page).show();
-        } else {
-            $('.localhostMessage', page).hide();
-        }
-
         // Show all users on localhost
         var promise1 = ApiClient.getPublicUsers();
 
@@ -37,13 +31,7 @@
         });
     },
 
-    isLocalhost: function () {
-
-        var location = getWindowUrl().toString().toLowerCase();
-        return location.indexOf('localhost') != -1 || location.indexOf('127.0.0.1') != -1;
-    },
-    
-    cancelLogin: function() {
+    cancelLogin: function () {
 
         LoginPage.showVisualForm($.mobile.activePage);
     },
@@ -52,7 +40,7 @@
         $('.visualLoginForm', page).hide();
         $('#manualLoginForm', page).show();
         $('#txtManualName', page).focus();
-        
+
         if (showCancel) {
             $('.btnCancel', page).show();
         } else {
@@ -137,7 +125,7 @@
 
             if (user.PrimaryImageTag) {
 
-                 imgUrl = ApiClient.getUserImageUrl(user.Id, {
+                imgUrl = ApiClient.getUserImageUrl(user.Id, {
                     width: 300,
                     tag: user.PrimaryImageTag,
                     type: "Primary"
@@ -182,7 +170,7 @@
             var name = this.getAttribute('data-username');
             var haspw = this.getAttribute('data-haspw');
 
-            if (LoginPage.isLocalhost() || haspw == 'false') {
+            if (haspw == 'false') {
                 LoginPage.authenticateUserByName(name, '');
             } else {
                 $('#txtManualName', page).val(name);

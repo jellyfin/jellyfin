@@ -542,7 +542,8 @@ namespace MediaBrowser.Api.Images
 
             }).ToList() : new List<IImageEnhancer>();
 
-            var contentType = GetMimeType(request.Format, imageInfo.Path);
+            var format = GetOutputFormat(request, imageInfo, supportedImageEnhancers);
+            var contentType = GetMimeType(format, imageInfo.Path);
 
             var cacheGuid = new Guid(_imageProcessor.GetImageCacheTag(item, imageInfo, supportedImageEnhancers));
 
@@ -562,6 +563,7 @@ namespace MediaBrowser.Api.Images
             return GetImageResult(item,
                 request,
                 imageInfo,
+                format,
                 supportedImageEnhancers,
                 contentType,
                 cacheDuration,
@@ -573,6 +575,7 @@ namespace MediaBrowser.Api.Images
         private async Task<object> GetImageResult(IHasImages item,
             ImageRequest request,
             ItemImageInfo image,
+            ImageOutputFormat format,
             List<IImageEnhancer> enhancers,
             string contentType,
             TimeSpan? cacheDuration,
@@ -598,11 +601,11 @@ namespace MediaBrowser.Api.Images
                 MaxWidth = request.MaxWidth,
                 Quality = request.Quality,
                 Width = request.Width,
-                OutputFormat = request.Format,
                 AddPlayedIndicator = request.AddPlayedIndicator,
                 PercentPlayed = request.PercentPlayed ?? 0,
                 UnplayedCount = request.UnplayedCount,
-                BackgroundColor = request.BackgroundColor
+                BackgroundColor = request.BackgroundColor,
+                OutputFormat = format
             };
 
             var file = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
@@ -615,6 +618,52 @@ namespace MediaBrowser.Api.Images
                 IsHeadRequest = isHeadRequest,
                 Path = file
             });
+        }
+
+        private ImageOutputFormat GetOutputFormat(ImageRequest request, ItemImageInfo image, List<IImageEnhancer> enhancers)
+        {
+            if (!string.IsNullOrWhiteSpace(request.Format))
+            {
+                ImageOutputFormat format;
+                if (Enum.TryParse(request.Format, true, out format))
+                {
+                    return format;
+                }
+            }
+
+            var serverFormats = _imageProcessor.GetSupportedImageOutputFormats();
+
+            var clientFormats = GetClientSupportedFormats();
+
+            if (serverFormats.Contains(ImageOutputFormat.Webp) &&
+                clientFormats.Contains(ImageOutputFormat.Webp))
+            {
+                return ImageOutputFormat.Webp;
+            }
+
+            if (enhancers.Count > 0)
+            {
+                return ImageOutputFormat.Png;
+            }
+
+            if (string.Equals(Path.GetExtension(image.Path), ".jpg", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(Path.GetExtension(image.Path), ".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                return ImageOutputFormat.Jpg;
+            }
+
+            // We can't predict if there will be transparency or not, so play it safe
+            return ImageOutputFormat.Png;
+        }
+
+        private ImageOutputFormat[] GetClientSupportedFormats()
+        {
+            if (Request.AcceptTypes.Contains("image/webp", StringComparer.OrdinalIgnoreCase))
+            {
+                return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+            }
+
+            return new[] { ImageOutputFormat.Jpg, ImageOutputFormat.Png };
         }
 
         private string GetMimeType(ImageOutputFormat format, string path)

@@ -63,17 +63,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             // This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(req);
 
-            if (!authAttribtues.AllowLocal || !req.IsLocal)
+            if (!string.IsNullOrWhiteSpace(auth.Token) ||
+                !_config.Configuration.InsecureApps6.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
-                if (!string.IsNullOrWhiteSpace(auth.Token) ||
-                    !_config.Configuration.InsecureApps6.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    var valid = IsValidConnectKey(auth.Token);
+                var valid = IsValidConnectKey(auth.Token);
 
-                    if (!valid)
-                    {
-                        SessionManager.ValidateSecurityToken(auth.Token);
-                    }
+                if (!valid)
+                {
+                    SessionManager.ValidateSecurityToken(auth.Token);
                 }
             }
 

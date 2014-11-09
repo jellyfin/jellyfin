@@ -374,6 +374,8 @@ namespace MediaBrowser.WebDashboard.Api
 
                                 "externalplayer.js",
                                 "favorites.js",
+                                "forgotpassword.js",
+                                "forgotpasswordpin.js",
                                 "gamesrecommendedpage.js",
                                 "gamesystemspage.js",
                                 "gamespage.js",

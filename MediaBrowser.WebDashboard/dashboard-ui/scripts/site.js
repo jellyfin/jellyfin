@@ -1242,9 +1242,6 @@ var Dashboard = {
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
             .on('requestfail.dashboard', Dashboard.onRequestFail)
             .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
-
-        // TODO: Improve with http://webpjs.appspot.com/
-        apiClient.supportsWebP($.browser.chrome);
     }
 
     var appName = "Dashboard";
@@ -1447,7 +1444,7 @@ $(document).on('pagebeforeshow', ".page", function () {
 
     else {
 
-        if (this.id !== "loginPage" && !page.hasClass('wizardPage') && !isConnectMode) {
+        if (this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage') && !isConnectMode) {
 
             console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();

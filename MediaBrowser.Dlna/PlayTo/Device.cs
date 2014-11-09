@@ -124,7 +124,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         _logger.Debug("RestartTimer");
                         _timer.Change(10, GetPlaybackTimerIntervalMs());
-
                         _volumeTimer.Change(100, GetVolumeTimerIntervalMs());
                     }
 
@@ -147,8 +146,14 @@ namespace MediaBrowser.Dlna.PlayTo
                         _logger.Debug("RestartTimerInactive");
                         var interval = GetInactiveTimerIntervalMs();
 
-                        _timer.Change(interval, interval);
-                        _volumeTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        if (_timer != null)
+                        {
+                            _timer.Change(interval, interval);
+                        }
+                        if (_volumeTimer != null)
+                        {
+                            _volumeTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        }
                     }
 
                     _timerActive = false;

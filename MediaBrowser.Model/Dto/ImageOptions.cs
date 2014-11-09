@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using System;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -74,7 +73,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the format.
         /// </summary>
         /// <value>The format.</value>
-        public ImageOutputFormat Format { get; set; }
+        public ImageOutputFormat? Format { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [add played indicator].
@@ -100,8 +99,6 @@ namespace MediaBrowser.Model.Dto
         public ImageOptions()
         {
             EnableImageEnhancers = true;
-
-            Format = ImageOutputFormat.Original;
         }
     }
 }
