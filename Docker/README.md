@@ -14,13 +14,13 @@ docker build --rm=true -t mbserver .
 
 ## Volumes:
 
-#### `/MBServer/ProgramData-Server`
+#### `/config`
 
-Configuration files and state of MediaBrowser Server folder. (i.e. /opt/appdata/mbserver)
+Configuration files and state of MediaBrowser Server folder. (i.e. /opt/appdata/mediabrowser)
 
 ## Docker run command:
 
 ```
-docker run -d --net=host -v /*your_config_location*:/MBServer/ProgramData-Server  -v /*your_media_location*:/media -v /etc/localtime:/etc/localtime:ro --name=mbserver mediabrowser/mbserver
+docker run -d --net=host -v /*your_config_location*:/config -v /*your_media_location*:/media -v /etc/localtime:/etc/localtime:ro --name=mbserver mediabrowser/mbserver
 
 ```
