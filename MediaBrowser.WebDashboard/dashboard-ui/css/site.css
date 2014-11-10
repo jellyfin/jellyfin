@@ -135,10 +135,23 @@ h1 a:hover {
     -ms-overflow-style: none;
     overflow: -moz-scrollbars-none;
 }
+
     .ui-panel-inner::-webkit-scrollbar {
         width: 0 !important;
         display: none;
     }
+
+.largePanel {
+    width: 250px;
+}
+
+/* Make panels larger */
+.largePanelModalOpen.ui-panel-dismiss-position-right {
+    right: 250px !important;
+}
+.largePanelModalOpen.ui-panel-dismiss-position-left {
+    left: 250px !important;
+}
 
 
 pre, textarea.pre {

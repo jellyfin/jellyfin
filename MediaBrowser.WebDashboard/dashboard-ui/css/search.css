@@ -1,12 +1,4 @@
-﻿.searchPanel {
-    width: 250px;
-}
-
-.searchPanelModelOpen {
-    right: 250px!important;
-}
-
-.searchHints {
+﻿.searchHints {
     margin-top: 1em;
 }
 

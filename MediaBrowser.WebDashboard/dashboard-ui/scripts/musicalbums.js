@@ -118,9 +118,28 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
+    var filtersLoaded;
+    function reloadFiltersIfNeeded(page) {
+
+        if (!filtersLoaded) {
+
+            filtersLoaded = true;
+
+            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
+
+                reloadItems(page);
+            });
+        }
+    }
+
     $(document).on('pageinit', "#musicAlbumsPage", function () {
 
         var page = this;
+
+        $('.viewPanel', page).on('panelopen', function () {
+
+            reloadFiltersIfNeeded(page);
+        });
 
         $('.radioSortBy', page).on('click', function () {
             query.SortBy = this.getAttribute('data-sortby');
@@ -223,6 +242,7 @@
 
         var viewKey = getSavedQueryKey();
         LibraryBrowser.loadSavedQueryValues(viewKey, query);
+        QueryFilters.onPageShow(page, query);
 
         LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 

@@ -38,7 +38,7 @@
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
-            
+
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "square",
@@ -62,7 +62,7 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-			
+
             Dashboard.hideLoadingMsg();
         });
     }
@@ -91,29 +91,32 @@
 
         }).checkboxradio('refresh');
 
-        $('.chkVideoTypeFilter', page).each(function () {
-
-            var filters = "," + (query.VideoTypes || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
-
-        $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+    }
+
+    var filtersLoaded;
+    function reloadFiltersIfNeeded(page) {
+
+        if (!filtersLoaded) {
+
+            filtersLoaded = true;
+
+            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
+
+                reloadItems(page);
+            });
+        }
     }
 
     $(document).on('pageinit', "#musicVideosPage", function () {
 
         var page = this;
+
+        $('.viewPanel', page).on('panelopen', function () {
+
+            reloadFiltersIfNeeded(page);
+        });
 
         $('.radioSortBy', this).on('click', function () {
             query.StartIndex = 0;
@@ -144,64 +147,6 @@
             reloadItems(page);
         });
 
-
-        $('.chkVideoTypeFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.VideoTypes || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.VideoTypes = filters;
-
-            reloadItems(page);
-        });
-
-        $('#chk3D', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.Is3D = this.checked ? this.getAttribute('data-filter') : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkSubtitle', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.HasSubtitles = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkTrailer', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.HasTrailer = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkThemeSong', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.HasThemeSong = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkThemeVideo', this).on('change', function () {
-
-            query.StartIndex = 0;
-            query.HasThemeVideo = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
             query.NameStartsWithOrGreater = character;
@@ -224,6 +169,8 @@
 
     }).on('pagebeforeshow', "#musicVideosPage", function () {
 
+        var page = this;
+
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -235,8 +182,9 @@
         }
 
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        QueryFilters.onPageShow(page, query);
 
-        reloadItems(this);
+        reloadItems(page);
 
     }).on('pageshow', "#musicVideosPage", function () {
 

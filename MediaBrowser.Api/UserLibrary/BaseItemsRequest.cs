@@ -96,6 +96,41 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsPlayed", Description = "Optional filter by items that are played, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsPlayed { get; set; }
 
+        /// <summary>
+        /// Limit results to items containing specific genres
+        /// </summary>
+        /// <value>The genres.</value>
+        [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Genres { get; set; }
+
+        [ApiMember(Name = "OfficialRatings", Description = "Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string OfficialRatings { get; set; }
+
+        [ApiMember(Name = "Tags", Description = "Optional. If specified, results will be filtered based on tag. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Tags { get; set; }
+
+        /// <summary>
+        /// Limit results to items containing specific years
+        /// </summary>
+        /// <value>The years.</value>
+        [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Years { get; set; }
+
+        public string[] GetGenres()
+        {
+            return (Genres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetTags()
+        {
+            return (Tags ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetOfficialRatings()
+        {
+            return (OfficialRatings ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public string[] GetMediaTypes()
         {
             return (MediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -109,6 +144,11 @@ namespace MediaBrowser.Api.UserLibrary
         public string[] GetExcludeItemTypes()
         {
             return (ExcludeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public int[] GetYears()
+        {
+            return (Years ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
         }
         
         /// <summary>

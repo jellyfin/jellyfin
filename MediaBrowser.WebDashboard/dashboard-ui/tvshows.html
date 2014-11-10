@@ -83,6 +83,7 @@
                         <label for="chkStatusEnded">${OptionEnded}</label>
                     </fieldset>
                     <br />
+
                     <div data-role="collapsible" data-collapsed="true" data-mini="true">
                         <h2>${HeaderAirDays}</h2>
 
@@ -103,7 +104,6 @@
                             <label for="chkSaturday">${OptionSaturday}</label>
                         </div>
                     </div>
-
                     <div data-role="collapsible" data-collapsed="true" data-mini="true">
                         <h2>${HeaderFeatures}</h2>
 
@@ -122,23 +122,34 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible" data-collapsed="true" data-mini="true">
-                        <h2>${HeaderManagement}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
 
-                        <div data-role="controlgroup">
-                            <input class="chkMissingImdbId" type="checkbox" name="chkMissingImdbId" id="chkMissingImdbId" data-mini="true">
-                            <label for="chkMissingImdbId">${OptionMissingImdbId}</label>
-
-                            <input class="chkMissingTvdbId" type="checkbox" name="chkMissingTvdbId" id="chkMissingTvdbId" data-mini="true">
-                            <label for="chkMissingTvdbId">${OptionMissingTvdbId}</label>
-
-                            <input class="chkMissingOverview" type="checkbox" name="chkMissingOverview" id="chkMissingOverview" data-mini="true">
-                            <label for="chkMissingOverview">${OptionMissingOverview}</label>
-
-                            <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch" data-mini="true">
-                            <label for="chkYearMismatch">${OptionFileMetadataYearMismatch}</label>
+                        <div class="filterOptions">
                         </div>
                     </div>
+
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
+                        <h2>${HeaderParentalRatings}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
+                        <h2>${HeaderTags}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
+                        <h2>${HeaderYears}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="tabSort viewTab">

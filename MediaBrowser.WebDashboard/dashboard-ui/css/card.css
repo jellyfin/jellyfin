@@ -91,7 +91,7 @@
 
 .visualCardBox-b {
     border-radius: 3px;
-    background: #111;
+    background: rgb(51, 51, 51);
 }
 
 .cardScalable {
@@ -128,18 +128,6 @@
     bottom: 0;
     left: 0;
     right: 0;
-}
-
-/*.cardContent:hover {
-        -moz-box-shadow: 0 0 0 5px #38c;
-        -webkit-box-shadow: 0 0 0 5px #38c;
-        box-shadow: 0 0 0 5px #38c;
-    }*/
-
-.alternateHover:hover .cardContent {
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
 }
 
 .cardContent:hover .cardImage {

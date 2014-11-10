@@ -8,7 +8,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 10
+            limit: 18
 
         }).done(function (result) {
 
@@ -31,7 +31,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10
+            limit: 18
 
         }).done(function (result) {
 

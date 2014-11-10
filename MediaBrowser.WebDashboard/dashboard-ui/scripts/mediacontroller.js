@@ -498,7 +498,7 @@
 
         var promise = MediaController.getTargets();
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" class="playerSelectionPanel" data-theme="a">';
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" data-theme="a">';
 
         html += '<div class="players"></div>';
 

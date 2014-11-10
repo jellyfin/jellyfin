@@ -69,9 +69,13 @@ namespace MediaBrowser.Controller.Entities
         public ImageType[] ImageTypes { get; set; }
         public VideoType[] VideoTypes { get; set; }
         public int[] Years { get; set; }
+        public string[] Tags { get; set; }
+        public string[] OfficialRatings { get; set; }
 
         public InternalItemsQuery()
         {
+            Tags = new string[] { };
+            OfficialRatings = new string[] { };
             SortBy = new string[] { };
             MediaTypes = new string[] { };
             IncludeItemTypes = new string[] { };

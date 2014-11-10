@@ -1241,7 +1241,12 @@
                     dataSrc = ' data-src="' + imgUrl + '"';
                 }
 
-                html += '<div class="cardBox">';
+                var cardboxCssClass = 'cardBox';
+
+                if (options.cardLayout) {
+                    cardboxCssClass += ' visualCardBox visualCardBox-b';
+                }
+                html += '<div class="' + cardboxCssClass + '">';
                 html += '<div class="cardScalable">';
 
                 html += '<div class="cardPadder"></div>';
@@ -1265,13 +1270,6 @@
                 }
                 if (item.IsUnidentified) {
                     html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
-                }
-
-                if (options.selectionPanel) {
-                    var chkItemSelectId = 'chkItemSelect' + i;
-
-                    // Render this pre-enhanced to save on jquery mobile dom manipulation
-                    html += '<div class="itemSelectionPanel" onclick="return false;" style="display:none;"><div class="ui-checkbox ui-mini"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>';
                 }
 
                 var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));

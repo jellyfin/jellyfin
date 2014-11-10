@@ -49,61 +49,17 @@
 
             updateFilterControls(page);
 
-            if (view == "Thumb") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    context: 'movies-trailers',
-                    lazy: true,
-                    overlayText: true
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Banner") {
+            html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "portrait",
+                context: 'movies-trailers',
+                showTitle: false,
+                centerText: true,
+                lazy: true,
+                overlayText: false
+            });
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "banner",
-                    preferBanner: true,
-                    context: 'movies-trailers',
-                    lazy: true
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "List") {
-
-                html = LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    context: 'movies-trailers',
-                    sortBy: query.SortBy
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Poster") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'movies-trailers',
-                    showTitle: false,
-                    centerText: true,
-                    lazy: true,
-                    overlayText: true
-                });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
-            }
-            else if (view == "Timeline") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'movies-trailers',
-                    showTitle: true,
-                    timeline: true,
-                    centerText: true,
-                    lazy: true
-                });
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
-            }
+            $('.itemsContainer', page).removeClass('timelineItemsContainer');
 
             html += pagingHtml;
 

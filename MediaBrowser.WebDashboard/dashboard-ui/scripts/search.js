@@ -221,7 +221,7 @@
 
             $(page).append(html);
 
-            panel = $('#searchPanel', page).panel({}).panel('option', 'classes.modalOpen', 'searchPanelModelOpen ui-panel-dismiss-open').trigger('create');
+            panel = $('#searchPanel', page).panel({}).trigger('create');
 
             $('#txtSearch', panel).on("keyup", function (e) {
 

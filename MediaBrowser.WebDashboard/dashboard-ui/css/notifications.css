@@ -1,12 +1,4 @@
-﻿.notificationsFlyout {
-    width: 250px;
-}
-
-.notificationsPanelModelOpen {
-    right: 250px !important;
-}
-
-.btnNotifications {
+﻿.btnNotifications {
     text-decoration: none !important;
 }
 

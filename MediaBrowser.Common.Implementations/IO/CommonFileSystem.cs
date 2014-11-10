@@ -398,14 +398,16 @@ namespace MediaBrowser.Common.Implementations.IO
                 throw new ArgumentNullException("path");
             }
 
-            //if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
-            //    !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    return false;
-            //}
-            //return true;
+            // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
 
-            return Path.IsPathRooted(path);
+            if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
+                !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            return true;
+
+            //return Path.IsPathRooted(path);
         }
     }
 }

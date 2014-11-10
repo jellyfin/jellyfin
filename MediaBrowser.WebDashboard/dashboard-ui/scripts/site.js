@@ -36,6 +36,10 @@ var Dashboard = {
         $.mobile.popup.prototype.options.transition = "fade";
         $.mobile.defaultPageTransition = "none";
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
+
+        // Make panels a little larger than the defaults
+        $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
+        $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
     },
 
     onRequestFail: function (e, data) {

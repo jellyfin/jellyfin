@@ -102,9 +102,28 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
+    var filtersLoaded;
+    function reloadFiltersIfNeeded(page) {
+
+        if (!filtersLoaded) {
+
+            filtersLoaded = true;
+
+            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
+
+                reloadItems(page);
+            });
+        }
+    }
+
     $(document).on('pageinit', "#musicArtistsPage", function () {
 
         var page = this;
+
+        $('.viewPanel', page).on('panelopen', function () {
+
+            reloadFiltersIfNeeded(page);
+        });
 
         $('.chkStandardFilter', this).on('change', function () {
 
@@ -169,6 +188,7 @@
         var viewkey = getSavedQueryKey();
 
         LibraryBrowser.loadSavedQueryValues(viewkey, query);
+        QueryFilters.onPageShow(page, query);
 
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 

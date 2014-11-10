@@ -646,7 +646,20 @@
 
             selectionCommands.show();
 
-            $('.itemSelectionPanel', page).show();
+            var panels = $('.itemSelectionPanel', page).show();
+
+            if (!panels.length) {
+
+                var index = 0;
+                $('.cardContent', page).each(function () {
+                    var chkItemSelectId = 'chkItemSelect' + index;
+
+                    $(this).append('<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>');
+                    index++;
+                });
+
+                $('.itemsContainer', page).trigger('create');
+            }
 
             $('.chkItemSelect:checked', page).checked(false).checkboxradio('refresh');
         }
@@ -815,7 +828,7 @@
             $('.' + this.getAttribute('data-tab'), page).show();
         });
 
-        var viewPanel = $('.viewPanel', page).panel('option', 'classes.modalOpen', 'viewPanelModelOpen ui-panel-dismiss-open');
+        var viewPanel = $('.viewPanel', page);
 
         $('#selectPageSize', viewPanel).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
 

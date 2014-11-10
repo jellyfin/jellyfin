@@ -41,7 +41,7 @@
 
         var html = '';
 
-        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+        var cssClass = "card homePageSquareCard bottomPaddedCard";
 
         html += "<div data-id='" + server.Id + "' class='" + cssClass + "'>";
 

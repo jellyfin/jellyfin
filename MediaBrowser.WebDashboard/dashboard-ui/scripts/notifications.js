@@ -64,7 +64,7 @@
 
             $(document.body).append(html);
 
-            $('.notificationsFlyout').panel({}).panel('option', 'classes.modalOpen', 'notificationsPanelModelOpen ui-panel-dismiss-open').trigger('create').panel("open").on("panelclose", function () {
+            $('.notificationsFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
                 $(this).off("panelclose").remove();
 
