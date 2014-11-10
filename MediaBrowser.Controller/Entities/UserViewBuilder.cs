@@ -870,6 +870,16 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.Tags.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.OfficialRatings.Length > 0)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -1405,6 +1415,12 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            // Apply official rating filter
+            if (query.OfficialRatings.Length > 0 && !query.OfficialRatings.Contains(item.OfficialRating ?? string.Empty))
+            {
+                return false;
+            }
+
             // Apply person filter
             if (!string.IsNullOrEmpty(query.Person))
             {
@@ -1430,6 +1446,21 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return false;
                     }
+                }
+            }                
+            
+            // Apply tag filter
+            var tags = query.Tags;
+            if (tags.Length > 0)
+            {
+                var hasTags = item as IHasTags;
+                if (hasTags == null)
+                {
+                    return false;
+                }
+                if (!(tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
                 }
             }
 

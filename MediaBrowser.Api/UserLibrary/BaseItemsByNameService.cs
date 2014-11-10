@@ -193,13 +193,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filters = request.GetFilters().ToList();
 
-            if (filters.Count == 0)
-            {
-                return items;
-            }
-
-            items = items.AsParallel();
-
             if (filters.Contains(ItemFilter.Dislikes))
             {
                 items = items.Where(i =>
@@ -243,8 +236,55 @@ namespace MediaBrowser.Api.UserLibrary
                 });
             }
 
-            return items.AsEnumerable();
+            // Avoid implicitly captured closure
+            var currentRequest = request;
+            return items.Where(i => ApplyAdditionalFilters(currentRequest, i, user, false));
         }
+
+        private bool ApplyAdditionalFilters(BaseItemsRequest request, BaseItem i, User user, bool isPreFiltered)
+        {
+            if (!isPreFiltered)
+            {
+                // Apply tag filter
+                var tags = request.GetTags();
+                if (tags.Length > 0)
+                {
+                    var hasTags = i as IHasTags;
+                    if (hasTags == null)
+                    {
+                        return false;
+                    }
+                    if (!(tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                    {
+                        return false;
+                    }
+                }
+
+                // Apply official rating filter
+                var officialRatings = request.GetOfficialRatings();
+                if (officialRatings.Length > 0 && !officialRatings.Contains(i.OfficialRating ?? string.Empty))
+                {
+                    return false;
+                }
+
+                // Apply genre filter
+                var genres = request.GetGenres();
+                if (genres.Length > 0 && !(genres.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
+                }
+
+                // Apply year filter
+                var years = request.GetYears();
+                if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 
         /// <summary>
         /// Filters the items.

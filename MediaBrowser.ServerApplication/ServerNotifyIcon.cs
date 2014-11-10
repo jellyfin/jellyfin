@@ -1,14 +1,9 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Startup.Common.Browser;
-using MediaBrowser.ServerApplication.Native;
 using System;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace MediaBrowser.ServerApplication
@@ -17,18 +12,18 @@ namespace MediaBrowser.ServerApplication
     {
         bool IsDisposing = false;
         
-        private System.Windows.Forms.NotifyIcon notifyIcon1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem cmdExit;
-        private System.Windows.Forms.ToolStripMenuItem cmdBrowse;
-        private System.Windows.Forms.ToolStripMenuItem cmdConfigure;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem cmdRestart;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem cmdCommunity;
-        private System.Windows.Forms.ToolStripMenuItem cmdApiDocs;
-        private System.Windows.Forms.ToolStripMenuItem cmdSwagger;
-        private System.Windows.Forms.ToolStripMenuItem cmdGtihub;
+        private NotifyIcon notifyIcon1;
+        private ContextMenuStrip contextMenuStrip1;
+        private ToolStripMenuItem cmdExit;
+        private ToolStripMenuItem cmdBrowse;
+        private ToolStripMenuItem cmdConfigure;
+        private ToolStripSeparator toolStripSeparator2;
+        private ToolStripMenuItem cmdRestart;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem cmdCommunity;
+        private ToolStripMenuItem cmdApiDocs;
+        private ToolStripMenuItem cmdSwagger;
+        private ToolStripMenuItem cmdGtihub;
 
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
@@ -61,19 +56,19 @@ namespace MediaBrowser.ServerApplication
             var components = new System.ComponentModel.Container();
             
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
-            notifyIcon1 = new System.Windows.Forms.NotifyIcon(components);
+            contextMenuStrip1 = new ContextMenuStrip(components);
+            notifyIcon1 = new NotifyIcon(components);
             
-            cmdExit = new System.Windows.Forms.ToolStripMenuItem();
-            cmdCommunity = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
-            cmdBrowse = new System.Windows.Forms.ToolStripMenuItem();
-            cmdApiDocs = new System.Windows.Forms.ToolStripMenuItem();
-            cmdSwagger = new System.Windows.Forms.ToolStripMenuItem();
-            cmdGtihub = new System.Windows.Forms.ToolStripMenuItem();
+            cmdExit = new ToolStripMenuItem();
+            cmdCommunity = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            cmdRestart = new ToolStripMenuItem();
+            toolStripSeparator2 = new ToolStripSeparator();
+            cmdConfigure = new ToolStripMenuItem();
+            cmdBrowse = new ToolStripMenuItem();
+            cmdApiDocs = new ToolStripMenuItem();
+            cmdSwagger = new ToolStripMenuItem();
+            cmdGtihub = new ToolStripMenuItem();
             
             // 
             // notifyIcon1
@@ -85,7 +80,7 @@ namespace MediaBrowser.ServerApplication
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] {
             cmdBrowse,
             cmdConfigure,
             toolStripSeparator2,
@@ -136,7 +131,7 @@ namespace MediaBrowser.ServerApplication
             // 
             // cmdApiDocs
             // 
-            cmdApiDocs.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            cmdApiDocs.DropDownItems.AddRange(new ToolStripItem[] {
             cmdSwagger,
             cmdGtihub});
             cmdApiDocs.Name = "cmdApiDocs";
