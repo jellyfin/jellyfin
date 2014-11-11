@@ -60,6 +60,14 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
         Task<ConnectionResult> Connect(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Connects the specified API client.
+        /// </summary>
+        /// <param name="apiClient">The API client.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;ConnectionResult&gt;.</returns>
+        Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken);
         
         /// <summary>
         /// Connects the specified server.

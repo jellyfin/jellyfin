@@ -45,7 +45,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             get
             {
-                return "Media Browser Xml";
+                return XmlProviderUtils.Name;
             }
         }
 
