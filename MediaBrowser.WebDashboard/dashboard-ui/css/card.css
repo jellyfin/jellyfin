@@ -90,8 +90,9 @@
 }
 
 .visualCardBox-b {
-    border-radius: 3px;
     background: rgb(51, 51, 51);
+    border: 1px solid rgb(31, 31, 31);
+    border-radius: 3px;
 }
 
 .cardScalable {
@@ -130,9 +131,9 @@
     right: 0;
 }
 
-.cardContent:hover .cardImage {
-    opacity: .5;
-}
+    .cardContent:hover .cardImage {
+        opacity: .5;
+    }
 
 /*.preview-overlay-container {
     -moz-border-radius: 2px;

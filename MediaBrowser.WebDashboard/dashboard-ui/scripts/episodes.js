@@ -59,9 +59,19 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: true,
-                    selectionPanel: true,
                     lazy: true,
                     context: 'tv'
+                });
+            }
+            else if (view == "PosterCard") {
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    context: 'tv',
+                    cardLayout: true
                 });
             }
 

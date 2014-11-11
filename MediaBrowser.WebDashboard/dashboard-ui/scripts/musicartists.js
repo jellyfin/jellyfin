@@ -60,9 +60,22 @@
                     showTitle: true,
                     coverImage: true,
                     centerText: true,
-                    lazy: true,
-                    selectionPanel: true
+                    lazy: true
                 });
+            }
+            else if (view == "PosterCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "square",
+                    context: 'music',
+                    showTitle: true,
+                    coverImage: true,
+                    lazy: true,
+                    cardLayout: true,
+                    showSongCount: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
 
             html += pagingHtml;

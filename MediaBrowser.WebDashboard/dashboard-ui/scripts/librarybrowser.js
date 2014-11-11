@@ -1217,7 +1217,7 @@
                     cssClass += ' itemWithAction';
                 }
 
-                html += '<a' + dataAttributes + ' class="' + cssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
+                html += '<div' + dataAttributes + ' class="' + cssClass + '">';
 
                 var style = "";
 
@@ -1250,7 +1250,7 @@
                 html += '<div class="cardScalable">';
 
                 html += '<div class="cardPadder"></div>';
-                html += '<div class="cardContent">';
+                html += '<a class="cardContent" href="' + href + '"' + defaultActionAttribute + '>';
                 html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '></div>';
 
                 html += '<div class="cardOverlayTarget"></div>';
@@ -1292,7 +1292,7 @@
                 }
 
                 // cardContent
-                html += '</div>';
+                html += '</a>';
 
                 // cardScalable
                 html += '</div>';
@@ -1304,7 +1304,7 @@
                 // cardBox
                 html += '</div>';
 
-                html += "</a>";
+                html += "</div>";
 
             }
 
@@ -1316,6 +1316,12 @@
             var html = '';
 
             html += '<div class="' + footerClass + '">';
+
+            if (options.cardLayout) {
+                html += '<div class="cardText" style="text-align:right; float:right;">';
+                html += '<button class="listviewMenuButton" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
+                html += "</div>";
+            }
 
             var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
 
@@ -1346,6 +1352,19 @@
                 lines.push(itemCountHtml);
             }
 
+            if (options.showSongCount) {
+
+                var songLine = '';
+
+                if (item.SongCount) {
+                    songLine = item.SongCount == 1 ?
+					Globalize.translate('ValueOneSong') :
+					Globalize.translate('ValueSongCount', item.SongCount);
+                }
+
+                lines.push(songLine);
+            }
+
             if (options.showPremiereDate && item.PremiereDate) {
 
                 try {
@@ -1361,6 +1380,18 @@
             if (options.showYear) {
 
                 lines.push(item.ProductionYear || '');
+            }
+
+            if (options.showSeriesYear) {
+
+                if (item.Status == "Continuing") {
+
+                    lines.push(Globalize.translate('ValueSeriesYearToPresent', item.ProductionYear || ''));
+
+                } else {
+                    lines.push(item.ProductionYear || '');
+                }
+
             }
 
             html += LibraryBrowser.getCardTextLines(lines, cssClass, !options.overlayText);

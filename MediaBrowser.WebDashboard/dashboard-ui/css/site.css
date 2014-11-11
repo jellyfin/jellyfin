@@ -489,10 +489,10 @@ h1 .imageLink {
 
     .mediaLocationsHeader .ui-btn {
         position: absolute;
-        right: -6px;
+        right: -3px;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
-        top: 6px;
+        top: 4px;
     }
 
 #ulDirectoryPickerList a {

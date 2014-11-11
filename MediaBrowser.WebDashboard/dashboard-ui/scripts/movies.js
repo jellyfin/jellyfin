@@ -50,10 +50,23 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'movies',
-                    selectionPanel: true,
                     lazy: true,
                     overlayText: true,
                     showTitle: false
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'movies',
+                    lazy: true,
+                    showTitle: true,
+                    cardLayout: true,
+                    showYear: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -84,7 +97,6 @@
                     context: 'movies',
                     showTitle: false,
                     centerText: true,
-                    selectionPanel: true,
                     lazy: true,
                     overlayText: true
                 });
@@ -98,7 +110,6 @@
                     showTitle: true,
                     timeline: true,
                     centerText: true,
-                    selectionPanel: true,
                     lazy: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');

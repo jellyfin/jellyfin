@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
+
     // The base query options
     var query = {
 
@@ -39,14 +41,41 @@
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                preferThumb: true,
-                context: 'movies',
-                showItemCounts: true,
-                centerText: true
-            });
+            if (view == "Thumb") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'movies',
+                    showItemCounts: true,
+                    centerText: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'movies',
+                    showItemCounts: true,
+                    cardLayout: true,
+                    showTitle: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies',
+                    centerText: true,
+                    showItemCounts: true,
+                    lazy: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
 
             html += pagingHtml;
 
@@ -71,6 +100,7 @@
     function updateFilterControls(page) {
 
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectView', page).val(view).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#movieGenresPage", function () {
@@ -100,8 +130,27 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.SortOrder = "Descending";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
     }).on('pagebeforeshow', "#movieGenresPage", function () {
 
+        var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -112,9 +161,18 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
 
-        reloadItems(this);
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
+
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#movieGenresPage", function () {
 

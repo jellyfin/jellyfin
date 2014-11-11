@@ -319,7 +319,7 @@
         var displayContextItem = card;
 
         if ($(card).hasClass('listviewMenuButton')) {
-            card = $(card).parents('.listItem')[0];
+            card = $(card).parents('.listItem,.card')[0];
         }
 
         var itemId = card.getAttribute('data-itemid');
@@ -342,7 +342,7 @@
             html += '<ul data-role="listview" style="min-width: 240px;">';
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-            var href = card.getAttribute('data-href') || card.href;
+            var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
 
             if (commands.indexOf('playlist') != -1) {
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';

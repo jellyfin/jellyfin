@@ -47,8 +47,7 @@
                 context: 'music',
                 showItemCounts: true,
                 centerText: true,
-                lazy: true,
-                selectionPanel: true
+                lazy: true
             });
 
             html += pagingHtml;
