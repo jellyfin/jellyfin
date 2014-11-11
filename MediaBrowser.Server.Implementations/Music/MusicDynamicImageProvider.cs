@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Music
 {
@@ -36,7 +38,42 @@ namespace MediaBrowser.Server.Implementations.Music
 
             }).ConfigureAwait(false);
 
-            return GetFinalItems(result.Items.Where(i => i.HasImage(ImageType.Primary)).ToList());
+            var items = result.Items.Select(i =>
+            {
+                var episode = i as Episode;
+                if (episode != null)
+                {
+                    var series = episode.Series;
+                    if (series != null)
+                    {
+                        return series;
+                    }
+                    var episodeSeason = episode.Season;
+                    if (episodeSeason != null)
+                    {
+                        return episodeSeason;
+                    }
+
+                    return episode;
+                }
+
+                var season = i as Season;
+                if (season != null)
+                {
+                    var series = season.Series;
+                    if (series != null)
+                    {
+                        return series;
+                    }
+
+                    return season;
+                }
+
+                return i;
+
+            }).DistinctBy(i => i.Id);
+
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
         }
 
         protected override bool Supports(IHasImages item)
@@ -50,6 +87,7 @@ namespace MediaBrowser.Server.Implementations.Music
                     SpecialFolder.TvFavoriteEpisodes,
                     SpecialFolder.TvFavoriteSeries,
                     SpecialFolder.TvGenres,
+                    SpecialFolder.TvGenre,
                     SpecialFolder.TvLatest,
                     SpecialFolder.TvNextUp,
                     SpecialFolder.TvResume,
@@ -58,12 +96,14 @@ namespace MediaBrowser.Server.Implementations.Music
                     SpecialFolder.MovieCollections,
                     SpecialFolder.MovieFavorites,
                     SpecialFolder.MovieGenres,
+                    SpecialFolder.MovieGenre,
                     SpecialFolder.MovieLatest,
                     SpecialFolder.MovieMovies,
                     SpecialFolder.MovieResume,
 
                     SpecialFolder.GameFavorites,
                     SpecialFolder.GameGenres,
+                    SpecialFolder.GameGenre,
                     SpecialFolder.GameSystems,
                     SpecialFolder.LatestGames,
                     SpecialFolder.RecentlyPlayedGames,
@@ -72,6 +112,7 @@ namespace MediaBrowser.Server.Implementations.Music
                     SpecialFolder.MusicAlbumArtists,
                     SpecialFolder.MusicAlbums,
                     SpecialFolder.MusicGenres,
+                    SpecialFolder.MusicGenre,
                     SpecialFolder.MusicLatest,
                     SpecialFolder.MusicSongs,
                     SpecialFolder.MusicFavorites,
