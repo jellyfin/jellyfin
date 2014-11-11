@@ -82,6 +82,7 @@ using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.TV;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
+using MediaBrowser.Server.Startup.Common.Migrations;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using System;
@@ -322,84 +323,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformVersionMigration()
         {
-            DeleteDeprecatedModules();
-
-            if (!ServerConfigurationManager.Configuration.PlaylistImagesDeleted)
-            {
-                DeletePlaylistImages();
-                ServerConfigurationManager.Configuration.PlaylistImagesDeleted = true;
-                ServerConfigurationManager.SaveConfiguration();
-            }
-        }
-
-        private void DeletePlaylistImages()
-        {
-            try
-            {
-                var path = Path.Combine(ApplicationPaths.DataPath, "playlists");
-
-                var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories)
-                    .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i) ?? string.Empty))
-                    .ToList();
-
-                foreach (var file in files)
-                {
-                    try
-                    {
-                        File.Delete(file);
-                    }
-                    catch (IOException)
-                    {
-
-                    }
-                }
-            }
-            catch (IOException)
-            {
-                
-            }
-        }
-
-        private void DeleteDeprecatedModules()
-        {
-            try
-            {
-                MigrateUserFolders();
-            }
-            catch (IOException)
-            {
-            }
-
-            try
-            {
-                File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MBPhoto.dll"));
-            }
-            catch (IOException)
-            {
-                // Not there, no big deal
-            }
-
-            try
-            {
-                File.Delete(Path.Combine(ApplicationPaths.PluginsPath, "MediaBrowser.Plugins.XbmcMetadata.dll"));
-            }
-            catch (IOException)
-            {
-                // Not there, no big deal
-            }
-        }
-
-        private void MigrateUserFolders()
-        {
-            var rootPath = ApplicationPaths.RootFolderPath;
-
-            var folders = new DirectoryInfo(rootPath).EnumerateDirectories("*", SearchOption.TopDirectoryOnly).Where(i => !string.Equals(i.Name, "default", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            foreach (var folder in folders)
-            {
-                Directory.Delete(folder.FullName, true);
-            }
+            new MigrateUserFolders(ApplicationPaths).Run();
+            new PlaylistImages(ServerConfigurationManager).Run();
+            new RenameXbmcOptions(ServerConfigurationManager).Run();
+            new RenameXmlOptions(ServerConfigurationManager).Run();
         }
 
         /// <summary>

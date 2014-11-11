@@ -131,7 +131,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             get
             {
-                return "Xbmc Nfo";
+                return "Nfo";
             }
         }
 

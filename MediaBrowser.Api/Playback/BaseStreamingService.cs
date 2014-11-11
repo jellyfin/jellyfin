@@ -995,7 +995,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (state.ReadInputAtNativeFramerate)
                 {
-                    await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
+                    await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
 
@@ -1618,8 +1618,6 @@ namespace MediaBrowser.Api.Playback
             var videoRequest = request as VideoStreamRequest;
 
             AttachMediaStreamInfo(state, mediaStreams, videoRequest, url);
-
-            state.SegmentLength = 6;
 
             var container = Path.GetExtension(state.RequestedUrl);
 

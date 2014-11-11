@@ -69,6 +69,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             Fetch(item, userDataList, metadataFile, settings, cancellationToken);
         }
 
+        protected virtual bool SupportsUrlAfterClosingXmlTag
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
@@ -79,6 +84,30 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(T item, List<UserItemData> userDataList, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
+            if (!SupportsUrlAfterClosingXmlTag)
+            {
+                using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
+                {
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
+                    {
+                        reader.MoveToContent();
+
+                        // Loop through each element
+                        while (reader.Read())
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                FetchDataFromXmlNode(reader, item, userDataList);
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+
             using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
                 // Need to handle a url after the xml data

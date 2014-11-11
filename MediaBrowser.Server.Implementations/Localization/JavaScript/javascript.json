@@ -288,7 +288,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Change Folder Type",
-    "HeaderChangeFolderTypeHelp": "To change the folder type, please remove and rebuild the collection with the new type.",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
     "HeaderAlert": "Alert",
     "MessagePleaseRestart": "Please restart to finish updating.",
     "ButtonRestart": "Restart",

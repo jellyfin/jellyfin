@@ -122,6 +122,16 @@ namespace MediaBrowser.Model.ApiClient
         Task<SearchHintResult> GetSearchHintsAsync(SearchQuery query);
 
         /// <summary>
+        /// Gets the filters.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="mediaTypes">The media types.</param>
+        /// <param name="itemTypes">The item types.</param>
+        /// <returns>Task&lt;QueryFilters&gt;.</returns>
+        Task<QueryFilters> GetFilters(string userId, string parentId, string[] mediaTypes, string[] itemTypes);
+
+        /// <summary>
         /// Gets the theme videos async.
         /// </summary>
         /// <param name="userId">The user id.</param>

@@ -28,6 +28,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             Fetch(item, userDataList, metadataFile, cancellationToken);
         }
 
+        protected override bool SupportsUrlAfterClosingXmlTag
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>

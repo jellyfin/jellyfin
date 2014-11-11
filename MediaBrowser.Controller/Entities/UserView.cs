@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, CollectionManager)
-                .GetUserItems(parent, ViewType, query);
+                .GetUserItems(parent, this, ViewType, query);
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
