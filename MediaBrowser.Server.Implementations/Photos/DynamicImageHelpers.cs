@@ -10,7 +10,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 {
     public static class DynamicImageHelpers
     {
-        public static async Task<Image> GetThumbCollage(List<string> files,
+        public static async Task<Stream> GetThumbCollage(List<string> files,
             IFileSystem fileSystem,
             int width,
             int height)
@@ -23,8 +23,8 @@ namespace MediaBrowser.Server.Implementations.Photos
             const int rows = 1;
             const int cols = 3;
 
-             int cellWidth = 2 * (width / 3);
-             int cellHeight = height;
+            int cellWidth = 2 * (width / 3);
+            int cellHeight = height;
             var index = 0;
 
             var img = new Bitmap(width, height, PixelFormat.Format32bppPArgb);
@@ -67,10 +67,10 @@ namespace MediaBrowser.Server.Implementations.Photos
                 }
             }
 
-            return img;
+            return GetStream(img);
         }
-        
-        public static async Task<Image> GetSquareCollage(List<string> files,
+
+        public static async Task<Stream> GetSquareCollage(List<string> files,
             IFileSystem fileSystem,
             int size)
         {
@@ -122,12 +122,23 @@ namespace MediaBrowser.Server.Implementations.Photos
                 }
             }
 
-            return img;
+            return GetStream(img);
         }
 
-        private static Task<Image> GetSingleImage(List<string> files, IFileSystem fileSystem)
+        private static Task<Stream> GetSingleImage(List<string> files, IFileSystem fileSystem)
         {
-            return GetImage(files[0], fileSystem);
+            return Task.FromResult<Stream>(fileSystem.GetFileStream(files[0], FileMode.Open, FileAccess.Read, FileShare.Read));
+        }
+
+        private static Stream GetStream(Image image)
+        {
+            var ms = new MemoryStream();
+
+            image.Save(ms, ImageFormat.Png);
+
+            ms.Position = 0;
+
+            return ms;
         }
 
         private static async Task<Image> GetImage(string file, IFileSystem fileSystem)

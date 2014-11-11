@@ -6,8 +6,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -74,36 +72,48 @@ namespace MediaBrowser.Server.Implementations.Photos
             MetadataRefreshOptions options, 
             CancellationToken cancellationToken)
         {
-            var img = await CreateImageAsync(item, itemsWithImages, imageType, 0).ConfigureAwait(false);
+            var stream = await CreateImageAsync(item, itemsWithImages, imageType, 0).ConfigureAwait(false);
 
-            if (img == null)
+            if (stream == null)
             {
                 return ItemUpdateType.None;
             }
 
-            using (var ms = new MemoryStream())
+            if (stream is MemoryStream)
             {
-                img.Save(ms, ImageFormat.Png);
+                using (stream)
+                {
+                    stream.Position = 0;
 
-                ms.Position = 0;
+                    await ProviderManager.SaveImage(item, stream, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await stream.CopyToAsync(ms).ConfigureAwait(false);
 
-                await ProviderManager.SaveImage(item, ms, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+                    ms.Position = 0;
+
+                    await ProviderManager.SaveImage(item, ms, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             return ItemUpdateType.ImageUpdate;
         }
 
-        protected Task<Image> GetThumbCollage(List<BaseItem> items)
+        protected Task<Stream> GetThumbCollage(List<BaseItem> items)
         {
-            return DynamicImageHelpers.GetThumbCollage(items.Select(i => i.GetImagePath(ImageType.Primary)).ToList(),
+            return DynamicImageHelpers.GetThumbCollage(items.Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb)).ToList(),
                 FileSystem,
                 1600,
                 900);
         }
 
-        protected Task<Image> GetSquareCollage(List<BaseItem> items)
+        protected Task<Stream> GetSquareCollage(List<BaseItem> items)
         {
-            return DynamicImageHelpers.GetSquareCollage(items.Select(i => i.GetImagePath(ImageType.Primary)).ToList(),
+            return DynamicImageHelpers.GetSquareCollage(items.Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb)).ToList(),
                 FileSystem,
                 800);
         }
@@ -113,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return "Dynamic Image Provider"; }
         }
 
-        public async Task<Image> CreateImageAsync(IHasImages item, 
+        public async Task<Stream> CreateImageAsync(IHasImages item, 
             List<BaseItem> itemsWithImages,
             ImageType imageType, 
             int imageIndex)
