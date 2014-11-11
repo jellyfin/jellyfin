@@ -61,6 +61,17 @@
                     centerText: true
                 });
             }
+            else if (view == "PosterCard") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: 'games',
+                    showTitle: true,
+                    showParentTitle: true,
+                    cardLayout: true
+                });
+            }
+
 
             html += pagingHtml;
 

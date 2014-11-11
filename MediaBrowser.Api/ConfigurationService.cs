@@ -124,7 +124,7 @@ namespace MediaBrowser.Api
 
         public void Post(AutoSetMetadataOptions request)
         {
-            _configurationManager.DisableMetadataService("Media Browser Xml");
+            _configurationManager.DisableMetadataService("Media Browser Legacy Xml");
             _configurationManager.SaveConfiguration();
         }
 

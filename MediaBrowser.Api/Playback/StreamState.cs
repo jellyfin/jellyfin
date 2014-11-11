@@ -63,11 +63,14 @@ namespace MediaBrowser.Api.Playback
 
         public string LiveTvStreamId { get; set; }
 
-        public int SegmentLength = 10;
+        public int SegmentLength = 6;
 
         public int HlsListSize
         {
-            get { return ReadInputAtNativeFramerate ? 100 : 1440; }
+            get
+            {
+                return ReadInputAtNativeFramerate ? 1000 : 0;
+            }
         }
 
         public long? RunTimeTicks;

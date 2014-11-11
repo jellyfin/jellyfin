@@ -49,8 +49,21 @@
                     context: 'music',
                     showTitle: true,
                     showParentTitle: true,
+                    lazy: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "PosterCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "square",
+                    context: 'music',
+                    showTitle: true,
+                    coverImage: true,
+                    showParentTitle: true,
                     lazy: true,
-                    selectionPanel: true
+                    cardLayout: true
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
@@ -71,8 +84,7 @@
                     showTitle: true,
                     showParentTitle: true,
                     timeline: true,
-                    lazy: true,
-                    selectionPanel: true
+                    lazy: true
                 });
                 $('.itemsContainer', page).addClass('timelineItemsContainer');
             }

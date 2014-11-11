@@ -53,6 +53,20 @@
 
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'tv',
+                    lazy: true,
+                    cardLayout: true,
+                    showTitle: true,
+                    showSeriesYear: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else if (view == "Banner") {
 
                 html = LibraryBrowser.getPosterViewHtml({

@@ -10,7 +10,7 @@
         var options = {
 
             IncludeItemTypes: "Game",
-            Limit: 8,
+            Limit: 18,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId
         };
@@ -33,7 +33,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Game",
-            Limit: 8,
+            Limit: 18,
             Recursive: true,
             Filters: "IsPlayed",
             Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",

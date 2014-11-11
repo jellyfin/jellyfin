@@ -60,6 +60,11 @@
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="INativeApp.cs" />
+    <Compile Include="Migrations\IVersionMigration.cs" />
+    <Compile Include="Migrations\MigrateUserFolders.cs" />
+    <Compile Include="Migrations\PlaylistImages.cs" />
+    <Compile Include="Migrations\RenameXbmcOptions.cs" />
+    <Compile Include="Migrations\RenameXmlOptions.cs" />
     <Compile Include="NativeEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupOptions.cs" />

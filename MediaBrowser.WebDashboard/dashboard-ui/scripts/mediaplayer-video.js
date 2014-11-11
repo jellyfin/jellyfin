@@ -1119,7 +1119,8 @@
                 html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             }
 
-            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm';
+            // Live streams seem to function better with mp4
+            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm' || !mediaSource.RunTimeTicks;
 
             if (mp4BeforeWebm) {
                 html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';

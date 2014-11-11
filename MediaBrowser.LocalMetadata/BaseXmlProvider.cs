@@ -78,13 +78,22 @@ namespace MediaBrowser.LocalMetadata
         {
             get
             {
-                return "Media Browser Xml";
+                return XmlProviderUtils.Name;
             }
         }
+
     }
 
     static class XmlProviderUtils
     {
+        public static string Name
+        {
+            get
+            {
+                return "Media Browser Legacy Xml";
+            }
+        }
+        
         internal static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(4, 4);
     }
 }

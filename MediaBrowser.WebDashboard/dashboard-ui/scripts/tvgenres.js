@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
+
     // The base query options
     var query = {
 
@@ -39,17 +41,41 @@
 
             updateFilterControls(page);
 
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: false,
-                context: 'tv',
-                preferThumb: true,
-                showItemCounts: true,
-                centerText: true,
-                lazy: true
-                
-            });
+            if (view == "Thumb") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'tv',
+                    showItemCounts: true,
+                    centerText: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'tv',
+                    showItemCounts: true,
+                    cardLayout: true,
+                    showTitle: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'tv',
+                    centerText: true,
+                    showItemCounts: true,
+                    lazy: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
 
             html += pagingHtml;
 
@@ -89,6 +115,7 @@
         }).checkboxradio('refresh');
 
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectView', page).val(view).selectmenu('refresh');
     }
 
     $(document).on('pageinit', "#tvGenresPage", function () {
@@ -118,9 +145,28 @@
             reloadItems(page);
         });
 
+        $('#selectView', this).on('change', function () {
+
+            view = this.value;
+
+            if (view == "Timeline") {
+
+                query.SortBy = "PremiereDate";
+                query.SortOrder = "Descending";
+                query.StartIndex = 0;
+                $('#radioPremiereDate', page)[0].click();
+
+            } else {
+                reloadItems(page);
+            }
+
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+        });
+
     }).on('pagebeforeshow', "#tvGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
+        var page = this;
 
         var limit = LibraryBrowser.getDefaultPageSize();
 
@@ -130,9 +176,17 @@
             query.StartIndex = 0;
         }
 
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        var viewkey = getSavedQueryKey();
+        LibraryBrowser.loadSavedQueryValues(viewkey, query);
 
-        reloadItems(this);
+        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+
+            if (val) {
+                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+            } else {
+                reloadItems(page);
+            }
+        });
 
     }).on('pageshow', "#tvGenresPage", function () {
 

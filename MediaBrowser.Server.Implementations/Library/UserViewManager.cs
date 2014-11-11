@@ -148,11 +148,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ThenBy(i => i.SortName);
         }
 
+        public Task<UserView> GetUserView(string name, string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
+        {
+            return _libraryManager.GetSpecialFolder(user, name, parentId, type, sortName, cancellationToken);
+        }
+
         public Task<UserView> GetUserView(string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
-            return _libraryManager.GetSpecialFolder(user, name, parentId, type, sortName, cancellationToken);
+            return GetUserView(name, parentId, type, user, sortName, cancellationToken);
         }
 
         public Task<UserView> GetUserView(string type, string sortName, CancellationToken cancellationToken)
