@@ -4,23 +4,24 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.Photos;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MoreLinq;
 
-namespace MediaBrowser.Server.Implementations.Music
+namespace MediaBrowser.Server.Implementations.Photos
 {
     public class MusicDynamicImageProvider : BaseDynamicImageProvider<UserView>, ICustomMetadataProvider<UserView>
     {
         private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
 
-        public MusicDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IUserManager userManager)
+        public MusicDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IUserManager userManager, ILibraryManager libraryManager)
             : base(fileSystem, providerManager)
         {
             _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
@@ -30,6 +31,44 @@ namespace MediaBrowser.Server.Implementations.Music
             if (!view.UserId.HasValue)
             {
                 return new List<BaseItem>();
+            }
+
+            if (string.Equals(view.ViewType, SpecialFolder.GameGenre, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = new List<BaseItem>();
+
+                var genre = _libraryManager.GetGameGenre(view.Name);
+
+                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
+                {
+                    list.Add(genre);
+                }
+                return list;
+            }
+            if (string.Equals(view.ViewType, SpecialFolder.MusicGenre, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = new List<BaseItem>();
+
+                var genre = _libraryManager.GetMusicGenre(view.Name);
+
+                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
+                {
+                    list.Add(genre);
+                }
+                return list;
+            }
+            if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(view.ViewType, SpecialFolder.TvGenre, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = new List<BaseItem>();
+
+                var genre = _libraryManager.GetGenre(view.Name);
+
+                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
+                {
+                    list.Add(genre);
+                }
+                return list;
             }
 
             var result = await view.GetItems(new InternalItemsQuery
