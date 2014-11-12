@@ -1213,10 +1213,6 @@
 
                 var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '"') : '';
 
-                if (options.defaultAction) {
-                    cssClass += ' itemWithAction';
-                }
-
                 html += '<div' + dataAttributes + ' class="' + cssClass + '">';
 
                 var style = "";
@@ -1250,7 +1246,14 @@
                 html += '<div class="cardScalable">';
 
                 html += '<div class="cardPadder"></div>';
-                html += '<a class="cardContent" href="' + href + '"' + defaultActionAttribute + '>';
+
+                var anchorCssClass = "cardContent";
+
+                if (options.defaultAction) {
+                    anchorCssClass += ' itemWithAction';
+                }
+
+                html += '<a class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
                 html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '></div>';
 
                 html += '<div class="cardOverlayTarget"></div>';

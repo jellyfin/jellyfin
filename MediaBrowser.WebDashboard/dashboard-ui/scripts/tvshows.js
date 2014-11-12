@@ -87,6 +87,18 @@
                 });
                 $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
+            else if (view == "PosterCard") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'tv',
+                    showTitle: true,
+                    showYear: true,
+                    lazy: true,
+                    cardLayout: true
+                });
+                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            }
             else {
 
                 // Poster

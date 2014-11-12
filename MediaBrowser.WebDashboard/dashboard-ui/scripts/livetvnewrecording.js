@@ -25,8 +25,8 @@
         $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
         $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime).checkboxradio('refresh');
 
-        $('#txtPrePaddingSeconds', page).val(defaultTimer.PrePaddingSeconds / 60);
-        $('#txtPostPaddingSeconds', page).val(defaultTimer.PostPaddingSeconds / 60);
+        $('#txtPrePaddingMinutes', page).val(defaultTimer.PrePaddingSeconds / 60);
+        $('#txtPostPaddingMinutes', page).val(defaultTimer.PostPaddingSeconds / 60);
         $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired).checkboxradio('refresh');
 
@@ -110,8 +110,8 @@
 
         ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
 
-            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
-            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
+            item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
+            item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
             item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 

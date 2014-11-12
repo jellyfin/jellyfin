@@ -30,6 +30,7 @@ namespace MediaBrowser.Model.Dlna
         public string VideoCodec { get; set; }
         public string VideoProfile { get; set; }
 
+        public bool? Cabac { get; set; }
         public string AudioCodec { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -144,6 +145,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty);
             list.Add(item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty);
             list.Add(item.VideoProfile ?? string.Empty);
+            list.Add(item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty);
 
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }

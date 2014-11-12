@@ -57,8 +57,8 @@
 
         LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), programInfo);
 
-        $('#txtPrePaddingSeconds', page).val(item.PrePaddingSeconds / 60);
-        $('#txtPostPaddingSeconds', page).val(item.PostPaddingSeconds / 60);
+        $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
+        $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
         $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
         $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
@@ -75,8 +75,8 @@
 
         ApiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
 
-            item.PrePaddingSeconds = $('#txtPrePaddingSeconds', form).val() * 60;
-            item.PostPaddingSeconds = $('#txtPostPaddingSeconds', form).val() * 60;
+            item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
+            item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
             item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 

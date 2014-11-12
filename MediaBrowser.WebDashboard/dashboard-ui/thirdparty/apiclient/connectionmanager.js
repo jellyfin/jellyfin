@@ -248,6 +248,13 @@
 
         function addAuthenticationInfoFromConnect(server, connectionMode, credentials) {
 
+            if (!server.ExchangeToken) {
+                throw new Error("server.ExchangeToken cannot be null");
+            }
+            if (!credentials.ConnectUserId) {
+                throw new Error("credentials.ConnectUserId cannot be null");
+            }
+
             var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
             url += "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
@@ -641,7 +648,7 @@
 
             function onEnsureConnectUserDone() {
 
-                if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
+                if (credentials.ConnectUserId && credentials.ConnectAccessToken && server.ExchangeToken) {
 
                     addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(onExchangeTokenDone);
 
