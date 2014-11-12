@@ -189,6 +189,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "EnableAutoStreamCopy", Description = "Whether or not to allow automatic stream copy if requested values match the original source. Defaults to true.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool EnableAutoStreamCopy { get; set; }
 
+        [ApiMember(Name = "Cabac", Description = "Enable if cabac encoding is required", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? Cabac { get; set; }
+        
         public VideoStreamRequest()
         {
             EnableAutoStreamCopy = true;

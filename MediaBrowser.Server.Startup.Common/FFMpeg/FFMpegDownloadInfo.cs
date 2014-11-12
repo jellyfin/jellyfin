@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                     info.FFMpegFilename = "ffmpeg.exe";
                     info.FFProbeFilename = "ffprobe.exe";
-                    info.Version = "20141005";
+                    info.Version = "20141111";
                     info.ArchiveType = "7z";
 
                     switch (environment.SystemArchitecture)
@@ -92,14 +92,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20141005-git-e079d43-win64-static.7z",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141005-git-e079d43-win64-static.7z"
+                                "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20141111-git-48efe9e-win64-static.7z",
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141111-git-48efe9e-win64-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20141005-git-e079d43-win32-static.7z",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141005-git-e079d43-win32-static.7z"
+                                "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20141111-git-48efe9e-win32-static.7z",
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20141111-git-48efe9e-win32-static.7z"
                             };
                     }
                     break;
