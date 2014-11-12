@@ -25,6 +25,12 @@ namespace MediaBrowser.Tests.Resolvers
             Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"cd  - 1"));
             Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"disc- 1"));
             Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"disk - 1"));
+
+            Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"Disc 01 (Hugo Wolf · 24 Lieder)"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"Disc 04 (Encores and Folk Songs)"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"Disc04 (Encores and Folk Songs)"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"Disc 04(Encores and Folk Songs)"));
+            Assert.IsTrue(EntityResolutionHelper.IsMultiDiscAlbumFolder(@"Disc04(Encores and Folk Songs)"));
         }
     }
 }

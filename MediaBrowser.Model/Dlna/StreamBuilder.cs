@@ -646,9 +646,17 @@ namespace MediaBrowser.Model.Dlna
                             }
                             break;
                         }
+                    case ProfileConditionValue.IsCabac:
+                        {
+                            bool val;
+                            if (BoolHelper.TryParseCultureInvariant(value, out val))
+                            {
+                                item.Cabac = val;
+                            }
+                            break;
+                        }
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.IsAnamorphic:
-                    case ProfileConditionValue.IsCabac:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
                     case ProfileConditionValue.VideoTimestamp:

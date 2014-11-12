@@ -157,17 +157,23 @@ namespace MediaBrowser.Controller.Resolvers
 
             // Normalize
             // Remove whitespace
-            filename = filename.Replace("-", string.Empty);
-            filename = filename.Replace(".", string.Empty);
-            filename = Regex.Replace(filename, @"\s+", "");
+            filename = filename.Replace("-", " ");
+            filename = filename.Replace(".", " ");
+            filename = filename.Replace("(", " ");
+            filename = filename.Replace(")", " ");
+            filename = Regex.Replace(filename, @"\s+", " ");
 
             var prefixes = new[] { "disc", "cd", "disk", "vol", "volume" };
+
+            filename = filename.TrimStart();
 
             foreach (var prefix in prefixes)
             {
                 if (filename.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     var tmp = filename.Substring(prefix.Length);
+
+                    tmp = tmp.Trim().Split(' ').FirstOrDefault() ?? string.Empty;
 
                     int val;
                     if (int.TryParse(tmp, NumberStyles.Any, CultureInfo.InvariantCulture, out val))

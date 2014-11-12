@@ -416,15 +416,19 @@
 
 @media all and (min-width: 1920px) {
 
-    .squareCard {
-        width: 9.0909090909090909090909090909091%;
-    }
-
     .bannerCard {
         width: 25%;
     }
 
     .portraitCard {
+        width: 9.0909090909090909090909090909091%;
+    }
+}
+
+
+@media all and (min-width: 2300px) {
+
+    .squareCard {
         width: 9.0909090909090909090909090909091%;
     }
 }

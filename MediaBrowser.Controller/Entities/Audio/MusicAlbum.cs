@@ -139,14 +139,14 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
 
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrWhiteSpace(id))
             {
                 return "MusicAlbum-MusicBrainzReleaseGroup-" + id;
             }
 
             id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
 
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrWhiteSpace(id))
             {
                 return "MusicAlbum-Musicbrainz-" + id;
             }

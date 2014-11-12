@@ -557,6 +557,8 @@
 
         function onShowTimerExpired(elem) {
 
+            elem = $('a', elem)[0];
+
             if ($(elem).hasClass('hasContextMenu')) {
                 return;
             }
@@ -566,8 +568,14 @@
             }
 
             var innerElem = $('.cardOverlayTarget', elem);
-            var id = elem.getAttribute('data-itemid');
-            var commands = elem.getAttribute('data-commands').split(',');
+
+            var dataElement = elem;
+            while (!dataElement.getAttribute('data-itemid')) {
+                dataElement = dataElement.parentNode;
+            }
+
+            var id = dataElement.getAttribute('data-itemid');
+            var commands = dataElement.getAttribute('data-commands').split(',');
 
             var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
             var promise2 = Dashboard.getCurrentUser();
@@ -767,11 +775,18 @@
         PlaylistManager.showPanel(selection);
     }
 
-    function onItemWithActionClick() {
+    function onItemWithActionClick(e) {
 
         var elem = this;
+
         var action = elem.getAttribute('data-action');
-        var elemWithAttributes = elem.getAttribute('data-itemid') ? elem : elem.parentNode;
+        var elemWithAttributes = elem;
+
+        if (action) {
+            while (!elemWithAttributes.getAttribute('data-itemid')) {
+                elemWithAttributes = elemWithAttributes.parentNode;
+            }
+        }
 
         var index;
         var itemsContainer;

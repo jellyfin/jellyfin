@@ -1402,6 +1402,13 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.Profile = val;
                     }
                 }
+                else if (i == 20)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -1864,6 +1871,14 @@ namespace MediaBrowser.Api.Playback
                     {
                         return false;
                     }
+                }
+            }
+
+            if (request.Cabac.HasValue && request.Cabac.Value)
+            {
+                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
+                {
+                    return false;
                 }
             }
 

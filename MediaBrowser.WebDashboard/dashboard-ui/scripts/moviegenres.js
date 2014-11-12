@@ -79,7 +79,7 @@
 
             html += pagingHtml;
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').createCardMenus();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
