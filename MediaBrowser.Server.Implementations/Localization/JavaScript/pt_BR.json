@@ -616,5 +616,12 @@
     "MessageLoggedOutParentalControl": "O acesso est\u00e1 atualmente restrito. Por favor, tente mais tarde.",
     "DefaultErrorMessage": "Ocorreu um erro ao processar o pedido. Por favor, tente novamente mais tarde.",
     "ButtonAccept": "Aceitar",
-    "ButtonReject": "Rejeitar"
+    "ButtonReject": "Rejeitar",
+    "HeaderForgotPassword": "Esqueci a Senha",
+    "MessageContactAdminToResetPassword": "Por favor, contate o administrador do sistema para redefinir sua senha.",
+    "MessageForgotPasswordInNetworkRequired": "Por favor, tente novamente dentro da rede de sua casa para iniciar o processo para redefinir a senha.",
+    "MessageForgotPasswordFileCreated": "O seguinte arquivo foi criado no seu servidor e cont\u00e9m instru\u00e7\u00f5es de como proceder:",
+    "MessageForgotPasswordFileExpiration": "O c\u00f3digo para redefini\u00e7\u00e3o expirar\u00e1 \u00e0s {0}.",
+    "MessageInvalidForgotPasswordPin": "Foi digitado um c\u00f3digo inv\u00e1lido ou expirado. Por favor, tente novamente.",
+    "MessagePasswordResetForUsers": "Foram redefinidas as senhas dos seguintes usu\u00e1rios:"
 }

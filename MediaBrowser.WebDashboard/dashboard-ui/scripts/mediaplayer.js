@@ -66,15 +66,21 @@
 
             clearProgressInterval();
 
-            var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 20000;
+            var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
+            self.lastProgressReport = 0;
 
             currentProgressInterval = setInterval(function () {
 
                 if (self.currentMediaElement) {
-                    sendProgressUpdate();
+
+                    if ((new Date().getTime() - self.lastProgressReport) > intervalTime) {
+
+                        self.lastProgressReport = new Date().getTime();
+                        sendProgressUpdate();
+                    }
                 }
 
-            }, intervalTime);
+            }, 250);
         };
 
         self.getCurrentMediaExtension = function (currentSrc) {
@@ -779,7 +785,7 @@
             self.setVolume(self.getSavedVolume() * 100);
         };
 
-        self.volume = function() {
+        self.volume = function () {
             return self.currentMediaElement.volume * 100;
         };
 
@@ -1333,11 +1339,17 @@
 
                 self.onPlaystateChange(this);
 
+                // In the event timeupdate isn't firing, at least we can update when this happens
+                self.setCurrentTime(self.getCurrentTicks());
+
             }).on("playing.mediaplayerevent", function () {
 
                 console.log('audio element event: playing');
 
                 self.onPlaystateChange(this);
+
+                // In the event timeupdate isn't firing, at least we can update when this happens
+                self.setCurrentTime(self.getCurrentTicks());
 
             }).on("timeupdate.mediaplayerevent", function () {
 

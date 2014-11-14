@@ -18,6 +18,8 @@ namespace MediaBrowser.Model.ApiClient
         public String ExchangeToken { get; set; }
         public UserLinkType? UserLinkType { get; set; }
 
+        public bool IsLocalAddressFixed { get; set; }
+
         public ServerInfo()
         {
             WakeOnLanInfos = new List<WakeOnLanInfo>();
@@ -28,10 +30,11 @@ namespace MediaBrowser.Model.ApiClient
             Name = systemInfo.ServerName;
             Id = systemInfo.Id;
 
-            if (!string.IsNullOrEmpty(systemInfo.LocalAddress))
+            if (!IsLocalAddressFixed && !string.IsNullOrEmpty(systemInfo.LocalAddress))
             {
                 LocalAddress = systemInfo.LocalAddress;
             }
+
             if (!string.IsNullOrEmpty(systemInfo.WanAddress))
             {
                 RemoteAddress = systemInfo.WanAddress;
@@ -52,6 +55,5 @@ namespace MediaBrowser.Model.ApiClient
                 }
             }
         }
-
     }
 }

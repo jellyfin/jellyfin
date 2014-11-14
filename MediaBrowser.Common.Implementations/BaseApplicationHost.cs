@@ -266,7 +266,7 @@ namespace MediaBrowser.Common.Implementations
 
             if (!isFirstLoad)
             {
-                LogEnvironmentInfo(Logger, ApplicationPaths);
+                LogEnvironmentInfo(Logger, ApplicationPaths, false);
             }
 
             // Put the app config in the log for troubleshooting purposes
@@ -285,8 +285,13 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
-        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
+        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, bool isStartup)
         {
+            if (isStartup)
+            {
+                logger.Info("Media Browser Server started");
+            }
+
             logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
 
             logger.Info("Server: {0}", Environment.MachineName);
@@ -692,18 +697,11 @@ namespace MediaBrowser.Common.Implementations
             return parts;
         }
 
-        private Version _version;
         /// <summary>
-        /// Gets the current application version
+        /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
-        public Version ApplicationVersion
-        {
-            get
-            {
-                return _version ?? (_version = GetType().Assembly.GetName().Version);
-            }
-        }
+        public abstract Version ApplicationVersion { get; }
 
         /// <summary>
         /// Handles the ConfigurationUpdated event of the ConfigurationManager control.

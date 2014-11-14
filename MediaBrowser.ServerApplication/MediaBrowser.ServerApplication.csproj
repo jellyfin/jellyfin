@@ -150,6 +150,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Installation\MediaBrowser.InstallUtil.dll">
+      <Link>MediaBrowser.InstallUtil.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Installation\MediaBrowser.Uninstaller.exe">
+      <Link>MediaBrowser.Uninstaller.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Installation\MediaBrowser.Updater.exe">
+      <Link>MediaBrowser.Updater.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\packages\System.Data.SQLite.Core.1.0.94.0\build\net45\x64\SQLite.Interop.dll">
       <Link>x64\SQLite.Interop.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -225,35 +237,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release (
-rmdir "$(SolutionDir)..\Deploy\Server\System" /s /q
-mkdir "$(SolutionDir)..\Deploy\Server\System"
-rmdir "$(SolutionDir)..\Deploy\Server\Pismo" /s /q
-xcopy "$(TargetDir)$(TargetFileName)" "$(SolutionDir)..\Deploy\Server\System\" /y
-xcopy "$(SolutionDir)Installation\MediaBrowser.Uninstaller.exe.config" "$(SolutionDir)..\Deploy\Server\System\" /y
-xcopy "$(SolutionDir)Installation\MediaBrowser.Uninstaller.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
-xcopy "$(SolutionDir)Installation\MediaBrowser.InstallUtil.dll" "$(SolutionDir)..\Deploy\Server\System\" /y
-xcopy "$(SolutionDir)Installation\MediaBrowser.Updater.exe" "$(SolutionDir)..\Deploy\Server\System\" /y
-
-mkdir "$(SolutionDir)..\Deploy\Server\System\swagger-ui"
-xcopy "$(TargetDir)swagger-ui" "$(SolutionDir)..\Deploy\Server\System\swagger-ui" /y /s
-
-xcopy "$(TargetDir)$(TargetFileName).config" "$(SolutionDir)..\Deploy\Server\System\" /y
-
-xcopy "$(TargetDir)*.dll" "$(SolutionDir)..\Deploy\Server\System" /y
-
-mkdir "$(SolutionDir)..\Deploy\Server\System\dashboard-ui"
-xcopy "$(TargetDir)dashboard-ui" "$(SolutionDir)..\Deploy\Server\System\dashboard-ui" /y /s
-
-mkdir "$(SolutionDir)..\Deploy\Server\System\x86"
-xcopy "$(TargetDir)x86" "$(SolutionDir)..\Deploy\Server\System\x86" /y /s
-
-mkdir "$(SolutionDir)..\Deploy\Server\System\x64"
-xcopy "$(TargetDir)x64" "$(SolutionDir)..\Deploy\Server\System\x64" /y /s
-
-del "$(SolutionDir)..\Deploy\MBServer.zip"
-"$(SolutionDir)ThirdParty\7zip\7za" a -mx9 "$(SolutionDir)..\Deploy\MBServer.zip" "$(SolutionDir)..\Deploy\Server\*"
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -262,11 +247,5 @@ del "$(SolutionDir)..\Deploy\MBServer.zip"
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="AfterBuild">
-    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
-      <Output TaskParameter="Assemblies" ItemName="CurrentAssembly" />
-    </GetAssemblyIdentity>
-    <Exec Command="copy &quot;$(SolutionDir)..\Deploy\MBServer.zip&quot;  &quot;$(SolutionDir)..\Deploy\MBServer_%(CurrentAssembly.Version).zip&quot; /y" Condition="'$(ConfigurationName)' == 'Release'" />
-  </Target>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.94.0\build\net45\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.94.0\build\net45\System.Data.SQLite.Core.targets')" />
 </Project>

@@ -616,5 +616,12 @@
     "MessageLoggedOutParentalControl": "El acceso se encuentra restringido en este momento. Por favor int\u00e9ntelo de nuevo mas tarde.",
     "DefaultErrorMessage": "Ha ocurrido un error al procesar la solicitud. Por favor int\u00e9ntelo de nuevo mas tarde.",
     "ButtonAccept": "Aceptar",
-    "ButtonReject": "Rechazar"
+    "ButtonReject": "Rechazar",
+    "HeaderForgotPassword": "Contrase\u00f1a Olvidada",
+    "MessageContactAdminToResetPassword": "Por favor contacte a su administrador para restablecer su contrase\u00f1a.",
+    "MessageForgotPasswordInNetworkRequired": "Por favor intente de nuevo dentro de su red de hogar para iniciar el proceso de restablecimiento de contrase\u00f1a.",
+    "MessageForgotPasswordFileCreated": "El siguiente archivo fue creado en tu servidor y contiene instrucciones de como proceder.",
+    "MessageForgotPasswordFileExpiration": "El pin de restablecimiento expirara en {0}.",
+    "MessageInvalidForgotPasswordPin": "Se introdujo un pin expirado o invalido. Por favor intente de nuevo.",
+    "MessagePasswordResetForUsers": "Las contrase\u00f1as se han restablecido para los siguientes usuarios:"
 }

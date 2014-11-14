@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-                return MainClass.CanSelfRestart;
+                return false;
             }
         }
 
@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-                return MainClass.CanSelfUpdate;
+                return false;
             }
         }
 

@@ -1254,5 +1254,14 @@
     "LabelSelectLastestItemsFolders": "Voeg media van de volgende secties toe aan Nieuwste items",
     "HeaderShareMediaFolders": "Deel media mappen",
     "MessageGuestSharingPermissionsHelp": "De meeste features zijn niet direct beschikbaar voor gasten maar kunnen aangezet worden waar gewenst.",
-    "HeaderInvitations": "Uitnodigingen"
+    "HeaderInvitations": "Uitnodigingen",
+    "LabelForgotPasswordUsernameHelp": "Enter your username, if you remember it.",
+    "HeaderForgotPassword": "Forgot Password",
+    "TitleForgotPassword": "Forgot Password",
+    "TitlePasswordReset": "Password Reset",
+    "LabelPasswordRecoveryPinCode": "Pin code:",
+    "HeaderPasswordReset": "Password Reset",
+    "HeaderParentalRatings": "Parental Ratings",
+    "HeaderVideoTypes": "Video Types",
+    "HeaderYears": "Years"
 }

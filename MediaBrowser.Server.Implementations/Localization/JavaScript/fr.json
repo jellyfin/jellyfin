@@ -614,7 +614,14 @@
     "ButtonSelectServer": "S\u00e9lectionner le serveur",
     "MessagePluginConfigurationRequiresLocalAccess": "Pour configurer ce plugin, S.v.p. connecter vous \u00e0 votre serveur local directement.",
     "MessageLoggedOutParentalControl": "L'acc\u00e8s est actuellement limit\u00e9. S.v.p. r\u00e9essayez plus tard",
-    "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
-    "ButtonAccept": "Accept",
-    "ButtonReject": "Reject"
+    "DefaultErrorMessage": "Il y a eu une erreur lors de l'ex\u00e9cution de la requ\u00eate. S.v.p. r\u00e9essayez plus tard.",
+    "ButtonAccept": "Accepter",
+    "ButtonReject": "Rejeter",
+    "HeaderForgotPassword": "Mot de passe oubli\u00e9",
+    "MessageContactAdminToResetPassword": "S.v.p. contactez votre administrateur de syst\u00e8me pour r\u00e9initialiser votre mot de passe.",
+    "MessageForgotPasswordInNetworkRequired": "S.v.p. r\u00e9essayez encore \u00e0 partir de votre r\u00e9seau local pour d\u00e9marrer la proc\u00e9dure de r\u00e9initialisation du mot de passe.",
+    "MessageForgotPasswordFileCreated": "Le fichier suivant a \u00e9t\u00e9 cr\u00e9e sur votre serveur et contient les instructions sur comment proc\u00e9der.",
+    "MessageForgotPasswordFileExpiration": "Le NIP de r\u00e9initialisation va expir\u00e9 dans {0}.",
+    "MessageInvalidForgotPasswordPin": "Un NIP invalide ou expir\u00e9 a \u00e9t\u00e9 entr\u00e9. S.v.p. r\u00e9essayez encore.",
+    "MessagePasswordResetForUsers": "Les mot de passes ont \u00e9t\u00e9 r\u00e9initialis\u00e9s pour les utilisateurs suivants:"
 }

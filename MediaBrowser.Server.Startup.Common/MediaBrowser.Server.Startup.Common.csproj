@@ -24,7 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>None</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -60,6 +60,7 @@
     <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="INativeApp.cs" />
+    <Compile Include="Migrations\DeprecatePlugins.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\MigrateUserFolders.cs" />
     <Compile Include="Migrations\PlaylistImages.cs" />

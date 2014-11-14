@@ -268,7 +268,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var config = ConfigurationManager.Configuration;
 
-            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.CurrentCulture);
+            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.Ordinal);
 
             if (ibnPathChanged)
             {
@@ -276,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
-            var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.CurrentCulture);
+            var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.Ordinal);
             var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
             RecordConfigurationValues(config);
@@ -331,7 +331,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var seasons = RootFolder.RecursiveChildren
                 .OfType<Season>()
-                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.CurrentCulture))
+                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.Ordinal))
                 .ToList();
 
             foreach (var season in seasons)

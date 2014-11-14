@@ -616,5 +616,12 @@
     "MessageLoggedOutParentalControl": "Toegang is momenteel bepertk, probeer later opnieuw.",
     "DefaultErrorMessage": "Er is een fout opgetreden. Probeer later opnieuw.",
     "ButtonAccept": "Accepteren",
-    "ButtonReject": "Weigeren"
+    "ButtonReject": "Weigeren",
+    "HeaderForgotPassword": "Forgot Password",
+    "MessageContactAdminToResetPassword": "Please contact your system administrator to reset your password.",
+    "MessageForgotPasswordInNetworkRequired": "Please try again within your home network to initiate the password reset process.",
+    "MessageForgotPasswordFileCreated": "The following file has been created on your server and contains instructions on how to proceed:",
+    "MessageForgotPasswordFileExpiration": "The reset pin will expire at {0}.",
+    "MessageInvalidForgotPasswordPin": "An invalid or expired pin was entered. Please try again.",
+    "MessagePasswordResetForUsers": "Passwords have been reset for the following users:"
 }

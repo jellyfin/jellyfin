@@ -616,5 +616,12 @@
     "MessageLoggedOutParentalControl": "Der Zugriff ist derzeit eingeschr\u00e4nkt. Bitte versuche es sp\u00e4ter erneut.",
     "DefaultErrorMessage": "Es gab einen Fehler beim verarbeiten der Anfrage. Bitte versuche es sp\u00e4ter erneut.",
     "ButtonAccept": "Akzeptieren",
-    "ButtonReject": "Ablehnen"
+    "ButtonReject": "Ablehnen",
+    "HeaderForgotPassword": "Passwort vergessen",
+    "MessageContactAdminToResetPassword": "Bitte kontaktiere deinen Systemadministrator, um dein Passwort zur\u00fccksetzen zu lassen.",
+    "MessageForgotPasswordInNetworkRequired": "Bitte versuche es erneut innerhalb deines Heimnetzwerks, um die Passwort Zur\u00fccksetzung zu starten.",
+    "MessageForgotPasswordFileCreated": "Die folgende Datei wurde auf deinem Server erstellt und enth\u00e4lt eine Anleitung, wie fortgefahren werden muss:",
+    "MessageForgotPasswordFileExpiration": "Der Zur\u00fccksetzungs-PIN wird am {0} auslaufen.",
+    "MessageInvalidForgotPasswordPin": "Ein ung\u00fcltiger oder abgelaufener PIN wurde eingegeben. Bitte versuche es noch einmal.",
+    "MessagePasswordResetForUsers": "Passw\u00f6rter wurden f\u00fcr die folgenden Benutzer zur\u00fcckgesetzt:"
 }

@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
 
     // The base query options
     var query = {
