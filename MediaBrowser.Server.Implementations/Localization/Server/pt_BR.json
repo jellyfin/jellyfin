@@ -1254,5 +1254,14 @@
     "LabelSelectLastestItemsFolders": "Incluir m\u00eddia das seguintes se\u00e7\u00f5es nos Itens Recentes",
     "HeaderShareMediaFolders": "Compartilhar Pastas de M\u00eddia",
     "MessageGuestSharingPermissionsHelp": "A maioria dos recursos est\u00e3o inicialmente indispon\u00edveis para convidados, mas podem ser ativados conforme necess\u00e1rio.",
-    "HeaderInvitations": "Convites"
+    "HeaderInvitations": "Convites",
+    "LabelForgotPasswordUsernameHelp": "Digite o nome de seu usu\u00e1rio, se lembrar.",
+    "HeaderForgotPassword": "Esqueci a Senha",
+    "TitleForgotPassword": "Esqueci a Senha",
+    "TitlePasswordReset": "Redefini\u00e7\u00e3o de Senha",
+    "LabelPasswordRecoveryPinCode": "C\u00f3digo:",
+    "HeaderPasswordReset": "Redefini\u00e7\u00e3o de Senha",
+    "HeaderParentalRatings": "Classifica\u00e7\u00f5es Parentais",
+    "HeaderVideoTypes": "Tipos de V\u00eddeo",
+    "HeaderYears": "Anos"
 }

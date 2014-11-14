@@ -1237,6 +1237,7 @@
     "LabelConnectGuestUserNameHelp": "This is the username that your friend uses to sign in to the Media Browser website, or their email address.",
     "HeaderInviteUserHelp": "Sharing your media with friends is easier than ever before with Media Browser Connect.",
     "ButtonSendInvitation": "Send Invitation",
+    "HeaderSignInWithConnect":  "Sign in with Media Browser Connect",
     "HeaderGuests": "Guests",
     "HeaderLocalUsers": "Local Users",
     "HeaderPendingInvitations": "Pending Invitations",

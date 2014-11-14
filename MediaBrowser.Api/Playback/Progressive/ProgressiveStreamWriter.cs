@@ -130,7 +130,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private void CopyToInternal(Stream source, Stream destination, int bufferSize)
         {
-            byte[] array = new byte[bufferSize];
+            var array = new byte[bufferSize];
             int count;
             while ((count = source.Read(array, 0, array.Length)) != 0)
             {

@@ -1254,5 +1254,14 @@
     "LabelSelectLastestItemsFolders": "Beziehe Medien aus folgenden Sektionen in \"Neueste Medien\" mit ein",
     "HeaderShareMediaFolders": "Teile Medienverzeichnisse",
     "MessageGuestSharingPermissionsHelp": "Die meisten Funktionen sind f\u00fcr G\u00e4ste zun\u00e4chst nicht verf\u00fcgbar, k\u00f6nnen aber je nach Bedarf aktiviert werden.",
-    "HeaderInvitations": "Einladungen"
+    "HeaderInvitations": "Einladungen",
+    "LabelForgotPasswordUsernameHelp": "Bitte gib deinen Benutzernamen ein, falls du dich daran erinnerst.",
+    "HeaderForgotPassword": "Passwort vergessen",
+    "TitleForgotPassword": "Passwort vergessen",
+    "TitlePasswordReset": "Passwort zur\u00fccksetzen",
+    "LabelPasswordRecoveryPinCode": "PIN-Code:",
+    "HeaderPasswordReset": "Passwort zur\u00fccksetzen",
+    "HeaderParentalRatings": "Altersbeschr\u00e4nkung",
+    "HeaderVideoTypes": "Videotypen",
+    "HeaderYears": "Jahre"
 }

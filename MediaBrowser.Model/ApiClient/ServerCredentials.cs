@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.ApiClient
                 {
                     existing.RemoteAddress = server.RemoteAddress;
                 }
-                if (!string.IsNullOrEmpty(server.LocalAddress))
+                if (!existing.IsLocalAddressFixed && !string.IsNullOrEmpty(server.LocalAddress))
                 {
                     existing.LocalAddress = server.LocalAddress;
                 }
@@ -61,6 +61,10 @@ namespace MediaBrowser.Model.ApiClient
                 if (server.WakeOnLanInfos != null && server.WakeOnLanInfos.Count > 0)
                 {
                     existing.WakeOnLanInfos = server.WakeOnLanInfos.ToList();
+                }
+                if (server.IsLocalAddressFixed)
+                {
+                    existing.IsLocalAddressFixed = true;
                 }
             }
             else

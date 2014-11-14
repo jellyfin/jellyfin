@@ -253,6 +253,19 @@ namespace MediaBrowser.Server.Startup.Common
             NativeApp = nativeApp;
         }
 
+        private Version _version;
+        /// <summary>
+        /// Gets the current application version
+        /// </summary>
+        /// <value>The application version.</value>
+        public override Version ApplicationVersion
+        {
+            get
+            {
+                return _version ?? (_version = NativeApp.GetType().Assembly.GetName().Version);
+            }
+        }
+
         public override bool IsRunningAsService
         {
             get { return NativeApp.IsRunningAsService; }
@@ -327,6 +340,7 @@ namespace MediaBrowser.Server.Startup.Common
             new PlaylistImages(ServerConfigurationManager).Run();
             new RenameXbmcOptions(ServerConfigurationManager).Run();
             new RenameXmlOptions(ServerConfigurationManager).Run();
+            new DeprecatePlugins(ApplicationPaths).Run();
         }
 
         /// <summary>

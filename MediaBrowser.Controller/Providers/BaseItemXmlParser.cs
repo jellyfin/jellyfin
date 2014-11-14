@@ -827,19 +827,19 @@ namespace MediaBrowser.Controller.Providers
                         {
                             var val = reader.ReadElementContentAsString();
 
-                            if (string.Equals("HSBS", val, StringComparison.CurrentCulture))
+                            if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                             {
                                 video.Video3DFormat = Video3DFormat.HalfSideBySide;
                             }
-                            else if (string.Equals("HTAB", val, StringComparison.CurrentCulture))
+                            else if (string.Equals("HTAB", val, StringComparison.OrdinalIgnoreCase))
                             {
                                 video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                             }
-                            else if (string.Equals("FTAB", val, StringComparison.CurrentCulture))
+                            else if (string.Equals("FTAB", val, StringComparison.OrdinalIgnoreCase))
                             {
                                 video.Video3DFormat = Video3DFormat.FullTopAndBottom;
                             }
-                            else if (string.Equals("FSBS", val, StringComparison.CurrentCulture))
+                            else if (string.Equals("FSBS", val, StringComparison.OrdinalIgnoreCase))
                             {
                                 video.Video3DFormat = Video3DFormat.FullSideBySide;
                             }

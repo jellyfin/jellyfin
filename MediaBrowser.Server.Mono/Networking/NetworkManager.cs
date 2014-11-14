@@ -28,9 +28,9 @@ namespace MediaBrowser.Server.Mono.Networking
         }
 
         /// <summary>
-        /// Gets a list of network devices
+        /// Gets available devices within the domain
         /// </summary>
-        /// PC's in the Domain</returns>
+        /// <returns>PC's in the Domain</returns>
 		public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
 			return new List<FileSystemEntryInfo> ();
