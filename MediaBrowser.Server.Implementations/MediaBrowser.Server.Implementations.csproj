@@ -68,6 +68,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
@@ -408,10 +409,6 @@
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\highlight.default.css">
-      <Link>swagger-ui\css\highlight.default.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
       <Link>swagger-ui\css\screen.css</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

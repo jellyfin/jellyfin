@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager)
+        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
+            SessionManager = sessionManager;
             ConnectManager = connectManager;
             UserManager = userManager;
         }
@@ -25,6 +27,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         public IUserManager UserManager { get; private set; }
         public IAuthorizationContext AuthorizationContext { get; private set; }
         public IConnectManager ConnectManager { get; private set; }
+        public ISessionManager SessionManager { get; private set; }
 
         /// <summary>
         /// Redirect the client to a specific URL if authentication failed.
@@ -90,6 +93,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 var roles = authAttribtues.GetRoles().ToList();
 
                 ValidateRoles(roles, user);
+            }
+
+            if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&
+                !string.IsNullOrWhiteSpace(auth.Client) &&
+                !string.IsNullOrWhiteSpace(auth.Device))
+            {
+                SessionManager.LogSessionActivity(auth.Client,
+                    auth.Version,
+                    auth.DeviceId,
+                    auth.Device,
+                    request.RemoteIp,
+                    user);
             }
         }
 
