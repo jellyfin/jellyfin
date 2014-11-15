@@ -17,11 +17,17 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getServerConfiguration().done(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
 
             config.UICulture = $('#selectLocalizationLanguage', page).val();
 
-            apiClient.updateServerConfiguration(config).done(function (result) {
+            apiClient.ajax({
+                
+                type: 'POST',
+                data: config,
+                url: apiClient.getUrl('Startup/Configuration')
+
+            }).done(function () {
 
                 Dashboard.navigate('wizarduser.html');
 
@@ -37,29 +43,13 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getPublicUsers().done(function (u) {
+        var promise1 = apiClient.getJSON(apiClient.getUrl('Startup/Configuration'));
 
-            var user = u.filter(function (i) {
-                return i.Configuration.IsAdministrator;
-            })[0];
+        var promise2 = apiClient.getJSON(apiClient.getUrl("Localization/Options"));
 
-            apiClient.authenticateUserByName(user.Name, '').done(function (result) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
-                user = result.User;
-
-                Dashboard.setCurrentUser(user.Id, result.AccessToken);
-
-                var promise1 = apiClient.getServerConfiguration();
-
-                var promise2 = apiClient.getJSON(apiClient.getUrl("Localization/Options"));
-
-                $.when(promise1, promise2).done(function (response1, response2) {
-
-                    loadPage(page, response1[0], response2[0]);
-
-                });
-
-            });
+            loadPage(page, response1[0], response2[0]);
 
         });
     });

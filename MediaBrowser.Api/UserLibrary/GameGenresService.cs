@@ -13,8 +13,7 @@ using System.Linq;
 
 namespace MediaBrowser.Api.UserLibrary
 {
-    [Route("/GameGenres", "GET")]
-    [Api(Description = "Gets all Game genres from a given item, folder, or the entire library")]
+    [Route("/GameGenres", "GET", Summary = "Gets all Game genres from a given item, folder, or the entire library")]
     public class GetGameGenres : GetItemsByName
     {
         public GetGameGenres()
@@ -23,8 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
         }
     }
 
-    [Route("/GameGenres/{Name}", "GET")]
-    [Api(Description = "Gets a Game genre, by name")]
+    [Route("/GameGenres/{Name}", "GET", Summary = "Gets a Game genre, by name")]
     public class GetGameGenre : IReturn<BaseItemDto>
     {
         /// <summary>

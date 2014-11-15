@@ -122,7 +122,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PackageService
     /// </summary>
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;

@@ -131,11 +131,11 @@ namespace MediaBrowser.Api.Library
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
     }
-    
+
     /// <summary>
     /// Class LibraryStructureService
     /// </summary>
-    [Authenticated]
+    [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class LibraryStructureService : BaseApiService
     {
         /// <summary>
@@ -164,7 +164,6 @@ namespace MediaBrowser.Api.Library
         /// <param name="appPaths">The app paths.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <exception cref="System.ArgumentNullException">appPaths</exception>
         public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
         {
             if (appPaths == null)

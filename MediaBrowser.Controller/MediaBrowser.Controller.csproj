@@ -220,8 +220,11 @@
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\IRestfulService.cs" />
+    <Compile Include="Net\IServiceRequest.cs" />
     <Compile Include="Net\ISessionContext.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />
+    <Compile Include="Net\SecurityException.cs" />
+    <Compile Include="Net\ServiceStackServiceRequest.cs" />
     <Compile Include="Net\StaticResultOptions.cs" />
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationManager.cs" />

@@ -22,8 +22,10 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
+            var serviceRequest = new ServiceStackServiceRequest(request);
+            
             //This code is executed before the service
-            var auth = AuthorizationContext.GetAuthorizationInfo(request);
+            var auth = AuthorizationContext.GetAuthorizationInfo(serviceRequest);
 
             if (auth != null)
             {

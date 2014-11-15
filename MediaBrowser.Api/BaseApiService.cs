@@ -84,7 +84,6 @@ namespace MediaBrowser.Api
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        /// <exception cref="System.ArgumentException">Session not found.</exception>
         protected SessionInfo GetSession()
         {
             var session = SessionContext.GetSession(Request);

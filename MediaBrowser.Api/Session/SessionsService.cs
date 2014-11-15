@@ -241,16 +241,19 @@ namespace MediaBrowser.Api.Session
     }
 
     [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
+    [Authenticated]
     public class ReportSessionEnded : IReturnVoid
     {
     }
 
     [Route("/Auth/Keys", "GET")]
+    [Authenticated(Roles = "Admin")]
     public class GetApiKeys
     {
     }
 
     [Route("/Auth/Keys/{Key}", "DELETE")]
+    [Authenticated(Roles = "Admin")]
     public class RevokeKey
     {
         [ApiMember(Name = "Key", Description = "Auth Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -258,6 +261,7 @@ namespace MediaBrowser.Api.Session
     }
 
     [Route("/Auth/Keys", "POST")]
+    [Authenticated(Roles = "Admin")]
     public class CreateKey
     {
         [ApiMember(Name = "App", Description = "App", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]

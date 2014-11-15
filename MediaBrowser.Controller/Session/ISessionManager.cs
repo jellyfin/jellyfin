@@ -256,12 +256,6 @@ namespace MediaBrowser.Controller.Session
         SessionInfo GetSession(string deviceId, string client, string version);
 
         /// <summary>
-        /// Validates the security token.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        void ValidateSecurityToken(string accessToken);
-
-        /// <summary>
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>

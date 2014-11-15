@@ -16,8 +16,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetGenres
     /// </summary>
-    [Route("/Genres", "GET")]
-    [Api(Description = "Gets all genres from a given item, folder, or the entire library")]
+    [Route("/Genres", "GET", Summary = "Gets all genres from a given item, folder, or the entire library")]
     public class GetGenres : GetItemsByName
     {
     }
@@ -25,8 +24,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetGenre
     /// </summary>
-    [Route("/Genres/{Name}", "GET")]
-    [Api(Description = "Gets a genre, by name")]
+    [Route("/Genres/{Name}", "GET", Summary = "Gets a genre, by name")]
     public class GetGenre : IReturn<BaseItemDto>
     {
         /// <summary>

@@ -5,11 +5,11 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,8 +45,8 @@ namespace MediaBrowser.Api.Images
         public bool IncludeAllLanguages { get; set; }
     }
 
-    [Route("/Items/{Id}/RemoteImages", "GET")]
-    [Api(Description = "Gets available remote images for an item")]
+    [Route("/Items/{Id}/RemoteImages", "GET", Summary = "Gets available remote images for an item")]
+    [Authenticated]
     public class GetRemoteImages : BaseRemoteImageRequest
     {
         /// <summary>
@@ -57,25 +57,8 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
-    [Route("/Artists/{Name}/RemoteImages", "GET")]
-    [Route("/Genres/{Name}/RemoteImages", "GET")]
-    [Route("/GameGenres/{Name}/RemoteImages", "GET")]
-    [Route("/MusicGenres/{Name}/RemoteImages", "GET")]
-    [Route("/Persons/{Name}/RemoteImages", "GET")]
-    [Route("/Studios/{Name}/RemoteImages", "GET")]
-    [Api(Description = "Gets available remote images for an item")]
-    public class GetItemByNameRemoteImages : BaseRemoteImageRequest
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Items/{Id}/RemoteImages/Providers", "GET")]
-    [Api(Description = "Gets available remote image providers for an item")]
+    [Route("/Items/{Id}/RemoteImages/Providers", "GET", Summary = "Gets available remote image providers for an item")]
+    [Authenticated]
     public class GetRemoteImageProviders : IReturn<List<ImageProviderInfo>>
     {
         /// <summary>
@@ -84,23 +67,6 @@ namespace MediaBrowser.Api.Images
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
-    }
-
-    [Route("/Artists/{Name}/RemoteImages/Providers", "GET")]
-    [Route("/Genres/{Name}/RemoteImages/Providers", "GET")]
-    [Route("/GameGenres/{Name}/RemoteImages/Providers", "GET")]
-    [Route("/MusicGenres/{Name}/RemoteImages/Providers", "GET")]
-    [Route("/Persons/{Name}/RemoteImages/Providers", "GET")]
-    [Route("/Studios/{Name}/RemoteImages/Providers", "GET")]
-    [Api(Description = "Gets available remote image providers for an item")]
-    public class GetItemByNameRemoteImageProviders : IReturn<List<ImageProviderInfo>>
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Name { get; set; }
     }
 
     public class BaseDownloadRemoteImage : IReturnVoid
@@ -115,8 +81,8 @@ namespace MediaBrowser.Api.Images
         public string ImageUrl { get; set; }
     }
 
-    [Route("/Items/{Id}/RemoteImages/Download", "POST")]
-    [Api(Description = "Downloads a remote image for an item")]
+    [Route("/Items/{Id}/RemoteImages/Download", "POST", Summary = "Downloads a remote image for an item")]
+    [Authenticated(Roles="Admin")]
     public class DownloadRemoteImage : BaseDownloadRemoteImage
     {
         /// <summary>
@@ -127,25 +93,7 @@ namespace MediaBrowser.Api.Images
         public string Id { get; set; }
     }
 
-    [Route("/Artists/{Name}/RemoteImages/Download", "POST")]
-    [Route("/Genres/{Name}/RemoteImages/Download", "POST")]
-    [Route("/GameGenres/{Name}/RemoteImages/Download", "POST")]
-    [Route("/MusicGenres/{Name}/RemoteImages/Download", "POST")]
-    [Route("/Persons/{Name}/RemoteImages/Download", "POST")]
-    [Route("/Studios/{Name}/RemoteImages/Download", "POST")]
-    [Api(Description = "Downloads a remote image for an item")]
-    public class DownloadItemByNameRemoteImage : BaseDownloadRemoteImage
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Name { get; set; }
-    }
-
-    [Route("/Images/Remote", "GET")]
-    [Api(Description = "Gets a remote image")]
+    [Route("/Images/Remote", "GET", Summary = "Gets a remote image")]
     public class GetRemoteImage
     {
         [ApiMember(Name = "ImageUrl", Description = "The image url", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -182,18 +130,6 @@ namespace MediaBrowser.Api.Images
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetItemByNameRemoteImageProviders request)
-        {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var type = pathInfo.GetArgumentValue<string>(0);
-
-            var item = GetItemByName(request.Name, type, _libraryManager);
-
-            var result = GetImageProviders(item);
-
-            return ToOptimizedSerializedResultUsingCache(result);
-        }
-
         private List<ImageProviderInfo> GetImageProviders(BaseItem item)
         {
             return _providerManager.GetRemoteImageProviderInfo(item).ToList();
@@ -202,16 +138,6 @@ namespace MediaBrowser.Api.Images
         public async Task<object> Get(GetRemoteImages request)
         {
             var item = _libraryManager.GetItemById(request.Id);
-
-            return await GetRemoteImageResult(item, request).ConfigureAwait(false);
-        }
-
-        public async Task<object> Get(GetItemByNameRemoteImages request)
-        {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var type = pathInfo.GetArgumentValue<string>(0);
-
-            var item = GetItemByName(request.Name, type, _libraryManager);
 
             return await GetRemoteImageResult(item, request).ConfigureAwait(false);
         }
@@ -268,18 +194,6 @@ namespace MediaBrowser.Api.Images
         public void Post(DownloadRemoteImage request)
         {
             var item = _libraryManager.GetItemById(request.Id);
-
-            var task = DownloadRemoteImage(item, request);
-
-            Task.WaitAll(task);
-        }
-
-        public void Post(DownloadItemByNameRemoteImage request)
-        {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var type = pathInfo.GetArgumentValue<string>(0);
-
-            var item = GetItemByName(request.Name, type, _libraryManager);
 
             var task = DownloadRemoteImage(item, request);
 

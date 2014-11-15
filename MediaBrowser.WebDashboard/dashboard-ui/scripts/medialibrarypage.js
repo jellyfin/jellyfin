@@ -345,9 +345,11 @@ var WizardLibraryPage = {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        var apiClient = ApiClient;
+
+        apiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
+            url: apiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
 
         }).done(function () {
 
@@ -440,14 +442,16 @@ var WizardLibraryPage = {
 
         pollTasks(page);
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
+        var apiClient = ApiClient;
+
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
+        $(apiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
 
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
+            if (apiClient.isWebSocketOpen()) {
+                apiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
             }
         });
 
@@ -455,11 +459,13 @@ var WizardLibraryPage = {
 
         var page = this;
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        var apiClient = ApiClient;
+
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
 
-        $(ApiClient).off("websocketmessage", onWebSocketMessage);
+        $(apiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

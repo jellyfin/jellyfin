@@ -1,5 +1,4 @@
-﻿using ServiceStack.Web;
-
+﻿
 namespace MediaBrowser.Controller.Net
 {
     public interface IAuthorizationContext
@@ -9,6 +8,13 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="requestContext">The request context.</param>
         /// <returns>AuthorizationInfo.</returns>
-        AuthorizationInfo GetAuthorizationInfo(IRequest requestContext);
+        AuthorizationInfo GetAuthorizationInfo(object requestContext);
+        
+        /// <summary>
+        /// Gets the authorization information.
+        /// </summary>
+        /// <param name="requestContext">The request context.</param>
+        /// <returns>AuthorizationInfo.</returns>
+        AuthorizationInfo GetAuthorizationInfo(IServiceRequest requestContext);
     }
 }

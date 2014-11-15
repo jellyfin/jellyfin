@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CulturesService
     /// </summary>
-    [Authenticated]
+    [Authenticated(AllowBeforeStartupWizard = true)]
     public class LocalizationService : BaseApiService
     {
         /// <summary>

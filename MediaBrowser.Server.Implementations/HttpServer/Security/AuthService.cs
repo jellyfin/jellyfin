@@ -1,13 +1,11 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Session;
-using ServiceStack;
-using ServiceStack.Auth;
-using ServiceStack.Web;
+using MediaBrowser.Controller.Security;
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.Security
@@ -16,27 +14,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager)
+        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
             ConnectManager = connectManager;
-            SessionManager = sessionManager;
             UserManager = userManager;
         }
 
         public IUserManager UserManager { get; private set; }
-        public ISessionManager SessionManager { get; private set; }
         public IAuthorizationContext AuthorizationContext { get; private set; }
         public IConnectManager ConnectManager { get; private set; }
-
-        /// <summary>
-        /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
-        /// For example, if this attribute should only permit access
-        /// if the user is authenticated with <see cref="BasicAuthProvider"/>,
-        /// you should set this property to <see cref="BasicAuthProvider.Name"/>.
-        /// </summary>
-        public string Provider { get; set; }
 
         /// <summary>
         /// Redirect the client to a specific URL if authentication failed.
@@ -44,33 +32,25 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         public string HtmlRedirect { get; set; }
 
-        public void Authenticate(IRequest request,
-            IResponse response,
-            object requestDto,
-            IAuthenticated authAttribtues)
+        public void Authenticate(IServiceRequest request,
+            IAuthenticationAttributes authAttribtues)
         {
-            if (HostContext.HasValidAuthSecret(request))
-                return;
-
-            //ExecuteBasic(req, res, requestDto); //first check if session is authenticated
-            //if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
-
-            ValidateUser(request, response, authAttribtues);
+            ValidateUser(request, authAttribtues);
         }
 
-        private void ValidateUser(IRequest req, IResponse response, IAuthenticated authAttribtues)
+        private void ValidateUser(IServiceRequest request,
+            IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
-            var auth = AuthorizationContext.GetAuthorizationInfo(req);
+            var auth = AuthorizationContext.GetAuthorizationInfo(request);
 
-            if (!string.IsNullOrWhiteSpace(auth.Token) ||
-                !_config.Configuration.InsecureApps6.Contains(auth.Client ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (!IsExemptFromAuthenticationToken(auth, authAttribtues))
             {
                 var valid = IsValidConnectKey(auth.Token);
 
                 if (!valid)
                 {
-                    SessionManager.ValidateSecurityToken(auth.Token);
+                    ValidateSecurityToken(request, auth.Token);
                 }
             }
 
@@ -80,45 +60,83 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (user == null & !string.IsNullOrWhiteSpace(auth.UserId))
             {
-                throw new ArgumentException("User with Id " + auth.UserId + " not found");
+                throw new SecurityException("User with Id " + auth.UserId + " not found");
             }
 
             if (user != null)
             {
                 if (user.Configuration.IsDisabled)
                 {
-                    throw new AuthenticationException("User account has been disabled.");
+                    throw new SecurityException("User account has been disabled.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                    };
                 }
 
                 if (!user.Configuration.IsAdministrator &&
                     !authAttribtues.EscapeParentalControl &&
                     !user.IsParentalScheduleAllowed())
                 {
-                    response.AddHeader("X-Application-Error-Code", "ParentalControl");
-                    throw new AuthenticationException("This user account is not allowed access at this time.");
+                    request.AddResponseHeader("X-Application-Error-Code", "ParentalControl");
+                    throw new SecurityException("This user account is not allowed access at this time.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.ParentalControl
+                    };
                 }
             }
 
-            var roles = authAttribtues.GetRoles().ToList();
+            if (!IsExemptFromRoles(auth, authAttribtues))
+            {
+                var roles = authAttribtues.GetRoles().ToList();
 
+                ValidateRoles(roles, user);
+            }
+        }
+
+        private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
+        {
+            if (!_config.Configuration.IsStartupWizardCompleted &&
+                authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            return _config.Configuration.InsecureApps7.Contains(auth.Client ?? string.Empty,
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
+        {
+            if (!_config.Configuration.IsStartupWizardCompleted &&
+                authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ValidateRoles(List<string> roles, User user)
+        {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {
                 if (user == null || !user.Configuration.IsAdministrator)
                 {
-                    throw new ArgumentException("Administrative access is required for this request.");
+                    throw new SecurityException("User does not have admin access.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                    };
                 }
             }
-
-            if (!string.IsNullOrWhiteSpace(auth.DeviceId) &&
-                !string.IsNullOrWhiteSpace(auth.Client) &&
-                !string.IsNullOrWhiteSpace(auth.Device))
+            if (roles.Contains("delete", StringComparer.OrdinalIgnoreCase))
             {
-                SessionManager.LogSessionActivity(auth.Client,
-                    auth.Version,
-                    auth.DeviceId,
-                    auth.Device,
-                    req.RemoteIp,
-                    user);
+                if (user == null || !user.Configuration.EnableContentDeletion)
+                {
+                    throw new SecurityException("User does not have delete access.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                    };
+                }
             }
         }
 
@@ -132,40 +150,34 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             return ConnectManager.IsAuthorizationTokenValid(token);
         }
 
-        protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
+        private void ValidateSecurityToken(IServiceRequest request, string token)
         {
-            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
-            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            if (string.IsNullOrWhiteSpace(token))
             {
-                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
-                return true;
-            }
-            return false;
-        }
-
-        public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
-        {
-            var url = req.ResolveAbsoluteUrl(redirectUrl);
-            if (includeRedirectParam)
-            {
-                var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
+                throw new SecurityException("Access token is invalid or expired.");
             }
 
-            res.RedirectToUrl(url);
-        }
+            var info = (AuthenticationInfo)request.Items["OriginalAuthenticationInfo"];
 
-        private static string ToQueryString(INameValueCollection queryStringCollection)
-        {
-            return ToQueryString((NameValueCollection)queryStringCollection.Original);
-        }
+            if (info == null)
+            {
+                throw new SecurityException("Access token is invalid or expired.");
+            }
 
-        private static string ToQueryString(NameValueCollection queryStringCollection)
-        {
-            if (queryStringCollection == null || queryStringCollection.Count == 0)
-                return String.Empty;
+            if (!info.IsActive)
+            {
+                throw new SecurityException("Access token has expired.");
+            }
 
-            return "?" + queryStringCollection.ToFormUrlEncoded();
+            //if (!string.IsNullOrWhiteSpace(info.UserId))
+            //{
+            //    var user = _userManager.GetUserById(info.UserId);
+
+            //    if (user == null || user.Configuration.IsDisabled)
+            //    {
+            //        throw new SecurityException("User account has been disabled.");
+            //    }
+            //}
         }
     }
 }

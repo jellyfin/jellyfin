@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -180,12 +181,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (user == null)
             {
-                throw new AuthenticationException("Invalid username or password entered.");
+                throw new SecurityException("Invalid username or password entered.");
             }
 
             if (user.Configuration.IsDisabled)
             {
-                throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
+                throw new SecurityException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
             var success = false;

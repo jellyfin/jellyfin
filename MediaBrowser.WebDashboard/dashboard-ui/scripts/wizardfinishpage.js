@@ -2,14 +2,14 @@
 
     onFinish: function () {
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.ajax({
 
-            config.IsStartupWizardCompleted = true;
+            url: ApiClient.getUrl('Startup/Complete'),
+            type: 'POST'
 
-            ApiClient.updateServerConfiguration(config).done(function () {
+        }).done(function () {
 
-                Dashboard.navigate('dashboard.html');
-            });
+            Dashboard.navigate('dashboard.html');
         });
     }
 };

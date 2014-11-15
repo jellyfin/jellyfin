@@ -1,60 +1,51 @@
 ﻿(function ($, document, window) {
 
-    function getUsers() {
-        return ApiClient.getUsers({IsGuest: false});
+    function getApiClient() {
+        return ApiClient;
     }
 
-    function onSaveComplete(user) {
-
-        var page = $.mobile.activePage;
-        var userId = user.Id;
-
-        var metadataKey = "xbmcmetadata";
+    function onUpdateUserComplete(result) {
 
         Dashboard.hideLoadingMsg();
 
-        ApiClient.getNamedConfiguration(metadataKey).done(function (config) {
+        if (result.UserLinkResult) {
 
-            config.UserId = userId;
+            var msgKey = result.UserLinkResult.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
 
-            ApiClient.updateNamedConfiguration(metadataKey, config).done(function () {
+            Dashboard.alert({
+                message: Globalize.translate(msgKey),
+                title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
+
+                callback: function () {
+                    Dashboard.navigate('wizardlibrary.html');
+                }
 
             });
-        });
 
-        var callback = function() {
-
+        } else {
             Dashboard.navigate('wizardlibrary.html');
-        };
-
-        ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), callback, callback);
+        }
     }
 
     function submit(form) {
 
         Dashboard.showLoadingMsg();
 
-        getUsers().done(function (users) {
+        var apiClient = getApiClient();
 
-            var user;
+        apiClient.ajax({
 
-            if (users.length) {
+            type: 'POST',
+            data: {
 
-                user = users[0];
+                Name: $('#txtUsername', form).val(),
+                ConnectUserName: $('#txtConnectUserName', form).val()
 
-                user.Name = $('#txtUsername', form).val();
+            },
+            url: apiClient.getUrl('Startup/User'),
+            dataType: 'json'
 
-                ApiClient.updateUser(user).done(function () {
-
-                    onSaveComplete(user);
-                });
-
-            } else {
-
-                ApiClient.createUser($('#txtUsername', form).val()).done(onSaveComplete);
-            }
-
-        });
+        }).done(onUpdateUserComplete);
     }
 
     function wizardUserPage() {
@@ -77,9 +68,9 @@
 
         var page = this;
 
-        getUsers().done(function (users) {
+        var apiClient = getApiClient();
 
-            var user = users[0];
+        apiClient.getJSON(apiClient.getUrl('Startup/User')).done(function (user) {
 
             $('#txtUsername', page).val(user.Name);
             $('#txtConnectUserName', page).val(user.ConnectUserName);

@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
                 {typeof (DirectoryNotFoundException), 404},
-                {typeof (Implementations.Security.AuthenticationException), 401},
+                {typeof (SecurityException), 401},
                 {typeof (UnauthorizedAccessException), 401}
             };
 

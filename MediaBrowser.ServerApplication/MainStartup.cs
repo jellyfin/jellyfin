@@ -195,8 +195,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="appPaths">The app paths.</param>
         private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
         {
-            logger.Info("Media Browser Server started");
-            ApplicationHost.LogEnvironmentInfo(logger, appPaths);
+            ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();

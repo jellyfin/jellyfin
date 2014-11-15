@@ -30,8 +30,6 @@
             msg += "<br/>";
             msg += result.PinFile;
             msg += "<br/>";
-            msg += "<br/>";
-            msg += Globalize.translate('MessageForgotPasswordFileExpiration', parseISO8601Date(result.PinExpirationDate, { toLocal: true }).toLocaleString());
 
             Dashboard.alert({
 

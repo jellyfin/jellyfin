@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Library
 {
-    [Route("/Library/FileOrganization", "GET")]
-    [Api(Description = "Gets file organization results")]
+    [Route("/Library/FileOrganization", "GET", Summary = "Gets file organization results")]
     public class GetFileOrganizationActivity : IReturn<QueryResult<FileOrganizationResult>>
     {
         /// <summary>
@@ -26,14 +25,12 @@ namespace MediaBrowser.Api.Library
         public int? Limit { get; set; }
     }
 
-    [Route("/Library/FileOrganizations", "DELETE")]
-    [Api(Description = "Clears the activity log")]
+    [Route("/Library/FileOrganizations", "DELETE", Summary = "Clears the activity log")]
     public class ClearOrganizationLog : IReturnVoid
     {
     }
 
-    [Route("/Library/FileOrganizations/{Id}/File", "DELETE")]
-    [Api(Description = "Deletes the original file of a organizer result")]
+    [Route("/Library/FileOrganizations/{Id}/File", "DELETE", Summary = "Deletes the original file of a organizer result")]
     public class DeleteOriginalFile : IReturnVoid
     {
         /// <summary>
@@ -44,8 +41,7 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Library/FileOrganizations/{Id}/Organize", "POST")]
-    [Api(Description = "Performs an organization")]
+    [Route("/Library/FileOrganizations/{Id}/Organize", "POST", Summary = "Performs an organization")]
     public class PerformOrganization : IReturn<QueryResult<FileOrganizationResult>>
     {
         /// <summary>
@@ -56,8 +52,7 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Library/FileOrganizations/{Id}/Episode/Organize", "POST")]
-    [Api(Description = "Performs an organization")]
+    [Route("/Library/FileOrganizations/{Id}/Episode/Organize", "POST", Summary = "Performs an organization")]
     public class OrganizeEpisode
     {
         [ApiMember(Name = "Id", Description = "Result Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -79,7 +74,7 @@ namespace MediaBrowser.Api.Library
         public bool RememberCorrection { get; set; }
     }
 
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class FileOrganizationService : BaseApiService
     {
         private readonly IFileOrganizationService _iFileOrganizationService;

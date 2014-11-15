@@ -12,7 +12,6 @@ using ServiceStack;
 using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,7 +58,7 @@ namespace MediaBrowser.Api
     /// Class DeleteUser
     /// </summary>
     [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class DeleteUser : IReturnVoid
     {
         /// <summary>
@@ -151,7 +150,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
@@ -159,17 +158,8 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class CreateUser
     /// </summary>
-    [Route("/Users", "POST", Summary = "Creates a user")]
-    [Authenticated]
-    public class CreateUser : UserDto, IReturn<UserDto>
-    {
-    }
-
-    /// <summary>
-    /// Class CreateUser
-    /// </summary>
     [Route("/Users/New", "POST", Summary = "Creates a user")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class CreateUserByName : IReturn<UserDto>
     {
         [ApiMember(Name = "Name", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
@@ -471,24 +461,6 @@ namespace MediaBrowser.Api
             await task.ConfigureAwait(false);
 
             user.UpdateConfiguration(dtoUser.Configuration);
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Post(CreateUser request)
-        {
-            var dtoUser = request;
-
-            var newUser = _userManager.CreateUser(dtoUser.Name).Result;
-
-            newUser.UpdateConfiguration(dtoUser.Configuration);
-
-            var result = _userManager.GetUserDto(newUser, Request.RemoteIp);
-
-            return ToOptimizedResult(result);
         }
 
         /// <summary>

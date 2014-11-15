@@ -29,7 +29,7 @@ namespace MediaBrowser.Api.System
         public string MinDate { get; set; }
     }
 
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class ActivityLogService : BaseApiService
     {
         private readonly IActivityManager _activityManager;

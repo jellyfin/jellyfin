@@ -1,14 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
 using ServiceStack.Web;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
-        public AuthorizationInfo GetAuthorizationInfo(IRequest requestContext)
+        private readonly IAuthenticationRepository _authRepo;
+
+        public AuthorizationContext(IAuthenticationRepository authRepo)
         {
+            _authRepo = authRepo;
+        }
+
+        public AuthorizationInfo GetAuthorizationInfo(object requestContext)
+        {
+            var req = new ServiceStackServiceRequest((IRequest)requestContext);
+            return GetAuthorizationInfo(req);
+        }
+
+        public AuthorizationInfo GetAuthorizationInfo(IServiceRequest requestContext)
+        {
+            object cached;
+            if (requestContext.Items.TryGetValue("AuthorizationInfo", out cached))
+            {
+                return (AuthorizationInfo)cached;
+            }
+
             return GetAuthorization(requestContext);
         }
 
@@ -17,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private AuthorizationInfo GetAuthorization(IRequest httpReq)
+        private AuthorizationInfo GetAuthorization(IServiceRequest httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
 
@@ -29,7 +50,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (auth != null)
             {
+                // TODO: Remove this 
                 auth.TryGetValue("UserId", out userId);
+
                 auth.TryGetValue("DeviceId", out deviceId);
                 auth.TryGetValue("Device", out device);
                 auth.TryGetValue("Client", out client);
@@ -84,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 }
             }
 
-            return new AuthorizationInfo
+            var info = new AuthorizationInfo
             {
                 Client = client,
                 Device = device,
@@ -93,6 +116,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 Version = version,
                 Token = token
             };
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var result = _authRepo.Get(new AuthenticationInfoQuery
+                {
+                    AccessToken = token
+                });
+
+                var tokenInfo = result.Items.FirstOrDefault();
+
+                if (tokenInfo != null)
+                {
+                    info.UserId = tokenInfo.UserId;
+                }
+                httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
+            }
+
+            httpReq.Items["AuthorizationInfo"] = info;
+
+            return info;
         }
 
         /// <summary>
@@ -100,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
+        private Dictionary<string, string> GetAuthorizationDictionary(IServiceRequest httpReq)
         {
             var auth = httpReq.Headers["Authorization"];
 

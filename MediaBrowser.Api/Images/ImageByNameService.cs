@@ -2,6 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
@@ -14,8 +15,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetGeneralImage
     /// </summary>
-    [Route("/Images/General/{Name}/{Type}", "GET")]
-    [Api(Description = "Gets a general image by name")]
+    [Route("/Images/General/{Name}/{Type}", "GET", Summary = "Gets a general image by name")]
     public class GetGeneralImage
     {
         /// <summary>
@@ -32,8 +32,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetRatingImage
     /// </summary>
-    [Route("/Images/Ratings/{Theme}/{Name}", "GET")]
-    [Api(Description = "Gets a rating image by name")]
+    [Route("/Images/Ratings/{Theme}/{Name}", "GET", Summary = "Gets a rating image by name")]
     public class GetRatingImage
     {
         /// <summary>
@@ -54,8 +53,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetMediaInfoImage
     /// </summary>
-    [Route("/Images/MediaInfo/{Theme}/{Name}", "GET")]
-    [Api(Description = "Gets a media info image by name")]
+    [Route("/Images/MediaInfo/{Theme}/{Name}", "GET", Summary = "Gets a media info image by name")]
     public class GetMediaInfoImage
     {
         /// <summary>
@@ -73,20 +71,20 @@ namespace MediaBrowser.Api.Images
         public string Theme { get; set; }
     }
 
-    [Route("/Images/MediaInfo", "GET")]
-    [Api(Description = "Gets all media info image by name")]
+    [Route("/Images/MediaInfo", "GET", Summary = "Gets all media info image by name")]
+    [Authenticated]
     public class GetMediaInfoImages : IReturn<List<ImageByNameInfo>>
     {
     }
 
-    [Route("/Images/Ratings", "GET")]
-    [Api(Description = "Gets all rating images by name")]
+    [Route("/Images/Ratings", "GET", Summary = "Gets all rating images by name")]
+    [Authenticated]
     public class GetRatingImages : IReturn<List<ImageByNameInfo>>
     {
     }
 
-    [Route("/Images/General", "GET")]
-    [Api(Description = "Gets all general images by name")]
+    [Route("/Images/General", "GET", Summary = "Gets all general images by name")]
+    [Authenticated]
     public class GetGeneralImages : IReturn<List<ImageByNameInfo>>
     {
     }

@@ -1618,7 +1618,7 @@ namespace MediaBrowser.Controller.Entities
 
             var parent = user.RootFolder;
 
-            list.Add(await GetUserView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, parent).ConfigureAwait(false));
 

@@ -1120,7 +1120,7 @@
             }
 
             // Live streams seem to function better with mp4
-            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm' || !mediaSource.RunTimeTicks;
+            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm';
 
             if (mp4BeforeWebm) {
                 html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';

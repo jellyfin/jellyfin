@@ -12,7 +12,6 @@
             cache: false
         });
     }
-
 })();
 
 // TODO: Deprecated in 1.9
@@ -21,6 +20,7 @@ $.support.cors = true;
 $(document).one('click', WebNotifications.requestPermission);
 
 var Dashboard = {
+
     jQueryMobileInit: function () {
 
         // Page

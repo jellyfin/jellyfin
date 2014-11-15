@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -21,8 +20,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetItem
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}", "GET")]
-    [Api(Description = "Gets an item from a user's library")]
+    [Route("/Users/{UserId}/Items/{Id}", "GET", Summary = "Gets an item from a user's library")]
     public class GetItem : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -57,8 +55,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetItem
     /// </summary>
-    [Route("/Users/{UserId}/Items/Root", "GET")]
-    [Api(Description = "Gets the root folder from a user's library")]
+    [Route("/Users/{UserId}/Items/Root", "GET", Summary = "Gets the root folder from a user's library")]
     public class GetRootFolder : IReturn<BaseItemDto>
     {
         /// <summary>
@@ -72,8 +69,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetIntros
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Intros", "GET")]
-    [Api(("Gets intros to play before the main media item plays"))]
+    [Route("/Users/{UserId}/Items/{Id}/Intros", "GET", Summary = "Gets intros to play before the main media item plays")]
     public class GetIntros : IReturn<ItemsResult>
     {
         /// <summary>
@@ -94,8 +90,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class MarkFavoriteItem
     /// </summary>
-    [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST")]
-    [Api(Description = "Marks an item as a favorite")]
+    [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST", Summary = "Marks an item as a favorite")]
     public class MarkFavoriteItem : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -116,8 +111,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UnmarkFavoriteItem
     /// </summary>
-    [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE")]
-    [Api(Description = "Unmarks an item as a favorite")]
+    [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE", Summary = "Unmarks an item as a favorite")]
     public class UnmarkFavoriteItem : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -138,8 +132,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class ClearUserItemRating
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE")]
-    [Api(Description = "Deletes a user's saved personal rating for an item")]
+    [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE", Summary = "Deletes a user's saved personal rating for an item")]
     public class DeleteUserItemRating : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -160,8 +153,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class UpdateUserItemRating
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/Rating", "POST")]
-    [Api(Description = "Updates a user's rating for an item")]
+    [Route("/Users/{UserId}/Items/{Id}/Rating", "POST", Summary = "Updates a user's rating for an item")]
     public class UpdateUserItemRating : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -189,8 +181,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetLocalTrailers
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET")]
-    [Api(Description = "Gets local trailers for an item")]
+    [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET", Summary = "Gets local trailers for an item")]
     public class GetLocalTrailers : IReturn<List<BaseItemDto>>
     {
         /// <summary>
@@ -211,8 +202,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetSpecialFeatures
     /// </summary>
-    [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET")]
-    [Api(Description = "Gets special features for an item")]
+    [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET", Summary = "Gets special features for an item")]
     public class GetSpecialFeatures : IReturn<List<BaseItemDto>>
     {
         /// <summary>
@@ -280,15 +270,6 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserLibraryService" /> class.
-        /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="dtoService">The dto service.</param>
-        /// <param name="userViewManager">The user view manager.</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, IUserViewManager userViewManager)
         {
             _userManager = userManager;

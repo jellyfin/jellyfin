@@ -18,6 +18,7 @@ namespace MediaBrowser.Api.LiveTv
     /// This is insecure right now to avoid windows phone refactoring
     /// </summary>
     [Route("/LiveTv/Info", "GET", Summary = "Gets available live tv services.")]
+    [Authenticated]
     public class GetLiveTvInfo : IReturn<LiveTvInfo>
     {
     }

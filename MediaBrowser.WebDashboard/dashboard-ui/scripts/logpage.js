@@ -4,7 +4,9 @@
 
         var page = this;
 
-        ApiClient.getJSON(ApiClient.getUrl('System/Logs')).done(function (logs) {
+        var apiClient = ApiClient;
+
+        apiClient.getJSON(apiClient.getUrl('System/Logs')).done(function (logs) {
 
             var html = '';
 
@@ -12,9 +14,12 @@
 
             html += logs.map(function (log) {
 
-                var logUrl = ApiClient.getUrl('System/Logs/Log', {
+                var logUrl = apiClient.getUrl('System/Logs/Log', {
                     name: log.Name
                 });
+
+                logUrl += "&api_key=" + apiClient.accessToken();
+
                 var logHtml = '<li><a href="' + logUrl + '" target="_blank">';
 
                 logHtml += '<h3>';

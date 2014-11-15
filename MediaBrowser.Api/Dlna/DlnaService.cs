@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.Dlna
     {
     }
 
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class DlnaService : BaseApiService
     {
         private readonly IDlnaManager _dlnaManager;

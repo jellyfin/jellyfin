@@ -4,16 +4,23 @@
 
         Dashboard.showLoadingMsg();
 
+        var apiClient = ApiClient;
+
         // After saving chapter task, now save server config
-        ApiClient.getServerConfiguration().done(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
 
             config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
             config.MetadataCountryCode = $('#selectCountry', page).val();
             config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
-
             config.EnableInternetProviders = $('#chkEnableInternetProviders', page).checked();
 
-            ApiClient.updateServerConfiguration(config).done(function (result) {
+            apiClient.ajax({
+
+                type: 'POST',
+                data: config,
+                url: apiClient.getUrl('Startup/Configuration')
+
+            }).done(function () {
 
                 navigateToNextPage();
 
@@ -37,9 +44,11 @@
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = ApiClient.getCultures();
-        var promise3 = ApiClient.getCountries();
+        var apiClient = ApiClient;
+
+        var promise1 = apiClient.getJSON(apiClient.getUrl('Startup/Configuration'));
+        var promise2 = apiClient.getCultures();
+        var promise3 = apiClient.getCountries();
 
         $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
 
@@ -50,7 +59,9 @@
 
     function navigateToNextPage() {
 
-        ApiClient.getSystemInfo().done(function(info) {
+        var apiClient = ApiClient;
+
+        apiClient.getJSON(apiClient.getUrl('Startup/Info')).done(function (info) {
 
             if (info.SupportsRunningAsService) {
                 Dashboard.navigate('wizardservice.html');

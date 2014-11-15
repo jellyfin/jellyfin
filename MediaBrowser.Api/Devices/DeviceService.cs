@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.Devices
 {
     [Route("/Devices", "GET", Summary = "Gets all devices")]
+    [Authenticated(Roles = "Admin")]
     public class GetDevices : IReturn<List<DeviceInfo>>
     {
         [ApiMember(Name = "SupportsContentUploading", Description = "SupportsContentUploading", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -26,6 +27,7 @@ namespace MediaBrowser.Api.Devices
     }
 
     [Route("/Devices/CameraUploads", "GET", Summary = "Gets camera upload history for a device")]
+    [Authenticated]
     public class GetCameraUploads : IReturn<ContentUploadHistory>
     {
         [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -33,6 +35,7 @@ namespace MediaBrowser.Api.Devices
     }
 
     [Route("/Devices/CameraUploads", "POST", Summary = "Uploads content")]
+    [Authenticated]
     public class PostCameraUpload : IRequiresRequestStream, IReturnVoid
     {
         [ApiMember(Name = "DeviceId", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -51,6 +54,7 @@ namespace MediaBrowser.Api.Devices
     }
 
     [Route("/Devices/Info", "GET", Summary = "Gets device info")]
+    [Authenticated]
     public class GetDeviceInfo : IReturn<DeviceInfo>
     {
         [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
@@ -58,6 +62,7 @@ namespace MediaBrowser.Api.Devices
     }
 
     [Route("/Devices/Capabilities", "GET", Summary = "Gets device capabilities")]
+    [Authenticated]
     public class GetDeviceCapabilities : IReturn<ClientCapabilities>
     {
         [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
@@ -65,13 +70,13 @@ namespace MediaBrowser.Api.Devices
     }
 
     [Route("/Devices/Options", "POST", Summary = "Updates device options")]
+    [Authenticated(Roles = "Admin")]
     public class PostDeviceOptions : DeviceOptions, IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string Id { get; set; }
     }
-    
-    [Authenticated]
+
     public class DeviceService : BaseApiService
     {
         private readonly IDeviceManager _deviceManager;

@@ -18,32 +18,10 @@
     }
 
     function getBaseRemoteOptions() {
+
         var options = {};
 
-        if (currentItem.Type == "Year") {
-            options.year = currentItem.Name;
-        }
-        else if (currentItem.Type == "MusicArtist") {
-            options.artist = currentItem.Name;
-        }
-        else if (currentItem.Type == "Person") {
-            options.person = currentItem.Name;
-        }
-        else if (currentItem.Type == "Genre") {
-            options.genre = currentItem.Name;
-        }
-        else if (currentItem.Type == "GameGenre") {
-            options.gameGenre = currentItem.Name;
-        }
-        else if (currentItem.Type == "MusicGenre") {
-            options.musicGenre = currentItem.Name;
-        }
-        else if (currentItem.Type == "Studio") {
-            options.studio = currentItem.Name;
-        }
-        else {
-            options.itemId = currentItem.Id;
-        }
+        options.itemId = currentItem.Id;
 
         return options;
     }
