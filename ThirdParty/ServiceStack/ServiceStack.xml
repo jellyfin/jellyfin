@@ -91,9 +91,10 @@
             Resolve the absolute url for this request
             </summary>
         </member>
-        <member name="M:ServiceStack.IAppHost.ResolveLocalizedString(System.String)">
+        <member name="M:ServiceStack.IAppHost.ResolveLocalizedString(System.String,ServiceStack.Web.IRequest)">
             <summary>
             Resolve localized text, returns itself by default.
+            The Request is provided when exists.
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.Routes">
@@ -156,6 +157,11 @@
             Provide callbacks to be fired after the AppHost has finished initializing
             </summary>
         </member>
+        <member name="P:ServiceStack.IAppHost.OnDisposeCallbacks">
+            <summary>
+            Provide callbacks to be fired when AppHost is being disposed
+            </summary>
+        </member>
         <member name="P:ServiceStack.IAppHost.RawHttpHandlers">
             <summary>
             Skip the ServiceStack Request Pipeline and process the returned IHttpHandler instead
@@ -184,6 +190,11 @@
         <member name="P:ServiceStack.IAppHost.Config">
             <summary>
             The AppHost config
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.AppSettings">
+            <summary>
+            The AppHost AppSettings. Defaults to App or Web.config appSettings.
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.Plugins">
@@ -295,6 +306,43 @@
             </summary>
             <returns>Reserved Url if the process completes successfully</returns>
         </member>
+        <member name="P:ServiceStack.AspNet.ServiceStackPage.UnauthorizedRedirectUrl">
+            <summary>
+            Default redirct URL if [Authenticate] attribute doesn't permit access.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.AspNet.ServiceStackPage.ForbiddenRedirectUrl">
+            <summary>
+            Default redirct URL if Required Role or Permission attributes doesn't permit access.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Configuration.ISettings.Get(System.String)">
+            <summary>
+            Provides a common interface for Settings providers such as
+            ConfigurationManager or Azure's RoleEnvironment. The only
+            requirement is that if the implementation cannot find the
+            specified key, the return value must be null
+            </summary>
+            <param name="key">The key for the setting</param>
+            <returns>The string value of the specified key, or null if the key
+            was invalid</returns>
+        </member>
+        <member name="M:ServiceStack.Configuration.ISettings.GetAllKeys">
+            <summary>
+            Return all keys in this configuration source.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceStackProvider.SessionAs``1">
+            <summary>
+            Typed UserSession
+            </summary>
+        </member>
+        <member name="F:ServiceStack.ServiceStackProvider.session">
+            <summary>
+            Dynamic Session Bag
+            </summary>
+        </member>
         <member name="M:ServiceStack.Auth.IAuthProvider.Logout(ServiceStack.IServiceBase,ServiceStack.Authenticate)">
             <summary>
             Remove the Users Session
@@ -346,6 +394,11 @@
         <member name="P:ServiceStack.Auth.AspNetWindowsAuthProvider.LimitAccessToRoles">
             <summary>
             Only allow access to users in specified roles
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Auth.AuthEvents">
+            <summary>
+            Conveneint base class with empty virtual methods so subclasses only need to override the hooks they need.
             </summary>
         </member>
         <member name="T:ServiceStack.Auth.OdnoklassnikiAuthProvider">
@@ -413,17 +466,6 @@
             <summary>
             Creates the required missing tables or DB schema 
             </summary>
-        </member>
-        <member name="M:ServiceStack.Configuration.ISettings.Get(System.String)">
-            <summary>
-            Provides a common interface for Settings providers such as
-            ConfigurationManager or Azure's RoleEnvironment. The only
-            requirement is that if the implementation cannot find the
-            specified key, the return value must be null
-            </summary>
-            <param name="key">The key for the setting</param>
-            <returns>The string value of the specified key, or null if the key
-            was invalid</returns>
         </member>
         <member name="T:ServiceStack.Service">
             <summary>

@@ -140,5 +140,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get { return response.SendChunked; }
             set { response.SendChunked = value; }
         }
+
+        public bool KeepAlive { get; set; }
     }
 }

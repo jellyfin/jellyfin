@@ -4,11 +4,6 @@
         <name>ServiceStack.Interfaces</name>
     </assembly>
     <members>
-        <member name="F:ServiceStack.AttributeBase.typeId">
-            <summary>
-            Required when using a TypeDescriptor to make it unique
-            </summary>
-        </member>
         <member name="T:ServiceStack.Caching.ICacheClient">
             <summary>
             A common interface implementation that is implemented by most cache providers
@@ -286,6 +281,11 @@
             <summary>
             Compute attribute.
             Use to indicate that a property is a Calculated Field 
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.ExcludeAttribute">
+            <summary>
+            Mark types that are to be excluded from specified features
             </summary>
         </member>
         <member name="T:ServiceStack.DataAnnotations.DecimalLengthAttribute">
@@ -909,7 +909,7 @@
         </member>
         <member name="P:ServiceStack.ApiMemberAttribute.ParameterType">
             <summary>
-            Gets or sets parameter type: It can be only one of the following: path, query, body, or header.
+            Gets or sets parameter type: It can be only one of the following: path, query, body, model, or header.
             </summary>
         </member>
         <member name="P:ServiceStack.ApiMemberAttribute.Name">
@@ -943,6 +943,11 @@
         <member name="P:ServiceStack.ApiMemberAttribute.AllowMultiple">
             <summary>
             For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiMemberAttribute.Route">
+            <summary>
+            Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
             </summary>
         </member>
         <member name="P:ServiceStack.IApiResponseDescription.StatusCode">
@@ -1205,6 +1210,12 @@
             <summary>
             A thin wrapper around each host's Response e.g: ASP.NET, HttpListener, MQ, etc
             </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.Write(System.String)">
+            <summary>
+            Write once to the Response Stream then close it. 
+            </summary>
+            <param name="text"></param>
         </member>
         <member name="M:ServiceStack.Web.IResponse.Close">
             <summary>
@@ -1580,14 +1591,19 @@
             Allow access but hide from metadata to requests from Localhost and Local Intranet only
             </summary>
         </member>
+        <member name="P:ServiceStack.RestrictAttribute.LocalhostOnly">
+            <summary>
+            Restrict access and hide from metadata to requests from Localhost only
+            </summary>
+        </member>
         <member name="P:ServiceStack.RestrictAttribute.InternalOnly">
             <summary>
             Restrict access and hide from metadata to requests from Localhost and Local Intranet only
             </summary>
         </member>
-        <member name="P:ServiceStack.RestrictAttribute.LocalhostOnly">
+        <member name="P:ServiceStack.RestrictAttribute.ExternalOnly">
             <summary>
-            Restrict access and hide from metadata to requests from Localhost only
+            Restrict access and hide from metadata to requests from External only
             </summary>
         </member>
         <member name="P:ServiceStack.RestrictAttribute.AccessTo">
