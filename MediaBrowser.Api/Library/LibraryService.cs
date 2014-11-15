@@ -23,8 +23,8 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Library
 {
-    [Route("/Items/{Id}/File", "GET")]
-    [Api(Description = "Gets the original file of an item")]
+    [Route("/Items/{Id}/File", "GET", Summary = "Gets the original file of an item")]
+    [Authenticated]
     public class GetFile
     {
         /// <summary>
@@ -38,8 +38,8 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class GetCriticReviews
     /// </summary>
-    [Route("/Items/{Id}/CriticReviews", "GET")]
-    [Api(Description = "Gets critic reviews for an item")]
+    [Route("/Items/{Id}/CriticReviews", "GET", Summary = "Gets critic reviews for an item")]
+    [Authenticated]
     public class GetCriticReviews : IReturn<QueryResult<ItemReview>>
     {
         /// <summary>
@@ -67,8 +67,8 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class GetThemeSongs
     /// </summary>
-    [Route("/Items/{Id}/ThemeSongs", "GET")]
-    [Api(Description = "Gets theme songs for an item")]
+    [Route("/Items/{Id}/ThemeSongs", "GET", Summary = "Gets theme songs for an item")]
+    [Authenticated]
     public class GetThemeSongs : IReturn<ThemeMediaResult>
     {
         /// <summary>
@@ -92,8 +92,8 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class GetThemeVideos
     /// </summary>
-    [Route("/Items/{Id}/ThemeVideos", "GET")]
-    [Api(Description = "Gets theme videos for an item")]
+    [Route("/Items/{Id}/ThemeVideos", "GET", Summary = "Gets theme videos for an item")]
+    [Authenticated]
     public class GetThemeVideos : IReturn<ThemeMediaResult>
     {
         /// <summary>
@@ -117,8 +117,8 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class GetThemeVideos
     /// </summary>
-    [Route("/Items/{Id}/ThemeMedia", "GET")]
-    [Api(Description = "Gets theme videos and songs for an item")]
+    [Route("/Items/{Id}/ThemeMedia", "GET", Summary = "Gets theme videos and songs for an item")]
+    [Authenticated]
     public class GetThemeMedia : IReturn<AllThemeMediaResult>
     {
         /// <summary>
@@ -139,14 +139,14 @@ namespace MediaBrowser.Api.Library
         public bool InheritFromParent { get; set; }
     }
 
-    [Route("/Library/Refresh", "POST")]
-    [Api(Description = "Starts a library scan")]
+    [Route("/Library/Refresh", "POST", Summary = "Starts a library scan")]
+    [Authenticated(Roles = "Admin")]
     public class RefreshLibrary : IReturnVoid
     {
     }
 
-    [Route("/Items/{Id}", "DELETE")]
-    [Api(Description = "Deletes an item from the library and file system")]
+    [Route("/Items/{Id}", "DELETE", Summary = "Deletes an item from the library and file system")]
+    [Authenticated(Roles = "Delete")]
     public class DeleteItem : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
@@ -154,7 +154,7 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Items/Counts", "GET")]
-    [Api(Description = "Gets counts of various item types")]
+    [Authenticated]
     public class GetItemCounts : IReturn<ItemCounts>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -164,8 +164,8 @@ namespace MediaBrowser.Api.Library
         public bool? IsFavorite { get; set; }
     }
 
-    [Route("/Items/{Id}/Ancestors", "GET")]
-    [Api(Description = "Gets all parents of an item")]
+    [Route("/Items/{Id}/Ancestors", "GET", Summary = "Gets all parents of an item")]
+    [Authenticated]
     public class GetAncestors : IReturn<BaseItemDto[]>
     {
         /// <summary>
@@ -183,8 +183,8 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Items/YearIndex", "GET")]
-    [Api(Description = "Gets a year index based on an item query.")]
+    [Route("/Items/YearIndex", "GET", Summary = "Gets a year index based on an item query.")]
+    [Authenticated]
     public class GetYearIndex : IReturn<List<ItemIndex>>
     {
         /// <summary>
@@ -201,23 +201,23 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class GetPhyscialPaths
     /// </summary>
-    [Route("/Library/PhysicalPaths", "GET")]
-    [Api(Description = "Gets a list of physical paths from virtual folders")]
+    [Route("/Library/PhysicalPaths", "GET", Summary = "Gets a list of physical paths from virtual folders")]
+    [Authenticated(Roles = "Admin")]
     public class GetPhyscialPaths : IReturn<List<string>>
     {
     }
 
-    [Route("/Library/MediaFolders", "GET")]
-    [Api(Description = "Gets all user media folders.")]
+    [Route("/Library/MediaFolders", "GET", Summary = "Gets all user media folders.")]
+    [Authenticated]
     public class GetMediaFolders : IReturn<ItemsResult>
     {
         [ApiMember(Name = "IsHidden", Description = "Optional. Filter by folders that are marked hidden, or not.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? IsHidden { get; set; }
     }
 
-    [Route("/Library/Series/Added", "POST")]
-    [Route("/Library/Series/Updated", "POST")]
-    [Api(Description = "Reports that new episodes of a series have been added by an external source")]
+    [Route("/Library/Series/Added", "POST", Summary = "Reports that new episodes of a series have been added by an external source")]
+    [Route("/Library/Series/Updated", "POST", Summary = "Reports that new episodes of a series have been added by an external source")]
+    [Authenticated]
     public class PostUpdatedSeries : IReturnVoid
     {
         [ApiMember(Name = "TvdbId", Description = "Tvdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -227,7 +227,6 @@ namespace MediaBrowser.Api.Library
     /// <summary>
     /// Class LibraryService
     /// </summary>
-    [Authenticated]
     public class LibraryService : BaseApiService
     {
         /// <summary>

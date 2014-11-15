@@ -24,8 +24,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class GetItemImage
     /// </summary>
-    [Route("/Items/{Id}/Images", "GET")]
-    [Api(Description = "Gets information about an item's images")]
+    [Route("/Items/{Id}/Images", "GET", Summary = "Gets information about an item's images")]
     [Authenticated]
     public class GetItemImageInfos : IReturn<List<ImageInfo>>
     {
@@ -43,7 +42,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}/{Index}", "HEAD")]
     [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "HEAD")]
-    [Api(Description = "Gets an item image")]
     public class GetItemImage : ImageRequest
     {
         /// <summary>
@@ -57,8 +55,7 @@ namespace MediaBrowser.Api.Images
     /// <summary>
     /// Class UpdateItemImageIndex
     /// </summary>
-    [Route("/Items/{Id}/Images/{Type}/{Index}/Index", "POST")]
-    [Api(Description = "Updates the index for an item image")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/Index", "POST", Summary = "Updates the index for an item image")]
     [Authenticated]
     public class UpdateItemImageIndex : IReturnVoid
     {
@@ -122,7 +119,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Studios/{Name}/Images/{Type}/{Index}", "HEAD")]
     [Route("/Years/{Year}/Images/{Type}", "HEAD")]
     [Route("/Years/{Year}/Images/{Type}/{Index}", "HEAD")]
-    [Api(Description = "Gets an item by name image")]
     public class GetItemByNameImage : ImageRequest
     {
         /// <summary>
@@ -140,7 +136,6 @@ namespace MediaBrowser.Api.Images
     [Route("/Users/{Id}/Images/{Type}/{Index}", "GET")]
     [Route("/Users/{Id}/Images/{Type}", "HEAD")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "HEAD")]
-    [Api(Description = "Gets a user image")]
     public class GetUserImage : ImageRequest
     {
         /// <summary>
@@ -156,7 +151,6 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "DELETE")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Api(Description = "Deletes an item image")]
     [Authenticated]
     public class DeleteItemImage : DeleteImageRequest, IReturnVoid
     {
@@ -173,7 +167,6 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "DELETE")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Api(Description = "Deletes a user image")]
     [Authenticated]
     public class DeleteUserImage : DeleteImageRequest, IReturnVoid
     {
@@ -190,7 +183,6 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "POST")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "POST")]
-    [Api(Description = "Posts a user image")]
     [Authenticated]
     public class PostUserImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {

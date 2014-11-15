@@ -26,8 +26,7 @@ namespace MediaBrowser.Api
         public bool ReplaceAllImages { get; set; }
     }
 
-    [Route("/Items/{Id}/Refresh", "POST")]
-    [Api(Description = "Refreshes metadata for an item")]
+    [Route("/Items/{Id}/Refresh", "POST", Summary = "Refreshes metadata for an item")]
     public class RefreshItem : BaseRefreshRequest
     {
         [ApiMember(Name = "Recursive", Description = "Indicates if the refresh should occur recursively.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]

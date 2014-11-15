@@ -79,7 +79,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     /// <summary>
     /// Class ScheduledTasksService
     /// </summary>
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class ScheduledTaskService : BaseApiService
     {
         /// <summary>

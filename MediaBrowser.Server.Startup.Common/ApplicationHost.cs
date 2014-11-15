@@ -496,10 +496,10 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo, UserManager));
 
-            var authContext = new AuthorizationContext();
+            var authContext = new AuthorizationContext(AuthenticationRepository);
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
-            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, SessionManager, authContext, ServerConfigurationManager, ConnectManager));
+            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager));
 
             RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
@@ -533,6 +533,8 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager)
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
+
+            new FFmpegValidator(Logger, ApplicationPaths).Validate(info);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), JsonSerializer, info.EncoderPath, info.ProbePath, info.Version);
             RegisterSingleInstance(MediaEncoder);

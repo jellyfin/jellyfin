@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Net
 {
-    public class AuthenticatedAttribute : Attribute, IHasRequestFilter, IAuthenticated
+    public class AuthenticatedAttribute : Attribute, IHasRequestFilter, IAuthenticationAttributes
     {
         public IAuthService AuthService { get; set; }
 
@@ -22,6 +22,12 @@ namespace MediaBrowser.Controller.Net
         public bool EscapeParentalControl { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow before startup wizard].
+        /// </summary>
+        /// <value><c>true</c> if [allow before startup wizard]; otherwise, <c>false</c>.</value>
+        public bool AllowBeforeStartupWizard { get; set; }
+        
+        /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
         /// <param name="request">The http request wrapper</param>
@@ -29,7 +35,9 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            AuthService.Authenticate(request, response, requestDto, this);
+            var serviceRequest = new ServiceStackServiceRequest(request);
+
+            AuthService.Authenticate(serviceRequest, this);
         }
 
         /// <summary>
@@ -60,9 +68,10 @@ namespace MediaBrowser.Controller.Net
         }
     }
 
-    public interface IAuthenticated
+    public interface IAuthenticationAttributes
     {
         bool EscapeParentalControl { get; }
+        bool AllowBeforeStartupWizard { get; }
 
         IEnumerable<string> GetRoles();
     }

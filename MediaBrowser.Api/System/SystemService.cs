@@ -35,7 +35,7 @@ namespace MediaBrowser.Api.System
     /// Class RestartApplication
     /// </summary>
     [Route("/System/Restart", "POST", Summary = "Restarts the application, if needed")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class RestartApplication
     {
     }
@@ -51,7 +51,7 @@ namespace MediaBrowser.Api.System
     }
 
     [Route("/System/Logs", "GET", Summary = "Gets a list of available server log files")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class GetServerLogs : IReturn<List<LogFile>>
     {
     }
@@ -64,6 +64,7 @@ namespace MediaBrowser.Api.System
     }
 
     [Route("/System/Logs/Log", "GET", Summary = "Gets a log file")]
+    [Authenticated(Roles = "Admin")]
     public class GetLogFile
     {
         [ApiMember(Name = "Name", Description = "The log file name.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]

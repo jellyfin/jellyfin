@@ -69,6 +69,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="AppThemeService.cs" />
     <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
     <Compile Include="ConnectService.cs" />
@@ -79,10 +80,10 @@
     <Compile Include="Library\ChapterService.cs" />
     <Compile Include="Playback\Hls\MpegDashService.cs" />
     <Compile Include="PlaylistService.cs" />
+    <Compile Include="StartupWizardService.cs" />
     <Compile Include="Subtitles\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
     <Compile Include="Music\AlbumsService.cs" />
-    <Compile Include="AppThemeService.cs" />
     <Compile Include="BaseApiService.cs" />
     <Compile Include="ConfigurationService.cs" />
     <Compile Include="DisplayPreferencesService.cs" />

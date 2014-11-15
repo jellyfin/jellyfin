@@ -15,8 +15,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class MarkPlayedItem
     /// </summary>
-    [Route("/Users/{UserId}/PlayedItems/{Id}", "POST")]
-    [Api(Description = "Marks an item as played")]
+    [Route("/Users/{UserId}/PlayedItems/{Id}", "POST", Summary = "Marks an item as played")]
     public class MarkPlayedItem : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -40,8 +39,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class MarkUnplayedItem
     /// </summary>
-    [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE")]
-    [Api(Description = "Marks an item as unplayed")]
+    [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE", Summary = "Marks an item as unplayed")]
     public class MarkUnplayedItem : IReturn<UserItemDataDto>
     {
         /// <summary>
@@ -59,20 +57,17 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
-    [Route("/Sessions/Playing", "POST")]
-    [Api(Description = "Reports playback has started within a session")]
+    [Route("/Sessions/Playing", "POST", Summary = "Reports playback has started within a session")]
     public class ReportPlaybackStart : PlaybackStartInfo, IReturnVoid
     {
     }
 
-    [Route("/Sessions/Playing/Progress", "POST")]
-    [Api(Description = "Reports playback progress within a session")]
+    [Route("/Sessions/Playing/Progress", "POST", Summary = "Reports playback progress within a session")]
     public class ReportPlaybackProgress : PlaybackProgressInfo, IReturnVoid
     {
     }
 
-    [Route("/Sessions/Playing/Stopped", "POST")]
-    [Api(Description = "Reports playback has stopped within a session")]
+    [Route("/Sessions/Playing/Stopped", "POST", Summary = "Reports playback has stopped within a session")]
     public class ReportPlaybackStopped : PlaybackStopInfo, IReturnVoid
     {
     }
@@ -80,8 +75,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class OnPlaybackStart
     /// </summary>
-    [Route("/Users/{UserId}/PlayingItems/{Id}", "POST")]
-    [Api(Description = "Reports that a user has begun playing an item")]
+    [Route("/Users/{UserId}/PlayingItems/{Id}", "POST", Summary = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
     {
         /// <summary>
@@ -125,8 +119,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class OnPlaybackProgress
     /// </summary>
-    [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST")]
-    [Api(Description = "Reports a user's playback progress")]
+    [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST", Summary = "Reports a user's playback progress")]
     public class OnPlaybackProgress : IReturnVoid
     {
         /// <summary>
@@ -172,8 +165,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class OnPlaybackStopped
     /// </summary>
-    [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE")]
-    [Api(Description = "Reports that a user has stopped playing an item")]
+    [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE", Summary = "Reports that a user has stopped playing an item")]
     public class OnPlaybackStopped : IReturnVoid
     {
         /// <summary>

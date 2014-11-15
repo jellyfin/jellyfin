@@ -20,6 +20,7 @@ namespace MediaBrowser.Api
     /// Class Plugins
     /// </summary>
     [Route("/Plugins", "GET", Summary = "Gets a list of currently installed plugins")]
+    [Authenticated]
     public class GetPlugins : IReturn<List<PluginInfo>>
     {
     }
@@ -28,6 +29,7 @@ namespace MediaBrowser.Api
     /// Class UninstallPlugin
     /// </summary>
     [Route("/Plugins/{Id}", "DELETE", Summary = "Uninstalls a plugin")]
+    [Authenticated(Roles = "Admin")]
     public class UninstallPlugin : IReturnVoid
     {
         /// <summary>
@@ -42,6 +44,7 @@ namespace MediaBrowser.Api
     /// Class GetPluginConfiguration
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "GET", Summary = "Gets a plugin's configuration")]
+    [Authenticated]
     public class GetPluginConfiguration
     {
         /// <summary>
@@ -56,6 +59,7 @@ namespace MediaBrowser.Api
     /// Class UpdatePluginConfiguration
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "POST", Summary = "Updates a plugin's configuration")]
+    [Authenticated]
     public class UpdatePluginConfiguration : IRequiresRequestStream, IReturnVoid
     {
         /// <summary>
@@ -76,6 +80,7 @@ namespace MediaBrowser.Api
     /// Class GetPluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information")]
+    [Authenticated]
     public class GetPluginSecurityInfo : IReturn<PluginSecurityInfo>
     {
     }
@@ -84,11 +89,13 @@ namespace MediaBrowser.Api
     /// Class UpdatePluginSecurityInfo
     /// </summary>
     [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information")]
+    [Authenticated(Roles = "Admin")]
     public class UpdatePluginSecurityInfo : PluginSecurityInfo, IReturnVoid
     {
     }
 
     [Route("/Plugins/RegistrationRecords/{Name}", "GET", Summary = "Gets registration status for a feature")]
+    [Authenticated]
     public class GetRegistrationStatus
     {
         [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -97,11 +104,10 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Mb2Equivalent", Description = "Optional. The equivalent feature name in MB2", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Mb2Equivalent { get; set; }
     }
-    
+
     /// <summary>
     /// Class PluginsService
     /// </summary>
-    [Authenticated]
     public class PluginService : BaseApiService
     {
         /// <summary>
@@ -118,14 +124,6 @@ namespace MediaBrowser.Api
 
         private readonly IInstallationManager _installationManager;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PluginService" /> class.
-        /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="securityManager">The security manager.</param>
-        /// <param name="installationManager">The installation manager.</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer</exception>
         public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager)
             : base()
         {
@@ -151,7 +149,7 @@ namespace MediaBrowser.Api
 
             return ToOptimizedResult(result);
         }
-        
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>

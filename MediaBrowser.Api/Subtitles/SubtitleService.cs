@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.Subtitles
 {
     [Route("/Videos/{Id}/Subtitles/{Index}", "DELETE", Summary = "Deletes an external subtitle file")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class DeleteSubtitle
     {
         /// <summary>

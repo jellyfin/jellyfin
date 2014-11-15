@@ -15,8 +15,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetPersons
     /// </summary>
-    [Route("/Persons", "GET")]
-    [Api(Description = "Gets all persons from a given item, folder, or the entire library")]
+    [Route("/Persons", "GET", Summary = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
     {
         /// <summary>
@@ -30,8 +29,7 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetPerson
     /// </summary>
-    [Route("/Persons/{Name}", "GET")]
-    [Api(Description = "Gets a person, by name")]
+    [Route("/Persons/{Name}", "GET", Summary = "Gets a person, by name")]
     public class GetPerson : IReturn<BaseItemDto>
     {
         /// <summary>

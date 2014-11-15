@@ -6,7 +6,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 

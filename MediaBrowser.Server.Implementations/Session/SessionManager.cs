@@ -11,10 +11,10 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -23,7 +23,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
-using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -251,11 +250,6 @@ namespace MediaBrowser.Server.Implementations.Session
             if (string.IsNullOrEmpty(deviceName))
             {
                 throw new ArgumentNullException("deviceName");
-            }
-
-            if (user != null && user.Configuration.IsDisabled)
-            {
-                throw new AuthenticationException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
 
             var activityDate = DateTime.UtcNow;
@@ -1261,49 +1255,11 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        public void ValidateSecurityToken(string token)
-        {
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new AuthenticationException();
-            }
-
-            var result = _authRepo.Get(new AuthenticationInfoQuery
-            {
-                AccessToken = token
-            });
-
-            var info = result.Items.FirstOrDefault();
-
-            if (info == null)
-            {
-                throw new AuthenticationException();
-            }
-
-            if (!info.IsActive)
-            {
-                throw new AuthenticationException("Access token has expired.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.UserId))
-            {
-                var user = _userManager.GetUserById(info.UserId);
-
-                if (user == null || user.Configuration.IsDisabled)
-                {
-                    throw new AuthenticationException("User account has been disabled.");
-                }
-            }
-        }
-
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
-        /// <exception cref="AuthenticationException">Invalid user or password entered.</exception>
-        /// <exception cref="System.UnauthorizedAccessException">Invalid user or password entered.</exception>
-        /// <exception cref="UnauthorizedAccessException">Invalid user or password entered.</exception>
         public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
         {
             var user = _userManager.Users
@@ -1315,7 +1271,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
 
-                throw new AuthenticationException("Invalid user or password entered.");
+                throw new UnauthorizedAccessException("Invalid user or password entered.");
             }
 
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);

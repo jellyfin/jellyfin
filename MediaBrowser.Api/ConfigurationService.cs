@@ -9,7 +9,6 @@ using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,18 +32,18 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Key { get; set; }
     }
-    
+
     /// <summary>
     /// Class UpdateConfiguration
     /// </summary>
     [Route("/System/Configuration", "POST", Summary = "Updates application configuration")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class UpdateConfiguration : ServerConfiguration, IReturnVoid
     {
     }
 
     [Route("/System/Configuration/{Key}", "POST", Summary = "Updates named configuration")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class UpdateNamedConfiguration : IReturnVoid, IRequiresRequestStream
     {
         [ApiMember(Name = "Key", Description = "Key", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -52,23 +51,23 @@ namespace MediaBrowser.Api
 
         public Stream RequestStream { get; set; }
     }
-    
+
     [Route("/System/Configuration/MetadataOptions/Default", "GET", Summary = "Gets a default MetadataOptions object")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
 
     }
 
     [Route("/System/Configuration/MetadataPlugins", "GET", Summary = "Gets all available metadata plugins")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class GetMetadataPlugins : IReturn<List<MetadataPluginSummary>>
     {
 
     }
 
     [Route("/System/Configuration/MetadataPlugins/Autoset", "POST")]
-    [Authenticated]
+    [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class AutoSetMetadataOptions : IReturnVoid
     {
 
@@ -149,7 +148,7 @@ namespace MediaBrowser.Api
 
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, configurationType);
-            
+
             _configurationManager.SaveConfiguration(key, configuration);
         }
 

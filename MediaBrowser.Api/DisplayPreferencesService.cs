@@ -24,9 +24,6 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public Guid UserId { get; set; }
-
-        [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Client { get; set; }
     }
 
     [Route("/DisplayPreferences/{Id}", "GET", Summary = "Gets a user's display preferences for an item")]

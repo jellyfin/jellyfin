@@ -87,7 +87,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class EnvironmentService
     /// </summary>
-    [Authenticated]
+    [Authenticated(Roles = "Admin")]
     public class EnvironmentService : BaseApiService
     {
         const char UncSeparator = '\\';
