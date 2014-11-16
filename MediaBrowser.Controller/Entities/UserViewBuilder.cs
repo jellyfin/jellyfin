@@ -740,7 +740,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            items = items.Where(i => Filter(i, user, query, userDataManager));
+            items = items.Where(i => Filter(i, user, query, userDataManager, libraryManager));
 
             items = FilterVirtualEpisodes(items,
                 query.IsMissing,
@@ -1140,7 +1140,7 @@ namespace MediaBrowser.Controller.Entities
             };
         }
 
-        private static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager)
+        private static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
@@ -1321,7 +1321,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.IsYearMismatched.Value;
 
-                if (IsYearMismatched(item) != filterValue)
+                if (IsYearMismatched(item, libraryManager) != filterValue)
                 {
                     return false;
                 }
@@ -1551,8 +1551,8 @@ namespace MediaBrowser.Controller.Entities
                         return false;
                     }
                 }
-            }                
-            
+            }
+
             // Apply tag filter
             var tags = query.Tags;
             if (tags.Length > 0)
@@ -1641,7 +1641,7 @@ namespace MediaBrowser.Controller.Entities
             return view;
         }
 
-        public static bool IsYearMismatched(BaseItem item)
+        public static bool IsYearMismatched(BaseItem item, ILibraryManager libraryManager)
         {
             if (item.ProductionYear.HasValue)
             {
@@ -1649,14 +1649,14 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    int? yearInName;
-                    string name;
-                    NameParser.ParseName(Path.GetFileName(path), out name, out yearInName);
+                    var info = libraryManager.ParseName(Path.GetFileName(path));
+                    var yearInName = info.Year;
 
                     // Go up a level if we didn't get a year
                     if (!yearInName.HasValue)
                     {
-                        NameParser.ParseName(Path.GetFileName(Path.GetDirectoryName(path)), out name, out yearInName);
+                        info = libraryManager.ParseName(Path.GetFileName(Path.GetDirectoryName(path)));
+                        yearInName = info.Year;
                     }
 
                     if (yearInName.HasValue)

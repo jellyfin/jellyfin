@@ -70,6 +70,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if (episode != null)
                 {
+                    // The base video resolver is going to fill these in, so null them out
+                    episode.ProductionYear = null;
+                    episode.Name = null;
+
                     if (season != null)
                     {
                         episode.ParentIndexNumber = season.IndexNumber;

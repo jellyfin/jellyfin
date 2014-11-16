@@ -333,7 +333,7 @@ namespace MediaBrowser.Api.UserLibrary
                 };
             }
 
-            var items = result.Item1.Items.Where(i => ApplyAdditionalFilters(request, i, user, false));
+            var items = result.Item1.Items.Where(i => ApplyAdditionalFilters(request, i, user, false, _libraryManager));
 
             // Apply filters
             // Run them starting with the ones that are likely to reduce the list the most
@@ -467,7 +467,7 @@ namespace MediaBrowser.Api.UserLibrary
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
 
-                Filter = (i, u) => ApplyAdditionalFilters(request, i, u, true),
+                Filter = (i, u) => ApplyAdditionalFilters(request, i, u, true, _libraryManager),
 
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -635,7 +635,7 @@ namespace MediaBrowser.Api.UserLibrary
             return items;
         }
 
-        private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered)
+        private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
         {
             if (!isPreFiltered)
             {
@@ -773,7 +773,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     var filterValue = request.IsYearMismatched.Value;
 
-                    if (UserViewBuilder.IsYearMismatched(i) != filterValue)
+                    if (UserViewBuilder.IsYearMismatched(i, libraryManager) != filterValue)
                     {
                         return false;
                     }

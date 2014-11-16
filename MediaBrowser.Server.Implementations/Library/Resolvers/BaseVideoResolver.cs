@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Video;
 using System;
 
@@ -42,8 +43,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
-                var parser = new VideoFileParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
-                var videoInfo = parser.ParseFile(args.Path);
+                var parser = new Naming.Video.VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+                var videoInfo = parser.ResolveFile(args.Path);
 
                 if (videoInfo == null)
                 {
@@ -67,7 +68,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                         IsInMixedFolder = true,
                         IsPlaceHolder = videoInfo.IsStub,
                         IsShortcut = isShortcut,
-                        Name = videoInfo.Name
+                        Name = videoInfo.Name,
+                        ProductionYear = videoInfo.Year
                     };
 
                     if (videoInfo.IsStub)

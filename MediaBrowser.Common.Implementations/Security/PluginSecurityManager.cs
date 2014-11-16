@@ -186,15 +186,18 @@ namespace MediaBrowser.Common.Implementations.Security
             string mb2Equivalent = null,
             string version = null)
         {
+            var lastChecked = LicenseFile.LastChecked(feature);
+
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
             var reg = new RegRecord
             {
-                registered = LicenseFile.LastChecked(feature) > DateTime.UtcNow.AddDays(-3)
+                // Cache the result for up to a week
+                registered = lastChecked > DateTime.UtcNow.AddDays(-7)
             };
 
             var success = reg.registered;
 
-            if (!reg.registered)
+            if (!(lastChecked > DateTime.UtcNow.AddDays(-1)))
             {
                 var mac = _networkManager.GetMacAddress();
                 var data = new Dictionary<string, string>
