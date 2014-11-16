@@ -21,14 +21,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     public class MovieResolver : BaseVideoResolver<Video>
     {
         private readonly IServerApplicationPaths _applicationPaths;
-        private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public MovieResolver(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
+        public MovieResolver(ILibraryManager libraryManager, IServerApplicationPaths applicationPaths, ILogger logger, IFileSystem fileSystem) : base(libraryManager)
         {
-            _applicationPaths = appPaths;
-            _libraryManager = libraryManager;
+            _applicationPaths = applicationPaths;
             _logger = logger;
             _fileSystem = fileSystem;
         }
@@ -221,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         };
                     }
 
-                    if (EntityResolutionHelper.IsMultiPartFolder(filename))
+                    if (LibraryManager.IsMultiPartFolder(filename))
                     {
                         multiDiscFolders.Add(child);
                     }
@@ -235,7 +233,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     continue;
                 }
 
-                var childArgs = new ItemResolveArgs(_applicationPaths, _libraryManager, directoryService)
+                var childArgs = new ItemResolveArgs(_applicationPaths, LibraryManager, directoryService)
                 {
                     FileInfo = child,
                     Path = child.FullName,
@@ -378,7 +376,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             var firstMovie = sortedMovies[0];
 
             // They must all be part of the sequence if we're going to consider it a multi-part movie
-            if (sortedMovies.All(i => EntityResolutionHelper.IsMultiPartFile(i.Path)))
+            if (sortedMovies.All(i => LibraryManager.IsMultiPartFile(i.Path)))
             {
                 // Only support up to 8 (matches Plex), to help avoid incorrect detection
                 if (sortedMovies.Count <= 8)

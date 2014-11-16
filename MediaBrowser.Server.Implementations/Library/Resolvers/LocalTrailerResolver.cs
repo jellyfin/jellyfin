@@ -16,7 +16,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     {
         private readonly IFileSystem _fileSystem;
 
-        public LocalTrailerResolver(IFileSystem fileSystem)
+        public LocalTrailerResolver(ILibraryManager libraryManager, IFileSystem fileSystem) : base(libraryManager)
         {
             _fileSystem = fileSystem;
         }

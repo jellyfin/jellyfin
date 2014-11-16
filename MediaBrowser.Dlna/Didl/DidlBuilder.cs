@@ -161,7 +161,7 @@ namespace MediaBrowser.Dlna.Didl
                 AddVideoResource(container, video, deviceId, filter, contentFeature, streamInfo);
             }
 
-            foreach (var subtitle in streamInfo.GetExternalSubtitles(_serverAddress))
+            foreach (var subtitle in streamInfo.GetExternalSubtitles(_serverAddress, false))
             {
                 AddSubtitleElement(container, subtitle);
             }

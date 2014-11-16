@@ -2,7 +2,6 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
 using System;
 using System.IO;
 using System.Linq;
@@ -63,14 +62,14 @@ namespace MediaBrowser.Server.Implementations.Library
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
                 //we use our resolve args name here to get the name of the containg folder, not actual video file
-                item.Name = GetMBName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                item.Name = GetMbName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
         }
 
         /// <summary>
         /// The MB name regex
         /// </summary>
-        private static readonly Regex MBNameRegex = new Regex(@"(\[.*?\])", RegexOptions.Compiled);
+        private static readonly Regex MbNameRegex = new Regex(@"(\[.*?\])", RegexOptions.Compiled);
 
         /// <summary>
         /// Strip out attribute items and return just the name we will use for items
@@ -78,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="path">Assumed to be a file or directory path</param>
         /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
         /// <returns>The cleaned name</returns>
-        private static string GetMBName(string path, bool isDirectory)
+        private static string GetMbName(string path, bool isDirectory)
         {
             //first just get the file or directory name
             var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
@@ -89,8 +88,9 @@ namespace MediaBrowser.Server.Implementations.Library
             return fn;
         }
 
-        public static string StripBrackets(string inputString) {
-            var output = MBNameRegex.Replace(inputString, string.Empty).Trim();
+        private static string StripBrackets(string inputString)
+        {
+            var output = MbNameRegex.Replace(inputString, string.Empty).Trim();
             return Regex.Replace(output, @"\s+", " ");
         }
 

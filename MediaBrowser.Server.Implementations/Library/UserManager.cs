@@ -19,7 +19,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
-using MediaBrowser.Server.Implementations.Security;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

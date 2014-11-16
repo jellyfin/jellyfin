@@ -298,7 +298,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumber = IndexNumber ?? TVUtils.GetSeasonNumberFromPath(Path);
+                    IndexNumber = IndexNumber ?? LibraryManager.GetSeasonNumberFromPath(Path);
 
                     // If a change was made record it
                     if (IndexNumber.HasValue)

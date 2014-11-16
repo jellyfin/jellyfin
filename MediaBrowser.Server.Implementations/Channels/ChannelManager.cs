@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Library;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
@@ -318,13 +319,13 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    files = files.Where(i => EntityResolutionHelper.IsVideoFile(i.FullName));
+                    files = files.Where(i => _libraryManager.IsVideoFile(i.FullName));
                 }
                 else
                 {
-                    files = files.Where(i => EntityResolutionHelper.IsAudioFile(i.FullName));
+                    files = files.Where(i => _libraryManager.IsAudioFile(i.FullName));
                 }
-
+                
                 var file = files
                     .FirstOrDefault(i => i.Name.StartsWith(filenamePrefix, StringComparison.OrdinalIgnoreCase));
 

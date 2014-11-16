@@ -14,10 +14,12 @@ namespace MediaBrowser.Server.Implementations.Library
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
         private readonly IFileSystem _fileSystem;
+        private readonly ILibraryManager _libraryManager;
 
-        public CoreResolutionIgnoreRule(IFileSystem fileSystem)
+        public CoreResolutionIgnoreRule(IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (args.Parent != null)
                 {
                     // Don't resolve these into audio files
-                    if (string.Equals(_fileSystem.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && EntityResolutionHelper.IsAudioFile(filename))
+                    if (string.Equals(_fileSystem.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && _libraryManager.IsAudioFile(filename))
                     {
                         return true;
                     }

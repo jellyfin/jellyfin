@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Library;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
@@ -45,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
-                .Where(i => EntityResolutionHelper.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
+                .Where(i => _libraryManager.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
                 .ToList();
 
             progress.Report(10);

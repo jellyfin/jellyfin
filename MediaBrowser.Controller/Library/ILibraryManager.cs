@@ -353,5 +353,57 @@ namespace MediaBrowser.Controller.Library
             string viewType, 
             string sortName, 
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Determines whether [is video file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
+        bool IsVideoFile(string path);
+
+        bool IsAudioFile(string path);
+        
+        /// <summary>
+        /// Determines whether [is multi part file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is multi part file] [the specified path]; otherwise, <c>false</c>.</returns>
+        bool IsMultiPartFile(string path);
+
+        /// <summary>
+        /// Determines whether [is multi part folder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is multi part folder] [the specified path]; otherwise, <c>false</c>.</returns>
+        bool IsMultiPartFolder(string path);
+
+        /// <summary>
+        /// Gets the season number from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        int? GetSeasonNumberFromPath(string path);
+
+        /// <summary>
+        /// Gets the season number from episode file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        int? GetSeasonNumberFromEpisodeFile(string path);
+
+        /// <summary>
+        /// Gets the ending episode number from file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        int? GetEndingEpisodeNumberFromFile(string path);
+
+        /// <summary>
+        /// Gets the episode number from file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="considerSeasonless">if set to <c>true</c> [consider seasonless].</param>
+        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
+        int? GetEpisodeNumberFromFile(string path, bool considerSeasonless);
     }
 }

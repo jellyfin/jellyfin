@@ -306,7 +306,6 @@
     <Compile Include="MediaEncoding\MediaEncoderHelpers.cs" />
     <Compile Include="Providers\MetadataProviderPriority.cs" />
     <Compile Include="Resolvers\BaseItemResolver.cs" />
-    <Compile Include="Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Resolvers\IItemResolver.cs" />
     <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
@@ -325,7 +324,6 @@
     <Compile Include="Providers\IImageEnhancer.cs" />
     <Compile Include="Providers\ProviderRefreshStatus.cs" />
     <Compile Include="Resolvers\IResolverIgnoreRule.cs" />
-    <Compile Include="Resolvers\EntityResolutionHelper.cs" />
     <Compile Include="Resolvers\ResolverPriority.cs" />
     <Compile Include="Library\TVUtils.cs" />
     <Compile Include="Library\ItemResolveArgs.cs" />

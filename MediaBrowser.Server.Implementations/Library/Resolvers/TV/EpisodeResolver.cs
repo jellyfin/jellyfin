@@ -11,6 +11,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
+        public EpisodeResolver(ILibraryManager libraryManager) : base(libraryManager)
+        {
+        }
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -73,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                     if (episode.ParentIndexNumber == null)
                     {
-                        episode.ParentIndexNumber = TVUtils.GetSeasonNumberFromEpisodeFile(args.Path);
+                        episode.ParentIndexNumber = SeriesResolver.GetSeasonNumberFromEpisodeFile(args.Path);
                     }
                 }
 
