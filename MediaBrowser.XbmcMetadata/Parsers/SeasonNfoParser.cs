@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -31,7 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             int num;
 
-                            if (int.TryParse(number, out num))
+                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
                             {
                                 item.IndexNumber = num;
                             }

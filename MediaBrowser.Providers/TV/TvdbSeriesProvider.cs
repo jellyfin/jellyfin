@@ -37,8 +37,9 @@ namespace MediaBrowser.Providers.TV
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ISeriesOrderManager _seriesOrder;
+        private readonly ILibraryManager _libraryManager;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ISeriesOrderManager seriesOrder)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ISeriesOrderManager seriesOrder, ILibraryManager libraryManager)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
@@ -46,6 +47,7 @@ namespace MediaBrowser.Providers.TV
             _config = config;
             _logger = logger;
             _seriesOrder = seriesOrder;
+            _libraryManager = libraryManager;
             Current = this;
         }
 
@@ -282,9 +284,8 @@ namespace MediaBrowser.Providers.TV
 
             if (results.Count == 0)
             {
-                int? yearInName = null;
-                string nameWithoutYear;
-                NameParser.ParseName(name, out nameWithoutYear, out yearInName);
+                var parsedName = _libraryManager.ParseName(name);
+                var nameWithoutYear = parsedName.Name;
 
                 if (!string.IsNullOrEmpty(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
                 {

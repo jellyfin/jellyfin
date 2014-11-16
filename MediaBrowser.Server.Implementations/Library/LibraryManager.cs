@@ -21,7 +21,6 @@ using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1635,8 +1634,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsVideoFile(string path)
         {
-            var parser = new VideoFileParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
-            return parser.IsVideoFile(path);
+            var resolver = new VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            return resolver.IsVideoFile(path);
         }
 
         public bool IsAudioFile(string path)
@@ -1647,13 +1646,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsMultiPartFile(string path)
         {
-            var parser = new MultiPartParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
+            var parser = new MultiPartParser(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
             return parser.Parse(path, FileInfoType.File).IsMultiPart;
         }
 
         public bool IsMultiPartFolder(string path)
         {
-            var parser = new MultiPartParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
+            var parser = new MultiPartParser(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
             return parser.Parse(path, FileInfoType.Directory).IsMultiPart;
         }
 
@@ -1675,6 +1674,19 @@ namespace MediaBrowser.Server.Implementations.Library
         public int? GetEpisodeNumberFromFile(string path, bool considerSeasonless)
         {
             return SeriesResolver.GetEpisodeNumberFromFile(path, considerSeasonless);
+        }
+
+        public ItemLookupInfo ParseName(string name)
+        {
+            var resolver = new VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+
+            var result = resolver.CleanDateTime(name);
+
+            return new ItemLookupInfo
+            {
+                Name = result.Name,
+                Year = result.Year
+            };
         }
     }
 }

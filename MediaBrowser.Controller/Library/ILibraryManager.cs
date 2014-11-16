@@ -361,6 +361,11 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
         bool IsVideoFile(string path);
 
+        /// <summary>
+        /// Determines whether [is audio file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is audio file] [the specified path]; otherwise, <c>false</c>.</returns>
         bool IsAudioFile(string path);
         
         /// <summary>
@@ -405,5 +410,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="considerSeasonless">if set to <c>true</c> [consider seasonless].</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
         int? GetEpisodeNumberFromFile(string path, bool considerSeasonless);
+
+        /// <summary>
+        /// Parses the name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>ItemInfo.</returns>
+        ItemLookupInfo ParseName(string name);
     }
 }

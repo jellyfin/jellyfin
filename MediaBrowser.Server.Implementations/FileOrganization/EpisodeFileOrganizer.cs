@@ -321,9 +321,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private Series GetMatchingSeries(string seriesName, FileOrganizationResult result)
         {
-            int? yearInName;
-            var nameWithoutYear = seriesName;
-            NameParser.ParseName(nameWithoutYear, out nameWithoutYear, out yearInName);
+            var parsedName = _libraryManager.ParseName(seriesName);
+
+            var yearInName = parsedName.Year;
+            var nameWithoutYear = parsedName.Name;
 
             result.ExtractedName = nameWithoutYear;
             result.ExtractedYear = yearInName;

@@ -266,7 +266,6 @@
     <Compile Include="Providers\ItemIdentities.cs" />
     <Compile Include="Providers\ItemLookupInfo.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
-    <Compile Include="Providers\NameParser.cs" />
     <Compile Include="Providers\MetadataStatus.cs" />
     <Compile Include="Providers\ISeriesOrderManager.cs" />
     <Compile Include="Session\ISessionManager.cs" />
