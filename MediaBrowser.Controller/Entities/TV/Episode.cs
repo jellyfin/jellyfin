@@ -306,7 +306,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumber = TVUtils.GetEpisodeNumberFromFile(Path, true);
+                    IndexNumber = LibraryManager.GetEpisodeNumberFromFile(Path, true);
 
                     // If a change was made record it
                     if (IndexNumber.HasValue)
@@ -317,7 +317,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!IndexNumberEnd.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    IndexNumberEnd = TVUtils.GetEndingEpisodeNumberFromFile(Path);
+                    IndexNumberEnd = LibraryManager.GetEndingEpisodeNumberFromFile(Path);
 
                     // If a change was made record it
                     if (IndexNumberEnd.HasValue)
@@ -338,7 +338,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (!ParentIndexNumber.HasValue && !string.IsNullOrEmpty(Path))
                 {
-                    ParentIndexNumber = TVUtils.GetSeasonNumberFromEpisodeFile(Path);
+                    ParentIndexNumber = LibraryManager.GetSeasonNumberFromEpisodeFile(Path);
                 }
 
                 // If a change was made record it

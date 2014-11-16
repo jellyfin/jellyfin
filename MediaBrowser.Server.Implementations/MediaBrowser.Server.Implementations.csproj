@@ -49,6 +49,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\libwebp\Imazen.WebP.dll</HintPath>
     </Reference>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Nat.1.2.21.0\lib\net40\Mono.Nat.dll</HintPath>
@@ -174,8 +178,10 @@
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
+    <Compile Include="Library\EntityResolutionHelper.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
+    <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
     <Compile Include="Library\Resolvers\PlaylistResolver.cs" />

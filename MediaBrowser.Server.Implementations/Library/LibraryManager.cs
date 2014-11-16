@@ -15,6 +15,10 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.IO;
+using MediaBrowser.Naming.Video;
+using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using MoreLinq;
@@ -1627,6 +1631,50 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return item;
+        }
+
+        public bool IsVideoFile(string path)
+        {
+            var parser = new VideoFileParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
+            return parser.IsVideoFile(path);
+        }
+
+        public bool IsAudioFile(string path)
+        {
+            var parser = new AudioFileParser(new AudioOptions());
+            return parser.IsAudioFile(path);
+        }
+
+        public bool IsMultiPartFile(string path)
+        {
+            var parser = new MultiPartParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
+            return parser.Parse(path, FileInfoType.File).IsMultiPart;
+        }
+
+        public bool IsMultiPartFolder(string path)
+        {
+            var parser = new MultiPartParser(new ExpandedVideoOptions(), new Naming.Logging.NullLogger());
+            return parser.Parse(path, FileInfoType.Directory).IsMultiPart;
+        }
+
+        public int? GetSeasonNumberFromPath(string path)
+        {
+            return SeriesResolver.GetSeasonNumberFromPath(path);
+        }
+
+        public int? GetSeasonNumberFromEpisodeFile(string path)
+        {
+            return SeriesResolver.GetSeasonNumberFromEpisodeFile(path);
+        }
+
+        public int? GetEndingEpisodeNumberFromFile(string path)
+        {
+            return SeriesResolver.GetEndingEpisodeNumberFromFile(path);
+        }
+
+        public int? GetEpisodeNumberFromFile(string path, bool considerSeasonless)
+        {
+            return SeriesResolver.GetEpisodeNumberFromFile(path, considerSeasonless);
         }
     }
 }

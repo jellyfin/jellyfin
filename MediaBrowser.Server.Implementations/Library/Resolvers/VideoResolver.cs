@@ -1,5 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
+using System;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -8,6 +12,31 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     /// </summary>
     public class VideoResolver : BaseVideoResolver<Video>
     {
+        public VideoResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
+        {
+        }
+
+        protected override Video Resolve(ItemResolveArgs args)
+        {
+            if (args.Parent != null)
+            {
+                var collectionType = args.GetCollectionType() ?? string.Empty;
+                var accepted = new[]
+                {
+                    string.Empty,
+                    CollectionType.HomeVideos
+                };
+
+                if (!accepted.Contains(collectionType, StringComparer.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+            }
+
+            return base.Resolve(args);
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>

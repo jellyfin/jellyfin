@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     {
-                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsMultiPartFolder(i.FullName);
+                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && LibraryManager.IsMultiPartFolder(i.FullName);
                     }
 
                     return false;
@@ -362,7 +362,7 @@ namespace MediaBrowser.Controller.Entities
                         return false;
                     }
 
-                    return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && EntityResolutionHelper.IsVideoFile(i.FullName) && EntityResolutionHelper.IsMultiPartFile(i.Name);
+                    return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && LibraryManager.IsVideoFile(i.FullName) && LibraryManager.IsMultiPartFile(i.Name);
                 });
             }
 
@@ -472,7 +472,7 @@ namespace MediaBrowser.Controller.Entities
                     }
 
                     return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) &&
-                           EntityResolutionHelper.IsVideoFile(i.FullName) &&
+                           LibraryManager.IsVideoFile(i.FullName) &&
                            i.Name.StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase);
                 });
             }

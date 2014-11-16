@@ -53,12 +53,8 @@
     <Compile Include="MediaEncoding\Subtitles\AssParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\SrtParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\VttWriterTest.cs" />
-    <Compile Include="Providers\MovieDbProviderTests.cs" />
-    <Compile Include="Resolvers\MovieResolverTests.cs" />
-    <Compile Include="Resolvers\MusicResolverTests.cs" />
     <Compile Include="Resolvers\TvUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server.Implementations\Library\ResolverHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">

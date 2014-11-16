@@ -16,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
@@ -55,18 +57,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 FileSize = new FileInfo(path).Length
             };
 
-            var seriesName = TVUtils.GetSeriesNameFromEpisodeFile(path);
+            var seriesName = SeriesResolver.GetSeriesNameFromEpisodeFile(path);
 
             if (!string.IsNullOrEmpty(seriesName))
             {
-                var season = TVUtils.GetSeasonNumberFromEpisodeFile(path);
+                var season = SeriesResolver.GetSeasonNumberFromEpisodeFile(path);
 
                 result.ExtractedSeasonNumber = season;
 
                 if (season.HasValue)
                 {
                     // Passing in true will include a few extra regex's
-                    var episode = TVUtils.GetEpisodeNumberFromFile(path, true);
+                    var episode = SeriesResolver.GetEpisodeNumberFromFile(path, true);
 
                     result.ExtractedEpisodeNumber = episode;
 
@@ -74,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     {
                         _logger.Debug("Extracted information from {0}. Series name {1}, Season {2}, Episode {3}", path, seriesName, season, episode);
 
-                        var endingEpisodeNumber = TVUtils.GetEndingEpisodeNumberFromFile(path);
+                        var endingEpisodeNumber = SeriesResolver.GetEndingEpisodeNumberFromFile(path);
 
                         result.ExtractedEndingEpisodeNumber = endingEpisodeNumber;
 
@@ -253,7 +255,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             try
             {
                 var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
-                    .Where(i => EntityResolutionHelper.IsVideoFile(i) && string.Equals(_fileSystem.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+                    .Where(i => _libraryManager.IsVideoFile(i) && string.Equals(_fileSystem.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
 
                 episodePaths.AddRange(filesOfOtherExtensions);
             }
