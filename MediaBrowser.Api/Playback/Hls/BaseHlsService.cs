@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitCount = isLive ? 3 : 2;
+                        var waitCount = isLive ? 2 : 2;
                         await WaitForMinimumSegmentCount(playlist, waitCount, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }

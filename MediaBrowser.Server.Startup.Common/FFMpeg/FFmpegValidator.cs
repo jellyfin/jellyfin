@@ -26,21 +26,50 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _logger.Info("FFProbe: {0}", info.ProbePath);
 
             var fileInfo = new FileInfo(info.EncoderPath);
-            var cachePath = Path.Combine(_appPaths.CachePath, fileInfo.Length.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N"));
+            var cachePath = Path.Combine(_appPaths.CachePath, "1" + fileInfo.Length.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N"));
 
-            if (!File.Exists(cachePath))
-            {
-                ValidateCodecs(info.EncoderPath);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-                File.WriteAllText(cachePath, string.Empty, Encoding.UTF8);
-            }
+            ValidateCodecs(info.EncoderPath, cachePath);
         }
 
-        private void ValidateCodecs(string path)
+        private void ValidateCodecs(string ffmpegPath, string cachePath)
         {
-            var output = GetOutput(path, "-encoders");
+            string output = null;
+            try
+            {
+                output = File.ReadAllText(cachePath, Encoding.UTF8);
+            }
+            catch
+            {
 
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                try
+                {
+                    output = GetFFMpegOutput(ffmpegPath, "-encoders");
+                }
+                catch
+                {
+                    return;
+                }
+
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+                    File.WriteAllText(cachePath, output, Encoding.UTF8);
+                }
+                catch
+                {
+
+                }
+            }
+
+            ValidateCodecsFromOutput(output);
+        }
+
+        private void ValidateCodecsFromOutput(string output)
+        {
             var required = new[]
             {
                 "libx264",
@@ -61,12 +90,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    throw new ArgumentException("ffmpeg is missing encoder " + encoder);
+                    _logger.Error("ffmpeg is missing encoder " + encoder);
+                    //throw new ArgumentException("ffmpeg is missing encoder " + encoder);
                 }
             }
         }
 
-        private string GetOutput(string path, string arguments)
+        private string GetFFMpegOutput(string path, string arguments)
         {
             var process = new Process
             {

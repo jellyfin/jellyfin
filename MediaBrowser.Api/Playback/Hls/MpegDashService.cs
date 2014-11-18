@@ -308,7 +308,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (File.Exists(segmentPath))
             {
-                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -317,7 +316,6 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (File.Exists(segmentPath))
                 {
-                    job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else

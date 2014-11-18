@@ -337,34 +337,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{Video}.</returns>
         private IEnumerable<Video> LoadAdditionalParts(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
-            IEnumerable<FileSystemInfo> files;
-
-            var path = Path;
-
-            if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd)
-            {
-                files = fileSystemChildren.Where(i =>
-                {
-                    if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                    {
-                        return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && LibraryManager.IsMultiPartFolder(i.FullName);
-                    }
-
-                    return false;
-                });
-            }
-            else
-            {
-                files = fileSystemChildren.Where(i =>
-                {
-                    if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                    {
-                        return false;
-                    }
-
-                    return !string.Equals(i.FullName, path, StringComparison.OrdinalIgnoreCase) && LibraryManager.IsVideoFile(i.FullName) && LibraryManager.IsMultiPartFile(i.Name);
-                });
-            }
+            var files = LibraryManager.GetAdditionalParts(Path, VideoType, fileSystemChildren);
 
             return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
             {

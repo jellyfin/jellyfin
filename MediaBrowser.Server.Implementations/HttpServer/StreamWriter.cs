@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -91,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     ThrottleCallback = ThrottleCallback
                 };
             }
-            WriteToAsync(responseStream);
+            WriteToInternal(responseStream);
         }
 
         /// <summary>
@@ -99,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
         /// <returns>Task.</returns>
-        private void WriteToAsync(Stream responseStream)
+        private void WriteToInternal(Stream responseStream)
         {
             try
             {

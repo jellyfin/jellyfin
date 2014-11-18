@@ -12,6 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.Video;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -88,11 +90,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, false, collectionType);
                 }
 
-                if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
-                {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false, collectionType);
-                }
-
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
                     return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false, collectionType);
@@ -126,11 +123,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<MusicVideo>(args);
-            }
-
-            if (string.Equals(collectionType, CollectionType.AdultVideos, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<Video>(args);
             }
 
             // To find a movie file, the collection type must be movies or boxsets
@@ -219,10 +211,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         };
                     }
 
-                    if (LibraryManager.IsMultiPartFolder(filename))
-                    {
-                        multiDiscFolders.Add(child);
-                    }
+                    multiDiscFolders.Add(child);
 
                     continue;
                 }
@@ -280,9 +269,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (multiDiscFolders.Count > 0)
             {
-                var folders = fileSystemEntries.Where(child => (child.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
-
-                return GetMultiDiscMovie<T>(multiDiscFolders, folders);
+                return GetMultiDiscMovie<T>(multiDiscFolders, directoryService);
             }
 
             return null;
@@ -293,16 +280,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="multiDiscFolders">The folders.</param>
-        /// <param name="allFolders">All folders.</param>
+        /// <param name="directoryService">The directory service.</param>
         /// <returns>``0.</returns>
-        private T GetMultiDiscMovie<T>(List<FileSystemInfo> multiDiscFolders, IEnumerable<FileSystemInfo> allFolders)
+        private T GetMultiDiscMovie<T>(List<FileSystemInfo> multiDiscFolders, IDirectoryService directoryService)
                where T : Video, new()
         {
             var videoTypes = new List<VideoType>();
 
             var folderPaths = multiDiscFolders.Select(i => i.FullName).Where(i =>
             {
-                var subfolders = Directory.GetDirectories(i).Select(Path.GetFileName).ToList();
+                var subfolders = directoryService.GetDirectories(i)
+                    .Select(d => d.Name)
+                    .ToList();
 
                 if (subfolders.Any(IsDvdDirectory))
                 {
@@ -320,7 +309,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }).OrderBy(i => i).ToList();
 
             // If different video types were found, don't allow this
-            if (videoTypes.Count > 0 && videoTypes.Any(i => i != videoTypes[0]))
+            if (videoTypes.Distinct().Count() > 1)
             {
                 return null;
             }
@@ -330,35 +319,24 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            // If there are other folders side by side that are folder rips, don't allow it
-            // TODO: Improve this to return null if any folder is present aside from our regularly ignored folders
-            if (allFolders.Except(multiDiscFolders).Any(i =>
-            {
-                var subfolders = Directory.GetDirectories(i.FullName).Select(Path.GetFileName).ToList();
+            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
 
-                if (subfolders.Any(IsDvdDirectory))
-                {
-                    return true;
-                }
-                if (subfolders.Any(IsBluRayDirectory))
-                {
-                    return true;
-                }
+            var result = resolver.ResolveDirectories(folderPaths);
 
-                return false;
-
-            }))
+            if (result.Stacks.Count != 1)
             {
                 return null;
             }
-
+            
             return new T
             {
                 Path = folderPaths[0],
 
                 IsMultiPart = true,
 
-                VideoType = videoTypes[0]
+                VideoType = videoTypes[0],
+
+                Name = result.Stacks[0].Name
             };
         }
 
@@ -375,21 +353,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var firstMovie = sortedMovies[0];
 
-            // They must all be part of the sequence if we're going to consider it a multi-part movie
-            if (sortedMovies.All(i => LibraryManager.IsMultiPartFile(i.Path)))
+            var paths = sortedMovies.Select(i => i.Path).ToList();
+
+            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+
+            var result = resolver.ResolveFiles(paths);
+
+            if (result.Stacks.Count != 1)
             {
-                // Only support up to 8 (matches Plex), to help avoid incorrect detection
-                if (sortedMovies.Count <= 8)
-                {
-                    firstMovie.IsMultiPart = true;
-
-                    _logger.Debug("Multi-part video found: " + firstMovie.Path);
-
-                    return firstMovie;
-                }
+                return null;
             }
 
-            return null;
+            firstMovie.IsMultiPart = true;
+            firstMovie.Name = result.Stacks[0].Name;
+
+            // They must all be part of the sequence if we're going to consider it a multi-part movie
+            return firstMovie;
         }
 
         private T GetMovieWithMultipleSources<T>(IEnumerable<T> movies)

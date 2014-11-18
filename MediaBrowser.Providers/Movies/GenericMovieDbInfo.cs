@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -20,13 +21,15 @@ namespace MediaBrowser.Providers.Movies
     {
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer)
+        public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer, ILibraryManager libraryManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
+            _libraryManager = libraryManager;
         }
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
@@ -39,7 +42,7 @@ namespace MediaBrowser.Providers.Movies
             // Don't search for music video id's because it is very easy to misidentify. 
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId) && typeof(T) != typeof(MusicVideo))
             {
-                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer).GetMovieSearchResults(itemId, cancellationToken).ConfigureAwait(false);
+                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetMovieSearchResults(itemId, cancellationToken).ConfigureAwait(false);
 
                 var searchResult = searchResults.FirstOrDefault();
 
