@@ -367,20 +367,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is audio file] [the specified path]; otherwise, <c>false</c>.</returns>
         bool IsAudioFile(string path);
-        
-        /// <summary>
-        /// Determines whether [is multi part file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is multi part file] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsMultiPartFile(string path);
-
-        /// <summary>
-        /// Determines whether [is multi part folder] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is multi part folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsMultiPartFolder(string path);
 
         /// <summary>
         /// Gets the season number from path.
@@ -417,5 +403,16 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>ItemInfo.</returns>
         ItemLookupInfo ParseName(string name);
+
+        /// <summary>
+        /// Gets the additional parts.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="files">The files.</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
+        IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
+            VideoType type,
+            IEnumerable<FileSystemInfo> files);
     }
 }

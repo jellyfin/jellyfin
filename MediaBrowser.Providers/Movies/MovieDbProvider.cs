@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -35,10 +36,11 @@ namespace MediaBrowser.Providers.Movies
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization)
+        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -46,6 +48,7 @@ namespace MediaBrowser.Providers.Movies
             _configurationManager = configurationManager;
             _logger = logger;
             _localization = localization;
+            _libraryManager = libraryManager;
             Current = this;
         }
 
@@ -101,7 +104,7 @@ namespace MediaBrowser.Providers.Movies
                 return new[] { remoteResult };
             }
 
-            return await new MovieDbSearch(_logger, _jsonSerializer).GetMovieSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+            return await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetMovieSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
@@ -112,7 +115,7 @@ namespace MediaBrowser.Providers.Movies
         public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
             where T : Video, new()
         {
-            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer);
+            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager);
 
             return movieDb.GetMetadata(id, cancellationToken);
         }

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -24,12 +25,14 @@ namespace MediaBrowser.Providers.Omdb
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
+        public OmdbItemProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
@@ -160,7 +163,7 @@ namespace MediaBrowser.Providers.Omdb
 
         private async Task<Tuple<string, string, string>> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
         {
-            var result = await new GenericMovieDbInfo<Movie>(_logger, _jsonSerializer).GetMetadata(info, cancellationToken)
+            var result = await new GenericMovieDbInfo<Movie>(_logger, _jsonSerializer, _libraryManager).GetMetadata(info, cancellationToken)
                         .ConfigureAwait(false);
 
             var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;

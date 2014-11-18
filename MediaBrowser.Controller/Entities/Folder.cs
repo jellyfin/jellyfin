@@ -472,6 +472,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                         else
                         {
+                            newItems.Add(child);
                             validChildren.Add(child);
                         }
                     }

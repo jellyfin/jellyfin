@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Providers
     {
         IEnumerable<FileSystemInfo> GetFileSystemEntries(string path);
         IEnumerable<FileSystemInfo> GetFiles(string path);
+        IEnumerable<FileSystemInfo> GetDirectories(string path);
         IEnumerable<FileSystemInfo> GetFiles(string path, bool clearCache);
         FileSystemInfo GetFile(string path);
         Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path);
@@ -108,6 +109,11 @@ namespace MediaBrowser.Controller.Providers
             dict.TryGetValue(path, out entry);
 
             return entry;
+        }
+
+        public IEnumerable<FileSystemInfo> GetDirectories(string path)
+        {
+            return GetFileSystemEntries(path, false).Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
         }
     }
 }

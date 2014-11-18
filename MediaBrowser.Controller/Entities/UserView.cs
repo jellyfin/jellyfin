@@ -61,7 +61,6 @@ namespace MediaBrowser.Controller.Entities
         {
             var standaloneTypes = new List<string>
             {
-                CollectionType.AdultVideos,
                 CollectionType.Books,
                 CollectionType.HomeVideos,
                 CollectionType.Photos,

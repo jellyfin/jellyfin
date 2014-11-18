@@ -1644,18 +1644,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return parser.IsAudioFile(path);
         }
 
-        public bool IsMultiPartFile(string path)
-        {
-            var parser = new MultiPartParser(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
-            return parser.Parse(path, FileInfoType.File).IsMultiPart;
-        }
-
-        public bool IsMultiPartFolder(string path)
-        {
-            var parser = new MultiPartParser(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
-            return parser.Parse(path, FileInfoType.Directory).IsMultiPart;
-        }
-
         public int? GetSeasonNumberFromPath(string path)
         {
             return SeriesResolver.GetSeasonNumberFromPath(path);
@@ -1687,6 +1675,43 @@ namespace MediaBrowser.Server.Implementations.Library
                 Name = result.Name,
                 Year = result.Year
             };
+        }
+
+        public IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
+            VideoType type,
+            IEnumerable<FileSystemInfo> files)
+        {
+            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+
+            StackResult result;
+            List<FileSystemInfo> filteredFiles;
+
+            if (type == VideoType.BluRay || type == VideoType.Dvd)
+            {
+                filteredFiles = files.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    .ToList();
+
+                result = resolver.ResolveDirectories(filteredFiles.Select(i => i.FullName));
+            }
+            else
+            {
+                filteredFiles = files.Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+                    .ToList();
+
+                result = resolver.ResolveFiles(filteredFiles.Select(i => i.FullName));
+            }
+
+            var stack = result.Stacks
+                .FirstOrDefault(i => i.Files.Contains(file, StringComparer.OrdinalIgnoreCase));
+
+            if (stack != null)
+            {
+                return stack.Files.Where(i => !string.Equals(i, file, StringComparison.OrdinalIgnoreCase))
+                    .Select(i => filteredFiles.FirstOrDefault(f => string.Equals(i, f.FullName, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => i != null);
+            }
+
+            return new List<FileSystemInfo>();
         }
     }
 }

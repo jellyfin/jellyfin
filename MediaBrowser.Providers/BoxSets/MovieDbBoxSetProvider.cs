@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -32,8 +33,9 @@ namespace MediaBrowser.Providers.BoxSets
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IHttpClient _httpClient;
+        private readonly ILibraryManager _libraryManager;
 
-        public MovieDbBoxSetProvider(ILogger logger, IJsonSerializer json, IServerConfigurationManager config, IFileSystem fileSystem, ILocalizationManager localization, IHttpClient httpClient)
+        public MovieDbBoxSetProvider(ILogger logger, IJsonSerializer json, IServerConfigurationManager config, IFileSystem fileSystem, ILocalizationManager localization, IHttpClient httpClient, ILibraryManager libraryManager)
         {
             _logger = logger;
             _json = json;
@@ -41,6 +43,7 @@ namespace MediaBrowser.Providers.BoxSets
             _fileSystem = fileSystem;
             _localization = localization;
             _httpClient = httpClient;
+            _libraryManager = libraryManager;
             Current = this;
         }
 
@@ -77,7 +80,7 @@ namespace MediaBrowser.Providers.BoxSets
                 return new[] { result };
             }
 
-            return await new MovieDbSearch(_logger, _json).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+            return await new MovieDbSearch(_logger, _json, _libraryManager).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
@@ -87,7 +90,7 @@ namespace MediaBrowser.Providers.BoxSets
             // We don't already have an Id, need to fetch it
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var searchResults = await new MovieDbSearch(_logger, _json).GetSearchResults(id, cancellationToken).ConfigureAwait(false);
+                var searchResults = await new MovieDbSearch(_logger, _json, _libraryManager).GetSearchResults(id, cancellationToken).ConfigureAwait(false);
 
                 var searchResult = searchResults.FirstOrDefault();
 

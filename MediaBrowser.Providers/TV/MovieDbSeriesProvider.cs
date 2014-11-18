@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -34,6 +35,7 @@ namespace MediaBrowser.Providers.TV
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
         private readonly IHttpClient _httpClient;
+        private readonly ILibraryManager _libraryManager;
 
         public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, IHttpClient httpClient)
         {
@@ -110,7 +112,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            return await new MovieDbSearch(_logger, _jsonSerializer).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
+            return await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
@@ -151,7 +153,7 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer).GetSearchResults(info, cancellationToken).ConfigureAwait(false);
+                var searchResults = await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
                 var searchResult = searchResults.FirstOrDefault();
 

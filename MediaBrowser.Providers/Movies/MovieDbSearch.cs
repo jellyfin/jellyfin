@@ -25,12 +25,13 @@ namespace MediaBrowser.Providers.Movies
         
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
-        private ILibraryManager _libraryManager;
+        private readonly ILibraryManager _libraryManager;
 
-        public MovieDbSearch(ILogger logger, IJsonSerializer json)
+        public MovieDbSearch(ILogger logger, IJsonSerializer json, ILibraryManager libraryManager)
         {
             _logger = logger;
             _json = json;
+            _libraryManager = libraryManager;
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo idInfo, CancellationToken cancellationToken)

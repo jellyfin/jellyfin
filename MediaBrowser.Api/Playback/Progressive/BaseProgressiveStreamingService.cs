@@ -421,6 +421,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 if (!File.Exists(outputPath))
                 {
                     job = await StartFfMpeg(state, outputPath, cancellationTokenSource).ConfigureAwait(false);
+                    job.ActiveRequestCount++;
                 }
                 else
                 {
