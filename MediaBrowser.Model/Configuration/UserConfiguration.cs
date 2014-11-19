@@ -47,6 +47,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayMissingEpisodes { get; set; }
         public bool DisplayUnairedEpisodes { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
+        public bool EnableSharedDeviceControl { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
         public bool EnableLiveTvAccess { get; set; }
@@ -95,6 +96,7 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
+            EnableSharedDeviceControl = true;
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };

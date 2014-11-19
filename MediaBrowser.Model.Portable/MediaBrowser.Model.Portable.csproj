@@ -764,6 +764,9 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\LiveMediaInfoResult.cs">
+      <Link>MediaInfo\LiveMediaInfoResult.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaProtocol.cs">
       <Link>MediaInfo\MediaProtocol.cs</Link>
     </Compile>

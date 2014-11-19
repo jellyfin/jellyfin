@@ -453,6 +453,14 @@ namespace MediaBrowser.Server.Implementations.Connect
                 throw new ArgumentNullException("ConnectServerId");
             }
 
+            var sendingUser = GetUser(sendingUserId);
+            var requesterUserName = sendingUser.ConnectUserName;
+
+            if (string.IsNullOrWhiteSpace(requesterUserName))
+            {
+                throw new ArgumentException("A Connect account is required in order to send invitations.");
+            }
+
             string connectUserId = null;
             var result = new UserLinkResult();
 
@@ -480,14 +488,6 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     throw;
                 }
-            }
-
-            var sendingUser = GetUser(sendingUserId);
-            var requesterUserName = sendingUser.ConnectUserName;
-
-            if (string.IsNullOrWhiteSpace(requesterUserName))
-            {
-                requesterUserName = sendingUser.Name;
             }
 
             if (string.IsNullOrWhiteSpace(connectUserId))
@@ -781,6 +781,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                             user.Configuration.EnableLiveTvManagement = false;
                             user.Configuration.EnableContentDeletion = false;
                             user.Configuration.EnableRemoteControlOfOtherUsers = false;
+                            user.Configuration.EnableSharedDeviceControl = false;
                             user.Configuration.IsAdministrator = false;
 
                             if (currentPendingEntry != null)

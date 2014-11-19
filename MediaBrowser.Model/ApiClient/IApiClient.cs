@@ -6,6 +6,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Plugins;
@@ -222,6 +223,13 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task{BaseItemDto[]}.</returns>
         Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
+
+        /// <summary>
+        /// Gets the live media information.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>Task&lt;LiveMediaInfoResult&gt;.</returns>
+        Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId);
 
         /// <summary>
         /// Gets the users async.
