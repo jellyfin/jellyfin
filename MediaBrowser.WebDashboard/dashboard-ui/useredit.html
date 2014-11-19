@@ -25,7 +25,7 @@
                             <label for="txtUserName">${LabelName}</label>
                             <input id="txtUserName" required="required" type="text" />
                         </li>
-                        <li id="fldConnectInfo" style="display: none;">
+                        <li id="fldConnectInfo" style="display: none; background: #e8eef7;padding:1em;border-radius:5px;">
                             <label for="txtConnectUserName">${LabelConnectUserName}</label>
                             <input id="txtConnectUserName" type="text" />
                             <div class="fieldDescription">
@@ -49,10 +49,19 @@
                         <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
                         <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
                         <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
-                        <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
-                        <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
                     </fieldset>
                     <br />
+                    <div>
+                        <fieldset id="remoteControlFields" data-role="controlgroup">
+                            <legend>${HeaderRemoteControl}</legend>
+                            <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
+                            <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
+                            <input type="checkbox" id="chkRemoteControlSharedDevices" />
+                            <label for="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</label>
+                        </fieldset>
+                        <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
+                        <br />
+                    </div>
                     <div id="accessControlDiv" data-role="collapsible">
                         <h2>${HeaderAdvancedControl}</h2>
                         <div id="fldIsEnabled" style="margin: 1em 0 2em;">

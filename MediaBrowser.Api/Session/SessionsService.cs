@@ -357,7 +357,12 @@ namespace MediaBrowser.Api.Session
 
                 if (!user.Configuration.EnableRemoteControlOfOtherUsers)
                 {
-                    result = result.Where(i => !i.UserId.HasValue || i.ContainsUser(request.ControllableByUserId.Value));
+                    result = result.Where(i => i.ContainsUser(request.ControllableByUserId.Value));
+                }
+
+                if (!user.Configuration.EnableSharedDeviceControl)
+                {
+                    result = result.Where(i => !i.UserId.HasValue);
                 }
             }
 

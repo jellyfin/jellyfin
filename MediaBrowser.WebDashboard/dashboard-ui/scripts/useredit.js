@@ -26,7 +26,8 @@
 
         $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
         $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
-        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers || false).checkboxradio("refresh");
+        $('#chkRemoteControlSharedDevices', page).checked(user.Configuration.EnableSharedDeviceControl);
+        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
         $('#chkEnableMediaPlayback', page).checked(user.Configuration.EnableMediaPlayback || false).checkboxradio("refresh");
 
         $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
@@ -72,6 +73,7 @@
         user.Configuration.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
         user.Configuration.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
         user.Configuration.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
+        user.Configuration.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
 
         ApiClient.updateUser(user).done(function () {
             onSaveComplete(page, user);

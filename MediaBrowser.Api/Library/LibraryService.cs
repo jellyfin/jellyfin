@@ -5,8 +5,10 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -146,7 +148,7 @@ namespace MediaBrowser.Api.Library
     }
 
     [Route("/Items/{Id}", "DELETE", Summary = "Deletes an item from the library and file system")]
-    [Authenticated(Roles = "Delete")]
+    [Authenticated]
     public class DeleteItem : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
@@ -241,12 +243,13 @@ namespace MediaBrowser.Api.Library
         private readonly IDtoService _dtoService;
         private readonly IChannelManager _channelManager;
         private readonly ISessionManager _sessionManager;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager, ISessionManager sessionManager)
+                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager, ISessionManager sessionManager, IAuthorizationContext authContext)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -255,6 +258,7 @@ namespace MediaBrowser.Api.Library
             _userDataManager = userDataManager;
             _channelManager = channelManager;
             _sessionManager = sessionManager;
+            _authContext = authContext;
         }
 
         public object Get(GetMediaFolders request)
@@ -465,6 +469,28 @@ namespace MediaBrowser.Api.Library
         public void Delete(DeleteItem request)
         {
             var item = _libraryManager.GetItemById(request.Id);
+
+            var auth = _authContext.GetAuthorizationInfo(Request);
+            var user = _userManager.GetUserById(auth.UserId);
+
+            if (item is Playlist)
+            {
+                // For now this is allowed if user can see the playlist
+            }
+            else if (item is ILiveTvRecording)
+            {
+                if (!user.Configuration.EnableLiveTvManagement)
+                {
+                    throw new UnauthorizedAccessException();
+                }
+            }
+            else
+            {
+                if (!user.Configuration.EnableContentDeletion)
+                {
+                    throw new UnauthorizedAccessException();
+                }
+            }
 
             var task = _libraryManager.DeleteItem(item);
 

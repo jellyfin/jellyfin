@@ -94,7 +94,7 @@
 
             apiClients.push(apiClient);
 
-            apiClient.getPublicSystemInfo().done(function (systemInfo) {
+            return apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
                 var server = credentialProvider.credentials().servers.filter(function (s) {
 
@@ -483,6 +483,7 @@
                 servers = servers.map(function (i) {
                     return {
                         ExchangeToken: i.AccessKey,
+                        ConnectServerId: i.Id,
                         Id: i.SystemId,
                         Name: i.Name,
                         RemoteAddress: i.Url,
@@ -825,6 +826,40 @@
         };
 
         self.deleteServer = function (serverId) {
+
+            if (!serverId) {
+                throw new Error("null serverId");
+            }
+            if (!self.connectToken()) {
+                throw new Error("null connectToken");
+            }
+            if (!self.connectUserId()) {
+                throw new Error("null connectUserId");
+            }
+
+            var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+
+            return $.ajax({
+                type: "DELETE",
+                url: url,
+                headers: {
+                    "X-Connect-UserToken": self.connectToken()
+                }
+
+            }).done(function () {
+
+                var credentials = credentialProvider.credentials();
+
+                credentials.servers = credentials.servers.filter(function (s) {
+                    return s.ConnectServerId != serverId;
+                });
+
+                credentialProvider.credentials(credentials);
+
+            });
+        };
+
+        self.rejectServer = function (serverId) {
 
             if (!serverId) {
                 throw new Error("null serverId");

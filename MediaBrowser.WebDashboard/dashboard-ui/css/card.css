@@ -693,32 +693,3 @@
         width: 16.666666666666666666666666666667%;
     }
 }
-
-/*.touch .mobileItemsContainer {
-    white-space: nowrap;
-    overflow-y: hidden;
-    overflow-x: scroll;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
-}
-
-.touch .mobileItemsContainer::-webkit-scrollbar {
-    height: 0 !important;
-    display: none;
-}
-
-.touch .mobileItemsContainer .card {
-    width: 80%;
-}
-
-.touch .mobileItemsContainer .homePageBackdropCard, .touch .mobileItemsContainer .homePageSmallBackdropCard {
-    max-width: 320px;
-}
-
-.touch .mobileItemsContainer .homePagePortraitCard {
-    max-width: 150px;
-}
-
-.touch .mobileItemsContainer .homePageSquareCard {
-    max-width: 200px;
-}*/

@@ -79,6 +79,7 @@
     <Compile Include="FilterService.cs" />
     <Compile Include="Library\ChapterService.cs" />
     <Compile Include="Playback\Hls\MpegDashService.cs" />
+    <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="PlaylistService.cs" />
     <Compile Include="StartupWizardService.cs" />
     <Compile Include="Subtitles\SubtitleService.cs" />

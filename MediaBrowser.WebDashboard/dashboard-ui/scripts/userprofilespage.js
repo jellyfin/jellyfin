@@ -402,10 +402,29 @@
 
     function showInvitePopup(page) {
 
-        $('#popupInvite', page).popup('open');
+        Dashboard.getCurrentUser().done(function (user) {
 
-        $('#txtConnectUsername', page).val('');
+            if (user.ConnectUserId) {
 
+                $('#popupInvite', page).popup('open');
+                $('#txtConnectUsername', page).val('');
+            } else {
+
+                var msg = Globalize.translate('MessageConnectAccountRequiredToInviteGuest');
+
+                msg += '<br/>';
+                msg += '<br/>';
+                msg += '<a href="useredit.html?userId=' + user.Id + '">' + Globalize.translate('ButtonLinkMyMediaBrowserAccount') + '</a>';
+                msg += '<br/>';
+
+                Dashboard.alert({
+                    message: msg,
+                    title: Globalize.translate('HeaderInviteGuest')
+                });
+
+            }
+
+        });
     }
 
     $(document).on('pageinit', "#userProfilesPage", function () {

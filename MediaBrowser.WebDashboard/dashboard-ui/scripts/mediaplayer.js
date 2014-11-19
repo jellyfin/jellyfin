@@ -543,34 +543,34 @@
                 self.stop();
             }
 
-            var mediaElement;
-
             if (item.MediaType === "Video") {
 
-                self.currentItem = item;
-                self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
+                ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
+                    userId: Dashboard.getCurrentUserId()
 
-                mediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
-                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                })).done(function(result) {
+                    
+                    self.currentItem = item;
+                    self.currentMediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
+
+                    self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
+                    self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+                    self.updateNowPlayingInfo(item);
+                });
+
 
             } else if (item.MediaType === "Audio") {
 
                 self.currentItem = item;
                 self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
 
-                mediaElement = playAudio(item, self.currentMediaSource, startPosition);
+                self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
 
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             } else {
                 throw new Error("Unrecognized media type");
-            }
-
-            self.currentMediaElement = mediaElement;
-
-            if (item.MediaType === "Video") {
-
-                self.updateNowPlayingInfo(item);
             }
         };
 

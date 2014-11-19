@@ -919,6 +919,11 @@
                 itemCommands.push('queuefromhere');
             }
 
+            // There's no detail page with a dedicated delete function
+            if (item.Type == 'Playlist') {
+                itemCommands.push('delete');
+            }
+
             return itemCommands;
         },
 

@@ -8,10 +8,11 @@
 
         var self = this;
         var credentials;
+        var key = 'servercredentials3';
 
         function ensure() {
 
-            credentials = credentials || JSON.parse(store.getItem('servercredentials') || '{}');
+            credentials = credentials || JSON.parse(store.getItem(key) || '{}');
             credentials.servers = credentials.servers || [];
         }
 
@@ -23,12 +24,12 @@
 
         function set(data) {
             credentials = data;
-            store.setItem('servercredentials', JSON.stringify(get()));
+            store.setItem(key, JSON.stringify(get()));
         }
 
         self.clear = function () {
             credentials = null;
-            store.removeItem('servercredentials');
+            store.removeItem(key);
         };
 
         self.credentials = function (data) {

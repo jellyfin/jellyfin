@@ -43,7 +43,7 @@
 
         var cssClass = "card homePageSquareCard bottomPaddedCard";
 
-        html += "<div data-id='" + server.Id + "' class='" + cssClass + "'>";
+        html += "<div data-id='" + server.Id + "' data-connectserverid='" + (server.ConnectServerId || '') + "' class='" + cssClass + "'>";
 
         html += '<div class="cardBox visualCardBox visualCardBox-b">';
         html += '<div class="cardScalable">';
@@ -69,7 +69,7 @@
 
         html += '<div class="cardText" style="text-align:right; float:right;">';
 
-        //html += '<button class="btnServerMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
+        html += '<button class="btnServerMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
 
         html += "</div>";
 
@@ -147,7 +147,7 @@
         });
     }
 
-    function rejectInvitation(page, id) {
+    function deleteServer(page, id) {
 
         Dashboard.showLoadingMsg();
 
@@ -164,11 +164,29 @@
         });
     }
 
+    function rejectInvitation(page, id) {
+
+        Dashboard.showLoadingMsg();
+
+        // Add/Update connect info
+        ConnectionManager.rejectServer(id).done(function () {
+
+            Dashboard.hideLoadingMsg();
+            loadPage(page);
+
+        }).fail(function () {
+
+            showGeneralError();
+
+        });
+    }
+
     function showServerMenu(elem) {
 
         var card = $(elem).parents('.card');
         var page = $(elem).parents('.page');
         var id = card.attr('data-id');
+        var connectserverid = card.attr('data-connectserverid');
 
         $('.serverMenu', page).popup("close").remove();
 
@@ -177,7 +195,7 @@
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-        html += '<li><a href="#" class="btnDelete" data-id="' + id + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+        html += '<li><a href="#" class="btnDelete" data-connectserverid="' + connectserverid + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
 
         html += '</ul>';
 
@@ -192,7 +210,7 @@
         });
 
         $('.btnDelete', flyout).on('click', function () {
-            rejectInvitation(page, this.getAttribute('data-id'));
+            deleteServer(page, this.getAttribute('data-connectserverid'));
             $('.serverMenu', page).popup("close").remove();
         });
     }

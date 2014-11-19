@@ -126,6 +126,7 @@
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
+    <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Dto\VideoStreamOptions.cs" />

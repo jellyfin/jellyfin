@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'List');
+    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
 
     // The base query options
     var query = {
@@ -15,7 +15,7 @@
 
     function getSavedQueryKey() {
 
-        return 'playlists' + (query.ParentId || '');
+        return 'playlists2' + (query.ParentId || '');
     }
 
     function showLoadingMessage(page) {
@@ -66,7 +66,7 @@
                         sortBy: query.SortBy
                     });
                 }
-                else if (view == "Poster") {
+                else if (view == "PosterCard") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "square",
@@ -74,7 +74,8 @@
                         showTitle: true,
                         lazy: true,
                         coverImage: true,
-                        showItemCounts: true
+                        showItemCounts: true,
+                        cardLayout: true
                     });
                 }
 

@@ -57,7 +57,7 @@
                 tag: item.ParentLogoImageTag
             });
 
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:' + maxLogoWidth + 'px;" />';
+            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
 
         }
         else if (item.ImageTags.Logo) {
@@ -68,7 +68,7 @@
                 tag: item.ImageTags.Logo
             });
 
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:' + maxLogoWidth + 'px;" />';
+            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
         }
         else {
             html += parentName || name;
@@ -230,6 +230,17 @@
         MediaController.play(id);
 
         closeContextMenu();
+
+        return false;
+    }
+
+    function onDeleteButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        closeContextMenu();
+
+        LibraryBrowser.deleteItem(id);
 
         return false;
     }
@@ -398,6 +409,10 @@
                 html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
             }
 
+            if (commands.indexOf('delete') != -1) {
+                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            }
+
             html += '</ul>';
 
             html += '</div>';
@@ -421,6 +436,7 @@
             $('.btnPlayAllFromHere', elem).on('click', onPlayAllFromHereButtonClick);
             $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
             $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
+            $('.btnDelete', elem).on('click', onDeleteButtonClick);
         });
     }
 

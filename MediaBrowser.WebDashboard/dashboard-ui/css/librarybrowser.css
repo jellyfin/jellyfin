@@ -107,6 +107,14 @@
     }
 }
 
+@media all and (min-width: 600px) {
+
+    .itemsContainer:not(.fullWidthItemsContainer):not(.smallItemsContainer) {
+        padding: 0 1em;
+        margin-right: 10px;
+    }
+}
+
 @media all and (min-width: 1200px) {
 
     .ehsContent {
@@ -907,6 +915,7 @@ a.itemTag:hover {
 
 .itemsContainer {
     text-align: center;
+    margin: 0 auto;
 }
 
 .timelineItemsContainer {

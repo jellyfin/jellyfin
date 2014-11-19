@@ -1275,7 +1275,7 @@ var Dashboard = {
 
             initializeApiClient(ApiClient);
 
-            ConnectionManager.addApiClient(ApiClient, true);
+            ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
         }
 
     } else {
