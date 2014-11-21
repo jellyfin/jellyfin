@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "\u00c4ndere Verzeichnistyp",
-    "HeaderChangeFolderTypeHelp": "Um den Verzeichnistyp zu \u00e4ndern, entferne diesen bitte und erstelle die Bibliothek mit dem neuen Typ erneut.",
+    "HeaderChangeFolderTypeHelp": "Um den Typ zu \u00e4ndern, entferne diesen bitte und erstelle die Bibliothek mit dem neuen Ordnertyp erneut.",
     "HeaderAlert": "Alarm",
     "MessagePleaseRestart": "Dr\u00fccke auf Neustart um das Update abzuschlie\u00dfen",
     "ButtonRestart": "Neu starten",
@@ -623,5 +623,8 @@
     "MessageForgotPasswordFileCreated": "Die folgende Datei wurde auf deinem Server erstellt und enth\u00e4lt eine Anleitung, wie fortgefahren werden muss:",
     "MessageForgotPasswordFileExpiration": "Der Zur\u00fccksetzungs-PIN wird am {0} auslaufen.",
     "MessageInvalidForgotPasswordPin": "Ein ung\u00fcltiger oder abgelaufener PIN wurde eingegeben. Bitte versuche es noch einmal.",
-    "MessagePasswordResetForUsers": "Passw\u00f6rter wurden f\u00fcr die folgenden Benutzer zur\u00fcckgesetzt:"
+    "MessagePasswordResetForUsers": "Passw\u00f6rter wurden f\u00fcr die folgenden Benutzer zur\u00fcckgesetzt:",
+    "HeaderInviteGuest": "Lade G\u00e4ste ein",
+    "ButtonLinkMyMediaBrowserAccount": "Verkn\u00fcpfe jetzt meinen Account",
+    "MessageConnectAccountRequiredToInviteGuest": "Um G\u00e4ste einladen zu k\u00f6nnen, musst du zuerst deinen Media Browser Account auf diesem Server verkn\u00fcpfen."
 }

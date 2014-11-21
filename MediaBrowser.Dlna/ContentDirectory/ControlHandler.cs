@@ -215,9 +215,9 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 if (item.IsFolder || serverItem.StubType.HasValue)
                 {
                     var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requested).ConfigureAwait(false));
-                    totalCount = childrenResult.TotalRecordCount;
+                    totalCount = 1;
 
-                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, totalCount, filter, id));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id));
                 }
                 else
                 {

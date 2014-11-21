@@ -623,5 +623,8 @@
     "MessageForgotPasswordFileCreated": "Le fichier suivant a \u00e9t\u00e9 cr\u00e9e sur votre serveur et contient les instructions sur comment proc\u00e9der.",
     "MessageForgotPasswordFileExpiration": "Le NIP de r\u00e9initialisation va expir\u00e9 dans {0}.",
     "MessageInvalidForgotPasswordPin": "Un NIP invalide ou expir\u00e9 a \u00e9t\u00e9 entr\u00e9. S.v.p. r\u00e9essayez encore.",
-    "MessagePasswordResetForUsers": "Les mot de passes ont \u00e9t\u00e9 r\u00e9initialis\u00e9s pour les utilisateurs suivants:"
+    "MessagePasswordResetForUsers": "Les mot de passes ont \u00e9t\u00e9 r\u00e9initialis\u00e9s pour les utilisateurs suivants:",
+    "HeaderInviteGuest": "Inviter une personne",
+    "ButtonLinkMyMediaBrowserAccount": "Lier \u00e0 mon compte maintenant",
+    "MessageConnectAccountRequiredToInviteGuest": "Pour inviter des personnes vous devez d'abord lier votre compte Media Browser \u00e0 ce serveur."
 }
