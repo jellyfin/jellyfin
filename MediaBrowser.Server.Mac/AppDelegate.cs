@@ -16,8 +16,8 @@ namespace MediaBrowser.Server.Mac
 
 		public override void FinishedLaunching (NSObject notification)
 		{
-			mainWindowController = new MainWindowController ();
-			mainWindowController.Window.MakeKeyAndOrderFront (this);
+			//mainWindowController = new MainWindowController ();
+			//mainWindowController.Window.MakeKeyAndOrderFront (this);
 		}
 	}
 }

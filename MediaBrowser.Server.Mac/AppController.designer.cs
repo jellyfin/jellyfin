@@ -6,7 +6,7 @@
 //
 using MonoMac.Foundation;
 
-namespace StatusMenu
+namespace MediaBrowser.Server.Mac
 {
 	partial class AppController
 	{
