@@ -2,7 +2,7 @@
 
     var pageSizeKey = 'people';
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
 
     // The base query options
     var query = {

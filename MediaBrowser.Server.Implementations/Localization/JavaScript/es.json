@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "ESTRENO",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Cambiar tipo de carpeta",
-    "HeaderChangeFolderTypeHelp": "To change the folder type, please remove and rebuild the collection with the new type.",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
     "HeaderAlert": "Alert",
     "MessagePleaseRestart": "Please restart to finish updating.",
     "ButtonRestart": "Reiniciar",
@@ -623,5 +623,8 @@
     "MessageForgotPasswordFileCreated": "The following file has been created on your server and contains instructions on how to proceed:",
     "MessageForgotPasswordFileExpiration": "The reset pin will expire at {0}.",
     "MessageInvalidForgotPasswordPin": "An invalid or expired pin was entered. Please try again.",
-    "MessagePasswordResetForUsers": "Passwords have been reset for the following users:"
+    "MessagePasswordResetForUsers": "Passwords have been reset for the following users:",
+    "HeaderInviteGuest": "Invite Guest",
+    "ButtonLinkMyMediaBrowserAccount": "Link my account now",
+    "MessageConnectAccountRequiredToInviteGuest": "In order to invite guests you need to first link your Media Browser account to this server."
 }

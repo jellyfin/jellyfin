@@ -1669,10 +1669,11 @@ namespace MediaBrowser.Server.Implementations.Library
             var resolver = new VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
 
             var result = resolver.CleanDateTime(name);
+            var cleanName = resolver.CleanString(result.Name);
 
             return new ItemLookupInfo
             {
-                Name = result.Name,
+                Name = cleanName.Name,
                 Year = result.Year
             };
         }

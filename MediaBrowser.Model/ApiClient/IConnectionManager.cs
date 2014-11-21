@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Occurs when [local user sign out].
         /// </summary>
-        event EventHandler<EventArgs> LocalUserSignOut;
+        event EventHandler<GenericEventArgs<IApiClient>> LocalUserSignOut;
         /// <summary>
         /// Occurs when [connect user sign out].
         /// </summary>

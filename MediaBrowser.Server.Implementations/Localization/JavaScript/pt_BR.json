@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "ESTR\u00c9IA",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Alterar Tipo de Pasta",
-    "HeaderChangeFolderTypeHelp": "Para alterar o tipo de pasta, por favor remova e reconstrua a cole\u00e7\u00e3o com o novo tipo.",
+    "HeaderChangeFolderTypeHelp": "Para alterar o tipo, por favor remova e reconstrua a pasta com o novo tipo.",
     "HeaderAlert": "Alerta",
     "MessagePleaseRestart": "Por favor, reinicie para finalizar a atualiza\u00e7\u00e3o.",
     "ButtonRestart": "Reiniciar",
@@ -623,5 +623,8 @@
     "MessageForgotPasswordFileCreated": "O seguinte arquivo foi criado no seu servidor e cont\u00e9m instru\u00e7\u00f5es de como proceder:",
     "MessageForgotPasswordFileExpiration": "O c\u00f3digo para redefini\u00e7\u00e3o expirar\u00e1 \u00e0s {0}.",
     "MessageInvalidForgotPasswordPin": "Foi digitado um c\u00f3digo inv\u00e1lido ou expirado. Por favor, tente novamente.",
-    "MessagePasswordResetForUsers": "Foram redefinidas as senhas dos seguintes usu\u00e1rios:"
+    "MessagePasswordResetForUsers": "Foram redefinidas as senhas dos seguintes usu\u00e1rios:",
+    "HeaderInviteGuest": "Convidar Usu\u00e1rio",
+    "ButtonLinkMyMediaBrowserAccount": "Conectar minha conta agora",
+    "MessageConnectAccountRequiredToInviteGuest": "Para convidar usu\u00e1rios voc\u00ea necessita primeiro conectar sua conta Media Browser com este servidor."
 }

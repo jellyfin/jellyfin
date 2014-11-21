@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "ESTRENO",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Cambiar tipo de carpeta",
-    "HeaderChangeFolderTypeHelp": "Para cambiar el tipo de carpeta, por favor elimine y reconstruya la colecci\u00f3n con el nuevo tipo.",
+    "HeaderChangeFolderTypeHelp": "Para cambiar el tipo, por favor elimine y reconstruya la carpeta con el nuevo tipo.",
     "HeaderAlert": "Alerta",
     "MessagePleaseRestart": "Por favor reinicie para finalizar la actualizaci\u00f3n.",
     "ButtonRestart": "Reiniciar",
@@ -623,5 +623,8 @@
     "MessageForgotPasswordFileCreated": "El siguiente archivo fue creado en tu servidor y contiene instrucciones de como proceder.",
     "MessageForgotPasswordFileExpiration": "El pin de restablecimiento expirara en {0}.",
     "MessageInvalidForgotPasswordPin": "Se introdujo un pin expirado o invalido. Por favor intente de nuevo.",
-    "MessagePasswordResetForUsers": "Las contrase\u00f1as se han restablecido para los siguientes usuarios:"
+    "MessagePasswordResetForUsers": "Las contrase\u00f1as se han restablecido para los siguientes usuarios:",
+    "HeaderInviteGuest": "Agregar un Invitado",
+    "ButtonLinkMyMediaBrowserAccount": "Enlazar mi cuenta ahora",
+    "MessageConnectAccountRequiredToInviteGuest": "Para poder agregar invitados primero necesitas vincular tu cuenta de Media Browser a este servidor."
 }

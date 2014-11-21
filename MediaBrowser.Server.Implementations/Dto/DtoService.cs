@@ -471,8 +471,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 })
                 .ToList();
 
-            // Attach People by transforming them into BaseItemPerson (DTO)
-            dto.People = new BaseItemPerson[people.Count];
+            var list = new List<BaseItemPerson>();
 
             var dictionary = people.Select(p => p.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase).Select(c =>
@@ -508,10 +507,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetImageCacheTag(entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N");
+                    list.Add(baseItemPerson);
                 }
-
-                dto.People[i] = baseItemPerson;
             }
+
+            dto.People = list.ToArray();
         }
 
         /// <summary>
