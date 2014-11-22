@@ -8,7 +8,7 @@ namespace MediaBrowser.Server.Mac
 {
 	public partial class AppDelegate : NSApplicationDelegate
 	{
-		//MainWindowController mainWindowController;
+		MainWindowController mainWindowController;
 
 		public AppDelegate ()
 		{
@@ -16,8 +16,7 @@ namespace MediaBrowser.Server.Mac
 
 		public override void FinishedLaunching (NSObject notification)
 		{
-			//mainWindowController = new MainWindowController ();
-			//mainWindowController.Window.MakeKeyAndOrderFront (this);
+
 		}
 	}
 }
