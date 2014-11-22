@@ -22,7 +22,32 @@ namespace MediaBrowser.Server.Mac
 
 		partial void HelloWorld(NSObject sender)
 		{
-			Console.WriteLine("hello world");
+
+		}
+
+		partial void Quit(NSObject sender)
+		{
+
+		}
+
+		partial void Configure(NSObject sender)
+		{
+
+		}
+
+		partial void Browse(NSObject sender)
+		{
+
+		}
+
+		partial void Github(NSObject sender)
+		{
+
+		}
+
+		partial void ApiDocs(NSObject sender)
+		{
+
 		}
 	}
 }
