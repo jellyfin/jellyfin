@@ -9,6 +9,9 @@
     <RootNamespace>MediaBrowser.Server.Mac</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
     <AssemblyName>MediaBrowser.Server.Mac</AssemblyName>
+    <ApplicationIcon>..\MediaBrowser.WebDashboard\dashboard-ui\css\images\favicon.ico</ApplicationIcon>
+    <ReleaseVersion>
+    </ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -99,5 +102,8 @@
       <Project>{175A9388-F352-4586-A6B4-070DED62B644}</Project>
       <Name>MediaBrowser.Server.Mono</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="touchicon.png" />
   </ItemGroup>
 </Project>

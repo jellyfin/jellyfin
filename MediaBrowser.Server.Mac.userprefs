@@ -1,6 +1,22 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/AppController.cs">
+    <Files>
+      <File FileName="MediaBrowser.Server.Mac/MainWindowController.cs" Line="1" Column="1" />
+      <File FileName="MediaBrowser.Server.Mac/AppDelegate.cs" Line="4" Column="4" />
+      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="14" Column="14" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="MediaBrowser.Server.Mac" expanded="True">
+            <Node name="AppDelegate.cs" expanded="True" />
+            <Node name="MainMenu.xib" selected="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
