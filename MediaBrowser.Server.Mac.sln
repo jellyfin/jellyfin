@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "MediaBrowser.Server.Mac", "MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj", "{F653920C-F41F-487D-AB9C-132379BBE4D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		AppStore|Any CPU = AppStore|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.AppStore|Any CPU.ActiveCfg = AppStore|Any CPU
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.AppStore|Any CPU.Build.0 = AppStore|Any CPU
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F653920C-F41F-487D-AB9C-132379BBE4D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj
+	EndGlobalSection
+EndGlobal
