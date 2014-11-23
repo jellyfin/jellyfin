@@ -8,8 +8,6 @@ namespace MediaBrowser.Server.Mac
 {
 	public partial class AppDelegate : NSApplicationDelegate
 	{
-		MainWindowController mainWindowController;
-
 		public AppDelegate ()
 		{
 		}
