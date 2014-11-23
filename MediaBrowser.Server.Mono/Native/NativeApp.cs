@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Mono.Native
         /// </summary>
         public void Restart()
         {
-            MainClass.Restart();
+            
         }
 
         /// <summary>

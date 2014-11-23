@@ -10,6 +10,7 @@ namespace MediaBrowser.Server.Mac
 	{
 		public AppDelegate ()
 		{
+
 		}
 
 		public override void FinishedLaunching (NSObject notification)
