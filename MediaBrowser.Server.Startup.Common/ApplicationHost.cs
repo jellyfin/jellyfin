@@ -266,6 +266,11 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
+        public override string OperatingSystemDisplayName
+        {
+            get { return NativeApp.Environment.OperatingSystemVersionString; }
+        }
+
         public override bool IsRunningAsService
         {
             get { return NativeApp.IsRunningAsService; }
@@ -531,7 +536,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder(IProgress<double> progress)
         {
-            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager)
+            var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment)
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
             new FFmpegValidator(Logger, ApplicationPaths).Validate(info);
@@ -909,7 +914,7 @@ namespace MediaBrowser.Server.Startup.Common
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = HttpServerPort,
-                OperatingSystem = Environment.OSVersion.ToString(),
+                OperatingSystem = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 WanAddress = ConnectManager.WanApiAddress,

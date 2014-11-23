@@ -208,7 +208,7 @@ namespace MediaBrowser.Common.Implementations.Security
                     { "systemid", _appHost.SystemId }, 
                     { "mb2equiv", mb2Equivalent }, 
                     { "ver", version }, 
-                    { "platform", Environment.OSVersion.VersionString }, 
+                    { "platform", _appHost.OperatingSystemDisplayName }, 
                     { "isservice", _appHost.IsRunningAsService.ToString().ToLower() }
                 };
 

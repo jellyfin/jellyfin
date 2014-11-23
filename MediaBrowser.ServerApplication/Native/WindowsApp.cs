@@ -33,7 +33,8 @@ namespace MediaBrowser.ServerApplication.Native
                 return new NativeEnvironment
                 {
                     OperatingSystem = OperatingSystem.Windows,
-                    SystemArchitecture = System.Environment.Is64BitOperatingSystem ? Architecture.X86_X64 : Architecture.X86
+                    SystemArchitecture = System.Environment.Is64BitOperatingSystem ? Architecture.X86_X64 : Architecture.X86,
+                    OperatingSystemVersionString = System.Environment.OSVersion.VersionString
                 };
             }
         }
