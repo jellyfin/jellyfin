@@ -43,12 +43,6 @@ namespace MediaBrowser.Server.Mono
 
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-			if (PerformUpdateIfNeeded(appPaths, logger))
-			{
-				logger.Info("Exiting to perform application update.");
-				return;
-			}
-
 			try
 			{
 				RunApplication(appPaths, logManager, options);
@@ -71,8 +65,6 @@ namespace MediaBrowser.Server.Mono
 			return new ServerApplicationPaths(programDataPath, applicationPath);
 		}
 
-		private static readonly RemoteCertificateValidationCallback IgnoreCertificates = new RemoteCertificateValidationCallback(delegate { return true; });
-
 		private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
 
 		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
@@ -80,7 +72,7 @@ namespace MediaBrowser.Server.Mono
 			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
 			// Allow all https requests
-			ServicePointManager.ServerCertificateValidationCallback = IgnoreCertificates;
+			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
 		    var fileSystem = new CommonFileSystem(logManager.GetLogger("FileSystem"), false, true);
 
@@ -156,29 +148,9 @@ namespace MediaBrowser.Server.Mono
 			File.WriteAllText(path, builder.ToString());
 		}
 
-		/// <summary>
-		/// Performs the update if needed.
-		/// </summary>
-		/// <param name="appPaths">The app paths.</param>
-		/// <param name="logger">The logger.</param>
-		/// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-		private static bool PerformUpdateIfNeeded(ServerApplicationPaths appPaths, ILogger logger)
-		{
-			return false;
-		}
-
 		public static void Shutdown()
 		{
 			ApplicationTaskCompletionSource.SetResult (true);
-		}
-
-		public static void Restart()
-		{
-			// Second instance will start first, so dispose so that the http ports will be available to the new instance
-			_appHost.Dispose();
-
-			// Right now this method will just shutdown, but not restart
-			Shutdown ();
 		}
 	}
 

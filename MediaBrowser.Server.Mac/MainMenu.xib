@@ -44,27 +44,19 @@
 			<object class="NSMenu" id="761139089">
 				<string key="NSTitle"/>
 				<array class="NSMutableArray" key="NSMenuItems">
-					<object class="NSMenuItem" id="92911173">
-						<reference key="NSMenu" ref="761139089"/>
-						<string key="NSTitle">Hello World</string>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<object class="NSCustomResource" key="NSOnImage" id="793232119">
-							<string key="NSClassName">NSImage</string>
-							<string key="NSResourceName">NSMenuCheckmark</string>
-						</object>
-						<object class="NSCustomResource" key="NSMixedImage" id="438564198">
-							<string key="NSClassName">NSImage</string>
-							<string key="NSResourceName">NSMenuMixedState</string>
-						</object>
-					</object>
 					<object class="NSMenuItem" id="523607499">
 						<reference key="NSMenu" ref="761139089"/>
 						<string key="NSTitle">Quit</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="793232119"/>
-						<reference key="NSMixedImage" ref="438564198"/>
+						<object class="NSCustomResource" key="NSOnImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">NSMenuCheckmark</string>
+						</object>
+						<object class="NSCustomResource" key="NSMixedImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">NSMenuMixedState</string>
+						</object>
 					</object>
 				</array>
 			</object>
@@ -86,14 +78,6 @@
 						<reference key="destination" ref="761139089"/>
 					</object>
 					<int key="connectionID">540</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">HelloWorld:</string>
-						<reference key="source" ref="67438171"/>
-						<reference key="destination" ref="92911173"/>
-					</object>
-					<int key="connectionID">542</int>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -141,16 +125,10 @@
 						<int key="objectID">536</int>
 						<reference key="object" ref="761139089"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="92911173"/>
 							<reference ref="523607499"/>
 						</array>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">MediaBrowser.Server.Mac</string>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">537</int>
-						<reference key="object" ref="92911173"/>
-						<reference key="parent" ref="761139089"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">538</int>
@@ -167,7 +145,6 @@
 				<string key="533.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="535.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="536.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="537.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="538.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
