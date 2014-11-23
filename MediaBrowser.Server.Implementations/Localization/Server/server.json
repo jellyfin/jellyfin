@@ -1,10 +1,11 @@
 ﻿{
     "LabelExit": "Exit",
     "LabelVisitCommunity": "Visit Community",
-    "LabelGithubWiki": "Github Wiki",
+    "LabelGithub": "Github",
     "LabelSwagger": "Swagger",
     "LabelStandard": "Standard",
-    "LabelViewApiDocumentation": "View Api Documentation",
+    "LabelApiDocumentation": "Api Documentation",
+    "LabelDeveloperResources": "Developer Resources",
     "LabelBrowseLibrary": "Browse Library",
     "LabelConfigureMediaBrowser": "Configure Media Browser",
     "LabelOpenLibraryViewer": "Open Library Viewer",

@@ -455,9 +455,7 @@ namespace MediaBrowser.ServerApplication
         {
             var exception = (Exception)e.ExceptionObject;
 
-            LogUnhandledException(exception);
-
-            _appHost.LogManager.Flush();
+            new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
 
             if (!_isRunningAsService)
             {
@@ -468,18 +466,6 @@ namespace MediaBrowser.ServerApplication
             {
                 Environment.Exit(Marshal.GetHRForException(exception));
             }
-        }
-
-        private static void LogUnhandledException(Exception ex)
-        {
-            _logger.ErrorException("UnhandledException", ex);
-
-            var path = Path.Combine(_appHost.ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "unhandled_" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var builder = LogHelper.GetLogMessage(ex);
-
-            File.WriteAllText(path, builder.ToString());
         }
 
         /// <summary>

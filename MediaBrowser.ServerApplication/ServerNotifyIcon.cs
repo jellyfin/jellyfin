@@ -174,9 +174,9 @@ namespace MediaBrowser.ServerApplication
 
             cmdExit.Text = _localization.GetLocalizedString("LabelExit");
             cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
-            cmdGtihub.Text = _localization.GetLocalizedString("LabelGithubWiki");
-            cmdSwagger.Text = _localization.GetLocalizedString("LabelSwagger");
-            cmdApiDocs.Text = _localization.GetLocalizedString("LabelViewApiDocumentation");
+            cmdGtihub.Text = _localization.GetLocalizedString("LabelGithub");
+            cmdSwagger.Text = _localization.GetLocalizedString("LabelApiDocumentation");
+            cmdApiDocs.Text = _localization.GetLocalizedString("LabelDeveloperResources");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
