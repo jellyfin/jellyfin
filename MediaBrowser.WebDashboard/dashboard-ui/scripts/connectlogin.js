@@ -2,7 +2,9 @@
 
     function onLoggedIn() {
 
-        window.location = 'selectserver.html';
+        // Need to switch from https to http
+
+        window.location = getWindowUrl().replace(/https/gi, 'http').replace(/connectlogin/gi, 'selectserver');
     }
 
     function login(page, username, password) {
