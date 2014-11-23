@@ -96,6 +96,22 @@
       <Project>{175A9388-F352-4586-A6B4-070DED62B644}</Project>
       <Name>MediaBrowser.Server.Mono</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
+      <Project>{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}</Project>
+      <Name>MediaBrowser.Server.Startup.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="touchicon.png" />
