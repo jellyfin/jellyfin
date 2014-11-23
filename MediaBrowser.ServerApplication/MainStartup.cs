@@ -223,7 +223,7 @@ namespace MediaBrowser.ServerApplication
                 "MBServer",
                 true,
                 nativeApp);
-
+            
             var initProgress = new Progress<double>();
 
             if (!runService)

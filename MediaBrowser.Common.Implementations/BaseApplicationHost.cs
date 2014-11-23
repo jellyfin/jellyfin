@@ -207,6 +207,9 @@ namespace MediaBrowser.Common.Implementations
             FileSystemManager = fileSystem;
 
             ConfigurationManager = GetConfigurationManager();
+
+            // Initialize this early in case the -v command line option is used
+            Logger = LogManager.GetLogger("App");
         }
 
         /// <summary>
@@ -228,7 +231,6 @@ namespace MediaBrowser.Common.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
-            Logger = LogManager.GetLogger("App");
             OnLoggerLoaded(true);
             LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
 

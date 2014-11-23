@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Modifier le type de r\u00e9pertoire",
-    "HeaderChangeFolderTypeHelp": "Pour modifier le type de dossier, merci de supprimer et reconstruire la collection avec le nouveau type.",
+    "HeaderChangeFolderTypeHelp": "Pour modifier le type de r\u00e9pertoire, veuillez supprimer et reconstruire le r\u00e9pertoire avec le nouveau type.",
     "HeaderAlert": "Alerte",
     "MessagePleaseRestart": "Veuillez red\u00e9marrer pour finaliser les mises \u00e0 jour.",
     "ButtonRestart": "Red\u00e9marrer",

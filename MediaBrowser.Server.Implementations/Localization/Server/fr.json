@@ -458,7 +458,7 @@
     "LinkApiDocumentation": "Documentation du API",
     "LabelFriendlyServerName": "Surnom du serveur:",
     "LabelFriendlyServerNameHelp": "Ce nom sera utilis\u00e9 pour identifier ce serveur. Si laiss\u00e9 vide, le nom d'ordinateur sera utilis\u00e9.",
-    "LabelPreferredDisplayLanguage": "Langue d'affichage pr\u00e9f\u00e9r\u00e9e",
+    "LabelPreferredDisplayLanguage": "Langue d'affichage pr\u00e9f\u00e9r\u00e9e :",
     "LabelPreferredDisplayLanguageHelp": "La traduction de Media Browser est un projet en cours et n'est pas compl\u00e9t\u00e9e encore.",
     "LabelReadHowYouCanContribute": "Lire comment vous pouvez contribuer.",
     "HeaderNewCollection": "Nouvelle collection",
