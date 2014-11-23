@@ -49,7 +49,7 @@ namespace MediaBrowser.ServerApplication
 
             var logger = _logger = logManager.GetLogger("Main");
 
-            BeginLog(logger, appPaths);
+            ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
 
             // Install directly
             if (options.ContainsOption("-installservice"))
@@ -186,16 +186,6 @@ namespace MediaBrowser.ServerApplication
             {
                 return !_isRunningAsService;
             }
-        }
-
-        /// <summary>
-        /// Begins the log.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="appPaths">The app paths.</param>
-        private static void BeginLog(ILogger logger, IApplicationPaths appPaths)
-        {
-            ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();

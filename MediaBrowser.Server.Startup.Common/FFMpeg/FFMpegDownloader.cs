@@ -22,19 +22,21 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly ILogger _logger;
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
+        private readonly NativeEnvironment _environment;
 
         private readonly string[] _fontUrls =
         {
             "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem)
+        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _zipClient = zipClient;
             _fileSystem = fileSystem;
+            _environment = environment;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo(NativeEnvironment environment, StartupOptions options, IProgress<double> progress)
@@ -240,7 +242,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private void SetFilePermissions(string targetFolder, string file)
         {
             // Linux: File permission to 666, and user's execute bit
-            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX)
+            if (_environment.OperatingSystem == OperatingSystem.Bsd || _environment.OperatingSystem == OperatingSystem.Linux || _environment.OperatingSystem == OperatingSystem.Osx)
             {
                 Syscall.chmod(Path.Combine(targetFolder, Path.GetFileName(file)), FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
             }

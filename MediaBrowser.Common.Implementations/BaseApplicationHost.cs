@@ -193,6 +193,11 @@ namespace MediaBrowser.Common.Implementations
             }
         }
 
+        public virtual string OperatingSystemDisplayName
+        {
+            get { return Environment.OSVersion.VersionString; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>

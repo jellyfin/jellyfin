@@ -5,6 +5,7 @@ namespace MediaBrowser.Server.Startup.Common
     {
         public OperatingSystem OperatingSystem { get; set; }
         public Architecture SystemArchitecture { get; set; }
+        public string OperatingSystemVersionString { get; set; }
     }
 
     public enum OperatingSystem

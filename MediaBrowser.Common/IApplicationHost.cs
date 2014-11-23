@@ -14,6 +14,12 @@ namespace MediaBrowser.Common
     public interface IApplicationHost
     {
         /// <summary>
+        /// Gets the display name of the operating system.
+        /// </summary>
+        /// <value>The display name of the operating system.</value>
+        string OperatingSystemDisplayName { get; }
+
+        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>

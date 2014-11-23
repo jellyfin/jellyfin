@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 { "serverid", _applicationHost.SystemId }, 
                 { "deviceid", _applicationHost.SystemId }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 
-                { "platform", Environment.OSVersion.VersionString }, 
+                { "platform", _applicationHost.OperatingSystemDisplayName }, 
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
             };
 
