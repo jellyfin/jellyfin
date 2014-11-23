@@ -172,7 +172,7 @@ mozroots --import --sync > "$LOGPATH/mozroots_stdout_$LOGDATE.log" 2> "$LOGPATH/
 echo "Updating NuGet to the latest version"
 mono .nuget/NuGet.exe update -self > "$LOGPATH/nugetupdate_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetupdate_stderr_$LOGDATE.log"
 # echo "Restoring NuGet package"
-# mono .nuget/NuGet.exe restore MediaBrowser.Mono.sln > "$LOGPATH/nugetrestore_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetrestore_stderr_$LOGDATE.log"
+# mono .nuget/NuGet.exe restore MediaBrowser.sln > "$LOGPATH/nugetrestore_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetrestore_stderr_$LOGDATE.log"
 
 
 echo ""
@@ -182,10 +182,10 @@ echo "========================================"
 echo ""
 
 echo "xbuild: cleaning build folder"
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:clean MediaBrowser.Mono.sln > "$LOGPATH/xbuildclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildclean_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:clean MediaBrowser.sln > "$LOGPATH/xbuildclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildclean_stderr_$LOGDATE.log"
 
 echo "xbuild: building..."
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:build MediaBrowser.Mono.sln > "$LOGPATH/xbuild_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuild_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:build MediaBrowser.sln > "$LOGPATH/xbuild_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuild_stderr_$LOGDATE.log"
 echo "xbuild: building done"
 
 echo ""
@@ -226,10 +226,10 @@ echo ""
 cd "$CWD/$BUILDPATH/$MBGITPATH"
 
 echo "xbuild: cleaning build folder"
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:clean MediaBrowser.Mono.sln > "$LOGPATH/xbuildmkclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmkclean_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:clean MediaBrowser.sln > "$LOGPATH/xbuildmkclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmkclean_stderr_$LOGDATE.log"
 
 echo "xbuild: building..."
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:build MediaBrowser.Mono.sln > "$LOGPATH/xbuildmk_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmk_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:build MediaBrowser.sln > "$LOGPATH/xbuildmk_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmk_stderr_$LOGDATE.log"
 echo "xbuild: building done"
 
 echo ""
