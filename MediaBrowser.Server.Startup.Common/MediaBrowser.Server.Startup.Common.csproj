@@ -70,6 +70,7 @@
     <Compile Include="NativeEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupOptions.cs" />
+    <Compile Include="UnhandledExceptionWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">

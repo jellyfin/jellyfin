@@ -7,7 +7,6 @@ using MediaBrowser.Server.Startup.Common;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
@@ -124,28 +123,12 @@ namespace MediaBrowser.Server.Mono
 		{
 			var exception = (Exception)e.ExceptionObject;
 
-			LogUnhandledException(exception);
+            new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
 
 			if (!Debugger.IsAttached)
 			{
 				Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
 			}
-		}
-
-		private static void LogUnhandledException(Exception ex)
-		{
-			_logger.ErrorException("UnhandledException", ex);
-
-			_appHost.LogManager.Flush ();
-
-			var path = Path.Combine(_appHost.ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "crash_" + Guid.NewGuid() + ".txt");
-
-			var builder = LogHelper.GetLogMessage(ex);
-
-			Console.WriteLine ("UnhandledException");
-			Console.WriteLine (builder.ToString());
-
-			File.WriteAllText(path, builder.ToString());
 		}
 
 		public static void Shutdown()
