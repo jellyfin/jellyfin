@@ -20,9 +20,11 @@ namespace MediaBrowser.Server.Mac
 		private NSMenuItem apiMenuItem;
 		private NSMenuItem communityMenuItem;
 
+		public static AppController Instance;
+
 		public AppController()
 		{
-
+			Instance = this;
 		}
 
 		public override void AwakeFromNib()
@@ -71,13 +73,14 @@ namespace MediaBrowser.Server.Mac
 			statusItem.Menu.AddItem (quitMenuItem);
 		}
 
-		private IServerApplicationHost AppHost{ get; set;}
-		private ILogger Logger{ get; set;}
+		public IServerApplicationHost AppHost{ get; set;}
+		public IServerConfigurationManager ConfigurationManager { get; set;}
+		public ILogger Logger{ get; set;}
+		public ILocalizationManager Localization { get; set;}
 
 		private void Quit(NSObject sender)
 		{
-			NSApplication.SharedApplication.Terminate(this);
-			//AppHost.Shutdown();
+			AppHost.Shutdown();
 		}
 
 		private void Community(NSObject sender)
@@ -103,6 +106,44 @@ namespace MediaBrowser.Server.Mac
 		private void ApiDocs(NSObject sender)
 		{
 			BrowserLauncher.OpenSwagger(AppHost, Logger);
+		}
+
+		public void Terminate() 
+		{
+			InvokeOnMainThread (() => NSApplication.SharedApplication.Terminate(this));
+		}
+
+		private string _uiCulture;
+		/// <summary>
+		/// Handles the ConfigurationUpdated event of the Instance control.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+		void Instance_ConfigurationUpdated(object sender, EventArgs e)
+		{
+			if (!string.Equals(ConfigurationManager.Configuration.UICulture, _uiCulture,
+				StringComparison.OrdinalIgnoreCase))
+			{
+				LocalizeText();
+			}
+		}
+
+		private void LocalizeText()
+		{
+			_uiCulture = ConfigurationManager.Configuration.UICulture;
+
+			BeginInvokeOnMainThread (LocalizeInternal);
+		}
+
+		private void LocalizeInternal() {
+
+			quitMenuItem.Title = Localization.GetLocalizedString("LabelExit");
+			communityMenuItem.Title = Localization.GetLocalizedString("LabelVisitCommunity");
+			githubMenuItem.Title = Localization.GetLocalizedString("LabelGithub");
+			apiMenuItem.Title = Localization.GetLocalizedString("LabelApiDocumentation");
+			developerMenuItem.Title = Localization.GetLocalizedString("LabelDeveloperResources");
+			browseMenuItem.Title = Localization.GetLocalizedString("LabelBrowseLibrary");
+			configureMenuItem.Title = Localization.GetLocalizedString("LabelConfigureMediaBrowser");
 		}
 	}
 }
