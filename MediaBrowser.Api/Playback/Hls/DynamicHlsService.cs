@@ -193,32 +193,37 @@ namespace MediaBrowser.Api.Playback.Hls
             return int.Parse(indexString, NumberStyles.Integer, UsCulture);
         }
 
-        private void DeleteLastFile(string path, string segmentExtension, int retryCount)
+        private void DeleteLastFile(string playlistPath, string segmentExtension, int retryCount)
+        {
+            var file = GetLastTranscodingFile(playlistPath, segmentExtension, FileSystem);
+
+            if (file != null)
+            {
+                DeleteFile(file, retryCount);
+            }
+        }
+
+        private void DeleteFile(FileInfo file, int retryCount)
         {
             if (retryCount >= 5)
             {
                 return;
             }
 
-            var file = GetLastTranscodingFile(path, segmentExtension, FileSystem);
-
-            if (file != null)
+            try
             {
-                try
-                {
-                    File.Delete(file.FullName);
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
+                File.Delete(file.FullName);
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
 
-                    Thread.Sleep(100);
-                    DeleteLastFile(path, segmentExtension, retryCount + 1);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
-                }
+                Thread.Sleep(100);
+                DeleteFile(file, retryCount + 1);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
             }
         }
 
@@ -226,11 +231,13 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var folder = Path.GetDirectoryName(playlist);
 
+            var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
+
             try
             {
                 return new DirectoryInfo(folder)
                     .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
-                    .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase))
+                    .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase) && Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .FirstOrDefault();
             }
