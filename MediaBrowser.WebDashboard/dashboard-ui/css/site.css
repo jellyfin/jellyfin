@@ -45,8 +45,15 @@
     margin-left: 0;
 }
 
+/* jQuery mobile adds a text shadow that seems unnecessary. */
 * {
     text-shadow: none !important;
+}
+
+/* Remove IE mobile 300ms tap delay */
+html {
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
 }
 
 body {

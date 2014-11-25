@@ -12,7 +12,7 @@
         var options = {
 
             IncludeItemTypes: "Episode",
-            Limit: screenWidth >= 1600 ? 24 : (screenWidth >= 1440 ? 16 : 15),
+            Limit: 24,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId,
             IsPlayed: false

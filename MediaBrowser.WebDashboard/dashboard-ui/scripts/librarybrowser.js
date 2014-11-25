@@ -1200,9 +1200,7 @@
                     cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
                 }
 
-                // The click through hasn't been working on chrome android
-                // The > 1 can be removed once this is resolved
-                if (options.showChildCountIndicator && item.ChildCount > 1) {
+                if (options.showChildCountIndicator) {
                     cssClass += ' groupedCard';
 
                     if (item.Type == 'Series') {

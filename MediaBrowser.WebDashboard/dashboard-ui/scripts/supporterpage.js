@@ -43,10 +43,10 @@
         return $(".radioDonationType:checked", page).val();
     }
 
-    var lifeTimeAmount = 40;
+    var lifeTimeAmount = 30;
     var dailyAmount = 1;
     var monthlyAmount = 4;
-    var yearlyAmount = 24;
+    var yearlyAmount = 20;
     function getDonationAmount(page) {
 
         var type = getDonationType(page);
