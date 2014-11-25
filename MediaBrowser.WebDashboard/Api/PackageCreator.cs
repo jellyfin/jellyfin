@@ -172,7 +172,9 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
-            sb.Append("<link rel=\"icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
+            sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
+
+            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
 
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
