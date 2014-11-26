@@ -25,6 +25,7 @@ namespace MediaBrowser.Server.Mac
 		public AppController()
 		{
 			Instance = this;
+			MainClass.AddDependencies (this);
 		}
 
 		public override void AwakeFromNib()

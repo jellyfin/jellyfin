@@ -4,7 +4,7 @@ namespace MediaBrowser.Server.Mono.Native
     /// <summary>
     /// Class NativeApp
     /// </summary>
-    public class NativeApp : BaseMonoApp
+    internal class NativeApp : BaseMonoApp
     {
         /// <summary>
         /// Shutdowns this instance.
