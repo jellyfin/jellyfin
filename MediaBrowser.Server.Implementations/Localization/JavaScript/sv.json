@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "PREMI\u00c4R",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "\u00c4ndra mapptyp",
-    "HeaderChangeFolderTypeHelp": "F\u00f6r att \u00e4ndra mapptyp, ta bort den existerande och skapa en ny av den \u00f6nskade typen.",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
     "HeaderAlert": "Varning",
     "MessagePleaseRestart": "V\u00e4nligen starta om f\u00f6r att slutf\u00f6ra uppdateringarna.",
     "ButtonRestart": "Starta om",

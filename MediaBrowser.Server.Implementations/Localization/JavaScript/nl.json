@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Verander Maptype",
-    "HeaderChangeFolderTypeHelp": "Als u het type map wilt wijzigen, verwijder het dan en maak dan een nieuwe collectie met het nieuwe type.",
+    "HeaderChangeFolderTypeHelp": "Als u het type map wilt wijzigen, verwijder het dan en maak dan een nieuwe map met het nieuwe type.",
     "HeaderAlert": "Waarschuwing",
     "MessagePleaseRestart": "Herstart om update te voltooien.",
     "ButtonRestart": "Herstart",

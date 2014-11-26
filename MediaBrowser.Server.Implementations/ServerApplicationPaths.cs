@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Implementations;
 using MediaBrowser.Controller;
-using System;
 using System.IO;
 
 namespace MediaBrowser.Server.Implementations
@@ -10,24 +9,6 @@ namespace MediaBrowser.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
-#if (DEBUG)
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
-        /// </summary>
-        public ServerApplicationPaths(string applicationPath)
-            : base(true, applicationPath)
-        {
-        }
-#else
-/// <summary>
-/// Initializes a new instance of the <see cref="ServerApplicationPaths"/> class.
-/// </summary>
-        public ServerApplicationPaths(string applicationPath)
-            : base(false, applicationPath)
-        {
-        }
-#endif
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>

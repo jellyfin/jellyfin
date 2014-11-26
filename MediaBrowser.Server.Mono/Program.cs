@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Mono
 		{
 			if (string.IsNullOrEmpty(programDataPath))
 			{
-				return new ServerApplicationPaths(applicationPath);
+				return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath);
 			}
 			
 			return new ServerApplicationPaths(programDataPath, applicationPath);

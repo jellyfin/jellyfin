@@ -148,6 +148,7 @@ namespace MediaBrowser.ServerApplication
         /// <summary>
         /// Creates the application paths.
         /// </summary>
+        /// <param name="applicationPath">The application path.</param>
         /// <param name="runAsService">if set to <c>true</c> [run as service].</param>
         /// <returns>ServerApplicationPaths.</returns>
         private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, bool runAsService)
@@ -161,7 +162,7 @@ namespace MediaBrowser.ServerApplication
                 return new ServerApplicationPaths(programDataPath, applicationPath);
             }
 
-            return new ServerApplicationPaths(applicationPath);
+            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath);
         }
 
         /// <summary>

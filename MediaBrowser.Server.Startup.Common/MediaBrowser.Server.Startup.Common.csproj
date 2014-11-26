@@ -41,6 +41,7 @@
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,6 +54,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="ApplicationHost.cs" />
+    <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />

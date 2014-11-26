@@ -228,8 +228,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the live media information.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;LiveMediaInfoResult&gt;.</returns>
-        Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId);
+        Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId);
 
         /// <summary>
         /// Gets the users async.

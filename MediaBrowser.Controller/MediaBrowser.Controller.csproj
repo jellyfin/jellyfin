@@ -220,6 +220,7 @@
     <Compile Include="Net\IHttpResultFactory.cs" />
     <Compile Include="Net\IHttpServer.cs" />
     <Compile Include="Net\IRestfulService.cs" />
+    <Compile Include="Net\IServerManager.cs" />
     <Compile Include="Net\IServiceRequest.cs" />
     <Compile Include="Net\ISessionContext.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />

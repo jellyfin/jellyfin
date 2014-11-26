@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "\u9996\u6620\u5f0f",
     "LabelHDProgram": "HD\u9ad8\u6e05",
     "HeaderChangeFolderType": "\u53d8\u66f4\u6587\u4ef6\u5939\u7c7b\u578b",
-    "HeaderChangeFolderTypeHelp": "\u5982\u8981\u53d8\u66f4\u6587\u4ef6\u5939\u7c7b\u578b\uff0c\u8bf7\u79fb\u9664\u5408\u96c6\u5e76\u7528\u65b0\u7c7b\u578b\u91cd\u5efa\u3002",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
     "HeaderAlert": "\u8b66\u62a5",
     "MessagePleaseRestart": "\u8bf7\u91cd\u542f\u670d\u52a1\u5668\u4ee5\u5b8c\u6210\u66f4\u65b0\u3002",
     "ButtonRestart": "\u91cd\u542f",

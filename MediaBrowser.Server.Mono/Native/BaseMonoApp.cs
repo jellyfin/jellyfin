@@ -165,12 +165,12 @@ namespace MediaBrowser.Server.Mono.Native
             return info;
         }
 
-        private NativeApp.Uname _unixName;
-        private NativeApp.Uname GetUnixName()
+        private Uname _unixName;
+        private Uname GetUnixName()
         {
             if (_unixName == null)
             {
-                var uname = new NativeApp.Uname();
+                var uname = new Uname();
                 Utsname utsname;
                 var callResult = Syscall.uname(out utsname);
                 if (callResult == 0)

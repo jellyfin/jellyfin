@@ -1,9 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Common.Net;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Interface IServerManager
