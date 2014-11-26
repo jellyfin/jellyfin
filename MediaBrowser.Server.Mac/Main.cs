@@ -15,7 +15,6 @@ using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Mono.Native;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.Server.Startup.Common.Browser;
 using Microsoft.Win32;
@@ -54,26 +53,23 @@ namespace MediaBrowser.Server.Mac
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
 			StartApplication(appPaths, logManager, options);
-			RunNSApp (args);
+			NSApplication.Init ();
+			NSApplication.Main (args);
+			var b = true;
 		}
 
-		private static void RunNSApp(string[] args) {
-		
-			NSApplication.Init ();
-
-			AppController.Instance.AppHost = _appHost;
-			AppController.Instance.Logger = _logger;
-			AppController.Instance.ConfigurationManager = _appHost.ServerConfigurationManager;
-			AppController.Instance.Localization = _appHost.LocalizationManager;
-
-			NSApplication.Main (args);
+		public static void AddDependencies(AppController appController){
+			appController.AppHost = _appHost;
+			appController.Logger = _logger;
+			appController.ConfigurationManager = _appHost.ServerConfigurationManager;
+			appController.Localization = _appHost.LocalizationManager;
 		}
 
 		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
 		{
 			if (string.IsNullOrEmpty(programDataPath))
 			{
-				return new ServerApplicationPaths(applicationPath);
+				programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "mediabrowser");
 			}
 
 			return new ServerApplicationPaths(programDataPath, applicationPath);
