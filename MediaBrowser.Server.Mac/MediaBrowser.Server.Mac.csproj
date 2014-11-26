@@ -69,10 +69,14 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="XamMac" />
+    <Reference Include="Mono.Posix">
+      <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Native\" />
+    <Folder Include="Resources\swagger-ui\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
@@ -85,19 +89,24 @@
     </Compile>
     <Compile Include="Main.cs" />
     <Compile Include="Native\NativeApp.cs" />
+    <Compile Include="Native\BaseMonoApp.cs" />
+    <Compile Include="Native\NetworkManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
+    <None Include="MediaBrowser.MediaInfo.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Imazen.WebP.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj">
-      <Project>{175A9388-F352-4586-A6B4-070DED62B644}</Project>
-      <Name>MediaBrowser.Server.Mono</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
@@ -125,5 +134,86 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="touchicon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\libgdiplus\osx\libgdiplus.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
+      <Link>Resources\swagger-ui\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
+      <Link>Resources\swagger-ui\swagger-ui.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
+      <Link>Resources\swagger-ui\swagger-ui.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
+      <Link>Resources\swagger-ui\css\screen.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\logo_small.png">
+      <Link>Resources\swagger-ui\images\logo_small.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\pet_store_api.png">
+      <Link>Resources\swagger-ui\images\pet_store_api.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\throbber.gif">
+      <Link>Resources\swagger-ui\images\throbber.gif</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\wordnik_api.png">
+      <Link>Resources\swagger-ui\images\wordnik_api.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
+      <Link>Resources\swagger-ui\lib\backbone-min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-1.0.0.js">
+      <Link>Resources\swagger-ui\lib\handlebars-1.0.0.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
+      <Link>Resources\swagger-ui\lib\highlight.7.3.pack.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
+      <Link>Resources\swagger-ui\lib\jquery-1.8.0.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
+      <Link>Resources\swagger-ui\lib\jquery.ba-bbq.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
+      <Link>Resources\swagger-ui\lib\jquery.slideto.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
+      <Link>Resources\swagger-ui\lib\jquery.wiggle.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
+      <Link>Resources\swagger-ui\lib\shred.bundle.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger.js">
+      <Link>Resources\swagger-ui\lib\swagger.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
+      <Link>Resources\swagger-ui\lib\underscore-min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
+      <Link>Resources\swagger-ui\lib\shred\content.js</Link>
+    </BundleResource>
   </ItemGroup>
 </Project>
