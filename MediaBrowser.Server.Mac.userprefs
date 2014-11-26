@@ -1,32 +1,15 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/Main.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="4" Column="4" />
-      <File FileName="MediaBrowser.Server.Mac/Main.cs" Line="4" Column="4" />
-      <File FileName="MediaBrowser.Common.Implementations/BaseApplicationPaths.cs" Line="13" Column="13" />
-      <File FileName="MediaBrowser.Server.Mac/app.config" Line="56" Column="56" />
-      <File FileName="MediaBrowser.WebDashboard/Api/PackageCreator.cs" Line="99" Column="99" />
-      <File FileName="MediaBrowser.Server.Mac/EmptyXmlFile.xml" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono/Program.cs" Line="9" Column="9" />
-      <File FileName="MediaBrowser.Server.Mac/AppDelegate.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono/Networking/NetworkManager.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Mono/Native/NativeApp.cs" Line="37" Column="37" />
+      <File FileName="MediaBrowser.Server.Mac/Main.cs" Line="120" Column="120" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True" selected="True">
-          <Node name="MediaBrowser.Common.Implementations" expanded="True">
-            <Node name="Devices" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.Server.Implementations" expanded="True" />
-          <Node name="MediaBrowser.Server.Mac" expanded="True">
-            <Node name="Native" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.Server.Mono" expanded="True">
-            <Node name="Networking" expanded="True" />
-          </Node>
-          <Node name="MediaBrowser.Server.Startup.Common" expanded="True" />
+        <State expanded="True">
+          <Node name="MediaBrowser.Server.Mac" expanded="True" />
+          <Node name="MediaBrowser.Server.Mono" expanded="True" />
+          <Node name="MediaBrowser.Server.Startup.Common" expanded="True" selected="True" />
           <Node name="MediaBrowser.WebDashboard" expanded="True">
             <Node name="Api" expanded="True" />
           </Node>

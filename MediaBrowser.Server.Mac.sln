@@ -25,8 +25,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Implementations", "MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj", "{2E781478-814D-4A48-9D80-BFF206441A65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", "MediaBrowser.Server.Mono\MediaBrowser.Server.Mono.csproj", "{175A9388-F352-4586-A6B4-070DED62B644}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Startup.Common", "MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj", "{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.WebDashboard", "MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj", "{5624B7B5-B5A7-41D8-9F10-CC5611109619}"
@@ -60,20 +58,6 @@ Global
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|x86.ActiveCfg = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|x86.Build.0 = Release|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.AppStore|Any CPU.Build.0 = Release|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|Any CPU.Build.0 = Debug|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|x86.ActiveCfg = Debug|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Debug|x86.Build.0 = Debug|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release Mono|x86.ActiveCfg = Release Mono|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release Mono|x86.Build.0 = Release Mono|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release|Any CPU.Build.0 = Release|Any CPU
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.ActiveCfg = Release|x86
-		{175A9388-F352-4586-A6B4-070DED62B644}.Release|x86.Build.0 = Release|x86
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.AppStore|Any CPU.Build.0 = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

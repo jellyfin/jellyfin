@@ -1,5 +1,4 @@
 ﻿using System;
-using MediaBrowser.Server.Mono.Native;
 
 namespace MediaBrowser.Server.Mac
 {
