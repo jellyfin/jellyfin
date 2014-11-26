@@ -623,29 +623,20 @@ namespace MediaBrowser.Server.Implementations.Library
         public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
             where T : BaseItem
         {
-            var list = new List<T>();
-
-            Parallel.ForEach(files, f =>
+            return files.Select(f =>
             {
                 try
                 {
-                    var item = ResolvePath(f, directoryService, parent, collectionType) as T;
-
-                    if (item != null)
-                    {
-                        lock (list)
-                        {
-                            list.Add(item);
-                        }
-                    }
+                    return ResolvePath(f, directoryService, parent, collectionType) as T;
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error resolving path {0}", ex, f.FullName);
+                    return null;
                 }
-            });
 
-            return list;
+            }).Where(i => i != null)
+            .ToList();
         }
 
         /// <summary>

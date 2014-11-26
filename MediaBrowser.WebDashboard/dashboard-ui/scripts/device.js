@@ -9,6 +9,7 @@
         }
 
         $('#txtCustomName', page).val(device.CustomName || '');
+        $('#txtUploadPath', page).val(device.CameraUploadPath || '');
         $('.reportedName', page).html(device.ReportedName || '');
     }
 

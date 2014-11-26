@@ -1200,7 +1200,7 @@
                     cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
                 }
 
-                if (options.showChildCountIndicator) {
+                if (options.showChildCountIndicator && item.ChildCount) {
                     cssClass += ' groupedCard';
 
                     if (item.Type == 'Series') {

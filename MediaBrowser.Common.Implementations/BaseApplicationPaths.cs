@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using System;
-using System.Configuration;
 using System.IO;
 
 namespace MediaBrowser.Common.Implementations
@@ -11,20 +9,6 @@ namespace MediaBrowser.Common.Implementations
     /// </summary>
     public abstract class BaseApplicationPaths : IApplicationPaths
     {
-        /// <summary>
-        /// The _use debug path
-        /// </summary>
-        private readonly bool _useDebugPath;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
-        /// </summary>
-        protected BaseApplicationPaths(bool useDebugPath, string applicationPath)
-        {
-            _useDebugPath = useDebugPath;
-            ApplicationPath = applicationPath;
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
@@ -39,17 +23,14 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The _program data path
         /// </summary>
-        private string _programDataPath;
+        private readonly string _programDataPath;
         /// <summary>
         /// Gets the path to the program data folder
         /// </summary>
         /// <value>The program data path.</value>
         public string ProgramDataPath
         {
-            get
-            {
-                return _programDataPath ?? (_programDataPath = GetProgramDataPath());
-            }
+            get { return _programDataPath; }
         }
 
         /// <summary>
@@ -201,36 +182,6 @@ namespace MediaBrowser.Common.Implementations
             {
                 return Path.Combine(CachePath, "temp");
             }
-        }
-
-        /// <summary>
-        /// Gets the path to the application's ProgramDataFolder
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetProgramDataPath()
-        {
-            var programDataPath = _useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
-
-            programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-
-            // If it's a relative path, e.g. "..\"
-            if (!Path.IsPathRooted(programDataPath))
-            {
-                var path = Path.GetDirectoryName(ApplicationPath);
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    throw new ApplicationException("Unable to determine running assembly location");
-                }
-
-                programDataPath = Path.Combine(path, programDataPath);
-
-                programDataPath = Path.GetFullPath(programDataPath);
-            }
-
-            Directory.CreateDirectory(programDataPath);
-
-            return programDataPath;
         }
     }
 }

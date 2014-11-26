@@ -652,7 +652,13 @@ namespace MediaBrowser.Api.Images
         {
             if ((Request.AcceptTypes ?? new string[] { }).Contains("image/webp", StringComparer.OrdinalIgnoreCase))
             {
-                return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+                var userAgent = Request.UserAgent ?? string.Empty;
+
+                // Not displaying properly on iOS
+                if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+                }
             }
 
             return new[] { ImageOutputFormat.Jpg, ImageOutputFormat.Png };

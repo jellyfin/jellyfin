@@ -70,7 +70,6 @@
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />
     <Compile Include="Net\HttpResponseInfo.cs" />
-    <Compile Include="Net\IServerManager.cs" />
     <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="Net\IHttpClient.cs" />

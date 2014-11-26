@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using System.Linq;

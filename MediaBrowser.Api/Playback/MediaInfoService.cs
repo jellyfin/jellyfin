@@ -52,7 +52,15 @@ namespace MediaBrowser.Api.Playback
             else
             {
                 var hasMediaSources = (IHasMediaSources)item;
-                mediaSources = hasMediaSources.GetMediaSources(true, user);
+
+                if (user == null)
+                {
+                    mediaSources = hasMediaSources.GetMediaSources(true);
+                }
+                else
+                {
+                    mediaSources = hasMediaSources.GetMediaSources(true, user);
+                }
             }
 
             return ToOptimizedResult(new LiveMediaInfoResult

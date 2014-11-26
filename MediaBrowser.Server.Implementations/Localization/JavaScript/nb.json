@@ -285,7 +285,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Endre Mappe Type",
-    "HeaderChangeFolderTypeHelp": "For \u00e5 endre mappe type, vennligst fjern og bygg samlingen med en ny type.",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
     "HeaderAlert": "Varsling",
     "MessagePleaseRestart": "Vennligst utf\u00f8r en omstart for \u00e5 fullf\u00f8re oppdatering.",
     "ButtonRestart": "Restart",
