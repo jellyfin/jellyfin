@@ -69,10 +69,13 @@ namespace MediaBrowser.Server.Mac
 		{
 			if (string.IsNullOrEmpty(programDataPath))
 			{
-				programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "mediabrowser");
+				// TODO: Use CommonApplicationData? Will we always have write access?
+				programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "mediabrowser-server");
 			}
+			// p5437mav0ABB83l
+			var resourcesPath = Path.Combine(Path.GetDirectoryName (applicationPath), "Resources");
 
-			return new ServerApplicationPaths(programDataPath, applicationPath);
+			return new ServerApplicationPaths(programDataPath, applicationPath, resourcesPath);
 		}
 
 		/// <summary>
