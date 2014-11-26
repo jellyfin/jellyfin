@@ -25,8 +25,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Container = "mp4",
                     Type = DlnaProfileType.Video,
                     AudioCodec = "aac",
-                    VideoCodec = "h264",
-                    VideoProfile= "baseline"
+                    VideoCodec = "h264"
                 },
 
                 new TranscodingProfile
@@ -115,6 +114,16 @@ namespace MediaBrowser.Dlna.Profiles
                             Value = "true",
                             IsRequired = false
                         }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Codec="h264",
+                    Conditions = new []
+                    {
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline")
                     }
                 },
 

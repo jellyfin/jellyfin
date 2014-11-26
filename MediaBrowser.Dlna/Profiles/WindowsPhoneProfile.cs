@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Dlna;
-using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna.Profiles;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -26,7 +26,6 @@ namespace MediaBrowser.Dlna.Profiles
                     VideoCodec = "h264",
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
-                    VideoProfile = "Baseline",
                     Context = EncodingContext.Streaming
                 },
                 new TranscodingProfile
@@ -35,7 +34,6 @@ namespace MediaBrowser.Dlna.Profiles
                     VideoCodec = "h264",
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
-                    VideoProfile = "Baseline",
                     Context = EncodingContext.Streaming
                 },
                 new TranscodingProfile
@@ -44,7 +42,6 @@ namespace MediaBrowser.Dlna.Profiles
                     VideoCodec = "h264",
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
-                    VideoProfile = "Baseline",
                     Context = EncodingContext.Static
                 }
             };
@@ -156,7 +153,8 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoLevel,
                             Value = "3"
-                        }
+                        },
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline")
                     }
                 },
 
