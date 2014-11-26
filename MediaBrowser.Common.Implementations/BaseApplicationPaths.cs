@@ -14,24 +14,12 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected BaseApplicationPaths(string programDataPath, string applicationPath)
         {
-            _programDataPath = programDataPath;
+            ProgramDataPath = programDataPath;
             ApplicationPath = applicationPath;
         }
 
         public string ApplicationPath { get; private set; }
-
-        /// <summary>
-        /// The _program data path
-        /// </summary>
-        private readonly string _programDataPath;
-        /// <summary>
-        /// Gets the path to the program data folder
-        /// </summary>
-        /// <value>The program data path.</value>
-        public string ProgramDataPath
-        {
-            get { return _programDataPath; }
-        }
+        public string ProgramDataPath { get; private set; }
 
         /// <summary>
         /// Gets the path to the system folder

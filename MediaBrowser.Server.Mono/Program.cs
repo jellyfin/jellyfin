@@ -1,3 +1,4 @@
+using System.IO;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
@@ -58,10 +59,10 @@ namespace MediaBrowser.Server.Mono
 		{
 			if (string.IsNullOrEmpty(programDataPath))
 			{
-				return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath);
+			    programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
 			}
 			
-			return new ServerApplicationPaths(programDataPath, applicationPath);
+			return new ServerApplicationPaths(programDataPath, applicationPath, Path.GetDirectoryName(applicationPath));
 		}
 
 		private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();

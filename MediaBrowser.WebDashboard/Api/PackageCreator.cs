@@ -87,9 +87,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _config.Configuration.DashboardSourcePath;
                 }
 
-                var runningDirectory = Path.GetDirectoryName(_config.ApplicationPaths.ApplicationPath);
-
-                return Path.Combine(runningDirectory, "dashboard-ui");
+                return Path.Combine(_config.ApplicationPaths.ApplicationResourcesPath, "dashboard-ui");
             }
         }
 
