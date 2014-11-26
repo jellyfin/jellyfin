@@ -286,13 +286,14 @@ Global
 		{C97B98FA-00D4-4880-88B8-C76017A418AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj
-		Policies = $0
-		$0.DotNetNamingPolicy = $1
-		$1.DirectoryNamespaceAssociation = None
-		$1.ResourceNamePolicy = FileFormatDefault
-		$0.VersionControlPolicy = $2
-		$2.inheritsSet = Mono
+		StartupItems = $0
+		$0.Item = MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj
+		Policies = $1
+		$1.DotNetNamingPolicy = $2
+		$2.DirectoryNamespaceAssociation = None
+		$2.ResourceNamePolicy = FileFormatDefault
+		$1.VersionControlPolicy = $3
+		$3.inheritsSet = Mono
 		version = 
 	EndGlobalSection
 EndGlobal
