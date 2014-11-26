@@ -40,9 +40,9 @@
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
-    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Streaming" />
-    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" videoProfile="Baseline" context="Static" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" protocol="hls" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Static" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
@@ -58,6 +58,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="1000000" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="24" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="3" isRequired="true" />
+        <ProfileCondition condition="EqualsAny" property="VideoProfile" value="baseline|constrained baseline" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="Video">

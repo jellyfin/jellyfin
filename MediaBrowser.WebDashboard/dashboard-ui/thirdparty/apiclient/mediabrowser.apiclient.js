@@ -289,6 +289,14 @@
             });
         };
 
+        self.get = function (url) {
+
+            return self.ajax({
+                type: "GET",
+                url: url
+            });
+        };
+
         self.getJSON = function (url) {
 
             return self.ajax({

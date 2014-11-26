@@ -110,7 +110,7 @@
 @media all and (min-width: 600px) {
 
     .itemsContainer:not(.fullWidthItemsContainer):not(.smallItemsContainer) {
-        padding: 0 1em;
+        padding: 0 .8em;
         margin-right: 10px;
     }
 }

@@ -823,6 +823,10 @@
         }
         else if (action == 'photoslideshow') {
 
+            if (!$(elem).hasClass('card')) {
+                elem = $(elem).parents('.card')[0];
+            }
+
             itemsContainer = $(elem).parents('.itemsContainer');
             index = $('.card', itemsContainer).get().indexOf(elem);
 
