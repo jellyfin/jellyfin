@@ -192,8 +192,10 @@
             };
         });
 
+        index = Math.max(index || 0, 0);
+
         $.swipebox(slideshowItems, {
-            initialIndexOnArray: index || 0,
+            initialIndexOnArray: index,
             hideBarsDelay: 30000
         });
     }

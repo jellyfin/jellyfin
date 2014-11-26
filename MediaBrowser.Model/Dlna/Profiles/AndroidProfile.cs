@@ -40,7 +40,6 @@ namespace MediaBrowser.Model.Dlna.Profiles
                     VideoCodec = "h264",
                     AudioCodec = "aac",
                     Type = DlnaProfileType.Video,
-                    VideoProfile = "baseline",
                     Context = EncodingContext.Streaming
                 });
             }
@@ -50,7 +49,6 @@ namespace MediaBrowser.Model.Dlna.Profiles
                 VideoCodec = "h264",
                 AudioCodec = "aac",
                 Type = DlnaProfileType.Video,
-                VideoProfile = "baseline",
                 Context = EncodingContext.Static
             });
 
