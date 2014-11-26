@@ -153,16 +153,18 @@ namespace MediaBrowser.ServerApplication
         /// <returns>ServerApplicationPaths.</returns>
         private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, bool runAsService)
         {
+            var resourcesPath = Path.GetDirectoryName(applicationPath);
+
             if (runAsService)
             {
                 var systemPath = Path.GetDirectoryName(applicationPath);
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
-                return new ServerApplicationPaths(programDataPath, applicationPath);
+                return new ServerApplicationPaths(programDataPath, applicationPath, resourcesPath);
             }
 
-            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath);
+            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath, resourcesPath);
         }
 
         /// <summary>

@@ -11,6 +11,13 @@ namespace MediaBrowser.Controller
         string RootFolderPath { get; }
 
         /// <summary>
+        /// Gets the application resources path. This is the path to the folder containing resources that are deployed as part of the application
+        /// For example, this folder contains dashboard-ui and swagger-ui
+        /// </summary>
+        /// <value>The application resources path.</value>
+        string ApplicationResourcesPath { get; }
+        
+        /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>
         /// <value>The default user views path.</value>

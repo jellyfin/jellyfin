@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using ServiceStack.Web;
 using System.IO;
@@ -7,9 +7,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 {
     public class SwaggerService : IHasResultFactory, IRestfulService
     {
-        private readonly IApplicationPaths _appPaths;
+        private readonly IServerApplicationPaths _appPaths;
 
-        public SwaggerService(IApplicationPaths appPaths)
+        public SwaggerService(IServerApplicationPaths appPaths)
         {
             _appPaths = appPaths;
         }
@@ -21,9 +21,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>System.Object.</returns>
         public object Get(GetSwaggerResource request)
         {
-            var runningDirectory = Path.GetDirectoryName(_appPaths.ApplicationPath);
-
-            var swaggerDirectory = Path.Combine(runningDirectory, "swagger-ui");
+            var swaggerDirectory = Path.Combine(_appPaths.ApplicationResourcesPath, "swagger-ui");
 
             var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', Path.DirectorySeparatorChar));
 

@@ -12,11 +12,13 @@ namespace MediaBrowser.Server.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths" /> class.
         /// </summary>
-        public ServerApplicationPaths(string programDataPath, string applicationPath)
+        public ServerApplicationPaths(string programDataPath, string applicationPath, string applicationResourcesPath)
             : base(programDataPath, applicationPath)
         {
-
+            ApplicationResourcesPath = applicationResourcesPath;
         }
+
+        public string ApplicationResourcesPath { get; private set; }
 
         /// <summary>
         /// Gets the path to the base root media directory
