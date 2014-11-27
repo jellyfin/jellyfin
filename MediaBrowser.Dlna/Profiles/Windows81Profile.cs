@@ -142,7 +142,13 @@ namespace MediaBrowser.Dlna.Profiles
 
                         // The first one in the list should be the higest one, e.g. if High profile is supported, make sure it appears before baseline: high|baseline
 
-                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline")
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "high|main|extended|baseline|constrained baseline"),
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoLevel,
+                            Value = "51"
+                        }
                     }
                 },
 
