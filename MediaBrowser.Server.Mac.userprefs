@@ -1,18 +1,19 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/Main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/AppController.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mac/Main.cs" Line="120" Column="120" />
+      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="28" Column="28" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MediaBrowser.Server.Mac" expanded="True" />
-          <Node name="MediaBrowser.Server.Mono" expanded="True" />
-          <Node name="MediaBrowser.Server.Startup.Common" expanded="True" selected="True" />
-          <Node name="MediaBrowser.WebDashboard" expanded="True">
-            <Node name="Api" expanded="True" />
+          <Node name="MediaBrowser.Server.Mac" expanded="True">
+            <Node name="Resources" expanded="True">
+              <Node name="appicon.icns" selected="True" />
+            </Node>
           </Node>
+          <Node name="MediaBrowser.Server.Startup.Common" expanded="True" />
+          <Node name="MediaBrowser.WebDashboard" expanded="True" />
           <Node name="MediaBrowser.XbmcMetadata" expanded="True" />
           <Node name="OpenSubtitlesHandler" expanded="True" />
         </State>

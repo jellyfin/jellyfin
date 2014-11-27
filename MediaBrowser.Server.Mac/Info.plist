@@ -5,12 +5,14 @@
 	<key>CFBundleIdentifier</key>
 	<string>com.MediaBrowser.MediaBrowser.Server.Mac</string>
 	<key>CFBundleName</key>
-	<string>MediaBrowser.Server.Mac</string>
+	<string>Media Browser</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6</string>
 	<key>LSUIElement</key>
+	<string>1</string>
+	<key>LSMultipleInstancesProhibited</key>
 	<string>1</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
@@ -20,5 +22,7 @@
 	<string>public.app-category.video</string>
 	<key>CFBundleDisplayName</key>
 	<string>Media Browser</string>
+	<key>CFBundleIconFile</key>
+	<string>appicon</string>
 </dict>
 </plist>
