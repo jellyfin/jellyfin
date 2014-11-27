@@ -26,29 +26,30 @@ namespace MediaBrowser.Server.Mac
 		{
 			Instance = this;
 			MainClass.AddDependencies (this);
+			ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 		}
 
 		public override void AwakeFromNib()
 		{
 			var statusItem = NSStatusBar.SystemStatusBar.CreateStatusItem(30);
 			statusItem.Menu = statusMenu;
-			statusItem.Image = NSImage.ImageNamed("touchicon");
+			statusItem.Image = NSImage.ImageNamed("statusicon");
 			statusItem.HighlightMode = true;
 
-			statusItem.Menu.RemoveAllItems ();
+			statusMenu.RemoveAllItems ();
 
 			browseMenuItem = new NSMenuItem ("Browse Media Library", "b", delegate {
 				Browse (this);
 			});
-			statusItem.Menu.AddItem (browseMenuItem);
+			statusMenu.AddItem (browseMenuItem);
 
 			configureMenuItem = new NSMenuItem ("Configure Media Browser", "c", delegate {
 				Configure (this);
 			});
-			statusItem.Menu.AddItem (configureMenuItem);
+			statusMenu.AddItem (configureMenuItem);
 
 			developerMenuItem = new NSMenuItem ("Developer Resources");
-			statusItem.Menu.AddItem (developerMenuItem);
+			statusMenu.AddItem (developerMenuItem);
 
 			var developerMenu = new NSMenu ();
 			developerMenuItem.Submenu = developerMenu;
@@ -66,12 +67,14 @@ namespace MediaBrowser.Server.Mac
 			communityMenuItem = new NSMenuItem ("Visit Community", "v", delegate {
 				Community (this);
 			});
-			statusItem.Menu.AddItem (communityMenuItem);
+			statusMenu.AddItem (communityMenuItem);
 
 			quitMenuItem = new NSMenuItem ("Quit", "q", delegate {
 				Quit (this);
 			});
-			statusItem.Menu.AddItem (quitMenuItem);
+			statusMenu.AddItem (quitMenuItem);
+
+			LocalizeText ();
 		}
 
 		public IServerApplicationHost AppHost{ get; set;}

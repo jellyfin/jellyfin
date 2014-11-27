@@ -72,8 +72,9 @@ namespace MediaBrowser.Server.Mac
 				// TODO: Use CommonApplicationData? Will we always have write access?
 				programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "mediabrowser-server");
 			}
-			// p5437mav0ABB83l
-			var resourcesPath = Path.Combine(Path.GetDirectoryName (applicationPath), "Resources");
+
+			// Within the mac bundle, go uo two levels then down into Resources folder
+			var resourcesPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName (applicationPath)), "Resources");
 
 			return new ServerApplicationPaths(programDataPath, applicationPath, resourcesPath);
 		}
@@ -109,9 +110,10 @@ namespace MediaBrowser.Server.Mac
 			var initProgress = new Progress<double>();
 
 			var task = _appHost.Init(initProgress);
-			task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
 
 			Task.WaitAll(task);
+
+			Task.Run (() => _appHost.RunStartupTasks());
 		}
 
 		/// <summary>

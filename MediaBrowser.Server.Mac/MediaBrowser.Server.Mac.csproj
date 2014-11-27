@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -92,6 +92,9 @@
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Native\BaseMonoApp.cs" />
     <Compile Include="Native\NetworkManager.cs" />
+    <Compile Include="..\SharedVersion.cs">
+      <Link>SharedVersion.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -105,6 +108,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -132,9 +136,45 @@
       <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
+      <Project>{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}</Project>
+      <Name>MediaBrowser.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
+      <Project>{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}</Project>
+      <Name>MediaBrowser.LocalMetadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj">
+      <Project>{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}</Project>
+      <Name>MediaBrowser.MediaEncoding</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj">
+      <Project>{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}</Project>
+      <Name>MediaBrowser.MediaInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
+      <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj">
+      <Project>{5624B7B5-B5A7-41D8-9F10-CC5611109619}</Project>
+      <Name>MediaBrowser.WebDashboard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj">
+      <Project>{23499896-B135-4527-8574-C26E926EA99E}</Project>
+      <Name>MediaBrowser.XbmcMetadata</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4A4402D4-E910-443B-B8FC-2C18286A2CA0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
+      <Project>{4FD51AC5-2C16-4308-A993-C3A84F3B4582}</Project>
+      <Name>MediaBrowser.Api</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="touchicon.png" />
+    <Content Include="statusicon.png" />
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
@@ -2922,5 +2962,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js">
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js</Link>
     </BundleResource>
+    <BundleResource Include="Resources\appicon.icns" />
   </ItemGroup>
 </Project>
