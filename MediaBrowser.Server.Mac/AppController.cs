@@ -73,9 +73,9 @@ namespace MediaBrowser.Server.Mac
 			});
 			statusMenu.AddItem (quitMenuItem);
 
-			//ConfigurationManager.ConfigurationUpdated -= Instance_ConfigurationUpdated;
-			//LocalizeText ();
-			//ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
+			ConfigurationManager.ConfigurationUpdated -= Instance_ConfigurationUpdated;
+			LocalizeText ();
+			ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 		}
 
 		public IServerApplicationHost AppHost{ get; set;}

@@ -37,7 +37,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <LinkMode>Full</LinkMode>
     <UseSGen>false</UseSGen>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <EnablePackageSigning>false</EnablePackageSigning>
@@ -53,7 +52,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <LinkMode>Full</LinkMode>
     <UseSGen>false</UseSGen>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
