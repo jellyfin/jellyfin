@@ -378,14 +378,13 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public virtual Task RunStartupTasks()
         {
-            return Task.Run(() =>
-            {
-                Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
+			Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-                Task.Run(() => ConfigureAutorun());
+			ConfigureAutorun ();
 
-                ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
-            });
+			ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+
+			return Task.FromResult (true);
         }
 
         /// <summary>
