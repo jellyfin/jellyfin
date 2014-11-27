@@ -26,7 +26,6 @@ namespace MediaBrowser.Server.Mac
 		{
 			Instance = this;
 			MainClass.AddDependencies (this);
-			ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 		}
 
 		public override void AwakeFromNib()
@@ -74,7 +73,9 @@ namespace MediaBrowser.Server.Mac
 			});
 			statusMenu.AddItem (quitMenuItem);
 
-			LocalizeText ();
+			//ConfigurationManager.ConfigurationUpdated -= Instance_ConfigurationUpdated;
+			//LocalizeText ();
+			//ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 		}
 
 		public IServerApplicationHost AppHost{ get; set;}

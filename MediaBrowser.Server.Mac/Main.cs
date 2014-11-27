@@ -55,7 +55,6 @@ namespace MediaBrowser.Server.Mac
 			StartApplication(appPaths, logManager, options);
 			NSApplication.Init ();
 			NSApplication.Main (args);
-			var b = true;
 		}
 
 		public static void AddDependencies(AppController appController){
