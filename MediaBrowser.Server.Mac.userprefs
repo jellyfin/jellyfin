@@ -1,17 +1,23 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/AppController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Server.Mac/Main.cs">
     <Files>
-      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="28" Column="28" />
+      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="4" Column="4" />
+      <File FileName="MediaBrowser.Server.Mac/Main.cs" Line="18" Column="18" />
+      <File FileName="MediaBrowser.Server.Startup.Common/ApplicationHost.cs" Line="22" Column="22" />
+      <File FileName="MediaBrowser.Common.Implementations/BaseApplicationHost.cs" Line="14" Column="14" />
+      <File FileName="MediaBrowser.Common.Implementations/Logging/NlogManager.cs" Line="24" Column="24" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MediaBrowser.Server.Mac" expanded="True">
-            <Node name="Resources" expanded="True">
-              <Node name="appicon.icns" selected="True" />
-            </Node>
+          <Node name="MediaBrowser.Common.Implementations" expanded="True">
+            <Node name="Logging" expanded="True" />
           </Node>
+          <Node name="MediaBrowser.Model" expanded="True">
+            <Node name="Logging" expanded="True" />
+          </Node>
+          <Node name="MediaBrowser.Server.Mac" expanded="True" selected="True" />
           <Node name="MediaBrowser.Server.Startup.Common" expanded="True" />
           <Node name="MediaBrowser.WebDashboard" expanded="True" />
           <Node name="MediaBrowser.XbmcMetadata" expanded="True" />
@@ -22,7 +28,6 @@
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/Users/luke/MediaBrowser/MediaBrowser.Server.Mac/Main.cs" line="58" column="1" />
       <Breakpoint file="/Users/luke/MediaBrowser/MediaBrowser.Common.Implementations/BaseApplicationPaths.cs" line="233" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
