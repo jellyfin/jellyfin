@@ -786,7 +786,7 @@ progress {
     color: green;
 }
 
-@media all and (max-width: 1440px) {
+@media all and (max-width: 1439px) {
 
     .dashboardHomeRightColumn {
         margin-top: 1em;
