@@ -1,7 +1,7 @@
 
 
    ----------------------------------------------------------------------
-              README file for Web Markup Minifier: Core 0.9.8
+              README file for Web Markup Minifier: Core 0.9.9
 
    ----------------------------------------------------------------------
 
@@ -42,14 +42,6 @@
    
    Also supports minification of views of popular JavaScript template
    engines: KnockoutJS, Kendo UI MVVM and AngularJS.
-   
-   =============
-   RELEASE NOTES
-   =============
-   To the list of built-in Angular directives, that contain expressions, 
-   added new directives: `ngMaxlength`, `ngMessages`, `ngMinlength`,
-   `ngModel`, `ngOptions`, `ngPattern`, `ngRequired`, `ngSwipeLeft`,
-   `ngSwipeRight` and `ngValue`.
 
    =============
    DOCUMENTATION

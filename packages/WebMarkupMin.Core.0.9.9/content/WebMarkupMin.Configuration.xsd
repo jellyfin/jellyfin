@@ -530,6 +530,11 @@ Leave all other color names or hex values as-specified.</xs:documentation>
 						<xs:documentation>Value indicating whether to minify the JavaScript within expression functions</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
+				<xs:attribute name="removeEmptyBlocks" type="Boolean_SchemaType" use="optional" default="true">
+					<xs:annotation>
+						<xs:documentation>Value indicating whether empty blocks removes the corresponding rule or directive</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>

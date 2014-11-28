@@ -31,10 +31,14 @@
 
     function showServerConnectionFailure() {
 
-        Dashboard.alert({
-            message: Globalize.translate("MessageUnableToConnectToServer"),
-            title: Globalize.translate("HeaderConnectionFailure")
-        });
+        // Need the timeout because jquery mobile will not show a popup while another is in process of closing
+        setTimeout(function () {
+            Dashboard.alert({
+                message: Globalize.translate("MessageUnableToConnectToServer"),
+                title: Globalize.translate("HeaderConnectionFailure")
+            });
+
+        }, 300);
     }
 
     function getServerHtml(server) {

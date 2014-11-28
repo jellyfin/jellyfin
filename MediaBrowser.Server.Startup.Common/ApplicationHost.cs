@@ -508,14 +508,10 @@ namespace MediaBrowser.Server.Startup.Common
 
 			RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
-            var displayPreferencesTask = Task.Run(async () => await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false));
-            var itemsTask = Task.Run(async () => await ConfigureItemRepositories().ConfigureAwait(false));
-            var userdataTask = Task.Run(async () => await ConfigureUserDataRepositories().ConfigureAwait(false));
-
+            await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false);
+            await ConfigureItemRepositories().ConfigureAwait(false);
+            await ConfigureUserDataRepositories().ConfigureAwait(false);
 			await ConfigureNotificationsRepository().ConfigureAwait(false);
-            progress.Report(92);
-
-            await Task.WhenAll(itemsTask, displayPreferencesTask, userdataTask).ConfigureAwait(false);
             progress.Report(100);
 
             SetStaticProperties();

@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.Video;
 using System;
 
@@ -43,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             // If the path is a file check for a matching extensions
             if (!args.IsDirectory)
             {
-                var parser = new Naming.Video.VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+                var parser = new Naming.Video.VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
                 var videoInfo = parser.ResolveFile(args.Path);
 
                 if (videoInfo == null)

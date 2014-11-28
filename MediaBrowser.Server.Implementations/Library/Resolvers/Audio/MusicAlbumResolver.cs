@@ -12,6 +12,7 @@ using MediaBrowser.Naming.Audio;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MediaBrowser.Naming.Common;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -179,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <returns><c>true</c> if [is multi disc album folder] [the specified path]; otherwise, <c>false</c>.</returns>
         private static bool IsMultiDiscAlbumFolder(string path)
         {
-            var parser = new AlbumParser(new AudioOptions(), new Naming.Logging.NullLogger());
+            var parser = new AlbumParser(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
             var result = parser.ParseMultiPart(path);
 
             return result.IsMultiPart;

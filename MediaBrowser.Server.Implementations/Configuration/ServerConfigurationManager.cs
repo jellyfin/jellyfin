@@ -134,20 +134,6 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 {
                     throw new ArgumentException("Invalid path substitution");
                 }
-
-                if (!map.From.EndsWith(":\\") && !map.From.EndsWith(":/"))
-                {
-                    map.From = map.From.TrimEnd('/').TrimEnd('\\');
-                }
-                if (!map.To.EndsWith(":\\") && !map.To.EndsWith(":/"))
-                {
-                    map.To = map.To.TrimEnd('/').TrimEnd('\\');
-                }
-
-                if (string.IsNullOrWhiteSpace(map.From) || string.IsNullOrWhiteSpace(map.To))
-                {
-                    throw new ArgumentException("Invalid path substitution");
-                }
             }
         }
 

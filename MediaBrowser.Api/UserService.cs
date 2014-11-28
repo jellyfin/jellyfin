@@ -150,7 +150,7 @@ namespace MediaBrowser.Api
     /// Class UpdateUser
     /// </summary>
     [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
-    [Authenticated(Roles = "Admin")]
+    [Authenticated]
     public class UpdateUser : UserDto, IReturnVoid
     {
     }
