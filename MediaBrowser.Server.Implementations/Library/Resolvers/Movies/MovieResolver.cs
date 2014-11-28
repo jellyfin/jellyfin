@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.Video;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
@@ -319,7 +320,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            var resolver = new StackResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
             var result = resolver.ResolveDirectories(folderPaths);
 
@@ -355,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var paths = sortedMovies.Select(i => i.Path).ToList();
 
-            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            var resolver = new StackResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
             var result = resolver.ResolveFiles(paths);
 

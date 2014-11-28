@@ -16,6 +16,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
@@ -1625,13 +1626,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsVideoFile(string path)
         {
-            var resolver = new VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
             return resolver.IsVideoFile(path);
         }
 
         public bool IsAudioFile(string path)
         {
-            var parser = new AudioFileParser(new AudioOptions());
+            var parser = new AudioFileParser(new ExtendedNamingOptions());
             return parser.IsAudioFile(path);
         }
 
@@ -1657,7 +1658,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -1673,7 +1674,7 @@ namespace MediaBrowser.Server.Implementations.Library
             VideoType type,
             IEnumerable<FileSystemInfo> files)
         {
-            var resolver = new StackResolver(new ExpandedVideoOptions(), new AudioOptions(), new Naming.Logging.NullLogger());
+            var resolver = new StackResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
             StackResult result;
             List<FileSystemInfo> filteredFiles;
