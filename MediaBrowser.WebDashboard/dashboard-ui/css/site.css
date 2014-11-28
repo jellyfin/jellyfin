@@ -822,7 +822,7 @@ progress {
     }
 
         .firstDashboardHomeRightColumn .ui-collapsible-content {
-            height: 585px;
+            min-height: 585px;
         }
 }
 
