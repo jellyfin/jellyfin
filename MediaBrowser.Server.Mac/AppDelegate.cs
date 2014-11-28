@@ -15,7 +15,7 @@ namespace MediaBrowser.Server.Mac
 
 		public override void FinishedLaunching (NSObject notification)
 		{
-
+			new MenuBarIcon ().ShowIcon ();
 		}
 	}
 }

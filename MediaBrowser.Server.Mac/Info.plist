@@ -2,27 +2,29 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleIdentifier</key>
-	<string>com.MediaBrowser.MediaBrowser.Server.Mac</string>
-	<key>CFBundleName</key>
-	<string>Media Browser</string>
-	<key>CFBundleVersion</key>
-	<string>1</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>10.6</string>
-	<key>LSUIElement</key>
-	<string>1</string>
-	<key>LSMultipleInstancesProhibited</key>
-	<string>1</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
-	<key>LSApplicationCategoryType</key>
-	<string>public.app-category.video</string>
 	<key>CFBundleDisplayName</key>
 	<string>Media Browser</string>
 	<key>CFBundleIconFile</key>
 	<string>appicon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.MediaBrowser.MediaBrowser.Server.Mac</string>
+	<key>CFBundleName</key>
+	<string>Media Browser</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.video</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.6</string>
+	<key>LSMultipleInstancesProhibited</key>
+	<string>1</string>
+	<key>LSUIElement</key>
+	<string>1</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
 </dict>
 </plist>
