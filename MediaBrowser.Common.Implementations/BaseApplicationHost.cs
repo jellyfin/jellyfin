@@ -448,45 +448,43 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         protected virtual Task RegisterResources(IProgress<double> progress)
         {
-            return Task.Run(() =>
-            {
-                RegisterSingleInstance(ConfigurationManager);
-                RegisterSingleInstance<IApplicationHost>(this);
+			RegisterSingleInstance(ConfigurationManager);
+			RegisterSingleInstance<IApplicationHost>(this);
 
-                RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
+			RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-                TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger);
+			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger);
 
-                RegisterSingleInstance(JsonSerializer);
-                RegisterSingleInstance(XmlSerializer);
+			RegisterSingleInstance(JsonSerializer);
+			RegisterSingleInstance(XmlSerializer);
 
-                RegisterSingleInstance(LogManager);
-                RegisterSingleInstance(Logger);
+			RegisterSingleInstance(LogManager);
+			RegisterSingleInstance(Logger);
 
-                RegisterSingleInstance(TaskManager);
+			RegisterSingleInstance(TaskManager);
 
-                RegisterSingleInstance(FileSystemManager);
+			RegisterSingleInstance(FileSystemManager);
 
-                HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
-                RegisterSingleInstance(HttpClient);
+			HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
+			RegisterSingleInstance(HttpClient);
 
-                NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
-                RegisterSingleInstance(NetworkManager);
+			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
+			RegisterSingleInstance(NetworkManager);
 
-                SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager, LogManager);
-                RegisterSingleInstance(SecurityManager);
+			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager, LogManager);
+			RegisterSingleInstance(SecurityManager);
 
-                InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
-                RegisterSingleInstance(InstallationManager);
+			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
+			RegisterSingleInstance(InstallationManager);
 
-                ZipClient = new ZipClient();
-                RegisterSingleInstance(ZipClient);
+			ZipClient = new ZipClient();
+			RegisterSingleInstance(ZipClient);
 
-                IsoManager = new IsoManager();
-                RegisterSingleInstance(IsoManager);
+			IsoManager = new IsoManager();
+			RegisterSingleInstance(IsoManager);
 
-                RegisterModules();
-            });
+			RegisterModules();
+			return Task.FromResult (true);
         }
 
         private void RegisterModules()

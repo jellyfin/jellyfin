@@ -18,7 +18,6 @@ using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.Server.Startup.Common.Browser;
 using Microsoft.Win32;
-using Microsoft.Win32;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -57,7 +56,7 @@ namespace MediaBrowser.Server.Mac
 			NSApplication.Main (args);
 		}
 
-		public static void AddDependencies(AppController appController){
+		public static void AddDependencies(MenuBarIcon appController){
 			appController.AppHost = _appHost;
 			appController.Logger = _logger;
 			appController.ConfigurationManager = _appHost.ServerConfigurationManager;
@@ -106,13 +105,16 @@ namespace MediaBrowser.Server.Mac
 
 			Console.WriteLine ("appHost.Init");
 
+			Task.Run (() => StartServer(CancellationToken.None));
+		}
+
+		private static async void StartServer(CancellationToken cancellationToken) 
+		{
 			var initProgress = new Progress<double>();
 
-			var task = _appHost.Init(initProgress);
+			await _appHost.Init (initProgress).ConfigureAwait (false);
 
-			Task.WaitAll(task);
-
-			Task.Run (() => _appHost.RunStartupTasks());
+			//await _appHost.RunStartupTasks ().ConfigureAwait (false);
 		}
 
 		/// <summary>
@@ -139,7 +141,7 @@ namespace MediaBrowser.Server.Mac
 			_appHost.Dispose ();
 
 			_logger.Info("AppController.Terminate");
-			AppController.Instance.Terminate ();
+			MenuBarIcon.Instance.Terminate ();
 		}
 
 		/// <summary>

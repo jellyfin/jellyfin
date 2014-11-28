@@ -86,13 +86,14 @@
     <Compile Include="AppController.designer.cs">
       <DependentUpon>AppController.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main.cs" />
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Native\BaseMonoApp.cs" />
     <Compile Include="Native\NetworkManager.cs" />
     <Compile Include="..\SharedVersion.cs">
       <Link>SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Main.cs" />
+    <Compile Include="MenuBarIcon.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -2960,5 +2961,6 @@
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js</Link>
     </BundleResource>
     <BundleResource Include="Resources\appicon.icns" />
+    <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
   </ItemGroup>
 </Project>
