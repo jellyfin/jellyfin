@@ -44,6 +44,7 @@
         }).checkboxradio('refresh');
 
         $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl).checkboxradio('refresh');
+        $('#chkEnableSingleImageLimit', page).checked(profile.EnableSingleAlbumArtLimit).checkboxradio('refresh');
 
         renderXmlDocumentAttributes(page, profile.XmlRootAttributes || []);
 
@@ -895,6 +896,7 @@
 
         profile.Name = $('#txtName', page).val();
         profile.EnableAlbumArtInDidl = $('#chkEnableAlbumArtInDidl', page).checked();
+        profile.EnableSingleAlbumArtLimit = $('#chkEnableSingleImageLimit', page).checked();
 
         profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function (c) {
             return c.getAttribute('data-value');
