@@ -1291,5 +1291,7 @@
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }
