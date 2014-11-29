@@ -1216,7 +1216,7 @@
     "HeaderCameraUploadHelp": "Carga autom\u00e1tica de fotos e v\u00eddeos de seus dispositivos m\u00f3veis para o Media Browser.",
     "MessageNoDevicesSupportCameraUpload": "Atualmente voc\u00ea n\u00e3o tem nenhum dispositivo que suporte carga atrav\u00e9s da c\u00e2mera.",
     "LabelCameraUploadPath": "Caminho para carga atrav\u00e9s da c\u00e2mera:",
-    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
+    "LabelCameraUploadPathHelp": "Selecione um caminho personalizado para upload, se desejar. Se n\u00e3o definir, a pasta padr\u00e3o ser\u00e1 usada. Se usar um caminho personalizado, ser\u00e1 necess\u00e1rio adicionar na \u00e1rea de ajustes da biblioteca.",
     "LabelCreateCameraUploadSubfolder": "Criar uma subpasta para cada dispositivo",
     "LabelCreateCameraUploadSubfolderHelp": "Pastas espec\u00edficas podem ser atribu\u00eddas a um dispositivo clicando-as na p\u00e1gina de Dispositivos.",
     "LabelCustomDeviceDisplayName": "Nome para exibi\u00e7\u00e3o:",
@@ -1272,5 +1272,8 @@
     "HeaderPasswordReset": "Redefini\u00e7\u00e3o de Senha",
     "HeaderParentalRatings": "Classifica\u00e7\u00f5es Parentais",
     "HeaderVideoTypes": "Tipos de V\u00eddeo",
-    "HeaderYears": "Anos"
+    "HeaderYears": "Anos",
+    "HeaderAddTag": "Adicionar Tag",
+    "LabelBlockItemsWithTags": "Bloquear itens com tags:",
+    "LabelTag": "Tag:"
 }

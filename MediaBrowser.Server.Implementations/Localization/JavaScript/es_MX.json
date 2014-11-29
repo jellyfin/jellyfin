@@ -610,7 +610,7 @@
     "MessageInvitationSentToUser": "Se ha enviado un correo electr\u00f3nico a {0}, invit\u00e1ndolo a aceptar tu invitaci\u00f3n para compartir.",
     "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser.",
     "HeaderConnectionFailure": "Falla de Conexi\u00f3n",
-    "MessageUnableToConnectToServer": "No fue posible conectarse a lo que se ha seleccionado en este momento. Por favor int\u00e9ntelo de nuevo mas tarde.",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected server right now. Please try again later.",
     "ButtonSelectServer": "Seleccionar servidor",
     "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este complemento por favor inicie sesi\u00f3n en su servidor local directamente.",
     "MessageLoggedOutParentalControl": "El acceso se encuentra restringido en este momento. Por favor int\u00e9ntelo de nuevo mas tarde.",

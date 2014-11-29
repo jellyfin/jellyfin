@@ -610,7 +610,7 @@
     "MessageInvitationSentToUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 accepter votre invitation de partage.",
     "MessageInvitationSentToNewUser": "Un mail a \u00e9t\u00e9 envoy\u00e9 \u00e0 {0} pour les inviter \u00e0 s'inscrire sur Media Browser.",
     "HeaderConnectionFailure": "Erreur de connexion",
-    "MessageUnableToConnectToServer": "Nous sommes incapable de se connecter \u00e0 la s\u00e9lection pour le moment. S.V.P. r\u00e9essayer plus tard.",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected server right now. Please try again later.",
     "ButtonSelectServer": "S\u00e9lectionner le serveur",
     "MessagePluginConfigurationRequiresLocalAccess": "Pour configurer ce plugin, S.v.p. connecter vous \u00e0 votre serveur local directement.",
     "MessageLoggedOutParentalControl": "L'acc\u00e8s est actuellement limit\u00e9. S.v.p. r\u00e9essayez plus tard",

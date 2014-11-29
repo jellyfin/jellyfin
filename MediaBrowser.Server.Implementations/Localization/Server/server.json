@@ -1288,5 +1288,8 @@
     "HeaderPasswordReset": "Password Reset",
     "HeaderParentalRatings": "Parental Ratings",
     "HeaderVideoTypes": "Video Types",
-    "HeaderYears": "Years"
+    "HeaderYears": "Years",
+    "HeaderAddTag": "Add Tag",
+    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelTag": "Tag:"
 }

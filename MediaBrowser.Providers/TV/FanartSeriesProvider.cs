@@ -295,18 +295,33 @@ namespace MediaBrowser.Providers.TV
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using (var response = await _httpClient.Get(new HttpRequestOptions
+            try
             {
-                Url = url,
-                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
-                CancellationToken = cancellationToken
-
-            }).ConfigureAwait(false))
-            {
-                using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var response = await _httpClient.Get(new HttpRequestOptions
                 {
-                    await response.CopyToAsync(fileStream).ConfigureAwait(false);
+                    Url = url,
+                    ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
+                    CancellationToken = cancellationToken
+
+                }).ConfigureAwait(false))
+                {
+                    using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    {
+                        await response.CopyToAsync(fileStream).ConfigureAwait(false);
+                    }
                 }
+            }
+            catch (HttpException exception)
+            {
+                if (exception.StatusCode.HasValue && exception.StatusCode.Value == HttpStatusCode.NotFound)
+                {
+                    // If the user has automatic updates enabled, save a dummy object to prevent repeated download attempts
+                    _json.SerializeToFile(new RootObject(), path);
+
+                    return;
+                }
+
+                throw;
             }
         }
 
