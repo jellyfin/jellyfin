@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Mac
 {
 	class MainClass
 	{
-		private static ApplicationHost _appHost;
+		internal static ApplicationHost AppHost;
 
 		private static ILogger _logger;
 
@@ -54,13 +54,6 @@ namespace MediaBrowser.Server.Mac
 			StartApplication(appPaths, logManager, options);
 			NSApplication.Init ();
 			NSApplication.Main (args);
-		}
-
-		public static void AddDependencies(MenuBarIcon appController){
-			appController.AppHost = _appHost;
-			appController.Logger = _logger;
-			appController.ConfigurationManager = _appHost.ServerConfigurationManager;
-			appController.Localization = _appHost.LocalizationManager;
 		}
 
 		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
@@ -96,10 +89,10 @@ namespace MediaBrowser.Server.Mac
 
 			var nativeApp = new NativeApp();
 
-			_appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", false, nativeApp);
+			AppHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", false, nativeApp);
 
 			if (options.ContainsOption("-v")) {
-				Console.WriteLine (_appHost.ApplicationVersion.ToString());
+				Console.WriteLine (AppHost.ApplicationVersion.ToString());
 				return;
 			}
 
@@ -112,9 +105,14 @@ namespace MediaBrowser.Server.Mac
 		{
 			var initProgress = new Progress<double>();
 
-			await _appHost.Init (initProgress).ConfigureAwait (false);
+			await AppHost.Init (initProgress).ConfigureAwait (false);
 
-			//await _appHost.RunStartupTasks ().ConfigureAwait (false);
+			await AppHost.RunStartupTasks ().ConfigureAwait (false);
+
+			if (MenuBarIcon.Instance != null) 
+			{
+				MenuBarIcon.Instance.Localize ();
+			}
 		}
 
 		/// <summary>
@@ -138,7 +136,7 @@ namespace MediaBrowser.Server.Mac
 		private static void ShutdownApp()
 		{
 			_logger.Info ("Calling ApplicationHost.Dispose");
-			_appHost.Dispose ();
+			AppHost.Dispose ();
 
 			_logger.Info("AppController.Terminate");
 			MenuBarIcon.Instance.Terminate ();
@@ -153,7 +151,7 @@ namespace MediaBrowser.Server.Mac
 		{
 			var exception = (Exception)e.ExceptionObject;
 
-			new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
+			new UnhandledExceptionWriter(AppHost.ServerConfigurationManager.ApplicationPaths, _logger, AppHost.LogManager).Log(exception);
 
 			if (!Debugger.IsAttached)
 			{
