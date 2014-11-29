@@ -4,7 +4,7 @@ namespace MediaBrowser.Model.Drawing
     /// <summary>
     /// Enum ImageOutputFormat
     /// </summary>
-    public enum ImageOutputFormat
+    public enum ImageFormat
     {
         /// <summary>
         /// The BMP

@@ -40,7 +40,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 
                 if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || args.ContainsFileSystemEntryByName("collection.xml"))
                 {
-                    return new BoxSet { Path = args.Path };
+                    return new BoxSet
+                    {
+                        Path = args.Path,
+                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                    };
                 }
             }
 

@@ -121,6 +121,7 @@
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
+    <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\ImageHeader.cs" />
     <Compile Include="Drawing\PercentPlayedDrawer.cs" />
     <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />

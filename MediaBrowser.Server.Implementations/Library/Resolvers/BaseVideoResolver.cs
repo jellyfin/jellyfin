@@ -1,10 +1,9 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.Video;
 using System;
+using System.IO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -29,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         /// <returns>`0.</returns>
         protected override T Resolve(ItemResolveArgs args)
         {
-            return ResolveVideo<T>(args);
+            return ResolveVideo<T>(args, true);
         }
 
         /// <summary>
@@ -37,8 +36,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         /// </summary>
         /// <typeparam name="TVideoType">The type of the T video type.</typeparam>
         /// <param name="args">The args.</param>
+        /// <param name="parseName">if set to <c>true</c> [parse name].</param>
         /// <returns>``0.</returns>
-        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args)
+        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
             // If the path is a file check for a matching extensions
@@ -69,9 +69,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                         IsInMixedFolder = true,
                         IsPlaceHolder = videoInfo.IsStub,
                         IsShortcut = isShortcut,
-                        Name = videoInfo.Name,
                         ProductionYear = videoInfo.Year
                     };
+
+                    if (parseName)
+                    {
+                        video.Name = videoInfo.Name;
+                    }
+                    else
+                    {
+                        video.Name = Path.GetFileNameWithoutExtension(path);
+                    }
 
                     if (videoInfo.IsStub)
                     {
@@ -86,6 +94,38 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                         else if (string.Equals(videoInfo.StubType, "bluray", StringComparison.OrdinalIgnoreCase))
                         {
                             video.VideoType = VideoType.BluRay;
+                        }
+                    }
+
+                    if (videoInfo.Is3D)
+                    {
+                        if (string.Equals(videoInfo.Format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "ftab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "htab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "sbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "tab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                         }
                     }
 

@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Drawing;
-using System.IO;
+﻿using System.IO;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.LiveTv
 {

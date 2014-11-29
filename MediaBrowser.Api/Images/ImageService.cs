@@ -567,7 +567,7 @@ namespace MediaBrowser.Api.Images
         private async Task<object> GetImageResult(IHasImages item,
             ImageRequest request,
             ItemImageInfo image,
-            ImageOutputFormat format,
+            ImageFormat format,
             List<IImageEnhancer> enhancers,
             string contentType,
             TimeSpan? cacheDuration,
@@ -612,11 +612,11 @@ namespace MediaBrowser.Api.Images
             });
         }
 
-        private ImageOutputFormat GetOutputFormat(ImageRequest request, ItemImageInfo image, List<IImageEnhancer> enhancers)
+        private ImageFormat GetOutputFormat(ImageRequest request, ItemImageInfo image, List<IImageEnhancer> enhancers)
         {
             if (!string.IsNullOrWhiteSpace(request.Format))
             {
-                ImageOutputFormat format;
+                ImageFormat format;
                 if (Enum.TryParse(request.Format, true, out format))
                 {
                     return format;
@@ -627,28 +627,28 @@ namespace MediaBrowser.Api.Images
 
             var clientFormats = GetClientSupportedFormats();
 
-            if (serverFormats.Contains(ImageOutputFormat.Webp) &&
-                clientFormats.Contains(ImageOutputFormat.Webp))
+            if (serverFormats.Contains(ImageFormat.Webp) &&
+                clientFormats.Contains(ImageFormat.Webp))
             {
-                return ImageOutputFormat.Webp;
+                return ImageFormat.Webp;
             }
 
             if (enhancers.Count > 0)
             {
-                return ImageOutputFormat.Png;
+                return ImageFormat.Png;
             }
 
             if (string.Equals(Path.GetExtension(image.Path), ".jpg", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(Path.GetExtension(image.Path), ".jpeg", StringComparison.OrdinalIgnoreCase))
             {
-                return ImageOutputFormat.Jpg;
+                return ImageFormat.Jpg;
             }
 
             // We can't predict if there will be transparency or not, so play it safe
-            return ImageOutputFormat.Png;
+            return ImageFormat.Png;
         }
 
-        private ImageOutputFormat[] GetClientSupportedFormats()
+        private ImageFormat[] GetClientSupportedFormats()
         {
             if ((Request.AcceptTypes ?? new string[] { }).Contains("image/webp", StringComparer.OrdinalIgnoreCase))
             {
@@ -657,32 +657,32 @@ namespace MediaBrowser.Api.Images
                 // Not displaying properly on iOS
                 if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    return new[] { ImageOutputFormat.Webp, ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+                    return new[] { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
                 }
             }
 
-            return new[] { ImageOutputFormat.Jpg, ImageOutputFormat.Png };
+            return new[] { ImageFormat.Jpg, ImageFormat.Png };
         }
 
-        private string GetMimeType(ImageOutputFormat format, string path)
+        private string GetMimeType(ImageFormat format, string path)
         {
-            if (format == ImageOutputFormat.Bmp)
+            if (format == ImageFormat.Bmp)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.bmp");
             }
-            if (format == ImageOutputFormat.Gif)
+            if (format == ImageFormat.Gif)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.gif");
             }
-            if (format == ImageOutputFormat.Jpg)
+            if (format == ImageFormat.Jpg)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.jpg");
             }
-            if (format == ImageOutputFormat.Png)
+            if (format == ImageFormat.Png)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.png");
             }
-            if (format == ImageOutputFormat.Webp)
+            if (format == ImageFormat.Webp)
             {
                 return Common.Net.MimeTypes.GetMimeType("i.webp");
             }

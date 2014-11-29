@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace MediaBrowser.Controller.Drawing
+namespace MediaBrowser.Server.Implementations.Drawing
 {
     /// <summary>
     /// Class ImageExtensions
