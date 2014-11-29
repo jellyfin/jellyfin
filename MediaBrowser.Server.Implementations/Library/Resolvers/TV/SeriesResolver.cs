@@ -81,7 +81,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if (IsSeriesFolder(args.Path, isTvShowsFolder, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager))
                 {
-                    return new Series();
+                    return new Series
+                    {
+                        Path = args.Path,
+                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                    };
                 }
             }
 

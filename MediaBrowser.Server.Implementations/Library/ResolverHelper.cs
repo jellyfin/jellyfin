@@ -56,14 +56,29 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Ensures the name.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="args">The arguments.</param>
         private static void EnsureName(BaseItem item, ItemResolveArgs args)
         {
             // If the subclass didn't supply a name, add it here
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
                 //we use our resolve args name here to get the name of the containg folder, not actual video file
-                item.Name = GetMbName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                item.Name = GetDisplayName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
+        }
+
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
+        /// <returns>System.String.</returns>
+        private static string GetDisplayName(string path, bool isDirectory)
+        {
+            //first just get the file or directory name
+            var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
+
+            return fn;
         }
 
         /// <summary>
@@ -71,28 +86,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private static readonly Regex MbNameRegex = new Regex(@"(\[.*?\])", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Strip out attribute items and return just the name we will use for items
-        /// </summary>
-        /// <param name="path">Assumed to be a file or directory path</param>
-        /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
-        /// <returns>The cleaned name</returns>
-        private static string GetMbName(string path, bool isDirectory)
-        {
-            //first just get the file or directory name
-            var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
-
-            //now - strip out anything inside brackets
-            fn = StripBrackets(fn);
-
-            return fn;
-        }
-
-        private static string StripBrackets(string inputString)
+        internal static string StripBrackets(string inputString)
         {
             var output = MbNameRegex.Replace(inputString, string.Empty).Trim();
             return Regex.Replace(output, @"\s+", " ");
         }
-
     }
 }

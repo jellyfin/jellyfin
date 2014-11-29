@@ -191,7 +191,7 @@
     <Compile Include="Dlna\TranscodingProfile.cs" />
     <Compile Include="Dlna\VideoOptions.cs" />
     <Compile Include="Dlna\XmlAttribute.cs" />
-    <Compile Include="Drawing\ImageOutputFormat.cs" />
+    <Compile Include="Drawing\ImageFormat.cs" />
     <Compile Include="Drawing\ImageSize.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
     <Compile Include="Dto\ChapterInfoDto.cs" />

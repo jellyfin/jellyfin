@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 

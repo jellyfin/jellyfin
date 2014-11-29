@@ -8,13 +8,12 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.Video;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Naming.Audio;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.Video;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -116,14 +115,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Find movies that are mixed in the same folder
             if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideo<Trailer>(args);
+                return ResolveVideo<Trailer>(args, true);
             }
 
             Video item = null;
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                item = ResolveVideo<MusicVideo>(args);
+                item = ResolveVideo<MusicVideo>(args, true);
             }
 
             // To find a movie file, the collection type must be movies or boxsets
@@ -131,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
-                item = ResolveVideo<Movie>(args);
+                item = ResolveVideo<Movie>(args, true);
             }
 
             if (item != null)
@@ -180,8 +179,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="fileSystemEntries">The file system entries.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
+        /// <param name="supportsMultipleSources">if set to <c>true</c> [supports multiple sources].</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, List<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources, string collectionType)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources, string collectionType)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -231,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     CollectionType = collectionType
                 };
 
-                var item = ResolveVideo<T>(childArgs);
+                var item = ResolveVideo<T>(childArgs, true);
 
                 if (item != null)
                 {

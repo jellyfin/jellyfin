@@ -73,7 +73,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the format.
         /// </summary>
         /// <value>The format.</value>
-        public ImageOutputFormat? Format { get; set; }
+        public ImageFormat? Format { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [add played indicator].

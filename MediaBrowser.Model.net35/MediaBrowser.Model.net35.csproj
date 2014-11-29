@@ -369,11 +369,11 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageFormat.cs">
+      <Link>Drawing\ImageFormat.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOrientation.cs">
       <Link>Drawing\ImageOrientation.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
-      <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageSize.cs">
       <Link>Drawing\ImageSize.cs</Link>

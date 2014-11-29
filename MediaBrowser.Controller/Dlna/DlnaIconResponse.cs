@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Controller.Drawing;
-using System;
+﻿using System;
 using System.IO;
+using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Dlna
 {
