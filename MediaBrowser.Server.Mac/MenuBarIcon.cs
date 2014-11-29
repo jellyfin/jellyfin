@@ -21,22 +21,40 @@ namespace MediaBrowser.Server.Mac
 
 		public static MenuBarIcon Instance;
 
-		public MenuBarIcon ()
+		public MenuBarIcon (ILogger logger)
 		{
 			Instance = this;
-			//MainClass.AddDependencies (this);
+			Logger = logger;
 		}
 
 		public void ShowIcon() {
 
-			NSApplication.SharedApplication.BeginInvokeOnMainThread (ShowIconInternal);
+			NSApplication.SharedApplication.BeginInvokeOnMainThread (CreateMenus);
 		}
 
-		private void ShowIconInternal() {
+		private void CreateMenus() {
+
+			CreateNsMenu ();
+		}
+
+		public void Localize() 
+		{
+			NSApplication.SharedApplication.BeginInvokeOnMainThread (() => {
+
+				var configManager = MainClass.AppHost.ServerConfigurationManager;
+
+				configManager.ConfigurationUpdated -= Instance_ConfigurationUpdated;
+				LocalizeText ();
+				configManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
+			});
+		}
+
+		private NSStatusItem statusItem;
+		private void CreateNsMenu() {
 
 			var menu = new NSMenu ();
 
-			var statusItem = NSStatusBar.SystemStatusBar.CreateStatusItem(30);
+			statusItem = NSStatusBar.SystemStatusBar.CreateStatusItem(30);
 			statusItem.Menu = menu;
 			statusItem.Image = NSImage.ImageNamed("statusicon");
 			statusItem.HighlightMode = true;
@@ -78,22 +96,13 @@ namespace MediaBrowser.Server.Mac
 				Quit (NSApplication.SharedApplication);
 			});
 			menu.AddItem (quitMenuItem);
-
-			NSApplication.SharedApplication.MainMenu = menu;
-
-			//ConfigurationManager.ConfigurationUpdated -= Instance_ConfigurationUpdated;
-			//LocalizeText ();
-			//ConfigurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 		}
 
-		public IServerApplicationHost AppHost{ get; set;}
-		public IServerConfigurationManager ConfigurationManager { get; set;}
-		public ILogger Logger{ get; set;}
-		public ILocalizationManager Localization { get; set;}
+		private ILogger Logger{ get; set;}
 
 		private void Quit(NSObject sender)
 		{
-			AppHost.Shutdown();
+			MainClass.AppHost.Shutdown();
 		}
 
 		private void Community(NSObject sender)
@@ -103,12 +112,12 @@ namespace MediaBrowser.Server.Mac
 
 		private void Configure(NSObject sender)
 		{
-			BrowserLauncher.OpenDashboard(AppHost, Logger);
+			BrowserLauncher.OpenDashboard(MainClass.AppHost, Logger);
 		}
 
 		private void Browse(NSObject sender)
 		{
-			BrowserLauncher.OpenWebClient(AppHost, Logger);
+			BrowserLauncher.OpenWebClient(MainClass.AppHost, Logger);
 		}
 
 		private void Github(NSObject sender)
@@ -118,7 +127,7 @@ namespace MediaBrowser.Server.Mac
 
 		private void ApiDocs(NSObject sender)
 		{
-			BrowserLauncher.OpenSwagger(AppHost, Logger);
+			BrowserLauncher.OpenSwagger(MainClass.AppHost, Logger);
 		}
 
 		public void Terminate() 
@@ -134,7 +143,9 @@ namespace MediaBrowser.Server.Mac
 		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
 		void Instance_ConfigurationUpdated(object sender, EventArgs e)
 		{
-			if (!string.Equals(ConfigurationManager.Configuration.UICulture, _uiCulture,
+			var configManager = MainClass.AppHost.ServerConfigurationManager;
+
+			if (!string.Equals(configManager.Configuration.UICulture, _uiCulture,
 				StringComparison.OrdinalIgnoreCase))
 			{
 				LocalizeText();
@@ -143,20 +154,24 @@ namespace MediaBrowser.Server.Mac
 
 		private void LocalizeText()
 		{
-			_uiCulture = ConfigurationManager.Configuration.UICulture;
+			var configManager = MainClass.AppHost.ServerConfigurationManager;
+
+			_uiCulture = configManager.Configuration.UICulture;
 
 			NSApplication.SharedApplication.BeginInvokeOnMainThread (LocalizeInternal);
 		}
 
 		private void LocalizeInternal() {
 
-			quitMenuItem.Title = Localization.GetLocalizedString("LabelExit");
-			communityMenuItem.Title = Localization.GetLocalizedString("LabelVisitCommunity");
-			githubMenuItem.Title = Localization.GetLocalizedString("LabelGithub");
-			apiMenuItem.Title = Localization.GetLocalizedString("LabelApiDocumentation");
-			developerMenuItem.Title = Localization.GetLocalizedString("LabelDeveloperResources");
-			browseMenuItem.Title = Localization.GetLocalizedString("LabelBrowseLibrary");
-			configureMenuItem.Title = Localization.GetLocalizedString("LabelConfigureMediaBrowser");
+			var localization = MainClass.AppHost.LocalizationManager;
+
+			quitMenuItem.Title = localization.GetLocalizedString("LabelExit");
+			communityMenuItem.Title = localization.GetLocalizedString("LabelVisitCommunity");
+			githubMenuItem.Title = localization.GetLocalizedString("LabelGithub");
+			apiMenuItem.Title = localization.GetLocalizedString("LabelApiDocumentation");
+			developerMenuItem.Title = localization.GetLocalizedString("LabelDeveloperResources");
+			browseMenuItem.Title = localization.GetLocalizedString("LabelBrowseLibrary");
+			configureMenuItem.Title = localization.GetLocalizedString("LabelConfigureMediaBrowser");
 		}
 	}
 }

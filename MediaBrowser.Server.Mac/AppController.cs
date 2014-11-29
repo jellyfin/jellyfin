@@ -14,7 +14,7 @@ namespace MediaBrowser.Server.Mac
 	{
 		public override void AwakeFromNib()
 		{
-
+			//new MenuBarIcon ().ShowIcon ();
 		}
 	}
 }

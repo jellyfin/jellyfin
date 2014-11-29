@@ -12,6 +12,7 @@
     <ApplicationIcon>..\MediaBrowser.WebDashboard\dashboard-ui\css\images\favicon.ico</ApplicationIcon>
     <ReleaseVersion>
     </ReleaseVersion>
+    <StartupObject>MediaBrowser.Server.Mac.MainClass</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,7 +32,6 @@
     <PackageSigningKey>Developer ID Installer</PackageSigningKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -254,6 +254,8 @@
     <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
       <Link>Resources\swagger-ui\lib\shred\content.js</Link>
     </BundleResource>
+    <BundleResource Include="Resources\appicon.icns" />
+    <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\.DS_Store">
       <Link>Resources\dashboard-ui\.DS_Store</Link>
     </BundleResource>
@@ -2960,7 +2962,5 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js">
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js</Link>
     </BundleResource>
-    <BundleResource Include="Resources\appicon.icns" />
-    <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
   </ItemGroup>
 </Project>
