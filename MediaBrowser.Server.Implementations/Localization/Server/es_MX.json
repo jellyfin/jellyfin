@@ -1272,5 +1272,8 @@
     "HeaderPasswordReset": "Restablecer Contrase\u00f1a",
     "HeaderParentalRatings": "Clasificaci\u00f3n Parental",
     "HeaderVideoTypes": "Tipos de Video",
-    "HeaderYears": "A\u00f1os"
+    "HeaderYears": "A\u00f1os",
+    "HeaderAddTag": "Add Tag",
+    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelTag": "Tag:"
 }

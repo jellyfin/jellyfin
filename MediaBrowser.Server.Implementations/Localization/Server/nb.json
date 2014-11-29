@@ -1263,14 +1263,17 @@
     "LabelSelectLastestItemsFolders": "Inkluder media fra f\u00f8lgende avsnitt i de siste elementene",
     "HeaderShareMediaFolders": "Del media mapper",
     "MessageGuestSharingPermissionsHelp": "De fleste funksjonene er i utgangspunktet utilgjengelig for gjester, men kan aktiveres ved behov.",
-    "HeaderInvitations": "Invitations",
+    "HeaderInvitations": "Invitasjoner",
     "LabelForgotPasswordUsernameHelp": "Enter your username, if you remember it.",
-    "HeaderForgotPassword": "Forgot Password",
-    "TitleForgotPassword": "Forgot Password",
-    "TitlePasswordReset": "Password Reset",
+    "HeaderForgotPassword": "Glemt passord",
+    "TitleForgotPassword": "Glemt passord",
+    "TitlePasswordReset": "Resett passord",
     "LabelPasswordRecoveryPinCode": "Pin code:",
-    "HeaderPasswordReset": "Password Reset",
+    "HeaderPasswordReset": "Resett passord",
     "HeaderParentalRatings": "Parental Ratings",
     "HeaderVideoTypes": "Video Types",
-    "HeaderYears": "Years"
+    "HeaderYears": "Years",
+    "HeaderAddTag": "Add Tag",
+    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelTag": "Tag:"
 }

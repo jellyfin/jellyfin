@@ -25,8 +25,23 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _logger.Info("FFMpeg: {0}", info.EncoderPath);
             _logger.Info("FFProbe: {0}", info.ProbePath);
 
-            var fileInfo = new FileInfo(info.EncoderPath);
-            var cachePath = Path.Combine(_appPaths.CachePath, "1" + fileInfo.Length.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N"));
+            string cacheKey;
+
+            try
+            {
+                cacheKey = new FileInfo(info.EncoderPath).Length.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
+            }
+            catch (IOException)
+            {
+                // This could happen if ffmpeg is coming from a Path variable and we don't have the full path
+                cacheKey = Guid.NewGuid().ToString("N");
+            }
+            catch
+            {
+                cacheKey = Guid.NewGuid().ToString("N");
+            }
+
+            var cachePath = Path.Combine(_appPaths.CachePath, "1" + cacheKey);
 
             ValidateCodecs(info.EncoderPath, cachePath);
         }

@@ -156,6 +156,7 @@ h1 a:hover {
 .largePanelModalOpen.ui-panel-dismiss-position-right {
     right: 250px !important;
 }
+
 .largePanelModalOpen.ui-panel-dismiss-position-left {
     left: 250px !important;
 }
@@ -407,8 +408,12 @@ h1 .imageLink {
 }
 
 .appLinks a {
-    margin: 0 2px;
+    text-decoration: none !important;
 }
+
+    .appLinks a + a {
+        margin-left: 5px;
+    }
 
 .appLinks img {
     height: 32px;

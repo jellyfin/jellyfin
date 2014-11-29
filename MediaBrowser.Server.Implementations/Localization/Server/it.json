@@ -1272,5 +1272,8 @@
     "HeaderPasswordReset": "Password Reset",
     "HeaderParentalRatings": "Valutazioni genitori",
     "HeaderVideoTypes": "Tipi Video",
-    "HeaderYears": "Anni"
+    "HeaderYears": "Anni",
+    "HeaderAddTag": "Add Tag",
+    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelTag": "Tag:"
 }

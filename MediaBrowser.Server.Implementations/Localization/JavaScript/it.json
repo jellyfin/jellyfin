@@ -610,7 +610,7 @@
     "MessageInvitationSentToUser": "Una e-mail \u00e8 stata inviata a {0}, invitandoli ad accettare l'invito di condivisione.",
     "MessageInvitationSentToNewUser": "Una e-mail \u00e8 stata inviata a {0} invitandoli a firmare con Media Browser.",
     "HeaderConnectionFailure": "Errore di connessione",
-    "MessageUnableToConnectToServer": "Non siamo in grado di connettersi al selezionata in questo momento. Si prega di riprovare pi\u00f9 tardi.",
+    "MessageUnableToConnectToServer": "We're unable to connect to the selected server right now. Please try again later.",
     "ButtonSelectServer": "Selezionare il server",
     "MessagePluginConfigurationRequiresLocalAccess": "Per configurare questo plugin si prega di accedere al proprio server locale direttamente.",
     "MessageLoggedOutParentalControl": "L'accesso \u00e8 attualmente limitato. Si prega di riprovare pi\u00f9 tardi.",

@@ -1272,5 +1272,8 @@
     "HeaderPasswordReset": "Wachtwoord resetten",
     "HeaderParentalRatings": "Ouderlijke toezicht",
     "HeaderVideoTypes": "Video types",
-    "HeaderYears": "Jaren"
+    "HeaderYears": "Jaren",
+    "HeaderAddTag": "Add Tag",
+    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelTag": "Tag:"
 }

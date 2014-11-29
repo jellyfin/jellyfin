@@ -1073,6 +1073,11 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
+            if (!IsVisibleViaTags(user))
+            {
+                return false;
+            }
+
             var maxAllowedRating = user.Configuration.MaxParentalRating;
 
             if (maxAllowedRating == null)
@@ -1101,6 +1106,21 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return value.Value <= maxAllowedRating.Value;
+        }
+
+        private bool IsVisibleViaTags(User user)
+        {
+            var hasTags = this as IHasTags;
+
+            if (hasTags != null)
+            {
+                if (user.Configuration.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

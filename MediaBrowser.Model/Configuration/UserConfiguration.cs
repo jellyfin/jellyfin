@@ -86,7 +86,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableUserPreferenceAccess { get; set; }
 
         public string[] LatestItemsExcludes { get; set; }
-        
+        public string[] BlockedTags { get; set; }
+   
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -102,6 +103,7 @@ namespace MediaBrowser.Model.Configuration
             OrderedViews = new string[] { };
             BlockedMediaFolders = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
+            BlockedTags = new string[] { };
             BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 

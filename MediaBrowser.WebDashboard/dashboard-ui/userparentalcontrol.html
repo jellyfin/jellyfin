@@ -30,6 +30,17 @@
                     </div>
                     <br />
 
+                    <div>
+                        <div>
+                            <div class="ui-controlgroup-label" style="display:inline-block;">${LabelBlockItemsWithTags}</div>
+                            <button type="button" class="btnAddTag" data-inline="true" data-mini="true" data-iconpos="notext" data-icon="plus" style="vertical-align:middle;margin: -5px 0 0 1em;">${ButtonAdd}</button>
+                        </div>
+                        <div class="blockedTags" style="margin-top:.5em;">
+
+                        </div>
+                    </div>
+                    <br />
+
                     <div class="accessScheduleSection" style="display:none;">
                         <div data-role="collapsible">
                             <h2>${HeaderAccessSchedule}</h2>
@@ -55,9 +66,33 @@
 
                 </form>
 
-                <div data-role="popup" id="popupSchedule" data-theme="a">
+                <div data-role="popup" id="popupTag" class="popup" data-theme="a">
 
-                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>
+                    <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
+                        <h3 style="margin: .5em;">${HeaderAddTag}</h3>
+                    </div>
+
+                    <div style="padding:10px 5px 0;">
+
+                        <form class="tagForm" style="min-width:210px;">
+
+                            <ul data-role="listview" class="ulForm" style="margin-bottom:10px!important;">
+                                <li>
+                                    <label for="txtTag">${LabelTag}</label>
+                                    <input id="txtTag" data-mini="true" type="text" required="required" />
+                                </li>
+                                <li>
+                                    <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
+                                    <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
+                                </li>
+                            </ul>
+                        </form>
+
+                    </div>
+
+                </div>
+
+                <div data-role="popup" id="popupSchedule" class="popup" data-theme="a">
 
                     <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
                         <h3 style="margin: .5em;">${HeaderSchedule}</h3>
@@ -93,7 +128,8 @@
                                 </li>
                                 <li>
                                     <input type="hidden" id="fldScheduleIndex" />
-                                    <button type="submit" data-icon="plus">${ButtonAdd}</button>
+                                    <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
+                                    <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
                                 </li>
                             </ul>
                         </form>
@@ -104,6 +140,7 @@
             </div>
         </div>
         <script type="text/javascript">
+            $('.tagForm').off('submit', UserParentalControlPage.onTagFormSubmit).on('submit', UserParentalControlPage.onTagFormSubmit);
             $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
             $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
         </script>

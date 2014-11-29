@@ -38,7 +38,7 @@
 
         var url = 'Providers/Subtitles/Subtitles/' + id;
 
-        $.get(ApiClient.getUrl(url)).done(function (result) {
+        ApiClient.get(ApiClient.getUrl(url)).done(function (result) {
 
             $('.subtitleContent', page).html(result);
 
