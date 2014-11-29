@@ -235,18 +235,19 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
                 foreach (var i in childrenResult.Items)
                 {
-                    var displayStubType = GetDisplayStubType(i, serverItem.Item);
+                    var childItem = i.Item;
+                    var displayStubType = GetDisplayStubType(childItem, serverItem.Item);
 
-                    if (i.IsFolder || displayStubType.HasValue)
+                    if (childItem.IsFolder || displayStubType.HasValue)
                     {
-                        var childCount = (await GetUserItems(i, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
+                        var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
                             .TotalRecordCount;
 
-                        result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, i, displayStubType, item, childCount, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, childItem, displayStubType, item, childCount, filter));
                     }
                     else
                     {
-                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, item, serverItem.StubType, deviceId, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, childItem, item, serverItem.StubType, deviceId, filter));
                     }
                 }
             }
@@ -271,6 +272,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 {
                     if (movie.LocalTrailerIds.Count > 0 ||
                         movie.SpecialFeatureIds.Count > 0)
+                    {
+                        return StubType.Folder;
+                    }
+
+                    if (movie.People.Count > 0)
                     {
                         return StubType.Folder;
                     }
@@ -408,7 +414,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }).ConfigureAwait(false);
         }
 
-        private async Task<QueryResult<BaseItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
+        private async Task<QueryResult<ServerItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             if (stubType.HasValue)
             {
@@ -428,7 +434,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            return await folder.GetItems(new InternalItemsQuery
+            var queryResult = await folder.GetItems(new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,
@@ -438,9 +444,15 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 Filter = FilterUnsupportedContent
 
             }).ConfigureAwait(false);
+
+            return new QueryResult<ServerItem>
+            {
+                TotalRecordCount = queryResult.TotalRecordCount,
+                Items = queryResult.Items.Select(i => new ServerItem { Item = i, StubType = null }).ToArray()
+            };
         }
 
-        private Task<QueryResult<BaseItem>> GetMovieItems(Movie item)
+        private Task<QueryResult<ServerItem>> GetMovieItems(Movie item)
         {
             var list = new List<BaseItem>();
 
@@ -448,12 +460,14 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             list.AddRange(item.LocalTrailerIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
             list.AddRange(item.SpecialFeatureIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
-            list.AddRange(item.ThemeVideoIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
 
-            return Task.FromResult(new QueryResult<BaseItem>
+            var serverItems = list.Select(i => new ServerItem { Item = i, StubType = null })
+                .ToList();
+
+            return Task.FromResult(new QueryResult<ServerItem>
             {
-                Items = list.ToArray(),
-                TotalRecordCount = list.Count
+                Items = serverItems.ToArray(),
+                TotalRecordCount = serverItems.Count
             });
         }
 
