@@ -16,6 +16,7 @@ namespace MediaBrowser.Api
     /// Class GetPackage
     /// </summary>
     [Route("/Packages/{Name}", "GET", Summary = "Gets a package, by name or assembly guid")]
+    [Authenticated]
     public class GetPackage : IReturn<PackageInfo>
     {
         /// <summary>
@@ -37,6 +38,7 @@ namespace MediaBrowser.Api
     /// Class GetPackages
     /// </summary>
     [Route("/Packages", "GET", Summary = "Gets available packages")]
+    [Authenticated]
     public class GetPackages : IReturn<List<PackageInfo>>
     {
         /// <summary>
@@ -60,6 +62,7 @@ namespace MediaBrowser.Api
     /// Class GetPackageVersionUpdates
     /// </summary>
     [Route("/Packages/Updates", "GET", Summary = "Gets available package updates for currently installed packages")]
+    [Authenticated(Roles = "Admin")]
     public class GetPackageVersionUpdates : IReturn<List<PackageVersionInfo>>
     {
         /// <summary>
@@ -74,6 +77,7 @@ namespace MediaBrowser.Api
     /// Class InstallPackage
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST", Summary = "Installs a package")]
+    [Authenticated(Roles = "Admin")]
     public class InstallPackage : IReturnVoid
     {
         /// <summary>
@@ -109,6 +113,7 @@ namespace MediaBrowser.Api
     /// Class CancelPackageInstallation
     /// </summary>
     [Route("/Packages/Installing/{Id}", "DELETE", Summary = "Cancels a package installation")]
+    [Authenticated(Roles = "Admin")]
     public class CancelPackageInstallation : IReturnVoid
     {
         /// <summary>
@@ -122,7 +127,6 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class PackageService
     /// </summary>
-    [Authenticated(Roles = "Admin")]
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;
@@ -139,7 +143,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentException">Unsupported PackageType</exception>
         public object Get(GetPackageVersionUpdates request)
         {
             var result = new List<PackageVersionInfo>();
