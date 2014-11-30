@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
@@ -469,13 +470,13 @@ namespace MediaBrowser.Dlna
             return new DescriptionXmlBuilder(profile, serverUuId, "").GetXml();
         }
 
-        public DlnaIconResponse GetIcon(string filename)
+        public ImageStream GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
-            return new DlnaIconResponse
+            return new ImageStream
             {
                 Format = format,
                 Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())

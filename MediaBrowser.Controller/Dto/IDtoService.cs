@@ -22,7 +22,8 @@ namespace MediaBrowser.Controller.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item);
+        /// <param name="fields">The fields.</param>
+        void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item, List<ItemFields> fields);
 
         /// <summary>
         /// Gets the base item dto.
@@ -34,6 +35,16 @@ namespace MediaBrowser.Controller.Dto
         /// <returns>Task{BaseItemDto}.</returns>
         BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
 
+        /// <summary>
+        /// Gets the base item dto.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="owner">The owner.</param>
+        /// <returns>BaseItemDto.</returns>
+        BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null);
+        
         /// <summary>
         /// Gets the chapter information dto.
         /// </summary>
@@ -51,12 +62,13 @@ namespace MediaBrowser.Controller.Dto
         /// <summary>
         /// Gets the item by name dto.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
+        /// <param name="options">The options.</param>
         /// <param name="taggedItems">The tagged items.</param>
         /// <param name="user">The user.</param>
         /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, List<BaseItem> taggedItems, User user = null)
+        BaseItemDto GetItemByNameDto<T>(T item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
             where T : BaseItem, IItemByName;
     }
 }

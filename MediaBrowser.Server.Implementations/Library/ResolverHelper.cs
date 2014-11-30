@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using System;
@@ -20,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
         /// <param name="fileSystem">The file system.</param>
-        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem)
+        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.Path))
@@ -34,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 item.Parent = args.Parent;
             }
 
-            item.Id = item.Path.GetMBId(item.GetType());
+            item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.DisplayMediaType))

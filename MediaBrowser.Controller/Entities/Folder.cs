@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (item.Id == Guid.Empty)
             {
-                item.Id = item.Path.GetMBId(item.GetType());
+                item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
 
             if (ActualChildren.Any(i => i.Id == item.Id))

@@ -17,7 +17,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
@@ -485,10 +484,34 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item != null)
             {
-                ResolverHelper.SetInitialItemValues(item, args, _fileSystem);
+                ResolverHelper.SetInitialItemValues(item, args, _fileSystem, this);
             }
 
             return item;
+        }
+
+        public Guid GetNewItemId(string key, Type type)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentNullException("key");
+            }
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            if (ConfigurationManager.Configuration.EnableLocalizedGuids && key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
+            {
+                // Try to normalize paths located underneath program-data in an attempt to make them more portable
+                key = key.Substring(ConfigurationManager.ApplicationPaths.ProgramDataPath.Length)
+                    .TrimStart(new[] { '/', '\\' })
+                    .Replace("/", "\\");
+            }
+
+            key = type.FullName + key.ToLower();
+
+            return key.GetMD5();
         }
 
         public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
@@ -651,7 +674,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             Directory.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(rootFolderPath.GetMBId(typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -662,7 +685,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     if (folder.Id == Guid.Empty)
                     {
-                        folder.Id = (folder.Path ?? folder.GetType().Name).GetMBId(folder.GetType());
+                        if (string.IsNullOrWhiteSpace(folder.Path))
+                        {
+                            folder.Id = GetNewItemId(folder.GetType().Name, folder.GetType());
+                        }
+                        else
+                        {
+                            folder.Id = GetNewItemId(folder.Path, folder.GetType());
+                        }
                     }
 
                     folder = GetItemById(folder.Id) as BasePluginFolder ?? folder;
@@ -685,7 +715,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 Directory.CreateDirectory(userRootPath);
 
-                _userRootFolder = GetItemById(userRootPath.GetMBId(typeof(UserRootFolder))) as UserRootFolder ??
+                _userRootFolder = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder ??
                                   (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
             }
 
@@ -801,7 +831,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 Path.Combine(path, validFilename) :
                 Path.Combine(path, subFolderPrefix, validFilename);
 
-            var id = fullPath.GetMBId(type);
+            var id = GetNewItemId(fullPath, type);
 
             BaseItem obj;
 
@@ -1513,7 +1543,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             path = Path.Combine(path, _fileSystem.GetValidFilename(type));
 
-            var id = (path + "_namedview_" + name).GetMBId(typeof(UserView));
+            var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
 
             var item = GetItemById(id) as UserView;
 
@@ -1578,7 +1608,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("viewType");
             }
 
-            var id = ("7_namedview_" + name + user.Id.ToString("N") + parentId).GetMBId(typeof(UserView));
+            var id = GetNewItemId("7_namedview_" + name + user.Id.ToString("N") + parentId, typeof(UserView));
 
             var path = BaseItem.GetInternalMetadataPathForId(id);
 

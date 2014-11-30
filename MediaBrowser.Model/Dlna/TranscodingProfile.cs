@@ -29,9 +29,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("transcodeSeekInfo")]
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
-        [XmlAttribute("videoProfile")]
-        public string VideoProfile { get; set; }
-
         [XmlAttribute("context")]
         public EncodingContext Context { get; set; }
 

@@ -236,7 +236,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 foreach (var i in childrenResult.Items)
                 {
                     var childItem = i.Item;
-                    var displayStubType = GetDisplayStubType(childItem, serverItem.Item);
+                    var displayStubType = i.StubType;
 
                     if (childItem.IsFolder || displayStubType.HasValue)
                     {
@@ -261,29 +261,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
-        }
-
-        private StubType? GetDisplayStubType(BaseItem item, BaseItem context)
-        {
-            if (context == null || context.IsFolder)
-            {
-                var movie = item as Movie;
-                if (movie != null)
-                {
-                    if (movie.LocalTrailerIds.Count > 0 ||
-                        movie.SpecialFeatureIds.Count > 0)
-                    {
-                        return StubType.Folder;
-                    }
-
-                    if (movie.People.Count > 0)
-                    {
-                        return StubType.Folder;
-                    }
-                }
-            }
-
-            return null;
         }
 
         private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(Headers sparams, User user, string deviceId)
@@ -418,11 +395,36 @@ namespace MediaBrowser.Dlna.ContentDirectory
         {
             if (stubType.HasValue)
             {
-                var movie = item as Movie;
-
-                if (movie != null)
+                if (stubType.Value == StubType.People)
                 {
-                    return await GetMovieItems(movie).ConfigureAwait(false);
+                    var items = item.People.Select(i =>
+                    {
+                        try
+                        {
+                            return _libraryManager.GetPerson(i.Name);
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+
+                    }).Where(i => i != null).ToArray();
+
+                    var result = new QueryResult<ServerItem>
+                    {
+                        Items = items.Select(i => new ServerItem { Item = i }).ToArray(),
+                        TotalRecordCount = items.Length
+                    };
+
+                    return ApplyPaging(result, startIndex, limit);
+                }
+                if (stubType.Value == StubType.Folder)
+                {
+                    var movie = item as Movie;
+                    if (movie != null)
+                    {
+                        return ApplyPaging(await GetMovieItems(movie).ConfigureAwait(false), startIndex, limit);
+                    }
                 }
             }
 
@@ -445,11 +447,50 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             }).ConfigureAwait(false);
 
+            var serverItems = queryResult
+                .Items
+                .Select(i => new ServerItem
+                {
+                    Item = i,
+                    StubType = GetDisplayStubType(i, item)
+                })
+                .ToArray();
+
             return new QueryResult<ServerItem>
             {
                 TotalRecordCount = queryResult.TotalRecordCount,
-                Items = queryResult.Items.Select(i => new ServerItem { Item = i, StubType = null }).ToArray()
+                Items = serverItems
             };
+        }
+
+        private QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
+        {
+            result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
+
+            return result;
+        }
+
+        private StubType? GetDisplayStubType(BaseItem item, BaseItem context)
+        {
+            if (context == null || context.IsFolder)
+            {
+                var movie = item as Movie;
+                if (movie != null)
+                {
+                    if (movie.LocalTrailerIds.Count > 0 ||
+                        movie.SpecialFeatureIds.Count > 0)
+                    {
+                        return StubType.Folder;
+                    }
+
+                    if (movie.People.Count > 0)
+                    {
+                        return StubType.Folder;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private Task<QueryResult<ServerItem>> GetMovieItems(Movie item)
@@ -463,6 +504,12 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var serverItems = list.Select(i => new ServerItem { Item = i, StubType = null })
                 .ToList();
+
+            serverItems.Add(new ServerItem
+            {
+                Item = item,
+                StubType = StubType.People
+            });
 
             return Task.FromResult(new QueryResult<ServerItem>
             {
@@ -512,6 +559,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 stubType = StubType.Folder;
                 id = id.Split(new[] { '_' }, 2)[1];
             }
+            else if (id.StartsWith("people_", StringComparison.OrdinalIgnoreCase))
+            {
+                stubType = StubType.People;
+                id = id.Split(new[] { '_' }, 2)[1];
+            }
 
             if (Guid.TryParse(id, out itemId))
             {
@@ -538,6 +590,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
     public enum StubType
     {
-        Folder = 0
+        Folder = 0,
+        People = 1
     }
 }

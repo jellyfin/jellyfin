@@ -96,6 +96,8 @@ namespace MediaBrowser.Common.Extensions
         /// <param name="str">The STR.</param>
         /// <param name="type">The type.</param>
         /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">type</exception>
+        [Obsolete("Use LibraryManager.GetNewItemId")]
         public static Guid GetMBId(this string str, Type type)
         {
             if (type == null)

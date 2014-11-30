@@ -1820,7 +1820,11 @@ namespace MediaBrowser.Controller.Entities
                 if (pct > 0)
                 {
                     pct = userData.PlaybackPositionTicks / pct;
-                    dto.PlayedPercentage = 100 * pct;
+
+                    if (pct > 0)
+                    {
+                        dto.PlayedPercentage = 100 * pct;
+                    }
                 }
             }
         }

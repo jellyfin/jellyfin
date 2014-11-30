@@ -542,7 +542,7 @@
     "HeaderRunningTasks": "Running Tasks",
     "HeaderActiveDevices": "Active Devices",
     "HeaderPendingInstallations": "Pending Installations",
-    "HeaerServerInformation": "Server Information",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Restart Now",
     "ButtonRestart": "Restart",
     "ButtonShutdown": "Shutdown",
