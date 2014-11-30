@@ -1575,7 +1575,7 @@
                 }
 
                 if (item.Type != 'TvChannel') {
-                    if (item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
+                    if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
                         return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                     }
                 }

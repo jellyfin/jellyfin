@@ -13,9 +13,11 @@
 
             IncludeItemTypes: "Movie",
             Limit: screenWidth >= 1600 ? 28 : (screenWidth >= 1440 ? 30 : (screenWidth >= 800 ? 28 : 18)),
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount",
             ParentId: parentId,
-            IsPlayed: false
+            IsPlayed: false,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {

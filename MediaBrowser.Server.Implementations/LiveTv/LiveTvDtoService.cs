@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -247,7 +248,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag != null)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
-                _dtoService.AttachPrimaryImageAspectRatio(dto, recording);
+                _dtoService.AttachPrimaryImageAspectRatio(dto, recording, new List<ItemFields>
+                    {
+                        ItemFields.PrimaryImageAspectRatio
+                    });
             }
 
             if (user != null)
@@ -337,7 +341,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
 
-                _dtoService.AttachPrimaryImageAspectRatio(dto, info);
+                _dtoService.AttachPrimaryImageAspectRatio(dto, info, new List<ItemFields>
+                    {
+                        ItemFields.PrimaryImageAspectRatio
+                    });
             }
 
             if (currentProgram != null)
@@ -401,7 +408,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (imageTag != null)
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
-                _dtoService.AttachPrimaryImageAspectRatio(dto, item);
+                _dtoService.AttachPrimaryImageAspectRatio(dto, item, new List<ItemFields>
+                    {
+                        ItemFields.PrimaryImageAspectRatio
+                    });
             }
 
             if (user != null)

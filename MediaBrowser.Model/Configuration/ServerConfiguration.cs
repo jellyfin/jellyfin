@@ -56,6 +56,12 @@ namespace MediaBrowser.Model.Configuration
         public bool SaveLocalMeta { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable localized guids].
+        /// </summary>
+        /// <value><c>true</c> if [enable localized guids]; otherwise, <c>false</c>.</value>
+        public bool EnableLocalizedGuids { get; set; }
+        
+        /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>

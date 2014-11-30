@@ -64,7 +64,7 @@ namespace MediaBrowser.Model.Dto
 
         public float? Metascore { get; set; }
 
-        public bool IsUnidentified { get; set; }
+        public bool? IsUnidentified { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
 
@@ -218,6 +218,12 @@ namespace MediaBrowser.Model.Dto
         public long? RunTimeTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the recursive unplayed item count.
+        /// </summary>
+        /// <value>The recursive unplayed item count.</value>
+        public int? RecursiveUnplayedItemCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the play access.
         /// </summary>
         /// <value>The play access.</value>
@@ -235,13 +241,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
 
-        /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        [Obsolete]
-        public int? RecursiveUnplayedItemCount { get; set; }
-        
         /// <summary>
         /// Gets or sets the season count.
         /// </summary>

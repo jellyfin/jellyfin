@@ -374,7 +374,7 @@ namespace MediaBrowser.Api.UserLibrary
                     item = i.Item1;
                     childCount = i.Item2.Count;
                 }
-
+                
                 var dto = _dtoService.GetBaseItemDto(item, fields, user);
 
                 dto.ChildCount = childCount;

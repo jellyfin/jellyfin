@@ -15,7 +15,9 @@
             Limit: 24,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId,
-            IsPlayed: false
+            IsPlayed: false,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {

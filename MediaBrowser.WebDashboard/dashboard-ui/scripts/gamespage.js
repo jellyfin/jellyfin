@@ -11,7 +11,9 @@
         MediaTypes: "Game",
         Recursive: true,
         Fields: "Genres,Studios,PrimaryImageAspectRatio,SortName",
-        StartIndex: 0
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
     };
 
     function getSavedQueryKey() {

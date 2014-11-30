@@ -13,7 +13,9 @@
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1600 ? 21 : (screenWidth >= 1200 ? 21 : 12)),
             Fields: "PrimaryImageAspectRatio",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -38,7 +40,9 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -70,7 +74,9 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

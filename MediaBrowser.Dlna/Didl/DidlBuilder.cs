@@ -293,8 +293,17 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
 
-        private string GetDisplayName(BaseItem item, BaseItem context)
+        private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
         {
+            if (itemStubType.HasValue && itemStubType.Value == StubType.People)
+            {
+                if (item is Video)
+                {
+                    return _localization.GetLocalizedString("HeaderCastCrew");
+                }
+                return _localization.GetLocalizedString("HeaderPeople");
+            }
+
             var episode = item as Episode;
             var season = context as Season;
 
@@ -491,7 +500,7 @@ namespace MediaBrowser.Dlna.Didl
             // MediaMonkey for example won't display content without a title
             //if (filter.Contains("dc:title"))
             {
-                AddValue(element, "dc", "title", GetDisplayName(item, context), NS_DC);
+                AddValue(element, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
             }
 
             element.AppendChild(CreateObjectClass(element.OwnerDocument, item, itemStubType));

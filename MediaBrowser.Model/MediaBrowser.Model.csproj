@@ -125,6 +125,7 @@
     <Compile Include="Dlna\SubtitleDeliveryMethod.cs" />
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
+    <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
@@ -412,6 +413,7 @@
     <Compile Include="Users\ForgotPasswordAction.cs" />
     <Compile Include="Users\ForgotPasswordResult.cs" />
     <Compile Include="Users\PinRedeemResult.cs" />
+    <Compile Include="Users\UserPolicy.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />
     <None Include="MediaBrowser.Model.snk" />

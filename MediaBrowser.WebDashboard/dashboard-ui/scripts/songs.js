@@ -11,7 +11,9 @@
         Recursive: true,
         Fields: "AudioInfo,ParentId",
         Limit: 200,
-        StartIndex: 0
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
     };
 
     function getSavedQueryKey() {

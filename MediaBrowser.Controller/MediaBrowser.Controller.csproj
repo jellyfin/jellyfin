@@ -105,7 +105,6 @@
     <Compile Include="Devices\IDeviceRepository.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
-    <Compile Include="Dlna\DlnaIconResponse.cs" />
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />
     <Compile Include="Dlna\IConnectionManager.cs" />
     <Compile Include="Dlna\IContentDirectory.cs" />
@@ -191,7 +190,6 @@
     <Compile Include="LiveTv\LiveTvException.cs" />
     <Compile Include="LiveTv\LiveTvServiceStatusInfo.cs" />
     <Compile Include="LiveTv\LiveTvTunerInfo.cs" />
-    <Compile Include="LiveTv\StreamResponseInfo.cs" />
     <Compile Include="LiveTv\LiveTvProgram.cs" />
     <Compile Include="LiveTv\LiveTvVideoRecording.cs" />
     <Compile Include="LiveTv\ProgramInfo.cs" />

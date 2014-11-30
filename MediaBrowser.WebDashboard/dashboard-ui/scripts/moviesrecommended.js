@@ -54,9 +54,11 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 3)),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount",
             CollapseBoxSetItems: false,
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -84,7 +86,9 @@
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
             ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 7)),
-            Fields: "PrimaryImageAspectRatio"
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         });
 
         ApiClient.getJSON(url).done(function (recommendations) {

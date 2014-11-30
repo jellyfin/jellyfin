@@ -414,5 +414,13 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
             VideoType type,
             IEnumerable<FileSystemInfo> files);
+
+        /// <summary>
+        /// Gets the new item identifier.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>Guid.</returns>
+        Guid GetNewItemId(string key, Type type);
     }
 }

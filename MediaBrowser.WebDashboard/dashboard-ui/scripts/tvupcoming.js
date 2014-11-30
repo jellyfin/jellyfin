@@ -8,7 +8,9 @@
 
             Limit: 32,
             Fields: "SeriesInfo,UserData",
-            UserId: Dashboard.getCurrentUserId()
+            UserId: Dashboard.getCurrentUserId(),
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();

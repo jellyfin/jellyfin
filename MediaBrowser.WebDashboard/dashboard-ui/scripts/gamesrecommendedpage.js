@@ -12,7 +12,9 @@
             IncludeItemTypes: "Game",
             Limit: 18,
             Fields: "PrimaryImageAspectRatio",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -37,7 +39,9 @@
             Recursive: true,
             Filters: "IsPlayed",
             Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getItems(userId, options).done(function (result) {

@@ -88,6 +88,11 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
+        private string XApplicationValue
+        {
+            get { return "Media Browser Server/" + _appHost.ApplicationVersion; }
+        }
+
         public ConnectManager(ILogger logger,
             IApplicationPaths appPaths,
             IJsonSerializer json,
@@ -204,9 +209,18 @@ namespace MediaBrowser.Server.Implementations.Connect
                 postData["localAddress"] = localAddress;
             }
 
-            using (var stream = await _httpClient.Post(url, postData, CancellationToken.None).ConfigureAwait(false))
+            var options = new HttpRequestOptions
             {
-                var data = _json.DeserializeFromStream<ServerRegistrationResponse>(stream);
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            options.SetPostData(postData);
+            SetApplicationHeader(options);
+
+            using (var response = await _httpClient.Post(options).ConfigureAwait(false))
+            {
+                var data = _json.DeserializeFromStream<ServerRegistrationResponse>(response.Content);
 
                 _data.ServerId = data.Id;
                 _data.AccessKey = data.AccessKey;
@@ -252,6 +266,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
@@ -398,6 +413,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             var result = new UserLinkResult();
 
@@ -517,6 +533,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
@@ -562,6 +579,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             };
 
             options.SetPostData(postData);
+            SetApplicationHeader(options);
 
             // No need to examine the response
             using (var stream = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
@@ -629,6 +647,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             };
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
@@ -643,6 +662,11 @@ namespace MediaBrowser.Server.Implementations.Connect
                     ImageUrl = response.ImageUrl
                 };
             }
+        }
+
+        private void SetApplicationHeader(HttpRequestOptions options)
+        {
+            options.RequestHeaders.Add("X-Application", XApplicationValue);
         }
 
         private void SetServerAccessToken(HttpRequestOptions options)
@@ -687,6 +711,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             };
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             try
             {
@@ -974,6 +999,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             try
             {
@@ -1006,20 +1032,22 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("passwordMd5");
             }
-            
-            var request = new HttpRequestOptions
+
+            var options = new HttpRequestOptions
             {
                 Url = GetConnectUrl("user/authenticate")
             };
 
-            request.SetPostData(new Dictionary<string, string>
+            options.SetPostData(new Dictionary<string, string>
                 {
                     {"userName",username},
                     {"password",passwordMd5}
                 });
 
+            SetApplicationHeader(options);
+            
             // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(request, "POST").ConfigureAwait(false)).Content)
+            using (var response = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
             {
             }
         }
@@ -1062,6 +1090,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             options.SetPostData(postData);
 
             SetServerAccessToken(options);
+            SetApplicationHeader(options);
 
             try
             {

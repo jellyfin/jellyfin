@@ -7,7 +7,9 @@
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -40,7 +42,9 @@
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -99,7 +103,9 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

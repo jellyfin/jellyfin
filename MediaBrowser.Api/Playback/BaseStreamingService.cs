@@ -2011,11 +2011,6 @@ namespace MediaBrowser.Api.Playback
                 state.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                 state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
-
-                if (state.VideoRequest != null && string.IsNullOrWhiteSpace(state.VideoRequest.Profile))
-                {
-                    state.VideoRequest.Profile = transcodingProfile.VideoProfile;
-                }
             }
         }
 

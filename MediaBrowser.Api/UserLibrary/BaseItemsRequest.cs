@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -9,6 +10,11 @@ namespace MediaBrowser.Api.UserLibrary
 {
     public abstract class BaseItemsRequest : IHasItemFields
     {
+        protected BaseItemsRequest()
+        {
+            EnableImages = true;
+        }
+
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
@@ -116,6 +122,15 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Years { get; set; }
 
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
+
         public string[] GetGenres()
         {
             return (Genres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
@@ -197,6 +212,36 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return val.Split(',');
+        }
+
+        public DtoOptions GetDtoOptions()
+        {
+            var options = new DtoOptions();
+
+            options.Fields = this.GetItemFields().ToList();
+            options.EnableImages = EnableImages;
+
+            if (ImageTypeLimit.HasValue)
+            {
+                options.ImageTypeLimit = ImageTypeLimit.Value;
+            }
+
+            if (string.IsNullOrWhiteSpace(EnableImageTypes))
+            {
+                if (options.EnableImages)
+                {
+                    // Get everything
+                    options.ImageTypes = Enum.GetNames(typeof(ImageType))
+                        .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
+                        .ToList();
+                }
+            }
+            else
+            {
+                options.ImageTypes = (EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
+            }
+
+            return options;
         }
     }
 }

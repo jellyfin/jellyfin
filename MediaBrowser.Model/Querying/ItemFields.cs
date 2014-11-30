@@ -82,9 +82,19 @@ namespace MediaBrowser.Model.Querying
         Keywords,
 
         /// <summary>
+        /// The media source count
+        /// </summary>
+        MediaSourceCount,
+
+        /// <summary>
         /// The media versions
         /// </summary>
         MediaSources,
+
+        /// <summary>
+        /// The metascore
+        /// </summary>
+        Metascore,
 
         /// <summary>
         /// The metadata settings
@@ -100,6 +110,11 @@ namespace MediaBrowser.Model.Querying
         /// The id of the item's parent
         /// </summary>
         ParentId,
+
+        /// <summary>
+        /// The part count
+        /// </summary>
+        PartCount,
 
         /// <summary>
         /// The physical path of the item
@@ -126,6 +141,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         PrimaryImageAspectRatio,
 
+        /// <summary>
+        /// The original primary image aspect ratio
+        /// </summary>
+        OriginalPrimaryImageAspectRatio,
+        
         /// <summary>
         /// The revenue
         /// </summary>
@@ -170,6 +190,11 @@ namespace MediaBrowser.Model.Querying
         /// The tags
         /// </summary>
         Tags,
+
+        /// <summary>
+        /// The vote count
+        /// </summary>
+        VoteCount,
 
         /// <summary>
         /// The TMDB collection name

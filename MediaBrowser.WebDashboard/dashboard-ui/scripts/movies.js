@@ -9,8 +9,10 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName",
-        StartIndex: 0
+        Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified",
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
     };
 
     function getSavedQueryKey() {
