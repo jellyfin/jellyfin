@@ -89,6 +89,38 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                         }
                     }
 
+                    if (videoInfo.Is3D)
+                    {
+                        if (string.Equals(videoInfo.Format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "ftab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "htab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "sbs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals(videoInfo.Format3D, "tab", StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                        }
+                    }
+
                     return video;
                 }
             }
