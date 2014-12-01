@@ -135,7 +135,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 request.Referer = options.Referer;
             }
 
-            request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
+            //request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
 
             return request;
         }

@@ -230,46 +230,6 @@ namespace MediaBrowser.Controller.Library
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Validates the artists.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the music genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the game genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the studios.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
         /// Occurs when [item added].
         /// </summary>
         event EventHandler<ItemChangeEventArgs> ItemAdded;
@@ -422,5 +382,25 @@ namespace MediaBrowser.Controller.Library
         /// <param name="type">The type.</param>
         /// <returns>Guid.</returns>
         Guid GetNewItemId(string key, Type type);
+
+        /// <summary>
+        /// Finds the trailers.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="fileSystemChildren">The file system children.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
+        IEnumerable<Trailer> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+            IDirectoryService directoryService);
+
+        /// <summary>
+        /// Finds the extras.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="fileSystemChildren">The file system children.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns>IEnumerable&lt;Video&gt;.</returns>
+        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+            IDirectoryService directoryService);
     }
 }

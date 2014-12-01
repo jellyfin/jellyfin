@@ -111,7 +111,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddCover(item, element);
+            AddCover(item, null, element);
 
             return element;
         }
@@ -469,7 +469,7 @@ namespace MediaBrowser.Dlna.Didl
 
             AddCommonFields(folder, stubType, null, container, filter);
 
-            AddCover(folder, container);
+            AddCover(folder, stubType, container);
 
             return container;
         }
@@ -750,8 +750,14 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddCover(BaseItem item, XmlElement element)
+        private void AddCover(BaseItem item, StubType? stubType, XmlElement element)
         {
+            if (stubType.HasValue && stubType.Value == StubType.People)
+            {
+                AddEmbeddedImageAsCover("people", element);
+                return;
+            }
+
             var imageInfo = GetImageInfo(item);
 
             if (imageInfo == null)
@@ -808,6 +814,22 @@ namespace MediaBrowser.Dlna.Didl
                 AddImageResElement(item, element, 4096, 4096, playbackPercentage, "png", "PNG_LRG");
                 AddImageResElement(item, element, 160, 160, playbackPercentage, "png", "PNG_TN");
             }
+        }
+
+        private void AddEmbeddedImageAsCover(string name, XmlElement element)
+        {
+            var result = element.OwnerDocument;
+            
+            var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
+            var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
+            profile.InnerText = _profile.AlbumArtPn;
+            icon.SetAttributeNode(profile);
+            icon.InnerText = _serverAddress + "/Dlna/icons/people480.jpg";
+            element.AppendChild(icon);
+
+            icon = result.CreateElement("upnp", "icon", NS_UPNP);
+            icon.InnerText = _serverAddress + "/Dlna/icons/people48.jpg";
+            element.AppendChild(icon);
         }
 
         private void AddImageResElement(BaseItem item,
