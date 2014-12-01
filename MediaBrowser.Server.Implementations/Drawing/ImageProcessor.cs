@@ -787,12 +787,24 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                             Directory.CreateDirectory(parentDirectory);
 
-                            using (var newImage = Image.FromStream(newImageStream.Stream, true, false))
+                            // Save as png
+                            if (newImageStream.Format == Model.Drawing.ImageFormat.Png)
                             {
                                 //And then save it in the cache
                                 using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                                 {
-                                    newImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
+                                    await newImageStream.Stream.CopyToAsync(outputStream).ConfigureAwait(false);
+                                }
+                            }
+                            else
+                            {
+                                using (var newImage = Image.FromStream(newImageStream.Stream, true, false))
+                                {
+                                    //And then save it in the cache
+                                    using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
+                                    {
+                                        newImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
+                                    }
                                 }
                             }
                         }

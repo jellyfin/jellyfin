@@ -12,6 +12,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IApplicationHost _applicationHost;
         private readonly INetworkManager _networkManager;
         private readonly IHttpClient _httpClient;
+        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
 
         public UsageReporter(IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient)
         {
@@ -37,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
             };
 
-            return _httpClient.Post(Common.Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
 
         public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
@@ -59,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 { "platform", app.DeviceName }, 
             };
 
-            return _httpClient.Post(Common.Constants.Constants.MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Constants;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
@@ -103,6 +102,7 @@ namespace MediaBrowser.Api
         private readonly IHttpClient _httpClient;
         private readonly INetworkManager _netManager;
         private readonly IJsonSerializer _serializer;
+        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
 
         public PackageReviewService(IHttpClient client, INetworkManager net, IJsonSerializer serializer)
         {
@@ -132,7 +132,7 @@ namespace MediaBrowser.Api
                 parms += "&title=true";
             }
 
-            var result = _httpClient.Get(Constants.MbAdminUrl + "/service/packageReview/retrieve" + parms, CancellationToken.None).Result;
+            var result = _httpClient.Get(MbAdminUrl + "/service/packageReview/retrieve" + parms, CancellationToken.None).Result;
 
             var reviews = _serializer.DeserializeFromStream<List<PackageReviewInfo>>(result);
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Api
                                { "review", reviewText },
                              };
 
-            Task.WaitAll(_httpClient.Post(Constants.MbAdminUrl + "/service/packageReview/update", review, CancellationToken.None));
+            Task.WaitAll(_httpClient.Post(MbAdminUrl + "/service/packageReview/update", review, CancellationToken.None));
         }
     }
 }

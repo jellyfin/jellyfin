@@ -361,6 +361,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public bool ContainsPerson(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+            return People.Any(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+
         public string GetInternalMetadataPath()
         {
             return GetInternalMetadataPath(ConfigurationManager.ApplicationPaths.InternalMetadataPath);

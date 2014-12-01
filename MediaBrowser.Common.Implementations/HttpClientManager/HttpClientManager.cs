@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Net.Sockets;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -134,7 +135,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 request.Referer = options.Referer;
             }
 
+            request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
+
             return request;
+        }
+
+        private static IPEndPoint BindIPEndPointCallback(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
+        {
+            // Prefer local ipv4
+            if (remoteEndPoint.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return new IPEndPoint(IPAddress.IPv6Any, 0);
+            }
+
+            return new IPEndPoint(IPAddress.Any, 0);
         }
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)

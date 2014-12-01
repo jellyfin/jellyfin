@@ -446,7 +446,7 @@ namespace MediaBrowser.Server.Startup.Common
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);
             RegisterSingleInstance(SessionManager);
 
-            var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
+            var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
             var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, LogManager.GetLogger("FileOrganizationService"), LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
@@ -481,7 +481,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths, playlistManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);

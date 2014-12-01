@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Querying
     public enum ItemFields
     {
         /// <summary>
+        /// The alternate episode numbers
+        /// </summary>
+        AlternateEpisodeNumbers,
+
+        /// <summary>
         /// The awards summary
         /// </summary>
         AwardSummary,
@@ -160,6 +165,11 @@ namespace MediaBrowser.Model.Querying
         /// The screenshot image tags
         /// </summary>
         ScreenshotImageTags,
+
+        /// <summary>
+        /// The series studio
+        /// </summary>
+        SeriesStudio,
 
         /// <summary>
         /// The soundtrack ids

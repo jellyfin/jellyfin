@@ -282,6 +282,10 @@ namespace MediaBrowser.Model.Querying
         public DateTime? MinPremiereDate { get; set; }
 
         public DateTime? MaxPremiereDate { get; set; }
+
+        public bool? EnableImages { get; set; }
+        public int? ImageTypeLimit { get; set; }
+        public string EnableImageTypes { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
