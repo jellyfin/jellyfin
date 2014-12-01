@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -8,7 +7,7 @@ using System.Linq;
 
 namespace MediaBrowser.Api.UserLibrary
 {
-    public abstract class BaseItemsRequest : IHasItemFields
+    public abstract class BaseItemsRequest : IHasDtoOptions
     {
         protected BaseItemsRequest()
         {
@@ -123,7 +122,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Years { get; set; }
 
         [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool EnableImages { get; set; }
+        public bool? EnableImages { get; set; }
 
         [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? ImageTypeLimit { get; set; }
@@ -212,36 +211,6 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return val.Split(',');
-        }
-
-        public DtoOptions GetDtoOptions()
-        {
-            var options = new DtoOptions();
-
-            options.Fields = this.GetItemFields().ToList();
-            options.EnableImages = EnableImages;
-
-            if (ImageTypeLimit.HasValue)
-            {
-                options.ImageTypeLimit = ImageTypeLimit.Value;
-            }
-
-            if (string.IsNullOrWhiteSpace(EnableImageTypes))
-            {
-                if (options.EnableImages)
-                {
-                    // Get everything
-                    options.ImageTypes = Enum.GetNames(typeof(ImageType))
-                        .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-                        .ToList();
-                }
-            }
-            else
-            {
-                options.ImageTypes = (EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
-            }
-
-            return options;
         }
     }
 }

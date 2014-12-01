@@ -14,7 +14,7 @@
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -41,7 +41,7 @@
             Fields: "ItemCounts,AudioInfo,PrimaryImageAspectRatio",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(userId, options).done(function (result) {

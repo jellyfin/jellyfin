@@ -67,7 +67,7 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                timeout: 5000
+                timeout: 15000
 
             });
         }

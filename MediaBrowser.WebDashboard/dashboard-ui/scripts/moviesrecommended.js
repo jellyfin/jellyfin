@@ -52,13 +52,13 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 3)),
+            Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 3)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount",
             CollapseBoxSetItems: false,
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -88,7 +88,7 @@
             ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 7)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });
 
         ApiClient.getJSON(url).done(function (recommendations) {

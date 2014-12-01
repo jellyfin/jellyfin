@@ -192,7 +192,7 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                timeout: 3000
+                timeout: 15000
 
             }).done(function () {
 
@@ -254,7 +254,7 @@
 
             console.log("Requesting " + request.url);
 
-            request.timeout = 3000;
+            request.timeout = 15000;
 
             $.ajax(request).done(function (response) {
 

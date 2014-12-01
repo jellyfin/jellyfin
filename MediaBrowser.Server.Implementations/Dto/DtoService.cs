@@ -1020,7 +1020,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
 
-                dto.MediaSourceCount = 1;
+                //if (fields.Contains(ItemFields.MediaSourceCount))
+                //{
+                    // Songs always have one
+                //}
             }
 
             var album = item as MusicAlbum;
@@ -1057,7 +1060,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.MediaSourceCount))
                 {
-                    dto.MediaSourceCount = video.MediaSourceCount;
+                    if (video.MediaSourceCount != 1)
+                    {
+                        dto.MediaSourceCount = video.MediaSourceCount;
+                    }
                 }
 
                 if (fields.Contains(ItemFields.Chapters))
@@ -1120,12 +1126,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
 
-                dto.DvdSeasonNumber = episode.DvdSeasonNumber;
-                dto.DvdEpisodeNumber = episode.DvdEpisodeNumber;
+                if (fields.Contains(ItemFields.AlternateEpisodeNumbers))
+                {
+                    dto.DvdSeasonNumber = episode.DvdSeasonNumber;
+                    dto.DvdEpisodeNumber = episode.DvdEpisodeNumber;
+                    dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
+                }
+
                 dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
                 dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
                 dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
-                dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
                 var episodeSeason = episode.Season;
                 if (episodeSeason != null)
@@ -1163,9 +1173,21 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.SeriesId = GetDtoId(series);
                     dto.SeriesName = series.Name;
                     dto.AirTime = series.AirTime;
-                    dto.SeriesStudio = series.Studios.FirstOrDefault();
-                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+
+                    if (options.GetImageLimit(ImageType.Thumb) > 0)
+                    {
+                        dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
+                    }
+
+                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                    {
+                        dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    }
+
+                    if (fields.Contains(ItemFields.SeriesStudio))
+                    {
+                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                    }
                 }
             }
 
@@ -1183,7 +1205,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AirTime = series.AirTime;
                     dto.SeriesStudio = series.Studios.FirstOrDefault();
 
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                    {
+                        dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    }
                 }
             }
 

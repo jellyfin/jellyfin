@@ -9,7 +9,7 @@
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -44,7 +44,7 @@
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -99,13 +99,13 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1200 ? 6 : 4),
+            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1200 ? 6 : 4),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
             ExcludeLocationTypes: "Virtual",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

@@ -12,12 +12,12 @@
         var options = {
 
             IncludeItemTypes: "Episode",
-            Limit: 24,
+            Limit: 30,
             Fields: "PrimaryImageAspectRatio",
             ParentId: parentId,
             IsPlayed: false,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {

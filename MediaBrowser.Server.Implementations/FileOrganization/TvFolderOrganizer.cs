@@ -3,8 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using System;
@@ -13,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Library;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {

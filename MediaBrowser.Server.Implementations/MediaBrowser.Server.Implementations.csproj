@@ -182,6 +182,7 @@
     <Compile Include="Library\EntityResolutionHelper.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
+    <Compile Include="Library\PathExtensions.cs" />
     <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />

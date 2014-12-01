@@ -1,13 +1,16 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -26,6 +29,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
     public class ControlHandler : BaseControlHandler
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IChannelManager _channelManager;
         private readonly IUserDataManager _userDataManager;
         private readonly User _user;
 
@@ -41,13 +45,14 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
+            _channelManager = channelManager;
             _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, userDataManager, localization);
@@ -412,7 +417,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
                     var result = new QueryResult<ServerItem>
                     {
-                        Items = items.Select(i => new ServerItem { Item = i }).ToArray(),
+                        Items = items.Select(i => new ServerItem { Item = i, StubType = StubType.Folder }).ToArray(),
                         TotalRecordCount = items.Length
                     };
 
@@ -426,6 +431,14 @@ namespace MediaBrowser.Dlna.ContentDirectory
                         return ApplyPaging(await GetMovieItems(movie).ConfigureAwait(false), startIndex, limit);
                     }
                 }
+
+                var person = item as Person;
+                if (person != null)
+                {
+                    return await GetItemsFromPerson(person, user, startIndex, limit).ConfigureAwait(false);
+                }
+
+                return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
             }
 
             var folder = (Folder)item;
@@ -463,6 +476,42 @@ namespace MediaBrowser.Dlna.ContentDirectory
             };
         }
 
+        private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
+        {
+            var items = user.RootFolder.GetRecursiveChildren(user)
+                .Where(i => i is Movie || i is Series)
+                .Where(i => i.ContainsPerson(person.Name))
+                .ToList();
+
+            var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+            {
+                ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
+                ExtraTypes = new[] { ExtraType.Trailer },
+                UserId = user.Id.ToString("N")
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            items.AddRange(trailerResult.Items.Where(i => i.ContainsPerson(person.Name)));
+
+            items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
+                .Skip(startIndex ?? 0)
+                .Take(limit ?? int.MaxValue)
+                .ToList();
+
+            var serverItems = items.Select(i => new ServerItem
+            {
+                Item = i,
+                StubType = null
+            })
+            .ToArray();
+
+            return new QueryResult<ServerItem>
+            {
+                TotalRecordCount = serverItems.Length,
+                Items = serverItems
+            };
+        }
+
         private QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
         {
             result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
@@ -482,15 +531,25 @@ namespace MediaBrowser.Dlna.ContentDirectory
                     {
                         return StubType.Folder;
                     }
+                }
 
-                    if (movie.People.Count > 0)
-                    {
-                        return StubType.Folder;
-                    }
+                if (EnablePeopleDisplay(item))
+                {
+                    return StubType.Folder;
                 }
             }
 
             return null;
+        }
+
+        private bool EnablePeopleDisplay(BaseItem item)
+        {
+            if (item.People.Count > 0)
+            {
+                return item is Movie;
+            }
+
+            return false;
         }
 
         private Task<QueryResult<ServerItem>> GetMovieItems(Movie item)

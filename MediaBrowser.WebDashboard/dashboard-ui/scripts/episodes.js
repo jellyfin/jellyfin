@@ -9,12 +9,12 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified",
+        Fields: "PrimaryImageAspectRatio,MediaSourceCount,IsUnidentified,UserData",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false,
         ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Logo,Thumb"
+        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
     };
 
     function getSavedQueryKey() {

@@ -221,7 +221,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     [Route("/Users/{UserId}/Items/Latest", "GET", Summary = "Gets latest media")]
-    public class GetLatestMedia : IReturn<List<BaseItemDto>>, IHasItemFields
+    public class GetLatestMedia : IReturn<List<BaseItemDto>>, IHasDtoOptions
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -251,6 +251,15 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "GroupItems", Description = "Whether or not to group items into a parent container.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool GroupItems { get; set; }
 
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
+        
         public GetLatestMedia()
         {
             Limit = 20;
@@ -362,7 +371,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            var fields = request.GetItemFields().ToList();
+            var options = request.GetDtoOptions();
 
             var dtos = list.Select(i =>
             {
@@ -374,8 +383,8 @@ namespace MediaBrowser.Api.UserLibrary
                     item = i.Item1;
                     childCount = i.Item2.Count;
                 }
-                
-                var dto = _dtoService.GetBaseItemDto(item, fields, user);
+
+                var dto = _dtoService.GetBaseItemDto(item, options, user);
 
                 dto.ChildCount = childCount;
 
