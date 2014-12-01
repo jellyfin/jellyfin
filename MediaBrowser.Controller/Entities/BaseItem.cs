@@ -603,118 +603,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Loads local trailers from the file system
-        /// </summary>
-        /// <returns>List{Video}.</returns>
-        private IEnumerable<Trailer> LoadLocalTrailers(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
-                .Where(i => string.Equals(i.Name, TrailerFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
-                .ToList();
-
-            var extraTypes = new List<ExtraType> { ExtraType.Trailer };
-            var suffixes = ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
-                .Select(i => i.Key)
-                .ToList();
-
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i =>
-                {
-                    var nameEithoutExtension = FileSystem.GetFileNameWithoutExtension(i);
-
-                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-
-                    return !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase);
-                }));
-
-            return LibraryManager.ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
-            {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.GetItemById(video.Id) as Trailer;
-
-                if (dbItem != null)
-                {
-                    video = dbItem;
-                }
-
-                if (video != null)
-                {
-                    video.ExtraType = ExtraType.Trailer;
-                }
-
-                return video;
-
-                // Sort them so that the list can be easily compared for changes
-            }).OrderBy(i => i.Path).ToList();
-        }
-
-        protected IEnumerable<Video> LoadSpecialFeatures(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
-                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
-                .ToList();
-
-            var extraTypes = new List<ExtraType> { ExtraType.BehindTheScenes, ExtraType.DeletedScene, ExtraType.Interview, ExtraType.Sample, ExtraType.Scene, ExtraType.Clip };
-            var suffixes = ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
-                .Select(i => i.Key)
-                .ToList();
-
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i =>
-                {
-                    var nameEithoutExtension = FileSystem.GetFileNameWithoutExtension(i);
-
-                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-
-                    return !string.Equals(Path, i.FullName, StringComparison.OrdinalIgnoreCase);
-                }));
-
-            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(video =>
-            {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = LibraryManager.GetItemById(video.Id) as Video;
-
-                if (dbItem != null)
-                {
-                    video = dbItem;
-                }
-
-                if (video != null)
-                {
-                    SetExtraTypeFromFilename(video);
-                }
-
-                return video;
-
-                // Sort them so that the list can be easily compared for changes
-            }).OrderBy(i => i.Path).ToList();
-        }
-
-        private void SetExtraTypeFromFilename(Video item)
-        {
-            var name = System.IO.Path.GetFileNameWithoutExtension(item.Path) ?? string.Empty;
-
-            foreach (var suffix in ExtraSuffixes)
-            {
-                if (name.EndsWith(suffix.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    item.ExtraType = suffix.Value;
-                    return;
-                }
-            }
-
-            item.ExtraType = ExtraType.Clip;
-        }
-
-        /// <summary>
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
@@ -879,7 +767,8 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadLocalTrailers(fileSystemChildren, options.DirectoryService).ToList();
+            var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService).ToList();
+
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);

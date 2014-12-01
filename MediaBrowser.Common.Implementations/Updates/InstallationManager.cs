@@ -172,7 +172,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         }
 
         private Tuple<List<PackageInfo>, DateTime> _lastPackageListResult;
-        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
 
         /// <summary>
         /// Gets all available packages.

@@ -1736,5 +1736,113 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return new List<FileSystemInfo>();
         }
+
+        public IEnumerable<Trailer> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        {
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
+
+            var extraTypes = new List<ExtraType> { ExtraType.Trailer };
+            var suffixes = BaseItem.ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
+                .Select(i => i.Key)
+                .ToList();
+
+            files.AddRange(fileSystemChildren.OfType<FileInfo>()
+                .Where(i =>
+                {
+                    var nameEithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
+
+                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(owner.Path, i.FullName, StringComparison.OrdinalIgnoreCase);
+                }));
+
+            return ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = GetItemById(video.Id) as Trailer;
+
+                if (dbItem != null)
+                {
+                    video = dbItem;
+                }
+
+                if (video != null)
+                {
+                    video.ExtraType = ExtraType.Trailer;
+                }
+
+                return video;
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
+        }
+
+        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        {
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
+
+            var extraTypes = new List<ExtraType> { ExtraType.BehindTheScenes, ExtraType.DeletedScene, ExtraType.Interview, ExtraType.Sample, ExtraType.Scene, ExtraType.Clip };
+            var suffixes = BaseItem.ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
+                .Select(i => i.Key)
+                .ToList();
+
+            files.AddRange(fileSystemChildren.OfType<FileInfo>()
+                .Where(i =>
+                {
+                    var nameEithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
+
+                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+
+                    return !string.Equals(owner.Path, i.FullName, StringComparison.OrdinalIgnoreCase);
+                }));
+
+            return ResolvePaths<Video>(files, directoryService, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = GetItemById(video.Id) as Video;
+
+                if (dbItem != null)
+                {
+                    video = dbItem;
+                }
+
+                if (video != null)
+                {
+                    SetExtraTypeFromFilename(video);
+                }
+
+                return video;
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
+        }
+
+        private void SetExtraTypeFromFilename(Video item)
+        {
+            var name = System.IO.Path.GetFileNameWithoutExtension(item.Path) ?? string.Empty;
+
+            foreach (var suffix in BaseItem.ExtraSuffixes)
+            {
+                if (name.EndsWith(suffix.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.ExtraType = suffix.Value;
+                    return;
+                }
+            }
+
+            item.ExtraType = ExtraType.Clip;
+        }
     }
 }

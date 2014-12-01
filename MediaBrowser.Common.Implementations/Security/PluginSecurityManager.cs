@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Implementations.Security
     /// </summary>
     public class PluginSecurityManager : ISecurityManager
     {
-        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
         
         private const string MBValidateUrl = MbAdminUrl + "service/registration/validate";
 
