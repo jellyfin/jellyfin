@@ -1,4 +1,6 @@
 ﻿
+using MediaBrowser.Model.Entities;
+
 namespace MediaBrowser.Model.Querying
 {
     public class LatestItemsQuery
@@ -64,6 +66,11 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the enable image types.
         /// </summary>
         /// <value>The enable image types.</value>
-        public string EnableImageTypes { get; set; }
+        public ImageType[] EnableImageTypes { get; set; }
+
+        public LatestItemsQuery()
+        {
+            EnableImageTypes = new ImageType[] {};
+        }
     }
 }

@@ -57,13 +57,6 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var trailer = item as Trailer;
-
-            if (trailer != null)
-            {
-                return !trailer.IsLocalTrailer;
-            }
-
             return item is Movie || item is BoxSet || item is MusicVideo;
         }
 

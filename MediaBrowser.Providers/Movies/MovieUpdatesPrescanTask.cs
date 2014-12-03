@@ -178,7 +178,7 @@ namespace MediaBrowser.Providers.Movies
 
             // Gather all movies into a lookup by tmdb id
             var allMovies = _libraryManager.RootFolder.RecursiveChildren
-                .Where(i => i is Movie || i is Trailer)
+                .Where(i => i is Movie)
                 .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
                 .ToLookup(i => i.GetProviderId(MetadataProviders.Tmdb));
 

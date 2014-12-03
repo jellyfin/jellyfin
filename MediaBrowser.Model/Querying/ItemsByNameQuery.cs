@@ -115,8 +115,8 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the enable image types.
         /// </summary>
         /// <value>The enable image types.</value>
-        public string EnableImageTypes { get; set; }
-        
+        public ImageType[] EnableImageTypes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery" /> class.
         /// </summary>
@@ -130,6 +130,7 @@ namespace MediaBrowser.Model.Querying
             SortBy = new string[] { };
             ExcludeItemTypes = new string[] { };
             IncludeItemTypes = new string[] { };
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

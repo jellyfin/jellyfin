@@ -893,6 +893,28 @@ namespace MediaBrowser.Controller.Entities
             return Id.ToString();
         }
 
+        internal virtual bool IsValidFromResolver(BaseItem newItem)
+        {
+            var current = this;
+
+            var currentAsPlaceHolder = current as ISupportsPlaceHolders;
+
+            if (currentAsPlaceHolder != null)
+            {
+                var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
+
+                if (newHasPlaceHolder != null)
+                {
+                    if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return current.IsInMixedFolder == newItem.IsInMixedFolder;
+        }
+
         /// <summary>
         /// Gets the preferred metadata language.
         /// </summary>
@@ -1288,7 +1310,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public virtual async Task MarkPlayed(User user, 
+        public virtual async Task MarkPlayed(User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -1725,6 +1747,35 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
+        }
+
+        protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, string path, CancellationToken cancellationToken)
+        {
+            var newOptions = new MetadataRefreshOptions(options.DirectoryService)
+            {
+                ImageRefreshMode = options.ImageRefreshMode,
+                MetadataRefreshMode = options.MetadataRefreshMode,
+                ReplaceAllMetadata = options.ReplaceAllMetadata
+            };
+
+            var id = LibraryManager.GetNewItemId(path, typeof(Video));
+
+            // Try to retrieve it from the db. If we don't find it, use the resolved version
+            var video = LibraryManager.GetItemById(id) as Video;
+
+            if (video == null)
+            {
+                video = LibraryManager.ResolvePath(new FileInfo(path)) as Video;
+
+                newOptions.ForceSave = true;
+            }
+
+            if (video == null)
+            {
+                return Task.FromResult(true);
+            }
+
+            return video.RefreshMetadata(newOptions, cancellationToken);
         }
     }
 }

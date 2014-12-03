@@ -189,7 +189,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                             return false;
                         }
 
-                        if (video.IsMultiPart)
+                        if (video.IsStacked)
                         {
                             return false;
                         }

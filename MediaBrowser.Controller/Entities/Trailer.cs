@@ -12,6 +12,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
+    [Obsolete]
     public class Trailer : Video, IHasCriticRating, IHasSoundtracks, IHasProductionLocations, IHasBudget, IHasTrailers, IHasKeywords, IHasTaglines, IHasMetascore, IHasLookupInfo<TrailerInfo>
     {
         public List<Guid> SoundtrackIds { get; set; }

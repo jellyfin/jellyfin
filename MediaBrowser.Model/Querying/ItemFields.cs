@@ -117,11 +117,6 @@ namespace MediaBrowser.Model.Querying
         ParentId,
 
         /// <summary>
-        /// The part count
-        /// </summary>
-        PartCount,
-
-        /// <summary>
         /// The physical path of the item
         /// </summary>
         Path,

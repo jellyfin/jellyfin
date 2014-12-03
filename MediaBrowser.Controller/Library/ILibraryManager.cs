@@ -365,17 +365,6 @@ namespace MediaBrowser.Controller.Library
         ItemLookupInfo ParseName(string name);
 
         /// <summary>
-        /// Gets the additional parts.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="files">The files.</param>
-        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
-        IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
-            VideoType type,
-            IEnumerable<FileSystemInfo> files);
-
-        /// <summary>
         /// Gets the new item identifier.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -390,7 +379,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
-        IEnumerable<Trailer> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
             IDirectoryService directoryService);
 
         /// <summary>
