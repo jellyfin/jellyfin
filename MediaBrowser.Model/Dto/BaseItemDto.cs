@@ -708,11 +708,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The game count.</value>
         public int? GameCount { get; set; }
         /// <summary>
-        /// Gets or sets the trailer count.
-        /// </summary>
-        /// <value>The trailer count.</value>
-        public int? TrailerCount { get; set; }
-        /// <summary>
         /// Gets or sets the song count.
         /// </summary>
         /// <value>The song count.</value>

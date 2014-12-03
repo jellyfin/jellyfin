@@ -17,6 +17,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
@@ -1700,113 +1701,28 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
-        public IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
-            VideoType type,
-            IEnumerable<FileSystemInfo> files)
-        {
-            var resolver = new StackResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
-
-            StackResult result;
-            List<FileSystemInfo> filteredFiles;
-
-            if (type == VideoType.BluRay || type == VideoType.Dvd)
-            {
-                filteredFiles = files.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                    .ToList();
-
-                result = resolver.ResolveDirectories(filteredFiles.Select(i => i.FullName));
-            }
-            else
-            {
-                filteredFiles = files.Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
-                    .ToList();
-
-                result = resolver.ResolveFiles(filteredFiles.Select(i => i.FullName));
-            }
-
-            var stack = result.Stacks
-                .FirstOrDefault(i => i.Files.Contains(file, StringComparer.OrdinalIgnoreCase));
-
-            if (stack != null)
-            {
-                return stack.Files.Where(i => !string.Equals(i, file, StringComparison.OrdinalIgnoreCase))
-                    .Select(i => filteredFiles.FirstOrDefault(f => string.Equals(i, f.FullName, StringComparison.OrdinalIgnoreCase)))
-                    .Where(i => i != null);
-            }
-
-            return new List<FileSystemInfo>();
-        }
-
-        public IEnumerable<Trailer> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var extraTypes = new List<ExtraType> { ExtraType.Trailer };
-            var suffixes = BaseItem.ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
-                .Select(i => i.Key)
-                .ToList();
+            var videoListResolver = new VideoListResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i =>
-                {
-                    var nameEithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
-
-                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-
-                    return !string.Equals(owner.Path, i.FullName, StringComparison.OrdinalIgnoreCase);
-                }));
-
-            return ResolvePaths<Trailer>(files, directoryService, null).Select(video =>
+            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = GetItemById(video.Id) as Trailer;
+                FullName = i.FullName,
+                Type = GetFileType(i)
 
-                if (dbItem != null)
-                {
-                    video = dbItem;
-                }
+            }).ToList());
 
-                if (video != null)
-                {
-                    video.ExtraType = ExtraType.Trailer;
-                }
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
 
-                return video;
-
-                // Sort them so that the list can be easily compared for changes
-            }).OrderBy(i => i.Path).ToList();
-        }
-
-        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
-                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
-                .ToList();
-
-            var extraTypes = new List<ExtraType> { ExtraType.BehindTheScenes, ExtraType.DeletedScene, ExtraType.Interview, ExtraType.Sample, ExtraType.Scene, ExtraType.Clip };
-            var suffixes = BaseItem.ExtraSuffixes.Where(i => extraTypes.Contains(i.Value))
-                .Select(i => i.Key)
-                .ToList();
-
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i =>
-                {
-                    var nameEithoutExtension = _fileSystem.GetFileNameWithoutExtension(i);
-
-                    if (!suffixes.Any(s => nameEithoutExtension.EndsWith(s, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-
-                    return !string.Equals(owner.Path, i.FullName, StringComparison.OrdinalIgnoreCase);
-                }));
+            if (currentVideo != null)
+            {
+                files.AddRange(currentVideo.Extras.Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
+            }
 
             return ResolvePaths<Video>(files, directoryService, null).Select(video =>
             {
@@ -1818,10 +1734,58 @@ namespace MediaBrowser.Server.Implementations.Library
                     video = dbItem;
                 }
 
-                if (video != null)
+                video.ExtraType = ExtraType.Trailer;
+
+                return video;
+
+                // Sort them so that the list can be easily compared for changes
+            }).OrderBy(i => i.Path).ToList();
+        }
+
+        private FileInfoType GetFileType(FileSystemInfo info)
+        {
+            if ((info.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                return FileInfoType.Directory;
+            }
+
+            return FileInfoType.File;
+        }
+
+        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        {
+            var files = fileSystemChildren.OfType<DirectoryInfo>()
+                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .ToList();
+
+            var videoListResolver = new VideoListResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+
+            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
+            {
+                FullName = i.FullName,
+                Type = GetFileType(i)
+
+            }).ToList());
+
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+
+            if (currentVideo != null)
+            {
+                files.AddRange(currentVideo.Extras.Where(i => !string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
+            }
+
+            return ResolvePaths<Video>(files, directoryService, null).Select(video =>
+            {
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                var dbItem = GetItemById(video.Id) as Video;
+
+                if (dbItem != null)
                 {
-                    SetExtraTypeFromFilename(video);
+                    video = dbItem;
                 }
+
+                SetExtraTypeFromFilename(video);
 
                 return video;
 
@@ -1831,18 +1795,34 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var name = System.IO.Path.GetFileNameWithoutExtension(item.Path) ?? string.Empty;
+            var resolver = new ExtraResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
 
-            foreach (var suffix in BaseItem.ExtraSuffixes)
+            var result = resolver.GetExtraInfo(item.Path);
+
+            if (string.Equals(result.ExtraType, "deletedscene", StringComparison.OrdinalIgnoreCase))
             {
-                if (name.EndsWith(suffix.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    item.ExtraType = suffix.Value;
-                    return;
-                }
+                item.ExtraType = ExtraType.DeletedScene;
             }
-
-            item.ExtraType = ExtraType.Clip;
+            else if (string.Equals(result.ExtraType, "behindthescenes", StringComparison.OrdinalIgnoreCase))
+            {
+                item.ExtraType = ExtraType.BehindTheScenes;
+            }
+            else if (string.Equals(result.ExtraType, "interview", StringComparison.OrdinalIgnoreCase))
+            {
+                item.ExtraType = ExtraType.Interview;
+            }
+            else if (string.Equals(result.ExtraType, "scene", StringComparison.OrdinalIgnoreCase))
+            {
+                item.ExtraType = ExtraType.Scene;
+            }
+            else if (string.Equals(result.ExtraType, "sample", StringComparison.OrdinalIgnoreCase))
+            {
+                item.ExtraType = ExtraType.Sample;
+            }
+            else
+            {
+                item.ExtraType = ExtraType.Clip;
+            }
         }
     }
 }

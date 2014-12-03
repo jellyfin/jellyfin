@@ -21,6 +21,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         {
             if (args.Parent != null)
             {
+                // The movie resolver will handle this
+                if (args.IsDirectory)
+                {
+                    return null;
+                }
+
                 var collectionType = args.GetCollectionType() ?? string.Empty;
                 var accepted = new[]
                 {

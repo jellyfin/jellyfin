@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -64,44 +63,44 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var isDirectory = args.IsDirectory;
-
-            if (isDirectory)
-            {
-                // Since the looping is expensive, this is an optimization to help us avoid it
-                if (args.ContainsMetaFileByName("series.xml"))
-                {
-                    return null;
-                }
-            }
-
             var collectionType = args.GetCollectionType();
 
             // Find movies with their own folders
-            if (isDirectory)
+            if (args.IsDirectory)
             {
-                if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
-                {
-                    return FindMovie<Trailer>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, false, collectionType);
-                }
-
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, false, collectionType);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, collectionType);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, false, collectionType);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, collectionType);
                 }
 
-                if (string.IsNullOrEmpty(collectionType) ||
-                    string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(collectionType))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, true, collectionType);
+                    // Owned items should just use the plain video type
+                    if (args.Parent == null)
+                    {
+                        return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, false, collectionType);
+                    }
+
+                    // Since the looping is expensive, this is an optimization to help us avoid it
+                    if (args.ContainsMetaFileByName("series.xml"))
+                    {
+                        return null;
+                    }
+                    
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, collectionType);
                 }
 
+                if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, true, collectionType);
+                }
+                
                 return null;
             }
 
@@ -112,12 +111,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            // Find movies that are mixed in the same folder
-            if (string.Equals(collectionType, CollectionType.Trailers, StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveVideo<Trailer>(args, true);
-            }
-
             Video item = null;
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
@@ -126,13 +119,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             // To find a movie file, the collection type must be movies or boxsets
-            // Otherwise we'll consider it a plain video and let the video resolver handle it
-            if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
+            else if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(collectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<Movie>(args, true);
             }
-
+            
             if (item != null)
             {
                 item.IsInMixedFolder = true;
@@ -178,11 +170,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="parent">The parent.</param>
         /// <param name="fileSystemEntries">The file system entries.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <param name="supportMultiFileItems">if set to <c>true</c> [support multi file items].</param>
         /// <param name="supportsMultipleSources">if set to <c>true</c> [supports multiple sources].</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportMultiFileItems, bool supportsMultipleSources, string collectionType)
+        private T FindMovie<T>(string path, Folder parent, IEnumerable<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, bool supportsMultipleSources, string collectionType)
             where T : Video, new()
         {
             var movies = new List<T>();
@@ -243,15 +234,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (movies.Count > 1)
             {
-                if (supportMultiFileItems)
-                {
-                    var result = GetMultiFileMovie(movies);
+                var multiFileResult = GetMultiFileMovie(movies);
 
-                    if (result != null)
-                    {
-                        return result;
-                    }
+                if (multiFileResult != null)
+                {
+                    return multiFileResult;
                 }
+
                 if (supportsMultipleSources)
                 {
                     var result = GetMovieWithMultipleSources(movies);
@@ -334,7 +323,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 Path = folderPaths[0],
 
-                IsMultiPart = true,
+                AdditionalParts = folderPaths.Skip(1).ToList(),
 
                 VideoType = videoTypes[0],
 
@@ -366,7 +355,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            firstMovie.IsMultiPart = true;
+            firstMovie.AdditionalParts = result.Stacks[0].Files.Skip(1).ToList();
             firstMovie.Name = result.Stacks[0].Name;
 
             // They must all be part of the sequence if we're going to consider it a multi-part movie
@@ -392,7 +381,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 if (sortedMovies.All(i => _fileSystem.GetFileNameWithoutExtension(i.Path).StartsWith(filenamePrefix + " - ", StringComparison.OrdinalIgnoreCase)))
                 {
-                    firstMovie.HasLocalAlternateVersions = true;
+                    firstMovie.LocalAlternateVersions = sortedMovies.Skip(1).Select(i => i.Path).ToList();
 
                     _logger.Debug("Multi-version video found: " + firstMovie.Path);
 
@@ -401,26 +390,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Determines whether [is DVD directory] [the specified directory name].
-        /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        /// <returns><c>true</c> if [is DVD directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
-        private bool IsDvdDirectory(string directoryName)
-        {
-            return string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Determines whether [is blu ray directory] [the specified directory name].
-        /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        /// <returns><c>true</c> if [is blu ray directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
-        private bool IsBluRayDirectory(string directoryName)
-        {
-            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

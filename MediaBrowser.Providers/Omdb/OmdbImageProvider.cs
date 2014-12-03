@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            return item is Movie || item is Trailer;
+            return item is Movie;
         }
 
         public int Order

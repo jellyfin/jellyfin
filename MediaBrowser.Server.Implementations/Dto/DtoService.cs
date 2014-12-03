@@ -233,7 +233,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
-                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
             }
 
             dto.ChildCount = taggedItems.Count;
@@ -1053,9 +1052,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsoType = video.IsoType;
                 dto.IsHD = video.IsHD;
 
-                if (fields.Contains(ItemFields.Chapters))
+                if (video.AdditionalParts.Count != 0)
                 {
-                    dto.PartCount = video.AdditionalPartIds.Count + 1;
+                    dto.PartCount = video.AdditionalParts.Count + 1;
                 }
 
                 if (fields.Contains(ItemFields.MediaSourceCount))

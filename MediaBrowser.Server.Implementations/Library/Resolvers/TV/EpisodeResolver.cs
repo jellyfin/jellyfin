@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using System;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
@@ -41,39 +42,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             if (season != null || parent is Series || parent.Parents.OfType<Series>().Any())
             {
-                Episode episode = null;
-
-                if (args.IsDirectory)
+                if (args.IsDirectory && args.Path.IndexOf("dead like me", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    if (args.ContainsFileSystemEntryByName("video_ts"))
-                    {
-                        episode = new Episode
-                        {
-                            Path = args.Path,
-                            VideoType = VideoType.Dvd
-                        };
-                    }
-                    if (args.ContainsFileSystemEntryByName("bdmv"))
-                    {
-                        episode = new Episode
-                        {
-                            Path = args.Path,
-                            VideoType = VideoType.BluRay
-                        };
-                    }
+                    var b = true;
                 }
-
-                if (episode == null)
-                {
-                    episode = base.Resolve(args);
-                }
+                var episode = ResolveVideo<Episode>(args, false);
 
                 if (episode != null)
                 {
-                    // The base video resolver is going to fill these in, so null them out
-                    episode.ProductionYear = null;
-                    episode.Name = null;
-
                     if (season != null)
                     {
                         episode.ParentIndexNumber = season.IndexNumber;

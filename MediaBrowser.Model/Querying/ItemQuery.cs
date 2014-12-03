@@ -97,7 +97,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The genres.</value>
         public string[] AllGenres { get; set; }
-        
+
         /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
@@ -211,7 +211,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The max players.</value>
         public int? MaxPlayers { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name starts with or greater.
         /// </summary>
@@ -223,7 +223,7 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The name starts with or greater.</value>
         public string NameStartsWith { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name starts with.
         /// </summary>
@@ -267,7 +267,7 @@ namespace MediaBrowser.Model.Querying
         public bool? CollapseBoxSetItems { get; set; }
 
         public bool? IsPlayed { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the exclude location types.
         /// </summary>
@@ -285,8 +285,8 @@ namespace MediaBrowser.Model.Querying
 
         public bool? EnableImages { get; set; }
         public int? ImageTypeLimit { get; set; }
-        public string EnableImageTypes { get; set; }
-        
+        public ImageType[] EnableImageTypes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
@@ -294,16 +294,16 @@ namespace MediaBrowser.Model.Querying
         {
             LocationTypes = new LocationType[] { };
             ExcludeLocationTypes = new LocationType[] { };
-            
+
             SortBy = new string[] { };
 
-            Filters = new ItemFilter[] {};
+            Filters = new ItemFilter[] { };
 
-            Fields = new ItemFields[] {};
+            Fields = new ItemFields[] { };
 
-            MediaTypes = new string[] {};
+            MediaTypes = new string[] { };
 
-            VideoTypes = new VideoType[] {};
+            VideoTypes = new VideoType[] { };
 
             Genres = new string[] { };
             Studios = new string[] { };
@@ -317,6 +317,7 @@ namespace MediaBrowser.Model.Querying
             ImageTypes = new ImageType[] { };
             AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

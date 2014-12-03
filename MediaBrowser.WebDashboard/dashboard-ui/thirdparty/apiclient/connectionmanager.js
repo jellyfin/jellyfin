@@ -17,7 +17,7 @@
         Remote: 1
     };
 
-    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, applicationVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
 
         var self = this;
         var apiClients = [];
@@ -78,7 +78,7 @@
         };
 
         self.appVersion = function () {
-            return applicationVersion;
+            return appVersion;
         };
 
         self.deviceId = function () {
@@ -128,7 +128,7 @@
 
                 var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-                apiClient = new MediaBrowser.ApiClient(url, appName, applicationVersion, deviceName, deviceId, capabilities);
+                apiClient = new MediaBrowser.ApiClient(url, appName, appVersion, deviceName, deviceId, capabilities);
 
                 apiClients.push(apiClient);
 
@@ -240,7 +240,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": accessToken
+                    "X-Connect-UserToken": accessToken,
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });
@@ -475,7 +476,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             }).done(function (servers) {
@@ -764,7 +766,10 @@
                     password: md5
                 },
                 dataType: "json",
-                contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                headers: {
+                    "X-Application": appName + "/" + appVersion
+                }
 
             }).done(function (result) {
 
@@ -819,7 +824,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });
@@ -843,7 +849,8 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             }).done(function () {
@@ -877,7 +884,8 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });
@@ -901,7 +909,8 @@
                 type: "GET",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });

@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbItemProvider : IRemoteMetadataProvider<Series, SeriesInfo>,
-        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>
+        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -112,18 +112,6 @@ namespace MediaBrowser.Providers.Omdb
         public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
             return GetMovieResult<Movie>(info, cancellationToken);
-        }
-
-        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
-        {
-            var result = new MetadataResult<Trailer>();
-
-            if (info.IsLocalTrailer)
-            {
-                return Task.FromResult(result);
-            }
-
-            return GetMovieResult<Trailer>(info, cancellationToken);
         }
 
         private async Task<MetadataResult<T>> GetMovieResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)

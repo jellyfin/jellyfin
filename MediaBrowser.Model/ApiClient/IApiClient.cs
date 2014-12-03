@@ -413,7 +413,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetUpcomingEpisodesAsync(NextUpQuery query);
+        Task<ItemsResult> GetUpcomingEpisodesAsync(UpcomingEpisodesQuery query);
 
         /// <summary>
         /// Gets a genre

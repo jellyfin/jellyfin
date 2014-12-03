@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.Video;
 using System;
 using System.IO;
 
@@ -42,9 +43,75 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
               where TVideoType : Video, new()
         {
             // If the path is a file check for a matching extensions
-            if (!args.IsDirectory)
+            var parser = new Naming.Video.VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+
+            if (args.IsDirectory)
             {
-                var parser = new Naming.Video.VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+                TVideoType video = null;
+                VideoFileInfo videoInfo = null;
+
+                // Loop through each child file/folder and see if we find a video
+                foreach (var child in args.FileSystemChildren)
+                {
+                    var filename = child.Name;
+
+                    if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        if (IsDvdDirectory(filename))
+                        {
+                            videoInfo = parser.ResolveDirectory(args.Path);
+
+                            if (videoInfo == null)
+                            {
+                                return null;
+                            }
+
+                            video = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.Dvd,
+                                ProductionYear = videoInfo.Year
+                            };
+                            break;
+                        }
+                        if (IsBluRayDirectory(filename))
+                        {
+                            videoInfo = parser.ResolveDirectory(args.Path);
+
+                            if (videoInfo == null)
+                            {
+                                return null;
+                            }
+
+                            video = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.BluRay,
+                                ProductionYear = videoInfo.Year
+                            };
+                            break;
+                        }
+                    }
+                }
+
+                if (video != null)
+                {
+                    if (parseName)
+                    {
+                        video.Name = videoInfo.Name;
+                    }
+                    else
+                    {
+                        video.Name = Path.GetFileName(args.Path);
+                    }
+
+                    Set3DFormat(video, videoInfo);
+                }
+
+                return video;
+            }
+            else
+            {
                 var videoInfo = parser.ResolveFile(args.Path);
 
                 if (videoInfo == null)
@@ -57,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub || isShortcut)
                 {
                     var type = string.Equals(videoInfo.Container, "iso", StringComparison.OrdinalIgnoreCase) || string.Equals(videoInfo.Container, "img", StringComparison.OrdinalIgnoreCase) ?
-                        VideoType.Iso : 
+                        VideoType.Iso :
                         VideoType.VideoFile;
 
                     var path = args.Path;
@@ -97,43 +164,68 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                         }
                     }
 
-                    if (videoInfo.Is3D)
-                    {
-                        if (string.Equals(videoInfo.Format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.FullSideBySide;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "ftab", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "htab", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "sbs", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                        }
-                        else if (string.Equals(videoInfo.Format3D, "tab", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                        }
-                    }
+                    Set3DFormat(video, videoInfo);
 
                     return video;
                 }
             }
 
             return null;
+        }
+
+        private void Set3DFormat(Video video, VideoFileInfo videoInfo)
+        {
+            if (videoInfo.Is3D)
+            {
+                if (string.Equals(videoInfo.Format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.FullSideBySide;
+                }
+                else if (string.Equals(videoInfo.Format3D, "ftab", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                }
+                else if (string.Equals(videoInfo.Format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                }
+                else if (string.Equals(videoInfo.Format3D, "htab", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                }
+                else if (string.Equals(videoInfo.Format3D, "sbs", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                }
+                else if (string.Equals(videoInfo.Format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                }
+                else if (string.Equals(videoInfo.Format3D, "tab", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [is DVD directory] [the specified directory name].
+        /// </summary>
+        /// <param name="directoryName">Name of the directory.</param>
+        /// <returns><c>true</c> if [is DVD directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
+        protected bool IsDvdDirectory(string directoryName)
+        {
+            return string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether [is blu ray directory] [the specified directory name].
+        /// </summary>
+        /// <param name="directoryName">Name of the directory.</param>
+        /// <returns><c>true</c> if [is blu ray directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
+        protected bool IsBluRayDirectory(string directoryName)
+        {
+            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

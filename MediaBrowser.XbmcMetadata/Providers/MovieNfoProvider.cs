@@ -26,13 +26,4 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
         }
     }
-
-    public class TrailerNfoProvider : BaseVideoNfoProvider<Trailer>
-    {
-        public TrailerNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config)
-            : base(fileSystem, logger, config)
-        {
-        }
-    }
-
 }

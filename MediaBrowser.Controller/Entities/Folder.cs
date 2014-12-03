@@ -363,47 +363,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsValidFromResolver(BaseItem current, BaseItem newItem)
         {
-            var currentAsVideo = current as Video;
-
-            if (currentAsVideo != null)
-            {
-                var newAsVideo = newItem as Video;
-
-                if (newAsVideo != null)
-                {
-                    if (currentAsVideo.IsPlaceHolder != newAsVideo.IsPlaceHolder)
-                    {
-                        return false;
-                    }
-                    if (currentAsVideo.IsMultiPart != newAsVideo.IsMultiPart)
-                    {
-                        return false;
-                    }
-                    if (currentAsVideo.HasLocalAlternateVersions != newAsVideo.HasLocalAlternateVersions)
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                var currentAsPlaceHolder = current as ISupportsPlaceHolders;
-
-                if (currentAsPlaceHolder != null)
-                {
-                    var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
-
-                    if (newHasPlaceHolder != null)
-                    {
-                        if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return current.IsInMixedFolder == newItem.IsInMixedFolder;
+            return current.IsValidFromResolver(newItem);
         }
 
         /// <summary>

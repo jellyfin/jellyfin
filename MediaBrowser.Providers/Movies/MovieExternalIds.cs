@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
-            return item is Movie || item is Trailer || item is MusicVideo;
+            return item is Movie || item is MusicVideo;
         }
     }
 
@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasProviderIds item)
         {
-            return item is Movie || item is Trailer || item is MusicVideo;
+            return item is Movie || item is MusicVideo;
         }
     }
 
@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
-            return item is Movie || item is Trailer || item is MusicVideo || item is Series || item is Episode;
+            return item is Movie || item is MusicVideo || item is Series || item is Episode;
         }
     }
 

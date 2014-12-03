@@ -51,7 +51,7 @@
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.12\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.13\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -194,7 +194,6 @@
     <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
     <Compile Include="Library\Resolvers\ItemResolver.cs" />
     <Compile Include="Library\Resolvers\FolderResolver.cs" />
-    <Compile Include="Library\Resolvers\LocalTrailerResolver.cs" />
     <Compile Include="Library\Resolvers\Movies\BoxSetResolver.cs" />
     <Compile Include="Library\Resolvers\Movies\MovieResolver.cs" />
     <Compile Include="Library\Resolvers\TV\EpisodeResolver.cs" />

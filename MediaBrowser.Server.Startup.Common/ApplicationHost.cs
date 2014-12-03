@@ -950,11 +950,6 @@ namespace MediaBrowser.Server.Startup.Common
                 var localAddresses = NetworkManager.GetLocalIpAddresses()
                     .ToList();
 
-                if (localAddresses.Count < 2)
-                {
-                    return localAddresses;
-                }
-
                 var httpServerAddresses = HttpServer.LocalEndPoints
                     .Select(i => i.Split(':').FirstOrDefault())
                     .Where(i => !string.IsNullOrEmpty(i))
@@ -967,7 +962,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                 if (matchedAddresses.Count == 0)
                 {
-                    return localAddresses.Take(1);
+                    return localAddresses;
                 }
 
                 return matchedAddresses;
