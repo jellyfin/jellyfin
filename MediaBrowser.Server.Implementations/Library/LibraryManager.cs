@@ -466,22 +466,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
-        public BaseItem ResolveItem(ItemResolveArgs args)
+        private BaseItem ResolveItem(ItemResolveArgs args)
         {
-            var item = EntityResolvers.Select(r =>
-            {
-                try
-                {
-                    return r.ResolvePath(args);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in {0} resolving {1}", ex, r.GetType().Name, args.Path);
-
-                    return null;
-                }
-
-            }).FirstOrDefault(i => i != null);
+            var item = EntityResolvers.Select(r => Resolve(args, r))
+                .FirstOrDefault(i => i != null);
 
             if (item != null)
             {
@@ -489,6 +477,19 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return item;
+        }
+
+        private BaseItem Resolve(ItemResolveArgs args, IItemResolver resolver)
+        {
+            try
+            {
+                return resolver.ResolvePath(args);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in {0} resolving {1}", ex, resolver.GetType().Name, args.Path);
+                return null;
+            }
         }
 
         public Guid GetNewItemId(string key, Type type)
@@ -565,7 +566,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
         }
 
-        public BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
+        private BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
         {
             if (fileInfo == null)
             {
@@ -645,23 +646,50 @@ namespace MediaBrowser.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        public List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
-            where T : BaseItem
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType)
         {
-            return files.Select(f =>
+            var fileList = files.ToList();
+
+            if (parent != null)
+            {
+                var multiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>();
+
+                foreach (var resolver in multiItemResolvers)
+                {
+                    var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService);
+
+                    if (result != null && result.Items.Count > 0)
+                    {
+                        var items = new List<BaseItem>();
+                        items.AddRange(result.Items);
+
+                        foreach (var item in items)
+                        {
+                            ResolverHelper.SetInitialItemValues(item, parent, _fileSystem, this, directoryService);
+                        }
+                        items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType));
+                        return items;
+                    }
+                }
+            }
+
+            return ResolveFileList(fileList, directoryService, parent, collectionType);
+        }
+
+        private IEnumerable<BaseItem> ResolveFileList(IEnumerable<FileSystemInfo> fileList, IDirectoryService directoryService, Folder parent, string collectionType)
+        {
+            return fileList.Select(f =>
             {
                 try
                 {
-                    return ResolvePath(f, directoryService, parent, collectionType) as T;
+                    return ResolvePath(f, directoryService, parent, collectionType);
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error resolving path {0}", ex, f.FullName);
                     return null;
                 }
-
-            }).Where(i => i != null)
-            .ToList();
+            }).Where(i => i != null);
         }
 
         /// <summary>
@@ -1724,7 +1752,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 files.AddRange(currentVideo.Extras.Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
             }
 
-            return ResolvePaths<Video>(files, directoryService, null).Select(video =>
+            return ResolvePaths(files, directoryService, null, null)
+                .OfType<Video>()
+                .Select(video =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = GetItemById(video.Id) as Video;
@@ -1775,27 +1805,29 @@ namespace MediaBrowser.Server.Implementations.Library
                 files.AddRange(currentVideo.Extras.Where(i => !string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
             }
 
-            return ResolvePaths<Video>(files, directoryService, null).Select(video =>
-            {
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                var dbItem = GetItemById(video.Id) as Video;
-
-                if (dbItem != null)
+            return ResolvePaths(files, directoryService, null, null)
+                .OfType<Video>()
+                .Select(video =>
                 {
-                    video = dbItem;
-                }
+                    // Try to retrieve it from the db. If we don't find it, use the resolved version
+                    var dbItem = GetItemById(video.Id) as Video;
 
-                SetExtraTypeFromFilename(video);
+                    if (dbItem != null)
+                    {
+                        video = dbItem;
+                    }
 
-                return video;
+                    SetExtraTypeFromFilename(video);
 
-                // Sort them so that the list can be easily compared for changes
-            }).OrderBy(i => i.Path).ToList();
+                    return video;
+
+                    // Sort them so that the list can be easily compared for changes
+                }).OrderBy(i => i.Path).ToList();
         }
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new ExtraResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 

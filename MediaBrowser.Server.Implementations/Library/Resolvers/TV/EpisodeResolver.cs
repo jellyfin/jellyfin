@@ -1,8 +1,5 @@
-﻿using System;
-using MediaBrowser.Controller.Entities.TV;
+﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
@@ -42,10 +39,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             if (season != null || parent is Series || parent.Parents.OfType<Series>().Any())
             {
-                if (args.IsDirectory && args.Path.IndexOf("dead like me", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    var b = true;
-                }
                 var episode = ResolveVideo<Episode>(args, false);
 
                 if (episode != null)
