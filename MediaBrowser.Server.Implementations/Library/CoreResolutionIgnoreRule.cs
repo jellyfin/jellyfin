@@ -95,11 +95,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         return true;
                     }
-
-                    if (BaseItem.ExtraSuffixes.Any(i => filename.IndexOf(i.Key, StringComparison.OrdinalIgnoreCase) != -1))
-                    {
-                        return true;
-                    }
                 }
 
                 // Ignore samples

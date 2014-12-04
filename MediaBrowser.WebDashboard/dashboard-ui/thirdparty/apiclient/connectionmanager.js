@@ -199,11 +199,11 @@
 
             var deferred = $.Deferred();
 
-            if (connectUser != null && connectUser.Id == credentials.ConnectUserId) {
+            if (connectUser && connectUser.Id == credentials.ConnectUserId) {
                 deferred.resolveWith(null, [[]]);
             }
 
-            else if (self.connectToken() && self.connectUserId()) {
+            else if (credentials.ConnectAccessToken && credentials.ConnectUserId) {
 
                 connectUser = null;
 
@@ -213,7 +213,6 @@
                     deferred.resolveWith(null, [[]]);
 
                 }).fail(function () {
-
                     deferred.resolveWith(null, [[]]);
                 });
 
@@ -240,8 +239,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": accessToken,
-                    "X-Application": appName + "/" + appVersion
+                    "X-Application": appName + "/" + appVersion,
+                    "X-Connect-UserToken": accessToken
                 }
 
             });
@@ -476,8 +475,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": self.connectToken(),
-                    "X-Application": appName + "/" + appVersion
+                    "X-Application": appName + "/" + appVersion,
+                    "X-Connect-UserToken": self.connectToken()
                 }
 
             }).done(function (servers) {
@@ -607,11 +606,7 @@
 
             var deferred = $.Deferred();
 
-            var systemInfo = null;
-            var connectionMode = MediaBrowser.ConnectionMode.Local;
-            var credentials = credentialProvider.credentials();
-
-            function onLocalServerTokenValidationDone() {
+            function onLocalServerTokenValidationDone(connectionMode, credentials) {
 
                 credentialProvider.addOrUpdateServer(credentials.servers, server);
                 server.DateLastAccessed = new Date().getTime();
@@ -640,27 +635,33 @@
                 $(self).trigger('connected', [result]);
             }
 
-            function onExchangeTokenDone() {
+            function onExchangeTokenDone(connectionMode, credentials) {
 
                 if (server.AccessToken) {
-                    validateAuthentication(server, connectionMode).always(onLocalServerTokenValidationDone);
+                    validateAuthentication(server, connectionMode).always(function() {
+                 
+                        onLocalServerTokenValidationDone(connectionMode, credentials);
+                    });
                 } else {
-                    onLocalServerTokenValidationDone();
+                    onLocalServerTokenValidationDone(connectionMode, credentials);
                 }
             }
 
-            function onEnsureConnectUserDone() {
+            function onEnsureConnectUserDone(connectionMode, credentials) {
 
                 if (credentials.ConnectUserId && credentials.ConnectAccessToken && server.ExchangeToken) {
 
-                    addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(onExchangeTokenDone);
+                    addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(function() {
+                        
+                        onExchangeTokenDone(connectionMode, credentials);
+                    });
 
                 } else {
-                    onExchangeTokenDone();
+                    onExchangeTokenDone(connectionMode, credentials);
                 }
             }
 
-            function onRemoteTestDone() {
+            function onRemoteTestDone(systemInfo, connectionMode) {
 
                 if (systemInfo == null) {
 
@@ -669,31 +670,33 @@
                 }
 
                 updateServerInfo(server, systemInfo);
+                server.LastConnectionMode = connectionMode;
+                var credentials = credentialProvider.credentials();
 
                 if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
-                    ensureConnectUser(credentials).always(onEnsureConnectUserDone);
+                    ensureConnectUser(credentials).always(function() {
+                        onEnsureConnectUserDone(connectionMode, credentials);
+                    });
                 } else {
-                    onEnsureConnectUserDone();
+                    onEnsureConnectUserDone(connectionMode, credentials);
                 }
             }
 
-            function onLocalTestDone() {
+            function onLocalTestDone(systemInfo, connectionMode) {
 
                 if (!systemInfo && server.RemoteAddress) {
 
                     // Try to connect to the local address
                     tryConnect(server.RemoteAddress).done(function (result) {
 
-                        systemInfo = result;
-                        connectionMode = MediaBrowser.ConnectionMode.Remote;
-                        onRemoteTestDone();
+                        onRemoteTestDone(result, MediaBrowser.ConnectionMode.Remote);
 
-                    }).fail(function () {
+                    }).fail(function() {
                         onRemoteTestDone();
                     });
 
                 } else {
-                    onRemoteTestDone();
+                    onRemoteTestDone(systemInfo, connectionMode);
                 }
             }
 
@@ -702,10 +705,7 @@
                 //onLocalTestDone();
                 // Try to connect to the local address
                 tryConnect(server.LocalAddress).done(function (result) {
-
-                    systemInfo = result;
-                    onLocalTestDone();
-
+                    onLocalTestDone(result, MediaBrowser.ConnectionMode.Local);
                 }).fail(function () {
                     onLocalTestDone();
                 });

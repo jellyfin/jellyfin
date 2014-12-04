@@ -1,10 +1,12 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.Video;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -29,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         /// <returns>`0.</returns>
         protected override T Resolve(ItemResolveArgs args)
         {
-            return ResolveVideo<T>(args, true);
+            return ResolveVideo<T>(args, false);
         }
 
         /// <summary>
@@ -96,14 +98,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
                 if (video != null)
                 {
-                    if (parseName)
-                    {
-                        video.Name = videoInfo.Name;
-                    }
-                    else
-                    {
-                        video.Name = Path.GetFileName(args.Path);
-                    }
+                    video.Name = parseName ? 
+                        videoInfo.Name :
+                        Path.GetFileName(args.Path);
 
                     Set3DFormat(video, videoInfo);
                 }
@@ -119,50 +116,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                     return null;
                 }
 
-                var isShortcut = string.Equals(videoInfo.Container, "strm", StringComparison.OrdinalIgnoreCase);
-
-                if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub || isShortcut)
+                if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub)
                 {
-                    var type = string.Equals(videoInfo.Container, "iso", StringComparison.OrdinalIgnoreCase) || string.Equals(videoInfo.Container, "img", StringComparison.OrdinalIgnoreCase) ?
-                        VideoType.Iso :
-                        VideoType.VideoFile;
-
                     var path = args.Path;
 
                     var video = new TVideoType
                     {
-                        VideoType = type,
                         Path = path,
                         IsInMixedFolder = true,
-                        IsPlaceHolder = videoInfo.IsStub,
-                        IsShortcut = isShortcut,
                         ProductionYear = videoInfo.Year
                     };
 
-                    if (parseName)
-                    {
-                        video.Name = videoInfo.Name;
-                    }
-                    else
-                    {
-                        video.Name = Path.GetFileNameWithoutExtension(path);
-                    }
-
-                    if (videoInfo.IsStub)
-                    {
-                        if (string.Equals(videoInfo.StubType, "dvd", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.VideoType = VideoType.Dvd;
-                        }
-                        else if (string.Equals(videoInfo.StubType, "hddvd", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.VideoType = VideoType.HdDvd;
-                        }
-                        else if (string.Equals(videoInfo.StubType, "bluray", StringComparison.OrdinalIgnoreCase))
-                        {
-                            video.VideoType = VideoType.BluRay;
-                        }
-                    }
+                    SetVideoType(video, videoInfo);
+                    
+                    video.Name = parseName ?
+                        videoInfo.Name :
+                        Path.GetFileNameWithoutExtension(args.Path);
 
                     Set3DFormat(video, videoInfo);
 
@@ -173,39 +142,80 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        private void Set3DFormat(Video video, VideoFileInfo videoInfo)
+        protected void SetVideoType(Video video, VideoFileInfo videoInfo)
         {
-            if (videoInfo.Is3D)
+            var extension = Path.GetExtension(video.Path);
+            video.VideoType = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
+              VideoType.Iso :
+              VideoType.VideoFile;
+
+            video.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+            video.IsPlaceHolder = videoInfo.IsStub;
+
+            if (videoInfo.IsStub)
             {
-                if (string.Equals(videoInfo.Format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoInfo.StubType, "dvd", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.VideoType = VideoType.Dvd;
+                }
+                else if (string.Equals(videoInfo.StubType, "hddvd", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.VideoType = VideoType.HdDvd;
+                }
+                else if (string.Equals(videoInfo.StubType, "bluray", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.VideoType = VideoType.BluRay;
+                }
+            }
+        }
+
+        protected void Set3DFormat(Video video, bool is3D, string format3D)
+        {
+            if (is3D)
+            {
+                if (string.Equals(format3D, "fsbs", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.FullSideBySide;
                 }
-                else if (string.Equals(videoInfo.Format3D, "ftab", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "ftab", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.FullTopAndBottom;
                 }
-                else if (string.Equals(videoInfo.Format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "hsbs", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.HalfSideBySide;
                 }
-                else if (string.Equals(videoInfo.Format3D, "htab", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "htab", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                 }
-                else if (string.Equals(videoInfo.Format3D, "sbs", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "sbs", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.HalfSideBySide;
                 }
-                else if (string.Equals(videoInfo.Format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "sbs3d", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.HalfSideBySide;
                 }
-                else if (string.Equals(videoInfo.Format3D, "tab", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(format3D, "tab", StringComparison.OrdinalIgnoreCase))
                 {
                     video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                 }
             }
+        }
+
+        protected void Set3DFormat(Video video, VideoFileInfo videoInfo)
+        {
+            Set3DFormat(video, videoInfo.Is3D, videoInfo.Format3D);
+        }
+
+        protected void Set3DFormat(Video video)
+        {
+            var resolver = new Format3DParser(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var result = resolver.Parse(video.Path);
+
+            Set3DFormat(video, result.Is3D, result.Format3D);
         }
 
         /// <summary>
@@ -226,6 +236,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         protected bool IsBluRayDirectory(string directoryName)
         {
             return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
+        }
+
+        protected bool IsBluRayContainer(string path, IDirectoryService directoryService)
+        {
+            return directoryService.GetDirectories(path).Any(i => IsBluRayDirectory(i.Name));
+        }
+
+        protected bool IsDvdContainer(string path, IDirectoryService directoryService)
+        {
+            return directoryService.GetDirectories(path).Any(i => IsDvdDirectory(i.Name));
         }
     }
 }

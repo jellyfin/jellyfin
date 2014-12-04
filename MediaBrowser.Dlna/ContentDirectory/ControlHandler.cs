@@ -213,14 +213,15 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var serverItem = GetItemFromObjectId(id, user);
             var item = serverItem.Item;
 
-            var totalCount = 0;
+            int totalCount;
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
+                totalCount = 1;
+                
                 if (item.IsFolder || serverItem.StubType.HasValue)
                 {
                     var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requested).ConfigureAwait(false));
-                    totalCount = 1;
 
                     result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id));
                 }

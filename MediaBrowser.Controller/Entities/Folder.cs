@@ -696,7 +696,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var collectionType = LibraryManager.FindCollectionType(this);
 
-            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
+            return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
         }
 
         /// <summary>
@@ -741,6 +741,12 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem RetrieveChild(BaseItem child)
         {
+            if (child.Id == Guid.Empty)
+            {
+                Logger.Error("Item found with empty Id: " + (child.Path ?? child.Name));
+                return null;
+            }
+
             var item = LibraryManager.GetMemoryItemById(child.Id);
 
             if (item != null)

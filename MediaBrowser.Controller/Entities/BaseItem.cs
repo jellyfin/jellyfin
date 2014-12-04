@@ -53,16 +53,6 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
-        public static List<KeyValuePair<string, ExtraType>> ExtraSuffixes = new List<KeyValuePair<string, ExtraType>>
-        {
-            new KeyValuePair<string,ExtraType>("-trailer", ExtraType.Trailer),
-            new KeyValuePair<string,ExtraType>("-deleted", ExtraType.DeletedScene),
-            new KeyValuePair<string,ExtraType>("-behindthescenes", ExtraType.BehindTheScenes),
-            new KeyValuePair<string,ExtraType>("-interview", ExtraType.Interview),
-            new KeyValuePair<string,ExtraType>("-scene", ExtraType.Scene),
-            new KeyValuePair<string,ExtraType>("-sample", ExtraType.Sample)
-        };
-
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         [IgnoreDataMember]
@@ -618,7 +608,9 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
-            return LibraryManager.ResolvePaths<Audio.Audio>(files, directoryService, null).Select(audio =>
+            return LibraryManager.ResolvePaths(files, directoryService, null)
+                .OfType<Audio.Audio>()
+                .Select(audio =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(audio.Id) as Audio.Audio;
@@ -628,10 +620,7 @@ namespace MediaBrowser.Controller.Entities
                     audio = dbItem;
                 }
 
-                if (audio != null)
-                {
-                    audio.ExtraType = ExtraType.ThemeSong;
-                }
+                audio.ExtraType = ExtraType.ThemeSong;
 
                 return audio;
 
@@ -649,7 +638,9 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
-            return LibraryManager.ResolvePaths<Video>(files, directoryService, null).Select(item =>
+            return LibraryManager.ResolvePaths(files, directoryService, null)
+                .OfType<Video>()
+                .Select(item =>
             {
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
                 var dbItem = LibraryManager.GetItemById(item.Id) as Video;
@@ -659,10 +650,7 @@ namespace MediaBrowser.Controller.Entities
                     item = dbItem;
                 }
 
-                if (item != null)
-                {
-                    item.ExtraType = ExtraType.ThemeVideo;
-                }
+                item.ExtraType = ExtraType.ThemeVideo;
 
                 return item;
 

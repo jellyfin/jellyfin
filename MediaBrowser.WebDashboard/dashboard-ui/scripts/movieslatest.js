@@ -24,7 +24,7 @@
                 items: items,
                 lazy: true,
                 shape: 'homePagePortrait',
-                overlayText: true
+                overlayText: false
 
             })).trigger('create').createCardMenus();
         });

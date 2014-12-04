@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -84,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     return new Series
                     {
                         Path = args.Path,
-                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                        Name = Path.GetFileName(args.Path)
                     };
                 }
             }

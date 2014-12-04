@@ -10,9 +10,6 @@
 
             switch (result.State) {
 
-                case MediaBrowser.ConnectionState.Unavilable:
-                    showServerConnectionFailure();
-                    break;
                 case MediaBrowser.ConnectionState.SignedIn:
                     {
                         var apiClient = result.ApiClient;
@@ -23,6 +20,7 @@
                     }
                     break;
                 default:
+                    showServerConnectionFailure();
                     break;
             }
 

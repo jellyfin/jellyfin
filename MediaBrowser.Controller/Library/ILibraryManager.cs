@@ -24,7 +24,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null, string collectionType = null);
+        BaseItem ResolvePath(FileSystemInfo fileInfo, 
+            Folder parent = null, 
+            string collectionType = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
@@ -35,8 +37,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>List{``0}.</returns>
-        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
-            where T : BaseItem;
+        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemInfo> files, 
+            IDirectoryService directoryService,
+            Folder parent, string 
+            collectionType = null);
 
         /// <summary>
         /// Gets the root folder.
