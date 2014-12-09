@@ -126,33 +126,29 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles, IDirectoryService directoryService)
         {
-            var imagePrefix = string.Empty;
+            var imagePrefix = item.FileNameWithoutExtension + "-";
+            var isInMixedFolder = item.IsInMixedFolder;
 
-            var baseItem = item as BaseItem;
-            if (baseItem != null && baseItem.IsInMixedFolder)
-            {
-                imagePrefix = _fileSystem.GetFileNameWithoutExtension(item.Path) + "-";
-            }
+            PopulatePrimaryImages(item, images, files, imagePrefix, isInMixedFolder);
 
-            PopulatePrimaryImages(item, images, files, imagePrefix);
-            PopulateBackdrops(item, images, files, imagePrefix, directoryService);
-            PopulateScreenshots(images, files, imagePrefix);
-
-            AddImage(files, images, imagePrefix + "logo", ImageType.Logo);
-            AddImage(files, images, imagePrefix + "clearart", ImageType.Art);
-            AddImage(files, images, imagePrefix + "disc", ImageType.Disc);
-            AddImage(files, images, imagePrefix + "cdart", ImageType.Disc);
-            AddImage(files, images, imagePrefix + "box", ImageType.Box);
-            AddImage(files, images, imagePrefix + "back", ImageType.BoxRear);
-            AddImage(files, images, imagePrefix + "boxrear", ImageType.BoxRear);
-            AddImage(files, images, imagePrefix + "menu", ImageType.Menu);
+            AddImage(files, images, "logo", imagePrefix, isInMixedFolder, ImageType.Logo);
+            AddImage(files, images, "clearart", imagePrefix, isInMixedFolder, ImageType.Art);
+            AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+            AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+            AddImage(files, images, "box", imagePrefix, isInMixedFolder, ImageType.Box);
+            AddImage(files, images, "back", imagePrefix, isInMixedFolder, ImageType.BoxRear);
+            AddImage(files, images, "boxrear", imagePrefix, isInMixedFolder, ImageType.BoxRear);
+            AddImage(files, images, "menu", imagePrefix, isInMixedFolder, ImageType.Menu);
 
             // Banner
-            AddImage(files, images, imagePrefix + "banner", ImageType.Banner);
+            AddImage(files, images, "banner", imagePrefix, isInMixedFolder, ImageType.Banner);
 
             // Thumb
-            AddImage(files, images, imagePrefix + "thumb", ImageType.Thumb);
-            AddImage(files, images, imagePrefix + "landscape", ImageType.Thumb);
+            AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
+            AddImage(files, images, "landscape", imagePrefix, isInMixedFolder, ImageType.Thumb);
+
+            PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder, directoryService);
+            PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
 
             if (supportParentSeriesFiles)
             {
@@ -165,54 +161,72 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
+        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder)
         {
-            AddImage(files, images, imagePrefix + "folder", ImageType.Primary);
-            AddImage(files, images, imagePrefix + "cover", ImageType.Primary);
-            AddImage(files, images, imagePrefix + "poster", ImageType.Primary);
-            AddImage(files, images, imagePrefix + "default", ImageType.Primary);
+            var names = new List<string>
+            {
+                "folder",
+                "cover",
+                "poster",
+                "default"
+            };
 
-            // Support plex/xbmc convention
+            // Support plex/kodi convention
             if (item is Series)
             {
-                AddImage(files, images, imagePrefix + "show", ImageType.Primary);
+                names.Add("show");
             }
 
-            // Support plex/xbmc convention
+            // Support plex/kodi convention
             if (item is Video && !(item is Episode))
             {
-                AddImage(files, images, imagePrefix + "movie", ImageType.Primary);
+                names.Add("movie");
             }
 
-            if (!string.IsNullOrEmpty(item.Path))
+            foreach (var name in names)
             {
-                var name = _fileSystem.GetFileNameWithoutExtension(item.Path);
+                AddImage(files, images, imagePrefix + name, ImageType.Primary);
+            }
 
-                if (!string.IsNullOrEmpty(name))
+            var fileNameWithoutExtension = item.FileNameWithoutExtension;
+
+            if (!string.IsNullOrEmpty(fileNameWithoutExtension))
+            {
+                AddImage(files, images, fileNameWithoutExtension, ImageType.Primary);
+            }
+
+            if (!isInMixedFolder)
+            {
+                foreach (var name in names)
                 {
                     AddImage(files, images, name, ImageType.Primary);
-                    AddImage(files, images, name + "-poster", ImageType.Primary);
                 }
             }
         }
 
-        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, IDirectoryService directoryService)
+        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder, IDirectoryService directoryService)
         {
-            PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", ImageType.Backdrop);
+            PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", isInMixedFolder, ImageType.Backdrop);
 
             if (!string.IsNullOrEmpty(item.Path))
             {
-                var name = _fileSystem.GetFileNameWithoutExtension(item.Path);
+                var name = item.FileNameWithoutExtension;
 
                 if (!string.IsNullOrEmpty(name))
                 {
                     AddImage(files, images, imagePrefix + name + "-fanart", ImageType.Backdrop);
+
+                    // Support without the prefix if it's in it's own folder
+                    if (!isInMixedFolder)
+                    {
+                        AddImage(files, images, name + "-fanart", ImageType.Backdrop);
+                    }
                 }
             }
 
-            PopulateBackdrops(images, files, imagePrefix, "fanart", "fanart-", ImageType.Backdrop);
-            PopulateBackdrops(images, files, imagePrefix, "background", "background-", ImageType.Backdrop);
-            PopulateBackdrops(images, files, imagePrefix, "art", "art-", ImageType.Backdrop);
+            PopulateBackdrops(images, files, imagePrefix, "fanart", "fanart-", isInMixedFolder, ImageType.Backdrop);
+            PopulateBackdrops(images, files, imagePrefix, "background", "background-", isInMixedFolder, ImageType.Backdrop);
+            PopulateBackdrops(images, files, imagePrefix, "art", "art-", isInMixedFolder, ImageType.Backdrop);
 
             var extraFanartFolder = files
                 .FirstOrDefault(i => string.Equals(i.Name, "extrafanart", StringComparison.OrdinalIgnoreCase));
@@ -245,12 +259,12 @@ namespace MediaBrowser.LocalMetadata.Images
             }));
         }
 
-        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix)
+        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder)
         {
-            PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", ImageType.Screenshot);
+            PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", isInMixedFolder, ImageType.Screenshot);
         }
 
-        private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, ImageType type)
+        private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
         {
             AddImage(files, images, imagePrefix + firstFileName, type);
 
@@ -267,6 +281,29 @@ namespace MediaBrowser.LocalMetadata.Images
                     if (unfound >= 3)
                     {
                         break;
+                    }
+                }
+            }
+
+            // Support without the prefix
+            if (!isInMixedFolder)
+            {
+                AddImage(files, images, firstFileName, type);
+
+                unfound = 0;
+                for (var i = 1; i <= 20; i++)
+                {
+                    // Screenshot Image
+                    var found = AddImage(files, images, subsequentFileNamePrefix + i, type);
+
+                    if (!found)
+                    {
+                        unfound++;
+
+                        if (unfound >= 3)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -308,6 +345,21 @@ namespace MediaBrowser.LocalMetadata.Images
                 AddImage(seriesFiles, images, filename + "-banner", ImageType.Banner);
                 AddImage(seriesFiles, images, filename + "-landscape", ImageType.Thumb);
             }
+        }
+
+        private bool AddImage(List<FileSystemInfo> files, List<LocalImageInfo> images, string name, string imagePrefix, bool isInMixedFolder, ImageType type)
+        {
+            var added = AddImage(files, images, imagePrefix + name, type);
+
+            if (!isInMixedFolder)
+            {
+                if (AddImage(files, images, name, type))
+                {
+                    added = true;
+                }
+            }
+
+            return added;
         }
 
         private bool AddImage(IEnumerable<FileSystemInfo> files, List<LocalImageInfo> images, string name, ImageType type)

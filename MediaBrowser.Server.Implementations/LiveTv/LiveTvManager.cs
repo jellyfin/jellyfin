@@ -220,19 +220,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 return 2;
-            })
-            .ThenBy(i =>
-            {
-                double number = 0;
-
-                if (!string.IsNullOrEmpty(i.Number))
-                {
-                    double.TryParse(i.Number, out number);
-                }
-
-                return number;
-
-            }).ThenBy(i => i.Name);
+            });
 
             var allChannels = channels.ToList();
             IEnumerable<LiveTvChannel> allEnumerable = allChannels;

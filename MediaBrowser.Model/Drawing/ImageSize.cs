@@ -55,6 +55,12 @@ namespace MediaBrowser.Model.Drawing
             ParseValue(value);
         }
 
+        public ImageSize(int width, int height)
+        {
+            _width = width;
+            _height = height;
+        }
+
         private void ParseValue(string value)
         {
             if (!string.IsNullOrEmpty(value))

@@ -58,6 +58,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (LocationType == LocationType.FileSystem)
+                {
+                    return System.IO.Path.GetFileName(Path);
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is physical root.
         /// </summary>

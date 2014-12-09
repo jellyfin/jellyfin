@@ -117,13 +117,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 FullName = i.FullName,
                 Type = FileInfoType.File
 
-            }).ToList());
+            }).ToList()).ToList();
 
             var result = new MultiItemResolverResult
             {
                 ExtraFiles = leftOver,
                 Items = videos
             };
+
+            var isInMixedFolder = resolverResult.Count > 0;
 
             foreach (var video in resolverResult)
             {
@@ -132,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 var videoItem = new T
                 {
                     Path = video.Files[0].Path,
-                    IsInMixedFolder = true,
+                    IsInMixedFolder = isInMixedFolder,
                     ProductionYear = video.Year,
                     Name = video.Name,
                     AdditionalParts = video.Files.Skip(1).Select(i => i.Path).ToList()
@@ -171,7 +173,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType, false);
                 }
 
                 if (string.IsNullOrEmpty(collectionType))
@@ -275,8 +277,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="fileSystemEntries">The file system entries.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="collectionType">Type of the collection.</param>
+        /// <param name="supportMultiVersion">if set to <c>true</c> [support multi version].</param>
         /// <returns>Movie.</returns>
-        private T FindMovie<T>(string path, Folder parent, List<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, string collectionType)
+        private T FindMovie<T>(string path, Folder parent, List<FileSystemInfo> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool supportMultiVersion = true)
             where T : Video, new()
         {
             var multiDiscFolders = new List<FileSystemInfo>();
@@ -311,12 +314,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                     multiDiscFolders.Add(child);
                 }
+                else if (IsDvdFile(filename))
+                {
+                    var movie = new T
+                    {
+                        Path = path,
+                        VideoType = VideoType.Dvd
+                    };
+                    Set3DFormat(movie);
+                    return movie;
+                }
             }
             
             var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, collectionType);
 
             // Test for multi-editions
-            if (result.Items.Count > 1)
+            if (result.Items.Count > 1 && supportMultiVersion)
             {
                 var filenamePrefix = Path.GetFileName(path);
 
@@ -327,6 +340,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         var movie = (T)result.Items[0];
                         movie.Name = filenamePrefix;
                         movie.LocalAlternateVersions = result.Items.Skip(1).Select(i => i.Path).ToList();
+                        movie.IsInMixedFolder = false;
 
                         _logger.Debug("Multi-version video found: " + movie.Path);
 
@@ -364,7 +378,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var folderPaths = multiDiscFolders.Select(i => i.FullName).Where(i =>
             {
-                var subfolders = directoryService.GetDirectories(i)
+                var subFileEntries = directoryService.GetFileSystemEntries(i)
+                    .ToList();
+
+                var subfolders = subFileEntries
+                    .Where(e => (e.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                     .Select(d => d.Name)
                     .ToList();
 
@@ -376,6 +394,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 if (subfolders.Any(IsBluRayDirectory))
                 {
                     videoTypes.Add(VideoType.BluRay);
+                    return true;
+                }
+
+                var subFiles = subFileEntries
+                 .Where(e => (e.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+                 .Select(d => d.Name);
+
+                if (subFiles.Any(IsDvdFile))
+                {
+                    videoTypes.Add(VideoType.Dvd);
                     return true;
                 }
 

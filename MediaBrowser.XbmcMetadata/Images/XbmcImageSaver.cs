@@ -252,7 +252,7 @@ namespace MediaBrowser.XbmcMetadata.Images
             {
                 return zeroIndexFilename;
             }
-
+            
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;
