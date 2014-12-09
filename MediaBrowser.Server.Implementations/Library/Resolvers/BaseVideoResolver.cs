@@ -94,6 +94,23 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                             break;
                         }
                     }
+                    else if (IsDvdFile(filename))
+                    {
+                        videoInfo = parser.ResolveDirectory(args.Path);
+
+                        if (videoInfo == null)
+                        {
+                            return null;
+                        }
+
+                        video = new TVideoType
+                        {
+                            Path = args.Path,
+                            VideoType = VideoType.Dvd,
+                            ProductionYear = videoInfo.Year
+                        };
+                        break;
+                    }
                 }
 
                 if (video != null)
@@ -229,6 +246,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         }
 
         /// <summary>
+        /// Determines whether [is DVD file] [the specified name].
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns><c>true</c> if [is DVD file] [the specified name]; otherwise, <c>false</c>.</returns>
+        protected bool IsDvdFile(string name)
+        {
+            return string.Equals(name, "video_ts.ifo", StringComparison.OrdinalIgnoreCase);
+        }
+        
+        /// <summary>
         /// Determines whether [is blu ray directory] [the specified directory name].
         /// </summary>
         /// <param name="directoryName">Name of the directory.</param>
@@ -236,16 +263,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         protected bool IsBluRayDirectory(string directoryName)
         {
             return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
-        }
-
-        protected bool IsBluRayContainer(string path, IDirectoryService directoryService)
-        {
-            return directoryService.GetDirectories(path).Any(i => IsBluRayDirectory(i.Name));
-        }
-
-        protected bool IsDvdContainer(string path, IDirectoryService directoryService)
-        {
-            return directoryService.GetDirectories(path).Any(i => IsDvdDirectory(i.Name));
         }
     }
 }

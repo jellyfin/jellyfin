@@ -212,6 +212,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual string FileNameWithoutExtension
+        {
+            get
+            {
+                if (LocationType == LocationType.FileSystem)
+                {
+                    return System.IO.Path.GetFileNameWithoutExtension(Path);
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// This is just a helper for convenience
         /// </summary>

@@ -515,7 +515,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 filename += "b=" + backgroundColor;
             }
 
-            return GetCachePath(ResizedImageCachePath, filename, Path.GetExtension(originalPath));
+            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
 
         /// <summary>

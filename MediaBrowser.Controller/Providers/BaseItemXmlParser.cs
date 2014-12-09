@@ -1340,6 +1340,12 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
+            // This is valid
+            if (!string.IsNullOrWhiteSpace(linkedItem.Path))
+            {
+                return linkedItem;
+            }
+
             return string.IsNullOrWhiteSpace(linkedItem.ItemName) || string.IsNullOrWhiteSpace(linkedItem.ItemType) ? null : linkedItem;
         }
 

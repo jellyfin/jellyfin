@@ -89,5 +89,41 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetItemLookupInfo<MusicVideoInfo>();
         }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            if (!ProductionYear.HasValue)
+            {
+                var info = LibraryManager.ParseName(Name);
+
+                var yearInName = info.Year;
+
+                if (yearInName.HasValue)
+                {
+                    ProductionYear = yearInName;
+                    hasChanges = true;
+                }
+                else
+                {
+                    // Try to get the year from the folder name
+                    if (!IsInMixedFolder)
+                    {
+                        info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
+
+                        yearInName = info.Year;
+
+                        if (yearInName.HasValue)
+                        {
+                            ProductionYear = yearInName;
+                            hasChanges = true;
+                        }
+                    }
+                }
+            }
+
+            return hasChanges;
+        }
     }
 }

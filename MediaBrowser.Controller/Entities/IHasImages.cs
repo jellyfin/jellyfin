@@ -22,6 +22,12 @@ namespace MediaBrowser.Controller.Entities
         string Path { get; set; }
 
         /// <summary>
+        /// Gets the file name without extension.
+        /// </summary>
+        /// <value>The file name without extension.</value>
+        string FileNameWithoutExtension { get; }
+
+        /// <summary>
         /// Gets the identifier.
         /// </summary>
         /// <value>The identifier.</value>

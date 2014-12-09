@@ -5,7 +5,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -233,6 +232,25 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return base.ContainingFolderPath;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (LocationType == LocationType.FileSystem)
+                {
+                    if (VideoType == VideoType.BluRay || VideoType == VideoType.Dvd || VideoType == VideoType.HdDvd)
+                    {
+                        return System.IO.Path.GetFileName(Path);
+                    }
+                    
+                    return System.IO.Path.GetFileNameWithoutExtension(Path);
+                }
+
+                return null;
             }
         }
 

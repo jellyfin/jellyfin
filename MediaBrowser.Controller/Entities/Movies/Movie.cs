@@ -158,6 +158,22 @@ namespace MediaBrowser.Controller.Entities.Movies
                     ProductionYear = yearInName;
                     hasChanges = true;
                 }
+                else
+                {
+                    // Try to get the year from the folder name
+                    if (!IsInMixedFolder)
+                    {
+                        info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
+
+                        yearInName = info.Year;
+
+                        if (yearInName.HasValue)
+                        {
+                            ProductionYear = yearInName;
+                            hasChanges = true;
+                        }
+                    }
+                }
             }
 
             return hasChanges;

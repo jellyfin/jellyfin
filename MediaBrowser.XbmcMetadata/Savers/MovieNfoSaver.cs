@@ -32,7 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var path = item.ContainingFolderPath;
 
-                return Path.Combine(path, fileSystem.GetFileNameWithoutExtension(path) + ".nfo");
+                return Path.Combine(path, Path.GetFileName(path) + ".nfo");
             }
 
             return Path.ChangeExtension(item.Path, ".nfo");

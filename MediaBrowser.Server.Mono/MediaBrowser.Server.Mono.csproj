@@ -135,14 +135,6 @@
       <Link>libgdiplus.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\ThirdParty\libwebp\linux\x86\libwebp.so">
-      <Link>libwebp\linux\lib\libwebp.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\ThirdParty\libwebp\linux\x86_64\libwebp.so">
-      <Link>libwebp\linux\lib64\libwebp.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
       <Link>libwebp\osx\libwebp.5.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
