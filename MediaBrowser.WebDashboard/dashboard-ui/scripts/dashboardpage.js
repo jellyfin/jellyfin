@@ -618,7 +618,7 @@
 
             return "<img src='css/images/clients/mb.png' />";
         }
-        if (clientLowered == "android") {
+        if (clientLowered == "android" || clientLowered == "androidtv") {
 
             return "<img src='css/images/clients/android.png' />";
         }
