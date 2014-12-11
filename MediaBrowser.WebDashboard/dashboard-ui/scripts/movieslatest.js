@@ -11,7 +11,7 @@
 
             IncludeItemTypes: "Movie",
             Limit: 30,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ParentId: parentId,
             IsPlayed: false,
             ImageTypeLimit: 1,

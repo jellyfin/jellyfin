@@ -389,8 +389,8 @@ namespace MediaBrowser.Server.Startup.Common
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            //SyncRepository = await GetSyncRepository().ConfigureAwait(false);
-            //RegisterSingleInstance(SyncRepository);
+            SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            RegisterSingleInstance(SyncRepository);
 
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this);
             RegisterSingleInstance(UserManager);

@@ -368,7 +368,6 @@
     <Compile Include="Sync\SyncJobQuery.cs" />
     <Compile Include="Sync\SyncJobRequest.cs" />
     <Compile Include="Sync\SyncJobStatus.cs" />
-    <Compile Include="Sync\SyncLimitType.cs" />
     <Compile Include="Sync\SyncQuality.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />

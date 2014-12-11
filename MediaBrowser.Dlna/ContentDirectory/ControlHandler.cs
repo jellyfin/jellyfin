@@ -492,7 +492,24 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             }, CancellationToken.None).ConfigureAwait(false);
 
-            items.AddRange(trailerResult.Items.Where(i => i.ContainsPerson(person.Name)));
+            var currentIds = items.Select(i => i.GetProviderId(MetadataProviders.Imdb))
+                .ToList();
+
+            var trailersToAdd = trailerResult.Items
+                .Where(i => i.ContainsPerson(person.Name))
+                .Where(i =>
+                {
+                    // Try to filter out dupes using imdb id
+                    var imdb = i.GetProviderId(MetadataProviders.Imdb);
+                    if (!string.IsNullOrWhiteSpace(imdb) &&
+                        currentIds.Contains(imdb, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                    return true;
+                });
+
+            items.AddRange(trailersToAdd);
 
             items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
                 .Skip(startIndex ?? 0)
@@ -527,7 +544,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 var movie = item as Movie;
                 if (movie != null)
                 {
-                    if (movie.LocalTrailerIds.Count > 0 ||
+                    if (movie.GetTrailerIds().Count > 0 ||
                         movie.SpecialFeatureIds.Count > 0)
                     {
                         return StubType.Folder;
@@ -559,7 +576,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             list.Add(item);
 
-            list.AddRange(item.LocalTrailerIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
+            list.AddRange(item.GetTrailerIds().Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
             list.AddRange(item.SpecialFeatureIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
 
             var serverItems = list.Select(i => new ServerItem { Item = i, StubType = null })

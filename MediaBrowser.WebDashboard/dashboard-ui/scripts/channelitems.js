@@ -7,7 +7,7 @@
 
         SortBy: "",
         SortOrder: "Ascending",
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SyncInfo",
         StartIndex: 0
     };
 

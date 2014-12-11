@@ -1,11 +1,10 @@
-﻿using System.IO;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
-using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -42,7 +41,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var items = GetItemsForSync(request.ItemIds).ToList();
+            var items = new SyncJobProcessor(_libraryManager, _repo)
+                .GetItemsForSync(request.ItemIds)
+                .ToList();
+
+            if (items.Any(i => !SupportsSync(i)))
+            {
+                throw new ArgumentException("Item does not support sync.");
+            }
 
             if (items.Count == 1)
             {
@@ -66,12 +72,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                 TargetId = target.Id,
                 UserId = request.UserId,
                 UnwatchedOnly = request.UnwatchedOnly,
-                Limit = request.Limit,
-                LimitType = request.LimitType,
+                ItemLimit = request.ItemLimit,
                 RequestedItemIds = request.ItemIds,
                 DateCreated = DateTime.UtcNow,
                 DateLastModified = DateTime.UtcNow,
-                ItemCount = 1
+                SyncNewContent = request.SyncNewContent,
+                RemoveWhenWatched = request.RemoveWhenWatched,
+                ItemCount = items.Count,
+                Quality = request.Quality
             };
 
             await _repo.Create(job).ConfigureAwait(false);
@@ -93,7 +101,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private void FillMetadata(SyncJob job)
         {
-            var item = GetItemsForSync(job.RequestedItemIds)
+            var item = new SyncJobProcessor(_libraryManager, _repo)
+                .GetItemsForSync(job.RequestedItemIds)
                 .FirstOrDefault();
 
             if (item != null)
@@ -130,7 +139,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task CancelJob(string id)
         {
-            throw new NotImplementedException();
+            var job = GetJob(id);
+
+            job.Status = SyncJobStatus.Cancelled;
+
+            return _repo.DeleteJob(id);
         }
 
         public SyncJob GetJob(string id)
@@ -165,26 +178,26 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private string GetSyncProviderId(ISyncProvider provider)
         {
-            return (provider.GetType().Name + provider.Name).GetMD5().ToString("N");
+            return (provider.GetType().Name).GetMD5().ToString("N");
         }
 
         public bool SupportsSync(BaseItem item)
         {
-            if (item.LocationType == LocationType.Virtual)
-            {
-                return false;
-            }
-
             if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
+                if (item.LocationType == LocationType.Virtual)
+                {
+                    return false;
+                }
+
                 if (item.RunTimeTicks.HasValue)
                 {
                     var video = item as Video;
 
                     if (video != null)
                     {
-                        if (video.VideoType != VideoType.VideoFile)
+                        if (video.VideoType == VideoType.Iso)
                         {
                             return false;
                         }
@@ -201,34 +214,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return false;
             }
 
-            return false;
-        }
-
-        private IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds)
-        {
-            return itemIds.SelectMany(GetItemsForSync).DistinctBy(i => i.Id);
-        }
-
-        private IEnumerable<BaseItem> GetItemsForSync(string id)
-        {
-            var item = _libraryManager.GetItemById(id);
-
-            if (item == null)
-            {
-                throw new ArgumentException("Item with Id " + id + " not found.");
-            }
-
-            if (!SupportsSync(item))
-            {
-                throw new ArgumentException("Item with Id " + id + " does not support sync.");
-            }
-
-            return GetItemsForSync(item);
-        }
-
-        private IEnumerable<BaseItem> GetItemsForSync(BaseItem item)
-        {
-            return new[] { item };
+            return item.LocationType == LocationType.FileSystem || item is Season;
         }
 
         private string GetDefaultName(BaseItem item)

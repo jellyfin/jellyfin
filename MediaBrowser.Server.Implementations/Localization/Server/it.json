@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Operazione in corso",
     "HeaderActiveDevices": "Dispositivi Connessi",
     "HeaderPendingInstallations": "installazioni in coda",
-    "HeaerServerInformation": "Informazioni del server",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Riavvia Adesso",
     "ButtonRestart": "Riavvia",
     "ButtonShutdown": "Arresta Server",
@@ -1275,5 +1275,7 @@
     "HeaderYears": "Anni",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }

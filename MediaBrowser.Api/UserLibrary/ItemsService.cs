@@ -877,7 +877,7 @@ namespace MediaBrowser.Api.UserLibrary
                     var hasTrailers = i as IHasTrailers;
                     if (hasTrailers != null)
                     {
-                        trailerCount = hasTrailers.LocalTrailerIds.Count;
+                        trailerCount = hasTrailers.GetTrailerIds().Count;
                     }
 
                     var ok = val ? trailerCount > 0 : trailerCount == 0;

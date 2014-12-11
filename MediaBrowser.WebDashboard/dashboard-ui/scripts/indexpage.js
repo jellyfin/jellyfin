@@ -126,7 +126,7 @@
         var options = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             IsPlayed: false
         };
 
@@ -163,7 +163,7 @@
         var options = {
 
             Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1600 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 7 : 6))),
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             Filters: "IsUnplayed",
             UserId: userId
         };
@@ -279,7 +279,7 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual"
         };
@@ -355,7 +355,7 @@
         var options = {
 
             Limit: screenWidth >= 1600 ? 6 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
             ChannelIds: channel.Id

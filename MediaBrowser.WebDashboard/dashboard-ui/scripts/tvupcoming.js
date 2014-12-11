@@ -7,7 +7,7 @@
         var query = {
 
             Limit: 40,
-            Fields: "SeriesInfo,UserData,SeriesStudio",
+            Fields: "SeriesInfo,UserData,SeriesStudio,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"

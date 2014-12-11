@@ -7,7 +7,7 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount",
+        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
         StartIndex: 0,
         ImageTypeLimit: 1,
         EnableImageTypes: "Primary,Backdrop,Banner,Thumb"

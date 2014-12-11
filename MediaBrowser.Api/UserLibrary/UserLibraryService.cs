@@ -515,7 +515,7 @@ namespace MediaBrowser.Api.UserLibrary
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
             {
-                trailerIds = hasTrailers.LocalTrailerIds;
+                trailerIds = hasTrailers.GetTrailerIds();
             }
 
             var dtos = trailerIds

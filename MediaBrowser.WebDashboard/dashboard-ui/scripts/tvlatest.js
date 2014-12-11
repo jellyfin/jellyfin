@@ -13,7 +13,7 @@
 
             IncludeItemTypes: "Episode",
             Limit: 30,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             IsPlayed: false,
             ImageTypeLimit: 1,

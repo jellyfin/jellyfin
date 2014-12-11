@@ -41,10 +41,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 {
                     var collectionType = args.GetCollectionType();
 
+                    var isMixed = string.IsNullOrWhiteSpace(collectionType);
+
+                    // For conflicting extensions, give priority to videos
+                    if (isMixed && _libraryManager.IsVideoFile(args.Path))
+                    {
+                        return null;
+                    }
+
                     var isStandalone = args.Parent == null;
 
                     if (isStandalone ||
-                        string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
+                        string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) ||
+                        isMixed)
                     {
                         return new Controller.Entities.Audio.Audio();
                     }

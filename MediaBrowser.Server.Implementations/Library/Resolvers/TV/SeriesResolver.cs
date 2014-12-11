@@ -99,12 +99,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="fileSystem">The file system.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
         public static bool IsSeriesFolder(string path, bool considerSeasonlessEntries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
         {
-            // A folder with more than 3 non-season folders in will not becounted as a series
-            var nonSeriesFolders = 0;
-
             foreach (var child in fileSystemChildren)
             {
                 var attributes = child.Attributes;
@@ -128,19 +127,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     {
                         //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
                         return true;
-                    }
-
-                    if (IsBadFolder(child.Name))
-                    {
-                        logger.Debug("Invalid folder under series: {0}", child.FullName);
-
-                        nonSeriesFolders++;
-                    }
-
-                    if (nonSeriesFolders >= 3)
-                    {
-                        logger.Debug("{0} not a series due to 3 or more invalid folders.", path);
-                        return false;
                     }
                 }
                 else
@@ -177,24 +163,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             var extension = Path.GetExtension(path);
 
             return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsBadFolder(string name)
-        {
-            if (string.Equals(name, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(name, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            if (string.Equals(name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return !EntityResolutionHelper.IgnoreFolders.Contains(name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

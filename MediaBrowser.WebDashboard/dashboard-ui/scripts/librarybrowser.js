@@ -26,11 +26,7 @@
             // Chrome seems to have virtualization built-in and can handle large lists easily
             var isChrome = $.browser.chrome;
 
-            if (getWindowUrl().toString().toLowerCase().indexOf('localhost') != -1) {
-                return isChrome ? 200 : 100;
-            }
-
-            return isChrome ? 100 : 50;
+            return isChrome ? 200 : 100;
         },
 
         getDefaultItemsView: function (view, mobileView) {
@@ -344,6 +340,10 @@
             }
 
             commands.push('refresh');
+
+            if (SyncManager.isAvailable(item)) {
+                commands.push('sync');
+            }
 
             return commands;
         },
@@ -922,6 +922,10 @@
             // There's no detail page with a dedicated delete function
             if (item.Type == 'Playlist') {
                 itemCommands.push('delete');
+            }
+
+            if (SyncManager.isAvailable(item)) {
+                itemCommands.push('sync');
             }
 
             return itemCommands;

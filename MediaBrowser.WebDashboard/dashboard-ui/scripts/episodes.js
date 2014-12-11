@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Episode",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,MediaSourceCount,IsUnidentified,UserData",
+        Fields: "PrimaryImageAspectRatio,MediaSourceCount,IsUnidentified,UserData,SyncInfo",
         StartIndex: 0,
         IsMissing: false,
         IsVirtualUnaired: false,

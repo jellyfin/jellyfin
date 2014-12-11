@@ -1257,7 +1257,8 @@ var Dashboard = {
     var capabilities = {
         PlayableMediaTypes: "Audio,Video",
 
-        SupportedCommands: Dashboard.getSupportedRemoteCommands().join(',')
+        SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
+        SupportsDeviceId: false
     };
 
     window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);

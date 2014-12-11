@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "P\u00e5g\u00e5ende aktiviteter",
     "HeaderActiveDevices": "Aktiva enheter",
     "HeaderPendingInstallations": "V\u00e4ntande installationer",
-    "HeaerServerInformation": "Serverinformation",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Starta om nu",
     "ButtonRestart": "Starta om",
     "ButtonShutdown": "St\u00e4ng av",
@@ -1275,5 +1275,7 @@
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }

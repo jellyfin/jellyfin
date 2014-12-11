@@ -10,7 +10,7 @@ namespace MediaBrowser.Server.Implementations.Sync
     {
         public string Name
         {
-            get { return "Dummy Sync"; }
+            get { return "Test Sync"; }
         }
 
         public IEnumerable<SyncTarget> GetSyncTargets()
@@ -19,8 +19,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 new SyncTarget
                 {
-                     Id = "mock".GetMD5().ToString("N"),
-                     Name = "Mock Sync"
+                     Id = GetType().Name.GetMD5().ToString("N"),
+                     Name = Name
                 }
             };
         }

@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Laufende Aufgaben",
     "HeaderActiveDevices": "Aktive Ger\u00e4te",
     "HeaderPendingInstallations": "Ausstehende Installationen",
-    "HeaerServerInformation": "Server Information",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Jetzt neustarten",
     "ButtonRestart": "Neu starten",
     "ButtonShutdown": "Herunterfahren",
@@ -1273,7 +1273,9 @@
     "HeaderParentalRatings": "Altersbeschr\u00e4nkung",
     "HeaderVideoTypes": "Videotypen",
     "HeaderYears": "Jahre",
-    "HeaderAddTag": "Add Tag",
-    "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "HeaderAddTag": "F\u00fcge Tag hinzu",
+    "LabelBlockItemsWithTags": "Blockiere Inhalte mit folgenden Tags:",
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }

@@ -24,7 +24,7 @@
             Filters: "IsFavorite",
             Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual"
         };

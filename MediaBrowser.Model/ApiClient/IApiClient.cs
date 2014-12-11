@@ -14,6 +14,7 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Users;
@@ -1370,6 +1371,20 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task&lt;DevicesOptions&gt;.</returns>
         Task<DevicesOptions> GetDevicesOptions();
+
+        /// <summary>
+        /// Updates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Task.</returns>
+        Task UpdateItem(BaseItemDto item);
+
+        /// <summary>
+        /// Requests the synchronize.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task&lt;SyncJob&gt;.</returns>
+        Task<SyncJob> RequestSync(SyncJobRequest request);
 
         /// <summary>
         /// Opens the web socket.

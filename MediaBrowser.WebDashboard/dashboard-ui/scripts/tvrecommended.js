@@ -5,7 +5,7 @@
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
@@ -40,7 +40,7 @@
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
@@ -101,7 +101,7 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1200 ? 6 : 4),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
             ExcludeLocationTypes: "Virtual",
             ParentId: parentId,
             ImageTypeLimit: 1,

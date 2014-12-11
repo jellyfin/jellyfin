@@ -179,8 +179,8 @@
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
-    <Compile Include="Library\EntityResolutionHelper.cs" />
     <Compile Include="Library\LibraryManager.cs" />
+    <Compile Include="Library\LocalTrailerPostScanTask.cs" />
     <Compile Include="Library\MusicManager.cs" />
     <Compile Include="Library\PathExtensions.cs" />
     <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
@@ -303,6 +303,7 @@
     <Compile Include="Sync\AppSyncProvider.cs" />
     <Compile Include="Sync\CloudSyncProvider.cs" />
     <Compile Include="Sync\MockSyncProvider.cs" />
+    <Compile Include="Sync\SyncJobProcessor.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />

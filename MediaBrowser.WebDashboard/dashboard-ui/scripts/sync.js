@@ -23,7 +23,9 @@
                 return i.Id;
             }).join(','),
 
-            Quality: $('.radioSyncQuality', form)[0].getAttribute('data-value')
+            Quality: $('.radioSyncQuality', form)[0].getAttribute('data-value'),
+
+            Name: $('#txtSyncJobName', form).val()
         };
 
         ApiClient.ajax({
@@ -35,6 +37,8 @@
 
         }).done(function () {
 
+            $('.syncPanel').panel('close');
+            $(window.SyncManager).trigger('jobsubmit');
         });
     }
 
@@ -51,19 +55,32 @@
             var html = '<div data-role="panel" data-position="right" data-display="overlay" class="syncPanel" data-position-fixed="true" data-theme="a">';
 
             html += '<div>';
-            html += '<h1 style="margin-top:.5em;">Sync Media</h1>';
+            html += '<h1 style="margin-top:.5em;">' + Globalize.translate('SyncMedia') + '</h1>';
 
             html += '<form class="formSubmitSyncRequest">';
+
+            if (items.length > 1) {
+
+                html += '<p>';
+                html += '<label for="txtSyncJobName">Sync job name:</label>';
+                html += '<input type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" />';
+                html += '</p>';
+            }
 
             html += '<div>';
             html += '<fieldset data-role="controlgroup">';
             html += '<legend>Sync to:</legend>';
 
+            var index = 0;
+
             html += targets.map(function (t) {
 
                 var targetHtml = '<label for="radioSync' + t.Id + '">' + t.Name + '</label>';
-                targetHtml += '<input class="radioSync" data-targetid="' + t.Id + '" type="radio" id="radioSync' + t.Id + '" />';
 
+                var checkedHtml = index ? '' : ' checked="checked"';
+                targetHtml += '<input class="radioSync" data-targetid="' + t.Id + '" type="radio" id="radioSync' + t.Id + '"' + checkedHtml + ' />';
+
+                index++;
                 return targetHtml;
 
             }).join('');
@@ -110,7 +127,7 @@
 
     function isAvailable(item, user) {
 
-        return false;
+        //return false;
         return item.SupportsSync;
     }
 

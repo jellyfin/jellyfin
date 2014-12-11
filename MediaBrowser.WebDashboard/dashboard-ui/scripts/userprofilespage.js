@@ -59,7 +59,7 @@
 
         $('.userMenu', page).popup("close").remove();
 
-        var html = '<div data-role="popup" class="userMenu" data-theme="a">';
+        var html = '<div data-role="popup" class="userMenu tapHoldMenu" data-theme="a">';
 
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
@@ -201,7 +201,7 @@
 
         $('.userMenu', page).popup("close").remove();
 
-        var html = '<div data-role="popup" class="userMenu" data-theme="a">';
+        var html = '<div data-role="popup" class="userMenu tapHoldMenu" data-theme="a">';
 
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';

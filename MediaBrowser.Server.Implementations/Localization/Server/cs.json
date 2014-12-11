@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "B\u011b\u017e\u00edc\u00ed \u00falohy",
     "HeaderActiveDevices": "Akt\u00edvn\u00ed za\u0159\u00edzen\u00ed",
     "HeaderPendingInstallations": "\u010cekaj\u00edc\u00ed instalace",
-    "HeaerServerInformation": "Informace o serveru",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Restartovat nyn\u00ed",
     "ButtonRestart": "Restart",
     "ButtonShutdown": "Vypnout",
@@ -1275,5 +1275,7 @@
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }

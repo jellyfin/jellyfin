@@ -12,7 +12,7 @@
         var options = {
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1600 ? 21 : (screenWidth >= 1200 ? 21 : 12)),
-            Fields: "PrimaryImageAspectRatio",
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
@@ -38,7 +38,7 @@
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 6)),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -72,7 +72,7 @@
             IncludeItemTypes: "Audio",
             Limit: screenWidth >= 1920 ? 16 : (screenWidth >= 1600 ? 14 : (screenWidth >= 1200 ? 14 : 12)),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo",
+            Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,

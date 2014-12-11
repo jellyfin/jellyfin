@@ -77,7 +77,11 @@
     function loadData(page) {
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl('Devices')).done(function (devices) {
+        ApiClient.getJSON(ApiClient.getUrl('Devices', {
+            
+            SupportsDeviceId: true
+
+        })).done(function (devices) {
 
             load(page, devices);
 

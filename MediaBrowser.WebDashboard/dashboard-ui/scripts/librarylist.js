@@ -245,6 +245,20 @@
         return false;
     }
 
+    function onSyncButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        closeContextMenu();
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+            SyncManager.showMenu([item]);
+        });
+
+        return false;
+    }
+
     function onExternalPlayerButtonClick() {
 
         closeContextMenu();
@@ -409,6 +423,10 @@
                 html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
             }
 
+            if (commands.indexOf('sync') != -1) {
+                html += '<li data-icon="refresh"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+            }
+
             if (commands.indexOf('delete') != -1) {
                 html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
@@ -437,6 +455,7 @@
             $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
             $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
             $('.btnDelete', elem).on('click', onDeleteButtonClick);
+            $('.btnSync', elem).on('click', onSyncButtonClick);
         });
     }
 
@@ -710,6 +729,38 @@
             }).get();
     }
 
+    function sync(page) {
+
+        var selection = getSelectedItems(page);
+
+        if (selection.length < 1) {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessagePleaseSelectOneItem'),
+                title: Globalize.translate('HeaderError')
+            });
+
+            return;
+        }
+
+        ApiClient.getItems({
+
+            ids: selection.join(','),
+            fields: 'SyncInfo',
+            userId: Dashboard.getCurrentUserId()
+
+        }).done(function (result) {
+
+            SyncManager.showMenu(result.Items);
+
+            $(SyncManager).off('jobsubmit.librarylist').on('jobsubmit.librarylist', function () {
+
+                hideSelections(page);
+            });
+
+        });
+    }
+
     function combineVersions(page) {
 
         var selection = getSelectedItems(page);
@@ -848,6 +899,10 @@
 
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);
+        });
+
+        $('.btnSyncItems', page).on('click', function () {
+            sync(page);
         });
 
         $('.btnAddToCollection', page).on('click', function () {
