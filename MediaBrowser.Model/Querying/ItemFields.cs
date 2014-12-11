@@ -165,7 +165,7 @@ namespace MediaBrowser.Model.Querying
         /// The series studio
         /// </summary>
         SeriesStudio,
-
+        
         /// <summary>
         /// The soundtrack ids
         /// </summary>

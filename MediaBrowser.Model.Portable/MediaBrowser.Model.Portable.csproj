@@ -1043,9 +1043,6 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobStatus.cs">
       <Link>Sync\SyncJobStatus.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Sync\SyncLimitType.cs">
-      <Link>Sync\SyncLimitType.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
       <Link>Sync\SyncQuality.cs</Link>
     </Compile>

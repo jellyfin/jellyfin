@@ -485,7 +485,7 @@
     "ValueOneMusicVideo": "1 video musical",
     "ValueMusicVideoCount": "{0} videos musicales",
     "HeaderOffline": "Fuera de L\u00ednea",
-    "HeaderUnaired": "No transmitido",
+    "HeaderUnaired": "No Emitido",
     "HeaderMissing": "Falta",
     "ButtonWebsite": "Sitio web",
     "TooltipFavorite": "Favorito",
@@ -610,7 +610,7 @@
     "MessageInvitationSentToUser": "Se ha enviado un correo electr\u00f3nico a {0}, invit\u00e1ndolo a aceptar tu invitaci\u00f3n para compartir.",
     "MessageInvitationSentToNewUser": "Se ha enviado un correo electr\u00f3nico a {0} invit\u00e1ndolo a registrarse con Media Browser.",
     "HeaderConnectionFailure": "Falla de Conexi\u00f3n",
-    "MessageUnableToConnectToServer": "We're unable to connect to the selected server right now. Please try again later.",
+    "MessageUnableToConnectToServer": "No es posible conectarse al servidor seleccionado en este momento. Por favor int\u00e9ntelo nuevamente m\u00e1s tarde.",
     "ButtonSelectServer": "Seleccionar servidor",
     "MessagePluginConfigurationRequiresLocalAccess": "Para configurar este complemento por favor inicie sesi\u00f3n en su servidor local directamente.",
     "MessageLoggedOutParentalControl": "El acceso se encuentra restringido en este momento. Por favor int\u00e9ntelo de nuevo mas tarde.",
@@ -626,5 +626,6 @@
     "MessagePasswordResetForUsers": "Las contrase\u00f1as se han restablecido para los siguientes usuarios:",
     "HeaderInviteGuest": "Agregar un Invitado",
     "ButtonLinkMyMediaBrowserAccount": "Enlazar mi cuenta ahora",
-    "MessageConnectAccountRequiredToInviteGuest": "Para poder agregar invitados primero necesitas vincular tu cuenta de Media Browser a este servidor."
+    "MessageConnectAccountRequiredToInviteGuest": "Para poder agregar invitados primero necesitas vincular tu cuenta de Media Browser a este servidor.",
+    "ButtonSync": "Sinc"
 }

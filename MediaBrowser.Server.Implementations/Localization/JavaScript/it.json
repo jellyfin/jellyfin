@@ -626,5 +626,6 @@
     "MessagePasswordResetForUsers": "Le password sono state rimesse per i seguenti utenti:",
     "HeaderInviteGuest": "Invita Ospite",
     "ButtonLinkMyMediaBrowserAccount": "Collega il mio account",
-    "MessageConnectAccountRequiredToInviteGuest": "Per invitare gli ospiti \u00e8 necessario collegare prima il tuo account browser media a questo server."
+    "MessageConnectAccountRequiredToInviteGuest": "Per invitare gli ospiti \u00e8 necessario collegare prima il tuo account browser media a questo server.",
+    "ButtonSync": "Sinc."
 }

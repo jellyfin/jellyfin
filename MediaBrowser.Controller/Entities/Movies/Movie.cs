@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             BoxSetIdList = new List<Guid>();
@@ -49,6 +50,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         public float? Metascore { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
+        public List<Guid> RemoteTrailerIds { get; set; }
         public List<string> Keywords { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
@@ -88,6 +90,17 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         /// <value>The name of the TMDB collection.</value>
         public string TmdbCollectionName { get; set; }
+
+        /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        public List<Guid> GetTrailerIds()
+        {
+            var list = LocalTrailerIds.ToList();
+            list.AddRange(RemoteTrailerIds);
+            return list;
+        }
 
         /// <summary>
         /// Gets the user data key.

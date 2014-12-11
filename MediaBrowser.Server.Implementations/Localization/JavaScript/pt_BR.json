@@ -626,5 +626,6 @@
     "MessagePasswordResetForUsers": "Foram redefinidas as senhas dos seguintes usu\u00e1rios:",
     "HeaderInviteGuest": "Convidar Usu\u00e1rio",
     "ButtonLinkMyMediaBrowserAccount": "Conectar minha conta agora",
-    "MessageConnectAccountRequiredToInviteGuest": "Para convidar usu\u00e1rios voc\u00ea necessita primeiro conectar sua conta Media Browser com este servidor."
+    "MessageConnectAccountRequiredToInviteGuest": "Para convidar usu\u00e1rios voc\u00ea necessita primeiro conectar sua conta Media Browser com este servidor.",
+    "ButtonSync": "Sincronizar"
 }

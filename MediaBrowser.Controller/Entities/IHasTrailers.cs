@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasTrailers
+    public interface IHasTrailers : IHasProviderIds
     {
         /// <summary>
         /// Gets or sets the remote trailers.
@@ -17,5 +17,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The local trailer ids.</value>
         List<Guid> LocalTrailerIds { get; set; }
+        List<Guid> RemoteTrailerIds { get; set; }
+
+        /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        List<Guid> GetTrailerIds();
     }
 }

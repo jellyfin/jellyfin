@@ -23,6 +23,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IServerApplicationPaths _appPaths;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
+        private IDbCommand _deleteJobCommand;
         private IDbCommand _saveJobCommand;
         private IDbCommand _saveJobItemCommand;
 
@@ -34,13 +35,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync2.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
             string[] queries = {
 
-                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, UnwatchedOnly BIT, SyncLimit BigInt, LimitType TEXT, IsDynamic BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
+                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, UnwatchedOnly BIT, ItemLimit INT, RemoveWhenWatched BIT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, JobId TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT)",
@@ -59,8 +60,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private void PrepareStatements()
         {
+            _deleteJobCommand = _connection.CreateCommand();
+            _deleteJobCommand.CommandText = "delete from SyncJobs where Id=@Id; delete from SyncJobItems where JobId=@Id";
+            _deleteJobCommand.Parameters.Add(_deleteJobCommand, "@Id");
+
             _saveJobCommand = _connection.CreateCommand();
-            _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, SyncLimit, LimitType, IsDynamic, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @UnwatchedOnly, @SyncLimit, @LimitType, @IsDynamic, @DateCreated, @DateLastModified, @ItemCount)";
+            _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, ItemLimit, RemoveWhenWatched, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @UnwatchedOnly, @ItemLimit, @RemoveWhenWatched, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@Id");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@TargetId");
@@ -71,9 +76,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@UserId");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemIds");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@UnwatchedOnly");
-            _saveJobCommand.Parameters.Add(_saveJobCommand, "@SyncLimit");
-            _saveJobCommand.Parameters.Add(_saveJobCommand, "@LimitType");
-            _saveJobCommand.Parameters.Add(_saveJobCommand, "@IsDynamic");
+            _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemLimit");
+            _saveJobCommand.Parameters.Add(_saveJobCommand, "@RemoveWhenWatched");
+            _saveJobCommand.Parameters.Add(_saveJobCommand, "@SyncNewContent");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@DateCreated");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@DateLastModified");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemCount");
@@ -88,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@Status");
         }
 
-        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, SyncLimit, LimitType, IsDynamic, DateCreated, DateLastModified, ItemCount from SyncJobs";
+        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, ItemLimit, RemoveWhenWatched, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
         private const string BaseJobItemSelectText = "select Id, ItemId, JobId, OutputPath, Status, TargetId from SyncJobItems";
 
         public SyncJob GetJob(string id)
@@ -159,15 +164,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(9))
             {
-                info.Limit = reader.GetInt64(9);
+                info.ItemLimit = reader.GetInt32(9);
             }
 
-            if (!reader.IsDBNull(10))
-            {
-                info.LimitType = (SyncLimitType)Enum.Parse(typeof(SyncLimitType), reader.GetString(10), true);
-            }
+            info.RemoveWhenWatched = reader.GetBoolean(10);
+            info.SyncNewContent = reader.GetBoolean(11);
 
-            info.IsDynamic = reader.GetBoolean(11);
             info.DateCreated = reader.GetDateTime(12).ToUniversalTime();
             info.DateLastModified = reader.GetDateTime(13).ToUniversalTime();
             info.ItemCount = reader.GetInt32(14);
@@ -206,9 +208,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobCommand.GetParameter(index++).Value = job.UserId;
                 _saveJobCommand.GetParameter(index++).Value = string.Join(",", job.RequestedItemIds.ToArray());
                 _saveJobCommand.GetParameter(index++).Value = job.UnwatchedOnly;
-                _saveJobCommand.GetParameter(index++).Value = job.Limit;
-                _saveJobCommand.GetParameter(index++).Value = job.LimitType;
-                _saveJobCommand.GetParameter(index++).Value = job.IsDynamic;
+                _saveJobCommand.GetParameter(index++).Value = job.ItemLimit;
+                _saveJobCommand.GetParameter(index++).Value = job.RemoveWhenWatched;
+                _saveJobCommand.GetParameter(index++).Value = job.SyncNewContent;
                 _saveJobCommand.GetParameter(index++).Value = job.DateCreated;
                 _saveJobCommand.GetParameter(index++).Value = job.DateLastModified;
                 _saveJobCommand.GetParameter(index++).Value = job.ItemCount;
@@ -216,6 +218,62 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobCommand.Transaction = transaction;
 
                 _saveJobCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save record:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
+        public async Task DeleteJob(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            await _writeLock.WaitAsync().ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                var index = 0;
+
+                _deleteJobCommand.GetParameter(index++).Value = new Guid(id);
+
+                _deleteJobCommand.Transaction = transaction;
+
+                _deleteJobCommand.ExecuteNonQuery();
 
                 transaction.Commit();
             }
@@ -334,6 +392,31 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return null;
+        }
+
+        public IEnumerable<SyncJobItem> GetJobItems(string jobId)
+        {
+            if (string.IsNullOrEmpty(jobId))
+            {
+                throw new ArgumentNullException("jobId");
+            }
+
+            var guid = new Guid(jobId);
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = BaseJobItemSelectText + " where JobId=@Id";
+
+                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        yield return GetSyncJobItem(reader);
+                    }
+                }
+            }
         }
 
         public Task Create(SyncJobItem jobItem)

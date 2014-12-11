@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Actieve taken",
     "HeaderActiveDevices": "Actieve apparaten",
     "HeaderPendingInstallations": "In afwachting van installaties",
-    "HeaerServerInformation": "Server Informatie",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Nu opnieuw opstarten",
     "ButtonRestart": "Herstart",
     "ButtonShutdown": "Afsluiten",
@@ -1273,7 +1273,9 @@
     "HeaderParentalRatings": "Ouderlijke toezicht",
     "HeaderVideoTypes": "Video types",
     "HeaderYears": "Jaren",
-    "HeaderAddTag": "Add Tag",
-    "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "HeaderAddTag": "Voeg tag toe",
+    "LabelBlockItemsWithTags": "Blokkeer items met de tag:",
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
 }

@@ -833,7 +833,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
             {
-                dto.LocalTrailerCount = hasTrailers.LocalTrailerIds.Count;
+                dto.LocalTrailerCount = hasTrailers.GetTrailerIds().Count;
             }
 
             var hasDisplayOrder = item as IHasDisplayOrder;

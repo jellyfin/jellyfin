@@ -17,6 +17,9 @@ namespace MediaBrowser.Api.Devices
     {
         [ApiMember(Name = "SupportsContentUploading", Description = "SupportsContentUploading", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? SupportsContentUploading { get; set; }
+
+        [ApiMember(Name = "SupportsDeviceId", Description = "SupportsDeviceId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool? SupportsDeviceId { get; set; }
     }
 
     [Route("/Devices", "DELETE", Summary = "Deletes a device")]
@@ -116,6 +119,13 @@ namespace MediaBrowser.Api.Devices
                 var val = request.SupportsContentUploading.Value;
 
                 devices = devices.Where(i => _deviceManager.GetCapabilities(i.Id).SupportsContentUploading == val);
+            }
+
+            if (request.SupportsDeviceId.HasValue)
+            {
+                var val = request.SupportsDeviceId.Value;
+
+                devices = devices.Where(i => _deviceManager.GetCapabilities(i.Id).SupportsDeviceId == val);
             }
 
             return ToOptimizedResult(devices.ToList());

@@ -626,5 +626,6 @@
     "MessagePasswordResetForUsers": "Passwords have been reset for the following users:",
     "HeaderInviteGuest": "Invite Guest",
     "ButtonLinkMyMediaBrowserAccount": "Link my account now",
-    "MessageConnectAccountRequiredToInviteGuest": "In order to invite guests you need to first link your Media Browser account to this server."
+    "MessageConnectAccountRequiredToInviteGuest": "In order to invite guests you need to first link your Media Browser account to this server.",
+    "ButtonSync": "Sync"
 }
