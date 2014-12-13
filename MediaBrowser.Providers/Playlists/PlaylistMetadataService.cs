@@ -7,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Providers.Playlists
 {
@@ -34,18 +33,14 @@ namespace MediaBrowser.Providers.Playlists
                 target.PlaylistMediaType = source.PlaylistMediaType;
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.OwnerUserId))
+            if (replaceData || target.Shares.Count == 0)
             {
-                target.OwnerUserId = source.OwnerUserId;
+                target.Shares = source.Shares;
             }
 
             if (mergeMetadataSettings)
             {
-                var list = source.LinkedChildren.ToList();
-
-                list.AddRange(target.LinkedChildren);
-
-                target.LinkedChildren = list;
+                target.LinkedChildren = source.LinkedChildren;
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿
 namespace MediaBrowser.Model.Sync
 {
-    public class SyncJobQuery
+    public class SyncJobItemQuery
     {
         /// <summary>
         /// Gets or sets the start index.
@@ -13,6 +13,11 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
+        /// <summary>
+        /// Gets or sets the job identifier.
+        /// </summary>
+        /// <value>The job identifier.</value>
+        public string JobId { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is completed.
         /// </summary>

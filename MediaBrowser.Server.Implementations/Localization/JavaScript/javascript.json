@@ -638,5 +638,14 @@
     "ButtonSync": "Sync",
     "SyncMedia": "Sync Media",
     "HeaderCancelSyncJob": "Cancel Sync",
-    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?"
+    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?",
+    "TabSync": "Sync",
+    "MessagePleaseSelectDeviceToSyncTo": "Please select a device to sync to.",
+    "MessageSyncJobCreated": "Sync job created.",
+    "LabelSyncTo": "Sync to:",
+    "LabelSyncJobName": "Sync job name:",
+    "LabelQuality": "Quality:",
+    "OptionHigh": "High",
+    "OptionMedium": "Medium",
+    "OptionLow": "Low"
 }

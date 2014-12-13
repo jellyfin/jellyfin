@@ -4,9 +4,8 @@ namespace MediaBrowser.Model.Sync
     public enum SyncJobStatus
     {
         Queued = 0,
-        Converting = 1,
-        Transferring = 2,
-        Completed = 3,
-        Cancelled = 4
+        InProgress = 1,
+        Completed = 2,
+        CompletedWithError = 3
     }
 }

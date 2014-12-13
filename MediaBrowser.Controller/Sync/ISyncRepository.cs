@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Sync
@@ -66,8 +65,8 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Gets the job items.
         /// </summary>
-        /// <param name="jobId">The job identifier.</param>
+        /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;SyncJobItem&gt;.</returns>
-        IEnumerable<SyncJobItem> GetJobItems(string jobId);
+        QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
     }
 }

@@ -115,9 +115,14 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 {
                     Name = name,
                     Parent = parentFolder,
-                    Path = path,
-                    OwnerUserId = options.UserId
+                    Path = path
                 };
+
+                playlist.Shares.Add(new Share
+                {
+                    UserId = options.UserId,
+                    CanEdit = true
+                });
 
                 playlist.SetMediaType(options.MediaType);
 

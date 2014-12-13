@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync2.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync4.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, UnwatchedOnly BIT, ItemLimit INT, RemoveWhenWatched BIT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
-                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, JobId TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT)",
+                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, JobId TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT)",
                                 "create index if not exists idx_SyncJobItems on SyncJobs(Id)",
 
                                 //pragmas
@@ -84,17 +84,20 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemCount");
 
             _saveJobItemCommand = _connection.CreateCommand();
-            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, JobId, OutputPath, Status, TargetId) values (@Id, @ItemId, @JobId, @OutputPath, @Status, @TargetId)";
+            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, JobId, OutputPath, Status, TargetId, DateCreated, Progress) values (@Id, @ItemId, @JobId, @OutputPath, @Status, @TargetId, @DateCreated, @Progress)";
 
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@Id");
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@ItemId");
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@JobId");
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@OutputPath");
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@Status");
+            _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@TargetId");
+            _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@DateCreated");
+            _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@Progress");
         }
 
         private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, ItemLimit, RemoveWhenWatched, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
-        private const string BaseJobItemSelectText = "select Id, ItemId, JobId, OutputPath, Status, TargetId from SyncJobItems";
+        private const string BaseJobItemSelectText = "select Id, ItemId, JobId, OutputPath, Status, TargetId, DateCreated, Progress from SyncJobItems";
 
         public SyncJob GetJob(string id)
         {
@@ -105,6 +108,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var guid = new Guid(id);
 
+            if (guid == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = BaseJobSelectText + " where Id=@Id";
@@ -321,8 +329,24 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var whereClauses = new List<string>();
 
-                var startIndex = query.StartIndex ?? 0;
+                if (query.IsCompleted.HasValue)
+                {
+                    if (query.IsCompleted.Value)
+                    {
+                        whereClauses.Add("Status=@Status");
+                    }
+                    else
+                    {
+                        whereClauses.Add("Status<>@Status");
+                    }
+                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = SyncJobStatus.Completed.ToString();
+                }
 
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                var startIndex = query.StartIndex ?? 0;
                 if (startIndex > 0)
                 {
                     whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobs ORDER BY DateLastModified DESC LIMIT {0})",
@@ -341,7 +365,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
                 }
 
-                cmd.CommandText += "; select count (Id) from SyncJobs";
+                cmd.CommandText += "; select count (Id) from SyncJobs" + whereTextWithoutPaging;
 
                 var list = new List<SyncJob>();
                 var count = 0;
@@ -386,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (reader.Read())
                     {
-                        return GetSyncJobItem(reader);
+                        return GetJobItem(reader);
                     }
                 }
             }
@@ -394,28 +418,84 @@ namespace MediaBrowser.Server.Implementations.Sync
             return null;
         }
 
-        public IEnumerable<SyncJobItem> GetJobItems(string jobId)
+        public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
         {
-            if (string.IsNullOrEmpty(jobId))
+            if (query == null)
             {
-                throw new ArgumentNullException("jobId");
+                throw new ArgumentNullException("query");
             }
-
-            var guid = new Guid(jobId);
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = BaseJobItemSelectText + " where JobId=@Id";
+                cmd.CommandText = BaseJobItemSelectText;
 
-                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
+                var whereClauses = new List<string>();
 
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                if (!string.IsNullOrWhiteSpace(query.JobId))
+                {
+                    whereClauses.Add("JobId=@JobId");
+                    cmd.Parameters.Add(cmd, "@JobId", DbType.String).Value = query.JobId;
+                }
+
+                if (query.IsCompleted.HasValue)
+                {
+                    if (query.IsCompleted.Value)
+                    {
+                        whereClauses.Add("Status=@Status");
+                    }
+                    else
+                    {
+                        whereClauses.Add("Status<>@Status");
+                    }
+                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = SyncJobStatus.Completed.ToString();
+                }
+
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                var startIndex = query.StartIndex ?? 0;
+                if (startIndex > 0)
+                {
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobItems ORDER BY DateCreated LIMIT {0})",
+                        startIndex.ToString(_usCulture)));
+                }
+
+                if (whereClauses.Count > 0)
+                {
+                    cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                }
+
+                cmd.CommandText += " ORDER BY DateCreated";
+
+                if (query.Limit.HasValue)
+                {
+                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                }
+
+                cmd.CommandText += "; select count (Id) from SyncJobItems" + whereTextWithoutPaging;
+
+                var list = new List<SyncJobItem>();
+                var count = 0;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
                     while (reader.Read())
                     {
-                        yield return GetSyncJobItem(reader);
+                        list.Add(GetJobItem(reader));
+                    }
+
+                    if (reader.NextResult() && reader.Read())
+                    {
+                        count = reader.GetInt32(0);
                     }
                 }
+
+                return new QueryResult<SyncJobItem>()
+                {
+                    Items = list.ToArray(),
+                    TotalRecordCount = count
+                };
             }
         }
 
@@ -447,6 +527,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.OutputPath;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.Status;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.TargetId;
+                _saveJobItemCommand.GetParameter(index++).Value = jobItem.DateCreated;
+                _saveJobItemCommand.GetParameter(index++).Value = jobItem.Progress;
 
                 _saveJobItemCommand.Transaction = transaction;
 
@@ -485,7 +567,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private SyncJobItem GetSyncJobItem(IDataReader reader)
+        private SyncJobItem GetJobItem(IDataReader reader)
         {
             var info = new SyncJobItem
             {
@@ -501,11 +583,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(4))
             {
-                info.Status = (SyncJobStatus)Enum.Parse(typeof(SyncJobStatus), reader.GetString(4), true);
+                info.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(4), true);
             }
 
             info.TargetId = reader.GetString(5);
 
+            info.DateCreated = reader.GetDateTime(6);
+
+            if (!reader.IsDBNull(7))
+            {
+                info.Progress = reader.GetDouble(7);
+            }
+            
             return info;
         }
 

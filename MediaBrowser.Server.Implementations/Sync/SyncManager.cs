@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -23,15 +24,17 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISyncRepository _repo;
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger _logger;
+        private readonly IUserManager _userManager;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager)
         {
             _libraryManager = libraryManager;
             _repo = repo;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _userManager = userManager;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -41,8 +44,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var items = new SyncJobProcessor(_libraryManager, _repo)
-                .GetItemsForSync(request.ItemIds)
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager);
+
+            var user = _userManager.GetUserById(request.UserId);
+            
+            var items = processor
+                .GetItemsForSync(request.ItemIds, user)
                 .ToList();
 
             if (items.Any(i => !SupportsSync(i)))
@@ -50,9 +57,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentException("Item does not support sync.");
             }
 
-            if (items.Count == 1)
+            if (string.IsNullOrWhiteSpace(request.Name) && request.ItemIds.Count == 1)
             {
-                request.Name = GetDefaultName(items[0]);
+                request.Name = GetDefaultName(_libraryManager.GetItemById(request.ItemIds[0]));
             }
 
             if (string.IsNullOrWhiteSpace(request.Name))
@@ -82,7 +89,15 @@ namespace MediaBrowser.Server.Implementations.Sync
                 Quality = request.Quality
             };
 
+            // It's just a static list
+            if (!items.Any(i => i.IsFolder || i is IItemByName))
+            {
+                job.SyncNewContent = false;
+            }
+
             await _repo.Create(job).ConfigureAwait(false);
+
+            await processor.EnsureJobItems(job).ConfigureAwait(false);
 
             return new SyncJobCreationResult
             {
@@ -101,9 +116,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private void FillMetadata(SyncJob job)
         {
-            var item = new SyncJobProcessor(_libraryManager, _repo)
-                .GetItemsForSync(job.RequestedItemIds)
-                .FirstOrDefault();
+            var item = job.RequestedItemIds
+                .Select(_libraryManager.GetItemById)
+                .FirstOrDefault(i => i != null);
 
             if (item != null)
             {
@@ -139,10 +154,6 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task CancelJob(string id)
         {
-            var job = GetJob(id);
-
-            job.Status = SyncJobStatus.Cancelled;
-
             return _repo.DeleteJob(id);
         }
 
@@ -165,8 +176,13 @@ namespace MediaBrowser.Server.Implementations.Sync
             return provider.GetSyncTargets().Select(i => new SyncTarget
             {
                 Name = i.Name,
-                Id = providerId + "-" + i.Id
+                Id = GetSyncTargetId(providerId, i)
             });
+        }
+
+        private string GetSyncTargetId(string providerId, SyncTarget target)
+        {
+            return (providerId + "-" + target.Id).GetMD5().ToString("N");
         }
 
         private ISyncProvider GetSyncProvider(SyncTarget target)
@@ -183,35 +199,46 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool SupportsSync(BaseItem item)
         {
-            if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.MediaType, MediaType.Game, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.MediaType, MediaType.Book, StringComparison.OrdinalIgnoreCase))
             {
                 if (item.LocationType == LocationType.Virtual)
                 {
                     return false;
                 }
 
-                if (item.RunTimeTicks.HasValue)
+                if (!item.RunTimeTicks.HasValue)
                 {
-                    var video = item as Video;
-
-                    if (video != null)
-                    {
-                        if (video.VideoType == VideoType.Iso)
-                        {
-                            return false;
-                        }
-
-                        if (video.IsStacked)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
+                    return false;
                 }
 
-                return false;
+                var video = item as Video;
+                if (video != null)
+                {
+                    if (video.VideoType == VideoType.Iso)
+                    {
+                        return false;
+                    }
+
+                    if (video.IsStacked)
+                    {
+                        return false;
+                    }
+                }
+
+                var game = item as Game;
+                if (game != null)
+                {
+                    if (game.IsMultiPart)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             return item.LocationType == LocationType.FileSystem || item is Season;
@@ -220,6 +247,22 @@ namespace MediaBrowser.Server.Implementations.Sync
         private string GetDefaultName(BaseItem item)
         {
             return item.Name;
+        }
+
+        public DeviceProfile GetDeviceProfile(string targetId)
+        {
+            foreach (var provider in _providers)
+            {
+                foreach (var target in GetSyncTargets(provider, null))
+                {
+                    if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return provider.GetDeviceProfile(target);
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
