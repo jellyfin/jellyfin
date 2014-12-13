@@ -181,11 +181,6 @@
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Android.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Windows 8 RT.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Windows Phone.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Images\logo240.jpg" />
     <EmbeddedResource Include="Images\logo240.png" />
   </ItemGroup>

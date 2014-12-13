@@ -176,7 +176,7 @@
 
         var task = tasks.filter(function (t) {
 
-            return t.Name == 'Refresh Guide';
+            return t.Key == 'RefreshGuide';
 
         })[0];
 

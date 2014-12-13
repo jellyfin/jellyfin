@@ -627,5 +627,22 @@
     "HeaderInviteGuest": "Nodig gast uit",
     "ButtonLinkMyMediaBrowserAccount": "Koppel mijn account nu",
     "MessageConnectAccountRequiredToInviteGuest": "Om gasten uit te kunnen nodigen moet je Media Browser account aan deze server gekoppeld worden.",
-    "ButtonSync": "Synchronisatie"
+    "ButtonSync": "Synchronisatie",
+    "SyncMedia": "Sync Media",
+    "HeaderCancelSyncJob": "Cancel Sync",
+    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?",
+    "TabSync": "Synchronisatie",
+    "MessagePleaseSelectDeviceToSyncTo": "Please select a device to sync to.",
+    "MessageSyncJobCreated": "Sync job created.",
+    "LabelSyncTo": "Sync to:",
+    "LabelSyncJobName": "Sync job name:",
+    "LabelQuality": "Quality:",
+    "OptionHigh": "High",
+    "OptionMedium": "Medium",
+    "OptionLow": "Low",
+    "HeaderSettings": "Settings",
+    "OptionAutomaticallySyncNewContent": "Automatically sync new content",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to these folders will be automatically synced to the device.",
+    "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
+    "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched."
 }

@@ -346,6 +346,7 @@ namespace MediaBrowser.Server.Startup.Common
             new RenameXbmcOptions(ServerConfigurationManager).Run();
             new RenameXmlOptions(ServerConfigurationManager).Run();
             new DeprecatePlugins(ApplicationPaths).Run();
+            new DeleteDlnaProfiles(ApplicationPaths).Run();
         }
 
         /// <summary>

@@ -1277,5 +1277,7 @@
     "LabelBlockItemsWithTags": "Bloquer les \u00e9l\u00e9ments contenant les tags:",
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
-    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
+    "TabActivity": "Activity",
+    "TitleSync": "Sync"
 }

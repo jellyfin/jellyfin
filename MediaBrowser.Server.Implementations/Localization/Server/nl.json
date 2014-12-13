@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Actieve taken",
     "HeaderActiveDevices": "Actieve apparaten",
     "HeaderPendingInstallations": "In afwachting van installaties",
-    "HeaderServerInformation": "Server Information",
+    "HeaderServerInformation": "Server informatie",
     "ButtonRestartNow": "Nu opnieuw opstarten",
     "ButtonRestart": "Herstart",
     "ButtonShutdown": "Afsluiten",
@@ -1216,7 +1216,7 @@
     "HeaderCameraUploadHelp": "Upload automatisch foto's en video's van je mobiele apparaten naar Media Browser.",
     "MessageNoDevicesSupportCameraUpload": "Je hebt op dit moment geen apparaten die camera upload ondersteunen.",
     "LabelCameraUploadPath": "Camera upload pad:",
-    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
+    "LabelCameraUploadPathHelp": "Geef een eigen upload pad op, indien gewenst. Deze map moet ook aan de bibliotheek instellingen toegevoegd worden. Als er niets opgegeven is wordt de standaard map gebruikt.",
     "LabelCreateCameraUploadSubfolder": "Maak een submap voor elk apparaat",
     "LabelCreateCameraUploadSubfolderHelp": "Specifieke mappen kunnen aan een apparaat toegekend worden door er op te klikken in de apparaten pagina.",
     "LabelCustomDeviceDisplayName": "Weergave naam:",
@@ -1276,6 +1276,8 @@
     "HeaderAddTag": "Voeg tag toe",
     "LabelBlockItemsWithTags": "Blokkeer items met de tag:",
     "LabelTag": "Tag:",
-    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
-    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
+    "LabelEnableSingleImageInDidlLimit": "Beperk tot \u00e9\u00e9n enkele ingesloten afbeelding",
+    "LabelEnableSingleImageInDidlLimitHelp": "Sommige apparaten zullen niet goed weergeven als er meerdere afbeeldingen ingesloten zijn in Didl.",
+    "TabActivity": "Activity",
+    "TitleSync": "Sync"
 }

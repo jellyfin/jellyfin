@@ -35,9 +35,12 @@
                 return i.Id || i;
             }).join(','),
 
-            Quality: $('.radioSyncQuality', form)[0].getAttribute('data-value'),
+            Quality: $('#selectQuality', form).val(),
 
-            Name: $('#txtSyncJobName', form).val()
+            Name: $('#txtSyncJobName', form).val(),
+
+            SyncNewContent: $('#chkSyncNewContent', form).checked(),
+            UnwatchedOnly: $('#chkUnwatchedOnly', form).checked()
         };
 
         ApiClient.ajax({
@@ -104,16 +107,34 @@
             html += '<br/>';
 
             html += '<div>';
-            html += '<fieldset data-role="controlgroup">';
-            html += '<legend>' + Globalize.translate('LabelQuality') + '</legend>';
-            html += '<label for="radioHighSyncQuality">' + Globalize.translate('OptionHigh') + '</label>';
-            html += '<input type="radio" id="radioHighSyncQuality" name="radioSyncQuality" checked="checked" class="radioSyncQuality" data-value="High" />';
-            html += '<label for="radioMediumSyncQuality">' + Globalize.translate('OptionMedium') + '</label>';
-            html += '<input type="radio" id="radioMediumSyncQuality" name="radioSyncQuality" class="radioSyncQuality" data-value="Medium" />';
-            html += '<label for="radioLowSyncQuality">' + Globalize.translate('OptionLow') + '</label>';
-            html += '<input type="radio" id="radioLowSyncQuality" name="radioSyncQuality" class="radioSyncQuality" data-value="Low" />';
-            html += '</fieldset>';
+            html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
+            html += '<select id="selectQuality" data-mini="true">';
+            html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
+            html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
+            html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
+            html += '</select>';
             html += '</div>';
+
+            //html += '<div data-role="collapsible" style="margin:1.5em 0">';
+            //html += '<h2>' + Globalize.translate('HeaderSettings') + '</h2>';
+            //html += '<div style="margin:0 -.5em 0 -.25em;">';
+
+            html += '<br/>';
+            html += '<div>';
+            html += '<label for="chkSyncNewContent">' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</label>';
+            html += '<input type="checkbox" id="chkSyncNewContent" data-mini="true" />';
+            html += '<div class="fieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
+            html += '</div>';
+
+            html += '<br/>';
+            html += '<div>';
+            html += '<label for="chkUnwatchedOnly">' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</label>';
+            html += '<input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />';
+            html += '<div class="fieldDescription">' + Globalize.translate('OptionSyncUnwatchedVideosOnlyHelp') + '</div>';
+            html += '</div>';
+
+            //html += '</div>';
+            //html += '</div>';
 
             html += '<br/>';
             html += '<p>';
