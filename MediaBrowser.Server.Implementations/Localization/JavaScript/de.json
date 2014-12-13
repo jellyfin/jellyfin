@@ -627,5 +627,22 @@
     "HeaderInviteGuest": "Lade G\u00e4ste ein",
     "ButtonLinkMyMediaBrowserAccount": "Verkn\u00fcpfe jetzt meinen Account",
     "MessageConnectAccountRequiredToInviteGuest": "Um G\u00e4ste einladen zu k\u00f6nnen, musst du zuerst deinen Media Browser Account auf diesem Server verkn\u00fcpfen.",
-    "ButtonSync": "Synchronisieren"
+    "ButtonSync": "Synchronisieren",
+    "SyncMedia": "Sync Media",
+    "HeaderCancelSyncJob": "Cancel Sync",
+    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?",
+    "TabSync": "Synchronisieren",
+    "MessagePleaseSelectDeviceToSyncTo": "Please select a device to sync to.",
+    "MessageSyncJobCreated": "Sync job created.",
+    "LabelSyncTo": "Sync to:",
+    "LabelSyncJobName": "Sync job name:",
+    "LabelQuality": "Quality:",
+    "OptionHigh": "High",
+    "OptionMedium": "Medium",
+    "OptionLow": "Low",
+    "HeaderSettings": "Settings",
+    "OptionAutomaticallySyncNewContent": "Automatically sync new content",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to these folders will be automatically synced to the device.",
+    "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
+    "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched."
 }

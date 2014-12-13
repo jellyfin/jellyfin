@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Tareas en Ejecuci\u00f3n",
     "HeaderActiveDevices": "Dispositivos Activos",
     "HeaderPendingInstallations": "Instalaciones Pendientes",
-    "HeaderServerInformation": "Server Information",
+    "HeaderServerInformation": "Informaci\u00f3n del Servidor",
     "ButtonRestartNow": "Reiniciar Ahora",
     "ButtonRestart": "Reiniciar",
     "ButtonShutdown": "Apagar",
@@ -1276,6 +1276,8 @@
     "HeaderAddTag": "Agregar Etiqueta",
     "LabelBlockItemsWithTags": "Bloquear \u00edtems con etiquetas:",
     "LabelTag": "Etiqueta:",
-    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
-    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl."
+    "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",
+    "LabelEnableSingleImageInDidlLimitHelp": "Algunos dispositivos no renderisaran apropiadamente si hay m\u00faltiples im\u00e1genes incrustadas en el Didl",
+    "TabActivity": "Activity",
+    "TitleSync": "Sync"
 }

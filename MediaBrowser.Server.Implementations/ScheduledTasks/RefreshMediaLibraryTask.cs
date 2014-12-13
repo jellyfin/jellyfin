@@ -12,7 +12,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Class RefreshMediaLibraryTask
     /// </summary>
-    public class RefreshMediaLibraryTask : IScheduledTask
+    public class RefreshMediaLibraryTask : IScheduledTask, IHasKey
     {
         /// <summary>
         /// The _library manager
@@ -87,6 +87,11 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             {
                 return "Library";
             }
+        }
+
+        public string Key
+        {
+            get { return "RefreshLibrary"; }
         }
     }
 }

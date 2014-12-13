@@ -63,6 +63,7 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="FFMpeg\FFmpegValidator.cs" />
     <Compile Include="INativeApp.cs" />
+    <Compile Include="Migrations\DeleteDlnaProfiles.cs" />
     <Compile Include="Migrations\DeprecatePlugins.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\MigrateUserFolders.cs" />

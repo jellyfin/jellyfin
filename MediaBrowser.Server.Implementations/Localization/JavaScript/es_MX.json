@@ -627,5 +627,22 @@
     "HeaderInviteGuest": "Agregar un Invitado",
     "ButtonLinkMyMediaBrowserAccount": "Enlazar mi cuenta ahora",
     "MessageConnectAccountRequiredToInviteGuest": "Para poder agregar invitados primero necesitas vincular tu cuenta de Media Browser a este servidor.",
-    "ButtonSync": "Sinc"
+    "ButtonSync": "Sinc",
+    "SyncMedia": "Sync Media",
+    "HeaderCancelSyncJob": "Cancel Sync",
+    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?",
+    "TabSync": "Sinc",
+    "MessagePleaseSelectDeviceToSyncTo": "Please select a device to sync to.",
+    "MessageSyncJobCreated": "Sync job created.",
+    "LabelSyncTo": "Sync to:",
+    "LabelSyncJobName": "Sync job name:",
+    "LabelQuality": "Quality:",
+    "OptionHigh": "High",
+    "OptionMedium": "Medium",
+    "OptionLow": "Low",
+    "HeaderSettings": "Settings",
+    "OptionAutomaticallySyncNewContent": "Automatically sync new content",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to these folders will be automatically synced to the device.",
+    "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
+    "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched."
 }
