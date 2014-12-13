@@ -761,6 +761,10 @@ var Dashboard = {
             href: "playbackconfiguration.html",
             selected: page.hasClass('playbackConfigurationPage')
         }, {
+            name: Globalize.translate('TabSync'),
+            href: "syncactivity.html",
+            selected: page.hasClass('syncConfigurationPage')
+        }, {
             divider: true,
             name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
@@ -1258,7 +1262,7 @@ var Dashboard = {
         PlayableMediaTypes: "Audio,Video",
 
         SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
-        SupportsDeviceId: false
+        SupportsUniqueIdentifier: false
     };
 
     window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);

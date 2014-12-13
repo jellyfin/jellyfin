@@ -79,11 +79,11 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Devices', {
             
-            SupportsDeviceId: true
+            SupportsUniqueIdentifier: true
 
-        })).done(function (devices) {
+        })).done(function (result) {
 
-            load(page, devices);
+            load(page, result.Items);
 
             Dashboard.hideLoadingMsg();
         });

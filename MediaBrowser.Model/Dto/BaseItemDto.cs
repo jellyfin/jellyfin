@@ -186,6 +186,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The genres.</value>
         public List<string> Genres { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series genres.
+        /// </summary>
+        /// <value>The series genres.</value>
+        public List<string> SeriesGenres { get; set; }
         
         /// <summary>
         /// Gets or sets the community rating.

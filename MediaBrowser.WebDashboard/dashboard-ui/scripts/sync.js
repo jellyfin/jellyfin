@@ -1,6 +1,18 @@
 ﻿(function (window, $) {
 
-    function submitJob(userId, items, form) {
+    function submitJob(userId, syncOptions, form) {
+
+        if (!userId) {
+            throw new Error('userId cannot be null');
+        }
+
+        if (!syncOptions) {
+            throw new Error('syncOptions cannot be null');
+        }
+
+        if (!form) {
+            throw new Error('form cannot be null');
+        }
 
         var target = $('.radioSync:checked', form).get().map(function (c) {
 
@@ -10,7 +22,7 @@
 
         if (!target) {
 
-            Dashboard.alert('Please select a device to sync to.');
+            Dashboard.alert(Globalize.translate('MessagePleaseSelectDeviceToSyncTo'));
             return;
         }
 
@@ -19,8 +31,8 @@
             userId: userId,
             TargetId: target,
 
-            ItemIds: items.map(function (i) {
-                return i.Id;
+            ItemIds: syncOptions.items.map(function (i) {
+                return i.Id || i;
             }).join(','),
 
             Quality: $('.radioSyncQuality', form)[0].getAttribute('data-value'),
@@ -39,10 +51,11 @@
 
             $('.syncPanel').panel('close');
             $(window.SyncManager).trigger('jobsubmit');
+            Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
     }
 
-    function showSyncMenu(items) {
+    function showSyncMenu(options) {
 
         var userId = Dashboard.getCurrentUserId();
 
@@ -59,17 +72,17 @@
 
             html += '<form class="formSubmitSyncRequest">';
 
-            if (items.length > 1) {
+            if (options.items.length > 1) {
 
                 html += '<p>';
-                html += '<label for="txtSyncJobName">Sync job name:</label>';
+                html += '<label for="txtSyncJobName">' + Globalize.translate('LabelSyncJobName') + '</label>';
                 html += '<input type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" />';
                 html += '</p>';
             }
 
             html += '<div>';
             html += '<fieldset data-role="controlgroup">';
-            html += '<legend>Sync to:</legend>';
+            html += '<legend>' + Globalize.translate('LabelSyncTo') + '</legend>';
 
             var index = 0;
 
@@ -92,19 +105,19 @@
 
             html += '<div>';
             html += '<fieldset data-role="controlgroup">';
-            html += '<legend>Quality:</legend>';
-            html += '<label for="radioHighSyncQuality">High</label>';
+            html += '<legend>' + Globalize.translate('LabelQuality') + '</legend>';
+            html += '<label for="radioHighSyncQuality">' + Globalize.translate('OptionHigh') + '</label>';
             html += '<input type="radio" id="radioHighSyncQuality" name="radioSyncQuality" checked="checked" class="radioSyncQuality" data-value="High" />';
-            html += '<label for="radioMediumSyncQuality">Medium</label>';
+            html += '<label for="radioMediumSyncQuality">' + Globalize.translate('OptionMedium') + '</label>';
             html += '<input type="radio" id="radioMediumSyncQuality" name="radioSyncQuality" class="radioSyncQuality" data-value="Medium" />';
-            html += '<label for="radioLowSyncQuality">Low</label>';
+            html += '<label for="radioLowSyncQuality">' + Globalize.translate('OptionLow') + '</label>';
             html += '<input type="radio" id="radioLowSyncQuality" name="radioSyncQuality" class="radioSyncQuality" data-value="Low" />';
             html += '</fieldset>';
             html += '</div>';
 
             html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="refresh" data-theme="b">Sync</button>';
+            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
             html += '</p>';
 
             html += '</form>';
@@ -119,7 +132,7 @@
 
             $('form', elem).on('submit', function () {
 
-                submitJob(userId, items, this);
+                submitJob(userId, options, this);
                 return false;
             });
         });

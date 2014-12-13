@@ -57,11 +57,6 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Item>");
 
-            if (!string.IsNullOrEmpty(playlist.OwnerUserId))
-            {
-                builder.Append("<OwnerUserId>" + SecurityElement.Escape(playlist.OwnerUserId) + "</OwnerUserId>");
-            }
-
             if (!string.IsNullOrEmpty(playlist.PlaylistMediaType))
             {
                 builder.Append("<PlaylistMediaType>" + SecurityElement.Escape(playlist.PlaylistMediaType) + "</PlaylistMediaType>");

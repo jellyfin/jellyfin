@@ -240,6 +240,9 @@
     <Compile Include="..\MediaBrowser.Model\Devices\DeviceOptions.cs">
       <Link>Devices\DeviceOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\DeviceQuery.cs">
+      <Link>Devices\DeviceQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Devices\DevicesOptions.cs">
       <Link>Devices\DevicesOptions.cs</Link>
     </Compile>
@@ -992,6 +995,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItem.cs">
       <Link>Sync\SyncJobItem.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItemQuery.cs">
+      <Link>Sync\SyncJobItemQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItemStatus.cs">
+      <Link>Sync\SyncJobItemStatus.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobQuery.cs">
       <Link>Sync\SyncJobQuery.cs</Link>

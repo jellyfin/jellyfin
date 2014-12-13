@@ -251,9 +251,8 @@
 
         closeContextMenu();
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-            SyncManager.showMenu([item]);
+        SyncManager.showMenu({
+            items: [id]
         });
 
         return false;
@@ -743,21 +742,13 @@
             return;
         }
 
-        ApiClient.getItems({
+        SyncManager.showMenu({
+            items: selection
+        });
 
-            ids: selection.join(','),
-            fields: 'SyncInfo',
-            userId: Dashboard.getCurrentUserId()
+        $(SyncManager).off('jobsubmit.librarylist').on('jobsubmit.librarylist', function () {
 
-        }).done(function (result) {
-
-            SyncManager.showMenu(result.Items);
-
-            $(SyncManager).off('jobsubmit.librarylist').on('jobsubmit.librarylist', function () {
-
-                hideSelections(page);
-            });
-
+            hideSelections(page);
         });
     }
 

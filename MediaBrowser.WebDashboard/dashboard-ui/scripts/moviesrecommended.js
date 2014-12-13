@@ -52,7 +52,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 3)),
+            Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1600 ? 8 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             CollapseBoxSetItems: false,
@@ -85,7 +85,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
-            ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 7)),
+            ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 7 : 6)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"

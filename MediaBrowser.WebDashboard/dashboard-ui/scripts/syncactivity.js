@@ -60,6 +60,7 @@
                 width: 400,
                 tag: job.PrimaryImageTag
             });
+            style = "background-position:center center;";
         } else {
             style = "background-color:#38c;background-position:center center;";
             imgUrl = "css/images/items/detail/video.png";
@@ -80,16 +81,8 @@
         if (job.Status == 'Completed') {
             html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
         }
-        else if (job.Status == 'Queued') {
-        }
-        else if (job.Status == 'Transcoding' || job.Status == 'Transferring') {
-            html += '<div class="playedIndicator"><div class="ui-icon-refresh ui-btn-icon-notext"></div></div>';
-        }
-        else if (job.Status == 'Cancelled') {
-            html += '<div class="playedIndicator" style="background-color:#FF6A00;"><div class="ui-icon-minus ui-btn-icon-notext"></div></div>';
-        }
-        else if (job.Status == 'TranscodingFailed') {
-            html += '<div class="playedIndicator" style="background-color:#cc0000;"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
+        else if (job.Status == 'CompletedWithError') {
+            html += '<div class="playedIndicator" style="background-color:#cc0000;"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
         }
 
         // cardContent
@@ -215,13 +208,13 @@
         });
     }
 
-    $(document).on('pageshow', "#dashboardSyncPage", function () {
+    $(document).on('pageshow', "#syncActivityPage", function () {
 
         var page = this;
 
         reloadData(page);
 
-    }).on('pageinit', "#dashboardSyncPage", function () {
+    }).on('pageinit', "#syncActivityPage", function () {
 
         var page = this;
 

@@ -1142,6 +1142,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.SeasonId = episodeSeason.Id.ToString("N");
                     dto.SeasonName = episodeSeason.Name;
                 }
+
+                if (fields.Contains(ItemFields.SeriesGenres))
+                {
+                    var episodeseries = episode.Series;
+                    if (episodeseries != null)
+                    {
+                        dto.SeriesGenres = episodeseries.Genres.ToList();
+                    }
+                }
             }
 
             // Add SeriesInfo

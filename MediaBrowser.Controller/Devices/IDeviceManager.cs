@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -58,8 +59,9 @@ namespace MediaBrowser.Controller.Devices
         /// <summary>
         /// Gets the devices.
         /// </summary>
+        /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
-        IEnumerable<DeviceInfo> GetDevices();
+        QueryResult<DeviceInfo> GetDevices(DeviceQuery query);
 
         /// <summary>
         /// Deletes the device.

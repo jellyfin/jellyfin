@@ -1104,6 +1104,17 @@
             });
         };
 
+        self.getInstantMixFromPlaylist = function (itemId, options) {
+
+            var url = self.getUrl("Playlists/" + itemId + "/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getEpisodes = function (itemId, options) {
 
             var url = self.getUrl("Shows/" + itemId + "/Episodes", options);

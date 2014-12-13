@@ -11,9 +11,16 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Playlists
 {
-    public class Playlist : Folder
+    public class Playlist : Folder, IHasShares
     {
         public string OwnerUserId { get; set; }
+
+        public List<Share> Shares { get; set; }
+
+        public Playlist()
+        {
+            Shares = new List<Share>();
+        }
 
         [IgnoreDataMember]
         protected override bool FilterLinkedChildrenPerUser
@@ -166,7 +173,15 @@ namespace MediaBrowser.Controller.Playlists
 
         public override bool IsVisible(User user)
         {
-            return base.IsVisible(user) && string.Equals(user.Id.ToString("N"), OwnerUserId);
+            if (base.IsVisible(user))
+            {
+                var userId = user.Id.ToString("N");
+
+                return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
+                    string.Equals(OwnerUserId, userId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
     }
 }

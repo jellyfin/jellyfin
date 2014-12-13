@@ -306,6 +306,7 @@
     <Compile Include="Sync\SyncJobProcessor.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
+    <Compile Include="Sync\SyncScheduledTask.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />

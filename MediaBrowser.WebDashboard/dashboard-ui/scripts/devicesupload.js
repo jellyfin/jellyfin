@@ -77,7 +77,7 @@
         $.when(promise1, promise2).done(function (response1, response2) {
 
 
-            load(page, response2[0], response1[0]);
+            load(page, response2[0].Items, response1[0]);
 
             Dashboard.hideLoadingMsg();
         });

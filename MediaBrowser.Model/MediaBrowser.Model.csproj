@@ -113,6 +113,7 @@
     <Compile Include="Connect\PinStatusResult.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
     <Compile Include="Devices\DeviceOptions.cs" />
+    <Compile Include="Devices\DeviceQuery.cs" />
     <Compile Include="Devices\LocalFileInfo.cs" />
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />
@@ -365,6 +366,8 @@
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
     <Compile Include="Sync\SyncJobItem.cs" />
+    <Compile Include="Sync\SyncJobItemQuery.cs" />
+    <Compile Include="Sync\SyncJobItemStatus.cs" />
     <Compile Include="Sync\SyncJobQuery.cs" />
     <Compile Include="Sync\SyncJobRequest.cs" />
     <Compile Include="Sync\SyncJobStatus.cs" />

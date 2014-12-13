@@ -44,6 +44,11 @@ namespace MediaBrowser.Providers.BoxSets
 
                 target.LinkedChildren = list;
             }
+
+            if (replaceData || target.Shares.Count == 0)
+            {
+                target.Shares = source.Shares;
+            }
         }
 
         protected override ItemUpdateType BeforeSave(BoxSet item)

@@ -736,16 +736,27 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         private UserRootFolder _userRootFolder;
+        private readonly object _syncLock = new object();
         public Folder GetUserRootFolder()
         {
             if (_userRootFolder == null)
             {
-                var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+                lock (_syncLock)
+                {
+                    if (_userRootFolder == null)
+                    {
+                        var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                Directory.CreateDirectory(userRootPath);
+                        Directory.CreateDirectory(userRootPath);
 
-                _userRootFolder = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder ??
-                                  (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
+                        _userRootFolder = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
+
+                        if (_userRootFolder == null)
+                        {
+                            _userRootFolder = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
+                        }
+                    }
+                }
             }
 
             return _userRootFolder;

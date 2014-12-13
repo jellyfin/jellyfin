@@ -926,6 +926,15 @@
                     });
 
                 }
+                else if (item.Type == "Playlist") {
+
+                    promise = ApiClient.getInstantMixFromPlaylist(id, {
+                        UserId: Dashboard.getCurrentUserId(),
+                        Fields: getItemFields,
+                        Limit: itemLimit
+                    });
+
+                }
                 else if (item.Type == "Audio") {
 
                     promise = ApiClient.getInstantMixFromSong(id, {

@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'List');
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
 
     // The base query options
     var query = {

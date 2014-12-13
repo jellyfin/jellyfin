@@ -1543,7 +1543,9 @@
 
         $('.btnSync', page).on('click', function () {
 
-            SyncManager.showMenu([currentItem]);
+            SyncManager.showMenu({
+                items: [currentItem]
+            });
         });
 
         $('.btnMoreCommands', page).on('click', function () {
