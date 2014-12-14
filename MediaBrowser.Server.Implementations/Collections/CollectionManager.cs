@@ -72,7 +72,12 @@ namespace MediaBrowser.Server.Implementations.Collections
                     DisplayMediaType = "Collection",
                     Path = path,
                     IsLocked = options.IsLocked,
-                    ProviderIds = options.ProviderIds
+                    ProviderIds = options.ProviderIds,
+                    Shares = options.UserIds.Select(i => new Share
+                    {
+                        UserId = i.ToString("N")
+
+                    }).ToList()
                 };
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
@@ -156,7 +161,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
 
                 itemList.Add(item);
-                
+
                 if (currentLinkedChildren.Any(i => i.Id == itemId))
                 {
                     throw new ArgumentException("Item already exists in collection");

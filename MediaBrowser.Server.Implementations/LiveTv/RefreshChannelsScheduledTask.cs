@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
     {
         private readonly ILiveTvManager _liveTvManager;
 
@@ -58,6 +58,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public bool IsEnabled
         {
             get { return true; }
+        }
+
+        public string Key
+        {
+            get { return "RefreshGuide"; }
         }
     }
 }

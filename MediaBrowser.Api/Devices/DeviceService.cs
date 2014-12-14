@@ -1,22 +1,19 @@
 ﻿using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using ServiceStack;
 using ServiceStack.Web;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Devices
 {
     [Route("/Devices", "GET", Summary = "Gets all devices")]
     [Authenticated(Roles = "Admin")]
-    public class GetDevices : IReturn<List<DeviceInfo>>
+    public class GetDevices : DeviceQuery, IReturn<QueryResult<DeviceInfo>>
     {
-        [ApiMember(Name = "SupportsContentUploading", Description = "SupportsContentUploading", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public bool? SupportsContentUploading { get; set; }
     }
 
     [Route("/Devices", "DELETE", Summary = "Deletes a device")]
@@ -109,16 +106,7 @@ namespace MediaBrowser.Api.Devices
 
         public object Get(GetDevices request)
         {
-            var devices = _deviceManager.GetDevices();
-
-            if (request.SupportsContentUploading.HasValue)
-            {
-                var val = request.SupportsContentUploading.Value;
-
-                devices = devices.Where(i => _deviceManager.GetCapabilities(i.Id).SupportsContentUploading == val);
-            }
-
-            return ToOptimizedResult(devices.ToList());
+            return ToOptimizedResult(_deviceManager.GetDevices(request));
         }
 
         public object Get(GetCameraUploads request)

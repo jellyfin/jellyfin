@@ -19,7 +19,7 @@ namespace MediaBrowser.Api
     /// Class GetNextUpEpisodes
     /// </summary>
     [Route("/Shows/NextUp", "GET", Summary = "Gets a list of next up episodes")]
-    public class GetNextUpEpisodes : IReturn<ItemsResult>, IHasItemFields
+    public class GetNextUpEpisodes : IReturn<ItemsResult>, IHasDtoOptions
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -58,10 +58,19 @@ namespace MediaBrowser.Api
         /// <value>The parent id.</value>
         [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
+
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
     }
 
     [Route("/Shows/Upcoming", "GET", Summary = "Gets a list of upcoming episodes")]
-    public class GetUpcomingEpisodes : IReturn<ItemsResult>, IHasItemFields
+    public class GetUpcomingEpisodes : IReturn<ItemsResult>, IHasDtoOptions
     {
         /// <summary>
         /// Gets or sets the user id.
@@ -97,6 +106,15 @@ namespace MediaBrowser.Api
         /// <value>The parent id.</value>
         [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
+
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
     }
 
     [Route("/Shows/{Id}/Similar", "GET", Summary = "Finds tv shows similar to a given one.")]
@@ -252,9 +270,9 @@ namespace MediaBrowser.Api
 
             var pagedItems = ApplyPaging(previousEpisodes, request.StartIndex, request.Limit);
 
-            var fields = request.GetItemFields().ToList();
+            var options = request.GetDtoOptions();
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
 
             var result = new ItemsResult
             {
@@ -283,9 +301,9 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var fields = request.GetItemFields().ToList();
+            var options = request.GetDtoOptions();
 
-            var returnItems = result.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+            var returnItems = result.Items.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {

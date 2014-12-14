@@ -1,9 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
-using System;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -21,17 +18,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         {
             if (args.Parent != null)
             {
-                var collectionType = args.GetCollectionType() ?? string.Empty;
-                var accepted = new[]
-                {
-                    string.Empty,
-                    CollectionType.HomeVideos
-                };
-
-                if (!accepted.Contains(collectionType, StringComparer.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
+                // The movie resolver will handle this
+                return null;
             }
 
             return base.Resolve(args);
@@ -46,6 +34,4 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             get { return ResolverPriority.Last; }
         }
     }
-
-
 }

@@ -276,7 +276,7 @@ namespace MediaBrowser.Api.Library
             var fields = Enum.GetNames(typeof(ItemFields))
                     .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
                     .ToList();
-
+            
             var result = new ItemsResult
             {
                 TotalRecordCount = items.Count,
@@ -353,7 +353,7 @@ namespace MediaBrowser.Api.Library
                     .ToList();
 
             BaseItem parent = item.Parent;
-
+            
             while (parent != null)
             {
                 if (user != null)
@@ -607,7 +607,7 @@ namespace MediaBrowser.Api.Library
                     }
                 }
             }
-
+           
             var dtos = themeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));

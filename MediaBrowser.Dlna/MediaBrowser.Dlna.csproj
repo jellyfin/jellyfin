@@ -181,11 +181,6 @@
     <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Android.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Windows 8 RT.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Windows Phone.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Images\logo240.jpg" />
     <EmbeddedResource Include="Images\logo240.png" />
   </ItemGroup>
@@ -197,6 +192,14 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\people48.jpg" />
+    <EmbeddedResource Include="Images\people48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\people480.jpg" />
+    <EmbeddedResource Include="Images\people480.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

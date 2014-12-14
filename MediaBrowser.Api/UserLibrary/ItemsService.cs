@@ -321,15 +321,14 @@ namespace MediaBrowser.Api.UserLibrary
             var result = await GetItemsToSerialize(request, user, parentItem).ConfigureAwait(false);
 
             var isFiltered = result.Item2;
+            var dtoOptions = request.GetDtoOptions();
 
             if (isFiltered)
             {
-                var currentFields = request.GetItemFields().ToList();
-
                 return new ItemsResult
                 {
                     TotalRecordCount = result.Item1.TotalRecordCount,
-                    Items = result.Item1.Items.Select(i => _dtoService.GetBaseItemDto(i, currentFields, user)).ToArray()
+                    Items = result.Item1.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
                 };
             }
 
@@ -363,9 +362,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
-            var fields = request.GetItemFields().ToList();
-
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
             return new ItemsResult
             {
@@ -880,7 +877,7 @@ namespace MediaBrowser.Api.UserLibrary
                     var hasTrailers = i as IHasTrailers;
                     if (hasTrailers != null)
                     {
-                        trailerCount = hasTrailers.LocalTrailerIds.Count;
+                        trailerCount = hasTrailers.GetTrailerIds().Count;
                     }
 
                     var ok = val ? trailerCount > 0 : trailerCount == 0;

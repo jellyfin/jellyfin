@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Entities.TV
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
             DisplaySpecialsWithSeasons = true;
         }
 
@@ -57,7 +58,8 @@ namespace MediaBrowser.Controller.Entities.TV
         public bool DisplaySpecialsWithSeasons { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
-        
+        public List<Guid> RemoteTrailerIds { get; set; }
+
         public List<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
@@ -107,6 +109,17 @@ namespace MediaBrowser.Controller.Entities.TV
         public override string GetUserDataKey()
         {
             return this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom) ?? base.GetUserDataKey();
+        }
+
+        /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        public List<Guid> GetTrailerIds()
+        {
+            var list = LocalTrailerIds.ToList();
+            list.AddRange(RemoteTrailerIds);
+            return list;
         }
 
         // Studio, Genre and Rating will all be the same so makes no sense to index by these

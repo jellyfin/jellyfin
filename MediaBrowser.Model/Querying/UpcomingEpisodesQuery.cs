@@ -1,4 +1,6 @@
-﻿namespace MediaBrowser.Model.Querying
+﻿using MediaBrowser.Model.Entities;
+
+namespace MediaBrowser.Model.Querying
 {
     public class UpcomingEpisodesQuery
     {
@@ -31,5 +33,25 @@
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable images].
+        /// </summary>
+        /// <value><c>null</c> if [enable images] contains no value, <c>true</c> if [enable images]; otherwise, <c>false</c>.</value>
+        public bool? EnableImages { get; set; }
+        /// <summary>
+        /// Gets or sets the image type limit.
+        /// </summary>
+        /// <value>The image type limit.</value>
+        public int? ImageTypeLimit { get; set; }
+        /// <summary>
+        /// Gets or sets the enable image types.
+        /// </summary>
+        /// <value>The enable image types.</value>
+        public ImageType[] EnableImageTypes { get; set; }
+
+        public UpcomingEpisodesQuery()
+        {
+            EnableImageTypes = new ImageType[] {};
+        }
     }
 }

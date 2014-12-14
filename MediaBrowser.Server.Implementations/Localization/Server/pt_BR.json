@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Tarefas em Execu\u00e7\u00e3o",
     "HeaderActiveDevices": "Dispositivos Ativos",
     "HeaderPendingInstallations": "Instala\u00e7\u00f5es Pendentes",
-    "HeaerServerInformation": "Informa\u00e7\u00f5es do Servidor",
+    "HeaderServerInformation": "Informa\u00e7\u00e3o do Servidor",
     "ButtonRestartNow": "Reiniciar Agora",
     "ButtonRestart": "Reiniciar",
     "ButtonShutdown": "Desligar",
@@ -1275,5 +1275,9 @@
     "HeaderYears": "Anos",
     "HeaderAddTag": "Adicionar Tag",
     "LabelBlockItemsWithTags": "Bloquear itens com tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limitar a uma imagem incorporada",
+    "LabelEnableSingleImageInDidlLimitHelp": "Alguns dispositivos n\u00e3o interpretar\u00e3o apropriadamente se m\u00faltiplas imagens estiverem incorporadas dentro do Didl.",
+    "TabActivity": "Atividade",
+    "TitleSync": "Sinc"
 }

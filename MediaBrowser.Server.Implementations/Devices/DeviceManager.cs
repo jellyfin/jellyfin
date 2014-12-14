@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         /// Occurs when [device options updated].
         /// </summary>
         public event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
-        
+
         public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger)
         {
             _repo = repo;
@@ -79,9 +80,30 @@ namespace MediaBrowser.Server.Implementations.Devices
             return _repo.GetDevice(id);
         }
 
-        public IEnumerable<DeviceInfo> GetDevices()
+        public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
-            return _repo.GetDevices().OrderByDescending(i => i.DateLastModified);
+            IEnumerable<DeviceInfo> devices = _repo.GetDevices().OrderByDescending(i => i.DateLastModified);
+
+            if (query.SupportsContentUploading.HasValue)
+            {
+                var val = query.SupportsContentUploading.Value;
+
+                devices = devices.Where(i => GetCapabilities(i.Id).SupportsContentUploading == val);
+            }
+
+            if (query.SupportsUniqueIdentifier.HasValue)
+            {
+                var val = query.SupportsUniqueIdentifier.Value;
+
+                devices = devices.Where(i => GetCapabilities(i.Id).SupportsUniqueIdentifier == val);
+            } 
+            
+            var array = devices.ToArray();
+            return new QueryResult<DeviceInfo>
+            {
+                Items = array,
+                TotalRecordCount = array.Length
+            };
         }
 
         public Task DeleteDevice(string id)

@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// The image format decoders
         /// </summary>
-        private static readonly KeyValuePair<byte[], Func<BinaryReader, Size>>[] ImageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, Size>>
+        private static readonly KeyValuePair<byte[], Func<BinaryReader, ImageSize>>[] ImageFormatDecoders = new Dictionary<byte[], Func<BinaryReader, ImageSize>>
         { 
             { new byte[] { 0x42, 0x4D }, DecodeBitmap }, 
             { new byte[] { 0x47, 0x49, 0x46, 0x38, 0x37, 0x61 }, DecodeGif }, 
@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="fileSystem">The file system.</param>
         /// <returns>The dimensions of the specified image.</returns>
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
-        public static Size GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
+        public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
             try
             {
@@ -71,9 +71,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     memoryStream.Position = 0;
 
                     // Co it the old fashioned way
-                    using (var b = Image.FromStream(memoryStream, true, false))
+                    using (var b = System.Drawing.Image.FromStream(memoryStream, true, false))
                     {
-                        return b.Size;
+                        var size = b.Size;
+
+                        return new ImageSize
+                        {
+                            Width = size.Width,
+                            Height = size.Height
+                        };
                     }
                 }
             }
@@ -86,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <returns>Size.</returns>
         /// <exception cref="System.ArgumentException">binaryReader</exception>
         /// <exception cref="ArgumentException">The image was of an unrecognized format.</exception>
-        private static Size GetDimensions(BinaryReader binaryReader)
+        private static ImageSize GetDimensions(BinaryReader binaryReader)
         {
             var magicBytes = new byte[MaxMagicBytesLength];
 
@@ -161,12 +167,16 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        private static Size DecodeBitmap(BinaryReader binaryReader)
+        private static ImageSize DecodeBitmap(BinaryReader binaryReader)
         {
             binaryReader.ReadBytes(16);
             int width = binaryReader.ReadInt32();
             int height = binaryReader.ReadInt32();
-            return new Size(width, height);
+            return new ImageSize
+            {
+                Width = width,
+                Height = height
+            };
         }
 
         /// <summary>
@@ -174,11 +184,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        private static Size DecodeGif(BinaryReader binaryReader)
+        private static ImageSize DecodeGif(BinaryReader binaryReader)
         {
             int width = binaryReader.ReadInt16();
             int height = binaryReader.ReadInt16();
-            return new Size(width, height);
+            return new ImageSize
+            {
+                Width = width,
+                Height = height
+            };
         }
 
         /// <summary>
@@ -186,12 +200,16 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// </summary>
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
-        private static Size DecodePng(BinaryReader binaryReader)
+        private static ImageSize DecodePng(BinaryReader binaryReader)
         {
             binaryReader.ReadBytes(8);
             int width = ReadLittleEndianInt32(binaryReader);
             int height = ReadLittleEndianInt32(binaryReader);
-            return new Size(width, height);
+            return new ImageSize
+            {
+                Width = width,
+                Height = height
+            };
         }
 
         /// <summary>
@@ -200,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="binaryReader">The binary reader.</param>
         /// <returns>Size.</returns>
         /// <exception cref="System.ArgumentException"></exception>
-        private static Size DecodeJfif(BinaryReader binaryReader)
+        private static ImageSize DecodeJfif(BinaryReader binaryReader)
         {
             while (binaryReader.ReadByte() == 0xff)
             {
@@ -211,7 +229,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     binaryReader.ReadByte();
                     int height = ReadLittleEndianInt16(binaryReader);
                     int width = ReadLittleEndianInt16(binaryReader);
-                    return new Size(width, height);
+                    return new ImageSize
+                    {
+                        Width = width,
+                        Height = height
+                    };
                 }
 
                 if (chunkLength < 0)

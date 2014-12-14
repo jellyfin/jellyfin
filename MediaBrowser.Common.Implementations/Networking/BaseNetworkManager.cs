@@ -24,14 +24,28 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
         public IEnumerable<string> GetLocalIpAddresses()
         {
-            var list = GetIPsDefault().Where(i => !IPAddress.IsLoopback(i)).Select(i => i.ToString()).ToList();
+            var list = GetIPsDefault()
+                .Where(i => !IPAddress.IsLoopback(i))
+                .Select(i => i.ToString())
+                .Where(FilterIpAddress)
+                .ToList();
 
             if (list.Count > 0)
             {
                 return list;
             }
 
-            return GetLocalIpAddressesFallback();
+            return GetLocalIpAddressesFallback().Where(FilterIpAddress);
+        }
+
+        private bool FilterIpAddress(string address)
+        {
+            if (address.StartsWith("169.", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private bool IsInPrivateAddressSpace(string endpoint)

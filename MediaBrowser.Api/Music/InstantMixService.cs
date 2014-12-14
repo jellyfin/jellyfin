@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Collections.Generic;
@@ -17,6 +18,11 @@ namespace MediaBrowser.Api.Music
 
     [Route("/Albums/{Id}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given album")]
     public class GetInstantMixFromAlbum : BaseGetSimilarItemsFromItem
+    {
+    }
+
+    [Route("/Playlists/{Id}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given playlist")]
+    public class GetInstantMixFromPlaylist : BaseGetSimilarItemsFromItem
     {
     }
 
@@ -105,6 +111,17 @@ namespace MediaBrowser.Api.Music
             var user = _userManager.GetUserById(request.UserId.Value);
 
             var items = _musicManager.GetInstantMixFromAlbum(album, user);
+
+            return GetResult(items, user, request);
+        }
+
+        public object Get(GetInstantMixFromPlaylist request)
+        {
+            var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
+
+            var user = _userManager.GetUserById(request.UserId.Value);
+
+            var items = _musicManager.GetInstantMixFromPlaylist(playlist, user);
 
             return GetResult(items, user, request);
         }

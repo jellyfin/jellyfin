@@ -24,7 +24,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemInfo fileInfo, Folder parent = null, string collectionType = null);
+        BaseItem ResolvePath(FileSystemInfo fileInfo, 
+            Folder parent = null, 
+            string collectionType = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
@@ -35,8 +37,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>List{``0}.</returns>
-        List<T> ResolvePaths<T>(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType = null)
-            where T : BaseItem;
+        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemInfo> files, 
+            IDirectoryService directoryService,
+            Folder parent, string 
+            collectionType = null);
 
         /// <summary>
         /// Gets the root folder.
@@ -230,46 +234,6 @@ namespace MediaBrowser.Controller.Library
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Validates the artists.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the music genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the game genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
-        /// Validates the studios.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress);
-
-        /// <summary>
         /// Occurs when [item added].
         /// </summary>
         event EventHandler<ItemChangeEventArgs> ItemAdded;
@@ -405,14 +369,31 @@ namespace MediaBrowser.Controller.Library
         ItemLookupInfo ParseName(string name);
 
         /// <summary>
-        /// Gets the additional parts.
+        /// Gets the new item identifier.
         /// </summary>
-        /// <param name="file">The file.</param>
+        /// <param name="key">The key.</param>
         /// <param name="type">The type.</param>
-        /// <param name="files">The files.</param>
-        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
-        IEnumerable<FileSystemInfo> GetAdditionalParts(string file,
-            VideoType type,
-            IEnumerable<FileSystemInfo> files);
+        /// <returns>Guid.</returns>
+        Guid GetNewItemId(string key, Type type);
+
+        /// <summary>
+        /// Finds the trailers.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="fileSystemChildren">The file system children.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
+        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+            IDirectoryService directoryService);
+
+        /// <summary>
+        /// Finds the extras.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        /// <param name="fileSystemChildren">The file system children.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns>IEnumerable&lt;Video&gt;.</returns>
+        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+            IDirectoryService directoryService);
     }
 }

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Users;
 using System;
 using System.IO;
 using System.Linq;
@@ -287,7 +288,7 @@ namespace MediaBrowser.Controller.Entities
 
             var localTime = date.ToLocalTime();
 
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek) && 
+            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek) &&
                 IsWithinTime(schedule, localTime);
         }
 

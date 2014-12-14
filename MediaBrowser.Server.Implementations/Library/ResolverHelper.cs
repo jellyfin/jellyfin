@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using System;
 using System.IO;
 using System.Linq;
@@ -18,9 +18,52 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Sets the initial item values.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <exception cref="System.ArgumentException">Item must have a path</exception>
+        public static void SetInitialItemValues(BaseItem item, Folder parent, IFileSystem fileSystem, ILibraryManager libraryManager, IDirectoryService directoryService)
+        {
+            // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
+            if (string.IsNullOrWhiteSpace(item.Path))
+            {
+                throw new ArgumentException("Item must have a Path");
+            }
+
+            // If the resolver didn't specify this
+            if (parent != null)
+            {
+                item.Parent = parent;
+            }
+
+            item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
+
+            // If the resolver didn't specify this
+            if (string.IsNullOrEmpty(item.DisplayMediaType))
+            {
+                item.DisplayMediaType = item.GetType().Name;
+            }
+
+            item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
+                item.Parents.Any(i => i.IsLocked);
+
+            // Make sure DateCreated and DateModified have values
+            var fileInfo = directoryService.GetFile(item.Path);
+            item.DateModified = fileSystem.GetLastWriteTimeUtc(fileInfo);
+            SetDateCreated(item, fileSystem, fileInfo);
+
+            EnsureName(item, fileInfo);
+        }
+
+        /// <summary>
+        /// Sets the initial item values.
+        /// </summary>
+        /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
         /// <param name="fileSystem">The file system.</param>
-        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem)
+        /// <param name="libraryManager">The library manager.</param>
+        public static void SetInitialItemValues(BaseItem item, ItemResolveArgs args, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.Path))
@@ -34,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 item.Parent = args.Parent;
             }
 
-            item.Id = item.Path.GetMBId(item.GetType());
+            item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
             // If the resolver didn't specify this
             if (string.IsNullOrEmpty(item.DisplayMediaType))
@@ -43,27 +86,38 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             // Make sure the item has a name
-            EnsureName(item, args);
+            EnsureName(item, args.FileInfo);
 
             item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 item.Parents.Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            EntityResolutionHelper.EnsureDates(fileSystem, item, args, true);
+            EnsureDates(fileSystem, item, args, true);
         }
 
         /// <summary>
         /// Ensures the name.
         /// </summary>
         /// <param name="item">The item.</param>
-        private static void EnsureName(BaseItem item, ItemResolveArgs args)
+        /// <param name="fileInfo">The file information.</param>
+        private static void EnsureName(BaseItem item, FileSystemInfo fileInfo)
         {
             // If the subclass didn't supply a name, add it here
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
-                //we use our resolve args name here to get the name of the containg folder, not actual video file
-                item.Name = GetMbName(args.FileInfo.Name, (args.FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                item.Name = GetDisplayName(fileInfo.Name, (fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
             }
+        }
+
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
+        /// <returns>System.String.</returns>
+        private static string GetDisplayName(string path, bool isDirectory)
+        {
+           return isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
         }
 
         /// <summary>
@@ -71,28 +125,84 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         private static readonly Regex MbNameRegex = new Regex(@"(\[.*?\])", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Strip out attribute items and return just the name we will use for items
-        /// </summary>
-        /// <param name="path">Assumed to be a file or directory path</param>
-        /// <param name="isDirectory">if set to <c>true</c> [is directory].</param>
-        /// <returns>The cleaned name</returns>
-        private static string GetMbName(string path, bool isDirectory)
-        {
-            //first just get the file or directory name
-            var fn = isDirectory ? Path.GetFileName(path) : Path.GetFileNameWithoutExtension(path);
-
-            //now - strip out anything inside brackets
-            fn = StripBrackets(fn);
-
-            return fn;
-        }
-
-        private static string StripBrackets(string inputString)
+        internal static string StripBrackets(string inputString)
         {
             var output = MbNameRegex.Replace(inputString, string.Empty).Trim();
             return Regex.Replace(output, @"\s+", " ");
         }
 
+        /// <summary>
+        /// Ensures DateCreated and DateModified have values
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="args">The args.</param>
+        /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
+        private static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, bool includeCreationTime)
+        {
+            if (fileSystem == null)
+            {
+                throw new ArgumentNullException("fileSystem");
+            }
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+            if (args == null)
+            {
+                throw new ArgumentNullException("args");
+            }
+
+            // See if a different path came out of the resolver than what went in
+            if (!string.Equals(args.Path, item.Path, StringComparison.OrdinalIgnoreCase))
+            {
+                var childData = args.IsDirectory ? args.GetFileSystemEntryByPath(item.Path) : null;
+
+                if (childData != null)
+                {
+                    if (includeCreationTime)
+                    {
+                        SetDateCreated(item, fileSystem, childData);
+                    }
+
+                    item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
+                }
+                else
+                {
+                    var fileData = fileSystem.GetFileSystemInfo(item.Path);
+
+                    if (fileData.Exists)
+                    {
+                        if (includeCreationTime)
+                        {
+                            SetDateCreated(item, fileSystem, fileData);
+                        }
+                        item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
+                    }
+                }
+            }
+            else
+            {
+                if (includeCreationTime)
+                {
+                    SetDateCreated(item, fileSystem, args.FileInfo);
+                }
+                item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
+            }
+        }
+
+        private static void SetDateCreated(BaseItem item, IFileSystem fileSystem, FileSystemInfo info)
+        {
+            var config = BaseItem.ConfigurationManager.GetMetadataConfiguration();
+
+            if (config.UseFileCreationTimeForDateAdded)
+            {
+                item.DateCreated = fileSystem.GetCreationTimeUtc(info);
+            }
+            else
+            {
+                item.DateCreated = DateTime.UtcNow;
+            }
+        }
     }
 }

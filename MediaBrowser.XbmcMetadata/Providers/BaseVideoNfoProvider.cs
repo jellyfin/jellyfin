@@ -46,7 +46,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 var path = item.Path;
 
-                return Path.Combine(path, fileSystem.GetFileNameWithoutExtension(path) + ".nfo");
+                return Path.Combine(path, Path.GetFileName(path) + ".nfo");
             }
 
             return Path.ChangeExtension(item.Path, ".nfo");

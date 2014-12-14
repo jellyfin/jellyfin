@@ -28,6 +28,13 @@ namespace MediaBrowser.Controller.Sync
         Task Update(SyncJob job);
 
         /// <summary>
+        /// Deletes the job.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task DeleteJob(string id);
+
+        /// <summary>
         /// Gets the jobs.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -54,5 +61,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="jobItem">The job item.</param>
         /// <returns>Task.</returns>
         Task Update(SyncJobItem jobItem);
+
+        /// <summary>
+        /// Gets the job items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable&lt;SyncJobItem&gt;.</returns>
+        QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
     }
 }

@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public List<IImageEnhancer> Enhancers { get; set; }
 
-        public ImageOutputFormat OutputFormat { get; set; }
+        public ImageFormat OutputFormat { get; set; }
 
         public bool AddPlayedIndicator { get; set; }
 

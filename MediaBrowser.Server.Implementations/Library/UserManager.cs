@@ -17,6 +17,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using System;
@@ -327,7 +328,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
+                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user, new List<ItemFields>
+                    {
+                        ItemFields.PrimaryImageAspectRatio
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -765,5 +769,14 @@ namespace MediaBrowser.Server.Implementations.Library
             public DateTime ExpirationDate { get; set; }
         }
 
+        public UserPolicy GetUserPolicy(string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateUserPolicy(string userId, UserPolicy userPolicy)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

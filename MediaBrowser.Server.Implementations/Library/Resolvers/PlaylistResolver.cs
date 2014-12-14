@@ -28,7 +28,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
                 if (filename.IndexOf("[playlist]", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    return new Playlist { Path = args.Path };
+                    return new Playlist
+                    {
+                        Path = args.Path,
+                        Name = ResolverHelper.StripBrackets(Path.GetFileName(args.Path))
+                    };
                 }
             }
 

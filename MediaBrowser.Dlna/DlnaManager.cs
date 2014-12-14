@@ -8,6 +8,7 @@ using MediaBrowser.Dlna.Profiles;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dlna.Profiles;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -469,13 +470,13 @@ namespace MediaBrowser.Dlna
             return new DescriptionXmlBuilder(profile, serverUuId, "").GetXml();
         }
 
-        public DlnaIconResponse GetIcon(string filename)
+        public ImageStream GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
-            return new DlnaIconResponse
+            return new ImageStream
             {
                 Format = format,
                 Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
@@ -522,10 +523,9 @@ namespace MediaBrowser.Dlna
                 new LgTvProfile(),
                 new Foobar2000Profile(),
                 new MediaMonkeyProfile(),
-                new Windows81Profile(),
+                //new Windows81Profile(),
                 //new WindowsMediaCenterProfile(),
-                new WindowsPhoneProfile(),
-                new AndroidProfile(),
+                //new WindowsPhoneProfile(),
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
                 new DefaultProfile(),

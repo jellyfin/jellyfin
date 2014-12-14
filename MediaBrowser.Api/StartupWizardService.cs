@@ -61,6 +61,7 @@ namespace MediaBrowser.Api
         public void Post(ReportStartupWizardComplete request)
         {
             _config.Configuration.IsStartupWizardCompleted = true;
+            _config.Configuration.EnableLocalizedGuids = true;
             _config.SaveConfiguration();
         }
 

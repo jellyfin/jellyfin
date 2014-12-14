@@ -346,6 +346,7 @@ namespace MediaBrowser.Server.Startup.Common
             new RenameXbmcOptions(ServerConfigurationManager).Run();
             new RenameXmlOptions(ServerConfigurationManager).Run();
             new DeprecatePlugins(ApplicationPaths).Run();
+            new DeleteDlnaProfiles(ApplicationPaths).Run();
         }
 
         /// <summary>
@@ -389,8 +390,8 @@ namespace MediaBrowser.Server.Startup.Common
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            //SyncRepository = await GetSyncRepository().ConfigureAwait(false);
-            //RegisterSingleInstance(SyncRepository);
+            SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            RegisterSingleInstance(SyncRepository);
 
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this);
             RegisterSingleInstance(UserManager);
@@ -428,7 +429,7 @@ namespace MediaBrowser.Server.Startup.Common
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"));
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
@@ -446,7 +447,7 @@ namespace MediaBrowser.Server.Startup.Common
             SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);
             RegisterSingleInstance(SessionManager);
 
-            var newsService = new Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
+            var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
             var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, LogManager.GetLogger("FileOrganizationService"), LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
@@ -481,7 +482,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths, playlistManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
@@ -950,11 +951,6 @@ namespace MediaBrowser.Server.Startup.Common
                 var localAddresses = NetworkManager.GetLocalIpAddresses()
                     .ToList();
 
-                if (localAddresses.Count < 2)
-                {
-                    return localAddresses;
-                }
-
                 var httpServerAddresses = HttpServer.LocalEndPoints
                     .Select(i => i.Split(':').FirstOrDefault())
                     .Where(i => !string.IsNullOrEmpty(i))
@@ -967,7 +963,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                 if (matchedAddresses.Count == 0)
                 {
-                    return localAddresses.Take(1);
+                    return localAddresses;
                 }
 
                 return matchedAddresses;

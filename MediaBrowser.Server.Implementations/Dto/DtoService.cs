@@ -69,7 +69,22 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <exception cref="System.ArgumentNullException">item</exception>
         public BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
         {
-            var dto = GetBaseItemDtoInternal(item, fields, user, owner);
+            var options = new DtoOptions
+            {
+                Fields = fields
+            };
+
+            // Get everything
+            options.ImageTypes = Enum.GetNames(typeof(ImageType))
+                .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
+                .ToList();
+            
+            return GetBaseItemDto(item, options, user, owner);
+        }
+
+        public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        {
+            var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
             var byName = item as IItemByName;
 
@@ -87,8 +102,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             return dto;
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
+            var fields = options.Fields;
+
             if (item == null)
             {
                 throw new ArgumentNullException("item");
@@ -115,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item);
+                    AttachPrimaryImageAspectRatio(dto, item, fields);
                 }
                 catch (Exception ex)
                 {
@@ -155,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 AttachStudios(dto, item);
             }
 
-            AttachBasicFields(dto, item, owner, fields);
+            AttachBasicFields(dto, item, owner, options);
 
             if (fields.Contains(ItemFields.SyncInfo))
             {
@@ -174,18 +191,19 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            if (item is Playlist)
+            var playlist = item as Playlist;
+            if (playlist != null)
             {
-                AttachLinkedChildImages(dto, (Folder)item, user);
+                AttachLinkedChildImages(dto, playlist, user, options);
             }
 
             return dto;
         }
 
-        public BaseItemDto GetItemByNameDto<T>(T item, List<ItemFields> fields, List<BaseItem> taggedItems, User user = null)
+        public BaseItemDto GetItemByNameDto<T>(T item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
             where T : BaseItem, IItemByName
         {
-            var dto = GetBaseItemDtoInternal(item, fields, user);
+            var dto = GetBaseItemDtoInternal(item, options, user);
 
             SetItemByNameInfo(item, dto, taggedItems, user);
 
@@ -215,7 +233,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
-                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
             }
 
             dto.ChildCount = taggedItems.Count;
@@ -369,36 +386,27 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.GameSystem = item.GameSystemName;
         }
 
-        /// <summary>
-        /// Gets the backdrop image tags.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>List{System.String}.</returns>
-        private List<string> GetBackdropImageTags(BaseItem item)
+        private List<string> GetBackdropImageTags(BaseItem item, int limit)
         {
-            return GetCacheTags(item, ImageType.Backdrop).ToList();
+            return GetCacheTags(item, ImageType.Backdrop, limit).ToList();
         }
 
-        /// <summary>
-        /// Gets the screenshot image tags.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>List{Guid}.</returns>
-        private List<string> GetScreenshotImageTags(BaseItem item)
+        private List<string> GetScreenshotImageTags(BaseItem item, int limit)
         {
             var hasScreenshots = item as IHasScreenshots;
             if (hasScreenshots == null)
             {
                 return new List<string>();
             }
-            return GetCacheTags(item, ImageType.Screenshot).ToList();
+            return GetCacheTags(item, ImageType.Screenshot, limit).ToList();
         }
 
-        private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type)
+        private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type, int limit)
         {
             return item.GetImages(type)
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i != null)
+                .Take(limit)
                 .ToList();
         }
 
@@ -649,9 +657,11 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
         /// <param name="owner">The owner.</param>
-        /// <param name="fields">The fields.</param>
-        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem owner, List<ItemFields> fields)
+        /// <param name="options">The options.</param>
+        private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem owner, DtoOptions options)
         {
+            var fields = options.Fields;
+
             if (fields.Contains(ItemFields.DateCreated))
             {
                 dto.DateCreated = item.DateCreated;
@@ -662,7 +672,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DisplayMediaType = item.DisplayMediaType;
             }
 
-            dto.IsUnidentified = item.IsUnidentified;
+            // Leave null if false
+            if (item.IsUnidentified)
+            {
+                dto.IsUnidentified = item.IsUnidentified;
+            }
 
             if (fields.Contains(ItemFields.Settings))
             {
@@ -736,10 +750,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            var hasMetascore = item as IHasMetascore;
-            if (hasMetascore != null)
+            if (fields.Contains(ItemFields.ProductionLocations))
             {
-                dto.Metascore = hasMetascore.Metascore;
+                var hasMetascore = item as IHasMetascore;
+                if (hasMetascore != null)
+                {
+                    dto.Metascore = hasMetascore.Metascore;
+                }
             }
 
             if (fields.Contains(ItemFields.AwardSummary))
@@ -751,11 +768,19 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            dto.BackdropImageTags = GetBackdropImageTags(item);
+            var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
+            if (backdropLimit > 0)
+            {
+                dto.BackdropImageTags = GetBackdropImageTags(item, backdropLimit);
+            }
 
             if (fields.Contains(ItemFields.ScreenshotImageTags))
             {
-                dto.ScreenshotImageTags = GetScreenshotImageTags(item);
+                var screenshotLimit = options.GetImageLimit(ImageType.Screenshot);
+                if (screenshotLimit > 0)
+                {
+                    dto.ScreenshotImageTags = GetScreenshotImageTags(item, screenshotLimit);
+                }
             }
 
             if (fields.Contains(ItemFields.Genres))
@@ -769,11 +794,14 @@ namespace MediaBrowser.Server.Implementations.Dto
             var currentItem = item;
             foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
             {
-                var tag = GetImageCacheTag(item, image);
-
-                if (tag != null)
+                if (options.GetImageLimit(image.Type) > 0)
                 {
-                    dto.ImageTags[image.Type] = tag;
+                    var tag = GetImageCacheTag(item, image);
+
+                    if (tag != null)
+                    {
+                        dto.ImageTags[image.Type] = tag;
+                    }
                 }
             }
 
@@ -805,7 +833,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var hasTrailers = item as IHasTrailers;
             if (hasTrailers != null)
             {
-                dto.LocalTrailerCount = hasTrailers.LocalTrailerIds.Count;
+                dto.LocalTrailerCount = hasTrailers.GetTrailerIds().Count;
             }
 
             var hasDisplayOrder = item as IHasDisplayOrder;
@@ -851,14 +879,14 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
-            if (dto.BackdropImageTags.Count == 0)
+            if (backdropLimit > 0 && dto.BackdropImageTags.Count == 0)
             {
                 var parentWithBackdrop = GetParentBackdropItem(item, owner);
 
                 if (parentWithBackdrop != null)
                 {
                     dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
-                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop);
+                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop, backdropLimit);
                 }
             }
 
@@ -874,7 +902,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.ParentIndexNumber = item.ParentIndexNumber;
 
             // If there is no logo, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasLogo)
+            if (!dto.HasLogo && options.GetImageLimit(ImageType.Logo) > 0)
             {
                 var parentWithLogo = GetParentImageItem(item, ImageType.Logo, owner);
 
@@ -887,7 +915,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             // If there is no art, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasArtImage)
+            if (!dto.HasArtImage && options.GetImageLimit(ImageType.Art) > 0)
             {
                 var parentWithImage = GetParentImageItem(item, ImageType.Art, owner);
 
@@ -900,7 +928,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             // If there is no thumb, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasThumb)
+            if (!dto.HasThumb && options.GetImageLimit(ImageType.Thumb) > 0)
             {
                 var parentWithImage = GetParentImageItem(item, ImageType.Thumb, owner);
 
@@ -953,7 +981,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.Type = item.GetClientTypeName();
             dto.CommunityRating = item.CommunityRating;
-            dto.VoteCount = item.VoteCount;
+
+            if (fields.Contains(ItemFields.VoteCount))
+            {
+                dto.VoteCount = item.VoteCount;
+            }
 
             if (item.IsFolder)
             {
@@ -987,7 +1019,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
 
-                dto.MediaSourceCount = 1;
+                //if (fields.Contains(ItemFields.MediaSourceCount))
+                //{
+                    // Songs always have one
+                //}
             }
 
             var album = item as MusicAlbum;
@@ -1017,8 +1052,18 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsoType = video.IsoType;
                 dto.IsHD = video.IsHD;
 
-                dto.PartCount = video.AdditionalPartIds.Count + 1;
-                dto.MediaSourceCount = video.MediaSourceCount;
+                if (video.AdditionalParts.Count != 0)
+                {
+                    dto.PartCount = video.AdditionalParts.Count + 1;
+                }
+
+                if (fields.Contains(ItemFields.MediaSourceCount))
+                {
+                    if (video.MediaSourceCount != 1)
+                    {
+                        dto.MediaSourceCount = video.MediaSourceCount;
+                    }
+                }
 
                 if (fields.Contains(ItemFields.Chapters))
                 {
@@ -1080,18 +1125,31 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
 
-                dto.DvdSeasonNumber = episode.DvdSeasonNumber;
-                dto.DvdEpisodeNumber = episode.DvdEpisodeNumber;
+                if (fields.Contains(ItemFields.AlternateEpisodeNumbers))
+                {
+                    dto.DvdSeasonNumber = episode.DvdSeasonNumber;
+                    dto.DvdEpisodeNumber = episode.DvdEpisodeNumber;
+                    dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
+                }
+
                 dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
                 dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
                 dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
-                dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
 
                 var episodeSeason = episode.Season;
                 if (episodeSeason != null)
                 {
                     dto.SeasonId = episodeSeason.Id.ToString("N");
                     dto.SeasonName = episodeSeason.Name;
+                }
+
+                if (fields.Contains(ItemFields.SeriesGenres))
+                {
+                    var episodeseries = episode.Series;
+                    if (episodeseries != null)
+                    {
+                        dto.SeriesGenres = episodeseries.Genres.ToList();
+                    }
                 }
             }
 
@@ -1123,9 +1181,21 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.SeriesId = GetDtoId(series);
                     dto.SeriesName = series.Name;
                     dto.AirTime = series.AirTime;
-                    dto.SeriesStudio = series.Studios.FirstOrDefault();
-                    dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+
+                    if (options.GetImageLimit(ImageType.Thumb) > 0)
+                    {
+                        dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
+                    }
+
+                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                    {
+                        dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    }
+
+                    if (fields.Contains(ItemFields.SeriesStudio))
+                    {
+                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                    }
                 }
             }
 
@@ -1143,7 +1213,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AirTime = series.AirTime;
                     dto.SeriesStudio = series.Studios.FirstOrDefault();
 
-                    dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                    {
+                        dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
+                    }
                 }
             }
 
@@ -1200,28 +1273,28 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private void AttachLinkedChildImages(BaseItemDto dto, Folder folder, User user)
+        private void AttachLinkedChildImages(BaseItemDto dto, Folder folder, User user, DtoOptions options)
         {
             List<BaseItem> linkedChildren = null;
 
-            if (dto.BackdropImageTags.Count == 0)
+            var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
+
+            if (backdropLimit > 0 && dto.BackdropImageTags.Count == 0)
             {
-                if (linkedChildren == null)
-                {
-                    linkedChildren = user == null
-                        ? folder.GetRecursiveChildren().ToList()
-                        : folder.GetRecursiveChildren(user, true).ToList();
-                }
+                linkedChildren = user == null
+                    ? folder.GetRecursiveChildren().ToList()
+                    : folder.GetRecursiveChildren(user, true).ToList();
+
                 var parentWithBackdrop = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Backdrop).Any());
 
                 if (parentWithBackdrop != null)
                 {
                     dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
-                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop);
+                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop, backdropLimit);
                 }
             }
 
-            if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+            if (!dto.ImageTags.ContainsKey(ImageType.Primary) && options.GetImageLimit(ImageType.Primary) > 0)
             {
                 if (linkedChildren == null)
                 {
@@ -1380,8 +1453,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
+        /// <param name="fields">The fields.</param>
         /// <returns>Task.</returns>
-        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item)
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item, List<ItemFields> fields)
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
@@ -1412,7 +1486,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 return;
             }
 
-            dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
+            if (fields.Contains(ItemFields.OriginalPrimaryImageAspectRatio))
+            {
+                dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
+            }
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
 

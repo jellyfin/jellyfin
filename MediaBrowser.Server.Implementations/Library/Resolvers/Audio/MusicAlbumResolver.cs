@@ -141,12 +141,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
                 if (libraryManager.IsAudioFile(fullName))
                 {
-                    // Don't resolve these into audio files
-                    if (string.Equals(fileSystem.GetFileNameWithoutExtension(fullName), BaseItem.ThemeSongFilename))
-                    {
-                        continue;
-                    }
-
                     return true;
                 }
             }

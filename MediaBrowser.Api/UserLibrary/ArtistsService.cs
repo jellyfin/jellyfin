@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.UserLibrary
             if (request.UserId.HasValue)
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
-
+                
                 return DtoService.GetBaseItemDto(item, fields.ToList(), user);
             }
 

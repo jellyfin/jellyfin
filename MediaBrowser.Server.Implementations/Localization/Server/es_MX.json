@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Tareas en Ejecuci\u00f3n",
     "HeaderActiveDevices": "Dispositivos Activos",
     "HeaderPendingInstallations": "Instalaciones Pendientes",
-    "HeaerServerInformation": "Informaci\u00f3n del Servidor",
+    "HeaderServerInformation": "Informaci\u00f3n del Servidor",
     "ButtonRestartNow": "Reiniciar Ahora",
     "ButtonRestart": "Reiniciar",
     "ButtonShutdown": "Apagar",
@@ -1216,7 +1216,7 @@
     "HeaderCameraUploadHelp": "Suba a Media Broswer fotos y videos tomados desde sus dispositivos m\u00f3viles de forma autom\u00e1tica.",
     "MessageNoDevicesSupportCameraUpload": "Actualmente no cuenta con ning\u00fan dispositivo que soporte subir desde la c\u00e1mara.",
     "LabelCameraUploadPath": "Ruta para subir desde la c\u00e1mara:",
-    "LabelCameraUploadPathHelp": "Select a custom upload path, if desired. If unspecified a default folder will be used. If using a custom path it will also need to be added in the library setup area.",
+    "LabelCameraUploadPathHelp": "Seleccione una trayectoria personalizada de subida. Si no se especifica, una carpeta por omisi\u00f3n ser\u00e1 usada. Si usa una trayectoria personalizada, tambi\u00e9n ser\u00e1 necesario a\u00f1adirla en el \u00e1rea de configuraci\u00f3n de la biblioteca.",
     "LabelCreateCameraUploadSubfolder": "Crear una subcarpeta para cada dispositivo",
     "LabelCreateCameraUploadSubfolderHelp": "Se pueden especificar carpetas espec\u00edficas para un dispositivo haciendo clic en \u00e9l desde la p\u00e1gina de Dispositivos.",
     "LabelCustomDeviceDisplayName": "Nombre a Desplegar:",
@@ -1273,7 +1273,11 @@
     "HeaderParentalRatings": "Clasificaci\u00f3n Parental",
     "HeaderVideoTypes": "Tipos de Video",
     "HeaderYears": "A\u00f1os",
-    "HeaderAddTag": "Add Tag",
-    "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "HeaderAddTag": "Agregar Etiqueta",
+    "LabelBlockItemsWithTags": "Bloquear \u00edtems con etiquetas:",
+    "LabelTag": "Etiqueta:",
+    "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",
+    "LabelEnableSingleImageInDidlLimitHelp": "Algunos dispositivos no renderisaran apropiadamente si hay m\u00faltiples im\u00e1genes incrustadas en el Didl",
+    "TabActivity": "Actividad",
+    "TitleSync": "Sincronizando"
 }

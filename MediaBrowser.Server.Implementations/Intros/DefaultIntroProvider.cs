@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             var ratingLevel = string.IsNullOrWhiteSpace(item.OfficialRating)
-                ? (int?)null
+                ? null
                 : _localization.GetRatingLevel(item.OfficialRating);
 
             var libaryItems = user.RootFolder.GetRecursiveChildren(user, false)
@@ -130,15 +130,6 @@ namespace MediaBrowser.Server.Implementations.Intros
                 {
                     Item = i,
                     Type = ItemWithTrailerType.ChannelTrailer,
-                    User = user,
-                    WatchingItem = item,
-                    Random = random
-                }));
-
-                candidates.AddRange(libaryItems.Where(i => i is Trailer).Select(i => new ItemWithTrailer
-                {
-                    Item = i,
-                    Type = ItemWithTrailerType.LibraryTrailer,
                     User = user,
                     WatchingItem = item,
                     Random = random

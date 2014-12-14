@@ -16,7 +16,12 @@ namespace MediaBrowser.Dlna.Profiles
             Identification = new DeviceIdentification
             {
                 ModelName = "Xbox One",
-                FriendlyName = "Xbox-SystemOS"
+                FriendlyName = "Xbox-SystemOS",
+
+                Headers = new[]
+                {
+                    new HttpHeaderInfo {Name = "User-Agent", Value = "NSPlayer", Match = HeaderMatchType.Substring}
+                }
             };
 
             TranscodingProfiles = new[]

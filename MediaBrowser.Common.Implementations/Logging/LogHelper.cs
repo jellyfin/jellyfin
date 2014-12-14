@@ -15,6 +15,11 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// <returns>StringBuilder.</returns>
         public static StringBuilder GetLogMessage(Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
             var messageText = new StringBuilder();
 
             messageText.AppendLine(exception.Message);

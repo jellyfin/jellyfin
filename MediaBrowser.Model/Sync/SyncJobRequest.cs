@@ -35,19 +35,25 @@ namespace MediaBrowser.Model.Sync
         /// <value><c>true</c> if [unwatched only]; otherwise, <c>false</c>.</value>
         public bool UnwatchedOnly { get; set; }
         /// <summary>
+        /// Gets or sets a value indicating whether [remove when watched].
+        /// </summary>
+        /// <value><c>true</c> if [remove when watched]; otherwise, <c>false</c>.</value>
+        public bool RemoveWhenWatched { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [synchronize new content].
+        /// </summary>
+        /// <value><c>true</c> if [synchronize new content]; otherwise, <c>false</c>.</value>
+        public bool SyncNewContent { get; set; }
+        /// <summary>
         /// Gets or sets the limit.
         /// </summary>
         /// <value>The limit.</value>
-        public long? Limit { get; set; }
-        /// <summary>
-        /// Gets or sets the type of the limit.
-        /// </summary>
-        /// <value>The type of the limit.</value>
-        public SyncLimitType? LimitType { get; set; }
+        public int? ItemLimit { get; set; }
 
         public SyncJobRequest()
         {
             ItemIds = new List<string>();
+            SyncNewContent = true;
         }
     }
 }

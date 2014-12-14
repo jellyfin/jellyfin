@@ -15,15 +15,19 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer
+    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer, IHasShares
     {
+        public List<Share> Shares { get; set; }
+        
         public BoxSet()
         {
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
 
             DisplayOrder = ItemSortBy.PremiereDate;
             Keywords = new List<string>();
+            Shares = new List<Share>();
         }
 
         protected override bool FilterLinkedChildrenPerUser
@@ -35,6 +39,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
+        public List<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the remote trailers.
@@ -74,6 +79,17 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        public List<Guid> GetTrailerIds()
+        {
+            var list = LocalTrailerIds.ToList();
+            list.AddRange(RemoteTrailerIds);
+            return list;
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
@@ -146,6 +162,21 @@ namespace MediaBrowser.Controller.Entities.Movies
             await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
+        }
+
+        public override bool IsVisible(User user)
+        {
+            if (base.IsVisible(user))
+            {
+                var userId = user.Id.ToString("N");
+
+                return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
+
+                    // Need to support this for boxsets created prior to the creation of Shares
+                    Shares.Count == 0;
+            }
+
+            return false;
         }
     }
 }

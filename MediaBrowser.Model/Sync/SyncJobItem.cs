@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Sync
 {
     public class SyncJobItem
@@ -37,12 +38,18 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
-        public SyncJobStatus Status { get; set; }
+        public SyncJobItemStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the current progress.
         /// </summary>
         /// <value>The current progress.</value>
-        public double? CurrentProgress { get; set; }
+        public double? Progress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date created.
+        /// </summary>
+        /// <value>The date created.</value>
+        public DateTime DateCreated { get; set; }
     }
 }
