@@ -625,6 +625,12 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
+                // No way to express this
+                if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                {
+                    continue;
+                }
+
                 switch (condition.Property)
                 {
                     case ProfileConditionValue.AudioBitrate:
@@ -650,12 +656,19 @@ namespace MediaBrowser.Model.Dlna
                             bool val;
                             if (BoolHelper.TryParseCultureInvariant(value, out val))
                             {
-                                item.Cabac = val;
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.Cabac = val;
+                                }
+                                else if (condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.Cabac = !val;
+                                }
                             }
                             break;
                         }
-                    case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.IsAnamorphic:
+                    case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
                     case ProfileConditionValue.PacketLength:
                     case ProfileConditionValue.VideoTimestamp:

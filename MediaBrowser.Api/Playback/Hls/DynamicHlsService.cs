@@ -501,6 +501,16 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             return state.VideoRequest.VideoBitRate.HasValue;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Session
 {
@@ -15,6 +16,8 @@ namespace MediaBrowser.Model.Session
         public bool SupportsContentUploading { get; set; }
         public bool SupportsUniqueIdentifier { get; set; }
         public bool SupportsSync { get; set; }
+
+        public DeviceProfile DeviceProfile { get; set; }
 
         public ClientCapabilities()
         {
