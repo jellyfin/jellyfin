@@ -915,7 +915,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             // If there is no art, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasArtImage && options.GetImageLimit(ImageType.Thumb) > 0)
+            if (!dto.HasArtImage && options.GetImageLimit(ImageType.Art) > 0)
             {
                 var parentWithImage = GetParentImageItem(item, ImageType.Art, owner);
 

@@ -640,9 +640,9 @@
     "OptionHigh": "High",
     "OptionMedium": "Medium",
     "OptionLow": "Low",
-    "HeaderSettings": "Settings",
-    "OptionAutomaticallySyncNewContent": "Automatically sync new content",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to these folders will be automatically synced to the device.",
-    "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
-    "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched."
+    "HeaderSettings": "Param\u00e8tres",
+    "OptionAutomaticallySyncNewContent": "Synchroniser automatiquement le nouveau contenu",
+    "OptionAutomaticallySyncNewContentHelp": "Le nouveau contenu ajout\u00e9 \u00e0 ces r\u00e9pertoires sera automatiquement synchronis\u00e9 \u00e0 votre p\u00e9riph\u00e9rique.",
+    "OptionSyncUnwatchedVideosOnly": "Synchroniser seulement les vid\u00e9os non lus.",
+    "OptionSyncUnwatchedVideosOnlyHelp": "Seulement les vid\u00e9os non lus seront synchronis\u00e9es et seront supprim\u00e9es du p\u00e9riph\u00e9rique au fur et \u00e0 mesure qu'elles sont lus."
 }
