@@ -301,9 +301,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboardgeneral.html">
       <Link>Resources\dashboard-ui\dashboardgeneral.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboardsync.html">
-      <Link>Resources\dashboard-ui\dashboardsync.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\device.html">
       <Link>Resources\dashboard-ui\device.html</Link>
     </BundleResource>
@@ -570,6 +567,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\supporterkey.html">
       <Link>Resources\dashboard-ui\supporterkey.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncactivity.html">
+      <Link>Resources\dashboard-ui\syncactivity.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncsettings.html">
+      <Link>Resources\dashboard-ui\syncsettings.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvgenres.html">
       <Link>Resources\dashboard-ui\tvgenres.html</Link>
@@ -1216,9 +1219,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\dashboardpage.js">
       <Link>Resources\dashboard-ui\scripts\dashboardpage.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\dashboardsync.js">
-      <Link>Resources\dashboard-ui\scripts\dashboardsync.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\device.js">
       <Link>Resources\dashboard-ui\scripts\device.js</Link>
     </BundleResource>
@@ -1536,6 +1536,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\sync.js">
       <Link>Resources\dashboard-ui\scripts\sync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncactivity.js">
+      <Link>Resources\dashboard-ui\scripts\syncactivity.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncsettings.js">
+      <Link>Resources\dashboard-ui\scripts\syncsettings.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\thememediaplayer.js">
       <Link>Resources\dashboard-ui\scripts\thememediaplayer.js</Link>
