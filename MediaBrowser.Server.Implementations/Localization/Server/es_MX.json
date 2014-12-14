@@ -1278,6 +1278,6 @@
     "LabelTag": "Etiqueta:",
     "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",
     "LabelEnableSingleImageInDidlLimitHelp": "Algunos dispositivos no renderisaran apropiadamente si hay m\u00faltiples im\u00e1genes incrustadas en el Didl",
-    "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TabActivity": "Actividad",
+    "TitleSync": "Sincronizando"
 }
