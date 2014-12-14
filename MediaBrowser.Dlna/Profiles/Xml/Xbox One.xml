@@ -4,7 +4,9 @@
   <Identification>
     <FriendlyName>Xbox-SystemOS</FriendlyName>
     <ModelName>Xbox One</ModelName>
-    <Headers />
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="NSPlayer" match="Substring" />
+    </Headers>
   </Identification>
   <FriendlyName>Media Browser</FriendlyName>
   <Manufacturer>Media Browser</Manufacturer>

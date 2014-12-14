@@ -1700,7 +1700,8 @@ namespace MediaBrowser.Controller.Entities
                 Name = Name,
                 ProviderIds = ProviderIds,
                 IndexNumber = IndexNumber,
-                ParentIndexNumber = ParentIndexNumber
+                ParentIndexNumber = ParentIndexNumber,
+                Year = ProductionYear
             };
         }
 
