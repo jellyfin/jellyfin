@@ -819,6 +819,19 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "Shares":
+                    {
+                        using (var subtree = reader.ReadSubtree())
+                        {
+                            var hasShares = item as IHasShares;
+                            if (hasShares != null)
+                            {
+                                FetchFromSharesNode(subtree, hasShares);
+                            }
+                        }
+                        break;
+                    }
+
                 case "Format3D":
                     {
                         var video = item as Video;
@@ -851,6 +864,71 @@ namespace MediaBrowser.Controller.Providers
                     reader.Skip();
                     break;
             }
+        }
+
+        private void FetchFromSharesNode(XmlReader reader, IHasShares item)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Share":
+                            {
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    var share = GetShareFromNode(subtree);
+                                    if (share != null)
+                                    {
+                                        item.Shares.Add(share);
+                                    }
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private Share GetShareFromNode(XmlReader reader)
+        {
+            var share = new Share();
+
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "UserId":
+                            {
+                                share.UserId = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "CanEdit":
+                            {
+                                share.CanEdit = string.Equals(reader.ReadElementContentAsString(), true.ToString(), StringComparison.OrdinalIgnoreCase);
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return share;
         }
 
         private void FetchFromCountriesNode(XmlReader reader, T item)
@@ -1338,6 +1416,12 @@ namespace MediaBrowser.Controller.Providers
                             break;
                     }
                 }
+            }
+
+            // This is valid
+            if (!string.IsNullOrWhiteSpace(linkedItem.Path))
+            {
+                return linkedItem;
             }
 
             return string.IsNullOrWhiteSpace(linkedItem.ItemName) || string.IsNullOrWhiteSpace(linkedItem.ItemType) ? null : linkedItem;

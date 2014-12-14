@@ -1,13 +1,16 @@
 ﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -26,6 +29,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
     public class ControlHandler : BaseControlHandler
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IChannelManager _channelManager;
         private readonly IUserDataManager _userDataManager;
         private readonly User _user;
 
@@ -41,13 +45,14 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
             _user = user;
             _systemUpdateId = systemUpdateId;
+            _channelManager = channelManager;
             _profile = profile;
 
             _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, userDataManager, localization);
@@ -208,14 +213,15 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var serverItem = GetItemFromObjectId(id, user);
             var item = serverItem.Item;
 
-            var totalCount = 0;
+            int totalCount;
 
             if (string.Equals(flag, "BrowseMetadata"))
             {
+                totalCount = 1;
+                
                 if (item.IsFolder || serverItem.StubType.HasValue)
                 {
                     var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requested).ConfigureAwait(false));
-                    totalCount = 1;
 
                     result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id));
                 }
@@ -235,18 +241,19 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
                 foreach (var i in childrenResult.Items)
                 {
-                    var displayStubType = GetDisplayStubType(i, serverItem.Item);
+                    var childItem = i.Item;
+                    var displayStubType = i.StubType;
 
-                    if (i.IsFolder || displayStubType.HasValue)
+                    if (childItem.IsFolder || displayStubType.HasValue)
                     {
-                        var childCount = (await GetUserItems(i, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
+                        var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
                             .TotalRecordCount;
 
-                        result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, i, displayStubType, item, childCount, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, childItem, displayStubType, item, childCount, filter));
                     }
                     else
                     {
-                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, item, serverItem.StubType, deviceId, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, childItem, item, serverItem.StubType, deviceId, filter));
                     }
                 }
             }
@@ -260,24 +267,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
                 new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
             };
-        }
-
-        private StubType? GetDisplayStubType(BaseItem item, BaseItem context)
-        {
-            if (context == null || context.IsFolder)
-            {
-                var movie = item as Movie;
-                if (movie != null)
-                {
-                    if (movie.LocalTrailerIds.Count > 0 ||
-                        movie.SpecialFeatureIds.Count > 0)
-                    {
-                        return StubType.Folder;
-                    }
-                }
-            }
-
-            return null;
         }
 
         private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(Headers sparams, User user, string deviceId)
@@ -408,16 +397,49 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }).ConfigureAwait(false);
         }
 
-        private async Task<QueryResult<BaseItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
+        private async Task<QueryResult<ServerItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             if (stubType.HasValue)
             {
-                var movie = item as Movie;
-
-                if (movie != null)
+                if (stubType.Value == StubType.People)
                 {
-                    return await GetMovieItems(movie).ConfigureAwait(false);
+                    var items = item.People.Select(i =>
+                    {
+                        try
+                        {
+                            return _libraryManager.GetPerson(i.Name);
+                        }
+                        catch
+                        {
+                            return null;
+                        }
+
+                    }).Where(i => i != null).ToArray();
+
+                    var result = new QueryResult<ServerItem>
+                    {
+                        Items = items.Select(i => new ServerItem { Item = i, StubType = StubType.Folder }).ToArray(),
+                        TotalRecordCount = items.Length
+                    };
+
+                    return ApplyPaging(result, startIndex, limit);
                 }
+                if (stubType.Value == StubType.Folder)
+                {
+                    var movie = item as Movie;
+                    if (movie != null)
+                    {
+                        return ApplyPaging(await GetMovieItems(movie).ConfigureAwait(false), startIndex, limit);
+                    }
+                }
+
+                var person = item as Person;
+                if (person != null)
+                {
+                    return await GetItemsFromPerson(person, user, startIndex, limit).ConfigureAwait(false);
+                }
+
+                return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
             }
 
             var folder = (Folder)item;
@@ -428,7 +450,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            return await folder.GetItems(new InternalItemsQuery
+            var queryResult = await folder.GetItems(new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,
@@ -438,22 +460,138 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 Filter = FilterUnsupportedContent
 
             }).ConfigureAwait(false);
+
+            var serverItems = queryResult
+                .Items
+                .Select(i => new ServerItem
+                {
+                    Item = i,
+                    StubType = GetDisplayStubType(i, item)
+                })
+                .ToArray();
+
+            return new QueryResult<ServerItem>
+            {
+                TotalRecordCount = queryResult.TotalRecordCount,
+                Items = serverItems
+            };
         }
 
-        private Task<QueryResult<BaseItem>> GetMovieItems(Movie item)
+        private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
+        {
+            var items = user.RootFolder.GetRecursiveChildren(user)
+                .Where(i => i is Movie || i is Series)
+                .Where(i => i.ContainsPerson(person.Name))
+                .ToList();
+
+            var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+            {
+                ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
+                ExtraTypes = new[] { ExtraType.Trailer },
+                UserId = user.Id.ToString("N")
+
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            var currentIds = items.Select(i => i.GetProviderId(MetadataProviders.Imdb))
+                .ToList();
+
+            var trailersToAdd = trailerResult.Items
+                .Where(i => i.ContainsPerson(person.Name))
+                .Where(i =>
+                {
+                    // Try to filter out dupes using imdb id
+                    var imdb = i.GetProviderId(MetadataProviders.Imdb);
+                    if (!string.IsNullOrWhiteSpace(imdb) &&
+                        currentIds.Contains(imdb, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                    return true;
+                });
+
+            items.AddRange(trailersToAdd);
+
+            items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
+                .Skip(startIndex ?? 0)
+                .Take(limit ?? int.MaxValue)
+                .ToList();
+
+            var serverItems = items.Select(i => new ServerItem
+            {
+                Item = i,
+                StubType = null
+            })
+            .ToArray();
+
+            return new QueryResult<ServerItem>
+            {
+                TotalRecordCount = serverItems.Length,
+                Items = serverItems
+            };
+        }
+
+        private QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
+        {
+            result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
+
+            return result;
+        }
+
+        private StubType? GetDisplayStubType(BaseItem item, BaseItem context)
+        {
+            if (context == null || context.IsFolder)
+            {
+                var movie = item as Movie;
+                if (movie != null)
+                {
+                    if (movie.GetTrailerIds().Count > 0 ||
+                        movie.SpecialFeatureIds.Count > 0)
+                    {
+                        return StubType.Folder;
+                    }
+                }
+
+                if (EnablePeopleDisplay(item))
+                {
+                    return StubType.Folder;
+                }
+            }
+
+            return null;
+        }
+
+        private bool EnablePeopleDisplay(BaseItem item)
+        {
+            if (item.People.Count > 0)
+            {
+                return item is Movie;
+            }
+
+            return false;
+        }
+
+        private Task<QueryResult<ServerItem>> GetMovieItems(Movie item)
         {
             var list = new List<BaseItem>();
 
             list.Add(item);
 
-            list.AddRange(item.LocalTrailerIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
+            list.AddRange(item.GetTrailerIds().Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
             list.AddRange(item.SpecialFeatureIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
-            list.AddRange(item.ThemeVideoIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
 
-            return Task.FromResult(new QueryResult<BaseItem>
+            var serverItems = list.Select(i => new ServerItem { Item = i, StubType = null })
+                .ToList();
+
+            serverItems.Add(new ServerItem
             {
-                Items = list.ToArray(),
-                TotalRecordCount = list.Count
+                Item = item,
+                StubType = StubType.People
+            });
+
+            return Task.FromResult(new QueryResult<ServerItem>
+            {
+                Items = serverItems.ToArray(),
+                TotalRecordCount = serverItems.Count
             });
         }
 
@@ -498,6 +636,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 stubType = StubType.Folder;
                 id = id.Split(new[] { '_' }, 2)[1];
             }
+            else if (id.StartsWith("people_", StringComparison.OrdinalIgnoreCase))
+            {
+                stubType = StubType.People;
+                id = id.Split(new[] { '_' }, 2)[1];
+            }
 
             if (Guid.TryParse(id, out itemId))
             {
@@ -524,6 +667,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
     public enum StubType
     {
-        Folder = 0
+        Folder = 0,
+        People = 1
     }
 }

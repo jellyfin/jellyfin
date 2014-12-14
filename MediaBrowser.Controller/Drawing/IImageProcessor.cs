@@ -94,6 +94,6 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the supported image output formats.
         /// </summary>
         /// <returns>ImageOutputFormat[].</returns>
-        ImageOutputFormat[] GetSupportedImageOutputFormats();
+        ImageFormat[] GetSupportedImageOutputFormats();
     }
 }

@@ -238,6 +238,12 @@ namespace MediaBrowser.Api.Session
 
         [ApiMember(Name = "SupportsContentUploading", Description = "Determines whether camera upload is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsContentUploading { get; set; }
+
+        [ApiMember(Name = "SupportsSync", Description = "Determines whether sync is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool SupportsSync { get; set; }
+        
+        [ApiMember(Name = "SupportsUniqueIdentifier", Description = "Determines whether the device supports a unique identifier.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool SupportsUniqueIdentifier { get; set; }
     }
 
     [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
@@ -516,7 +522,11 @@ namespace MediaBrowser.Api.Session
 
                 MessageCallbackUrl = request.MessageCallbackUrl,
 
-                SupportsContentUploading = request.SupportsContentUploading
+                SupportsContentUploading = request.SupportsContentUploading,
+
+                SupportsSync = request.SupportsSync,
+
+                SupportsUniqueIdentifier = request.SupportsUniqueIdentifier
             });
         }
     }

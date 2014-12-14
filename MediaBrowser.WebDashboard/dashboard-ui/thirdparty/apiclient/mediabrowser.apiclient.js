@@ -192,7 +192,7 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                timeout: 3000
+                timeout: 15000
 
             }).done(function () {
 
@@ -254,7 +254,7 @@
 
             console.log("Requesting " + request.url);
 
-            request.timeout = 3000;
+            request.timeout = 15000;
 
             $.ajax(request).done(function (response) {
 
@@ -1096,6 +1096,17 @@
         self.getInstantMixFromMusicGenre = function (options) {
 
             var url = self.getUrl("MusicGenres/InstantMix", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getInstantMixFromPlaylist = function (itemId, options) {
+
+            var url = self.getUrl("Playlists/" + itemId + "/InstantMix", options);
 
             return self.ajax({
                 type: "GET",

@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Running Tasks",
     "HeaderActiveDevices": "Active Devices",
     "HeaderPendingInstallations": "Pending Installations",
-    "HeaerServerInformation": "Server Information",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Restart Now",
     "ButtonRestart": "Restart",
     "ButtonShutdown": "Shutdown",
@@ -1275,5 +1275,9 @@
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
+    "TabActivity": "Activity",
+    "TitleSync": "Sync"
 }

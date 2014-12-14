@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -56,28 +55,6 @@ namespace MediaBrowser.Common.Extensions
         }
 
         /// <summary>
-        /// Removes the accent.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>System.String.</returns>
-        public static string RemoveAccent(this string text)
-        {
-            var normalizedString = text.Normalize(NormalizationForm.FormD);
-            var stringBuilder = new StringBuilder();
-
-            foreach (var c in normalizedString)
-            {
-                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
-                {
-                    stringBuilder.Append(c);
-                }
-            }
-
-            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
-        }
-
-        /// <summary>
         /// Gets the M d5.
         /// </summary>
         /// <param name="str">The STR.</param>
@@ -96,6 +73,8 @@ namespace MediaBrowser.Common.Extensions
         /// <param name="str">The STR.</param>
         /// <param name="type">The type.</param>
         /// <returns>Guid.</returns>
+        /// <exception cref="System.ArgumentNullException">type</exception>
+        [Obsolete("Use LibraryManager.GetNewItemId")]
         public static Guid GetMBId(this string str, Type type)
         {
             if (type == null)
@@ -106,36 +85,6 @@ namespace MediaBrowser.Common.Extensions
             var key = type.FullName + str.ToLower();
 
             return key.GetMD5();
-        }
-
-        /// <summary>
-        /// Gets the attribute value.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <param name="attrib">The attrib.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">attrib</exception>
-        public static string GetAttributeValue(this string str, string attrib)
-        {
-            if (string.IsNullOrEmpty(str))
-            {
-                throw new ArgumentNullException("str");
-            }
-
-            if (string.IsNullOrEmpty(attrib))
-            {
-                throw new ArgumentNullException("attrib");
-            }
-            
-            string srch = "[" + attrib + "=";
-            int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-            if (start > -1)
-            {
-                start += srch.Length;
-                int end = str.IndexOf(']', start);
-                return str.Substring(start, end - start);
-            }
-            return null;
         }
     }
 }

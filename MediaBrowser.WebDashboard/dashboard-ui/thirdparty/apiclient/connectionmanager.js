@@ -17,7 +17,7 @@
         Remote: 1
     };
 
-    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, applicationVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
 
         var self = this;
         var apiClients = [];
@@ -67,7 +67,7 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                timeout: 5000
+                timeout: 15000
 
             });
         }
@@ -78,7 +78,7 @@
         };
 
         self.appVersion = function () {
-            return applicationVersion;
+            return appVersion;
         };
 
         self.deviceId = function () {
@@ -128,7 +128,7 @@
 
                 var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-                apiClient = new MediaBrowser.ApiClient(url, appName, applicationVersion, deviceName, deviceId, capabilities);
+                apiClient = new MediaBrowser.ApiClient(url, appName, appVersion, deviceName, deviceId, capabilities);
 
                 apiClients.push(apiClient);
 
@@ -199,11 +199,11 @@
 
             var deferred = $.Deferred();
 
-            if (connectUser != null && connectUser.Id == credentials.ConnectUserId) {
+            if (connectUser && connectUser.Id == credentials.ConnectUserId) {
                 deferred.resolveWith(null, [[]]);
             }
 
-            else if (self.connectToken() && self.connectUserId()) {
+            else if (credentials.ConnectAccessToken && credentials.ConnectUserId) {
 
                 connectUser = null;
 
@@ -213,7 +213,6 @@
                     deferred.resolveWith(null, [[]]);
 
                 }).fail(function () {
-
                     deferred.resolveWith(null, [[]]);
                 });
 
@@ -240,6 +239,7 @@
                 url: url,
                 dataType: "json",
                 headers: {
+                    "X-Application": appName + "/" + appVersion,
                     "X-Connect-UserToken": accessToken
                 }
 
@@ -475,6 +475,7 @@
                 url: url,
                 dataType: "json",
                 headers: {
+                    "X-Application": appName + "/" + appVersion,
                     "X-Connect-UserToken": self.connectToken()
                 }
 
@@ -605,11 +606,7 @@
 
             var deferred = $.Deferred();
 
-            var systemInfo = null;
-            var connectionMode = MediaBrowser.ConnectionMode.Local;
-            var credentials = credentialProvider.credentials();
-
-            function onLocalServerTokenValidationDone() {
+            function onLocalServerTokenValidationDone(connectionMode, credentials) {
 
                 credentialProvider.addOrUpdateServer(credentials.servers, server);
                 server.DateLastAccessed = new Date().getTime();
@@ -638,27 +635,33 @@
                 $(self).trigger('connected', [result]);
             }
 
-            function onExchangeTokenDone() {
+            function onExchangeTokenDone(connectionMode, credentials) {
 
                 if (server.AccessToken) {
-                    validateAuthentication(server, connectionMode).always(onLocalServerTokenValidationDone);
+                    validateAuthentication(server, connectionMode).always(function() {
+                 
+                        onLocalServerTokenValidationDone(connectionMode, credentials);
+                    });
                 } else {
-                    onLocalServerTokenValidationDone();
+                    onLocalServerTokenValidationDone(connectionMode, credentials);
                 }
             }
 
-            function onEnsureConnectUserDone() {
+            function onEnsureConnectUserDone(connectionMode, credentials) {
 
                 if (credentials.ConnectUserId && credentials.ConnectAccessToken && server.ExchangeToken) {
 
-                    addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(onExchangeTokenDone);
+                    addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(function() {
+                        
+                        onExchangeTokenDone(connectionMode, credentials);
+                    });
 
                 } else {
-                    onExchangeTokenDone();
+                    onExchangeTokenDone(connectionMode, credentials);
                 }
             }
 
-            function onRemoteTestDone() {
+            function onRemoteTestDone(systemInfo, connectionMode) {
 
                 if (systemInfo == null) {
 
@@ -667,31 +670,33 @@
                 }
 
                 updateServerInfo(server, systemInfo);
+                server.LastConnectionMode = connectionMode;
+                var credentials = credentialProvider.credentials();
 
                 if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
-                    ensureConnectUser(credentials).always(onEnsureConnectUserDone);
+                    ensureConnectUser(credentials).always(function() {
+                        onEnsureConnectUserDone(connectionMode, credentials);
+                    });
                 } else {
-                    onEnsureConnectUserDone();
+                    onEnsureConnectUserDone(connectionMode, credentials);
                 }
             }
 
-            function onLocalTestDone() {
+            function onLocalTestDone(systemInfo, connectionMode) {
 
                 if (!systemInfo && server.RemoteAddress) {
 
                     // Try to connect to the local address
                     tryConnect(server.RemoteAddress).done(function (result) {
 
-                        systemInfo = result;
-                        connectionMode = MediaBrowser.ConnectionMode.Remote;
-                        onRemoteTestDone();
+                        onRemoteTestDone(result, MediaBrowser.ConnectionMode.Remote);
 
-                    }).fail(function () {
+                    }).fail(function() {
                         onRemoteTestDone();
                     });
 
                 } else {
-                    onRemoteTestDone();
+                    onRemoteTestDone(systemInfo, connectionMode);
                 }
             }
 
@@ -700,10 +705,7 @@
                 //onLocalTestDone();
                 // Try to connect to the local address
                 tryConnect(server.LocalAddress).done(function (result) {
-
-                    systemInfo = result;
-                    onLocalTestDone();
-
+                    onLocalTestDone(result, MediaBrowser.ConnectionMode.Local);
                 }).fail(function () {
                     onLocalTestDone();
                 });
@@ -764,7 +766,10 @@
                     password: md5
                 },
                 dataType: "json",
-                contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                headers: {
+                    "X-Application": appName + "/" + appVersion
+                }
 
             }).done(function (result) {
 
@@ -819,7 +824,8 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });
@@ -843,7 +849,8 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             }).done(function () {
@@ -877,7 +884,8 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });
@@ -901,7 +909,8 @@
                 type: "GET",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Application": appName + "/" + appVersion
                 }
 
             });

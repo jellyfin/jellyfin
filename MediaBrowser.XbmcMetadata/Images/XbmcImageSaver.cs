@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -252,7 +252,7 @@ namespace MediaBrowser.XbmcMetadata.Images
             {
                 return zeroIndexFilename;
             }
-
+            
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;

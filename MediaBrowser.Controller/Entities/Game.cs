@@ -28,12 +28,14 @@ namespace MediaBrowser.Controller.Entities
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Tags = new List<string>();
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
+        public List<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the tags.
@@ -118,6 +120,17 @@ namespace MediaBrowser.Controller.Entities
             id.GameSystem = GameSystem;
 
             return id;
+        }
+
+        /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        public List<Guid> GetTrailerIds()
+        {
+            var list = LocalTrailerIds.ToList();
+            list.AddRange(RemoteTrailerIds);
+            return list;
         }
     }
 }

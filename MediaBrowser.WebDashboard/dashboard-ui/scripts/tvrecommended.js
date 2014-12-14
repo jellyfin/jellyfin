@@ -5,9 +5,11 @@
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -38,9 +40,11 @@
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
@@ -85,8 +89,6 @@
 
     function loadResume(page) {
 
-        var screenWidth = $(window).width();
-
         var parentId = LibraryMenu.getTopParentId();
 
         var options = {
@@ -95,11 +97,13 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1200 ? 6 : 4),
+            Limit: 6,
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
             ExcludeLocationTypes: "Virtual",
-            ParentId: parentId
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

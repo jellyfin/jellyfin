@@ -275,6 +275,9 @@
     <Compile Include="..\MediaBrowser.Model\Devices\DeviceOptions.cs">
       <Link>Devices\DeviceOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Devices\DeviceQuery.cs">
+      <Link>Devices\DeviceQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Devices\DevicesOptions.cs">
       <Link>Devices\DevicesOptions.cs</Link>
     </Compile>
@@ -347,9 +350,6 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\ProfileConditionValue.cs">
       <Link>Dlna\ProfileConditionValue.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\Profiles\AndroidProfile.cs">
-      <Link>Dlna\Profiles\AndroidProfile.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\Profiles\DefaultProfile.cs">
       <Link>Dlna\Profiles\DefaultProfile.cs</Link>
     </Compile>
@@ -404,11 +404,11 @@
     <Compile Include="..\MediaBrowser.Model\Drawing\DrawingUtils.cs">
       <Link>Drawing\DrawingUtils.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Drawing\ImageFormat.cs">
+      <Link>Drawing\ImageFormat.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageOrientation.cs">
       <Link>Drawing\ImageOrientation.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Drawing\ImageOutputFormat.cs">
-      <Link>Drawing\ImageOutputFormat.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Drawing\ImageSize.cs">
       <Link>Drawing\ImageSize.cs</Link>
@@ -421,6 +421,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\ChapterInfoDto.cs">
       <Link>Dto\ChapterInfoDto.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\DtoOptions.cs">
+      <Link>Dto\DtoOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\GameSystemSummary.cs">
       <Link>Dto\GameSystemSummary.cs</Link>
@@ -1031,6 +1034,12 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItem.cs">
       <Link>Sync\SyncJobItem.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItemQuery.cs">
+      <Link>SyncJobItemQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncJobItemStatus.cs">
+      <Link>Sync\SyncJobItemStatus.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobQuery.cs">
       <Link>Sync\SyncJobQuery.cs</Link>
     </Compile>
@@ -1039,9 +1048,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobStatus.cs">
       <Link>Sync\SyncJobStatus.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Sync\SyncLimitType.cs">
-      <Link>Sync\SyncLimitType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
       <Link>Sync\SyncQuality.cs</Link>
@@ -1117,6 +1123,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\PinRedeemResult.cs">
       <Link>Users\PinRedeemResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\UserPolicy.cs">
+      <Link>Users\UserPolicy.cs</Link>
     </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>

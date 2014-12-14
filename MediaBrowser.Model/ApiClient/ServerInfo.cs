@@ -11,14 +11,14 @@ namespace MediaBrowser.Model.ApiClient
         public String Id { get; set; }
         public String LocalAddress { get; set; }
         public String RemoteAddress { get; set; }
+        public String ManualAddress { get; set; }
         public String UserId { get; set; }
         public String AccessToken { get; set; }
         public List<WakeOnLanInfo> WakeOnLanInfos { get; set; }
         public DateTime DateLastAccessed { get; set; }
         public String ExchangeToken { get; set; }
         public UserLinkType? UserLinkType { get; set; }
-
-        public bool IsLocalAddressFixed { get; set; }
+        public ConnectionMode? LastConnectionMode { get; set; }
 
         public ServerInfo()
         {
@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.ApiClient
             Name = systemInfo.ServerName;
             Id = systemInfo.Id;
 
-            if (!IsLocalAddressFixed && !string.IsNullOrEmpty(systemInfo.LocalAddress))
+            if (!string.IsNullOrEmpty(systemInfo.LocalAddress))
             {
                 LocalAddress = systemInfo.LocalAddress;
             }
@@ -53,6 +53,21 @@ namespace MediaBrowser.Model.ApiClient
                         MacAddress = fullSystemInfo.MacAddress
                     });
                 }
+            }
+        }
+
+        public string GetAddress(ConnectionMode mode)
+        {
+            switch (mode)
+            {
+                case ConnectionMode.Local:
+                    return LocalAddress;
+                case ConnectionMode.Manual:
+                    return ManualAddress;
+                case ConnectionMode.Remote:
+                    return RemoteAddress;
+                default:
+                    throw new ArgumentException("Unexpected ConnectionMode");
             }
         }
     }

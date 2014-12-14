@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,18 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user)
+        {
+            var genres = item
+                .GetRecursiveChildren(user, true)
+               .OfType<Audio>()
+               .SelectMany(i => i.Genres)
+               .Concat(item.Genres)
+               .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            return GetInstantMixFromGenres(genres, user);
+        }
+
+        public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user)
         {
             var genres = item
                 .GetRecursiveChildren(user, true)

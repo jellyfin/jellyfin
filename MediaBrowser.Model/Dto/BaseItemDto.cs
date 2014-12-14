@@ -64,7 +64,7 @@ namespace MediaBrowser.Model.Dto
 
         public float? Metascore { get; set; }
 
-        public bool IsUnidentified { get; set; }
+        public bool? IsUnidentified { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
 
@@ -186,6 +186,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The genres.</value>
         public List<string> Genres { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series genres.
+        /// </summary>
+        /// <value>The series genres.</value>
+        public List<string> SeriesGenres { get; set; }
         
         /// <summary>
         /// Gets or sets the community rating.
@@ -218,6 +224,12 @@ namespace MediaBrowser.Model.Dto
         public long? RunTimeTicks { get; set; }
 
         /// <summary>
+        /// Gets or sets the recursive unplayed item count.
+        /// </summary>
+        /// <value>The recursive unplayed item count.</value>
+        public int? RecursiveUnplayedItemCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the play access.
         /// </summary>
         /// <value>The play access.</value>
@@ -235,13 +247,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
 
-        /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        [Obsolete]
-        public int? RecursiveUnplayedItemCount { get; set; }
-        
         /// <summary>
         /// Gets or sets the season count.
         /// </summary>
@@ -708,11 +713,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The game count.</value>
         public int? GameCount { get; set; }
-        /// <summary>
-        /// Gets or sets the trailer count.
-        /// </summary>
-        /// <value>The trailer count.</value>
-        public int? TrailerCount { get; set; }
         /// <summary>
         /// Gets or sets the song count.
         /// </summary>

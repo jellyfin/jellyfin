@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'List');
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
 
     // The base query options
     var query = {
@@ -9,8 +9,10 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName",
-        StartIndex: 0
+        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
     };
 
     function getSavedQueryKey() {

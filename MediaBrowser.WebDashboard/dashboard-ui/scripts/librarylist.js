@@ -245,6 +245,19 @@
         return false;
     }
 
+    function onSyncButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        closeContextMenu();
+
+        SyncManager.showMenu({
+            items: [id]
+        });
+
+        return false;
+    }
+
     function onExternalPlayerButtonClick() {
 
         closeContextMenu();
@@ -409,6 +422,10 @@
                 html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
             }
 
+            if (commands.indexOf('sync') != -1) {
+                html += '<li data-icon="refresh"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+            }
+
             if (commands.indexOf('delete') != -1) {
                 html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
@@ -437,6 +454,7 @@
             $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
             $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
             $('.btnDelete', elem).on('click', onDeleteButtonClick);
+            $('.btnSync', elem).on('click', onSyncButtonClick);
         });
     }
 
@@ -710,6 +728,30 @@
             }).get();
     }
 
+    function sync(page) {
+
+        var selection = getSelectedItems(page);
+
+        if (selection.length < 1) {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessagePleaseSelectOneItem'),
+                title: Globalize.translate('HeaderError')
+            });
+
+            return;
+        }
+
+        SyncManager.showMenu({
+            items: selection
+        });
+
+        $(SyncManager).off('jobsubmit.librarylist').on('jobsubmit.librarylist', function () {
+
+            hideSelections(page);
+        });
+    }
+
     function combineVersions(page) {
 
         var selection = getSelectedItems(page);
@@ -848,6 +890,10 @@
 
         $('.btnMergeVersions', page).on('click', function () {
             combineVersions(page);
+        });
+
+        $('.btnSyncItems', page).on('click', function () {
+            sync(page);
         });
 
         $('.btnAddToCollection', page).on('click', function () {

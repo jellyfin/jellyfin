@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
+﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
@@ -59,6 +58,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (LocationType == LocationType.FileSystem)
+                {
+                    return System.IO.Path.GetFileName(Path);
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is physical root.
         /// </summary>
@@ -103,7 +116,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (item.Id == Guid.Empty)
             {
-                item.Id = item.Path.GetMBId(item.GetType());
+                item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
 
             if (ActualChildren.Any(i => i.Id == item.Id))
@@ -364,47 +377,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsValidFromResolver(BaseItem current, BaseItem newItem)
         {
-            var currentAsVideo = current as Video;
-
-            if (currentAsVideo != null)
-            {
-                var newAsVideo = newItem as Video;
-
-                if (newAsVideo != null)
-                {
-                    if (currentAsVideo.IsPlaceHolder != newAsVideo.IsPlaceHolder)
-                    {
-                        return false;
-                    }
-                    if (currentAsVideo.IsMultiPart != newAsVideo.IsMultiPart)
-                    {
-                        return false;
-                    }
-                    if (currentAsVideo.HasLocalAlternateVersions != newAsVideo.HasLocalAlternateVersions)
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                var currentAsPlaceHolder = current as ISupportsPlaceHolders;
-
-                if (currentAsPlaceHolder != null)
-                {
-                    var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
-
-                    if (newHasPlaceHolder != null)
-                    {
-                        if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return current.IsInMixedFolder == newItem.IsInMixedFolder;
+            return current.IsValidFromResolver(newItem);
         }
 
         /// <summary>
@@ -737,7 +710,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var collectionType = LibraryManager.FindCollectionType(this);
 
-            return LibraryManager.ResolvePaths<BaseItem>(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
+            return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
         }
 
         /// <summary>
@@ -782,6 +755,12 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem RetrieveChild(BaseItem child)
         {
+            if (child.Id == Guid.Empty)
+            {
+                Logger.Error("Item found with empty Id: " + (child.Path ?? child.Name));
+                return null;
+            }
+
             var item = LibraryManager.GetMemoryItemById(child.Id);
 
             if (item != null)

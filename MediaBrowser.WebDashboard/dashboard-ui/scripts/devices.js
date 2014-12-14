@@ -77,9 +77,13 @@
     function loadData(page) {
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl('Devices')).done(function (devices) {
+        ApiClient.getJSON(ApiClient.getUrl('Devices', {
+            
+            SupportsUniqueIdentifier: true
 
-            load(page, devices);
+        })).done(function (result) {
+
+            load(page, result.Items);
 
             Dashboard.hideLoadingMsg();
         });

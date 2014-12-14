@@ -9,9 +9,11 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Audio",
         Recursive: true,
-        Fields: "AudioInfo,ParentId",
+        Fields: "AudioInfo,ParentId,SyncInfo",
         Limit: 200,
-        StartIndex: 0
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
     };
 
     function getSavedQueryKey() {

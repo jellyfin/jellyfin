@@ -13,11 +13,14 @@ namespace MediaBrowser.Model.Session
         public string MessageCallbackUrl { get; set; }
 
         public bool SupportsContentUploading { get; set; }
+        public bool SupportsUniqueIdentifier { get; set; }
+        public bool SupportsSync { get; set; }
 
         public ClientCapabilities()
         {
             PlayableMediaTypes = new List<string>();
             SupportedCommands = new List<string>();
+            SupportsUniqueIdentifier = true;
         }
     }
 }

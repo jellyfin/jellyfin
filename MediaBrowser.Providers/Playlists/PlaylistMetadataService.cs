@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -35,18 +33,14 @@ namespace MediaBrowser.Providers.Playlists
                 target.PlaylistMediaType = source.PlaylistMediaType;
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.OwnerUserId))
+            if (replaceData || target.Shares.Count == 0)
             {
-                target.OwnerUserId = source.OwnerUserId;
+                target.Shares = source.Shares;
             }
 
             if (mergeMetadataSettings)
             {
-                var list = source.LinkedChildren.ToList();
-
-                list.AddRange(target.LinkedChildren);
-
-                target.LinkedChildren = list;
+                target.LinkedChildren = source.LinkedChildren;
             }
         }
     }

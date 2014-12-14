@@ -2,7 +2,9 @@
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
@@ -20,7 +22,15 @@ namespace MediaBrowser.LocalMetadata.Parsers
             {
                 case "OwnerUserId":
                     {
-                        item.OwnerUserId = reader.ReadElementContentAsString();
+                        var userId = reader.ReadElementContentAsString();
+                        if (!item.Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            item.Shares.Add(new Share
+                            {
+                                UserId = userId,
+                                CanEdit = true
+                            });
+                        }
 
                         break;
                     }

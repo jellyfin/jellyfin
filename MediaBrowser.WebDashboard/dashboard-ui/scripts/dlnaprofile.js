@@ -44,6 +44,7 @@
         }).checkboxradio('refresh');
 
         $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl).checkboxradio('refresh');
+        $('#chkEnableSingleImageLimit', page).checked(profile.EnableSingleAlbumArtLimit).checkboxradio('refresh');
 
         renderXmlDocumentAttributes(page, profile.XmlRootAttributes || []);
 
@@ -499,7 +500,6 @@
         $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http').selectmenu('refresh');
         $('#selectTranscodingContext', popup).val(transcodingProfile.Context || 'Streaming').selectmenu('refresh');
 
-        $('#txtTranscodingVideoProfile', popup).val(transcodingProfile.VideoProfile || '');
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
         $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false).checkboxradio('refresh');
         $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
@@ -526,7 +526,6 @@
         currentSubProfile.Protocol = $('#selectTranscodingProtocol', page).val();
         currentSubProfile.Context = $('#selectTranscodingContext', page).val();
 
-        currentSubProfile.VideoProfile = $('#txtTranscodingVideoProfile', page).val();
         currentSubProfile.EnableMpegtsM2TsMode = $('#chkEnableMpegtsM2TsMode', page).checked();
         currentSubProfile.EstimateContentLength = $('#chkEstimateContentLength', page).checked();
         currentSubProfile.TranscodeSeekInfo = $('#chkReportByteRangeRequests', page).checked() ? 'Bytes' : 'Auto';
@@ -895,6 +894,7 @@
 
         profile.Name = $('#txtName', page).val();
         profile.EnableAlbumArtInDidl = $('#chkEnableAlbumArtInDidl', page).checked();
+        profile.EnableSingleAlbumArtLimit = $('#chkEnableSingleImageLimit', page).checked();
 
         profile.SupportedMediaTypes = $('.chkMediaType:checked', page).get().map(function (c) {
             return c.getAttribute('data-value');
@@ -979,12 +979,10 @@
                 $('#fldTranscodingVideoCodec', page).show();
                 $('#fldTranscodingProtocol', page).show();
                 $('#fldEnableMpegtsM2TsMode', page).show();
-                $('#fldVideoProfile', page).show();
             } else {
                 $('#fldTranscodingVideoCodec', page).hide();
                 $('#fldTranscodingProtocol', page).hide();
                 $('#fldEnableMpegtsM2TsMode', page).hide();
-                $('#fldVideoProfile', page).hide();
             }
 
             if (this.value == 'Photo') {

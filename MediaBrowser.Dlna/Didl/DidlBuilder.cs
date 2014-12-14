@@ -111,7 +111,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddCover(item, element);
+            AddCover(item, null, element);
 
             return element;
         }
@@ -293,8 +293,17 @@ namespace MediaBrowser.Dlna.Didl
             container.AppendChild(res);
         }
 
-        private string GetDisplayName(BaseItem item, BaseItem context)
+        private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
         {
+            if (itemStubType.HasValue && itemStubType.Value == StubType.People)
+            {
+                if (item is Video)
+                {
+                    return _localization.GetLocalizedString("HeaderCastCrew");
+                }
+                return _localization.GetLocalizedString("HeaderPeople");
+            }
+
             var episode = item as Episode;
             var season = context as Season;
 
@@ -460,7 +469,7 @@ namespace MediaBrowser.Dlna.Didl
 
             AddCommonFields(folder, stubType, null, container, filter);
 
-            AddCover(folder, container);
+            AddCover(folder, stubType, container);
 
             return container;
         }
@@ -491,7 +500,7 @@ namespace MediaBrowser.Dlna.Didl
             // MediaMonkey for example won't display content without a title
             //if (filter.Contains("dc:title"))
             {
-                AddValue(element, "dc", "title", GetDisplayName(item, context), NS_DC);
+                AddValue(element, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
             }
 
             element.AppendChild(CreateObjectClass(element.OwnerDocument, item, itemStubType));
@@ -741,8 +750,14 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddCover(BaseItem item, XmlElement element)
+        private void AddCover(BaseItem item, StubType? stubType, XmlElement element)
         {
+            if (stubType.HasValue && stubType.Value == StubType.People)
+            {
+                AddEmbeddedImageAsCover("people", element);
+                return;
+            }
+
             var imageInfo = GetImageInfo(item);
 
             if (imageInfo == null)
@@ -799,6 +814,22 @@ namespace MediaBrowser.Dlna.Didl
                 AddImageResElement(item, element, 4096, 4096, playbackPercentage, "png", "PNG_LRG");
                 AddImageResElement(item, element, 160, 160, playbackPercentage, "png", "PNG_TN");
             }
+        }
+
+        private void AddEmbeddedImageAsCover(string name, XmlElement element)
+        {
+            var result = element.OwnerDocument;
+            
+            var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
+            var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
+            profile.InnerText = _profile.AlbumArtPn;
+            icon.SetAttributeNode(profile);
+            icon.InnerText = _serverAddress + "/Dlna/icons/people480.jpg";
+            element.AppendChild(icon);
+
+            icon = result.CreateElement("upnp", "icon", NS_UPNP);
+            icon.InnerText = _serverAddress + "/Dlna/icons/people48.jpg";
+            element.AppendChild(icon);
         }
 
         private void AddImageResElement(BaseItem item,

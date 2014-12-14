@@ -6,9 +6,11 @@
 
         var query = {
 
-            Limit: 32,
-            Fields: "SeriesInfo,UserData",
-            UserId: Dashboard.getCurrentUserId()
+            Limit: 40,
+            Fields: "SeriesInfo,UserData,SeriesStudio,SyncInfo",
+            UserId: Dashboard.getCurrentUserId(),
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         query.ParentId = LibraryMenu.getTopParentId();

@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             BoxSetIdList = new List<Guid>();
@@ -49,6 +50,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         public float? Metascore { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
+        public List<Guid> RemoteTrailerIds { get; set; }
         public List<string> Keywords { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
@@ -90,6 +92,17 @@ namespace MediaBrowser.Controller.Entities.Movies
         public string TmdbCollectionName { get; set; }
 
         /// <summary>
+        /// Gets the trailer ids.
+        /// </summary>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        public List<Guid> GetTrailerIds()
+        {
+            var list = LocalTrailerIds.ToList();
+            list.AddRange(RemoteTrailerIds);
+            return list;
+        }
+
+        /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -119,7 +132,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private async Task<bool> RefreshSpecialFeatures(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var newItems = LoadSpecialFeatures(fileSystemChildren, options.DirectoryService).ToList();
+            var newItems = LibraryManager.FindExtras(this, fileSystemChildren, options.DirectoryService).ToList();
             var newItemIds = newItems.Select(i => i.Id).ToList();
 
             var itemsChanged = !SpecialFeatureIds.SequenceEqual(newItemIds);
@@ -157,6 +170,22 @@ namespace MediaBrowser.Controller.Entities.Movies
                 {
                     ProductionYear = yearInName;
                     hasChanges = true;
+                }
+                else
+                {
+                    // Try to get the year from the folder name
+                    if (!IsInMixedFolder)
+                    {
+                        info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
+
+                        yearInName = info.Year;
+
+                        if (yearInName.HasValue)
+                        {
+                            ProductionYear = yearInName;
+                            hasChanges = true;
+                        }
+                    }
                 }
             }
 

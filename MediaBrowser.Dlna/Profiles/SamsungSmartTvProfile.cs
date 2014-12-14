@@ -91,7 +91,7 @@ namespace MediaBrowser.Dlna.Profiles
                 },
                 new DirectPlayProfile
                 {
-                    Container = "3gpp",
+                    Container = "3gp",
                     VideoCodec = "h264,mpeg4",
                     AudioCodec = "aac,he-aac",
                     Type = DlnaProfileType.Video

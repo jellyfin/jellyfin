@@ -596,7 +596,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: 5,
-            fields: "PrimaryImageAspectRatio,UserData"
+            fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 
         if (item.Type == "Movie") {
@@ -722,7 +722,7 @@
 
         _childrenItemsQuery = null;
 
-        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio";
+        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio,SyncInfo";
 
         var query = {
             ParentId: item.Id,
@@ -1069,7 +1069,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "DateCreated",
+            Fields: "DateCreated,SyncInfo",
             Albums: item.Name
 
         }).done(function (result) {
@@ -1543,7 +1543,9 @@
 
         $('.btnSync', page).on('click', function () {
 
-            SyncManager.showMenu([currentItem]);
+            SyncManager.showMenu({
+                items: [currentItem]
+            });
         });
 
         $('.btnMoreCommands', page).on('click', function () {

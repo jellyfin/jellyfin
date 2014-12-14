@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Drawing;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -109,7 +110,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<StreamResponseInfo> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
+        Task<ImageStream> GetChannelImageAsync(string channelId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording image asynchronous. This only needs to be implemented if an image path or url cannot be supplied to RecordingInfo
@@ -117,7 +118,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recordingId">The recording identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<StreamResponseInfo> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken);
+        Task<ImageStream> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the program image asynchronous. This only needs to be implemented if an image path or url cannot be supplied to ProgramInfo
@@ -126,7 +127,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ImageResponseInfo}.</returns>
-        Task<StreamResponseInfo> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
+        Task<ImageStream> GetProgramImageAsync(string programId, string channelId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recordings asynchronous.

@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "MusicVideo",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "DateCreated,SyncInfo",
         StartIndex: 0
     };
 

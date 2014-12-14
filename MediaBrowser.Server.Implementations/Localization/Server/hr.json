@@ -539,7 +539,7 @@
     "HeaderRunningTasks": "Zadatci koji se izvode",
     "HeaderActiveDevices": "Aktivni ure\u0111aji",
     "HeaderPendingInstallations": "Instalacije u toku",
-    "HeaerServerInformation": "Informacije servera",
+    "HeaderServerInformation": "Server Information",
     "ButtonRestartNow": "Ponovo pokreni sad",
     "ButtonRestart": "Ponovo pokreni",
     "ButtonShutdown": "Ugasi",
@@ -1275,5 +1275,9 @@
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
     "LabelBlockItemsWithTags": "Block items with tags:",
-    "LabelTag": "Tag:"
+    "LabelTag": "Tag:",
+    "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
+    "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
+    "TabActivity": "Activity",
+    "TitleSync": "Sync"
 }

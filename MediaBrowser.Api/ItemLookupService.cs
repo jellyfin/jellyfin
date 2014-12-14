@@ -37,12 +37,6 @@ namespace MediaBrowser.Api
     {
     }
 
-    [Route("/Items/RemoteSearch/Trailer", "POST")]
-    [Authenticated]
-    public class GetTrailerRemoteSearchResults : RemoteSearchQuery<TrailerInfo>, IReturn<List<RemoteSearchResult>>
-    {
-    }
-
     [Route("/Items/RemoteSearch/AdultVideo", "POST")]
     [Authenticated]
     public class GetAdultVideoRemoteSearchResults : RemoteSearchQuery<ItemLookupInfo>, IReturn<List<RemoteSearchResult>>
@@ -158,13 +152,6 @@ namespace MediaBrowser.Api
         public object Post(GetPersonRemoteSearchResults request)
         {
             var result = _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(request, CancellationToken.None).Result;
-
-            return ToOptimizedResult(result);
-        }
-
-        public object Post(GetTrailerRemoteSearchResults request)
-        {
-            var result = _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(request, CancellationToken.None).Result;
 
             return ToOptimizedResult(result);
         }

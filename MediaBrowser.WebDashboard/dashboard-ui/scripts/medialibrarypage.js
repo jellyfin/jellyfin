@@ -376,7 +376,7 @@ var WizardLibraryPage = {
 
         var task = tasks.filter(function (t) {
 
-            return t.Name == 'Scan media library';
+            return t.Key == 'RefreshLibrary';
 
         })[0];
 

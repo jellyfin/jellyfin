@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return _libraryManager.ValidateArtists(cancellationToken, progress);
+            return ((LibraryManager)_libraryManager).ValidateArtists(cancellationToken, progress);
         }
     }
 }

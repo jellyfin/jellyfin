@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Movie",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "DateCreated,SyncInfo",
         StartIndex: 0
     };
 

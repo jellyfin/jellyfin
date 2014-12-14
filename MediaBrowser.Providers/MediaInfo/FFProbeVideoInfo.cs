@@ -757,13 +757,14 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>System.Nullable{IsoType}.</returns>
         private IsoType? DetermineIsoType(IIsoMount isoMount)
         {
-            var folders = Directory.EnumerateDirectories(isoMount.MountedPath).Select(Path.GetFileName).ToList();
+            var fileSystemEntries = Directory.EnumerateFileSystemEntries(isoMount.MountedPath).Select(Path.GetFileName).ToList();
 
-            if (folders.Contains("video_ts", StringComparer.OrdinalIgnoreCase))
+            if (fileSystemEntries.Contains("video_ts", StringComparer.OrdinalIgnoreCase) ||
+                fileSystemEntries.Contains("VIDEO_TS.IFO", StringComparer.OrdinalIgnoreCase))
             {
                 return IsoType.Dvd;
             }
-            if (folders.Contains("bdmv", StringComparer.OrdinalIgnoreCase))
+            if (fileSystemEntries.Contains("bdmv", StringComparer.OrdinalIgnoreCase))
             {
                 return IsoType.BluRay;
             }

@@ -149,16 +149,16 @@ h1 a:hover {
     }
 
 .largePanel {
-    width: 250px;
+    width: 270px;
 }
 
 /* Make panels larger */
 .largePanelModalOpen.ui-panel-dismiss-position-right {
-    right: 250px !important;
+    right: 270px !important;
 }
 
 .largePanelModalOpen.ui-panel-dismiss-position-left {
-    left: 250px !important;
+    left: 270px !important;
 }
 
 

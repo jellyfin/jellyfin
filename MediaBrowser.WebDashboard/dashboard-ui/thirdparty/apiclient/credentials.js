@@ -23,8 +23,13 @@
         }
 
         function set(data) {
-            credentials = data;
-            store.setItem(key, JSON.stringify(get()));
+            
+            if (data) {
+                credentials = data;
+                store.setItem(key, JSON.stringify(data));
+            } else {
+                self.clear();
+            }
         }
 
         self.clear = function () {

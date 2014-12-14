@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
     public class RemoteNotifications : IServerEntryPoint
     {
-        private const string Url = "http://www.mb3admin.com/admin/service/MB3ServerNotifications.json";
+        private const string Url = "https://www.mb3admin.com/admin/service/MB3ServerNotifications.json";
 
         private Timer _timer;
         private readonly IHttpClient _httpClient;

@@ -101,7 +101,22 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value><c>null</c> if [is played] contains no value, <c>true</c> if [is played]; otherwise, <c>false</c>.</value>
         public bool? IsPlayed { get; set; }
-        
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable images].
+        /// </summary>
+        /// <value><c>null</c> if [enable images] contains no value, <c>true</c> if [enable images]; otherwise, <c>false</c>.</value>
+        public bool? EnableImages { get; set; }
+        /// <summary>
+        /// Gets or sets the image type limit.
+        /// </summary>
+        /// <value>The image type limit.</value>
+        public int? ImageTypeLimit { get; set; }
+        /// <summary>
+        /// Gets or sets the enable image types.
+        /// </summary>
+        /// <value>The enable image types.</value>
+        public ImageType[] EnableImageTypes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsByNameQuery" /> class.
         /// </summary>
@@ -115,6 +130,7 @@ namespace MediaBrowser.Model.Querying
             SortBy = new string[] { };
             ExcludeItemTypes = new string[] { };
             IncludeItemTypes = new string[] { };
+            EnableImageTypes = new ImageType[] { };
         }
     }
 }

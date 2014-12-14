@@ -645,6 +645,29 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 AddLinkedChildren(playlist, builder, "PlaylistItems", "PlaylistItem");
             }
+
+            var hasShares = item as IHasShares;
+            if (hasShares != null)
+            {
+                
+            }
+        }
+
+        public static void AddShares(IHasShares item, StringBuilder builder)
+        {
+            builder.Append("<Shares>");
+
+            foreach (var share in item.Shares)
+            {
+                builder.Append("<Share>");
+
+                builder.Append("<UserId>" + SecurityElement.Escape(share.UserId) + "</UserId>");
+                builder.Append("<CanEdit>" + SecurityElement.Escape(share.CanEdit.ToString().ToLower()) + "</CanEdit>");
+
+                builder.Append("</Share>");
+            }
+
+            builder.Append("</Shares>");
         }
 
         public static void AddChapters(Video item, StringBuilder builder, IItemRepository repository)

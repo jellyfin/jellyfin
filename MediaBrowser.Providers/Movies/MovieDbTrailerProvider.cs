@@ -12,18 +12,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieDbTrailerProvider : IRemoteMetadataProvider<Trailer, TrailerInfo>, IHasOrder, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>
+    public class MovieDbTrailerProvider : IHasOrder, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>
     {
         private readonly IHttpClient _httpClient;
 
         public MovieDbTrailerProvider(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-        }
-
-        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
-        {
-            return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)

@@ -18,5 +18,10 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the endpoint address.
+        /// </summary>
+        /// <value>The endpoint address.</value>
+        public string EndpointAddress { get; set; }
     }
 }

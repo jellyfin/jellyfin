@@ -7,8 +7,13 @@ using System.Linq;
 
 namespace MediaBrowser.Api.UserLibrary
 {
-    public abstract class BaseItemsRequest : IHasItemFields
+    public abstract class BaseItemsRequest : IHasDtoOptions
     {
+        protected BaseItemsRequest()
+        {
+            EnableImages = true;
+        }
+
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
@@ -115,6 +120,15 @@ namespace MediaBrowser.Api.UserLibrary
         /// <value>The years.</value>
         [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Years { get; set; }
+
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
 
         public string[] GetGenres()
         {

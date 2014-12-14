@@ -151,7 +151,7 @@ namespace MediaBrowser.Api
             {
                 items = items.Take(request.Limit.Value).ToArray();
             }
-
+            
             var dtos = items
                    .Select(i => _dtoService.GetBaseItemDto(i.Item2, request.GetItemFields().ToList(), user))
                    .ToArray();

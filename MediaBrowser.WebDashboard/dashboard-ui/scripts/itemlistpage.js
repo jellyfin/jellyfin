@@ -7,8 +7,10 @@
 
         SortBy: "SortName",
         SortOrder: "Ascending",
-        Fields: "DateCreated,PrimaryImageAspectRatio",
-        StartIndex: 0
+        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+        StartIndex: 0,
+        ImageTypeLimit: 1,
+        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
     };
 
     var currentItem;

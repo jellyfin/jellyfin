@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.Movies
                 Logger,
 
                 // Strip out secondary versions
-                request, item => (item is Movie || item is Trailer) && !((Video)item).PrimaryVersionId.HasValue,
+                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
 
                 SimilarItemsHelper.GetSimiliarityScore);
 

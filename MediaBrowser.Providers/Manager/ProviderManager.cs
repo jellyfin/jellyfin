@@ -437,7 +437,6 @@ namespace MediaBrowser.Providers.Manager
                 GetPluginSummary<Game>(),
                 GetPluginSummary<GameSystem>(),
                 GetPluginSummary<Movie>(),
-                GetPluginSummary<Trailer>(),
                 GetPluginSummary<BoxSet>(),
                 GetPluginSummary<Book>(),
                 GetPluginSummary<Series>(),

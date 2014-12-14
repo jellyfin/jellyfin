@@ -200,6 +200,19 @@ namespace MediaBrowser.Api.Movies
                     .ToList();
             }
 
+            if (item is Video)
+            {
+                var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+
+                // Use imdb id to try to filter duplicates of the same item
+                if (!string.IsNullOrWhiteSpace(imdbId))
+                {
+                    list = list
+                        .Where(i => !string.Equals(imdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+            }
+
             var items = SimilarItemsHelper.GetSimilaritems(item, list, getSimilarityScore).ToList();
 
             IEnumerable<BaseItem> returnItems = items;
@@ -208,7 +221,7 @@ namespace MediaBrowser.Api.Movies
             {
                 returnItems = returnItems.Take(request.Limit.Value);
             }
-
+          
             var result = new ItemsResult
             {
                 Items = returnItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray(),

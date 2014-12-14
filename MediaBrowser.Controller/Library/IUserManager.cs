@@ -164,5 +164,19 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pin">The pin.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
+
+        /// <summary>
+        /// Gets the user policy.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <returns>UserPolicy.</returns>
+        UserPolicy GetUserPolicy(string userId);
+
+        /// <summary>
+        /// Updates the user policy.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="userPolicy">The user policy.</param>
+        Task UpdateUserPolicy(string userId, UserPolicy userPolicy);
     }
 }

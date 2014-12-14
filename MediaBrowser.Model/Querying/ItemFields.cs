@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Querying
     public enum ItemFields
     {
         /// <summary>
+        /// The alternate episode numbers
+        /// </summary>
+        AlternateEpisodeNumbers,
+
+        /// <summary>
         /// The awards summary
         /// </summary>
         AwardSummary,
@@ -82,9 +87,19 @@ namespace MediaBrowser.Model.Querying
         Keywords,
 
         /// <summary>
+        /// The media source count
+        /// </summary>
+        MediaSourceCount,
+
+        /// <summary>
         /// The media versions
         /// </summary>
         MediaSources,
+
+        /// <summary>
+        /// The metascore
+        /// </summary>
+        Metascore,
 
         /// <summary>
         /// The metadata settings
@@ -127,6 +142,11 @@ namespace MediaBrowser.Model.Querying
         PrimaryImageAspectRatio,
 
         /// <summary>
+        /// The original primary image aspect ratio
+        /// </summary>
+        OriginalPrimaryImageAspectRatio,
+        
+        /// <summary>
         /// The revenue
         /// </summary>
         Revenue,
@@ -141,6 +161,16 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         ScreenshotImageTags,
 
+        /// <summary>
+        /// The series genres
+        /// </summary>
+        SeriesGenres,
+
+        /// <summary>
+        /// The series studio
+        /// </summary>
+        SeriesStudio,
+        
         /// <summary>
         /// The soundtrack ids
         /// </summary>
@@ -170,6 +200,11 @@ namespace MediaBrowser.Model.Querying
         /// The tags
         /// </summary>
         Tags,
+
+        /// <summary>
+        /// The vote count
+        /// </summary>
+        VoteCount,
 
         /// <summary>
         /// The TMDB collection name

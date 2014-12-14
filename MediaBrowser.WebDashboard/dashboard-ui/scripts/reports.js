@@ -874,7 +874,7 @@
         query.SortBy = getDefaultSortOrder($('#selectView', page).val());
         query.SortOrder = "Ascending";
 
-        reloadItems(page);
+        $('#selectView', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
 
     }).on('pageshow', "#libraryReportPage", function () {
 

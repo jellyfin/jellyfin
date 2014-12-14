@@ -26,7 +26,7 @@ $DeployPathSystemPath = "$DeployPathServerPath\$DeployPathSystemFolderName"
 $7za = "$PSScriptRoot\..\..\ThirdParty\7zip\7za.exe"
 $7zaOptions = "a -mx9"
 
-$WindowsBinReleasePath = "$PSScriptRoot\..\..\MediaBrowser.ServerApplication\bin\x86\Release"
+$WindowsBinReleasePath = "$PSScriptRoot\..\..\MediaBrowser.ServerApplication\bin\Release"
 
 Write-Host "Building Windows version..."
 $buildSucceeded = Invoke-MsBuild -Path "$PSScriptRoot\..\..\MediaBrowser.sln" -MsBuildParameters "/target:Clean;Build /property:Configuration=Release;Platform=""Any CPU"" /verbosity:Quiet" -BuildLogDirectoryPath "$PSScriptRoot" 

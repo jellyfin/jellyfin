@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dlna;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Dlna;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Dlna
@@ -69,6 +70,6 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>DlnaIconResponse.</returns>
-        DlnaIconResponse GetIcon(string filename);
+        ImageStream GetIcon(string filename);
     }
 }

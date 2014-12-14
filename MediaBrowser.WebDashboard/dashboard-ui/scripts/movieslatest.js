@@ -5,17 +5,17 @@
         var parentId = LibraryMenu.getTopParentId();
         var userId = Dashboard.getCurrentUserId();
         
-        var screenWidth = $(window).width();
-
         var page = this;
 
         var options = {
 
             IncludeItemTypes: "Movie",
-            Limit: screenWidth >= 1600 ? 28 : (screenWidth >= 1440 ? 30 : (screenWidth >= 800 ? 28 : 18)),
-            Fields: "PrimaryImageAspectRatio",
+            Limit: 30,
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ParentId: parentId,
-            IsPlayed: false
+            IsPlayed: false,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -24,7 +24,7 @@
                 items: items,
                 lazy: true,
                 shape: 'homePagePortrait',
-                overlayText: true
+                overlayText: false
 
             })).trigger('create').createCardMenus();
         });
