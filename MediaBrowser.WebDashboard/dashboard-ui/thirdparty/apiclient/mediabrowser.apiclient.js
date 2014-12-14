@@ -1908,11 +1908,13 @@
 
         self.reportCapabilities = function (options) {
 
-            var url = self.getUrl("Sessions/Capabilities", options);
+            var url = self.getUrl("Sessions/Capabilities/Full");
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify(options),
+                contentType: "application/json"
             });
         };
 

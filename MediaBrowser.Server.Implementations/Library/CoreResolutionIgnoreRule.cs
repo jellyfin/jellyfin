@@ -104,6 +104,15 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
+                if (args.Parent != null)
+                {
+                    // Don't resolve these into audio files
+                    if (string.Equals(_fileSystem.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename) && _libraryManager.IsAudioFile(filename))
+                    {
+                        return true;
+                    }
+                }
+                
                 // Ignore samples
                 if (filename.IndexOf(".sample.", StringComparison.OrdinalIgnoreCase) != -1)
                 {
