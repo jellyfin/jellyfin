@@ -1380,11 +1380,11 @@ namespace MediaBrowser.Model.ApiClient
         Task UpdateItem(BaseItemDto item);
 
         /// <summary>
-        /// Requests the synchronize.
+        /// Creates the synchronize job.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task&lt;SyncJob&gt;.</returns>
-        Task<SyncJob> RequestSync(SyncJobRequest request);
+        Task<SyncJob> CreateSyncJob(SyncJobRequest request);
 
         /// <summary>
         /// Opens the web socket.

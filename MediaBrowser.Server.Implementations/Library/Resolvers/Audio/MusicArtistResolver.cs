@@ -51,13 +51,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.Parent.IsRoot) return null;
 
             // Don't allow nested artists
-            if (args.Parent is MusicArtist)
+            if (args.HasParent<MusicArtist>() || args.HasParent<MusicAlbum>())
             {
                 return null;
             }
 
             // Optimization
-            if (args.Parent is BoxSet || args.Parent is Series || args.Parent is Season)
+            if (args.HasParent<BoxSet>() || args.HasParent<Series>() || args.HasParent<Season>())
             {
                 return null;
             }

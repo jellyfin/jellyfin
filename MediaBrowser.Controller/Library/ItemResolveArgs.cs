@@ -154,6 +154,28 @@ namespace MediaBrowser.Controller.Library
         /// <value>The additional locations.</value>
         private List<string> AdditionalLocations { get; set; }
 
+        public bool HasParent<T>()
+            where T : Folder
+        {
+            var parent = Parent;
+
+            if (parent != null)
+            {
+                var item = parent as T;
+
+                // Just in case the user decided to nest episodes. 
+                // Not officially supported but in some cases we can handle it.
+                if (item == null)
+                {
+                    item = parent.Parents.OfType<T>().FirstOrDefault();
+                }
+
+                return item != null;
+
+            }
+            return false;
+        }
+
         /// <summary>
         /// Adds the additional location.
         /// </summary>
@@ -165,7 +187,7 @@ namespace MediaBrowser.Controller.Library
             {
                 throw new ArgumentNullException();
             }
-            
+
             if (AdditionalLocations == null)
             {
                 AdditionalLocations = new List<string>();
@@ -182,7 +204,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                var paths = string.IsNullOrWhiteSpace(Path) ? new string[] {} : new[] {Path};
+                var paths = string.IsNullOrWhiteSpace(Path) ? new string[] { } : new[] { Path };
                 return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations);
             }
         }
@@ -199,7 +221,7 @@ namespace MediaBrowser.Controller.Library
             {
                 throw new ArgumentNullException();
             }
-            
+
             return GetFileSystemEntryByPath(System.IO.Path.Combine(Path, name));
         }
 
@@ -215,7 +237,7 @@ namespace MediaBrowser.Controller.Library
             {
                 throw new ArgumentNullException();
             }
-            
+
             if (FileSystemDictionary != null)
             {
                 FileSystemInfo entry;
