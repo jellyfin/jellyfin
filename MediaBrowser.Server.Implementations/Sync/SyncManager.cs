@@ -84,7 +84,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 DateCreated = DateTime.UtcNow,
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
-                RemoveWhenWatched = request.RemoveWhenWatched,
                 ItemCount = items.Count,
                 Quality = request.Quality
             };

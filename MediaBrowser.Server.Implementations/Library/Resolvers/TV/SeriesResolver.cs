@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 }
                 
                 // Optimization to avoid running these tests against Seasons
-                if (args.Parent is Series || args.Parent is Season || args.Parent is MusicArtist || args.Parent is MusicAlbum)
+                if (args.HasParent<Series>() || args.HasParent<Season>() || args.HasParent<MusicArtist>() || args.HasParent<MusicAlbum>())
                 {
                     return null;
                 }
@@ -78,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
-                if (IsSeriesFolder(args.Path, isTvShowsFolder, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager))
+                if (IsSeriesFolder(args.Path, collectionType, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager))
                 {
                     return new Series
                     {
@@ -95,14 +95,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// Determines whether [is series folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="considerSeasonlessEntries">if set to <c>true</c> [consider seasonless entries].</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeriesFolder(string path, bool considerSeasonlessEntries, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
+        public static bool IsSeriesFolder(string path, string collectionType, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
         {
             foreach (var child in fileSystemChildren)
             {
@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    if (IsSeasonFolder(child.FullName, directoryService, fileSystem))
+                    if (IsSeasonFolder(child.FullName, collectionType, directoryService, fileSystem))
                     {
                         //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
                         return true;
@@ -135,7 +135,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                     if (libraryManager.IsVideoFile(fullName) || IsVideoPlaceHolder(fullName))
                     {
-                        if (GetEpisodeNumberFromFile(fullName, considerSeasonlessEntries).HasValue)
+                        var isTvShowsFolder = string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase);
+
+                        if (GetEpisodeNumberFromFile(fullName, isTvShowsFolder).HasValue)
                         {
                             return true;
                         }
@@ -169,12 +171,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// Determines whether [is season folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, IDirectoryService directoryService, IFileSystem fileSystem)
+        private static bool IsSeasonFolder(string path, string collectionType, IDirectoryService directoryService, IFileSystem fileSystem)
         {
-            var seasonNumber = GetSeasonNumberFromPath(path);
+            var seasonNumber = GetSeasonNumberFromPath(path, collectionType);
             var hasSeasonNumber = seasonNumber != null;
 
             if (!hasSeasonNumber)
@@ -309,18 +312,27 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             // "blah - 01.avi", "blah 2 - 01.avi", "blah - 01 blah.avi", "blah 2 - 01 blah", "blah - 01 - blah.avi", "blah 2 - 01 - blah"
         };
 
+        public static int? GetSeasonNumberFromPath(string path)
+        {
+            return GetSeasonNumberFromPath(path, CollectionType.TvShows);
+        }
+
         /// <summary>
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="collectionType">Type of the collection.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        public static int? GetSeasonNumberFromPath(string path)
+        public static int? GetSeasonNumberFromPath(string path, string collectionType)
         {
             var filename = Path.GetFileName(path);
 
-            if (string.Equals(filename, "specials", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                return 0;
+                if (string.Equals(filename, "specials", StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
+                }
             }
 
             int val;

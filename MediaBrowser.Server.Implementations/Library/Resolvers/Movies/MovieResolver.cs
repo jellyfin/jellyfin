@@ -456,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Don't do any resolving within a series structure
             if (string.IsNullOrEmpty(collectionType))
             {
-                if (parent is Season || parent is Series)
+                if (HasParent<Series>(parent) || HasParent<Season>(parent))
                 {
                     return true;
                 }
@@ -479,6 +479,26 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             };
 
             return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private bool HasParent<T>(Folder parent)
+            where T : Folder
+        {
+            if (parent != null)
+            {
+                var item = parent as T;
+
+                // Just in case the user decided to nest episodes. 
+                // Not officially supported but in some cases we can handle it.
+                if (item == null)
+                {
+                    item = parent.Parents.OfType<T>().FirstOrDefault();
+                }
+
+                return item != null;
+
+            }
+            return false;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -9,10 +8,10 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
+using MediaBrowser.Naming.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Naming.Common;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -53,10 +52,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             //Avoid mis-identifying top folders
             if (args.Parent == null) return null;
             if (args.Parent.IsRoot) return null;
-            if (args.Parent is MusicAlbum) return null;
+            if (args.HasParent<MusicAlbum>()) return null;
 
             // Optimization
-            if (args.Parent is BoxSet || args.Parent is Series || args.Parent is Season)
+            if (args.HasParent<BoxSet>() || args.HasParent<Series>() || args.HasParent<Season>())
             {
                 return null;
             }

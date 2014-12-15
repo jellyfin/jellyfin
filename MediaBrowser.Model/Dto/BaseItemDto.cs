@@ -887,7 +887,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsVideo
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Video); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Video); }
         }
 
         /// <summary>
@@ -897,7 +897,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsAudio
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Audio); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Audio); }
         }
 
         /// <summary>
@@ -907,7 +907,7 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsGame
         {
-            get { return StringHelper.EqualsIgnoreCase(MediaType, MediaBrowser.Model.Entities.MediaType.Game); }
+            get { return StringHelper.EqualsIgnoreCase(MediaType, Entities.MediaType.Game); }
         }
 
         /// <summary>
@@ -951,7 +951,13 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public bool IsArtist
         {
-            get { return StringHelper.EqualsIgnoreCase(Type, "Artist"); }
+            get { return StringHelper.EqualsIgnoreCase(Type, "MusicArtist"); }
+        }
+
+        [IgnoreDataMember]
+        public bool IsAlbum
+        {
+            get { return StringHelper.EqualsIgnoreCase(Type, "MusicAlbum"); }
         }
 
         [IgnoreDataMember]

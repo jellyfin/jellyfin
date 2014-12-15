@@ -362,6 +362,7 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
     <Compile Include="Sync\SyncJobItem.cs" />
@@ -370,6 +371,7 @@
     <Compile Include="Sync\SyncJobQuery.cs" />
     <Compile Include="Sync\SyncJobRequest.cs" />
     <Compile Include="Sync\SyncJobStatus.cs" />
+    <Compile Include="Sync\SyncOptions.cs" />
     <Compile Include="Sync\SyncQuality.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />

@@ -1708,7 +1708,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return SeriesResolver.GetSeasonNumberFromPath(path);
+            return SeriesResolver.GetSeasonNumberFromPath(path, CollectionType.TvShows);
         }
 
         public int? GetSeasonNumberFromEpisodeFile(string path)

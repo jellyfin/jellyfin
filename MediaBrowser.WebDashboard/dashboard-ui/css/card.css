@@ -693,3 +693,10 @@
         width: 16.666666666666666666666666666667%;
     }
 }
+
+@media all and (min-width: 1600px) {
+
+    .homePageSmallBackdropCard {
+        width: 12.5%;
+    }
+}
