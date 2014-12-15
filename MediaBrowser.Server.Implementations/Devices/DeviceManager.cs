@@ -91,6 +91,13 @@ namespace MediaBrowser.Server.Implementations.Devices
                 devices = devices.Where(i => GetCapabilities(i.Id).SupportsContentUploading == val);
             }
 
+            if (query.SupportsSync.HasValue)
+            {
+                var val = query.SupportsSync.Value;
+
+                devices = devices.Where(i => GetCapabilities(i.Id).SupportsSync == val);
+            }
+
             if (query.SupportsUniqueIdentifier.HasValue)
             {
                 var val = query.SupportsUniqueIdentifier.Value;
