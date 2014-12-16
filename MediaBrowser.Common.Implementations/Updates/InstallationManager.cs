@@ -161,7 +161,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 { "systemid", _applicationHost.SystemId }
             };
 
-            using (var json = await _httpClient.Post(MbAdminUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+            using (var json = await _httpClient.Post(MbAdminUrlHttps + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -172,7 +172,8 @@ namespace MediaBrowser.Common.Implementations.Updates
         }
 
         private Tuple<List<PackageInfo>, DateTime> _lastPackageListResult;
-        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
+        private const string MbAdminUrlHttp = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrlHttps = "https://www.mb3admin.com/admin/";
 
         /// <summary>
         /// Gets all available packages.
@@ -204,7 +205,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 }
             }
 
-            using (var json = await _httpClient.Get(MbAdminUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
+            using (var json = await _httpClient.Get(MbAdminUrlHttp + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
