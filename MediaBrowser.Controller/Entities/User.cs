@@ -140,6 +140,29 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private UserPolicy _policy;
+        private readonly object _policySyncLock = new object();
+        [IgnoreDataMember]
+        public UserPolicy Policy
+        {
+            get
+            {
+                if (_policy == null)
+                {
+                    lock (_policySyncLock)
+                    {
+                        if (_policy == null)
+                        {
+                            _policy = UserManager.GetUserPolicy(this);
+                        }
+                    }
+                }
+                
+                return _policy;
+            }
+            set { _policy = value; }
+        }
+
         /// <summary>
         /// Renames the user.
         /// </summary>
@@ -200,7 +223,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The configuration directory path.</value>
         [IgnoreDataMember]
-        private string ConfigurationDirectoryPath
+        public string ConfigurationDirectoryPath
         {
             get
             {

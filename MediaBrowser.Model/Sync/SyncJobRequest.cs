@@ -15,6 +15,16 @@ namespace MediaBrowser.Model.Sync
         /// <value>The item ids.</value>
         public List<string> ItemIds { get; set; }
         /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>The category.</value>
+        public SyncCategory? Category { get; set; }
+        /// <summary>
+        /// Gets or sets the parent identifier.
+        /// </summary>
+        /// <value>The parent identifier.</value>
+        public string ParentId { get; set; }
+        /// <summary>
         /// Gets or sets the quality.
         /// </summary>
         /// <value>The quality.</value>

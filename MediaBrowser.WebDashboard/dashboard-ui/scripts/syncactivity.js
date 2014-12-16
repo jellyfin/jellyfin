@@ -42,7 +42,7 @@
 
         var html = '';
 
-        html += "<div class='card homePageSquareCard' data-id='" + job.Id + "'>";
+        html += "<div class='card squareCard' data-id='" + job.Id + "'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';

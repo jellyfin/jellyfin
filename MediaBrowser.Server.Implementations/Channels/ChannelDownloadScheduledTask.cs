@@ -13,8 +13,10 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -64,7 +66,10 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             CleanChannelContent(cancellationToken);
 
-            var users = _userManager.Users.Select(i => i.Id.ToString("N")).ToList();
+            var users = _userManager.Users
+                .DistinctBy(GetUserDistinctValue)
+                .Select(i => i.Id.ToString("N"))
+                .ToList();
 
             var numComplete = 0;
 
@@ -86,6 +91,15 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             progress.Report(100);
+        }
+
+        public static string GetUserDistinctValue(User user)
+        {
+            var channels = user.Configuration.BlockedChannels
+                .OrderBy(i => i)
+                .ToList();
+
+            return string.Join("|", channels.ToArray());
         }
 
         private async Task DownloadContent(string user,
@@ -201,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 if (IsSizeLimitReached(path, limit.Value))
                 {
                     return;
-                }    
+                }
             }
 
             var itemId = item.Id.ToString("N");

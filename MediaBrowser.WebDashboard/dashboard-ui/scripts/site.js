@@ -928,8 +928,8 @@ var Dashboard = {
         else if (msg.MessageType === "GeneralCommand") {
 
             var cmd = msg.Data;
-
-            Dashboard.processGeneralCommand(cmd);
+            // Media Controller should catch this
+            //Dashboard.processGeneralCommand(cmd);
         }
     },
 

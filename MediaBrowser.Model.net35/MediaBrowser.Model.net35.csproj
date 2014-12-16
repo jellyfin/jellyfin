@@ -60,6 +60,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionMode.cs">
       <Link>ApiClient\ConnectionMode.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionOptions.cs">
+      <Link>ApiClient\ConnectionOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionState.cs">
       <Link>ApiClient\ConnectionState.cs</Link>
     </Compile>
@@ -983,6 +986,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
+      <Link>Sync\SyncCategory.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>

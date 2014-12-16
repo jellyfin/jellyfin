@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Users;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -60,6 +61,10 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if this instance has password; otherwise, <c>false</c>.</value>
         public bool HasPassword { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has configured password.
+        /// </summary>
+        /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
         public bool HasConfiguredPassword { get; set; }
         
         /// <summary>
@@ -79,6 +84,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The configuration.</value>
         public UserConfiguration Configuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the policy.
+        /// </summary>
+        /// <value>The policy.</value>
+        public UserPolicy Policy { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio.
@@ -108,6 +119,7 @@ namespace MediaBrowser.Model.Dto
         public UserDto()
         {
             Configuration = new UserConfiguration();
+            Policy = new UserPolicy();
         }
 
         /// <summary>

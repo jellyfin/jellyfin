@@ -533,10 +533,13 @@ namespace MediaBrowser.Server.Implementations.Channels
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
+            var limit = query.Limit;
+
             // See below about parental control
             if (user != null)
             {
                 query.StartIndex = null;
+                query.Limit = null;
             }
 
             var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
@@ -554,7 +557,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (user != null)
             {
                 items = items.Where(i => i.IsVisible(user))
-                    .Take(10)
+                    .Take(limit ?? 10)
                     .ToArray();
 
                 totalRecordCount = items.Length;

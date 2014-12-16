@@ -21,6 +21,16 @@ namespace MediaBrowser.Model.Sync
         /// <value>The quality.</value>
         public SyncQuality Quality { get; set; }
         /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>The category.</value>
+        public SyncCategory? Category { get; set; }
+        /// <summary>
+        /// Gets or sets the parent identifier.
+        /// </summary>
+        /// <value>The parent identifier.</value>
+        public string ParentId { get; set; }
+        /// <summary>
         /// Gets or sets the current progress.
         /// </summary>
         /// <value>The current progress.</value>

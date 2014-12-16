@@ -80,6 +80,15 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Connects the specified server.
         /// </summary>
+        /// <param name="server">The server.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;ConnectionResult&gt;.</returns>
+        Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Connects the specified server.
+        /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>

@@ -25,6 +25,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly string _postUrl;
 
         private Timer _pingTimer;
+        private DateTime _lastPingTime;
 
         public HttpSessionController(IHttpClient httpClient,
             IJsonSerializer json,
@@ -68,10 +69,23 @@ namespace MediaBrowser.Server.Implementations.Session
             try
             {
                 await SendMessage("Ping", CancellationToken.None).ConfigureAwait(false);
+
+                _lastPingTime = DateTime.UtcNow;
             }
             catch
             {
-                ReportSessionEnded();
+                var lastActivityDate = new[] { _lastPingTime, Session.LastActivityDate }
+                    .Max();
+
+                var timeSinceLastPing = DateTime.UtcNow - lastActivityDate;
+
+                // We don't want to stop the session due to one single request failure
+                // At the same time, we don't want the timeout to be too long because it will
+                // be sitting in active sessions available for remote control, when it's not
+                if (timeSinceLastPing >= TimeSpan.FromMinutes(5))
+                {
+                    ReportSessionEnded();
+                }
             }
         }
 
@@ -90,6 +104,8 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (_pingTimer != null)
             {
+                _lastPingTime = DateTime.UtcNow;
+
                 var period = TimeSpan.FromSeconds(60);
 
                 _pingTimer.Change(period, period);
@@ -101,8 +117,8 @@ namespace MediaBrowser.Server.Implementations.Session
             return SendMessage(name, new Dictionary<string, string>(), cancellationToken);
         }
 
-        private async Task SendMessage(string name, 
-            Dictionary<string, string> args, 
+        private async Task SendMessage(string name,
+            Dictionary<string, string> args,
             CancellationToken cancellationToken)
         {
             var url = PostUrl + "/" + name + ToQueryString(args);

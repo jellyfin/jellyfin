@@ -46,7 +46,7 @@ namespace MediaBrowser.Api.Sync
     }
 
     [Route("/Sync/Targets", "GET", Summary = "Gets a list of available sync targets.")]
-    public class GetSyncTarget : IReturn<List<SyncTarget>>
+    public class GetSyncTargets : IReturn<List<SyncTarget>>
     {
         [ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
@@ -62,7 +62,7 @@ namespace MediaBrowser.Api.Sync
             _syncManager = syncManager;
         }
 
-        public object Get(GetSyncTarget request)
+        public object Get(GetSyncTargets request)
         {
             var result = _syncManager.GetSyncTargets(request.UserId);
 

@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager);
 
             var user = _userManager.GetUserById(request.UserId);
-            
+
             var items = processor
                 .GetItemsForSync(request.ItemIds, user)
                 .ToList();
@@ -85,7 +85,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
                 ItemCount = items.Count,
-                Quality = request.Quality
+                Quality = request.Quality,
+                Category = request.Category,
+                ParentId = request.ParentId
             };
 
             // It's just a static list

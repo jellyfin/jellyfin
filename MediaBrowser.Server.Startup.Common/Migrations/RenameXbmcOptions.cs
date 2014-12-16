@@ -3,7 +3,7 @@ using System;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
 {
-    public class RenameXbmcOptions
+    public class RenameXbmcOptions : IVersionMigration
     {
         private readonly IServerConfigurationManager _config;
 
