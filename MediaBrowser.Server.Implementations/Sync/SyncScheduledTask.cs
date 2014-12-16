@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncScheduledTask : IScheduledTask
+    public class SyncScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ISyncRepository _syncRepo;
@@ -57,6 +57,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                     new IntervalTrigger { Interval = TimeSpan.FromHours(3) },
                     new StartupTrigger{ DelayMs = Convert.ToInt32(TimeSpan.FromMinutes(5).TotalMilliseconds)}
                 };
+        }
+
+        public bool IsHidden
+        {
+            get { return true; }
+        }
+
+        public bool IsEnabled
+        {
+            get { return true; }
         }
     }
 }
