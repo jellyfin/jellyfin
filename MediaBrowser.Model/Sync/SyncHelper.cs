@@ -40,10 +40,23 @@ namespace MediaBrowser.Model.Sync
                     if (item.IsFolder || item.IsGameGenre || item.IsMusicGenre || item.IsGenre || item.IsArtist || item.IsStudio || item.IsPerson)
                     {
                         options.Add(SyncOptions.SyncNewContent);
+                        options.Add(SyncOptions.ItemLimit);
                         break;
                     }
                 }
             }
+
+            return options;
+        }
+
+        public static List<SyncOptions> GetSyncOptions(SyncCategory category)
+        {
+            List<SyncOptions> options = new List<SyncOptions>();
+
+            options.Add(SyncOptions.Quality);
+            options.Add(SyncOptions.UnwatchedOnly);
+            options.Add(SyncOptions.SyncNewContent);
+            options.Add(SyncOptions.ItemLimit);
 
             return options;
         }

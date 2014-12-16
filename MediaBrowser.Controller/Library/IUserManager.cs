@@ -168,9 +168,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user policy.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
+        /// <param name="user">The user.</param>
         /// <returns>UserPolicy.</returns>
-        UserPolicy GetUserPolicy(string userId);
+        UserPolicy GetUserPolicy(User user);
 
         /// <summary>
         /// Updates the user policy.

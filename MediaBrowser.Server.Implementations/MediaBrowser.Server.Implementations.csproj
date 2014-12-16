@@ -215,7 +215,6 @@
     <Compile Include="Library\Validators\PeopleValidator.cs" />
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
-    <Compile Include="Library\Validators\UserViewPostScanTask.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\CleanDatabaseScheduledTask.cs" />

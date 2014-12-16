@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -317,7 +318,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 ConnectLinkType = user.ConnectLinkType,
                 ConnectUserId = user.ConnectUserId,
                 ConnectUserName = user.ConnectUserName,
-                ServerId = _appHost.SystemId
+                ServerId = _appHost.SystemId,
+                Policy = user.Policy
             };
 
             var image = user.GetImageInfo(ImageType.Primary, 0);
@@ -529,6 +531,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     _logger.ErrorException("Error deleting file {0}", ex, path);
                 }
 
+                DeleteUserPolicy(user);
+
                 // Force this to be lazy loaded again
                 Users = await LoadUsers().ConfigureAwait(false);
 
@@ -715,7 +719,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var usersReset = new List<string>();
 
-            var valid = !string.IsNullOrWhiteSpace(_lastPin) && 
+            var valid = !string.IsNullOrWhiteSpace(_lastPin) &&
                 string.Equals(_lastPin, pin, StringComparison.OrdinalIgnoreCase) &&
                 _lastPasswordPinCreationResult != null &&
                 _lastPasswordPinCreationResult.ExpirationDate > DateTime.UtcNow;
@@ -769,14 +773,65 @@ namespace MediaBrowser.Server.Implementations.Library
             public DateTime ExpirationDate { get; set; }
         }
 
-        public UserPolicy GetUserPolicy(string userId)
+        public UserPolicy GetUserPolicy(User user)
         {
-            throw new NotImplementedException();
+            var path = GetPolifyFilePath(user);
+
+            try
+            {
+                lock (_policySyncLock)
+                {
+                    return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reading policy file: {0}", ex, path);
+
+                return new UserPolicy
+                {
+                    EnableSync = !user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest
+                };
+            }
         }
 
-        public Task UpdateUserPolicy(string userId, UserPolicy userPolicy)
+        private readonly object _policySyncLock = new object();
+        public async Task UpdateUserPolicy(string userId, UserPolicy userPolicy)
         {
-            throw new NotImplementedException();
+            var user = GetUserById(userId);
+            var path = GetPolifyFilePath(user);
+
+            lock (_policySyncLock)
+            {
+                _xmlSerializer.SerializeToFile(userPolicy, path);
+                user.Policy = userPolicy;
+            }
+        }
+
+        private void DeleteUserPolicy(User user)
+        {
+            var path = GetPolifyFilePath(user);
+
+            try
+            {
+                lock (_policySyncLock)
+                {
+                    File.Delete(path);
+                }
+            }
+            catch (IOException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting policy file", ex);
+            }
+        }
+
+        private string GetPolifyFilePath(User user)
+        {
+            return Path.Combine(user.ConfigurationDirectoryPath, "policy.xml");
         }
     }
 }

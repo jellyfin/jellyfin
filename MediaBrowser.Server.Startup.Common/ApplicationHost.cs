@@ -341,12 +341,20 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformVersionMigration()
         {
-            new MigrateUserFolders(ApplicationPaths).Run();
-            new PlaylistImages(ServerConfigurationManager).Run();
-            new RenameXbmcOptions(ServerConfigurationManager).Run();
-            new RenameXmlOptions(ServerConfigurationManager).Run();
-            new DeprecatePlugins(ApplicationPaths).Run();
-            new DeleteDlnaProfiles(ApplicationPaths).Run();
+            var migrations = new List<IVersionMigration>
+            {
+                new MigrateUserFolders(ApplicationPaths),
+                new PlaylistImages(ServerConfigurationManager),
+                new RenameXbmcOptions(ServerConfigurationManager),
+                new RenameXmlOptions(ServerConfigurationManager),
+                new DeprecatePlugins(ApplicationPaths),
+                new DeleteDlnaProfiles(ApplicationPaths)
+            };
+
+            foreach (var task in migrations)
+            {
+                task.Run();
+            }
         }
 
         /// <summary>

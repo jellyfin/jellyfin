@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Logging;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var users = _userManager.Users
+                .DistinctBy(ChannelDownloadScheduledTask.GetUserDistinctValue)
                 .Select(i => i.Id.ToString("N"))
                 .ToList();
 

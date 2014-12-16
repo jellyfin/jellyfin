@@ -35,13 +35,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync5.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync6.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
             string[] queries = {
 
-                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
+                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, JobId TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT)",
@@ -65,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _deleteJobCommand.Parameters.Add(_deleteJobCommand, "@Id");
 
             _saveJobCommand = _connection.CreateCommand();
-            _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
+            _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@Id");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@TargetId");
@@ -75,6 +75,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@Progress");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@UserId");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemIds");
+            _saveJobCommand.Parameters.Add(_saveJobCommand, "@Category");
+            _saveJobCommand.Parameters.Add(_saveJobCommand, "@ParentId");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@UnwatchedOnly");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemLimit");
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@SyncNewContent");
@@ -95,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobItemCommand.Parameters.Add(_saveJobCommand, "@Progress");
         }
 
-        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
+        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
         private const string BaseJobItemSelectText = "select Id, ItemId, JobId, OutputPath, Status, TargetId, DateCreated, Progress from SyncJobItems";
 
         public SyncJob GetJob(string id)
@@ -166,19 +168,29 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(8))
             {
-                info.UnwatchedOnly = reader.GetBoolean(8);
+                info.Category = (SyncCategory)Enum.Parse(typeof(SyncCategory), reader.GetString(8), true);
             }
 
             if (!reader.IsDBNull(9))
             {
-                info.ItemLimit = reader.GetInt32(9);
+                info.ParentId = reader.GetString(9);
             }
 
-            info.SyncNewContent = reader.GetBoolean(10);
+            if (!reader.IsDBNull(10))
+            {
+                info.UnwatchedOnly = reader.GetBoolean(10);
+            }
 
-            info.DateCreated = reader.GetDateTime(11).ToUniversalTime();
-            info.DateLastModified = reader.GetDateTime(12).ToUniversalTime();
-            info.ItemCount = reader.GetInt32(13);
+            if (!reader.IsDBNull(11))
+            {
+                info.ItemLimit = reader.GetInt32(11);
+            }
+
+            info.SyncNewContent = reader.GetBoolean(12);
+
+            info.DateCreated = reader.GetDateTime(13).ToUniversalTime();
+            info.DateLastModified = reader.GetDateTime(14).ToUniversalTime();
+            info.ItemCount = reader.GetInt32(15);
 
             return info;
         }
@@ -213,6 +225,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobCommand.GetParameter(index++).Value = job.Progress;
                 _saveJobCommand.GetParameter(index++).Value = job.UserId;
                 _saveJobCommand.GetParameter(index++).Value = string.Join(",", job.RequestedItemIds.ToArray());
+                _saveJobCommand.GetParameter(index++).Value = job.Category;
+                _saveJobCommand.GetParameter(index++).Value = job.ParentId;
                 _saveJobCommand.GetParameter(index++).Value = job.UnwatchedOnly;
                 _saveJobCommand.GetParameter(index++).Value = job.ItemLimit;
                 _saveJobCommand.GetParameter(index++).Value = job.SyncNewContent;
