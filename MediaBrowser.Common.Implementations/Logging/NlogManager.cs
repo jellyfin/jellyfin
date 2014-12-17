@@ -35,6 +35,12 @@ namespace MediaBrowser.Common.Implementations.Logging
         public string LogFilePath { get; private set; }
 
         /// <summary>
+        /// Gets or sets the exception message prefix.
+        /// </summary>
+        /// <value>The exception message prefix.</value>
+        public string ExceptionMessagePrefix { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="NlogManager" /> class.
         /// </summary>
         /// <param name="logDirectory">The log directory.</param>
@@ -159,7 +165,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// <returns>ILogger.</returns>
         public ILogger GetLogger(string name)
         {
-            return new NLogger(name);
+            return new NLogger(name, this);
         }
 
         /// <summary>

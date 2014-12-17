@@ -352,6 +352,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                     cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = SyncJobStatus.Completed.ToString();
                 }
+                if (!string.IsNullOrWhiteSpace(query.TargetId))
+                {
+                    whereClauses.Add("TargetId=@TargetId");
+                    cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                }
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
@@ -446,6 +451,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     whereClauses.Add("JobId=@JobId");
                     cmd.Parameters.Add(cmd, "@JobId", DbType.String).Value = query.JobId;
+                }
+                if (!string.IsNullOrWhiteSpace(query.TargetId))
+                {
+                    whereClauses.Add("TargetId=@TargetId");
+                    cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                }
+                if (query.Status.HasValue)
+                {
+                    whereClauses.Add("Status=@Status");
+                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = query.Status.Value.ToString();
                 }
 
                 if (query.IsCompleted.HasValue)

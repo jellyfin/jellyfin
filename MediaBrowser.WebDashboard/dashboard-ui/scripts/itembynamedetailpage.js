@@ -82,6 +82,12 @@
                     $('.btnPlay', page).hide();
                 }
 
+                if (SyncManager.isAvailable(item, user)) {
+                    $('.btnSync', page).removeClass('hide');
+                } else {
+                    $('.btnSync', page).addClass('hide');
+                }
+
                 var editImagesHref = user.Configuration.IsAdministrator ? 'edititemimages.html' + editQuery : null;
 
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
@@ -389,7 +395,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio",
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,SyncInfo",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0,
             CollapseBoxSetItems: false
@@ -533,6 +539,13 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+            });
+        });
+
+        $('.btnSync', page).on('click', function () {
+
+            SyncManager.showMenu({
+                items: [currentItem]
             });
         });
 

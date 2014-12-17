@@ -23,6 +23,13 @@ namespace MediaBrowser.Controller.Sync
         QueryResult<SyncJob> GetJobs(SyncJobQuery query);
 
         /// <summary>
+        /// Gets the job items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;SyncJobItem&gt;.</returns>
+        QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
+        
+        /// <summary>
         /// Gets the job.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -59,5 +66,19 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="targetId">The target identifier.</param>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetDeviceProfile(string targetId);
+
+        /// <summary>
+        /// Reports the synchronize job item transferred.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferred(string id);
+
+        /// <summary>
+        /// Gets the job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>SyncJobItem.</returns>
+        SyncJobItem GetJobItem(string id);
     }
 }

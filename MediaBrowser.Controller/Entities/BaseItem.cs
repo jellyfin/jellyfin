@@ -899,21 +899,6 @@ namespace MediaBrowser.Controller.Entities
         {
             var current = this;
 
-            var currentAsPlaceHolder = current as ISupportsPlaceHolders;
-
-            if (currentAsPlaceHolder != null)
-            {
-                var newHasPlaceHolder = newItem as ISupportsPlaceHolders;
-
-                if (newHasPlaceHolder != null)
-                {
-                    if (currentAsPlaceHolder.IsPlaceHolder != newHasPlaceHolder.IsPlaceHolder)
-                    {
-                        return false;
-                    }
-                }
-            }
-
             return current.IsInMixedFolder == newItem.IsInMixedFolder;
         }
 

@@ -1031,6 +1031,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
       <Link>Sync\SyncCategory.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
+      <Link>Sync\SyncDialogOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>
     </Compile>
@@ -1054,6 +1057,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJobStatus.cs">
       <Link>Sync\SyncJobStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncOptions.cs">
+      <Link>Sync\SyncOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
       <Link>Sync\SyncQuality.cs</Link>

@@ -1387,6 +1387,35 @@ namespace MediaBrowser.Model.ApiClient
         Task<SyncJob> CreateSyncJob(SyncJobRequest request);
 
         /// <summary>
+        /// Gets the synchronize jobs.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task&lt;QueryResult&lt;SyncJob&gt;&gt;.</returns>
+        Task<QueryResult<SyncJob>> GetSyncJobs(SyncJobQuery query);
+
+        /// <summary>
+        /// Gets the synchronize job items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task&lt;QueryResult&lt;SyncJobItem&gt;&gt;.</returns>
+        Task<QueryResult<SyncJobItem>> GetSyncJobItems(SyncJobItemQuery query);
+
+        /// <summary>
+        /// Reports the synchronize job item transferred.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferred(string id);
+
+        /// <summary>
+        /// Gets the synchronize job item file.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;Stream&gt;.</returns>
+        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Opens the web socket.
         /// </summary>
         /// <param name="webSocketFactory">The web socket factory.</param>

@@ -252,7 +252,10 @@
         closeContextMenu();
 
         SyncManager.showMenu({
-            items: [id]
+            items: [
+            {
+                Id: id
+            }]
         });
 
         return false;
