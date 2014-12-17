@@ -27,22 +27,14 @@ namespace MediaBrowser.Api.Sync
         public string Id { get; set; }
     }
 
-    [Route("/Sync/Jobs", "GET", Summary = "Gets sync jobs.")]
-    public class GetSyncJobs : IReturn<QueryResult<SyncJob>>
+    [Route("/Sync/JobItems", "GET", Summary = "Gets sync job items.")]
+    public class GetSyncJobItems : SyncJobItemQuery, IReturn<QueryResult<SyncJobItem>>
     {
-        /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
-        /// </summary>
-        /// <value>The start index.</value>
-        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? StartIndex { get; set; }
+    }
 
-        /// <summary>
-        /// The maximum number of items to return
-        /// </summary>
-        /// <value>The limit.</value>
-        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? Limit { get; set; }
+    [Route("/Sync/Jobs", "GET", Summary = "Gets sync jobs.")]
+    public class GetSyncJobs : SyncJobQuery, IReturn<QueryResult<SyncJob>>
+    {
     }
 
     [Route("/Sync/Jobs", "POST", Summary = "Gets sync jobs.")]
@@ -104,11 +96,14 @@ namespace MediaBrowser.Api.Sync
 
         public object Get(GetSyncJobs request)
         {
-            var result = _syncManager.GetJobs(new SyncJobQuery
-            {
-                StartIndex = request.StartIndex,
-                Limit = request.Limit
-            });
+            var result = _syncManager.GetJobs(request);
+
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetSyncJobItems request)
+        {
+            var result = _syncManager.GetJobItems(request);
 
             return ToOptimizedResult(result);
         }

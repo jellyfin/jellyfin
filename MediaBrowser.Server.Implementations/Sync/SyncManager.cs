@@ -284,5 +284,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             return _repo.GetJobItem(id);
         }
+
+        public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
+        {
+            return _repo.GetJobItems(query);
+        }
     }
 }

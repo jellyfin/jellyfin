@@ -1411,8 +1411,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the synchronize job item file.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
-        Task<Stream> GetSyncJobItemFile(string id);
+        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Opens the web socket.

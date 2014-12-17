@@ -23,6 +23,13 @@ namespace MediaBrowser.Controller.Sync
         QueryResult<SyncJob> GetJobs(SyncJobQuery query);
 
         /// <summary>
+        /// Gets the job items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;SyncJobItem&gt;.</returns>
+        QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
+        
+        /// <summary>
         /// Gets the job.
         /// </summary>
         /// <param name="id">The identifier.</param>
