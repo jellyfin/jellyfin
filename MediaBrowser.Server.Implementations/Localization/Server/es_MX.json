@@ -232,10 +232,10 @@
     "HeaderFeatureAccess": "Permisos de acceso",
     "OptionAllowMediaPlayback": "Permitir reproducci\u00f3n de medios",
     "OptionAllowBrowsingLiveTv": "Permitir acceder a TV en vivo",
-    "OptionAllowDeleteLibraryContent": "Permitir a este usuario eliminar contenido de la librer\u00eda",
+    "OptionAllowDeleteLibraryContent": "Allow deletion of library content",
     "OptionAllowManageLiveTv": "Permitir administrar grabaciones de TV en vivo",
-    "OptionAllowRemoteControlOthers": "Permitir a este usuario controlar remotamente a otros usuarios",
-    "OptionAllowRemoteSharedDevices": "Permitir a este usuario controlar dispositivos remotamente",
+    "OptionAllowRemoteControlOthers": "Allow remote control of other users",
+    "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
     "OptionAllowRemoteSharedDevicesHelp": "Los dispositivos dnla son considerados como compartidos hasta que alg\u00fan usuario comienza a controlarlo.",
     "HeaderRemoteControl": "Control Remoto",
     "OptionMissingTmdbId": "Falta Id de Tmdb",
@@ -714,7 +714,7 @@
     "LabelMaxStreamingBitrate": "Tasa de bits m\u00e1xima para transmisi\u00f3n:",
     "LabelMaxStreamingBitrateHelp": "Especifique una tasa de bits m\u00e1xima al transferir en tiempo real.",
     "LabelMaxStaticBitrate": "Tasa m\u00e1xima de bits de sinc",
-    "LabelMaxStaticBitrateHelp": "Especifique una tasa de bits cuando se sincronice contenido en alta calidad.",
+    "LabelMaxStaticBitrateHelp": "Especifique una tasa de bits cuando al sincronizar contenido en alta calidad.",
     "LabelMusicStaticBitrate": "Tasa de bits de sinc de m\u00fascia",
     "LabelMusicStaticBitrateHelp": "Especifique la tasa de bits m\u00e1xima al sincronizar m\u00fasica",
     "LabelMusicStreamingTranscodingBitrate": "Tasa de transcodificaci\u00f3n de m\u00fasica:",
@@ -952,7 +952,7 @@
     "LabelDateAdded": "Fecha de adici\u00f3n:",
     "HeaderFeatures": "Caracter\u00edsticas",
     "HeaderAdvanced": "Avanzado",
-    "ButtonSync": "Sinc",
+    "ButtonSync": "SInc",
     "TabScheduledTasks": "Tareas Programadas",
     "HeaderChapters": "Cap\u00edtulos",
     "HeaderResumeSettings": "Configuraci\u00f3n para Continuar",
@@ -1279,5 +1279,5 @@
     "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",
     "LabelEnableSingleImageInDidlLimitHelp": "Algunos dispositivos no renderisaran apropiadamente si hay m\u00faltiples im\u00e1genes incrustadas en el Didl",
     "TabActivity": "Actividad",
-    "TitleSync": "Sincronizando"
+    "TitleSync": "Sinc"
 }

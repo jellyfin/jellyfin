@@ -21,13 +21,22 @@ namespace MediaBrowser.Model.Sync
                     if (item.IsVideo)
                     {
                         options.Add(SyncOptions.Quality);
-                        options.Add(SyncOptions.UnwatchedOnly);
+                        if (items.Count > 1)
+                        {
+                            options.Add(SyncOptions.UnwatchedOnly);
+                        }
                         break;
                     }
                     if (item.IsFolder && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
                     {
                         options.Add(SyncOptions.Quality);
                         options.Add(SyncOptions.UnwatchedOnly);
+                        break;
+                    }
+                    if (item.IsGenre)
+                    {
+                        options.Add(SyncOptions.SyncNewContent);
+                        options.Add(SyncOptions.ItemLimit);
                         break;
                     }
                 }

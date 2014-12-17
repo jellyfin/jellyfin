@@ -232,10 +232,10 @@
     "HeaderFeatureAccess": "Funktionszugriff",
     "OptionAllowMediaPlayback": "Erlaube das Abspielen von Medien",
     "OptionAllowBrowsingLiveTv": "Erlaube das durchsuchen von Live-TV",
-    "OptionAllowDeleteLibraryContent": "Erlaube diesem Benutzer das L\u00f6schen von Bibliothelkeninhalten",
+    "OptionAllowDeleteLibraryContent": "Erlaube L\u00f6schen von Bibliotheken-Inhalten.",
     "OptionAllowManageLiveTv": "Erlaube die Verwaltung von Live-TV Aufnahmen",
-    "OptionAllowRemoteControlOthers": "Erlaube diesem Benutzer, andere Benutzer fernzusteuern",
-    "OptionAllowRemoteSharedDevices": "Erlaube diesem Benutzer geteilte Ger\u00e4te fernzusteuern",
+    "OptionAllowRemoteControlOthers": "Erlaube Fernsteuerung anderer Benutzer",
+    "OptionAllowRemoteSharedDevices": "Erlaube Fernsteuerung geteilter Ger\u00e4te",
     "OptionAllowRemoteSharedDevicesHelp": "DLNA-Ger\u00e4te werden gemeinsam genutzt, bis ein Benutzer die Steuerung \u00fcbernimmt.",
     "HeaderRemoteControl": "Fernsteuerung",
     "OptionMissingTmdbId": "Fehlende Tmdb Id",
@@ -1278,6 +1278,6 @@
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Begrenze auf ein eingebundenes Bild",
     "LabelEnableSingleImageInDidlLimitHelp": "Einige Ger\u00e4te zeigen m\u00f6glicherweise Darstellungsfehler wenn mehrere Bilder mit Didl eingebunden wurden.",
-    "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TabActivity": "Aktivit\u00e4t",
+    "TitleSync": "Synchronisation"
 }

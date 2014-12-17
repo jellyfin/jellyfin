@@ -364,6 +364,7 @@
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
     <Compile Include="Sync\SyncCategory.cs" />
+    <Compile Include="Sync\SyncDialogOptions.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
