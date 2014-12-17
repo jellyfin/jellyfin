@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new InvalidOperationException("Cannot proceed with sync because user no longer exists.");
             }
 
-            var items = GetItemsForSync(job.RequestedItemIds, user)
+            var items = GetItemsForSync(job.RequestedItemIds, user, job.UnwatchedOnly)
                 .ToList();
 
             var jobItems = _syncRepo.GetJobItems(new SyncJobItemQuery
@@ -59,6 +59,15 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var item in items)
             {
+                // Respect ItemLimit, if set
+                if (job.ItemLimit.HasValue)
+                {
+                    if (jobItems.Count >= job.ItemLimit.Value)
+                    {
+                        break;
+                    }
+                }
+
                 var itemId = item.Id.ToString("N");
 
                 var jobItem = jobItems.FirstOrDefault(i => string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase));
@@ -87,6 +96,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .ToList();
 
             await UpdateJobStatus(job, jobItems).ConfigureAwait(false);
+        }
+
+        public Task UpdateJobStatus(string id)
+        {
+            var job = _syncRepo.GetJob(id);
+
+            return UpdateJobStatus(job);
         }
 
         private Task UpdateJobStatus(SyncJob job)
@@ -155,12 +171,31 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _syncRepo.Update(job);
         }
 
-        public IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds, User user)
+        public IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds, User user, bool unwatchedOnly)
         {
-            return itemIds
+            var items = itemIds
                 .SelectMany(i => GetItemsForSync(i, user))
-                .Where(_syncManager.SupportsSync)
-                .DistinctBy(i => i.Id);
+                .Where(_syncManager.SupportsSync);
+
+            if (unwatchedOnly)
+            {
+                // Avoid implicitly captured closure
+                var currentUser = user;
+
+                items = items.Where(i =>
+                {
+                    var video = i as Video;
+
+                    if (video != null)
+                    {
+                        return !video.IsPlayed(currentUser);
+                    }
+
+                    return true;
+                });
+            }
+
+            return items.DistinctBy(i => i.Id);
         }
 
         private IEnumerable<BaseItem> GetItemsForSync(string id, User user)
@@ -184,8 +219,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     .GetRecursiveChildren(user);
 
                 return itemByName.GetTaggedItems(items);
-            } 
-            
+            }
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;

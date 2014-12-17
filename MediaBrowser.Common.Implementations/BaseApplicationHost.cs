@@ -294,19 +294,20 @@ namespace MediaBrowser.Common.Implementations
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, bool isStartup)
         {
-            if (isStartup)
-            {
-                logger.Info("Media Browser Server started");
-            }
+            logger.LogMultiline("Media Browser", LogSeverity.Info, GetBaseExceptionMessage(appPaths));
+        }
 
-            logger.Info("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs()));
+        protected static StringBuilder GetBaseExceptionMessage(IApplicationPaths appPaths)
+        {
+            var builder = new StringBuilder();
 
-            logger.Info("Server: {0}", Environment.MachineName);
-            logger.Info("Operating system: {0}", Environment.OSVersion.ToString());
-            logger.Info("Processor count: {0}", Environment.ProcessorCount);
-            logger.Info("64-Bit OS: {0}", Environment.Is64BitOperatingSystem);
-            logger.Info("64-Bit Process: {0}", Environment.Is64BitProcess);
-            logger.Info("Program data path: {0}", appPaths.ProgramDataPath);
+            builder.AppendLine(string.Format("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs())));
+
+            builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
+            builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
+            builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
+            builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
+            builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
 
             Type type = Type.GetType("Mono.Runtime");
             if (type != null)
@@ -314,13 +315,13 @@ namespace MediaBrowser.Common.Implementations
                 MethodInfo displayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
                 if (displayName != null)
                 {
-                    logger.Info("Mono: " + displayName.Invoke(null, null));
+                    builder.AppendLine("Mono: " + displayName.Invoke(null, null));
                 }
-            } 
-            
-            logger.Info("Application Path: {0}", appPaths.ApplicationPath);
+            }
 
-            logger.Info("*** When reporting issues please include the entire log file. ***".ToUpper());
+            builder.AppendLine(string.Format("Application Path: {0}", appPaths.ApplicationPath));
+
+            return builder;
         }
 
         protected virtual IJsonSerializer CreateJsonSerializer()
