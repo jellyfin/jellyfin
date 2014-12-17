@@ -207,7 +207,7 @@
 
     function isAvailable(item, user) {
 
-        //return false;
+        return false;
         return item.SupportsSync;
     }
 

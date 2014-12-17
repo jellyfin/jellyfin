@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var user = _userManager.GetUserById(request.UserId);
 
             var items = processor
-                .GetItemsForSync(request.ItemIds, user)
+                .GetItemsForSync(request.ItemIds, user, request.UnwatchedOnly)
                 .ToList();
 
             if (items.Any(i => !SupportsSync(i)))

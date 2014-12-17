@@ -14,6 +14,12 @@ namespace MediaBrowser.Model.Logging
         LogSeverity LogSeverity { get; set; }
 
         /// <summary>
+        /// Gets or sets the exception message prefix.
+        /// </summary>
+        /// <value>The exception message prefix.</value>
+        string ExceptionMessagePrefix { get; set; }
+
+        /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <param name="name">The name.</param>

@@ -14,6 +14,8 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// </summary>
         private readonly NLog.Logger _logger;
 
+        private readonly ILogManager _logManager;
+
         /// <summary>
         /// The _lock object
         /// </summary>
@@ -23,8 +25,10 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// Initializes a new instance of the <see cref="NLogger" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public NLogger(string name)
+        /// <param name="logManager">The log manager.</param>
+        public NLogger(string name, ILogManager logManager)
         {
+            _logManager = logManager;
             lock (LockObject)
             {
                 _logger = NLog.LogManager.GetLogger(name);
@@ -95,6 +99,13 @@ namespace MediaBrowser.Common.Implementations.Logging
             message = FormatMessage(message, paramList).Replace(Environment.NewLine, ". ");
 
             var messageText = LogHelper.GetLogMessage(exception);
+
+            var prefix = _logManager.ExceptionMessagePrefix;
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+            {
+                messageText.Insert(0, prefix);
+            }
 
             LogMultiline(message, level, messageText);
         }

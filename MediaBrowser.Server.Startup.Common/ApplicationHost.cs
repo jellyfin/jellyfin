@@ -251,6 +251,8 @@ namespace MediaBrowser.Server.Startup.Common
             _remotePackageName = remotePackageName;
             _supportsNativeWebSocket = supportsNativeWebSocket;
             NativeApp = nativeApp;
+
+            SetBaseExceptionMessage();
         }
 
         private Version _version;
@@ -305,6 +307,23 @@ namespace MediaBrowser.Server.Startup.Common
         public bool SupportsAutoRunAtStartup
         {
             get { return NativeApp.SupportsAutoRunAtStartup; }
+        }
+
+        private void SetBaseExceptionMessage()
+        {
+            var builder = GetBaseExceptionMessage(ApplicationPaths);
+
+            // Skip if plugins haven't been loaded yet
+            //if (Plugins != null)
+            //{
+            //    var pluginString = string.Join("|", Plugins.Select(i => i.Name + "-" + i.Version.ToString()).ToArray());
+            //    builder.Insert(0, string.Format("Plugins: {0}{1}", pluginString, Environment.NewLine));
+            //}
+
+            builder.Insert(0, string.Format("Version: {0}{1}", ApplicationVersion, Environment.NewLine));
+            builder.Insert(0, "*** Error Report ***" + Environment.NewLine);
+
+            LogManager.ExceptionMessagePrefix = builder.ToString();
         }
 
         /// <summary>
