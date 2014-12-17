@@ -59,6 +59,15 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var item in items)
             {
+                // Respect ItemLimit, if set
+                if (job.ItemLimit.HasValue)
+                {
+                    if (jobItems.Count >= job.ItemLimit.Value)
+                    {
+                        break;
+                    }
+                }
+
                 var itemId = item.Id.ToString("N");
 
                 var jobItem = jobItems.FirstOrDefault(i => string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase));
@@ -87,6 +96,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .ToList();
 
             await UpdateJobStatus(job, jobItems).ConfigureAwait(false);
+        }
+
+        public Task UpdateJobStatus(string id)
+        {
+            var job = _syncRepo.GetJob(id);
+
+            return UpdateJobStatus(job);
         }
 
         private Task UpdateJobStatus(SyncJob job)

@@ -265,5 +265,24 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             return null;
         }
+
+        public async Task ReportSyncJobItemTransferred(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            jobItem.Status = SyncJobItemStatus.Completed;
+            jobItem.Progress = 100;
+
+            await _repo.Update(jobItem).ConfigureAwait(false);
+
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager);
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public SyncJobItem GetJobItem(string id)
+        {
+            return _repo.GetJobItem(id);
+        }
     }
 }

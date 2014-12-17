@@ -363,7 +363,11 @@ namespace MediaBrowser.Controller.Entities
         {
             await base.UpdateToRepository(updateReason, cancellationToken).ConfigureAwait(false);
 
-            foreach (var item in GetLocalAlternateVersionIds().Select(i => LibraryManager.GetItemById(i)))
+            var localAlternates = GetLocalAlternateVersionIds()
+                .Select(i => LibraryManager.GetItemById(i))
+                .Where(i => i != null);
+
+            foreach (var item in localAlternates)
             {
                 item.ImageInfos = ImageInfos;
                 item.Overview = Overview;

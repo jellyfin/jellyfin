@@ -232,10 +232,10 @@
     "HeaderFeatureAccess": "Functie toegang",
     "OptionAllowMediaPlayback": "Afspelen van media toestaan",
     "OptionAllowBrowsingLiveTv": "Bladeren door live tv toestaan",
-    "OptionAllowDeleteLibraryContent": "Deze gebruiker kan inhoud uit de bibliotheek verwijderen",
+    "OptionAllowDeleteLibraryContent": "Allow deletion of library content",
     "OptionAllowManageLiveTv": "Beheer van live tv-opnames toestaan",
-    "OptionAllowRemoteControlOthers": "Deze gebruiker kan andere gebruikers op afstand besturen",
-    "OptionAllowRemoteSharedDevices": "Sta deze gebruiker toe om gedeelde apparaten te gebruiken",
+    "OptionAllowRemoteControlOthers": "Allow remote control of other users",
+    "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
     "OptionAllowRemoteSharedDevicesHelp": "Dlna apparaten worden als gedeeld apparaat gezien totdat een gebruiker deze gaat gebruiken.",
     "HeaderRemoteControl": "Gebruik op afstand",
     "OptionMissingTmdbId": "TMDB Id ontbreekt",
@@ -1278,6 +1278,6 @@
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Beperk tot \u00e9\u00e9n enkele ingesloten afbeelding",
     "LabelEnableSingleImageInDidlLimitHelp": "Sommige apparaten zullen niet goed weergeven als er meerdere afbeeldingen ingesloten zijn in Didl.",
-    "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TabActivity": "Activiteit",
+    "TitleSync": "Synchroniseer"
 }

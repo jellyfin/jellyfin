@@ -550,7 +550,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             };
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
@@ -604,17 +604,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 failed = true;
 
-                if (File.Exists(outputPath))
+                try
                 {
-                    try
-                    {
-                        _logger.Info("Deleting extracted subtitle due to failure: ", outputPath);
-                        File.Delete(outputPath);
-                    }
-                    catch (IOException ex)
-                    {
-                        _logger.ErrorException("Error deleting extracted subtitle {0}", ex, outputPath);
-                    }
+                    _logger.Info("Deleting extracted subtitle due to failure: {0}", outputPath);
+                    File.Delete(outputPath);
+                }
+                catch (FileNotFoundException)
+                {
+                    
+                }
+                catch (IOException ex)
+                {
+                    _logger.ErrorException("Error deleting extracted subtitle {0}", ex, outputPath);
                 }
             }
             else if (!File.Exists(outputPath))

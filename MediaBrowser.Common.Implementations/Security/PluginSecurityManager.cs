@@ -17,9 +17,7 @@ namespace MediaBrowser.Common.Implementations.Security
     /// </summary>
     public class PluginSecurityManager : ISecurityManager
     {
-        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
-        
-        private const string MBValidateUrl = MbAdminUrl + "service/registration/validate";
+        private const string MBValidateUrl = MbAdmin.HttpsUrl + "service/registration/validate";
 
         /// <summary>
         /// The _is MB supporter
@@ -162,7 +160,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 return new SupporterInfo();
             }
 
-            var url = MbAdminUrl + "/service/supporter/retrieve?key=" + key;
+            var url = MbAdmin.HttpsUrl + "/service/supporter/retrieve?key=" + key;
 
             using (var stream = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
             {
