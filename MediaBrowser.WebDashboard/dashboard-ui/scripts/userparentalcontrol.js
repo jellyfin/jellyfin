@@ -211,7 +211,7 @@
 
         user.Configuration.BlockedTags = getTagsFromPage(page);
 
-        ApiClient.updateUser(user).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             onSaveComplete(page);
         });
     }

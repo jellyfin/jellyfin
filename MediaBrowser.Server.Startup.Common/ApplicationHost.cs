@@ -363,7 +363,6 @@ namespace MediaBrowser.Server.Startup.Common
             var migrations = new List<IVersionMigration>
             {
                 new MigrateUserFolders(ApplicationPaths),
-                new PlaylistImages(ServerConfigurationManager),
                 new RenameXbmcOptions(ServerConfigurationManager),
                 new RenameXmlOptions(ServerConfigurationManager),
                 new DeprecatePlugins(ApplicationPaths),

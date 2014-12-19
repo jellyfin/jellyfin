@@ -186,6 +186,14 @@ namespace MediaBrowser.Model.ApiClient
         Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Updates the user configuration.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="configuration">The configuration.</param>
+        /// <returns>Task.</returns>
+        Task UpdateUserConfiguration(string userId, UserConfiguration configuration);
+
+        /// <summary>
         /// Gets a BaseItem
         /// </summary>
         /// <param name="id">The id.</param>

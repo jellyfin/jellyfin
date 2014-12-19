@@ -602,6 +602,13 @@
     }
 }
 
+@media all and (min-width: 2200px) {
+
+    .homePageSquareCard {
+        width: 10%;
+    }
+}
+
 
 /** homePagePortraitCard */
 .homePagePortraitCard .cardPadder {
@@ -652,6 +659,13 @@
 
     .homePagePortraitCard {
         width: 10%;
+    }
+}
+
+@media all and (min-width: 2200px) {
+
+    .homePagePortraitCard {
+        width: 9.09090909091%;
     }
 }
 

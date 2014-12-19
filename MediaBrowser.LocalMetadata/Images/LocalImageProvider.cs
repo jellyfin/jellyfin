@@ -76,11 +76,14 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 return directoryService.GetFileSystemEntries(path)
                 .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) ||
-                (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+
+                .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty));
             }
 
             return directoryService.GetFiles(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+                .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty));
         }
 
         public List<LocalImageInfo> GetImages(IHasImages item, IDirectoryService directoryService)
@@ -109,6 +112,7 @@ namespace MediaBrowser.LocalMetadata.Images
                     return !string.IsNullOrEmpty(ext) &&
                            BaseItem.SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 })
+                .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty))
                .ToList();
 
             var list = new List<LocalImageInfo>();
@@ -402,13 +406,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private FileSystemInfo GetImage(IEnumerable<FileSystemInfo> files, string name)
         {
-            var candidates = files
-                .Where(i => string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            return BaseItem.SupportedImageExtensions
-                .Select(i => candidates.FirstOrDefault(c => string.Equals(c.Extension, i, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault(i => i != null);
+            return files.FirstOrDefault(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase));
         }
     }
 }

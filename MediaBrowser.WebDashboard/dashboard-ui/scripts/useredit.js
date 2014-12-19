@@ -36,6 +36,8 @@
 
         $('#chkDisableUserPreferences', page).checked((!user.Configuration.EnableUserPreferenceAccess) || false).checkboxradio("refresh");
 
+        $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -75,8 +77,14 @@
         user.Configuration.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
         user.Configuration.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
 
+        user.Policy.EnableSync = $('#chkEnableSync', page).checked();
+
         ApiClient.updateUser(user).done(function () {
-            onSaveComplete(page, user);
+
+            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+
+                onSaveComplete(page, user);
+            });
         });
     }
 

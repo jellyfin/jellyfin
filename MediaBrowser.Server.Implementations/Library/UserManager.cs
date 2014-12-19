@@ -781,18 +781,27 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 lock (_policySyncLock)
                 {
-                    return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
+                    return (UserPolicy) _xmlSerializer.DeserializeFromFile(typeof (UserPolicy), path);
                 }
+            }
+            catch (FileNotFoundException)
+            {
+                return GetDefaultPolicy(user);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error reading policy file: {0}", ex, path);
 
-                return new UserPolicy
-                {
-                    EnableSync = !user.ConnectLinkType.HasValue || user.ConnectLinkType.Value != UserLinkType.Guest
-                };
+                return GetDefaultPolicy(user);
             }
+        }
+
+        private UserPolicy GetDefaultPolicy(User user)
+        {
+            return new UserPolicy
+            {
+                EnableSync = true
+            };
         }
 
         private readonly object _policySyncLock = new object();

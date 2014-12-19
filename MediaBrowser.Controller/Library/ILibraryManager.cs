@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -340,26 +341,11 @@ namespace MediaBrowser.Controller.Library
         int? GetSeasonNumberFromPath(string path);
 
         /// <summary>
-        /// Gets the season number from episode file.
+        /// Fills the missing episode numbers from path.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromEpisodeFile(string path);
-
-        /// <summary>
-        /// Gets the ending episode number from file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetEndingEpisodeNumberFromFile(string path);
-
-        /// <summary>
-        /// Gets the episode number from file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="considerSeasonless">if set to <c>true</c> [consider seasonless].</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetEpisodeNumberFromFile(string path, bool considerSeasonless);
+        /// <param name="episode">The episode.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool FillMissingEpisodeNumbersFromPath(Episode episode);
 
         /// <summary>
         /// Parses the name.

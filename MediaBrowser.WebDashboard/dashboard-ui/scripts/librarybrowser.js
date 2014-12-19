@@ -1,6 +1,6 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, store) {
 
-    var pageSizeKey = 'pagesize_v3';
+    var pageSizeKey = 'pagesize_v4';
 
     $(function () {
         $("body").on("create", function () {

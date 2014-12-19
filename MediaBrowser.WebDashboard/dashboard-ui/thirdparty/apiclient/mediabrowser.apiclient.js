@@ -2634,6 +2634,44 @@
             });
         };
 
+        self.updateUserPolicy = function (userId, policy) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!policy) {
+                throw new Error("null policy");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Policy");
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(policy),
+                contentType: "application/json"
+            });
+        };
+
+        self.updateUserConfiguration = function (userId, configuration) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+            if (!configuration) {
+                throw new Error("null configuration");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/Configuration");
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(configuration),
+                contentType: "application/json"
+            });
+        };
+
         /**
          * Updates the Triggers for a ScheduledTask
          * @param {String} id

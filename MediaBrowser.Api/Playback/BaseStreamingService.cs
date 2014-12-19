@@ -302,6 +302,21 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        protected string H264Encoder
+        {
+            get
+            {
+                var lib = ServerConfigurationManager.Configuration.H264Encoder;
+
+                if (!string.IsNullOrWhiteSpace(lib))
+                {
+                    return lib;
+                }
+
+                return "libx264";
+            }
+        }
+
         /// <summary>
         /// Gets the video bitrate to specify on the command line
         /// </summary>
@@ -318,7 +333,7 @@ namespace MediaBrowser.Api.Playback
 
             var qualitySetting = GetQualitySetting();
 
-            if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(videoCodec, H264Encoder, StringComparison.OrdinalIgnoreCase))
             {
                 switch (qualitySetting)
                 {
@@ -761,7 +776,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "libx264";
+                    return H264Encoder;
                 }
                 if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1562,9 +1577,6 @@ namespace MediaBrowser.Api.Playback
                 mediaStreams = new List<MediaStream>();
 
                 state.DeInterlace = true;
-                state.OutputAudioSync = "1000";
-                state.InputVideoSync = "-1";
-                state.InputAudioSync = "1";
 
                 // Just to prevent this from being null and causing other methods to fail
                 state.MediaPath = string.Empty;
@@ -1695,6 +1707,13 @@ namespace MediaBrowser.Api.Playback
             state.InputBitrate = mediaSource.Bitrate;
             state.InputFileSize = mediaSource.Size;
             state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+
+            if (state.ReadInputAtNativeFramerate)
+            {
+                state.OutputAudioSync = "1000";
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
+            }
 
             AttachMediaStreamInfo(state, mediaSource.MediaStreams, videoRequest, requestedUrl);
         }

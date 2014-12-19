@@ -1295,5 +1295,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TitleSync": "Sync",
+    "OptionAllowSyncContent":  "Allow syncing media to devices"
 }

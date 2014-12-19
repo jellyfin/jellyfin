@@ -365,7 +365,10 @@
 
         html += '<div>';
 
-        if (session.PlayState.PlayMethod == 'Transcode') {
+        if (session.TranscodingInfo && session.TranscodingInfo.IsAudioDirect && session.TranscodingInfo.IsVideoDirect) {
+            html += Globalize.translate('LabelPlayMethodDirectStream');
+        }
+        else if (session.PlayState.PlayMethod == 'Transcode') {
             html += Globalize.translate('LabelPlayMethodTranscoding');
         }
         else if (session.PlayState.PlayMethod == 'DirectStream') {

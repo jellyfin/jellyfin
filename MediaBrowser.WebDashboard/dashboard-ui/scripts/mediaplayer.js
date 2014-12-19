@@ -103,8 +103,9 @@
                 return '.m3u8';
             }
 
-            // Chrome or IE with plugin installed
+            // Chrome, Firefox or IE with plugin installed
             if (self.canPlayWebm()) {
+
                 return '.webm';
             }
 

@@ -31,7 +31,7 @@
             userId: userId,
             TargetId: target,
 
-            ItemIds: syncOptions.items.map(function (i) {
+            ItemIds: (syncOptions.items || []).map(function (i) {
                 return i.Id || i;
             }).join(','),
 
@@ -41,7 +41,10 @@
 
             SyncNewContent: $('#chkSyncNewContent', form).checked(),
             UnwatchedOnly: $('#chkUnwatchedOnly', form).checked(),
-            ItemLimit: $('#txtItemLimit').val() || null
+            ItemLimit: $('#txtItemLimit').val() || null,
+
+            ParentId: syncOptions.ParentId,
+            Category: syncOptions.Category
         };
 
         ApiClient.ajax({
@@ -66,9 +69,12 @@
         ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
 
             UserId: userId,
-            ItemIds: options.items.map(function (i) {
+            ItemIds: (options.items || []).map(function (i) {
                 return i.Id || i;
-            }).join(',')
+            }).join(','),
+
+            ParentId: options.ParentId,
+            Category: options.Category
 
         })).done(function (result) {
 
@@ -157,7 +163,7 @@
 
             html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
+            html += '<button type="submit" data-icon="cloud" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
             html += '</p>';
 
             html += '</form>';
@@ -207,7 +213,7 @@
 
     function isAvailable(item, user) {
 
-        return false;
+        //return false;
         return item.SupportsSync;
     }
 
@@ -218,5 +224,47 @@
         isAvailable: isAvailable
 
     };
+
+    function showSyncButtonsPerUser(page) {
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Policy.EnableSync) {
+                $('.categorySyncButton', page).show();
+            } else {
+                $('.categorySyncButton', page).hide();
+            }
+
+        });
+    }
+
+    function onCategorySyncButtonClick(page, button) {
+
+        var category = button.getAttribute('data-category');
+        var parentId = LibraryMenu.getTopParentId();
+
+        SyncManager.showMenu({
+            ParentId: parentId,
+            Category: category
+        });
+    }
+
+    $(document).on('pageinit', ".libraryPage", function () {
+
+        var page = this;
+
+        $('.categorySyncButton', page).on('click', function () {
+
+            onCategorySyncButtonClick(page, this);
+        });
+
+    }).on('pagebeforeshow', ".libraryPage", function () {
+
+        var page = this;
+
+        showSyncButtonsPerUser(page);
+
+    });
+
 
 })(window, jQuery);

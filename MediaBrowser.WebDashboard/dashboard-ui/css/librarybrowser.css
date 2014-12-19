@@ -61,13 +61,13 @@
 }
 
 .listHeader {
-    margin-top: .7em;
+    margin-top: 1em;
     margin-bottom: .15em;
     padding-left: 2px;
 }
 
 .firstListHeader {
-    margin-top: .25em;
+    margin-top: 1em;
 }
 
 .ehsContent {
@@ -132,7 +132,7 @@
 @media all and (min-width: 1920px) {
 
     .ehsContent {
-        width: 94%;
+        width: 96%;
     }
 }
 

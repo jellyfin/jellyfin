@@ -185,7 +185,9 @@ namespace MediaBrowser.Api
                     CompletionPercentage = percentComplete,
                     Width = state.OutputWidth,
                     Height = state.OutputHeight,
-                    AudioChannels = state.OutputAudioChannels
+                    AudioChannels = state.OutputAudioChannels,
+                    IsAudioDirect = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
                 });
             }
         }

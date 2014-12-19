@@ -5,6 +5,8 @@ namespace MediaBrowser.Model.Session
         public string AudioCodec { get; set; }
         public string VideoCodec { get; set; }
         public string Container { get; set; }
+        public bool IsVideoDirect { get; set; }
+        public bool IsAudioDirect { get; set; }
         public int? Bitrate { get; set; }
 
         public float? Framerate { get; set; }

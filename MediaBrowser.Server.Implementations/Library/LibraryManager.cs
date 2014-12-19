@@ -18,8 +18,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
+using MediaBrowser.Naming.TV;
 using MediaBrowser.Naming.Video;
-using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
@@ -862,7 +862,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var type = typeof(T);
 
-            if (type == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
+            if (type == typeof(Person))
             {
                 subFolderPrefix = validFilename.Substring(0, 1);
             }
@@ -1708,22 +1708,69 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return SeriesResolver.GetSeasonNumberFromPath(path, CollectionType.TvShows);
+            return new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true).SeasonNumber;
         }
 
-        public int? GetSeasonNumberFromEpisodeFile(string path)
+        public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
-            return SeriesResolver.GetSeasonNumberFromEpisodeFile(path);
-        }
+            var resolver = new EpisodeResolver(new ExtendedNamingOptions(),
+                new Naming.Logging.NullLogger());
 
-        public int? GetEndingEpisodeNumberFromFile(string path)
-        {
-            return SeriesResolver.GetEndingEpisodeNumberFromFile(path);
-        }
+            var locationType = episode.LocationType;
+            
+            var fileType = /*args.IsDirectory ? FileInfoType.Directory :*/ FileInfoType.File;
+            var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
+                resolver.Resolve(episode.Path, fileType) :
+                new Naming.TV.EpisodeInfo();
 
-        public int? GetEpisodeNumberFromFile(string path, bool considerSeasonless)
-        {
-            return SeriesResolver.GetEpisodeNumberFromFile(path, considerSeasonless);
+            if (episodeInfo == null)
+            {
+                episodeInfo = new Naming.TV.EpisodeInfo();
+            }
+
+            var changed = false;
+
+            if (!episode.IndexNumber.HasValue)
+            {
+                episode.IndexNumber = episodeInfo.EpisodeNumber;
+
+                if (episode.IndexNumber.HasValue)
+                {
+                    changed = true;
+                }
+            }
+
+            if (!episode.IndexNumberEnd.HasValue)
+            {
+                episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+
+                if (episode.IndexNumberEnd.HasValue)
+                {
+                    changed = true;
+                }
+            }
+
+            if (!episode.ParentIndexNumber.HasValue)
+            {
+                episode.ParentIndexNumber = episodeInfo.SeasonNumber;
+
+                if (!episode.ParentIndexNumber.HasValue)
+                {
+                    var season = episode.Season;
+
+                    if (season != null)
+                    {
+                        episode.ParentIndexNumber = season.IndexNumber;
+                    }
+                }
+
+                if (episode.ParentIndexNumber.HasValue)
+                {
+                    changed = true;
+                }
+            }
+
+            return changed;
         }
 
         public ItemLookupInfo ParseName(string name)

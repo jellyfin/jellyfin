@@ -1076,3 +1076,26 @@ progress {
         width: 100%;
     }
 }
+
+.accentButton {
+    display: inline-block;
+    background: rgba(51, 136, 204, .7);
+    border-radius: 1000px;
+    padding: 5px 12px;
+    color: #fff !important;
+    font-weight: normal !important;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+    .accentButton:hover {
+        opacity: .5;
+    }
+
+    .accentButton .fa:not(.notext) {
+        margin-right: 7px;
+    }
+
+h1 + .accentButton {
+    margin: 18px 0 0 20px;
+}

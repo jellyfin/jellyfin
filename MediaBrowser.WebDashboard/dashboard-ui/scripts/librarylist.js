@@ -426,7 +426,7 @@
             }
 
             if (commands.indexOf('sync') != -1) {
-                html += '<li data-icon="refresh"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+                html += '<li data-icon="cloud"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {

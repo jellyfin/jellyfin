@@ -55,8 +55,14 @@ namespace MediaBrowser.Api.Sync
         [ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
 
-        [ApiMember(Name = "ItemIds", Description = "ItemIds", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ItemIds", Description = "ItemIds", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ItemIds { get; set; }
+
+        [ApiMember(Name = "ParentId", Description = "ParentId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
+        
+        [ApiMember(Name = "Category", Description = "Category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SyncCategory? Category { get; set; }
     }
 
     [Route("/Sync/JobItems/{Id}/Transferred", "POST", Summary = "Reports that a sync job item has successfully been transferred.")]
@@ -155,19 +161,26 @@ namespace MediaBrowser.Api.Sync
             result.Targets = _syncManager.GetSyncTargets(request.UserId)
                 .ToList();
 
-            var dtos = request.ItemIds.Split(',')
-                .Select(_libraryManager.GetItemById)
-                .Where(i => i != null)
-                .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions
-                {
-                    Fields = new List<ItemFields>
+            if (request.Category.HasValue)
+            {
+                result.Options = SyncHelper.GetSyncOptions(request.Category.Value);
+            }
+            else
+            {
+                var dtos = request.ItemIds.Split(',')
+                    .Select(_libraryManager.GetItemById)
+                    .Where(i => i != null)
+                    .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions
+                    {
+                        Fields = new List<ItemFields>
                     {
                         ItemFields.SyncInfo
                     }
-                }))
-                .ToList();
+                    }))
+                    .ToList();
 
-            result.Options = SyncHelper.GetSyncOptions(dtos);
+                result.Options = SyncHelper.GetSyncOptions(dtos);
+            }
 
             return ToOptimizedResult(result);
         }
