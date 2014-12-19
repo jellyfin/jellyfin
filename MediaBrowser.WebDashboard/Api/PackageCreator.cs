@@ -197,6 +197,7 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
+                                "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
                                 "css/all.css" + versionString
                             };
 

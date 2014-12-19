@@ -651,7 +651,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
+            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)

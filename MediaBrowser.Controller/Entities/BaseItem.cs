@@ -45,6 +45,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn" };
 
+        public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
+
         /// <summary>
         /// The trailer folder name
         /// </summary>

@@ -153,7 +153,14 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public MovieInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<MovieInfo>();
+            var info = GetItemLookupInfo<MovieInfo>();
+
+            if (!IsInMixedFolder)
+            {
+                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+            }
+
+            return info;
         }
 
         public override bool BeforeMetadataRefresh()

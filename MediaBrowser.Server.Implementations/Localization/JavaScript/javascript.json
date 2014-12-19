@@ -650,7 +650,7 @@
     "OptionLow": "Low",
     "HeaderSettings": "Settings",
     "OptionAutomaticallySyncNewContent": "Automatically sync new content",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to these folders will be automatically synced to the device.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to this category will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
     "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched.",
     "LabelItemLimit": "Item limit:",

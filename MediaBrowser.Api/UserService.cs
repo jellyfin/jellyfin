@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
@@ -51,7 +52,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -125,7 +126,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -153,6 +154,28 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class UpdateUser : UserDto, IReturnVoid
     {
+    }
+
+    /// <summary>
+    /// Class UpdateUser
+    /// </summary>
+    [Route("/Users/{Id}/Policy", "POST", Summary = "Updates a user policy")]
+    [Authenticated(Roles = "admin")]
+    public class UpdateUserPolicy : UserPolicy, IReturnVoid
+    {
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class UpdateUser
+    /// </summary>
+    [Route("/Users/{Id}/Configuration", "POST", Summary = "Updates a user configuration")]
+    [Authenticated]
+    public class UpdateUserConfiguration : UserConfiguration, IReturnVoid
+    {
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -196,12 +219,6 @@ namespace MediaBrowser.Api
 
         public IAuthorizationContext AuthorizationContext { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserService" /> class.
-        /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="dtoService">The dto service.</param>
-        /// <param name="sessionMananger">The session mananger.</param>
         public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
         {
             _userManager = userManager;
@@ -494,6 +511,18 @@ namespace MediaBrowser.Api
         public object Post(ForgotPasswordPin request)
         {
             return _userManager.RedeemPasswordResetPin(request.Pin);
+        }
+
+        public void Post(UpdateUserConfiguration request)
+        {
+            var user = _userManager.GetUserById(request.Id);
+            user.UpdateConfiguration(request);
+        }
+
+        public void Post(UpdateUserPolicy request)
+        {
+            var task = _userManager.UpdateUserPolicy(request.Id, request);
+            Task.WaitAll(task);
         }
     }
 }

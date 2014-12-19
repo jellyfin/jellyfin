@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.IO;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
@@ -37,22 +39,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (season != null || parent is Series || parent.Parents.OfType<Series>().Any())
+            if (season != null || args.HasParent<Series>())
             {
                 var episode = ResolveVideo<Episode>(args, false);
-
-                if (episode != null)
-                {
-                    if (season != null)
-                    {
-                        episode.ParentIndexNumber = season.IndexNumber;
-                    }
-
-                    if (episode.ParentIndexNumber == null)
-                    {
-                        episode.ParentIndexNumber = SeriesResolver.GetSeasonNumberFromEpisodeFile(args.Path);
-                    }
-                }
 
                 return episode;
             }

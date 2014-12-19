@@ -72,26 +72,29 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var features = _channelManager.GetChannelFeatures(channelId);
 
                 const int currentRefreshLevel = 1;
-                var maxRefreshLevel = features.AutoRefreshLevels ?? 1;
+                var maxRefreshLevel = features.AutoRefreshLevels ?? 0;
 
-                var innerProgress = new ActionableProgress<double>();
+                if (maxRefreshLevel > 0)
+                {
+                    var innerProgress = new ActionableProgress<double>();
 
-                var startingNumberComplete = numComplete;
-                innerProgress.RegisterAction(p =>
-                {
-                    double innerPercent = startingNumberComplete;
-                    innerPercent += (p / 100);
-                    innerPercent /= numItems;
-                    progress.Report(innerPercent * 100);
-                });
+                    var startingNumberComplete = numComplete;
+                    innerProgress.RegisterAction(p =>
+                    {
+                        double innerPercent = startingNumberComplete;
+                        innerPercent += (p / 100);
+                        innerPercent /= numItems;
+                        progress.Report(innerPercent * 100);
+                    });
 
-                try
-                {
-                    await GetAllItems(user, channelId, null, currentRefreshLevel, maxRefreshLevel, innerProgress, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting channel content", ex);
+                    try
+                    {
+                        await GetAllItems(user, channelId, null, currentRefreshLevel, maxRefreshLevel, innerProgress, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting channel content", ex);
+                    }
                 }
 
                 numComplete++;

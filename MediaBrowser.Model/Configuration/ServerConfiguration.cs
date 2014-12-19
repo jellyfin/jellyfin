@@ -145,12 +145,6 @@ namespace MediaBrowser.Model.Configuration
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable people prefix sub folders].
-        /// </summary>
-        /// <value><c>true</c> if [enable people prefix sub folders]; otherwise, <c>false</c>.</value>
-        public bool EnablePeoplePrefixSubFolders { get; set; }
-
-        /// <summary>
         /// Gets or sets the encoding quality.
         /// </summary>
         /// <value>The encoding quality.</value>
@@ -179,8 +173,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] InsecureApps7 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
-
-        public bool PlaylistImagesDeleted { get; set; }
+        public string H264Encoder { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -195,7 +188,6 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
-            EnablePeoplePrefixSubFolders = true;
 
             EnableUPnP = true;
             DownMixAudioBoost = 2;
@@ -225,6 +217,7 @@ namespace MediaBrowser.Model.Configuration
             EnableRealtimeMonitor = true;
 
             UICulture = "en-us";
+            H264Encoder = "libx264";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
