@@ -748,7 +748,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            if (fields.Contains(ItemFields.ProductionLocations))
+            if (fields.Contains(ItemFields.Metascore))
             {
                 var hasMetascore = item as IHasMetascore;
                 if (hasMetascore != null)
