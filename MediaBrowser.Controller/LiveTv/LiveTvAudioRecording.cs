@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System.Linq;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -78,7 +79,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
         }

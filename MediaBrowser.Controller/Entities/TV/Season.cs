@@ -7,6 +7,7 @@ using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -249,7 +250,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetEpisodes(user);
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;

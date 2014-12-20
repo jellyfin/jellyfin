@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -595,7 +596,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>PlayAccess.</returns>
         public PlayAccess GetPlayAccess(User user)
         {
-            if (!user.Configuration.EnableMediaPlayback)
+            if (!user.Policy.EnableMediaPlayback)
             {
                 return PlayAccess.None;
             }
@@ -987,7 +988,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var maxAllowedRating = user.Configuration.MaxParentalRating;
+            var maxAllowedRating = user.Policy.MaxParentalRating;
 
             if (maxAllowedRating == null)
             {
@@ -1003,7 +1004,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                return !GetBlockUnratedValue(user.Configuration);
+                return !GetBlockUnratedValue(user.Policy);
             }
 
             var value = LocalizationManager.GetRatingLevel(rating);
@@ -1023,7 +1024,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (hasTags != null)
             {
-                if (user.Configuration.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+                if (user.Policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -1037,7 +1038,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="config">The configuration.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        protected virtual bool GetBlockUnratedValue(UserConfiguration config)
+        protected virtual bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }

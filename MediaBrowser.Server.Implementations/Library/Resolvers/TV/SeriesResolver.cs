@@ -53,13 +53,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             if (args.IsDirectory)
             {
                 // Avoid expensive tests against VF's and all their children by not allowing this
-                if (args.Parent == null || args.Parent.IsRoot)
-                {
-                    return null;
-                }
-                
-                // Optimization to avoid running these tests against Seasons
-                if (args.HasParent<Series>() || args.HasParent<Season>() || args.HasParent<MusicArtist>() || args.HasParent<MusicAlbum>())
+                if (args.Parent.IsRoot)
                 {
                     return null;
                 }
@@ -69,8 +63,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 var isTvShowsFolder = string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase);
 
                 // If there's a collection type and it's not tv, it can't be a series
-                if (!string.IsNullOrEmpty(collectionType) &&
-                    !isTvShowsFolder)
+                if (!isTvShowsFolder)
+                {
+                    return null;
+                }
+
+                if (args.HasParent<Series>() || args.HasParent<Season>())
                 {
                     return null;
                 }

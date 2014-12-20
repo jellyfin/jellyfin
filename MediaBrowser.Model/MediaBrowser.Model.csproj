@@ -366,6 +366,7 @@
     <Compile Include="Sync\SyncCategory.cs" />
     <Compile Include="Sync\SyncDialogOptions.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
+    <Compile Include="Sync\SyncItem.cs" />
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
     <Compile Include="Sync\SyncJobItem.cs" />

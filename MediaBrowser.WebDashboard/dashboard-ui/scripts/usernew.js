@@ -14,7 +14,7 @@
 
             var id = 'mediaFolder' + i;
 
-            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Policy.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Policy.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
 
             html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
@@ -39,7 +39,7 @@
 
             var id = 'channels' + i;
 
-            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Policy.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
 
             html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
@@ -81,19 +81,19 @@
 
         ApiClient.createUser(name).done(function (user) {
 
-            user.Configuration.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+            user.Policy.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
 
                 return this.getAttribute('data-foldername');
 
             }).get();
 
-            user.Configuration.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
+            user.Policy.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
 
                 return this.getAttribute('data-foldername');
 
             }).get();
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
         });

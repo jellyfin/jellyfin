@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         protected override PhotoAlbum Resolve(ItemResolveArgs args)
         {
             // Must be an image file within a photo collection
-            if (!args.IsRoot && args.IsDirectory && string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            if (args.IsDirectory && string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 if (HasPhotos(args))
                 {
@@ -34,6 +35,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         private static bool HasPhotos(ItemResolveArgs args)
         {
             return args.FileSystemChildren.Any(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && PhotoResolver.IsImageFile(i.FullName));
+        }
+
+        public override ResolverPriority Priority
+        {
+            get
+            {
+                // Behind special folder resolver
+                return ResolverPriority.Second;
+            }
         }
     }
 }

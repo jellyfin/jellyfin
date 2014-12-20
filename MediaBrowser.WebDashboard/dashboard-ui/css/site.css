@@ -1081,7 +1081,7 @@ progress {
     display: inline-block;
     background: rgba(51, 136, 204, .7);
     border-radius: 1000px;
-    padding: 5px 12px;
+    padding: 4px 12px;
     color: #fff !important;
     font-weight: normal !important;
     text-decoration: none;

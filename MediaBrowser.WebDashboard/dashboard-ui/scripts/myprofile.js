@@ -187,7 +187,7 @@
 
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
-            if (loggedInUser.Configuration.IsAdministrator) {
+            if (loggedInUser.Policy.IsAdministrator) {
                 $('#lnkParentalControl', page).show();
             } else {
                 $('#lnkParentalControl', page).hide();
@@ -367,7 +367,7 @@
 
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
-            if (loggedInUser.Configuration.IsAdministrator) {
+            if (loggedInUser.Policy.IsAdministrator) {
                 $('#lnkParentalControl', page).show();
             } else {
                 $('#lnkParentalControl', page).hide();

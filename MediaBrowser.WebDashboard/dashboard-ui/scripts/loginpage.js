@@ -85,7 +85,7 @@
 
             Dashboard.setCurrentUser(user.Id, result.AccessToken);
 
-            if (user.Configuration.IsAdministrator) {
+            if (user.Policy.IsAdministrator) {
                 window.location = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
             } else {
                 window.location = "index.html?u=" + user.Id + '&t=' + result.AccessToken;

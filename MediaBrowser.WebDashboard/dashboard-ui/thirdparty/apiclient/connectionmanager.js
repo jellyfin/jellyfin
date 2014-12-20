@@ -375,7 +375,7 @@
                 {
                     localUser: localUser,
                     name: connectUser ? connectUser.Name : localUser.Name,
-                    canManageServer: localUser && localUser.Configuration.IsAdministrator,
+                    canManageServer: localUser && localUser.Policy.IsAdministrator,
                     imageUrl: image.url,
                     supportsImageParams: image.supportsParams
                 }]);

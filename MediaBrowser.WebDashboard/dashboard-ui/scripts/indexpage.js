@@ -75,15 +75,11 @@
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
 
-            var style = "";
+            var style = 'background-image:url(\'' + imgUrl + '\');';
 
-            if (imgUrl) {
-                style += 'background-image:url(\'' + imgUrl + '\');';
-            }
+            var imageCssClass = '';
 
-            var imageCssClass = 'posterItemImage';
-
-            html += '<div class="' + imageCssClass + '" style="' + style + '">';
+            html += '<div class="posterItemImage ' + imageCssClass + '" style="' + style + '">';
             html += '</div>';
 
             html += "<div class='posterItemDefaultText posterItemText'>";

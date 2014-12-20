@@ -4,23 +4,13 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        //html += '<a href="index.html" class="headerButton headerButtonLeft headerHomeButton">';
-        //html += '<img src="css/images/items/folders/home.png" />';
-        //html += '</a>';
-
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner">';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
+        html += '<div class="barMenuInner fa fa-bars">';
         html += '</div>';
         html += '</button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner">';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
+        html += '<div class="barMenuInner fa fa-bars">';
         html += '</div>';
         html += '</button>';
 
@@ -32,7 +22,7 @@
 
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
-            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
+            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:20px;"></div></button>';
         } else {
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
@@ -40,8 +30,9 @@
 
         html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-        var userButtonHeight = 21;
         if (user.imageUrl) {
+
+            var userButtonHeight = 23;
 
             var url = user.imageUrl;
 
@@ -49,15 +40,15 @@
                 url += "height=" + userButtonHeight;
             }
 
-            html += '<img src="' + url + '" style="height:' + userButtonHeight + 'px;" />';
+            html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
         } else {
-            html += '<img src="css/images/currentuserdefaultwhite.png" style="height:' + userButtonHeight + 'px;" />';
+            html += '<div class="fa fa-user"></div>';
         }
 
         html += '</a>';
 
         if (user.canManageServer) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><img src="css/images/items/folders/settings.png" /></a>';
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><div class="fa fa-cog"></div></a>';
         }
 
         html += '</div>';
@@ -170,7 +161,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Configuration.IsAdministrator) {
+            if (user.Policy.IsAdministrator) {
                 $('.adminMenuOptions').show();
             } else {
                 $('.adminMenuOptions').hide();

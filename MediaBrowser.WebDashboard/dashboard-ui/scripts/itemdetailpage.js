@@ -90,7 +90,7 @@
                 return g.Type == "Grouping";
             });
 
-            if (user.Configuration.IsAdministrator && groupedVersions.length) {
+            if (user.Policy.IsAdministrator && groupedVersions.length) {
                 $('.splitVersionContainer', page).show();
             } else {
                 $('.splitVersionContainer', page).hide();
@@ -144,7 +144,7 @@
 
     function renderImage(page, item, user) {
 
-        var imageHref = user.Configuration.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
+        var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
         $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
     }
@@ -887,7 +887,7 @@
         html += '<div class="detailSectionHeader" style="position: relative;">';
         html += '<span>' + type.name + '</span>';
 
-        if (user.Configuration.IsAdministrator) {
+        if (user.Policy.IsAdministrator) {
             html += '<a class="detailSectionHeaderButton" href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonEdit') + '</a>';
         }
 

@@ -375,7 +375,7 @@
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
-            if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
+            if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 

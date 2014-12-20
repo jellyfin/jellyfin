@@ -264,12 +264,12 @@ namespace MediaBrowser.Api
 
             if (request.IsDisabled.HasValue)
             {
-                users = users.Where(i => i.Configuration.IsDisabled == request.IsDisabled.Value);
+                users = users.Where(i => i.Policy.IsDisabled == request.IsDisabled.Value);
             }
 
             if (request.IsHidden.HasValue)
             {
-                users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
+                users = users.Where(i => i.Policy.IsHidden == request.IsHidden.Value);
             }
 
             if (request.IsGuest.HasValue)
@@ -445,39 +445,13 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
-            // If removing admin access
-            if (!dtoUser.Configuration.IsAdministrator && user.Configuration.IsAdministrator)
-            {
-                if (_userManager.Users.Count(i => i.Configuration.IsAdministrator) == 1)
-                {
-                    throw new ArgumentException("There must be at least one user in the system with administrative access.");
-                }
-            }
-
-            // If disabling
-            if (dtoUser.Configuration.IsDisabled && user.Configuration.IsAdministrator)
-            {
-                throw new ArgumentException("Administrators cannot be disabled.");
-            }
-
-            // If disabling
-            if (dtoUser.Configuration.IsDisabled && !user.Configuration.IsDisabled)
-            {
-                if (_userManager.Users.Count(i => !i.Configuration.IsDisabled) == 1)
-                {
-                    throw new ArgumentException("There must be at least one enabled user in the system.");
-                }
-
-                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
-            }
-
             var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
                 _userManager.UpdateUser(user) :
                 _userManager.RenameUser(user, dtoUser.Name);
 
             await task.ConfigureAwait(false);
 
-            user.UpdateConfiguration(dtoUser.Configuration);
+            await _userManager.UpdateConfiguration(dtoUser.Id, dtoUser.Configuration);
         }
 
         /// <summary>
@@ -515,14 +489,48 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateUserConfiguration request)
         {
-            var user = _userManager.GetUserById(request.Id);
-            user.UpdateConfiguration(request);
+            var task = _userManager.UpdateConfiguration(request.Id, request);
+
+            Task.WaitAll(task);
         }
 
         public void Post(UpdateUserPolicy request)
         {
-            var task = _userManager.UpdateUserPolicy(request.Id, request);
+            var task = UpdateUserPolicy(request);
             Task.WaitAll(task);
+        }
+
+        private async Task UpdateUserPolicy(UpdateUserPolicy request)
+        {
+            var user = _userManager.GetUserById(request.Id);
+            
+            // If removing admin access
+            if (!request.IsAdministrator && user.Policy.IsAdministrator)
+            {
+                if (_userManager.Users.Count(i => i.Policy.IsAdministrator) == 1)
+                {
+                    throw new ArgumentException("There must be at least one user in the system with administrative access.");
+                }
+            }
+
+            // If disabling
+            if (request.IsDisabled && user.Policy.IsAdministrator)
+            {
+                throw new ArgumentException("Administrators cannot be disabled.");
+            }
+
+            // If disabling
+            if (request.IsDisabled && !user.Policy.IsDisabled)
+            {
+                if (_userManager.Users.Count(i => !i.Policy.IsDisabled) == 1)
+                {
+                    throw new ArgumentException("There must be at least one enabled user in the system.");
+                }
+
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+            }
+
+            await _userManager.UpdateUserPolicy(request.Id, request).ConfigureAwait(false);
         }
     }
 }

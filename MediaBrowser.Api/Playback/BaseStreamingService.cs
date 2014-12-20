@@ -202,6 +202,10 @@ namespace MediaBrowser.Api.Playback
             {
                 args += " -map -0:s";
             }
+            else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
+            {
+                args += " -map 1:0 -sn";
+            }
 
             return args;
         }
@@ -273,7 +277,7 @@ namespace MediaBrowser.Api.Playback
                 // Recommended per docs
                 return Math.Max(Environment.ProcessorCount - 1, 2);
             }
-            
+
             // Use more when this is true. -re will keep cpu usage under control
             if (state.ReadInputAtNativeFramerate)
             {
@@ -666,9 +670,18 @@ namespace MediaBrowser.Api.Playback
                 videoSizeParam = string.Format(",scale={0}:{1}", state.VideoStream.Width.Value.ToString(UsCulture), state.VideoStream.Height.Value.ToString(UsCulture));
             }
 
-            return string.Format(" -filter_complex \"[0:{0}]format=yuva444p{3},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{1}] [sub] overlay{2}\"",
-                state.SubtitleStream.Index,
-                state.VideoStream.Index,
+            var mapPrefix = state.SubtitleStream.IsExternal ?
+                1 :
+                0;
+
+            var subtitleStreamIndex = state.SubtitleStream.IsExternal
+                ? 0
+                : state.SubtitleStream.Index;
+
+            return string.Format(" -filter_complex \"[{0}:{1}]format=yuva444p{4},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{2}] [sub] overlay{3}\"",
+                mapPrefix.ToString(UsCulture),
+                subtitleStreamIndex.ToString(UsCulture),
+                state.VideoStream.Index.ToString(UsCulture),
                 outputSizeParam,
                 videoSizeParam);
         }
@@ -813,6 +826,21 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(string transcodingJobId, StreamState state)
         {
+            var arg = "-i " + GetInputPathArgument(transcodingJobId, state);
+
+            if (state.SubtitleStream != null)
+            {
+                if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
+                {
+                    arg += " -i " + state.SubtitleStream.Path;
+                }
+            }
+
+            return arg;
+        }
+
+        private string GetInputPathArgument(string transcodingJobId, StreamState state)
+        {
             if (state.InputProtocol == MediaProtocol.File &&
                state.RunTimeTicks.HasValue &&
                state.VideoType == VideoType.VideoFile &&
@@ -883,7 +911,7 @@ namespace MediaBrowser.Api.Playback
                     state.InputProtocol = streamInfo.Protocol;
 
                     await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
-                    
+
                     AttachMediaStreamInfo(state, streamInfo, state.VideoRequest, state.RequestedUrl);
                     checkCodecs = true;
                 }
@@ -913,8 +941,8 @@ namespace MediaBrowser.Api.Playback
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <param name="workingDirectory">The working directory.</param>
         /// <returns>Task.</returns>
-        protected async Task<TranscodingJob> StartFfMpeg(StreamState state, 
-            string outputPath, 
+        protected async Task<TranscodingJob> StartFfMpeg(StreamState state,
+            string outputPath,
             CancellationTokenSource cancellationTokenSource,
             string workingDirectory = null)
         {
@@ -1103,7 +1131,7 @@ namespace MediaBrowser.Api.Playback
                     if (scale.HasValue)
                     {
                         long val;
-                        
+
                         if (long.TryParse(size, NumberStyles.Any, UsCulture, out val))
                         {
                             bytesTranscoded = val * scale.Value;
@@ -1642,7 +1670,7 @@ namespace MediaBrowser.Api.Playback
 
             if (string.IsNullOrEmpty(container))
             {
-                container = request.Static ? 
+                container = request.Static ?
                     state.InputContainer :
                     (Path.GetExtension(GetOutputFilePath(state)) ?? string.Empty).TrimStart('.');
             }
@@ -1717,7 +1745,7 @@ namespace MediaBrowser.Api.Playback
 
             AttachMediaStreamInfo(state, mediaSource.MediaStreams, videoRequest, requestedUrl);
         }
-        
+
         private void AttachMediaStreamInfo(StreamState state,
             List<MediaStream> mediaStreams,
             VideoStreamRequest videoRequest,

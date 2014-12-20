@@ -295,7 +295,7 @@
                 return false;
             }
 
-            if (subtitleStream && (subtitleStream.IsGraphicalSubtitleStream || !self.supportsTextTracks())) {
+            if (subtitleStream && (!subtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
                 return false;
             }

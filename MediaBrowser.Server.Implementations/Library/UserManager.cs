@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -63,6 +62,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
 
         private readonly INetworkManager _networkManager;
 
@@ -71,13 +71,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IConnectManager> _connectFactory;
         private readonly IServerApplicationHost _appHost;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserManager" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="userRepository">The user repository.</param>
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -87,6 +81,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _dtoServiceFactory = dtoServiceFactory;
             _connectFactory = connectFactory;
             _appHost = appHost;
+            _jsonSerializer = jsonSerializer;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -164,6 +159,11 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task Initialize()
         {
             Users = await LoadUsers().ConfigureAwait(false);
+
+            foreach (var user in Users.ToList())
+            {
+                await DoPolicyMigration(user).ConfigureAwait(false);
+            }
         }
 
         public Task<bool> AuthenticateUser(string username, string passwordSha1, string remoteEndPoint)
@@ -185,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new SecurityException("Invalid username or password entered.");
             }
 
-            if (user.Configuration.IsDisabled)
+            if (user.Policy.IsDisabled)
             {
                 throw new SecurityException(string.Format("The {0} account is currently disabled. Please consult with your administrator.", user.Name));
             }
@@ -283,12 +283,40 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 users.Add(user);
 
-                user.Configuration.IsAdministrator = true;
-                user.Configuration.EnableRemoteControlOfOtherUsers = true;
-                UpdateConfiguration(user, user.Configuration);
+                user.Policy.IsAdministrator = true;
+                user.Policy.EnableRemoteControlOfOtherUsers = true;
+                await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
             }
 
             return users;
+        }
+
+        private async Task DoPolicyMigration(User user)
+        {
+            if (!user.Configuration.ValuesMigratedToPolicy)
+            {
+                user.Policy.AccessSchedules = user.Configuration.AccessSchedules;
+                user.Policy.BlockedChannels = user.Configuration.BlockedChannels;
+                user.Policy.BlockedMediaFolders = user.Configuration.BlockedMediaFolders;
+                user.Policy.BlockedTags = user.Configuration.BlockedTags;
+                user.Policy.BlockUnratedItems = user.Configuration.BlockUnratedItems;
+                user.Policy.EnableContentDeletion = user.Configuration.EnableContentDeletion;
+                user.Policy.EnableLiveTvAccess = user.Configuration.EnableLiveTvAccess;
+                user.Policy.EnableLiveTvManagement = user.Configuration.EnableLiveTvManagement;
+                user.Policy.EnableMediaPlayback = user.Configuration.EnableMediaPlayback;
+                user.Policy.EnableRemoteControlOfOtherUsers = user.Configuration.EnableRemoteControlOfOtherUsers;
+                user.Policy.EnableSharedDeviceControl = user.Configuration.EnableSharedDeviceControl;
+                user.Policy.EnableUserPreferenceAccess = user.Configuration.EnableUserPreferenceAccess;
+                user.Policy.IsAdministrator = user.Configuration.IsAdministrator;
+                user.Policy.IsDisabled = user.Configuration.IsDisabled;
+                user.Policy.IsHidden = user.Configuration.IsHidden;
+                user.Policy.MaxParentalRating = user.Configuration.MaxParentalRating;
+
+                await UpdateUserPolicy(user.Id.ToString("N"), user.Policy);
+
+                user.Configuration.ValuesMigratedToPolicy = true;
+                await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
+            }
         }
 
         public UserDto GetUserDto(User user, string remoteEndPoint = null)
@@ -509,7 +537,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentException(string.Format("The user '{0}' cannot be deleted because there must be at least one user in the system.", user.Name));
             }
 
-            if (user.Configuration.IsAdministrator && allUsers.Count(i => i.Configuration.IsAdministrator) == 1)
+            if (user.Policy.IsAdministrator && allUsers.Count(i => i.Policy.IsAdministrator) == 1)
             {
                 throw new ArgumentException(string.Format("The user '{0}' cannot be deleted because there must be at least one admin user in the system.", user.Name));
             }
@@ -518,17 +546,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
             try
             {
-                await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
+                var configPath = GetConfigurationFilePath(user);
 
-                var path = user.ConfigurationFilePath;
+                await UserRepository.DeleteUser(user, CancellationToken.None).ConfigureAwait(false);
 
                 try
                 {
-                    File.Delete(path);
+                    File.Delete(configPath);
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error deleting file {0}", ex, path);
+                    _logger.ErrorException("Error deleting file {0}", ex, configPath);
                 }
 
                 DeleteUserPolicy(user);
@@ -613,15 +641,6 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
-        public void UpdateConfiguration(User user, UserConfiguration newConfiguration)
-        {
-            var xmlPath = user.ConfigurationFilePath;
-            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
-            _xmlSerializer.SerializeToFile(newConfiguration, xmlPath);
-
-            EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
-        }
-
         private string PasswordResetFile
         {
             get { return Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "passwordreset.txt"); }
@@ -689,7 +708,7 @@ namespace MediaBrowser.Server.Implementations.Library
             string pinFile = null;
             DateTime? expirationDate = null;
 
-            if (user != null && !user.Configuration.IsAdministrator)
+            if (user != null && !user.Policy.IsAdministrator)
             {
                 action = ForgotPasswordAction.ContactAdmin;
             }
@@ -781,7 +800,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 lock (_policySyncLock)
                 {
-                    return (UserPolicy) _xmlSerializer.DeserializeFromFile(typeof (UserPolicy), path);
+                    return (UserPolicy)_jsonSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
             }
             catch (FileNotFoundException)
@@ -805,15 +824,37 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         private readonly object _policySyncLock = new object();
-        public async Task UpdateUserPolicy(string userId, UserPolicy userPolicy)
+        public Task UpdateUserPolicy(string userId, UserPolicy userPolicy)
         {
             var user = GetUserById(userId);
+            return UpdateUserPolicy(user, userPolicy, true);
+        }
+
+        private async Task UpdateUserPolicy(User user, UserPolicy userPolicy, bool fireEvent)
+        {
+            var updateConfig = user.Policy.IsAdministrator != userPolicy.IsAdministrator ||
+                user.Policy.EnableLiveTvManagement != userPolicy.EnableLiveTvManagement ||
+                user.Policy.EnableLiveTvAccess != userPolicy.EnableLiveTvAccess ||
+                user.Policy.EnableMediaPlayback != userPolicy.EnableMediaPlayback ||
+                user.Policy.EnableContentDeletion != userPolicy.EnableContentDeletion;
+            
             var path = GetPolifyFilePath(user);
 
             lock (_policySyncLock)
             {
-                _xmlSerializer.SerializeToFile(userPolicy, path);
+                _jsonSerializer.SerializeToFile(userPolicy, path);
                 user.Policy = userPolicy;
+            }
+
+            if (updateConfig)
+            {
+                user.Configuration.IsAdministrator = user.Policy.IsAdministrator;
+                user.Configuration.EnableLiveTvManagement = user.Policy.EnableLiveTvManagement;
+                user.Configuration.EnableLiveTvAccess = user.Policy.EnableLiveTvAccess;
+                user.Configuration.EnableMediaPlayback = user.Policy.EnableMediaPlayback;
+                user.Configuration.EnableContentDeletion = user.Policy.EnableContentDeletion;
+
+                await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
             }
         }
 
@@ -840,7 +881,65 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetPolifyFilePath(User user)
         {
-            return Path.Combine(user.ConfigurationDirectoryPath, "policy.xml");
+            return Path.Combine(user.ConfigurationDirectoryPath, "policy.json");
+        }
+
+        private string GetConfigurationFilePath(User user)
+        {
+            return Path.Combine(user.ConfigurationDirectoryPath, "config.xml");
+        }
+
+        public UserConfiguration GetUserConfiguration(User user)
+        {
+            var path = GetConfigurationFilePath(user);
+
+            try
+            {
+                lock (_configSyncLock)
+                {
+                    return (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), path);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                return new UserConfiguration();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reading policy file: {0}", ex, path);
+
+                return new UserConfiguration();
+            }
+        }
+
+        private readonly object _configSyncLock = new object();
+        public Task UpdateConfiguration(string userId, UserConfiguration config)
+        {
+            var user = GetUserById(userId);
+            return UpdateConfiguration(user, config, true);
+        }
+
+        private async Task UpdateConfiguration(User user, UserConfiguration config, bool fireEvent)
+        {
+            var path = GetConfigurationFilePath(user);
+
+            // The xml serializer will output differently if the type is not exact
+            if (config.GetType() != typeof (UserConfiguration))
+            {
+                var json = _jsonSerializer.SerializeToString(config);
+                config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
+            }
+
+            lock (_configSyncLock)
+            {
+                _xmlSerializer.SerializeToFile(config, path);
+                user.Configuration = config;
+            }
+
+            if (fireEvent)
+            {
+                EventHelper.FireEventIfNotNull(UserConfigurationUpdated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -51,7 +52,7 @@ namespace MediaBrowser.Controller.Channels
             return ExternalId;
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
         }

@@ -245,7 +245,7 @@ var Dashboard = {
 
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showServerRestartWarning(info);
                 }
             });
@@ -570,7 +570,7 @@ var Dashboard = {
 
             var isConnectMode = Dashboard.isConnectMode();
 
-            if (user.localUser && user.localUser.Configuration.EnableUserPreferenceAccess) {
+            if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
                 html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
             }
 
@@ -672,7 +672,7 @@ var Dashboard = {
 
                 link = links[i];
 
-                if (!user.Configuration.IsAdministrator) {
+                if (!user.Policy.IsAdministrator) {
                     break;
                 }
 
@@ -705,7 +705,7 @@ var Dashboard = {
 
                 link = links[i];
 
-                if (!user.Configuration.IsAdministrator) {
+                if (!user.Policy.IsAdministrator) {
                     break;
                 }
 
@@ -892,7 +892,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationCompleted") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "completed");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -901,7 +901,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationFailed") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "failed");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -910,7 +910,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationCancelled") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -919,7 +919,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstalling") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "progress");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -1436,7 +1436,7 @@ $(document).on('pagebeforeshow', ".page", function () {
 
                 var isSettingsPage = page.hasClass('type-interior');
 
-                if (!user.Configuration.IsAdministrator && isSettingsPage) {
+                if (!user.Policy.IsAdministrator && isSettingsPage) {
                     window.location.replace("index.html");
                     return;
                 }

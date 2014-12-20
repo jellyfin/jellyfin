@@ -36,13 +36,6 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
         /// <summary>
-        /// Updates the configuration.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="newConfiguration">The new configuration.</param>
-        void UpdateConfiguration(User user, UserConfiguration newConfiguration);
-        
-        /// <summary>
         /// Gets a User by Id
         /// </summary>
         /// <param name="id">The id.</param>
@@ -171,6 +164,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>UserPolicy.</returns>
         UserPolicy GetUserPolicy(User user);
+
+        /// <summary>
+        /// Gets the user configuration.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>UserConfiguration.</returns>
+        UserConfiguration GetUserConfiguration(User user);
+
+        /// <summary>
+        /// Updates the configuration.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="newConfiguration">The new configuration.</param>
+        /// <returns>Task.</returns>
+        Task UpdateConfiguration(string userId, UserConfiguration newConfiguration);
 
         /// <summary>
         /// Updates the user policy.

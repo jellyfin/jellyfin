@@ -135,7 +135,7 @@ namespace MediaBrowser.Api
                 Level = request.Level,
                 Name = request.Name,
                 Url = request.Url,
-                UserIds = _userManager.Users.Where(i => i.Configuration.IsAdministrator).Select(i => i.Id.ToString("N")).ToList()
+                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id.ToString("N")).ToList()
             };
 
             await _notificationManager.SendNotification(notification, CancellationToken.None).ConfigureAwait(false);

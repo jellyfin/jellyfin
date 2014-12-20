@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -199,7 +200,7 @@ namespace MediaBrowser.Controller.LiveTv
             return ItemRepository.SaveItem(this, cancellationToken);
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
         }

@@ -1846,7 +1846,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Configuration.EnableLiveTvAccess && ActiveService != null;
+            return user.Policy.EnableLiveTvAccess && ActiveService != null;
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -1854,7 +1854,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = ActiveService;
 
             return _userManager.Users
-                .Where(i => i.Configuration.EnableLiveTvAccess && service != null);
+                .Where(i => i.Policy.EnableLiveTvAccess && service != null);
         }
 
         /// <summary>

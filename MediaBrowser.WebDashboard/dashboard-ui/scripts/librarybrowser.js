@@ -321,7 +321,7 @@
             if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
                 commands.push('delete');
             }
-            else if (user.Configuration.EnableContentDeletion &&
+            else if (user.Policy.EnableContentDeletion &&
                 item.Type != "TvChannel" &&
                 item.Type != "Genre" &&
                 item.Type != "Studio" &&
@@ -333,7 +333,7 @@
                 commands.push('delete');
             }
 
-            if (user.Configuration.IsAdministrator) {
+            if (user.Policy.IsAdministrator) {
                 if (item.Type != "Recording" && item.Type != "Program") {
                     commands.push('edit');
                 }

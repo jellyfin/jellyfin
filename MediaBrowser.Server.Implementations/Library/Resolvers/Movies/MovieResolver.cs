@@ -183,12 +183,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                     }
 
-                    // Since the looping is expensive, this is an optimization to help us avoid it
-                    if (args.ContainsMetaFileByName("series.xml"))
-                    {
-                        return null;
-                    }
-
                     return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                 }
 

@@ -20,6 +20,12 @@
     line-height: 50px;
 }
 
+.viewMenuBar .fa {
+    color: #e8e8e8;
+    font-size: 24px;
+    vertical-align: middle;
+}
+
 .headerButton {
     margin: 0;
     padding: 0;
@@ -74,56 +80,12 @@
 }
 
 .barMenuInner {
-    padding: 7px 10px;
-    border: 1px solid #000;
-    border-radius: 4px;
-    box-shadow: rgba(255, 255, 255, 0.0980392) 0px 1px 0px 0px inset, rgba(255, 255, 255, 0.0745098) 0px 1px 0px 0px;
-    background-color: rgb(14, 14, 14);
-    background-image: linear-gradient(rgb(21, 21, 21), rgb(4, 4, 4));
-    background-repeat: repeat-x;
-    border-bottom-color: rgba(0, 0, 0, 0.247059);
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-image-outset: 0px;
-    border-image-repeat: stretch;
-    border-image-slice: 100%;
-    border-image-source: none;
-    border-image-width: 1;
-    border-left-color: rgba(0, 0, 0, 0.0980392);
-    border-left-style: solid;
-    border-left-width: 1px;
-    border-right-color: rgba(0, 0, 0, 0.0980392);
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-top-color: rgba(0, 0, 0, 0.0980392);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-top-style: solid;
-    border-top-width: 1px;
+    padding: 6px 10px;
 }
 
 .barsMenuButton:hover {
     opacity: .5 !important;
 }
-
-.icon-bar {
-    display: block;
-    width: 18px;
-    height: 2px;
-    background-color: #f5f5f5;
-    -webkit-border-radius: 1px;
-    -moz-border-radius: 1px;
-    border-radius: 1px;
-    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-}
-
-    .icon-bar + .icon-bar {
-        margin-top: 3px;
-    }
 
 .libraryMenuButtonText {
     color: #fff !important;
@@ -180,10 +142,10 @@
     background-color: #111;
 }
 
-.libraryViewNav::-webkit-scrollbar {
-    height: 0 !important;
-    display: none;
-}
+    .libraryViewNav::-webkit-scrollbar {
+        height: 0 !important;
+        display: none;
+    }
 
 .viewMenuLink {
     text-decoration: none;
@@ -218,7 +180,7 @@
 
 .viewMenuTextLink {
     display: block;
-    padding: .65em .5em .55em 38px !important;
+    padding: .7em .5em .6em 38px !important;
     font-size: 14px;
     font-weight: 300 !important;
     font-family: Roboto;
@@ -276,10 +238,6 @@
 
 .editorViewMenu {
     background-image: url(images/items/folders/edit.png);
-}
-
-.dashboardViewMenu {
-    background-image: url(images/items/folders/settings.png);
 }
 
 .reportsViewMenu {

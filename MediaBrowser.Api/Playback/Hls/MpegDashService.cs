@@ -627,7 +627,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentFilename = Path.GetFileNameWithoutExtension(outputPath) + "%03d" + GetSegmentFileExtension(state);
 
-            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f ssegment -segment_time {6} -segment_list_size {8} -segment_list \"{9}\" {10}",
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f ssegment -segment_time {6} -segment_list_size {8} -segment_list \"{9}\" {10}",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
