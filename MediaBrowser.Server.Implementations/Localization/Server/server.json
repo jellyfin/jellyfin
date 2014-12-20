@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "Setup your media library",
     "ButtonAddMediaFolder": "Add media folder",
     "LabelFolderType": "Folder type:",
-    "MediaFolderHelpPluginRequired": "* Requires the use of a plugin, e.g. GameBrowser or MB Bookshelf.",
     "ReferToMediaLibraryWiki": "Refer to the media library wiki.",
     "LabelCountry": "Country:",
     "LabelLanguage": "Language:",

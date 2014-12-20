@@ -5,6 +5,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -20,7 +21,7 @@ namespace MediaBrowser.Controller.Channels
 
         public string OriginalImageUrl { get; set; }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             // Don't block. 
             return false;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -274,7 +275,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return new[] { Path };
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }

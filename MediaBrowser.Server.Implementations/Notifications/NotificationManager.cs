@@ -78,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 switch (request.SendToUserMode.Value)
                 {
                     case SendToUserType.Admins:
-                        return _userManager.Users.Where(i => i.Configuration.IsAdministrator)
+                        return _userManager.Users.Where(i => i.Policy.IsAdministrator)
                                 .Select(i => i.Id.ToString("N"));
                     case SendToUserType.All:
                         return _userManager.Users.Select(i => i.Id.ToString("N"));

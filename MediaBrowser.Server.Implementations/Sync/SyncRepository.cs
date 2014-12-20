@@ -24,6 +24,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private IDbCommand _deleteJobCommand;
+        private IDbCommand _deleteJobItemsCommand;
         private IDbCommand _saveJobCommand;
         private IDbCommand _saveJobItemCommand;
 
@@ -61,9 +62,13 @@ namespace MediaBrowser.Server.Implementations.Sync
         private void PrepareStatements()
         {
             _deleteJobCommand = _connection.CreateCommand();
-            _deleteJobCommand.CommandText = "delete from SyncJobs where Id=@Id; delete from SyncJobItems where JobId=@Id";
+            _deleteJobCommand.CommandText = "delete from SyncJobs where Id=@Id";
             _deleteJobCommand.Parameters.Add(_deleteJobCommand, "@Id");
 
+            _deleteJobItemsCommand = _connection.CreateCommand();
+            _deleteJobItemsCommand.CommandText = "delete from SyncJobItems where JobId=@JobId";
+            _deleteJobItemsCommand.Parameters.Add(_deleteJobItemsCommand, "@JobId");
+            
             _saveJobCommand = _connection.CreateCommand();
             _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
@@ -289,11 +294,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var index = 0;
 
                 _deleteJobCommand.GetParameter(index++).Value = new Guid(id);
-
                 _deleteJobCommand.Transaction = transaction;
-
                 _deleteJobCommand.ExecuteNonQuery();
 
+                _deleteJobItemsCommand.GetParameter(index++).Value = new Guid(id);
+                _deleteJobItemsCommand.Transaction = transaction;
+                _deleteJobItemsCommand.ExecuteNonQuery();
+                
                 transaction.Commit();
             }
             catch (OperationCanceledException)

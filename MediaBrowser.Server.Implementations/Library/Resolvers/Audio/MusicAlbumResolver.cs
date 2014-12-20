@@ -37,7 +37,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <value>The priority.</value>
         public override ResolverPriority Priority
         {
-            get { return ResolverPriority.Third; } // we need to be ahead of the generic folder resolver but behind the movie one
+            get
+            {
+                // Behind special folder resolver
+                return ResolverPriority.Second;
+            } 
         }
 
         /// <summary>
@@ -49,21 +53,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         {
             if (!args.IsDirectory) return null;
 
-            //Avoid mis-identifying top folders
-            if (args.Parent == null) return null;
+            // Avoid mis-identifying top folders
             if (args.Parent.IsRoot) return null;
             if (args.HasParent<MusicAlbum>()) return null;
 
-            // Optimization
-            if (args.HasParent<BoxSet>() || args.HasParent<Series>() || args.HasParent<Season>())
-            {
-                return null;
-            }
-
             var collectionType = args.GetCollectionType();
 
-            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music,
-                StringComparison.OrdinalIgnoreCase);
+            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
 
             // If there's a collection type and it's not music, don't allow it.
             if (!isMusicMediaFolder)

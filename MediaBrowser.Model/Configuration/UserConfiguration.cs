@@ -42,6 +42,10 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
         public bool IsHidden { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is disabled.
+        /// </summary>
+        /// <value><c>true</c> if this instance is disabled; otherwise, <c>false</c>.</value>
         public bool IsDisabled { get; set; }
 
         public bool DisplayMissingEpisodes { get; set; }
@@ -74,9 +78,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] OrderedViews { get; set; }
 
-        public bool SyncConnectName { get; set; }
-        public bool SyncConnectImage { get; set; }
-
         public bool IncludeTrailersInSuggestions { get; set; }
 
         public bool EnableCinemaMode { get; set; }
@@ -87,7 +88,9 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] LatestItemsExcludes { get; set; }
         public string[] BlockedTags { get; set; }
-   
+
+        public bool ValuesMigratedToPolicy { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -110,8 +113,6 @@ namespace MediaBrowser.Model.Configuration
             ExcludeFoldersFromGrouping = new string[] { };
             DisplayCollectionsView = true;
 
-            SyncConnectName = true;
-            SyncConnectImage = true;
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
             EnableUserPreferenceAccess = true;

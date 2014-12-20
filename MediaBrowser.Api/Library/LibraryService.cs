@@ -479,14 +479,14 @@ namespace MediaBrowser.Api.Library
             }
             else if (item is ILiveTvRecording)
             {
-                if (!user.Configuration.EnableLiveTvManagement)
+                if (!user.Policy.EnableLiveTvManagement)
                 {
                     throw new UnauthorizedAccessException();
                 }
             }
             else
             {
-                if (!user.Configuration.EnableContentDeletion)
+                if (!user.Policy.EnableContentDeletion)
                 {
                     throw new UnauthorizedAccessException();
                 }

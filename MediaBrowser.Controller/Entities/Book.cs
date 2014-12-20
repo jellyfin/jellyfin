@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -36,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
             Tags = new List<string>();
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Book);
         }

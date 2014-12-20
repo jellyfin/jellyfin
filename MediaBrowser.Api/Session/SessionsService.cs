@@ -373,12 +373,12 @@ namespace MediaBrowser.Api.Session
 
                 var user = _userManager.GetUserById(request.ControllableByUserId.Value);
 
-                if (!user.Configuration.EnableRemoteControlOfOtherUsers)
+                if (!user.Policy.EnableRemoteControlOfOtherUsers)
                 {
                     result = result.Where(i => i.ContainsUser(request.ControllableByUserId.Value));
                 }
 
-                if (!user.Configuration.EnableSharedDeviceControl)
+                if (!user.Policy.EnableSharedDeviceControl)
                 {
                     result = result.Where(i => !i.UserId.HasValue);
                 }

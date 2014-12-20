@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public static string GetUserDistinctValue(User user)
         {
-            var channels = user.Configuration.BlockedChannels
+            var channels = user.Policy.BlockedChannels
                 .OrderBy(i => i)
                 .ToList();
 

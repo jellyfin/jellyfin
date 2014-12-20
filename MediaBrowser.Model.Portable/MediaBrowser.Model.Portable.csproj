@@ -1034,6 +1034,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
       <Link>Sync\SyncDialogOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncItem.cs">
+      <Link>Sync\SyncItem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>
     </Compile>

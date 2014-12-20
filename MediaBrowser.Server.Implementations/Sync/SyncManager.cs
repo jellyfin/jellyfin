@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -242,7 +243,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return true;
             }
 
-            return item.LocationType == LocationType.FileSystem || item is Season;
+            return item.LocationType == LocationType.FileSystem || item is Season || item is ILiveTvRecording;
         }
 
         private string GetDefaultName(BaseItem item)

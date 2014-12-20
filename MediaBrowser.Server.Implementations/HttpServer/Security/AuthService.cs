@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                if (user.Configuration.IsDisabled)
+                if (user.Policy.IsDisabled)
                 {
                     throw new SecurityException("User account has been disabled.")
                     {
@@ -76,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     };
                 }
 
-                if (!user.Configuration.IsAdministrator &&
+                if (!user.Policy.IsAdministrator &&
                     !authAttribtues.EscapeParentalControl &&
                     !user.IsParentalScheduleAllowed())
                 {
@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Configuration.IsAdministrator)
+                if (user == null || !user.Policy.IsAdministrator)
                 {
                     throw new SecurityException("User does not have admin access.")
                     {
@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             }
             if (roles.Contains("delete", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Configuration.EnableContentDeletion)
+                if (user == null || !user.Policy.EnableContentDeletion)
                 {
                     throw new SecurityException("User does not have delete access.")
                     {
