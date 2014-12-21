@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,16 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string ItemId { get; set; }
+    }
+
+    [Route("/Items/{ItemId}/ContentType", "POST", Summary = "Updates an item's content type")]
+    public class UpdateItemContentType : IReturnVoid
+    {
+        [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string ItemId { get; set; }
+
+        [ApiMember(Name = "ContentType", Description = "The content type of the item", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ContentType { get; set; }
     }
     
     [Authenticated]
@@ -55,7 +66,100 @@ namespace MediaBrowser.Api
                 Cultures = _localizationManager.GetCultures().ToList()
             };
 
+            var locationType = item.LocationType;
+            if (locationType == LocationType.FileSystem ||
+                locationType == LocationType.Offline)
+            {
+                var collectionType = _libraryManager.GetInheritedContentType(item);
+                if (string.IsNullOrWhiteSpace(collectionType))
+                {
+                    info.ContentTypeOptions = GetContentTypeOptions(true);
+                    info.ContentType = _libraryManager.GetContentType(item);
+                }
+            }
+
             return ToOptimizedResult(info);
+        }
+
+        public void Post(UpdateItemContentType request)
+        {
+            
+        }
+
+        private List<NameValuePair> GetContentTypeOptions(bool isForItem)
+        {
+            var list = new List<NameValuePair>();
+
+            if (isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeInherit",
+                    Value = ""
+                });
+            }
+            
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMovies",
+                Value = "movies"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMusic",
+                Value = "music"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeTvShows",
+                Value = "tvshows"
+            });
+
+            if (!isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeBooks",
+                    Value = "books"
+                });
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeGames",
+                    Value = "games"
+                });
+            }
+
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeHomeVideos",
+                Value = "homevideos"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMusicVideos",
+                Value = "musicvideos"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypePhotos",
+                Value = "photos"
+            });
+
+            if (!isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeMixed",
+                    Value = ""
+                });
+            }
+
+            foreach (var val in list)
+            {
+                val.Name = _localizationManager.GetLocalizedString(val.Name);
+            }
+
+            return list;
         }
 
         public void Post(UpdateItem request)

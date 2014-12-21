@@ -708,7 +708,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            var collectionType = LibraryManager.FindCollectionType(this);
+            var collectionType = LibraryManager.GetContentType(this);
 
             return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
         }

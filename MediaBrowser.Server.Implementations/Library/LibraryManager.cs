@@ -1546,12 +1546,17 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id);
         }
 
-        /// <summary>
-        /// Finds the type of the collection.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        public string FindCollectionType(BaseItem item)
+        public string GetContentType(BaseItem item)
+        {
+            return GetInheritedContentType(item);
+        }
+
+        public string GetInheritedContentType(BaseItem item)
+        {
+            return GetTopFolderContentType(item);
+        }
+
+        private string GetTopFolderContentType(BaseItem item)
         {
             while (!(item.Parent is AggregateFolder) && item.Parent != null)
             {

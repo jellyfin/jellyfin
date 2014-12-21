@@ -1,6 +1,7 @@
 ﻿(function ($, document, window) {
 
     var currentItem;
+    var metadataEditorInfo;
 
     function updateTabs(page, item) {
 
@@ -21,6 +22,7 @@
         $.when(promise1, promise2).done(function (response1, response2) {
 
             var item = response1[0];
+            metadataEditorInfo = response2[0];
 
             currentItem = item;
 
@@ -31,9 +33,10 @@
                 $('.editPageInnerContent', page).show();
             }
 
-            var metadataEditorInfo = response2[0];
             var languages = metadataEditorInfo.Cultures;
             var countries = metadataEditorInfo.Countries;
+
+            renderContentTypeOptions(page, metadataEditorInfo);
 
             loadExternalIds(page, item, metadataEditorInfo.ExternalIdInfos);
 
@@ -97,6 +100,24 @@
             });
 
         });
+    }
+
+    function renderContentTypeOptions(page, metadataInfo) {
+
+        if (metadataInfo.ContentTypeOptions.length) {
+            $('#fldContentType', page).show();
+        } else {
+            $('#fldContentType', page).hide();
+        }
+
+        var html = metadataInfo.ContentTypeOptions.map(function (i) {
+
+
+            return '<option value="' + i.Value + '">' + i.Name + '</option>';
+
+        }).join('');
+
+        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '').selectmenu('refresh');
     }
 
     function onExternalIdChange() {
@@ -871,17 +892,45 @@
             var tagline = $('#txtTagline', form).val();
             item.Taglines = tagline ? [tagline] : [];
 
-            ApiClient.updateItem(item).done(function () {
+            self.submitUpdatedItem(form, item);
+
+            return false;
+        };
+
+        self.submitUpdatedItem = function (form, item) {
+
+            function afterContentTypeUpdated() {
 
                 Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
                     $(form).parents('.page').trigger('itemsaved', [i]);
                 });
+            }
+
+            ApiClient.updateItem(item).done(function () {
+
+                var newContentType = $('#selectContentType', form).val() || '';
+
+                if ((metadataEditorInfo.ContentType || '') != newContentType) {
+
+                    ApiClient.ajax({
+
+                        url: ApiClient.getUrl('Items/' + item.Id + '/ContentType', {
+                            ContentType: newContentType
+                        }),
+
+                        type: 'POST'
+
+                    }).done(function () {
+                        afterContentTypeUpdated();
+                    });
+
+                } else {
+                    afterContentTypeUpdated();
+                }
 
             });
-
-            return false;
         };
 
         self.getDateFromForm = function (form, element, property) {

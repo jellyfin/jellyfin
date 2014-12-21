@@ -259,8 +259,15 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string FindCollectionType(BaseItem item);
+        string GetContentType(BaseItem item);
 
+        /// <summary>
+        /// Gets the type of the inherited content.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        string GetInheritedContentType(BaseItem item);
+        
         /// <summary>
         /// Normalizes the root path list.
         /// </summary>
