@@ -157,6 +157,11 @@ namespace MediaBrowser.Model.Querying
         SeasonName,
 
         /// <summary>
+        /// The settings
+        /// </summary>
+        Settings,
+
+        /// <summary>
         /// The short overview
         /// </summary>
         ShortOverview,

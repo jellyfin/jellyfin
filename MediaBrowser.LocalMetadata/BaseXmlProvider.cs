@@ -90,7 +90,7 @@ namespace MediaBrowser.LocalMetadata
         {
             get
             {
-                return "Media Browser Legacy Xml";
+                return "Media Browser Xml";
             }
         }
         

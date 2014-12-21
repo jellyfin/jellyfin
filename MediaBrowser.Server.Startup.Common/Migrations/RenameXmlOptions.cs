@@ -42,9 +42,9 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 for (var i = 0; i < options.Length; i++)
                 {
-                    if (string.Equals(options[i], "Media Browser Xml", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(options[i], "Media Browser Legacy Xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        options[i] = "Media Browser Legacy Xml";
+                        options[i] = "Media Browser Xml";
                         changed = true;
                     }
                 }

@@ -426,6 +426,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\MediaSourceType.cs">
       <Link>Dto\MediaSourceType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\MetadataEditorInfo.cs">
+      <Link>Dto\MetadataEditorInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RatingType.cs">
       <Link>Dto\RatingType.cs</Link>
     </Compile>
