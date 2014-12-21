@@ -464,6 +464,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\MetadataEditorInfo.cs">
       <Link>Dto\MetadataEditorInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\NameValuePair.cs">
+      <Link>Dto\NameValuePair.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RatingType.cs">
       <Link>Dto\RatingType.cs</Link>
     </Compile>

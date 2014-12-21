@@ -12,12 +12,16 @@ namespace MediaBrowser.Model.Dto
         public List<CultureDto> Cultures { get; set; }
         public List<ExternalIdInfo> ExternalIdInfos { get; set; }
 
+        public string ContentType { get; set; }
+        public List<NameValuePair> ContentTypeOptions { get; set; }
+
         public MetadataEditorInfo()
         {
             ParentalRatingOptions = new List<ParentalRating>();
             Countries = new List<CountryInfo>();
             Cultures = new List<CultureDto>();
             ExternalIdInfos = new List<ExternalIdInfo>();
+            ContentTypeOptions = new List<NameValuePair>();
         }
     }
 }

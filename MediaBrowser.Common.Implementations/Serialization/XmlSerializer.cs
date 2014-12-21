@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
 
@@ -10,6 +11,17 @@ namespace MediaBrowser.Common.Implementations.Serialization
     /// </summary>
     public class XmlSerializer : IXmlSerializer
     {
+        // Need to cache these
+        // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
+        private readonly ConcurrentDictionary<string, System.Xml.Serialization.XmlSerializer> _serializers =
+            new ConcurrentDictionary<string, System.Xml.Serialization.XmlSerializer>();
+
+        private System.Xml.Serialization.XmlSerializer GetSerializer(Type type)
+        {
+            var key = type.FullName;
+            return _serializers.GetOrAdd(key, k => new System.Xml.Serialization.XmlSerializer(type));
+        }
+
         /// <summary>
         /// Serializes to writer.
         /// </summary>
@@ -18,7 +30,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         private void SerializeToWriter(object obj, XmlTextWriter writer)
         {
             writer.Formatting = Formatting.Indented;
-            var netSerializer = new System.Xml.Serialization.XmlSerializer(obj.GetType());
+            var netSerializer = GetSerializer(obj.GetType());
             netSerializer.Serialize(writer, obj);
         }
 
@@ -32,8 +44,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         {
             using (var reader = new XmlTextReader(stream))
             {
-                var netSerializer = new System.Xml.Serialization.XmlSerializer(type);
-
+                var netSerializer = GetSerializer(type);
                 return netSerializer.Deserialize(reader);
             }
         }
