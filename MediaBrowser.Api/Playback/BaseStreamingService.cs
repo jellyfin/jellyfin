@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -249,7 +250,7 @@ namespace MediaBrowser.Api.Playback
 
         protected EncodingQuality GetQualitySetting()
         {
-            var quality = ServerConfigurationManager.Configuration.MediaEncodingQuality;
+            var quality = ApiEntryPoint.Instance.GetEncodingOptions().MediaEncodingQuality;
 
             if (quality == EncodingQuality.Auto)
             {
@@ -310,7 +311,7 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                var lib = ServerConfigurationManager.Configuration.H264Encoder;
+                var lib = ApiEntryPoint.Instance.GetEncodingOptions().H264Encoder;
 
                 if (!string.IsNullOrWhiteSpace(lib))
                 {
@@ -461,7 +462,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
                 {
-                    volParam = ",volume=" + ServerConfigurationManager.Configuration.DownMixAudioBoost.ToString(UsCulture);
+                    volParam = ",volume=" + ApiEntryPoint.Instance.GetEncodingOptions().DownMixAudioBoost.ToString(UsCulture);
                 }
             }
 
@@ -953,7 +954,7 @@ namespace MediaBrowser.Api.Playback
             var transcodingId = Guid.NewGuid().ToString("N");
             var commandLineArgs = GetCommandLineArguments(outputPath, transcodingId, state, true);
 
-            if (ServerConfigurationManager.Configuration.EnableDebugEncodingLogging)
+            if (ApiEntryPoint.Instance.GetEncodingOptions().EnableDebugLogging)
             {
                 commandLineArgs = "-loglevel debug " + commandLineArgs;
             }

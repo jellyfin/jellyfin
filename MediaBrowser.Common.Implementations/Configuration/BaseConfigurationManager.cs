@@ -233,11 +233,20 @@ namespace MediaBrowser.Common.Implementations.Configuration
 
         public void SaveConfiguration(string key, object configuration)
         {
-            var configurationType = GetConfigurationType(key);
+            var configurationStore = GetConfigurationStore(key);
+            var configurationType = configurationStore.ConfigurationType;
 
             if (configuration.GetType() != configurationType)
             {
                 throw new ArgumentException("Expected configuration type is " + configurationType.Name);
+            }
+
+            var validatingStore = configurationStore as IValidatingConfiguration;
+            if (validatingStore != null)
+            {
+                var currentConfiguration = GetConfiguration(key);
+
+                validatingStore.Validate(currentConfiguration, configuration);
             }
 
             EventHelper.FireEventIfNotNull(NamedConfigurationUpdating, this, new ConfigurationUpdateEventArgs
@@ -267,9 +276,14 @@ namespace MediaBrowser.Common.Implementations.Configuration
 
         public Type GetConfigurationType(string key)
         {
-            return _configurationStores
-                .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase))
+            return GetConfigurationStore(key)
                 .ConfigurationType;
+        }
+
+        private ConfigurationStore GetConfigurationStore(string key)
+        {
+            return _configurationStores
+                .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
