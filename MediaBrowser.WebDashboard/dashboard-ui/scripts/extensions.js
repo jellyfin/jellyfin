@@ -36,6 +36,31 @@ $.fn.buttonEnabled = function (enabled) {
     return enabled ? this.attr('disabled', '').removeAttr('disabled') : this.attr('disabled', 'disabled');
 };
 
+$.fn.dateTimeVal = function (val) {
+
+    if (val != null) {
+
+        var now = val;
+
+        var year = now.getFullYear();
+        var month = now.getMonth().toString().length === 1 ? '0' + (now.getMonth() + 1).toString() : now.getMonth() + 1;
+        var date = now.getDate().toString().length === 1 ? '0' + (now.getDate()).toString() : now.getDate();
+        var hours = now.getHours().toString().length === 1 ? '0' + now.getHours().toString() : now.getHours();
+        var minutes = now.getMinutes().toString().length === 1 ? '0' + now.getMinutes().toString() : now.getMinutes();
+        var seconds = now.getSeconds().toString().length === 1 ? '0' + now.getSeconds().toString() : now.getSeconds();
+
+        var formattedDateTime = year + '-' + month + '-' + date + 'T' + hours + ':' + minutes + ':' + seconds;
+
+        //if (onlyBlank === true && $(this).val()) {
+        //    return this;
+        //}
+
+        return this.val(formattedDateTime);
+    }
+
+    return this.val();
+};
+
 if (!Array.prototype.filter) {
     Array.prototype.filter = function (fun /*, thisp*/) {
         "use strict";

@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh songs
             foreach (var item in songs)
             {
-                if (tasks.Count >= 3)
+                if (tasks.Count >= 2)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -173,37 +173,23 @@ namespace MediaBrowser.Controller.Entities.Audio
             // Refresh all non-songs
             foreach (var item in others)
             {
-                if (tasks.Count >= 3)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
-                var innerProgress = new ActionableProgress<double>();
 
                 // Avoid implicitly captured closure
                 var currentChild = item;
-                innerProgress.RegisterAction(p =>
+
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                lock (percentages)
                 {
-                    lock (percentages)
-                    {
-                        percentages[currentChild.Id] = p / 100;
+                    percentages[currentChild.Id] = 1;
 
-                        var percent = percentages.Values.Sum();
-                        percent /= totalItems;
-                        percent *= 100;
-                        progress.Report(percent);
-                    }
-                });
-
-                // Avoid implicitly captured closure
-                var taskChild = item;
-                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                    var percent = percentages.Values.Sum();
+                    percent /= totalItems;
+                    percent *= 100;
+                    progress.Report(percent);
+                }
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            
             progress.Report(100);
         }
 

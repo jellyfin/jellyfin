@@ -8,8 +8,7 @@
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
-                    <ul>
-                    </ul>
+                    <ul></ul>
                 </div>
             </div>
             <div class="editPageInnerContent" style="display: none;">
@@ -209,15 +208,16 @@
                         <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none; margin-top: 1em;">
                             <h3>${HeaderAlternateEpisodeNumbers}</h3>
                             <div>
-                                <div data-role="fieldcontain">
+                                <br />
+                                <div>
                                     <label for="txtDvdSeasonNumber">${LabelDvdSeasonNumber}</label>
                                     <input type="number" id="txtDvdSeasonNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
-                                <div data-role="fieldcontain">
+                                <div>
                                     <label for="txtDvdEpisodeNumber">${LabelDvdEpisodeNumber}</label>
                                     <input type="number" id="txtDvdEpisodeNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
-                                <div data-role="fieldcontain">
+                                <div>
                                     <label for="txtAbsoluteEpisodeNumber">${LabelAbsoluteEpisodeNumber}</label>
                                     <input type="number" id="txtAbsoluteEpisodeNumber" data-mini="true" pattern="[0-9]*" />
                                 </div>
@@ -226,48 +226,56 @@
                         <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none; margin-top: 1em;">
                             <h3>${HeaderSpecialEpisodeInfo}</h3>
                             <div>
-                                <div data-role="fieldcontain">
+                                <br />
+                                <div>
                                     <label for="txtAirsBeforeSeason">${LabelAirsBeforeSeason}</label>
                                     <input type="number" id="txtAirsBeforeSeason" data-mini="true" pattern="[0-9]*" />
                                 </div>
-                                <div data-role="fieldcontain">
+                                <div>
                                     <label for="txtAirsAfterSeason">${LabelAirsAfterSeason}</label>
                                     <input type="number" id="txtAirsAfterSeason" data-mini="true" pattern="[0-9]*" />
                                 </div>
-                                <div data-role="fieldcontain">
+                                <div>
                                     <label for="txtAirsBeforeEpisode">${LabelAirsBeforeEpisode}</label>
                                     <input type="number" id="txtAirsBeforeEpisode" data-mini="true" pattern="[0-9]*" />
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" style="margin-top: 1em;">
-                            <h3>${HeaderExternalIds}</h3>
-                            <div class="externalIds">
+                        <div class="detailSection">
+                            <div class="detailSectionHeader">
+                                ${HeaderExternalIds}
+                            </div>
+                            <div class="detailSectionContent" style="padding: 0 .5em;">
+                                <div class="externalIds editorFieldset">
+                                </div>
                             </div>
                         </div>
 
-                        <div data-role="collapsible" data-mini="true" id="collapsibleDisplaySettings" style="display: none; margin-top: 1em;">
-                            <h3>${HeaderDisplaySettings}</h3>
-                            <div>
-                                <div data-role="fieldcontain" id="fldSourceType" style="display: none;" class="fldDisplaySetting">
+                        <div class="detailSection" id="collapsibleDisplaySettings" style="display:none;">
+                            <div class="detailSectionHeader">
+                                ${HeaderDisplaySettings}
+                            </div>
+                            <div class="detailSectionContent" style="padding: 0 .5em;">
+                                <br />
+                                <div id="fldSourceType" style="display: none;" class="fldDisplaySetting">
                                     <label for="txtDisplayMediaType">${LabelTreatImageAs}</label>
                                     <input type="text" id="txtDisplayMediaType" data-mini="true" />
                                 </div>
-                                <div data-role="fieldcontain" id="fldDisplaySpecialsInline" class="fldDisplaySetting">
+                                <div id="fldDisplaySpecialsInline" class="fldDisplaySetting">
                                     <label for="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</label>
                                     <input data-mini="true" type="checkbox" id="chkDisplaySpecialsInline" />
                                 </div>
-                                <div data-role="fieldcontain" id="fldDisplayOrder" class="fldDisplaySetting">
+                                <div id="fldDisplayOrder" class="fldDisplaySetting">
                                     <label for="selectDisplayOrder" id="labelDisplayOrder">${LabelDisplayOrder}</label>
-                                    <select id="selectDisplayOrder" data-mini="true">
-                                    </select>
+                                    <select id="selectDisplayOrder" data-mini="true"></select>
                                 </div>
                             </div>
                         </div>
+
                         <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderCountries}</h3>
                             <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
+                                <div>
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
@@ -279,7 +287,7 @@
                         <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderGenres}</h3>
                             <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
+                                <div>
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
@@ -300,7 +308,7 @@
                         <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderPlotKeywords}</h3>
                             <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
+                                <div>
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
@@ -312,7 +320,7 @@
                         <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderStudios}</h3>
                             <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
+                                <div>
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
@@ -324,7 +332,7 @@
                         <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderTags}</h3>
                             <div data-role="editableListviewContainer">
-                                <div data-role="fieldcontain">
+                                <div>
                                     <div style="display: inline-block; width: 80%;">
                                         <input type="text" data-mini="true" />
                                     </div>
@@ -336,13 +344,14 @@
                         <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none; margin-top: 1em;">
                             <h3>${HeaderMetadataSettings}</h3>
                             <div>
-                                <div data-role="fieldcontain">
+                                <br />
+                                <div>
                                     <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
                                     <select id="selectLanguage" data-mini="true"></select>
                                 </div>
                                 <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
                                 <br />
-                                <div data-role="fieldcontain">
+                                <div>
                                     <label for="selectCountry">${LabelCountry}</label>
                                     <select id="selectCountry" data-mini="true"></select>
                                 </div>
@@ -353,11 +362,13 @@
                                     <label for="chkLockData">${LabelLockItemToPreventChanges}</label>
                                     <input data-mini="true" type="checkbox" id="chkLockData" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
                                 </p>
+                                <br />
                                 <div id="providerSettingsContainer" style="display: none">
                                 </div>
+                                <br />
                             </div>
                         </div>
-                        <br/>
+                        <br />
                         <button class="btnSave" type="submit" data-theme="a" data-icon="check">
                             ${ButtonSave}
                         </button>

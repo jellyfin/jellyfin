@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Dto
         public List<ImageType> ImageTypes { get; set; }
         public int ImageTypeLimit { get; set; }
         public bool EnableImages { get; set; }
+        public bool EnableSettings { get; set; }
 
         public DtoOptions()
         {

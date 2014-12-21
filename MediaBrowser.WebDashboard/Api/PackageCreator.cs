@@ -198,6 +198,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
+                                "thirdparty/jstree3.0.8/themes/default/style.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -220,7 +221,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "scripts/all.js" + versionString,
-                                "thirdparty/jstree1.0/jquery.jstree.min.js",
+                                "thirdparty/jstree3.0.8/jstree.min.js",
                                 "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
             };
 

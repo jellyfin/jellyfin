@@ -402,6 +402,7 @@
     "LabelYear": "Year:",
     "LabelDateOfBirth": "Date of birth:",
     "LabelBirthYear": "Birth year:",
+    "LabelBirthDate": "Birth date:",
     "LabelDeathDate": "Death date:",
     "HeaderRemoveMediaLocation": "Remove Media Location",
     "MessageConfirmRemoveMediaLocation": "Are you sure you wish to remove this location?",

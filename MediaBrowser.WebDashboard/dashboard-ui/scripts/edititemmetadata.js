@@ -136,11 +136,11 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            html += '<div data-role="fieldcontain">';
+            html += '<div>';
             var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
             html += '<label for="' + id + '">' + idLabel + '</label>';
 
-            html += '<div style="display: inline-block; width: 250px;">';
+            html += '<div style="display: inline-block; width: 80%;">';
 
             var value = providerIds[idInfo.Key] || '';
 
@@ -392,7 +392,7 @@
             $('#fldDisplayOrder', page).show();
 
             $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
-            $('#selectDisplayOrder', page).html('<option value="SortName">'+Globalize.translate('OptionSortName')+'</option><option value="PremiereDate">'+Globalize.translate('OptionReleaseDate')+'</option>').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>').selectmenu('refresh');
         } else {
             $('#selectDisplayOrder', page).html('').selectmenu('refresh');
             $('#fldDisplayOrder', page).hide();
@@ -785,7 +785,7 @@
     }
 
     function onDeleted(id) {
-        
+
         var elem = $('#' + id)[0];
 
         $('.libraryTree').jstree("select_node", elem, true)
@@ -839,9 +839,9 @@
                 Keywords: editableListViewValues($("#listKeywords", form)),
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
-                PremiereDate: $('#txtPremiereDate', form).val() || null,
-                DateCreated: $('#txtDateAdded', form).val() || null,
-                EndDate: $('#txtEndDate', form).val() || null,
+                PremiereDate: EditItemMetadataPage.getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
+                DateCreated: EditItemMetadataPage.getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
+                EndDate: EditItemMetadataPage.getDateFromForm(form, '#txtEndDate', 'EndDate'),
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
                 Video3DFormat: $('#select3dFormat', form).val(),
@@ -896,6 +896,32 @@
             });
 
             return false;
+        };
+
+        self.getDateFromForm = function (form, element, property) {
+
+            var val = $(element, form).val();
+
+            if (!val) {
+                return null;
+            }
+
+            if (currentItem[property]) {
+
+                var date = parseISO8601Date(currentItem[property], { toLocal: true });
+
+                var parts = date.toISOString().split('T');
+
+                // If the date is the same, preserve the time
+                if (parts[0].indexOf(val) == 0) {
+
+                    var iso = parts[1];
+
+                    val += 'T' + iso;
+                }
+            }
+
+            return val;
         };
 
         self.addElementToEditableListview = function (source, sortCallback) {
@@ -979,8 +1005,8 @@
                 var id = "txtLookup" + idInfo.Key;
 
                 html += '<div data-role="fieldcontain">';
-				
-				var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+
+                var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
                 html += '<label for="' + id + '">' + idLabel + '</label>';
 
                 var value = providerIds[idInfo.Key] || '';
@@ -1245,7 +1271,6 @@
             if (data.id != currentItem.Id) {
 
                 MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemName = data.itemName;
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 

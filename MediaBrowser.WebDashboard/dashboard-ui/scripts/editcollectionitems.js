@@ -239,7 +239,6 @@
             if (data.id != currentItem.Id) {
 
                 MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemName = data.itemName;
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
