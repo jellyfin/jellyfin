@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "\u05d4\u05d2\u05d3\u05e8 \u05d0\u05ea \u05e1\u05e4\u05e8\u05d9\u05d9\u05ea \u05d4\u05de\u05d3\u05d9\u05d4 \u05e9\u05dc\u05da",
     "ButtonAddMediaFolder": "\u05d4\u05d5\u05e1\u05e3 \u05ea\u05d9\u05e7\u05d9\u05d9\u05ea \u05de\u05d3\u05d9\u05d4",
     "LabelFolderType": "\u05e1\u05d5\u05d2 \u05d4\u05ea\u05d9\u05e7\u05d9\u05d9\u05d4:",
-    "MediaFolderHelpPluginRequired": "* \u05de\u05e6\u05e8\u05d9\u05da \u05de\u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05ea\u05d5\u05e1\u05e3, \u05dc\u05d3\u05d5\u05d2\u05de\u05d0 GameBrowser \u05d0\u05d5 MB Bookshelf",
     "ReferToMediaLibraryWiki": "\u05e4\u05e0\u05d4 \u05dc\u05de\u05d9\u05d3\u05e2 \u05d0\u05d5\u05d3\u05d5\u05ea \u05e1\u05e4\u05e8\u05d9\u05d9\u05ea \u05d4\u05de\u05d3\u05d9\u05d4.",
     "LabelCountry": "\u05de\u05d3\u05d9\u05e0\u05d4:",
     "LabelLanguage": "\u05e9\u05e4\u05d4:",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TitleSync": "Sync",
+    "OptionAllowSyncContent": "Allow syncing media to devices"
 }

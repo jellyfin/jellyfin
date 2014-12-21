@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "Aseta sinun media kirjasto",
     "ButtonAddMediaFolder": "Lis\u00e4\u00e4 media kansio",
     "LabelFolderType": "Kansion tyyppi:",
-    "MediaFolderHelpPluginRequired": "* Vaatii lis\u00e4osan, kuten GameBrowser tai MB Bookshelf.",
     "ReferToMediaLibraryWiki": "Viittus media kirjaston wikiin.",
     "LabelCountry": "Maa:",
     "LabelLanguage": "Kieli:",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TitleSync": "Sync",
+    "OptionAllowSyncContent": "Allow syncing media to devices"
 }

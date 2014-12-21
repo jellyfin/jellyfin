@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "Configurer votre biblioth\u00e8que de m\u00e9dia",
     "ButtonAddMediaFolder": "Ajouter un r\u00e9pertoire de m\u00e9dia",
     "LabelFolderType": "Type de r\u00e9pertoire:",
-    "MediaFolderHelpPluginRequired": "* N\u00e9cessite l'utilisation d'un plugin, par exemple : \"GameBrowser\" ou \"MB BookShelf\".",
     "ReferToMediaLibraryWiki": "Se r\u00e9f\u00e9rer au wiki des biblioth\u00e8ques de m\u00e9dia",
     "LabelCountry": "Pays:",
     "LabelLanguage": "Langue:",
@@ -232,10 +231,10 @@
     "HeaderFeatureAccess": "Acc\u00e8s aux  caract\u00e9ristiques",
     "OptionAllowMediaPlayback": "Autoriser la lecture du m\u00e9dia",
     "OptionAllowBrowsingLiveTv": "Autoriser la TV en direct",
-    "OptionAllowDeleteLibraryContent": "Allow deletion of library content",
+    "OptionAllowDeleteLibraryContent": "Autoriser la suppression de contenu dans la biblioth\u00e8que",
     "OptionAllowManageLiveTv": "Autoriser la gestion des enregistrements de la TV en direct",
-    "OptionAllowRemoteControlOthers": "Allow remote control of other users",
-    "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
+    "OptionAllowRemoteControlOthers": "Autoriser le contr\u00f4le \u00e0 distance d'autres utilisateurs",
+    "OptionAllowRemoteSharedDevices": "Autoriser le contr\u00f4le \u00e0 distance des disques partag\u00e9s",
     "OptionAllowRemoteSharedDevicesHelp": "Les p\u00e9riph\u00e9riques Dlna sont consid\u00e9r\u00e9s comme partag\u00e9s tant qu'un utilisateur ne commence pas \u00e0 le contr\u00f4ler.",
     "HeaderRemoteControl": "Contr\u00f4le \u00e0 distance",
     "OptionMissingTmdbId": "ID TMDb manquant",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limiter \u00e0 une seule image int\u00e9gr\u00e9e",
     "LabelEnableSingleImageInDidlLimitHelp": "Quelques p\u00e9riph\u00e9riques ne fourniront pas un rendu correct si plusieurs images sont int\u00e9gr\u00e9es dans Didl",
     "TabActivity": "Activit\u00e9",
-    "TitleSync": "Sync."
+    "TitleSync": "Sync.",
+    "OptionAllowSyncContent": "Allow syncing media to devices"
 }
