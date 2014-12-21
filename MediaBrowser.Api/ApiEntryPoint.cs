@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Api.Playback;
-using MediaBrowser.Controller;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
@@ -33,7 +35,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The application paths
         /// </summary>
-        private readonly IServerApplicationPaths _appPaths;
+        private readonly IServerConfigurationManager _config;
 
         private readonly ISessionManager _sessionManager;
 
@@ -43,13 +45,13 @@ namespace MediaBrowser.Api
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="appPaths">The application paths.</param>
         /// <param name="sessionManager">The session manager.</param>
-        public ApiEntryPoint(ILogger logger, IServerApplicationPaths appPaths, ISessionManager sessionManager)
+        /// <param name="config">The configuration.</param>
+        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config)
         {
             Logger = logger;
-            _appPaths = appPaths;
             _sessionManager = sessionManager;
+            _config = config;
 
             Instance = this;
         }
@@ -73,12 +75,17 @@ namespace MediaBrowser.Api
             }
         }
 
+        public EncodingOptions GetEncodingOptions()
+        {
+            return _config.GetConfiguration<EncodingOptions>("encoding");
+        }
+
         /// <summary>
         /// Deletes the encoded media cache.
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            foreach (var file in Directory.EnumerateFiles(_appPaths.TranscodingTempPath, "*", SearchOption.AllDirectories)
+            foreach (var file in Directory.EnumerateFiles(_config.ApplicationPaths.TranscodingTempPath, "*", SearchOption.AllDirectories)
                 .ToList())
             {
                 File.Delete(file);

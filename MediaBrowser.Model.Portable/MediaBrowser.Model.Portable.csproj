@@ -188,6 +188,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\DynamicDayOfWeek.cs">
       <Link>Configuration\DynamicDayOfWeek.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\EncodingOptions.cs">
+      <Link>Configuration\EncodingOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\EncodingQuality.cs">
       <Link>Configuration\EncodingQuality.cs</Link>
     </Compile>

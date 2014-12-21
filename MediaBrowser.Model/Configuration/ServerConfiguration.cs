@@ -144,15 +144,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The image saving convention.</value>
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
-        /// <summary>
-        /// Gets or sets the encoding quality.
-        /// </summary>
-        /// <value>The encoding quality.</value>
-        public EncodingQuality MediaEncodingQuality { get; set; }
-
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableDebugEncodingLogging { get; set; }
         public string TranscodingTempPath { get; set; }
 
         public bool EnableAutomaticRestart { get; set; }
@@ -165,15 +158,12 @@ namespace MediaBrowser.Model.Configuration
 
         public string UICulture { get; set; }
 
-        public double DownMixAudioBoost { get; set; }
-
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
         public bool FindInternetTrailers { get; set; }
 
         public string[] InsecureApps7 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
-        public string H264Encoder { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -181,7 +171,6 @@ namespace MediaBrowser.Model.Configuration
         public ServerConfiguration()
             : base()
         {
-            MediaEncodingQuality = EncodingQuality.Auto;
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             HttpServerPortNumber = 8096;
@@ -190,7 +179,6 @@ namespace MediaBrowser.Model.Configuration
             EnableAutomaticRestart = true;
 
             EnableUPnP = true;
-            DownMixAudioBoost = 2;
 
             MinResumePct = 5;
             MaxResumePct = 90;
@@ -217,7 +205,6 @@ namespace MediaBrowser.Model.Configuration
             EnableRealtimeMonitor = true;
 
             UICulture = "en-us";
-            H264Encoder = "libx264";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
