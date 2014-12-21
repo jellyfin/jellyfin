@@ -71,7 +71,8 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var options = new DtoOptions
             {
-                Fields = fields
+                Fields = fields,
+                EnableSettings = true
             };
 
             // Get everything
@@ -676,7 +677,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.IsUnidentified = item.IsUnidentified;
             }
 
-            if (fields.Contains(ItemFields.Settings))
+            if (options.EnableSettings)
             {
                 dto.LockedFields = item.LockedFields;
                 dto.LockData = item.IsLocked;
@@ -1169,7 +1170,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.SeasonCount = series.SeasonCount;
 
-                if (fields.Contains(ItemFields.Settings))
+                if (options.EnableSettings)
                 {
                     dto.DisplaySpecialsWithSeasons = series.DisplaySpecialsWithSeasons;
                 }

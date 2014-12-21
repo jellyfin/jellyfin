@@ -107,11 +107,6 @@ namespace MediaBrowser.Model.Querying
         Metascore,
 
         /// <summary>
-        /// The metadata settings
-        /// </summary>
-        Settings,
-
-        /// <summary>
         /// The item overview
         /// </summary>
         Overview,

@@ -1563,14 +1563,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 return null;
             }
 
-            var collectionTypes = GetUserRootFolder().Children
+            return GetUserRootFolder().Children
                 .OfType<ICollectionFolder>()
-                .Where(i => !string.IsNullOrEmpty(i.CollectionType) && (string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path)))
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
-                .Distinct()
-                .ToList();
-
-            return collectionTypes.Count == 1 ? collectionTypes[0] : null;
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
         public async Task<UserView> GetNamedView(string name,
@@ -1717,7 +1714,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 new Naming.Logging.NullLogger());
 
             var locationType = episode.LocationType;
-            
+
             var fileType = /*args.IsDirectory ? FileInfoType.Directory :*/ FileInfoType.File;
             var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
                 resolver.Resolve(episode.Path, fileType) :
