@@ -128,6 +128,7 @@
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
+    <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Dto\StreamOptions.cs" />

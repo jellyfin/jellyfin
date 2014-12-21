@@ -59,7 +59,7 @@
 
         }
 
-        function tryConnect(url) {
+        function tryConnect(url, timeout) {
 
             return $.ajax({
 
@@ -67,7 +67,7 @@
                 url: url + "/mediabrowser/system/info/public",
                 dataType: "json",
 
-                timeout: 15000
+                timeout: timeout || 15000
 
             });
         }
@@ -704,7 +704,7 @@
 
                 //onLocalTestDone();
                 // Try to connect to the local address
-                tryConnect(server.LocalAddress).done(function (result) {
+                tryConnect(server.LocalAddress, 5000).done(function (result) {
                     onLocalTestDone(result, MediaBrowser.ConnectionMode.Local);
                 }).fail(function () {
                     onLocalTestDone();

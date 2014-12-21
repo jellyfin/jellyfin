@@ -2,14 +2,6 @@
 
     var currentItem;
 
-    var languagesPromise;
-    var countriesPromise;
-
-    function ensureLanguagePromises() {
-        languagesPromise = languagesPromise || ApiClient.getCultures();
-        countriesPromise = countriesPromise || ApiClient.getCountries();
-    }
-
     function updateTabs(page, item) {
 
         var query = MetadataEditor.getEditQueryString(item);
@@ -23,13 +15,10 @@
 
         Dashboard.showLoadingMsg();
 
-        ensureLanguagePromises();
-
         var promise1 = MetadataEditor.getItemPromise();
-        var promise2 = languagesPromise;
-        var promise3 = countriesPromise;
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.currentItemId + '/MetadataEditor'));
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
             var item = response1[0];
 
@@ -41,12 +30,12 @@
             } else {
                 $('.editPageInnerContent', page).show();
             }
-            var languages = response2[0];
-            var countries = response3[0];
 
-            ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
-                loadExternalIds(page, item, idList);
-            });
+            var metadataEditorInfo = response2[0];
+            var languages = metadataEditorInfo.Cultures;
+            var countries = metadataEditorInfo.Countries;
+
+            loadExternalIds(page, item, metadataEditorInfo.ExternalIdInfos);
 
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
@@ -62,7 +51,7 @@
             updateTabs(page, item);
 
             setFieldVisibilities(page, item);
-            fillItemInfo(page, item);
+            fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
             if (item.Type == "BoxSet") {
                 $('#btnEditCollectionTitles', page).show();
@@ -410,22 +399,19 @@
         }
     }
 
-    function fillItemInfo(page, item) {
+    function fillItemInfo(page, item, parentalRatingOptions) {
 
-        ApiClient.getParentalRatings().done(function (result) {
+        var select = $('#selectOfficialRating', page);
 
-            var select = $('#selectOfficialRating', page);
+        populateRatings(parentalRatingOptions, select, item.OfficialRating);
 
-            populateRatings(result, select, item.OfficialRating);
+        select.val(item.OfficialRating || "").selectmenu('refresh');
 
-            select.val(item.OfficialRating || "").selectmenu('refresh');
+        select = $('#selectCustomRating', page);
 
-            select = $('#selectCustomRating', page);
+        populateRatings(parentalRatingOptions, select, item.CustomRating);
 
-            populateRatings(result, select, item.CustomRating);
-
-            select.val(item.CustomRating || "").selectmenu('refresh');
-        });
+        select.val(item.CustomRating || "").selectmenu('refresh');
 
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);

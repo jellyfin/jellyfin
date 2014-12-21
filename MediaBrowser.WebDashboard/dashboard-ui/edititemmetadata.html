@@ -205,9 +205,12 @@
                             </div>
                         </div>
                         <br />
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleDvdEpisodeInfo" style="display: none; margin-top: 1em;">
-                            <h3>${HeaderAlternateEpisodeNumbers}</h3>
-                            <div>
+
+                        <div class="detailSection" id="collapsibleDvdEpisodeInfo" style="display: none;">
+                            <div class="detailSectionHeader">
+                                ${HeaderAlternateEpisodeNumbers}
+                            </div>
+                            <div class="detailSectionContent" style="padding: 0 .5em;">
                                 <br />
                                 <div>
                                     <label for="txtDvdSeasonNumber">${LabelDvdSeasonNumber}</label>
@@ -223,9 +226,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-role="collapsible" data-mini="true" data-collapsed="false" id="collapsibleSpecialEpisodeInfo" style="display: none; margin-top: 1em;">
-                            <h3>${HeaderSpecialEpisodeInfo}</h3>
-                            <div>
+
+                        <div class="detailSection" id="collapsibleSpecialEpisodeInfo" style="display: none;">
+                            <div class="detailSectionHeader">
+                                ${HeaderSpecialEpisodeInfo}
+                            </div>
+                            <div class="detailSectionContent" style="padding: 0 .5em;">
                                 <br />
                                 <div>
                                     <label for="txtAirsBeforeSeason">${LabelAirsBeforeSeason}</label>
@@ -241,6 +247,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="detailSection">
                             <div class="detailSectionHeader">
                                 ${HeaderExternalIds}

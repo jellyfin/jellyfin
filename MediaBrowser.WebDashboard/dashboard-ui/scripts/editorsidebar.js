@@ -32,6 +32,10 @@
             node.li_attr.loadedFromServer = true;
         }
 
+        if (selected) {
+            selectedNodeId = item.Id;
+        }
+
         return node;
     }
 
@@ -119,11 +123,6 @@
                     itemtype: 'mediafolders',
                     loadedFromServer: true
                 },
-                children: [
-                    {
-                        text: 'Loading...',
-                        icon: false
-                    }],
                 icon: false
             });
 
@@ -150,9 +149,7 @@
 
             callback.call(scope, nodes);
 
-            setTimeout(function () {
-                $.jstree.reference(".libraryTree", page).load_node('MediaFolders');
-            }, 300);
+            nodesToLoad.push('MediaFolders');
         });
     }
 
@@ -174,7 +171,7 @@
 
     }
 
-    function loadMediaFolders(page, openItems, callback) {
+    function loadMediaFolders(page, scope, openItems, callback) {
 
         ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
 
@@ -186,22 +183,12 @@
 
             });
 
-            callback(nodes);
+            callback.call(scope, nodes);
 
             for (var i = 0, length = nodes.length; i < length; i++) {
                 if (nodes[i].state.opened) {
 
-                    var nodeId = nodes[i].id;
-                    setTimeout(function () {
-                        $.jstree.reference(".libraryTree", page).load_node(nodeId);
-                    }, 300);
-                }
-
-                if (nodes[i].state.selected) {
-                    var scrollNodeId = nodes[i].id;
-                    setTimeout(function () {
-                        scrollToNode(page, scrollNodeId);
-                    }, 300);
+                    nodesToLoad.push(nodes[i].id);
                 }
             }
 
@@ -227,7 +214,7 @@
 
         if (id == 'MediaFolders') {
 
-            loadMediaFolders(page, openItems, callback);
+            loadMediaFolders(page, scope, openItems, callback);
             return;
         }
 
@@ -257,17 +244,7 @@
             for (var i = 0, length = nodes.length; i < length; i++) {
                 if (nodes[i].state.opened) {
 
-                    var nodeId = nodes[i].id;
-                    setTimeout(function () {
-                        $.jstree.reference(".libraryTree", page).load_node(nodeId);
-                    }, 300);
-                }
-
-                if (nodes[i].state.selected) {
-                    var scrollNodeId = nodes[i].id;
-                    setTimeout(function () {
-                        scrollToNode(page, scrollNodeId);
-                    }, 300);
+                    nodesToLoad.push(nodes[i].id);
                 }
             }
 
@@ -287,6 +264,11 @@
     }
 
     function initializeTree(page, currentUser, openItems, selectedId) {
+
+        nodesToLoad = [];
+        selectedNodeId = null;
+
+        $.jstree.destroy();
 
         $('.libraryTree', page).jstree({
 
@@ -322,17 +304,67 @@
 
             var node = data.node;
 
-            if (!node.li_attr.loadedFromServer) {
+            if (node.children && node.children) {
+                loadNodesToLoad(page, node);
+            }
+
+            if (node.li_attr && node.id != '#' && !node.li_attr.loadedFromServer) {
 
                 node.li_attr.loadedFromServer = true;
 
-                setTimeout(function () {
-                    $.jstree.reference(".libraryTree", page).load_node(node.id);
-                }, 500);
+                $.jstree.reference(".libraryTree", page).load_node(node.id, loadNodeCallback);
+            }
+
+        }).off('load_node.jstree').on('load_node.jstree', function (event, data) {
+
+            var node = data.node;
+
+            if (node.children && node.children) {
+                loadNodesToLoad(page, node);
+            }
+
+            if (node.li_attr && node.id != '#' && !node.li_attr.loadedFromServer) {
+
+                node.li_attr.loadedFromServer = true;
+
+                $.jstree.reference(".libraryTree", page).load_node(node.id, loadNodeCallback);
             }
 
         });
     }
+
+    function loadNodesToLoad(page, node) {
+
+        var children = node.children;
+
+        for (var i = 0, length = children.length; i < length; i++) {
+
+            var child = children[i];
+
+            if (nodesToLoad.indexOf(child) != -1) {
+
+                nodesToLoad = nodesToLoad.filter(function (n) {
+                    return n != child;
+                });
+
+                $.jstree.reference(".libraryTree", page).load_node(child, loadNodeCallback);
+            }
+        }
+    }
+
+    function loadNodeCallback(node) {
+
+        if (selectedNodeId && node.children && node.children.indexOf(selectedNodeId) != -1) {
+
+            setTimeout(function() {
+                
+                scrollToNode($.mobile.activePage, selectedNodeId);
+            }, 500);
+        }
+    }
+
+    var nodesToLoad = [];
+    var selectedNodeId;
 
     function updateEditorNode(page, item) {
 

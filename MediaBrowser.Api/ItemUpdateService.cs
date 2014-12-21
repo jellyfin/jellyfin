@@ -2,7 +2,9 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System;
@@ -20,14 +22,40 @@ namespace MediaBrowser.Api
         public string ItemId { get; set; }
     }
 
+    [Route("/Items/{ItemId}/MetadataEditor", "GET", Summary = "Gets metadata editor info for an item")]
+    public class GetMetadataEditorInfo : IReturn<MetadataEditorInfo>
+    {
+        [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string ItemId { get; set; }
+    }
+    
     [Authenticated]
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IProviderManager _providerManager;
+        private readonly ILocalizationManager _localizationManager;
 
-        public ItemUpdateService(ILibraryManager libraryManager)
+        public ItemUpdateService(ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager)
         {
             _libraryManager = libraryManager;
+            _providerManager = providerManager;
+            _localizationManager = localizationManager;
+        }
+
+        public object Get(GetMetadataEditorInfo request)
+        {
+            var item = _libraryManager.GetItemById(request.ItemId);
+            
+            var info = new MetadataEditorInfo
+            {
+                ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
+                ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToList(),
+                Countries = _localizationManager.GetCountries().ToList(),
+                Cultures = _localizationManager.GetCultures().ToList()
+            };
+
+            return ToOptimizedResult(info);
         }
 
         public void Post(UpdateItem request)
