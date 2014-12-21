@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "Configurar biblioteca de medios",
     "ButtonAddMediaFolder": "Agregar una carpeta de medios",
     "LabelFolderType": "Tipo de carpeta:",
-    "MediaFolderHelpPluginRequired": "* Requiere el uso de un plugin, por ejemplo GameBrowser o MB Bookshelf",
     "ReferToMediaLibraryWiki": "Consultar el wiki de la biblioteca de medios",
     "LabelCountry": "Pa\u00eds:",
     "LabelLanguage": "Idioma:",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TitleSync": "Sync",
+    "OptionAllowSyncContent": "Allow syncing media to devices"
 }

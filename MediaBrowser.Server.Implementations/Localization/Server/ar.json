@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "\u0627\u0639\u062f\u0627\u062f \u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0648\u0633\u0627\u0626\u0637",
     "ButtonAddMediaFolder": "\u0627\u0636\u0627\u0641\u0629 \u0645\u062c\u0644\u062f \u0644\u0644\u0648\u0633\u0627\u0626\u0637",
     "LabelFolderType": "\u0646\u0648\u0639 \u0627\u0644\u0645\u062c\u0644\u062f:",
-    "MediaFolderHelpPluginRequired": "* Requires the use of a plugin, e.g. GameBrowser or MB Bookshelf.",
     "ReferToMediaLibraryWiki": "\u0627\u0644\u0631\u062c\u0648\u0639 \u0627\u0644\u0649 wiki \u0644\u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0648\u0633\u0627\u0626\u0637",
     "LabelCountry": "\u0627\u0644\u0628\u0644\u062f:",
     "LabelLanguage": "\u0627\u0644\u0644\u063a\u0629:",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
-    "TitleSync": "Sync"
+    "TitleSync": "Sync",
+    "OptionAllowSyncContent": "Allow syncing media to devices"
 }

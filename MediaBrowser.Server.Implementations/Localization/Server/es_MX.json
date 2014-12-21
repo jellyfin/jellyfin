@@ -40,7 +40,6 @@
     "HeaderSetupLibrary": "Configurar su biblioteca de medios",
     "ButtonAddMediaFolder": "Agregar carpeta de medios",
     "LabelFolderType": "Tipo de carpeta:",
-    "MediaFolderHelpPluginRequired": "* Requiere el uso de un complemento, p. ej. GameBrowser o MB Bookshelf.",
     "ReferToMediaLibraryWiki": "Consultar la wiki de la biblioteca de medios.",
     "LabelCountry": "Pa\u00eds:",
     "LabelLanguage": "Idioma:",
@@ -232,10 +231,10 @@
     "HeaderFeatureAccess": "Permisos de acceso",
     "OptionAllowMediaPlayback": "Permitir reproducci\u00f3n de medios",
     "OptionAllowBrowsingLiveTv": "Permitir acceder a TV en vivo",
-    "OptionAllowDeleteLibraryContent": "Allow deletion of library content",
+    "OptionAllowDeleteLibraryContent": "Permitir eliminar contenido de la biblioteca",
     "OptionAllowManageLiveTv": "Permitir administrar grabaciones de TV en vivo",
-    "OptionAllowRemoteControlOthers": "Allow remote control of other users",
-    "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
+    "OptionAllowRemoteControlOthers": "Permitir control remoto de otros usuarios",
+    "OptionAllowRemoteSharedDevices": "Permitir control remoto de dispositivos compartidos",
     "OptionAllowRemoteSharedDevicesHelp": "Los dispositivos dnla son considerados como compartidos hasta que alg\u00fan usuario comienza a controlarlo.",
     "HeaderRemoteControl": "Control Remoto",
     "OptionMissingTmdbId": "Falta Id de Tmdb",
@@ -1279,5 +1278,6 @@
     "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",
     "LabelEnableSingleImageInDidlLimitHelp": "Algunos dispositivos no renderisaran apropiadamente si hay m\u00faltiples im\u00e1genes incrustadas en el Didl",
     "TabActivity": "Actividad",
-    "TitleSync": "Sinc"
+    "TitleSync": "Sinc",
+    "OptionAllowSyncContent": "Permitir sincronizaci\u00f3n de medios con dispositivos"
 }
