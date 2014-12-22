@@ -105,7 +105,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
             UpdateCachePath();
         }
 
-        public void AddParts(IEnumerable<IConfigurationFactory> factories)
+        public virtual void AddParts(IEnumerable<IConfigurationFactory> factories)
         {
             _configurationFactories = factories.ToArray();
 
@@ -266,6 +266,11 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 XmlSerializer.SerializeToFile(configuration, path);
             }
 
+            OnNamedConfigurationUpdated(key, configuration);
+        }
+
+        protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
+        {
             EventHelper.FireEventIfNotNull(NamedConfigurationUpdated, this, new ConfigurationUpdateEventArgs
             {
                 Key = key,

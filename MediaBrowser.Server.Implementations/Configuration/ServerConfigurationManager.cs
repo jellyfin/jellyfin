@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
@@ -75,6 +76,13 @@ namespace MediaBrowser.Server.Implementations.Configuration
             base.OnConfigurationUpdated();
         }
 
+        public override void AddParts(IEnumerable<IConfigurationFactory> factories)
+        {
+            base.AddParts(factories);
+
+            UpdateTranscodingTempPath();
+        }
+
         /// <summary>
         /// Updates the items by name path.
         /// </summary>
@@ -93,6 +101,28 @@ namespace MediaBrowser.Server.Implementations.Configuration
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrEmpty(Configuration.MetadataPath) ?
                 null :
                 Configuration.MetadataPath;
+        }
+
+        /// <summary>
+        /// Updates the transcoding temporary path.
+        /// </summary>
+        private void UpdateTranscodingTempPath()
+        {
+            var encodingConfig = this.GetConfiguration<EncodingOptions>("encoding");
+
+            ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
+                null :
+                encodingConfig.TranscodingTempPath;
+        }
+
+        protected override void OnNamedConfigurationUpdated(string key, object configuration)
+        {
+            base.OnNamedConfigurationUpdated(key, configuration);
+
+            if (string.Equals(key, "encoding", StringComparison.OrdinalIgnoreCase))
+            {
+                UpdateTranscodingTempPath();
+            }
         }
 
         /// <summary>
