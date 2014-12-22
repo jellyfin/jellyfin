@@ -89,7 +89,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] LatestItemsExcludes { get; set; }
         public string[] BlockedTags { get; set; }
 
-        public bool ValuesMigratedToPolicy { get; set; }
+        public bool HasMigratedToPolicy { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
