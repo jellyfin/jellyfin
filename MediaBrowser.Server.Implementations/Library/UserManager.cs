@@ -293,7 +293,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private async Task DoPolicyMigration(User user)
         {
-            if (!user.Configuration.ValuesMigratedToPolicy)
+            if (!user.Configuration.HasMigratedToPolicy)
             {
                 user.Policy.AccessSchedules = user.Configuration.AccessSchedules;
                 user.Policy.BlockedChannels = user.Configuration.BlockedChannels;
@@ -314,7 +314,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 await UpdateUserPolicy(user.Id.ToString("N"), user.Policy);
 
-                user.Configuration.ValuesMigratedToPolicy = true;
+                user.Configuration.HasMigratedToPolicy = true;
                 await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
             }
         }
@@ -800,7 +800,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 lock (_policySyncLock)
                 {
-                    return (UserPolicy)_jsonSerializer.DeserializeFromFile(typeof(UserPolicy), path);
+                    return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
             }
             catch (FileNotFoundException)
@@ -842,7 +842,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             lock (_policySyncLock)
             {
-                _jsonSerializer.SerializeToFile(userPolicy, path);
+                _xmlSerializer.SerializeToFile(userPolicy, path);
                 user.Policy = userPolicy;
             }
 
@@ -881,7 +881,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetPolifyFilePath(User user)
         {
-            return Path.Combine(user.ConfigurationDirectoryPath, "policy.json");
+            return Path.Combine(user.ConfigurationDirectoryPath, "policy.xml");
         }
 
         private string GetConfigurationFilePath(User user)
