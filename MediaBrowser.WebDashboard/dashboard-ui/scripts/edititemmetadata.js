@@ -17,7 +17,9 @@
         Dashboard.showLoadingMsg();
 
         var promise1 = MetadataEditor.getItemPromise();
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.currentItemId + '/MetadataEditor'));
+        var promise2 = MetadataEditor.currentItemId ?
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.currentItemId + '/MetadataEditor')) :
+            {};
 
         $.when(promise1, promise2).done(function (response1, response2) {
 

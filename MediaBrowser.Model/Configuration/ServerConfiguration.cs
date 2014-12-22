@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -165,6 +166,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveMetadataHidden { get; set; }
 
+        public NameValuePair[] ContentTypes { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -192,6 +195,7 @@ namespace MediaBrowser.Model.Configuration
             FindInternetTrailers = true;
 
             PathSubstitutions = new PathSubstitution[] { };
+            ContentTypes = new NameValuePair[] { };
 
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";
