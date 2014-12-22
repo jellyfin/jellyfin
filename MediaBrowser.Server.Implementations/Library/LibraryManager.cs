@@ -560,10 +560,9 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public BaseItem ResolvePath(FileSystemInfo fileInfo,
-            Folder parent = null,
-            string collectionType = null)
+            Folder parent = null)
         {
-            return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
+            return ResolvePath(fileInfo, new DirectoryService(_logger), parent);
         }
 
         private BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
@@ -573,10 +572,17 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("fileInfo");
             }
 
+            var fullPath = fileInfo.FullName;
+
+            if (string.IsNullOrWhiteSpace(collectionType))
+            {
+                collectionType = GetConfiguredContentType(fullPath);
+            }
+
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
             {
                 Parent = parent,
-                Path = fileInfo.FullName,
+                Path = fullPath,
                 FileInfo = fileInfo,
                 CollectionType = collectionType
             };
@@ -1548,12 +1554,43 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public string GetContentType(BaseItem item)
         {
-            return GetInheritedContentType(item);
+            // Types cannot be overridden, so go from the top down until we find a configured content type
+
+            var type = GetTopFolderContentType(item);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
+            type = GetInheritedContentType(item);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
+            return GetConfiguredContentType(item);
         }
 
         public string GetInheritedContentType(BaseItem item)
         {
-            return GetTopFolderContentType(item);
+            return item.Parents
+                .Select(GetConfiguredContentType)
+                .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));
+        }
+
+        private string GetConfiguredContentType(BaseItem item)
+        {
+            return GetConfiguredContentType(item.ContainingFolderPath);
+        }
+
+        private string GetConfiguredContentType(string path)
+        {
+            var type = ConfigurationManager.Configuration.ContentTypes
+                .FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i.Name, path));
+
+            return type == null ? null : type.Value;
         }
 
         private string GetTopFolderContentType(BaseItem item)

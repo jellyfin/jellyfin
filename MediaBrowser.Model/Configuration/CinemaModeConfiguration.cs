@@ -19,6 +19,7 @@ namespace MediaBrowser.Model.Configuration
         public CinemaModeConfiguration()
         {
             EnableIntrosParentalControl = true;
+            EnableIntrosFromSimilarMovies = true;
             TrailerLimit = 2;
         }
     }

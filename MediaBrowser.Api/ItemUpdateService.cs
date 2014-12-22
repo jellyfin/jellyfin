@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -46,12 +47,14 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
+        private readonly IServerConfigurationManager _config;
 
-        public ItemUpdateService(ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager)
+        public ItemUpdateService(ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _providerManager = providerManager;
             _localizationManager = localizationManager;
+            _config = config;
         }
 
         public object Get(GetMetadataEditorInfo request)
@@ -70,11 +73,14 @@ namespace MediaBrowser.Api
             if (locationType == LocationType.FileSystem ||
                 locationType == LocationType.Offline)
             {
-                var collectionType = _libraryManager.GetInheritedContentType(item);
-                if (string.IsNullOrWhiteSpace(collectionType))
+                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder))
                 {
-                    info.ContentTypeOptions = GetContentTypeOptions(true);
-                    info.ContentType = _libraryManager.GetContentType(item);
+                    var collectionType = _libraryManager.GetInheritedContentType(item);
+                    if (string.IsNullOrWhiteSpace(collectionType))
+                    {
+                        info.ContentTypeOptions = GetContentTypeOptions(true);
+                        info.ContentType = _libraryManager.GetContentType(item);
+                    }
                 }
             }
 
@@ -83,7 +89,24 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateItemContentType request)
         {
-            
+            var item = _libraryManager.GetItemById(request.ItemId);
+            var path = item.ContainingFolderPath;
+
+            var types = _config.Configuration.ContentTypes
+                .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(request.ContentType))
+            {
+                types.Add(new NameValuePair
+                {
+                    Name = path,
+                    Value = request.ContentType
+                });
+            }
+
+            _config.Configuration.ContentTypes = types.ToArray();
+            _config.SaveConfiguration();
         }
 
         private List<NameValuePair> GetContentTypeOptions(bool isForItem)
