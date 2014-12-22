@@ -250,7 +250,7 @@ namespace MediaBrowser.Api.Playback
 
         protected EncodingQuality GetQualitySetting()
         {
-            var quality = ApiEntryPoint.Instance.GetEncodingOptions().MediaEncodingQuality;
+            var quality = ApiEntryPoint.Instance.GetEncodingOptions().EncodingQuality;
 
             if (quality == EncodingQuality.Auto)
             {

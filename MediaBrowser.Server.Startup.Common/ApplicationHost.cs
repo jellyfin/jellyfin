@@ -238,12 +238,12 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="remotePackageName">Name of the remote package.</param>
         /// <param name="supportsNativeWebSocket">if set to <c>true</c> [supports native web socket].</param>
         /// <param name="nativeApp">The native application.</param>
-        public ApplicationHost(ServerApplicationPaths applicationPaths, 
-            ILogManager logManager, 
-            StartupOptions options, 
+        public ApplicationHost(ServerApplicationPaths applicationPaths,
+            ILogManager logManager,
+            StartupOptions options,
             IFileSystem fileSystem,
-            string remotePackageName, 
-            bool supportsNativeWebSocket, 
+            string remotePackageName,
+            bool supportsNativeWebSocket,
             INativeApp nativeApp)
             : base(applicationPaths, logManager, fileSystem)
         {
@@ -353,12 +353,14 @@ namespace MediaBrowser.Server.Startup.Common
 
         public override async Task Init(IProgress<double> progress)
         {
-            PerformVersionMigration();
+            PerformPreInitMigrations();
 
             await base.Init(progress).ConfigureAwait(false);
+
+            PerformPostInitMigrations();
         }
 
-        private void PerformVersionMigration()
+        private void PerformPreInitMigrations()
         {
             var migrations = new List<IVersionMigration>
             {
@@ -375,6 +377,19 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
+        private void PerformPostInitMigrations()
+        {
+            var migrations = new List<IVersionMigration>
+            {
+                new MigrateTranscodingPath(ServerConfigurationManager)
+            };
+
+            foreach (var task in migrations)
+            {
+                task.Run();
+            }
+        }
+
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
@@ -383,7 +398,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
 
-			RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer));
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
@@ -398,7 +413,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserDataManager = new UserDataManager(LogManager);
             RegisterSingleInstance(UserDataManager);
 
-			UserRepository = await GetUserRepository().ConfigureAwait(false);
+            UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
 
             DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
@@ -439,7 +454,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-			HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html", _supportsNativeWebSocket);
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html", _supportsNativeWebSocket);
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -533,12 +548,12 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager));
 
-			RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
+            RegisterSingleInstance<ISubtitleEncoder>(new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer));
 
             await ConfigureDisplayPreferencesRepositories().ConfigureAwait(false);
             await ConfigureItemRepositories().ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
-			await ConfigureNotificationsRepository().ConfigureAwait(false);
+            await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
 
             SetStaticProperties();
