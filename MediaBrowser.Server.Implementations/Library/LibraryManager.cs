@@ -1755,9 +1755,12 @@ namespace MediaBrowser.Server.Implementations.Library
             var resolver = new EpisodeResolver(new ExtendedNamingOptions(),
                 new Naming.Logging.NullLogger());
 
+            var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ? 
+                FileInfoType.Directory : 
+                FileInfoType.File;
+
             var locationType = episode.LocationType;
 
-            var fileType = /*args.IsDirectory ? FileInfoType.Directory :*/ FileInfoType.File;
             var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
                 resolver.Resolve(episode.Path, fileType) :
                 new Naming.TV.EpisodeInfo();
@@ -1769,29 +1772,42 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var changed = false;
 
-            if (!episode.IndexNumber.HasValue)
+            if (episodeInfo.IsByDate)
             {
-                episode.IndexNumber = episodeInfo.EpisodeNumber;
-
                 if (episode.IndexNumber.HasValue)
                 {
+                    episode.IndexNumber = null;
                     changed = true;
                 }
-            }
-
-            if (!episode.IndexNumberEnd.HasValue)
-            {
-                episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
 
                 if (episode.IndexNumberEnd.HasValue)
                 {
+                    episode.IndexNumberEnd = null;
                     changed = true;
                 }
-            }
 
-            if (!episode.ParentIndexNumber.HasValue)
-            {
-                episode.ParentIndexNumber = episodeInfo.SeasonNumber;
+                if (!episode.PremiereDate.HasValue)
+                {
+                    if (episodeInfo.Year.HasValue && episodeInfo.Month.HasValue && episodeInfo.Day.HasValue)
+                    {
+                        episode.PremiereDate = new DateTime(episodeInfo.Year.Value, episodeInfo.Month.Value, episodeInfo.Day.Value).ToUniversalTime();
+                    }
+
+                    if (episode.PremiereDate.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.ProductionYear.HasValue)
+                {
+                    episode.ProductionYear = episodeInfo.Year;
+
+                    if (episode.ProductionYear.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
 
                 if (!episode.ParentIndexNumber.HasValue)
                 {
@@ -1801,11 +1817,53 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         episode.ParentIndexNumber = season.IndexNumber;
                     }
+
+                    if (episode.ParentIndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+            }
+            else
+            {
+                if (!episode.IndexNumber.HasValue)
+                {
+                    episode.IndexNumber = episodeInfo.EpisodeNumber;
+
+                    if (episode.IndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
                 }
 
-                if (episode.ParentIndexNumber.HasValue)
+                if (!episode.IndexNumberEnd.HasValue)
                 {
-                    changed = true;
+                    episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+
+                    if (episode.IndexNumberEnd.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.ParentIndexNumber.HasValue)
+                {
+                    episode.ParentIndexNumber = episodeInfo.SeasonNumber;
+
+                    if (!episode.ParentIndexNumber.HasValue)
+                    {
+                        var season = episode.Season;
+
+                        if (season != null)
+                        {
+                            episode.ParentIndexNumber = season.IndexNumber;
+                        }
+                    }
+
+                    if (episode.ParentIndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
                 }
             }
 

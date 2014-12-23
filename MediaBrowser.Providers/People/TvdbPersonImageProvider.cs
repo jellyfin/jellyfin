@@ -83,6 +83,10 @@ namespace MediaBrowser.Providers.People
             {
                 return null;
             }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
+            }
         }
 
         private RemoteImageInfo GetImageInfo(string xmlFile, string personName, CancellationToken cancellationToken)

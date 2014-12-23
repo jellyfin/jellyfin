@@ -257,6 +257,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
 
                 }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
 
                 writer.WriteEndElement();
 

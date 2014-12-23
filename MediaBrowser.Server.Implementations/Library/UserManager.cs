@@ -171,6 +171,38 @@ namespace MediaBrowser.Server.Implementations.Library
             return AuthenticateUser(username, passwordSha1, null, remoteEndPoint);
         }
 
+        public bool IsValidUsername(string username)
+        {
+            // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            return username.All(IsValidCharacter);
+        }
+
+        private bool IsValidCharacter(char i)
+        {
+            return char.IsLetterOrDigit(i) || char.Equals(i, '-') || char.Equals(i, '_') || char.Equals(i, '\'') ||
+                   char.Equals(i, '.');
+        }
+
+        public string MakeValidUsername(string username)
+        {
+            if (IsValidUsername(username))
+            {
+                return username;
+            }
+            
+            // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            var builder = new StringBuilder();
+
+            foreach (var c in username)
+            {
+                if (IsValidCharacter(c))
+                {
+                    builder.Append(c);
+                }
+            }
+            return builder.ToString();
+        }
+
         public async Task<bool> AuthenticateUser(string username, string passwordSha1, string passwordMd5, string remoteEndPoint)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -178,7 +210,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("username");
             }
 
-            var user = Users.FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
+            var user = Users
+                .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
             if (user == null)
             {
@@ -200,20 +233,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (!success && _networkManager.IsInLocalNetwork(remoteEndPoint) && user.Configuration.EnableLocalPassword)
                 {
                     success = string.Equals(GetLocalPasswordHash(user), passwordSha1.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase);
-                }
-            }
-
-            // Maybe user accidently entered connect credentials. let's be flexible
-            if (!success && user.ConnectLinkType.HasValue && !string.IsNullOrWhiteSpace(passwordMd5))
-            {
-                try
-                {
-                    await _connectFactory().Authenticate(user.ConnectUserName, passwordMd5).ConfigureAwait(false);
-                    success = true;
-                }
-                catch
-                {
-
                 }
             }
 
@@ -273,7 +292,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // There always has to be at least one user.
             if (users.Count == 0)
             {
-                var name = Environment.UserName;
+                var name = MakeValidUsername(Environment.UserName);
 
                 var user = InstantiateNewUser(name, false);
 
@@ -475,6 +494,11 @@ namespace MediaBrowser.Server.Implementations.Library
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException("name");
+            }
+
+            if (!IsValidUsername(name))
+            {
+                throw new ArgumentException("Only alphanumeric characters are allowed.");
             }
 
             if (Users.Any(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
@@ -803,6 +827,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+                return GetDefaultPolicy(user);
+            }
             catch (FileNotFoundException)
             {
                 return GetDefaultPolicy(user);
@@ -839,6 +867,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 user.Policy.EnableContentDeletion != userPolicy.EnableContentDeletion;
             
             var path = GetPolifyFilePath(user);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -900,6 +930,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     return (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), path);
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+                return new UserConfiguration();
+            }
             catch (FileNotFoundException)
             {
                 return new UserConfiguration();
@@ -930,6 +964,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            
             lock (_configSyncLock)
             {
                 _xmlSerializer.SerializeToFile(config, path);

@@ -459,17 +459,21 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private bool IsSameEpisode(string sourcePath, string newPath)
         {
-            var sourceFileInfo = new FileInfo(sourcePath);
-            var destinationFileInfo = new FileInfo(newPath);
-
             try
             {
+                var sourceFileInfo = new FileInfo(sourcePath);
+                var destinationFileInfo = new FileInfo(newPath);
+
                 if (sourceFileInfo.Length == destinationFileInfo.Length)
                 {
                     return true;
                 }
             }
             catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (DirectoryNotFoundException)
             {
                 return false;
             }

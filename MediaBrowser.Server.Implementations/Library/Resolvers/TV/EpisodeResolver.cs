@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.IO;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV

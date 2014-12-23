@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -789,7 +790,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         if (user == null)
                         {
                             // Add user
-                            user = await _userManager.CreateUser(connectEntry.UserName).ConfigureAwait(false);
+                            user = await _userManager.CreateUser(_userManager.MakeValidUsername(connectEntry.UserName)).ConfigureAwait(false);
 
                             user.ConnectUserName = connectEntry.UserName;
                             user.ConnectUserId = connectEntry.UserId;

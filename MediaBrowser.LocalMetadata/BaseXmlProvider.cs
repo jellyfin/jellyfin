@@ -28,8 +28,6 @@ namespace MediaBrowser.LocalMetadata
 
             var path = file.FullName;
 
-            //await XmlProviderUtils.XmlParsingResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             try
             {
                 result.Item = new T();
@@ -44,10 +42,6 @@ namespace MediaBrowser.LocalMetadata
             catch (DirectoryNotFoundException)
             {
                 result.HasMetadata = false;
-            }
-            finally
-            {
-                //XmlProviderUtils.XmlParsingResourcePool.Release();
             }
 
             return result;

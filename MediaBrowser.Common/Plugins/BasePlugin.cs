@@ -204,6 +204,10 @@ namespace MediaBrowser.Common.Plugins
             {
                 return (TConfigurationType)XmlSerializer.DeserializeFromFile(typeof(TConfigurationType), path);
             }
+            catch (DirectoryNotFoundException)
+            {
+                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+            }
             catch (FileNotFoundException)
             {
                 return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));

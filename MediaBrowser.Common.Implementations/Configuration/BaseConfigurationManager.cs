@@ -223,6 +223,10 @@ namespace MediaBrowser.Common.Implementations.Configuration
             {
                 return Activator.CreateInstance(configurationType);
             }
+            catch (DirectoryNotFoundException)
+            {
+                return Activator.CreateInstance(configurationType);
+            }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error loading configuration file: {0}", ex, path);
