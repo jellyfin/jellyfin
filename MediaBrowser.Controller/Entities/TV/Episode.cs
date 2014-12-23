@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -175,6 +175,15 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
 
                 return season;
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsInSeasonFolder
+        {
+            get
+            {
+                return FindParent<Season>() != null;
             }
         }
 

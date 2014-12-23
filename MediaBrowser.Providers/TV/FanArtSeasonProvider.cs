@@ -98,6 +98,10 @@ namespace MediaBrowser.Providers.TV
                     {
                         // No biggie. Don't blow up
                     }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // No biggie. Don't blow up
+                    }
                 }
             }
 

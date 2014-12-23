@@ -613,6 +613,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     
                 }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
                 catch (IOException ex)
                 {
                     _logger.ErrorException("Error deleting extracted subtitle {0}", ex, outputPath);

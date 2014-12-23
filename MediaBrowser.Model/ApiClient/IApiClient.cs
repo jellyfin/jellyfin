@@ -505,15 +505,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;PublicSystemInfo&gt;.</returns>
         Task<PublicSystemInfo> GetPublicSystemInfoAsync(CancellationToken cancellationToken = default(CancellationToken));
-        
-        /// <summary>
-        /// Gets a person
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetPersonAsync(string name, string userId);
 
         /// <summary>
         /// Gets a list of plugins installed on the server
@@ -966,15 +957,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">item</exception>
         string GetPersonImageUrl(BaseItemPerson item, ImageOptions options);
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="name">The name of the person</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        string GetPersonImageUrl(string name, ImageOptions options);
 
         /// <summary>
         /// Gets an image url that can be used to download an image from the api

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -73,7 +74,7 @@ namespace MediaBrowser.Api
             if (locationType == LocationType.FileSystem ||
                 locationType == LocationType.Offline)
             {
-                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder))
+                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
                 {
                     var collectionType = _libraryManager.GetInheritedContentType(item);
                     if (string.IsNullOrWhiteSpace(collectionType))

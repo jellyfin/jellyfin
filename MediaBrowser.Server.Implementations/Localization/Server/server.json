@@ -37,7 +37,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonNew": "New",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
     "FolderTypeAdultVideos": "Adult videos",
@@ -48,7 +48,7 @@
     "FolderTypeBooks": "Books",
     "FolderTypeTvShows": "TV",
     "FolderTypeInherit": "Inherit",
-    "LabelContentType":  "Content type:",
+    "LabelContentType": "Content type:",
     "HeaderSetupLibrary": "Setup your media library",
     "ButtonAddMediaFolder": "Add media folder",
     "LabelFolderType": "Folder type:",
@@ -1307,5 +1307,8 @@
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
     "TitleSync": "Sync",
-    "OptionAllowSyncContent":  "Allow syncing media to devices"
+    "OptionAllowSyncContent": "Allow syncing media to devices",
+    "NameSeasonUnknown": "Season Unknown",
+    "NameSeasonNumber": "Season {0}",
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
 }

@@ -186,5 +186,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userId">The user identifier.</param>
         /// <param name="userPolicy">The user policy.</param>
         Task UpdateUserPolicy(string userId, UserPolicy userPolicy);
+
+        /// <summary>
+        /// Makes the valid username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns>System.String.</returns>
+        string MakeValidUsername(string username);
     }
 }
