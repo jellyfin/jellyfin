@@ -40,6 +40,7 @@
     "LabelStopping": "Stopping",
     "LabelCancelled": "(cancelled)",
     "LabelFailed": "(failed)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(Aborted by server shutdown)",
     "LabelScheduledTaskLastRan": "Last ran {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "Delete Task Trigger",
@@ -658,5 +659,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp":  "Content will be displayed as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }

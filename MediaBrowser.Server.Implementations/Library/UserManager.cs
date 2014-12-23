@@ -498,7 +498,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!IsValidUsername(name))
             {
-                throw new ArgumentException("Only alphanumeric characters are allowed.");
+                throw new ArgumentException("Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
             if (Users.Any(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))

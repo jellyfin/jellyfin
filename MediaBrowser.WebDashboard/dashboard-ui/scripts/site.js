@@ -1095,7 +1095,18 @@ var Dashboard = {
             parent = $('.ui-content', page)[0];
         }
 
-        $(parent).prepend("<h1 class='pageTitle'>" + (document.title || "&nbsp;") + "</h1>");
+        var helpUrl = page.attr('data-helpurl');
+
+        var html = '<div>';
+        html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
+
+        if (helpUrl) {
+            html += '<a href="' + helpUrl + '" target="_blank" class="accentButton accentButton-g" style="margin-top:-10px;"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</a>';
+        }
+
+        html += '</div>';
+
+        $(parent).prepend(html);
     },
 
     setPageTitle: function (title) {
