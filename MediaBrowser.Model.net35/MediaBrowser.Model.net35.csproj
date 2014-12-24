@@ -1002,6 +1002,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
       <Link>Sync\SyncDialogOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncHelper.cs">
+      <Link>Sync\SyncHelper.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncItem.cs">
       <Link>Sync\SyncItem.cs</Link>
     </Compile>

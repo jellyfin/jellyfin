@@ -69,7 +69,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             var target = GetSyncTargets(request.UserId)
-                .First(i => string.Equals(request.TargetId, i.Id));
+                .FirstOrDefault(i => string.Equals(request.TargetId, i.Id));
+
+            if (target == null)
+            {
+                throw new ArgumentException("Sync target not found.");
+            }
 
             var jobId = Guid.NewGuid().ToString("N");
 
@@ -173,17 +178,23 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider, string userId)
         {
-            var providerId = GetSyncProviderId(provider);
-
             return provider.GetSyncTargets().Select(i => new SyncTarget
             {
                 Name = i.Name,
-                Id = GetSyncTargetId(providerId, i)
+                Id = GetSyncTargetId(provider, i)
             });
         }
 
-        private string GetSyncTargetId(string providerId, SyncTarget target)
+        private string GetSyncTargetId(ISyncProvider provider, SyncTarget target)
         {
+            var hasUniqueId = provider as IHasUniqueTargetIds;
+
+            if (hasUniqueId != null)
+            {
+                return target.Id;
+            }
+
+            var providerId = GetSyncProviderId(provider);
             return (providerId + "-" + target.Id).GetMD5().ToString("N");
         }
 

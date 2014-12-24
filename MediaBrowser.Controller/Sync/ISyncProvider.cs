@@ -25,4 +25,9 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetDeviceProfile(SyncTarget target);
     }
+
+    public interface IHasUniqueTargetIds
+    {
+        
+    }
 }
