@@ -649,7 +649,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var hasShares = item as IHasShares;
             if (hasShares != null)
             {
-                
+                AddShares(hasShares, builder);
             }
         }
 

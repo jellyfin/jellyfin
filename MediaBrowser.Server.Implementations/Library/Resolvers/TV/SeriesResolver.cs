@@ -1,17 +1,15 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.TV;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.IO;
-using MediaBrowser.Naming.TV;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -60,10 +58,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 var collectionType = args.GetCollectionType();
 
-                var isTvShowsFolder = string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase);
-
                 // If there's a collection type and it's not tv, it can't be a series
-                if (!isTvShowsFolder)
+                if (!string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
@@ -73,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
-                if (IsSeriesFolder(args.Path, collectionType, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager))
+                if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager))
                 {
                     return new Series
                     {
@@ -90,14 +86,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// Determines whether [is series folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="collectionType">Type of the collection.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is series folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsSeriesFolder(string path, string collectionType, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
+        public static bool IsSeriesFolder(string path, IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService, IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
         {
             foreach (var child in fileSystemChildren)
             {
@@ -118,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                 if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    if (IsSeasonFolder(child.FullName, collectionType))
+                    if (IsSeasonFolder(child.FullName))
                     {
                         //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
                         return true;
@@ -130,22 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 
                     if (libraryManager.IsVideoFile(fullName) || IsVideoPlaceHolder(fullName))
                     {
-                        var isTvShowsFolder = string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase);
-
-                        // We can fast track this for known tv folders
-                        if (isTvShowsFolder)
-                        {
-                            return true;
-                        }
-
-                        var resolver = new Naming.TV.EpisodeResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
-
-                        var episodeInfo = resolver.Resolve(fullName, FileInfoType.File, isTvShowsFolder, false);
-
-                        if (episodeInfo != null && (episodeInfo.EpisodeNumber.HasValue || episodeInfo.IsByDate))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -176,12 +156,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// Determines whether [is season folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="collectionType">Type of the collection.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, string collectionType)
+        private static bool IsSeasonFolder(string path)
         {
-            var isTvFolder = string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase);
-            var seasonNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, isTvFolder).SeasonNumber;
+            var seasonNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true).SeasonNumber;
 
             return seasonNumber.HasValue;
         }

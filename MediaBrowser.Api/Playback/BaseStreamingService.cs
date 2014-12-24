@@ -729,7 +729,8 @@ namespace MediaBrowser.Api.Playback
                     return Math.Min(request.MaxAudioChannels.Value, audioStream.Channels.Value);
                 }
 
-                return request.MaxAudioChannels.Value;
+                // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
+                return Math.Min(request.MaxAudioChannels.Value, 5);
             }
 
             return request.AudioChannels;

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class AppSyncProvider : ISyncProvider
+    public class AppSyncProvider : ISyncProvider, IHasUniqueTargetIds
     {
         private readonly IDeviceManager _deviceManager;
 
