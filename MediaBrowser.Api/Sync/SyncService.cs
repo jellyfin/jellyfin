@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MediaBrowser.Model.Users;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -60,7 +61,7 @@ namespace MediaBrowser.Api.Sync
 
         [ApiMember(Name = "ParentId", Description = "ParentId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
-        
+
         [ApiMember(Name = "Category", Description = "Category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public SyncCategory? Category { get; set; }
     }
@@ -77,6 +78,11 @@ namespace MediaBrowser.Api.Sync
     {
         [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Sync/OfflineActions", "POST", Summary = "Reports an action that occurred while offline.")]
+    public class ReportOfflineActions : List<UserAction>, IReturnVoid
+    {
     }
 
     [Authenticated]
@@ -173,9 +179,9 @@ namespace MediaBrowser.Api.Sync
                     .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions
                     {
                         Fields = new List<ItemFields>
-                    {
-                        ItemFields.SyncInfo
-                    }
+                        {
+                            ItemFields.SyncInfo
+                        }
                     }))
                     .ToList();
 
@@ -183,6 +189,21 @@ namespace MediaBrowser.Api.Sync
             }
 
             return ToOptimizedResult(result);
+        }
+
+        public void Post(ReportOfflineActions request)
+        {
+            var task = PostAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(ReportOfflineActions request)
+        {
+            foreach (var action in request)
+            {
+                await _syncManager.ReportOfflineAction(action).ConfigureAwait(false);
+            }
         }
     }
 }

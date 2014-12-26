@@ -358,6 +358,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             var streamInfo = new StreamBuilder().BuildVideoItem(options);
             var mediaSource = streamInfo.MediaSource;
 
+            jobItem.MediaSourceId = streamInfo.MediaSourceId;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
+
             if (streamInfo.PlayMethod != PlayMethod.Transcode)
             {
                 if (mediaSource.Protocol == MediaProtocol.File)
@@ -388,6 +391,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var streamInfo = new StreamBuilder().BuildAudioItem(options);
             var mediaSource = streamInfo.MediaSource;
+
+            jobItem.MediaSourceId = streamInfo.MediaSourceId;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
             if (streamInfo.PlayMethod != PlayMethod.Transcode)
             {

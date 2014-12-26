@@ -4,6 +4,7 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Sync
 {
@@ -80,5 +81,19 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="id">The identifier.</param>
         /// <returns>SyncJobItem.</returns>
         SyncJobItem GetJobItem(string id);
+
+        /// <summary>
+        /// Gets the job item information.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>SyncedItem.</returns>
+        SyncedItem GetJobItemInfo(string id);
+
+        /// <summary>
+        /// Reports the offline action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns>Task.</returns>
+        Task ReportOfflineAction(UserAction action);
     }
 }

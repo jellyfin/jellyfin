@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Images
 {
@@ -668,26 +669,26 @@ namespace MediaBrowser.Api.Images
         {
             if (format == ImageFormat.Bmp)
             {
-                return Common.Net.MimeTypes.GetMimeType("i.bmp");
+                return MimeTypes.GetMimeType("i.bmp");
             }
             if (format == ImageFormat.Gif)
             {
-                return Common.Net.MimeTypes.GetMimeType("i.gif");
+                return MimeTypes.GetMimeType("i.gif");
             }
             if (format == ImageFormat.Jpg)
             {
-                return Common.Net.MimeTypes.GetMimeType("i.jpg");
+                return MimeTypes.GetMimeType("i.jpg");
             }
             if (format == ImageFormat.Png)
             {
-                return Common.Net.MimeTypes.GetMimeType("i.png");
+                return MimeTypes.GetMimeType("i.png");
             }
             if (format == ImageFormat.Webp)
             {
-                return Common.Net.MimeTypes.GetMimeType("i.webp");
+                return MimeTypes.GetMimeType("i.webp");
             }
 
-            return Common.Net.MimeTypes.GetMimeType(path);
+            return MimeTypes.GetMimeType(path);
         }
 
         /// <summary>

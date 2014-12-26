@@ -252,7 +252,7 @@
     "ButtonMoveRight": "Move right",
     "ButtonBrowseOnlineImages": "Browse online images",
     "HeaderDeleteItem": "Delete Item",
-    "ConfirmDeleteItem": "Are you sure you wish to delete this item from your library?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageValueNotCorrect": "The value entered is not correct. Please try again.",
     "MessageItemSaved": "Item saved.",
