@@ -444,9 +444,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
-      <Link>Dto\StreamOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
     </Compile>
@@ -756,6 +753,12 @@
     <Compile Include="..\MediaBrowser.Model\Net\HttpException.cs">
       <Link>Net\HttpException.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\HttpResponse.cs">
+      <Link>Net\HttpResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\MimeTypes.cs">
+      <Link>Net\MimeTypes.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Net\NetworkShare.cs">
       <Link>Net\NetworkShare.cs</Link>
     </Compile>
@@ -996,17 +999,23 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\ItemFIleInfo.cs">
+      <Link>Sync\ItemFIleInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\ItemFileType.cs">
+      <Link>Sync\ItemFileType.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
       <Link>Sync\SyncCategory.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
       <Link>Sync\SyncDialogOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncedItem.cs">
+      <Link>Sync\SyncedItem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncHelper.cs">
       <Link>Sync\SyncHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Sync\SyncItem.cs">
-      <Link>Sync\SyncItem.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>
@@ -1109,6 +1118,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\PinRedeemResult.cs">
       <Link>Users\PinRedeemResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\UserAction.cs">
+      <Link>Users\UserAction.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\UserActionType.cs">
+      <Link>Users\UserActionType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\UserPolicy.cs">
       <Link>Users\UserPolicy.cs</Link>

@@ -251,7 +251,6 @@
     "HeaderDeleteItem": "Delete Item",
     "ConfirmDeleteItem": "Are you sure you wish to delete this item from your library?",
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
-    "MessageValueNotCorrect": "The value entered is not correct. Please try again.",
     "MessageItemSaved": "Item saved.",
     "OptionEnded": "Ended",
     "OptionContinuing": "Continuing",

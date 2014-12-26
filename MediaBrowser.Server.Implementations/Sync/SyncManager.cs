@@ -1,5 +1,9 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.IO;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -7,10 +11,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MediaBrowser.Model.Users;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -26,16 +32,20 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
+        private readonly IDtoService _dtoService;
+        private readonly IApplicationHost _appHost;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, IDtoService dtoService, IApplicationHost appHost)
         {
             _libraryManager = libraryManager;
             _repo = repo;
             _imageProcessor = imageProcessor;
             _logger = logger;
             _userManager = userManager;
+            _dtoService = dtoService;
+            _appHost = appHost;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -251,6 +261,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
+                if (item is LiveTvChannel || item is IChannelItem || item is ILiveTvRecording)
+                {
+                    return false;
+                }
+
                 return true;
             }
 
@@ -300,6 +315,55 @@ namespace MediaBrowser.Server.Implementations.Sync
         public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
         {
             return _repo.GetJobItems(query);
+        }
+
+        public SyncedItem GetJobItemInfo(string id)
+        {
+            var jobItem = GetJobItem(id);
+            var job = _repo.GetJob(jobItem.JobId);
+
+            var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
+            var syncedItem = new SyncedItem
+            {
+                SyncJobId = jobItem.JobId,
+                SyncJobItemId = jobItem.Id,
+                ServerId = _appHost.SystemId,
+                UserId = job.UserId
+            };
+
+            // Get everything
+            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+
+            syncedItem.Item = _dtoService.GetBaseItemDto(libraryItem, new DtoOptions
+            {
+                Fields = fields
+            });
+
+            // TODO: this should be the media source of the transcoded output
+            syncedItem.Item.MediaSources = syncedItem.Item.MediaSources
+                .Where(i => string.Equals(i.Id, jobItem.MediaSourceId))
+                .ToList();
+
+            var mediaSource = syncedItem.Item.MediaSources
+               .FirstOrDefault(i => string.Equals(i.Id, jobItem.MediaSourceId));
+
+            // This will be null for items that are not audio/video
+            if (mediaSource == null)
+            {
+                syncedItem.OriginalFileName = Path.GetFileName(libraryItem.Path);
+            }
+            else
+            {
+                syncedItem.OriginalFileName = Path.GetFileName(mediaSource.Path);
+            }
+
+            return syncedItem;
+        }
+
+        public Task ReportOfflineAction(UserAction action)
+        {
+            return Task.FromResult(true);
         }
     }
 }

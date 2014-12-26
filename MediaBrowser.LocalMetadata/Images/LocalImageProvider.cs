@@ -169,8 +169,8 @@ namespace MediaBrowser.LocalMetadata.Images
             var names = new List<string>
             {
                 "folder",
-                "cover",
                 "poster",
+                "cover",
                 "default"
             };
 

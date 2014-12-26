@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Manager
 {

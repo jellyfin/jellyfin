@@ -986,19 +986,6 @@
             list.listview('refresh');
         };
 
-        self.onDeleteFormSubmitted = function () {
-
-            var page = $(this).parents('.page');
-
-            if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
-                Dashboard.alert(Globalize.translate('MessageValueNotCorrect'));
-            } else {
-                performDelete(page);
-            }
-
-            return false;
-        };
-
         self.onIdentificationFormSubmitted = function () {
 
             var page = $(this).parents('.page');

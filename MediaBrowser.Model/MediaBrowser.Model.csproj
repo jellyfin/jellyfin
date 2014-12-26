@@ -133,7 +133,6 @@
     <Compile Include="Dto\NameValuePair.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
-    <Compile Include="Dto\StreamOptions.cs" />
     <Compile Include="Dto\VideoStreamOptions.cs" />
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
@@ -155,6 +154,8 @@
     <Compile Include="Configuration\MetadataPluginType.cs" />
     <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="MediaInfo\MediaProtocol.cs" />
+    <Compile Include="Net\HttpResponse.cs" />
+    <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />
     <Compile Include="Notifications\NotificationOptions.cs" />
     <Compile Include="Notifications\NotificationType.cs" />
@@ -366,10 +367,12 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Sync\ItemFIleInfo.cs" />
+    <Compile Include="Sync\ItemFileType.cs" />
     <Compile Include="Sync\SyncCategory.cs" />
     <Compile Include="Sync\SyncDialogOptions.cs" />
+    <Compile Include="Sync\SyncedItem.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
-    <Compile Include="Sync\SyncItem.cs" />
     <Compile Include="Sync\SyncJob.cs" />
     <Compile Include="Sync\SyncJobCreationResult.cs" />
     <Compile Include="Sync\SyncJobItem.cs" />
@@ -423,6 +426,8 @@
     <Compile Include="Users\ForgotPasswordAction.cs" />
     <Compile Include="Users\ForgotPasswordResult.cs" />
     <Compile Include="Users\PinRedeemResult.cs" />
+    <Compile Include="Users\UserAction.cs" />
+    <Compile Include="Users\UserActionType.cs" />
     <Compile Include="Users\UserPolicy.cs" />
     <None Include="Fody.targets" />
     <None Include="FodyWeavers.xml" />

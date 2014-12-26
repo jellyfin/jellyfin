@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using ServiceStack.Web;

@@ -23,6 +23,12 @@ namespace MediaBrowser.Model.Sync
         public string ItemId { get; set; }
 
         /// <summary>
+        /// Gets or sets the media source identifier.
+        /// </summary>
+        /// <value>The media source identifier.</value>
+        public string MediaSourceId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the target identifier.
         /// </summary>
         /// <value>The target identifier.</value>

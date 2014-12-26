@@ -410,7 +410,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
-            UserDataManager = new UserDataManager(LogManager);
+            UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
@@ -470,7 +470,7 @@ namespace MediaBrowser.Server.Startup.Common
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, DtoService, this);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
@@ -485,7 +485,7 @@ namespace MediaBrowser.Server.Startup.Common
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
 
-            SessionManager = new SessionManager(UserDataManager, ServerConfigurationManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);
+            SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);

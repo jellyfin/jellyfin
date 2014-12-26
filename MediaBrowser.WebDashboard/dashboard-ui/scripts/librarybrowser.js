@@ -379,6 +379,7 @@
                         $(LibraryBrowser).trigger('itemdeleting', [itemId]);
                     }
                 });
+
             }, 250);
         },
 

@@ -6,7 +6,7 @@
         
         $('.radioEncodingQuality', page).each(function() {
 
-            this.checked = config.MediaEncodingQuality == this.value;
+            this.checked = config.EncodingQuality == this.value;
 
         }).checkboxradio('refresh');
         
@@ -64,7 +64,7 @@
             ApiClient.getNamedConfiguration("encoding").done(function (config) {
 
                 config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
-                config.MediaEncodingQuality = $('.radioEncodingQuality:checked', form).val();
+                config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
 

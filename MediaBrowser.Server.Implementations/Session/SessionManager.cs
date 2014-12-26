@@ -68,12 +68,6 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
-        /// Gets or sets the configuration manager.
-        /// </summary>
-        /// <value>The configuration manager.</value>
-        private readonly IServerConfigurationManager _configurationManager;
-
-        /// <summary>
         /// The _active connections
         /// </summary>
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
@@ -105,18 +99,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionManager" /> class.
-        /// </summary>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="userRepository">The user repository.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public SessionManager(IUserDataManager userDataRepository, IServerConfigurationManager configurationManager, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
+        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
         {
             _userDataRepository = userDataRepository;
-            _configurationManager = configurationManager;
             _logger = logger;
             _userRepository = userRepository;
             _libraryManager = libraryManager;
@@ -689,7 +674,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                UpdatePlayState(item, data, positionTicks.Value);
+                _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
 
                 await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
@@ -779,7 +764,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                playedToCompletion = UpdatePlayState(item, data, positionTicks.Value);
+                playedToCompletion = _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
             }
             else
             {
@@ -791,65 +776,6 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
-
-            return playedToCompletion;
-        }
-
-        /// <summary>
-        /// Updates playstate position for an item but does not save
-        /// </summary>
-        /// <param name="item">The item</param>
-        /// <param name="data">User data for the item</param>
-        /// <param name="positionTicks">The current playback position</param>
-        private bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
-        {
-            var playedToCompletion = false;
-
-            var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
-
-            // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime)
-            {
-                var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
-
-                // Don't track in very beginning
-                if (pctIn < _configurationManager.Configuration.MinResumePct)
-                {
-                    positionTicks = 0;
-                }
-
-                // If we're at the end, assume completed
-                else if (pctIn > _configurationManager.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
-                {
-                    positionTicks = 0;
-                    data.Played = playedToCompletion = true;
-                }
-
-                else
-                {
-                    // Enforce MinResumeDuration
-                    var durationSeconds = TimeSpan.FromTicks(item.RunTimeTicks.Value).TotalSeconds;
-
-                    if (durationSeconds < _configurationManager.Configuration.MinResumeDurationSeconds)
-                    {
-                        positionTicks = 0;
-                        data.Played = playedToCompletion = true;
-                    }
-                }
-            }
-            else if (!hasRuntime)
-            {
-                // If we don't know the runtime we'll just have to assume it was fully played
-                data.Played = playedToCompletion = true;
-                positionTicks = 0;
-            }
-
-            if (item is Audio)
-            {
-                positionTicks = 0;
-            }
-
-            data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
         }

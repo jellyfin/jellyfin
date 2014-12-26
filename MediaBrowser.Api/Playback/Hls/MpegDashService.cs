@@ -18,6 +18,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -97,7 +98,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 playlistText = GetManifestText(state);
             }
 
-            return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.mpd"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.mpd"), new Dictionary<string, string>());
         }
 
         private string GetManifestText(StreamState state)
@@ -583,10 +584,19 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var codec = state.OutputVideoCodec;
 
+            var args = "-codec:v:0 " + codec;
+
+            if (state.EnableMpegtsM2TsMode)
+            {
+                args += " -mpegts_m2ts_mode 1";
+            }
+
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
+                return state.VideoStream != null && IsH264(state.VideoStream) ?
+                    args + " -bsf:v h264_mp4toannexb" :
+                    args;
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
@@ -594,7 +604,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
+            args+= " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
             args += " -r 24 -g 24";
 

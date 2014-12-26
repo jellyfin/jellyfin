@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Model.Net
 {
     /// <summary>
     /// Class MimeTypes
     /// </summary>
     public static class MimeTypes
     {
-        /// <summary>
-        /// The json MIME type
-        /// </summary>
-        public static string JsonMimeType = "application/json";
-
         /// <summary>
         /// Any extension in this list is considered a video file - can be added to at runtime for extensibility
         /// </summary>
@@ -52,35 +47,44 @@ namespace MediaBrowser.Common.Net
 
         private static readonly Dictionary<string, string> VideoFileExtensionsDictionary = VideoFileExtensions.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Determines whether [is video file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
-        public static bool IsVideoFile(string path)
-        {
-            if (string.IsNullOrEmpty(path))
+        // http://en.wikipedia.org/wiki/Internet_media_type
+        // Add more as needed
+
+        private static readonly Dictionary<string, string> MimeTypeLookup =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                throw new ArgumentNullException("path");
-            }
-
-            var extension = Path.GetExtension(path);
-
-            if (string.IsNullOrEmpty(extension))
-            {
-                return false;
-            }
-
-            return VideoFileExtensionsDictionary.ContainsKey(extension);
-        }
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".tbn", "image/jpeg"},
+                {".png", "image/png"},
+                {".gif", "image/gif"},
+                {".webp", "image/webp"},
+                {".ico", "image/vnd.microsoft.icon"},
+                {".mpg", "video/mpeg"},
+                {".mpeg", "video/mpeg"},
+                {".ogv", "video/ogg"},
+                {".mov", "video/quicktime"},
+                {".webm", "video/webm"},
+                {".mkv", "video/x-matroska"},
+                {".wmv", "video/x-ms-wmv"},
+                {".flv", "video/x-flv"},
+                {".avi", "video/x-msvideo"},
+                {".asf", "video/x-ms-asf"},
+                {".m4v", "video/x-m4v"}
+            };
+        
+        private static readonly Dictionary<string, string> ExtensionLookup =
+           MimeTypeLookup
+           .GroupBy(i => i.Value)
+           .ToDictionary(x => x.Key, x => x.First().Key, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">path</exception>
-        /// <exception cref="System.InvalidOperationException">Argument not supported:  + path</exception>
+        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="InvalidOperationException">Argument not supported:  + path</exception>
         public static string GetMimeType(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -90,50 +94,13 @@ namespace MediaBrowser.Common.Net
 
             var ext = Path.GetExtension(path) ?? string.Empty;
 
-            // http://en.wikipedia.org/wiki/Internet_media_type
-            // Add more as needed
+            string result;
+            if (MimeTypeLookup.TryGetValue(ext, out result))
+            {
+                return result;
+            }
 
             // Type video
-            if (ext.Equals(".mpg", StringComparison.OrdinalIgnoreCase) || ext.EndsWith("mpeg", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/mpeg";
-            }
-            if (ext.Equals(".ogv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/ogg";
-            }
-            if (ext.Equals(".mov", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/quicktime";
-            }
-            if (ext.Equals(".webm", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/webm";
-            }
-            if (ext.Equals(".mkv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-matroska";
-            }
-            if (ext.Equals(".wmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-ms-wmv";
-            }
-            if (ext.Equals(".flv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-flv";
-            }
-            if (ext.Equals(".avi", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-msvideo";
-            }
-            if (ext.Equals(".m4v", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-m4v";
-            }
-            if (ext.EndsWith("asf", StringComparison.OrdinalIgnoreCase))
-            {
-                return "video/x-ms-asf";
-            }
             if (ext.Equals(".3gp", StringComparison.OrdinalIgnoreCase))
             {
                 return "video/3gpp";
@@ -197,28 +164,6 @@ namespace MediaBrowser.Common.Net
                 return "application/x-cdisplay";
             }
 
-            // Type image
-            if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
-            {
-                return "image/gif";
-            }
-            if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".tbn", StringComparison.OrdinalIgnoreCase))
-            {
-                return "image/jpeg";
-            }
-            if (ext.Equals(".png", StringComparison.OrdinalIgnoreCase))
-            {
-                return "image/png";
-            }
-            if (ext.Equals(".webp", StringComparison.OrdinalIgnoreCase))
-            {
-                return "image/webp";
-            }
-            if (ext.Equals(".ico", StringComparison.OrdinalIgnoreCase))
-            {
-                return "image/vnd.microsoft.icon";
-            }
-
             // Type audio
             if (ext.Equals(".mp3", StringComparison.OrdinalIgnoreCase))
             {
@@ -272,7 +217,7 @@ namespace MediaBrowser.Common.Net
             }
             if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
-                return JsonMimeType;
+                return "application/json";
             }
             if (ext.Equals(".map", StringComparison.OrdinalIgnoreCase))
             {
@@ -320,19 +265,9 @@ namespace MediaBrowser.Common.Net
             throw new ArgumentException("Argument not supported: " + path);
         }
 
-        private static readonly Dictionary<string, string> MimeExtensions =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"image/jpeg", "jpg"},
-                {"image/jpg", "jpg"},
-                {"image/png", "png"},
-                {"image/gif", "gif"},
-                {"image/webp", "webp"}
-            };
-
         public static string ToExtension(string mimeType)
         {
-            return "." + MimeExtensions[mimeType];
+            return ExtensionLookup[mimeType];
         }
     }
 }

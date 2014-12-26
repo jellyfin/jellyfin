@@ -7,6 +7,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Plugins;
@@ -185,6 +186,22 @@ namespace MediaBrowser.Model.ApiClient
         /// <exception cref="ArgumentNullException">url</exception>
         Task<Stream> GetImageStreamAsync(string url, CancellationToken cancellationToken = default(CancellationToken));
 
+        /// <summary>
+        /// Gets the stream.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;Stream&gt;.</returns>
+        Task<Stream> GetStream(string url, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Gets the response.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;HttpResponse&gt;.</returns>
+        Task<HttpResponse> GetResponse(string url, CancellationToken cancellationToken = default(CancellationToken));
+        
         /// <summary>
         /// Updates the user configuration.
         /// </summary>
@@ -1300,15 +1317,6 @@ namespace MediaBrowser.Model.ApiClient
         Task<QueryResult<BaseItemDto>> GetPlaylistItems(PlaylistItemQuery query);
 
         /// <summary>
-        /// Gets the url needed to stream an audio file
-        /// </summary>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">options</exception>
-        [Obsolete]
-        string GetAudioStreamUrl(StreamOptions options);
-
-        /// <summary>
         /// Gets the url needed to stream a video file
         /// </summary>
         /// <param name="options">The options.</param>
@@ -1411,5 +1419,19 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="webSocketFactory">The web socket factory.</param>
         /// <param name="keepAliveTimerMs">The keep alive timer ms.</param>
         void OpenWebSocket(Func<IClientWebSocket> webSocketFactory, int keepAliveTimerMs = 60000);
+
+        /// <summary>
+        /// Reports the offline actions.
+        /// </summary>
+        /// <param name="actions">The actions.</param>
+        /// <returns>Task.</returns>
+        Task ReportOfflineActions(List<UserAction> actions);
+
+        /// <summary>
+        /// Gets the ready synchronize items.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <returns>List&lt;SyncedItem&gt;.</returns>
+        Task<List<SyncedItem>> GetReadySyncItems(string targetId);
     }
 }

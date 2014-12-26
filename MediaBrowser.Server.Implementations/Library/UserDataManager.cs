@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
@@ -23,9 +25,11 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
 
         private readonly ILogger _logger;
+        private readonly IServerConfigurationManager _config;
 
-        public UserDataManager(ILogManager logManager)
+        public UserDataManager(ILogManager logManager, IServerConfigurationManager config)
         {
+            _config = config;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -35,22 +39,6 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <value>The repository.</value>
         public IUserDataRepository Repository { get; set; }
 
-        /// <summary>
-        /// Saves the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="userData">The user data.</param>
-        /// <param name="reason">The reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">userData
-        /// or
-        /// cancellationToken
-        /// or
-        /// userId
-        /// or
-        /// key</exception>
         public async Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
@@ -219,5 +207,59 @@ namespace MediaBrowser.Server.Implementations.Library
                 Key = data.Key
             };
         }
+
+        public bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
+        {
+            var playedToCompletion = false;
+
+            var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
+
+            // If a position has been reported, and if we know the duration
+            if (positionTicks > 0 && hasRuntime)
+            {
+                var pctIn = Decimal.Divide(positionTicks, item.RunTimeTicks.Value) * 100;
+
+                // Don't track in very beginning
+                if (pctIn < _config.Configuration.MinResumePct)
+                {
+                    positionTicks = 0;
+                }
+
+                // If we're at the end, assume completed
+                else if (pctIn > _config.Configuration.MaxResumePct || positionTicks >= item.RunTimeTicks.Value)
+                {
+                    positionTicks = 0;
+                    data.Played = playedToCompletion = true;
+                }
+
+                else
+                {
+                    // Enforce MinResumeDuration
+                    var durationSeconds = TimeSpan.FromTicks(item.RunTimeTicks.Value).TotalSeconds;
+
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    {
+                        positionTicks = 0;
+                        data.Played = playedToCompletion = true;
+                    }
+                }
+            }
+            else if (!hasRuntime)
+            {
+                // If we don't know the runtime we'll just have to assume it was fully played
+                data.Played = playedToCompletion = true;
+                positionTicks = 0;
+            }
+
+            if (item is Audio)
+            {
+                positionTicks = 0;
+            }
+
+            data.PlaybackPositionTicks = positionTicks;
+
+            return playedToCompletion;
+        }
+
     }
 }
