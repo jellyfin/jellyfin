@@ -207,6 +207,7 @@
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="Net\AuthenticatedAttribute.cs" />
     <Compile Include="Net\AuthorizationInfo.cs" />
+    <Compile Include="Net\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Net\IAuthorizationContext.cs" />
     <Compile Include="Net\IAuthService.cs" />
     <Compile Include="Net\IHasAuthorization.cs" />
@@ -218,6 +219,7 @@
     <Compile Include="Net\IServerManager.cs" />
     <Compile Include="Net\IServiceRequest.cs" />
     <Compile Include="Net\ISessionContext.cs" />
+    <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />
     <Compile Include="Net\SecurityException.cs" />
     <Compile Include="Net\ServiceStackServiceRequest.cs" />

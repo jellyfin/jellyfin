@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Common.Configuration
+namespace MediaBrowser.Common.Implementations.Configuration
 {
     /// <summary>
     /// Class ConfigurationHelper

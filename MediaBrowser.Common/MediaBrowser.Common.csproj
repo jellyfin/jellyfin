@@ -53,7 +53,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Configuration\ConfigurationHelper.cs" />
     <Compile Include="Configuration\ConfigurationUpdateEventArgs.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Configuration\IConfigurationFactory.cs" />
@@ -64,11 +63,9 @@
     <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
-    <Compile Include="Net\BasePeriodicWebSocketListener.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />
     <Compile Include="Net\HttpResponseInfo.cs" />
-    <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="Net\IHttpClient.cs" />
     <Compile Include="Net\INetworkManager.cs" />
