@@ -40,6 +40,7 @@
     "LabelStopping": "Stopping",
     "LabelCancelled": "(cancelled)",
     "LabelFailed": "(failed)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(Aborted by server shutdown)",
     "LabelScheduledTaskLastRan": "Last ran {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "Delete Task Trigger",
@@ -249,8 +250,9 @@
     "ButtonMoveRight": "Move right",
     "ButtonBrowseOnlineImages": "Browse online images",
     "HeaderDeleteItem": "Delete Item",
-    "ConfirmDeleteItem": "Are you sure you wish to delete this item from your library?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
+    "MessageValueNotCorrect": "The value entered is not correct. Please try again.",
     "MessageItemSaved": "Item saved.",
     "OptionEnded": "Ended",
     "OptionContinuing": "Continuing",
@@ -411,7 +413,7 @@
     "HeaderMediaLocations": "Media Locations",
     "LabelFolderTypeValue": "Folder type: {0}",
     "LabelPathSubstitutionHelp": "Optional: Path substitution can map server paths to network shares that clients can access for direct playback.",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
     "FolderTypeAdultVideos": "Adult videos",
@@ -587,6 +589,7 @@
     "WebClientTourMobile2": "and easily controls other devices and Media Browser apps",
     "MessageEnjoyYourStay": "Enjoy your stay",
     "DashboardTourDashboard": "The server dashboard allows you to monitor your server and your users. You'll always know who is doing what and where they are.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Easily create user accounts for your friends and family, each with their own permissions, library access, parental controls and more.",
     "DashboardTourCinemaMode": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
     "DashboardTourChapters": "Enable chapter image generation for your videos for a more pleasing presentation while viewing.",
@@ -649,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed with as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }

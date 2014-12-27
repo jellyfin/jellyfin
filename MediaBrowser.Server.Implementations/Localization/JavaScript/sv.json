@@ -40,6 +40,7 @@
     "LabelStopping": "Avbryter",
     "LabelCancelled": "(avbr\u00f6ts)",
     "LabelFailed": "(misslyckades)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(avbr\u00f6ts eftersom servern st\u00e4ngdes av)",
     "LabelScheduledTaskLastRan": "Senast k\u00f6rd {0}, tog {1}",
     "HeaderDeleteTaskTrigger": "Ta bort aktivitetsutl\u00f6sare",
@@ -249,7 +250,7 @@
     "ButtonMoveRight": "H\u00f6ger",
     "ButtonBrowseOnlineImages": "Bl\u00e4ddra bland bilder online",
     "HeaderDeleteItem": "Radera objekt",
-    "ConfirmDeleteItem": "\u00c4r du s\u00e4ker p\u00e5 att du vill radera det h\u00e4r objektet fr\u00e5n biblioteket?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Ange ett namn eller externt id.",
     "MessageValueNotCorrect": "Det angivna v\u00e4rdet \u00e4r felaktigt. Var god f\u00f6rs\u00f6k igen.",
     "MessageItemSaved": "Objektet har sparats.",
@@ -412,7 +413,7 @@
     "HeaderMediaLocations": "Lagringsplatser f\u00f6r media",
     "LabelFolderTypeValue": "Typ av mapp: {0}",
     "LabelPathSubstitutionHelp": "Tillval: S\u00f6kv\u00e4gsutbyte betyder att en plats p\u00e5 servern kopplas till en lokal fils\u00f6kv\u00e4g p\u00e5 en klient. P\u00e5 s\u00e5 s\u00e4tt f\u00e5r klienten direkt tillg\u00e5ng till material p\u00e5 servern och kan spela upp det direkt via n\u00e4tverket.",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musik",
     "FolderTypeAdultVideos": "Inneh\u00e5ll f\u00f6r vuxna",
@@ -588,6 +589,7 @@
     "WebClientTourMobile2": "och kan enkelt fj\u00e4rrstyra andra enheter och Media Browser-appar",
     "MessageEnjoyYourStay": "Ha ett trevligt bes\u00f6k",
     "DashboardTourDashboard": "Via serverns kontrollpanel kan du \u00f6vervaka din server och alla anv\u00e4ndare. Du kommer alltid att kunna veta vem som g\u00f6r vad och var de \u00e4r.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Skapa enkelt anv\u00e4ndarkonton f\u00f6r dina v\u00e4nner och familj, alla med sina egna beh\u00f6righeter, biblioteks \u00e5tkomst, f\u00f6r\u00e4ldrakontroll och mycket mer.",
     "DashboardTourCinemaMode": "Biol\u00e4get g\u00f6r ditt vardagsrum till en biograf genom m\u00f6jligheten att visa trailers och egna vinjetter innan filmen b\u00f6rjar.",
     "DashboardTourChapters": "Ta fram kapitelbildrutor fr\u00e5n videofiler f\u00f6r att f\u00e5 en snyggare presentation.",
@@ -650,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed with as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }

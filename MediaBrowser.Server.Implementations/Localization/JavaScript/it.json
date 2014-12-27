@@ -40,6 +40,7 @@
     "LabelStopping": "Sto fermando",
     "LabelCancelled": "(cancellato)",
     "LabelFailed": "(fallito)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(Interrotto dalla chiusura del server)",
     "LabelScheduledTaskLastRan": "Ultima esecuzione  {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "Elimina Operazione pianificata",
@@ -249,7 +250,7 @@
     "ButtonMoveRight": "Muovi a destra",
     "ButtonBrowseOnlineImages": "Sfoglia le immagini Online",
     "HeaderDeleteItem": "Elimina elemento",
-    "ConfirmDeleteItem": "Sei sicuro di voler eliminare questo elemento dalla tua libreria?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Inserisci il nome o id esterno.",
     "MessageValueNotCorrect": "Il valore inserito non \u00e8 corretto.Riprova di nuovo.",
     "MessageItemSaved": "Elemento salvato.",
@@ -412,7 +413,7 @@
     "HeaderMediaLocations": "Posizioni Media",
     "LabelFolderTypeValue": "Tipo cartella: {0}",
     "LabelPathSubstitutionHelp": "Opzionale: cambio Path pu\u00f2 mappare i percorsi del server a condivisioni di rete che i clienti possono accedere per la riproduzione diretta.",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Film",
     "FolderTypeMusic": "Musica",
     "FolderTypeAdultVideos": "Video per adulti",
@@ -588,6 +589,7 @@
     "WebClientTourMobile2": "e controlla facilmente altri dispositivi e applicazioni Media Browser",
     "MessageEnjoyYourStay": "Godetevi il vostro soggiorno",
     "DashboardTourDashboard": "Il pannello di controllo del server consente di monitorare il vostro server e gli utenti. Potrai sempre sapere chi sta facendo cosa e dove sono.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Facile creazione di account utente per i vostri amici e la famiglia, ognuno con le proprie autorizzazioni, accesso alla libreria, controlli parentali e altro ancora.",
     "DashboardTourCinemaMode": "Modalit\u00e0 Cinema porta l'esperienza del teatro direttamente nel tuo salotto con la possibilit\u00e0 di giocare trailer e intro personalizzati prima la caratteristica principale.",
     "DashboardTourChapters": "Abilita capitolo generazione di immagini per i vostri video per una presentazione pi\u00f9 gradevole durante la visualizzazione.",
@@ -650,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed with as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }

@@ -40,6 +40,7 @@
     "LabelStopping": "Parando",
     "LabelCancelled": "(cancelado)",
     "LabelFailed": "(falhou)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(Abortada pelo desligamento do servidor)",
     "LabelScheduledTaskLastRan": "\u00daltima execu\u00e7\u00e3o {0}, demorando {1}.",
     "HeaderDeleteTaskTrigger": "Excluir Disparador da Tarefa",
@@ -249,7 +250,7 @@
     "ButtonMoveRight": "Mover \u00e0 direita",
     "ButtonBrowseOnlineImages": "Procurar imagens online",
     "HeaderDeleteItem": "Excluir item",
-    "ConfirmDeleteItem": "Deseja realmente excluir este item de sua biblioteca?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Por favor, digite um nome ou Id externo.",
     "MessageValueNotCorrect": "O valor digitado n\u00e3o est\u00e1 correto. Por favor, tente novamente.",
     "MessageItemSaved": "Item salvo.",
@@ -412,7 +413,7 @@
     "HeaderMediaLocations": "Localiza\u00e7\u00f5es de M\u00eddia",
     "LabelFolderTypeValue": "Tipo de pasta: {0}",
     "LabelPathSubstitutionHelp": "Opcional: Substitui\u00e7\u00e3o de caminho pode mapear caminhos do servidor para compartilhamentos de rede de forma a que os clientes possam acessar para reprodu\u00e7\u00e3o direta.",
-    "FolderTypeMixed": "V\u00eddeos misturados",
+    "FolderTypeMixed": "Conte\u00fado misto",
     "FolderTypeMovies": "Filmes",
     "FolderTypeMusic": "M\u00fasica",
     "FolderTypeAdultVideos": "V\u00eddeos adultos",
@@ -588,6 +589,7 @@
     "WebClientTourMobile2": "e controle facilmente outros dispositivos e apps do Media Browser",
     "MessageEnjoyYourStay": "Divirta-se",
     "DashboardTourDashboard": "O painel do servidor permite monitorar seu servidor e seus usu\u00e1rios. Voc\u00ea sempre poder\u00e1 saber quem est\u00e1 fazendo o qu\u00ea e onde est\u00e3o.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Crie facilmente contas de usu\u00e1rios para seus amigos e fam\u00edlia, cada um com sua permiss\u00e3o, acesso \u00e0 biblioteca, controle parental e mais.",
     "DashboardTourCinemaMode": "O modo cinema traz a experi\u00eancia do cinema para sua sala, permitindo reproduzir trailers e intros personalizadas antes da fun\u00e7\u00e3o principal.",
     "DashboardTourChapters": "Ative a gera\u00e7\u00e3o de imagem do cap\u00edtulo para seus v\u00eddeos para ter uma apresenta\u00e7\u00e3o mais prazeirosa.",
@@ -650,5 +652,5 @@
     "LabelItemLimitHelp": "Opcional. Defina o n\u00famero limite de itens que ser\u00e3o sincronizados.",
     "MessageBookPluginRequired": "Requer a instala\u00e7\u00e3o do plugin Bookshelf",
     "MessageGamePluginRequired": "Requer a instala\u00e7\u00e3o do plugin GameBrowser",
-    "MessageMixedContentHelp": "O conte\u00fado ser\u00e1 exibido como uma estrutura de pasta simples"
+    "MessageMixedContentHelp": "O conte\u00fado ser\u00e1 exibido em uma estrutura de pasta simples"
 }

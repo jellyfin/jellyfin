@@ -266,6 +266,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                     return false;
                 }
 
+                // It would be nice to support these later
+                if (item is Game || item is Book)
+                {
+                    return false;
+                }
+
                 return true;
             }
 

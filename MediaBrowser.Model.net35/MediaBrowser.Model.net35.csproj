@@ -999,6 +999,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\DeviceFileInfo.cs">
+      <Link>Sync\DeviceFileInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\ItemFIleInfo.cs">
       <Link>Sync\ItemFIleInfo.cs</Link>
     </Compile>
