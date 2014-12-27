@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Net;
+﻿using MediaBrowser.Model.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

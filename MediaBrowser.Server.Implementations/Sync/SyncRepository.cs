@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync7.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync8.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
@@ -298,7 +298,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _deleteJobCommand.Transaction = transaction;
                 _deleteJobCommand.ExecuteNonQuery();
 
-                _deleteJobItemsCommand.GetParameter(index++).Value = new Guid(id);
+                index = 0;
+                _deleteJobItemsCommand.GetParameter(index++).Value = id;
                 _deleteJobItemsCommand.Transaction = transaction;
                 _deleteJobItemsCommand.ExecuteNonQuery();
                 
@@ -607,11 +608,16 @@ namespace MediaBrowser.Server.Implementations.Sync
             var info = new SyncJobItem
             {
                 Id = reader.GetGuid(0).ToString("N"),
-                ItemId = reader.GetString(1),
-                MediaSourceId = reader.GetString(2),
-                JobId = reader.GetString(3)
+                ItemId = reader.GetString(1)
             };
 
+            if (!reader.IsDBNull(2))
+            {
+                info.MediaSourceId = reader.GetString(2);
+            }
+            
+            info.JobId = reader.GetString(3);
+            
             if (!reader.IsDBNull(4))
             {
                 info.OutputPath = reader.GetString(4);

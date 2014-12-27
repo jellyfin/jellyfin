@@ -1,12 +1,9 @@
-﻿using System.Text;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSocketMessageType = MediaBrowser.Model.Net.WebSocketMessageType;
 using WebSocketState = MediaBrowser.Model.Net.WebSocketState;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp

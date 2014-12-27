@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
@@ -17,11 +16,10 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Authorizes the server.
         /// </summary>
-        /// <param name="httpServerPort">The HTTP server port.</param>
-        /// <param name="httpServerUrlPrefix">The HTTP server URL prefix.</param>
         /// <param name="udpPort">The UDP port.</param>
+        /// <param name="httpServerPort">The HTTP server port.</param>
         /// <param name="tempDirectory">The temporary directory.</param>
-        void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int udpPort, string tempDirectory);
+        void AuthorizeServer(int udpPort, int httpServerPort, string tempDirectory);
 
         /// <summary>
         /// Gets the environment.
