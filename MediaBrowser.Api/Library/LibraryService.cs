@@ -272,16 +272,13 @@ namespace MediaBrowser.Api.Library
                 items = items.Where(i => i.IsHidden == val).ToList();
             }
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
             
             var result = new ItemsResult
             {
                 TotalRecordCount = items.Count,
 
-                Items = items.Select(i => _dtoService.GetBaseItemDto(i, fields)).ToArray()
+                Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions)).ToArray()
             };
 
             return ToOptimizedResult(result);
@@ -347,10 +344,7 @@ namespace MediaBrowser.Api.Library
 
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
             BaseItem parent = item.Parent;
             
@@ -361,7 +355,7 @@ namespace MediaBrowser.Api.Library
                     parent = TranslateParentItem(parent, user);
                 }
 
-                baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, fields, user));
+                baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
                 parent = parent.Parent;
             }
@@ -583,11 +577,6 @@ namespace MediaBrowser.Api.Library
                 item = item.Parent;
             }
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
-
             var themeSongIds = GetThemeSongIds(item);
 
             if (themeSongIds.Count == 0 && request.InheritFromParent)
@@ -607,10 +596,12 @@ namespace MediaBrowser.Api.Library
                     }
                 }
             }
-           
+
+            var dtoOptions = new DtoOptions();
+
             var dtos = themeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
-                            .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             var items = dtos.ToArray();
 
@@ -651,11 +642,6 @@ namespace MediaBrowser.Api.Library
                 item = item.Parent;
             }
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
-
             var themeVideoIds = GetThemeVideoIds(item);
 
             if (themeVideoIds.Count == 0 && request.InheritFromParent)
@@ -681,9 +667,11 @@ namespace MediaBrowser.Api.Library
                 }
             }
 
+            var dtoOptions = new DtoOptions();
+
             var dtos = themeVideoIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
-                            .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             var items = dtos.ToArray();
 
@@ -754,10 +742,7 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
             var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)
@@ -765,7 +750,7 @@ namespace MediaBrowser.Api.Library
                 .SelectMany(i => i.RecursiveChildren)
                 .OfType<Audio>()
                 .OrderBy(i => i.SortName)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             var items = dtos.ToArray();
 

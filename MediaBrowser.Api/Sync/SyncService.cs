@@ -173,16 +173,18 @@ namespace MediaBrowser.Api.Sync
             }
             else
             {
+                var dtoOptions = new DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+                        ItemFields.SyncInfo
+                    }
+                };
+
                 var dtos = request.ItemIds.Split(',')
                     .Select(_libraryManager.GetItemById)
                     .Where(i => i != null)
-                    .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions
-                    {
-                        Fields = new List<ItemFields>
-                        {
-                            ItemFields.SyncInfo
-                        }
-                    }))
+                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions))
                     .ToList();
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);

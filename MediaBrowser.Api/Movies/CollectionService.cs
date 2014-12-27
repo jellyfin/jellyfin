@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -70,7 +71,9 @@ namespace MediaBrowser.Api.Movies
 
             }).ConfigureAwait(false);
 
-            var dto = _dtoService.GetBaseItemDto(item, new List<ItemFields>());
+            var dtoOptions = new DtoOptions();
+
+            var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
 
             return ToOptimizedResult(new CollectionCreationResult
             {

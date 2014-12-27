@@ -366,6 +366,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
+        /// <summary>
+        /// Gets or sets the season user data.
+        /// </summary>
+        /// <value>The season user data.</value>
+        public UserItemDataDto SeasonUserData { get; set; }
 
         /// <summary>
         /// Gets or sets the recursive item count.

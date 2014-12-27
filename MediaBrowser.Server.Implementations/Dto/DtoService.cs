@@ -73,11 +73,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 Fields = fields
             };
-
-            // Get everything
-            options.ImageTypes = Enum.GetNames(typeof(ImageType))
-                .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-                .ToList();
             
             return GetBaseItemDto(item, options, user, owner);
         }
@@ -273,6 +268,21 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.PlayAccess = item.GetPlayAccess(user);
+
+            if (fields.Contains(ItemFields.SeasonUserData))
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var season = episode.Season;
+
+                    if (season != null)
+                    {
+                        dto.SeasonUserData = _userDataRepository.GetUserDataDto(season, user);
+                    }
+                }
+            }
         }
 
         private int GetChildCount(Folder folder, User user)

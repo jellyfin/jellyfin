@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -79,15 +80,12 @@ namespace MediaBrowser.Api
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
             var video = (Video)item;
 
             var items = video.GetAdditionalParts()
-                         .Select(i => _dtoService.GetBaseItemDto(i, fields, user, video))
+                         .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, video))
                          .ToArray();
 
             var result = new ItemsResult

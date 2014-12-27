@@ -3,11 +3,11 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -88,7 +88,17 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets or sets the date last episode added.
         /// </summary>
         /// <value>The date last episode added.</value>
-        public DateTime DateLastEpisodeAdded { get; set; }
+        [IgnoreDataMember]
+        public DateTime DateLastEpisodeAdded
+        {
+            get
+            {
+                return RecursiveChildren.OfType<Episode>()
+                        .Select(i => i.DateCreated)
+                        .OrderByDescending(i => i)
+                        .FirstOrDefault();
+            }
+        }
 
         /// <summary>
         /// Series aren't included directly in indices - Their Episodes will roll up to them

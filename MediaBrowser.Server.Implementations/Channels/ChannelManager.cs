@@ -179,12 +179,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var internalResult = await GetChannelsInternal(query, cancellationToken).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -544,11 +541,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
-
             var items = internalResult.Items;
             var totalRecordCount = internalResult.TotalRecordCount;
 
@@ -563,7 +555,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 totalRecordCount = items.Length;
             }
 
-            var returnItems = items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtoOptions = new DtoOptions();
+
+            var returnItems = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -828,12 +822,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             await RefreshIfNeeded(internalResult.Items, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -980,12 +971,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var internalResult = await GetChannelItemsInternal(query, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1407,12 +1395,9 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var folder = await GetInternalChannelFolder(userId, cancellationToken).ConfigureAwait(false);
 
-            return _dtoService.GetBaseItemDto(folder, fields, user);
+            return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
         public async Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken)

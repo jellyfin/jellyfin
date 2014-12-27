@@ -1872,12 +1872,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var folder = await GetInternalLiveTvFolder(userId, cancellationToken).ConfigureAwait(false);
 
-            return _dtoService.GetBaseItemDto(folder, fields, user);
+            return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
         public async Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken)
