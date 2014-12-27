@@ -32,12 +32,12 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
-        private readonly IDtoService _dtoService;
+        private readonly Func<IDtoService> _dtoService;
         private readonly IApplicationHost _appHost;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, IDtoService dtoService, IApplicationHost appHost)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -323,9 +323,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _repo.GetJobItems(query);
         }
 
-        public SyncedItem GetJobItemInfo(string id)
+        private SyncedItem GetJobItemInfo(SyncJobItem jobItem)
         {
-            var jobItem = GetJobItem(id);
             var job = _repo.GetJob(jobItem.JobId);
 
             var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
@@ -338,7 +337,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = job.UserId
             };
 
-            syncedItem.Item = _dtoService.GetBaseItemDto(libraryItem, new DtoOptions());
+            syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, new DtoOptions());
 
             // TODO: this should be the media source of the transcoded output
             syncedItem.Item.MediaSources = syncedItem.Item.MediaSources
@@ -364,6 +363,17 @@ namespace MediaBrowser.Server.Implementations.Sync
         public Task ReportOfflineAction(UserAction action)
         {
             return Task.FromResult(true);
+        }
+
+        public List<SyncedItem> GetReadySyncItems(string targetId)
+        {
+            var jobItemResult = GetJobItems(new SyncJobItemQuery
+            {
+                TargetId = targetId,
+                //Status = SyncJobItemStatus.Transferring
+            });
+
+            return jobItemResult.Items.Select(GetJobItemInfo).ToList();
         }
     }
 }

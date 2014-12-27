@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string[] Path { get; set; }
         /// <summary>
         /// Gets or sets the type of the image.
         /// </summary>

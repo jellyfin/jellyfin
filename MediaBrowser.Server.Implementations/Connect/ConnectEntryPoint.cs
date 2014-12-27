@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Connect;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;

@@ -165,6 +165,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] InsecureApps7 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
+        public bool EnableWin8HttpListener { get; set; }
 
         public NameValuePair[] ContentTypes { get; set; }
 
@@ -180,6 +181,7 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
+            EnableWin8HttpListener = true;
 
             EnableUPnP = true;
 

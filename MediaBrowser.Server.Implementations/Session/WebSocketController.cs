@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;

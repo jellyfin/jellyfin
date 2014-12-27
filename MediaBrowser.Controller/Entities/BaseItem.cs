@@ -14,6 +14,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +22,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {

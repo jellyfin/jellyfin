@@ -83,17 +83,17 @@ namespace MediaBrowser.Controller.Sync
         SyncJobItem GetJobItem(string id);
 
         /// <summary>
-        /// Gets the job item information.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>SyncedItem.</returns>
-        SyncedItem GetJobItemInfo(string id);
-
-        /// <summary>
         /// Reports the offline action.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns>Task.</returns>
         Task ReportOfflineAction(UserAction action);
+
+        /// <summary>
+        /// Gets the ready synchronize items.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <returns>List&lt;SyncedItem&gt;.</returns>
+        List<SyncedItem> GetReadySyncItems(string targetId);
     }
 }

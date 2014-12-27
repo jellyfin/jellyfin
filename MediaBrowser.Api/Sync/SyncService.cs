@@ -85,6 +85,13 @@ namespace MediaBrowser.Api.Sync
     {
     }
 
+    [Route("/Sync/Items/Ready", "GET", Summary = "Gets ready to download sync items.")]
+    public class GetReadySyncItems : IReturn<List<SyncedItem>>
+    {
+        [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string TargetId { get; set; }
+    }
+
     [Authenticated]
     public class SyncService : BaseApiService
     {
@@ -206,6 +213,11 @@ namespace MediaBrowser.Api.Sync
             {
                 await _syncManager.ReportOfflineAction(action).ConfigureAwait(false);
             }
+        }
+
+        public object Get(GetReadySyncItems request)
+        {
+            return ToOptimizedResult(_syncManager.GetReadySyncItems(request.TargetId));
         }
     }
 }

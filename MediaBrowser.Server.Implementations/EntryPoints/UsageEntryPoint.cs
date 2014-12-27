@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;

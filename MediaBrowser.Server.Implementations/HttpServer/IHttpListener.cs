@@ -1,9 +1,8 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {

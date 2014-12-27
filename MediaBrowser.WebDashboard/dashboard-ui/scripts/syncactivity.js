@@ -68,7 +68,7 @@
 
         html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '" style="' + style + '">';
 
-        if (job.Progress) {
+        if (job.Progress && job.Progress < 100) {
             html += '<div class="cardFooter">';
             html += "<div class='cardText cardProgress'>";
             html += '<progress class="itemProgressBar" min="0" max="100" value="' + job.Progress + '"></progress>';

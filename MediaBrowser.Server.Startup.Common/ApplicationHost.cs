@@ -224,7 +224,7 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
 
-        private readonly bool _supportsNativeWebSocket;
+        private bool _supportsNativeWebSocket;
 
         internal INativeApp NativeApp { get; set; }
 
@@ -454,6 +454,18 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
+            if (IsFirstRun)
+            {
+                ServerConfigurationManager.Configuration.EnableWin8HttpListener = false;
+                ServerConfigurationManager.SaveConfiguration();
+                _supportsNativeWebSocket = false;
+            }
+
+            if (!ServerConfigurationManager.Configuration.EnableWin8HttpListener)
+            {
+                _supportsNativeWebSocket = false;
+            }
+
             HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html", _supportsNativeWebSocket);
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -470,7 +482,7 @@ namespace MediaBrowser.Server.Startup.Common
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, DtoService, this);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
@@ -735,7 +747,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
-            StartServer(true);
+            StartServer();
 
             LibraryManager.AddParts(GetExports<IResolverIgnoreRule>(),
                                     GetExports<IVirtualFolderCreator>(),
@@ -773,8 +785,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Starts the server.
         /// </summary>
-        /// <param name="retryOnFailure">if set to <c>true</c> [retry on failure].</param>
-        private void StartServer(bool retryOnFailure)
+        private void StartServer()
         {
             try
             {
@@ -784,16 +795,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 Logger.ErrorException("Error starting http server", ex);
 
-                if (retryOnFailure)
-                {
-                    RegisterServerWithAdministratorAccess();
-
-                    StartServer(false);
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
         }
 
@@ -1070,9 +1072,8 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 NativeApp.AuthorizeServer(
-                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    HttpServerUrlPrefixes.First(),
                     UdpServerEntryPoint.PortNumber,
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }
             catch (Exception ex)
