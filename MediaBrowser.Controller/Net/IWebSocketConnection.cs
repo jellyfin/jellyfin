@@ -1,9 +1,10 @@
-﻿using MediaBrowser.Model.Net;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     public interface IWebSocketConnection : IDisposable
     {

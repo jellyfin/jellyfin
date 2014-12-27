@@ -219,11 +219,15 @@
     <Compile Include="Net\IServerManager.cs" />
     <Compile Include="Net\IServiceRequest.cs" />
     <Compile Include="Net\ISessionContext.cs" />
+    <Compile Include="Net\IWebSocket.cs" />
+    <Compile Include="Net\IWebSocketConnection.cs" />
     <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />
     <Compile Include="Net\SecurityException.cs" />
     <Compile Include="Net\ServiceStackServiceRequest.cs" />
     <Compile Include="Net\StaticResultOptions.cs" />
+    <Compile Include="Net\WebSocketConnectEventArgs.cs" />
+    <Compile Include="Net\WebSocketMessageInfo.cs" />
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationManager.cs" />
     <Compile Include="Notifications\INotificationService.cs" />

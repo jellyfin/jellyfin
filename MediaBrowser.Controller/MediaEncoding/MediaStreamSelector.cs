@@ -34,15 +34,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public static int? GetDefaultSubtitleStreamIndex(List<MediaStream> streams,
-            IEnumerable<string> preferredLanguages,
+            List<string> preferredLanguages,
             SubtitlePlaybackMode mode,
             string audioTrackLanguage)
         {
-            var languages = preferredLanguages.ToList();
-            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, languages).ToList();
+            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages).ToList();
 
             var full = streams.Where(s => !s.IsForced);
-            var forced = streams.Where(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
 
             MediaStream stream = null;
 
@@ -54,9 +52,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (mode == SubtitlePlaybackMode.Default)
             {
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
-                if (!ContainsOrdinal(languages, audioTrackLanguage))
+                if (!ContainsOrdinal(preferredLanguages, audioTrackLanguage))
                 {
-                    stream = full.FirstOrDefault(s => ContainsOrdinal(languages, s.Language));
+                    stream = full.FirstOrDefault(s => ContainsOrdinal(preferredLanguages, s.Language));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
@@ -66,7 +64,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // load forced subs if we have found no suitable full subtitles
-            stream = stream ?? forced.FirstOrDefault();
+            stream = stream ?? streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
 
             if (stream != null)
             {

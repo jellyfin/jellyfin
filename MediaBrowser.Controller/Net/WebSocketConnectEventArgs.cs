@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Class WebSocketConnectEventArgs

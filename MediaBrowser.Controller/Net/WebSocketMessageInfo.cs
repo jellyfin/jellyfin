@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Net;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Class WebSocketMessageInfo
