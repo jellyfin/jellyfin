@@ -69,10 +69,6 @@
     <Compile Include="IApplicationHost.cs" />
     <Compile Include="Net\IHttpClient.cs" />
     <Compile Include="Net\INetworkManager.cs" />
-    <Compile Include="Net\IWebSocket.cs" />
-    <Compile Include="Net\IWebSocketConnection.cs" />
-    <Compile Include="Net\WebSocketConnectEventArgs.cs" />
-    <Compile Include="Net\WebSocketMessageInfo.cs" />
     <Compile Include="Plugins\IDependencyModule.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />

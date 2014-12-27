@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
