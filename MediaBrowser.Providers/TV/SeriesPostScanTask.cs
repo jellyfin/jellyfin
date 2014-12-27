@@ -76,10 +76,6 @@ namespace MediaBrowser.Providers.TV
                     .Select(i => i.Id)
                     .ToList();
 
-                series.DateLastEpisodeAdded = physicalEpisodes.Select(i => i.DateCreated)
-                    .OrderByDescending(i => i)
-                    .FirstOrDefault();
-
                 numComplete++;
                 double percent = numComplete;
                 percent /= seriesList.Count;

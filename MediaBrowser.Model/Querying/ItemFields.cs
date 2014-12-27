@@ -234,6 +234,11 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The media streams
         /// </summary>
-        MediaStreams
+        MediaStreams,
+
+        /// <summary>
+        /// The season user data
+        /// </summary>
+        SeasonUserData
     }
 }

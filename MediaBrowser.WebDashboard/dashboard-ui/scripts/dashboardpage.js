@@ -1249,7 +1249,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
 (function ($, document, window) {
 
-    var welcomeDismissValue = '7';
+    var welcomeDismissValue = '8';
     var welcomeTourKey = 'welcomeTour';
 
     function dismissWelcome(page, userId) {
@@ -1281,6 +1281,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         $.swipebox([
                 { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
+                { href: 'css/images/tour/dashboard/help.png', title: Globalize.translate('DashboardTourHelp') },
                 { href: 'css/images/tour/dashboard/users.png', title: Globalize.translate('DashboardTourUsers') },
                 { href: 'css/images/tour/dashboard/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
                 { href: 'css/images/tour/dashboard/chapters.png', title: Globalize.translate('DashboardTourChapters') },

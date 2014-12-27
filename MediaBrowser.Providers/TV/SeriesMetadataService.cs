@@ -7,7 +7,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -53,30 +52,6 @@ namespace MediaBrowser.Providers.TV
             {
                 target.DisplaySpecialsWithSeasons = source.DisplaySpecialsWithSeasons;
             }
-        }
-
-        protected override ItemUpdateType BeforeSave(Series item)
-        {
-            var updateType = base.BeforeSave(item);
-
-            var episodes = item.RecursiveChildren
-                .OfType<Episode>()
-                .ToList();
-
-            var dateLastEpisodeAdded = item.DateLastEpisodeAdded;
-
-            item.DateLastEpisodeAdded = episodes
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .Select(i => i.DateCreated)
-                .OrderByDescending(i => i)
-                .FirstOrDefault();
-
-            if (dateLastEpisodeAdded != item.DateLastEpisodeAdded)
-            {
-                updateType = updateType | ItemUpdateType.MetadataImport;
-            }
-
-            return updateType;
         }
     }
 }

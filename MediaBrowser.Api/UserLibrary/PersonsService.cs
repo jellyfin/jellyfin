@@ -86,17 +86,16 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = GetPerson(request.Name, LibraryManager);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true));
+            var dtoOptions = new DtoOptions();
 
             if (request.UserId.HasValue)
             {
                 var user = UserManager.GetUserById(request.UserId.Value);
 
-                return DtoService.GetBaseItemDto(item, fields.ToList(), user);
+                return DtoService.GetBaseItemDto(item, dtoOptions, user);
             }
 
-            return DtoService.GetBaseItemDto(item, fields.ToList());
+            return DtoService.GetBaseItemDto(item, dtoOptions);
         }
 
         /// <summary>

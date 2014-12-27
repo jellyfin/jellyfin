@@ -332,13 +332,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = job.UserId
             };
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
-            syncedItem.Item = _dtoService.GetBaseItemDto(libraryItem, new DtoOptions
-            {
-                Fields = fields
-            });
+            syncedItem.Item = _dtoService.GetBaseItemDto(libraryItem, new DtoOptions());
 
             // TODO: this should be the media source of the transcoded output
             syncedItem.Item.MediaSources = syncedItem.Item.MediaSources
