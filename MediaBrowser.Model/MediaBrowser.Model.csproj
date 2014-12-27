@@ -367,6 +367,7 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Sync\DeviceFileInfo.cs" />
     <Compile Include="Sync\ItemFIleInfo.cs" />
     <Compile Include="Sync\ItemFileType.cs" />
     <Compile Include="Sync\SyncCategory.cs" />

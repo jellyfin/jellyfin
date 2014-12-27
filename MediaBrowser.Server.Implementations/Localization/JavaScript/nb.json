@@ -40,6 +40,7 @@
     "LabelStopping": "Stoppe",
     "LabelCancelled": "(kansellert)",
     "LabelFailed": "(Feilet)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(Avbrutt av server shutdown)",
     "LabelScheduledTaskLastRan": "Sist kj\u00f8rt {0}, tar {1}.",
     "HeaderDeleteTaskTrigger": "Slett Oppgave Trigger",
@@ -249,7 +250,7 @@
     "ButtonMoveRight": "Flytt til h\u00f8yre",
     "ButtonBrowseOnlineImages": "Bla igjennom bilder online",
     "HeaderDeleteItem": "Slett element",
-    "ConfirmDeleteItem": "Er du sikker p\u00e5 at du vil slette dette elementet fra ditt bibliotek?",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Vennligst skriv ett navn eller en ekstern id.",
     "MessageValueNotCorrect": "Verdien som ble skrevet er ikke korrekt. Vennligst pr\u00f8v igjen.",
     "MessageItemSaved": "Element lagret.",
@@ -412,7 +413,7 @@
     "HeaderMediaLocations": "Media Steder",
     "LabelFolderTypeValue": "Mappe type: {0}",
     "LabelPathSubstitutionHelp": "Valgfritt: Sti erstatter kan koble server stier til nettverkressurser som klienter har tilgang til for direkte avspilling.",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musikk",
     "FolderTypeAdultVideos": "Voksen videoer",
@@ -588,6 +589,7 @@
     "WebClientTourMobile2": "og enkelt styrer andre enheter og mediabrowser apps",
     "MessageEnjoyYourStay": "Nyt oppholdet",
     "DashboardTourDashboard": "The server dashboard allows you to monitor your server and your users. You'll always know who is doing what and where they are.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Opprett bruker kontoer enkelt for dine venner og familie, hver med deres egne rettigheter, bibliotek tillgang, foreldre kontroll og mere til.",
     "DashboardTourCinemaMode": "Kino-modus bringer kinoopplevelsen direkte til din stue med muligheten til \u00e5 spille trailere og tilpassede introer f\u00f8r filmen begynner.",
     "DashboardTourChapters": "Aktiver generering av kapittel bilder  for dine videoer for en mer behagelig presentasjon mens du ser p\u00e5.",
@@ -650,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed with as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }

@@ -40,6 +40,7 @@
     "LabelStopping": "\u505c\u6b62",
     "LabelCancelled": "(\u5df2\u53d6\u6d88)",
     "LabelFailed": "(\u5931\u8d25)",
+    "ButtonHelp": "Help",
     "LabelAbortedByServerShutdown": "(\u56e0\u4e3a\u670d\u52a1\u5668\u5173\u95ed\u88ab\u4e2d\u6b62)",
     "LabelScheduledTaskLastRan": "\u6700\u540e\u8fd0\u884c {0}, \u82b1\u8d39\u65f6\u95f4 {1}.",
     "HeaderDeleteTaskTrigger": "\u5220\u9664\u4efb\u52a1\u89e6\u53d1\u6761\u4ef6",
@@ -249,7 +250,7 @@
     "ButtonMoveRight": "\u53f3\u79fb",
     "ButtonBrowseOnlineImages": "\u6d4f\u89c8\u5728\u7ebf\u56fe\u7247",
     "HeaderDeleteItem": "\u5220\u9664\u9879\u76ee",
-    "ConfirmDeleteItem": "\u4f60\u786e\u5b9a\u5e0c\u671b\u4ece\u5a92\u4f53\u5e93\u91cc\u5220\u9664\u8fd9\u4e2a\u9879\u76ee\uff1f",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "\u8bf7\u8f93\u5165\u4e00\u4e2a\u540d\u79f0\u6216\u4e00\u4e2a\u5916\u90e8ID\u3002",
     "MessageValueNotCorrect": "\u8f93\u5165\u7684\u503c\u4e0d\u6b63\u786e\u3002\u8bf7\u91cd\u8bd5\u3002",
     "MessageItemSaved": "\u9879\u76ee\u5df2\u4fdd\u5b58\u3002",
@@ -412,7 +413,7 @@
     "HeaderMediaLocations": "\u5a92\u4f53\u4f4d\u7f6e",
     "LabelFolderTypeValue": "\u6587\u4ef6\u5939\u7c7b\u578b\uff1a {0}",
     "LabelPathSubstitutionHelp": "\u53ef\u9009\uff1a\u66ff\u4ee3\u8def\u5f84\u80fd\u628a\u670d\u52a1\u5668\u8def\u5f84\u6620\u5c04\u5230\u7f51\u7edc\u5171\u4eab\uff0c\u4ece\u800c\u4f7f\u5ba2\u6237\u7aef\u53ef\u4ee5\u76f4\u63a5\u64ad\u653e\u3002",
-    "FolderTypeMixed": "Mixed videos",
+    "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "\u7535\u5f71",
     "FolderTypeMusic": "\u97f3\u4e50",
     "FolderTypeAdultVideos": "\u6210\u4eba\u89c6\u9891",
@@ -588,6 +589,7 @@
     "WebClientTourMobile2": "and easily controls other devices and Media Browser apps",
     "MessageEnjoyYourStay": "Enjoy your stay",
     "DashboardTourDashboard": "The server dashboard allows you to monitor your server and your users. You'll always know who is doing what and where they are.",
+    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
     "DashboardTourUsers": "Easily create user accounts for your friends and family, each with their own permissions, library access, parental controls and more.",
     "DashboardTourCinemaMode": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
     "DashboardTourChapters": "Enable chapter image generation for your videos for a more pleasing presentation while viewing.",
@@ -650,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed with as a plain folder structure"
+    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
 }
