@@ -174,7 +174,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 // Need to check Count > 0 for boxsets created prior to the introduction of Shares
                 if (Shares.Count > 0 && !Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    return false;
+                    //return false;
                 }
 
                 return true;

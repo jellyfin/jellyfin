@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Media Steder",
     "LabelFolderTypeValue": "Mappe type: {0}",
     "LabelPathSubstitutionHelp": "Valgfritt: Sti erstatter kan koble server stier til nettverkressurser som klienter har tilgang til for direkte avspilling.",
-    "FolderTypeMixed": "Mixed content",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musikk",
     "FolderTypeAdultVideos": "Voksen videoer",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

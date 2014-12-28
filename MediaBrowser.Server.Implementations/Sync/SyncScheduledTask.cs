@@ -28,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public string Name
         {
-            get { return "Sync"; }
+            get { return "Sync preparation"; }
         }
 
         public string Description

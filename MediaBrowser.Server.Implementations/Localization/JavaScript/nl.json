@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Media Locaties",
     "LabelFolderTypeValue": "Map type: {0}",
     "LabelPathSubstitutionHelp": "Optioneel: Pad vervanging kan server paden naar netwerk locaties verwijzen zodat clients direct kunnen afspelen.",
-    "FolderTypeMixed": "Gemengde inhoud",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Films",
     "FolderTypeMusic": "Muziek",
     "FolderTypeAdultVideos": "Adult video's",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optioneel. Een limiet stellen aan het aantal items die zullen worden gesynchroniseerd.",
     "MessageBookPluginRequired": "Vereist installatie van de Bookshelf plugin",
     "MessageGamePluginRequired": "Vereist installatie van de GameBrowser plugin",
-    "MessageMixedContentHelp": "Inhoud zal worden weergegeven als een gewone mappenstructuur"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

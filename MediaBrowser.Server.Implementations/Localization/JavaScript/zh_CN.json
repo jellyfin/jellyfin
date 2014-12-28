@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "\u5a92\u4f53\u4f4d\u7f6e",
     "LabelFolderTypeValue": "\u6587\u4ef6\u5939\u7c7b\u578b\uff1a {0}",
     "LabelPathSubstitutionHelp": "\u53ef\u9009\uff1a\u66ff\u4ee3\u8def\u5f84\u80fd\u628a\u670d\u52a1\u5668\u8def\u5f84\u6620\u5c04\u5230\u7f51\u7edc\u5171\u4eab\uff0c\u4ece\u800c\u4f7f\u5ba2\u6237\u7aef\u53ef\u4ee5\u76f4\u63a5\u64ad\u653e\u3002",
-    "FolderTypeMixed": "Mixed content",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "\u7535\u5f71",
     "FolderTypeMusic": "\u97f3\u4e50",
     "FolderTypeAdultVideos": "\u6210\u4eba\u89c6\u9891",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

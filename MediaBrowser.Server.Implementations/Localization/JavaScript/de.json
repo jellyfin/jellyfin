@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Medienquellen",
     "LabelFolderTypeValue": "Verzeichnistyp: {0}",
     "LabelPathSubstitutionHelp": "Optional: Die Pfadersetzung kann Serverpfade zu Netzwerkfreigaben umleiten, die von Endger\u00e4ten f\u00fcr die direkte Wiedergabe genutzt werden k\u00f6nnen.",
-    "FolderTypeMixed": "Gemischte Inhalte",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Filme",
     "FolderTypeMusic": "Musik",
     "FolderTypeAdultVideos": "Videos f\u00fcr Erwachsene",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Legen Sie die maximale Anzahl der zu synchronisierenden Eintr\u00e4ge fest.",
     "MessageBookPluginRequired": "Setzt die Installation des Bookshelf-Plugins voraus.",
     "MessageGamePluginRequired": "Setzt die Installation des GameBrowser-Plugins voraus.",
-    "MessageMixedContentHelp": "Inhalt wird als Verzeichnisstruktur angezeigt."
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }
