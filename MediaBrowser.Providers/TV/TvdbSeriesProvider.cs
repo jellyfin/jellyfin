@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.TV
                     await zipStream.CopyToAsync(ms).ConfigureAwait(false);
 
                     ms.Position = 0;
-                    _zipClient.ExtractAll(ms, seriesDataPath, true);
+                    _zipClient.ExtractAllFromZip(ms, seriesDataPath, true);
                 }
             }
 

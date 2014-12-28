@@ -68,6 +68,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
+        private IMultiItemResolver[] MultiItemResolvers { get; set; }
 
         /// <summary>
         /// Gets or sets the comparers.
@@ -196,9 +197,10 @@ namespace MediaBrowser.Server.Implementations.Library
             EntityResolutionIgnoreRules = rules.ToArray();
             PluginFolderCreators = pluginFolders.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
+            MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
-
+            
             PostscanTasks = postscanTasks.OrderBy(i =>
             {
                 var hasOrder = i as IHasOrder;
@@ -344,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
+                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -658,9 +660,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parent != null)
             {
-                var multiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>();
-
-                foreach (var resolver in multiItemResolvers)
+                foreach (var resolver in MultiItemResolvers)
                 {
                     var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService);
 

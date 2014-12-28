@@ -121,14 +121,28 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             ILibraryManager libraryManager)
         {
             var discSubfolderCount = 0;
+            var notMultiDisc = false;
 
             foreach (var fileSystemInfo in list)
             {
                 if ((fileSystemInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-                    if (allowSubfolders && IsAlbumSubfolder(fileSystemInfo, directoryService, logger, fileSystem, libraryManager))
+                    if (allowSubfolders)
                     {
-                        discSubfolderCount++;
+                        var path = fileSystemInfo.FullName;
+                        var isMultiDisc = IsMultiDiscFolder(path);
+                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+
+                        if (isMultiDisc && hasMusic)
+                        {
+                            logger.Debug("Found multi-disc folder: " + path);
+                            discSubfolderCount++;
+                        }
+                        else if (hasMusic)
+                        {
+                            // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
+                            notMultiDisc = true;
+                        }
                     }
                 }
 
@@ -140,34 +154,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 }
             }
 
-            return discSubfolderCount > 0;
-        }
-
-        private static bool IsAlbumSubfolder(FileSystemInfo directory, IDirectoryService directoryService, ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager)
-        {
-            var path = directory.FullName;
-
-            if (IsMultiDiscFolder(path))
+            if (notMultiDisc)
             {
-                logger.Debug("Found multi-disc folder: " + path);
-
-                return ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+                return false;
             }
 
-            return false;
+            return discSubfolderCount > 0 && discSubfolderCount > 10;
         }
 
-        public static bool IsMultiDiscFolder(string path)
-        {
-            return IsMultiDiscAlbumFolder(path);
-        }
-
-        /// <summary>
-        /// Determines whether [is multi disc album folder] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is multi disc album folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsMultiDiscAlbumFolder(string path)
+        private static bool IsMultiDiscFolder(string path)
         {
             var parser = new AlbumParser(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
             var result = parser.ParseMultiPart(path);

@@ -316,35 +316,26 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                jobItem.OutputPath = await Sync(jobItem, video, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, video, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                jobItem.OutputPath = await Sync(jobItem, (Audio)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Audio)item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
             {
-                jobItem.OutputPath = await Sync(jobItem, (Photo)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Photo)item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
-            else if (item is Game)
+            else
             {
-                jobItem.OutputPath = await Sync(jobItem, (Game)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await SyncGeneric(jobItem, item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
-
-            else if (item is Book)
-            {
-                jobItem.OutputPath = await Sync(jobItem, (Book)item, deviceProfile, cancellationToken).ConfigureAwait(false);
-            }
-
-            jobItem.Progress = 50;
-            jobItem.Status = SyncJobItemStatus.Transferring;
-            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, CancellationToken cancellationToken)
         {
             var options = new VideoOptions
             {
@@ -359,26 +350,33 @@ namespace MediaBrowser.Server.Implementations.Sync
             var mediaSource = streamInfo.MediaSource;
 
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
-            await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
-            if (streamInfo.PlayMethod != PlayMethod.Transcode)
+            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            {
+                await _syncRepo.Update(jobItem).ConfigureAwait(false);
+            }
+            else
             {
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
-                    return mediaSource.Path;
+                    jobItem.OutputPath = mediaSource.Path;
                 }
                 if (mediaSource.Protocol == MediaProtocol.Http)
                 {
-                    return await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
+                    jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
                 throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
             }
 
             // TODO: Transcode
-            return mediaSource.Path;
+            jobItem.OutputPath = mediaSource.Path;
+
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, CancellationToken cancellationToken)
         {
             var options = new AudioOptions
             {
@@ -393,38 +391,48 @@ namespace MediaBrowser.Server.Implementations.Sync
             var mediaSource = streamInfo.MediaSource;
 
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
-            await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
-            if (streamInfo.PlayMethod != PlayMethod.Transcode)
+            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            {
+                await _syncRepo.Update(jobItem).ConfigureAwait(false);
+            }
+            else
             {
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
-                    return mediaSource.Path;
+                    jobItem.OutputPath = mediaSource.Path;
                 }
                 if (mediaSource.Protocol == MediaProtocol.Http)
                 {
-                    return await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
+                    jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
                 throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
             }
 
             // TODO: Transcode
-            return mediaSource.Path;
+            jobItem.OutputPath = mediaSource.Path;
+
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Photo item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Photo item, DeviceProfile profile, CancellationToken cancellationToken)
         {
-            return item.Path;
+            jobItem.OutputPath = item.Path;
+
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Game item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task SyncGeneric(SyncJobItem jobItem, BaseItem item, DeviceProfile profile, CancellationToken cancellationToken)
         {
-            return item.Path;
-        }
+            jobItem.OutputPath = item.Path;
 
-        private async Task<string> Sync(SyncJobItem jobItem, Book item, DeviceProfile profile, CancellationToken cancellationToken)
-        {
-            return item.Path;
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
         private async Task<string> DownloadFile(SyncJobItem jobItem, MediaSourceInfo mediaSource, CancellationToken cancellationToken)

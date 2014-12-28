@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -20,6 +19,7 @@ using MediaBrowser.Model.Users;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -337,7 +337,19 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = job.UserId
             };
 
-            syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, new DtoOptions());
+            var dtoOptions = new DtoOptions();
+
+            // Remove some bloat
+            dtoOptions.Fields.Remove(ItemFields.MediaStreams);
+            dtoOptions.Fields.Remove(ItemFields.IndexOptions);
+            dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
+            dtoOptions.Fields.Remove(ItemFields.OriginalPrimaryImageAspectRatio);
+            dtoOptions.Fields.Remove(ItemFields.Path);
+            dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
+            dtoOptions.Fields.Remove(ItemFields.Settings);
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+
+            syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
 
             // TODO: this should be the media source of the transcoded output
             syncedItem.Item.MediaSources = syncedItem.Item.MediaSources
@@ -370,10 +382,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                //Status = SyncJobItemStatus.Transferring
+                Status = SyncJobItemStatus.Transferring
             });
 
-            return jobItemResult.Items.Select(GetJobItemInfo).ToList();
+            return jobItemResult.Items.Select(GetJobItemInfo)
+                .ToList();
         }
     }
 }
