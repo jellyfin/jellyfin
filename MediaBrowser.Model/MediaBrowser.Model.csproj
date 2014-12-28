@@ -370,6 +370,7 @@
     <Compile Include="Sync\DeviceFileInfo.cs" />
     <Compile Include="Sync\ItemFIleInfo.cs" />
     <Compile Include="Sync\ItemFileType.cs" />
+    <Compile Include="Sync\LocalItem.cs" />
     <Compile Include="Sync\SyncCategory.cs" />
     <Compile Include="Sync\SyncDialogOptions.cs" />
     <Compile Include="Sync\SyncedItem.cs" />

@@ -24,10 +24,5 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The type of the image.</value>
         public ImageType ImageType { get; set; }
-        /// <summary>
-        /// Gets or sets the item identifier.
-        /// </summary>
-        /// <value>The item identifier.</value>
-        public string ItemId { get; set; }
     }
 }

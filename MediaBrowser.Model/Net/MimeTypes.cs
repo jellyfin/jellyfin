@@ -72,7 +72,7 @@ namespace MediaBrowser.Model.Net
                 {".asf", "video/x-ms-asf"},
                 {".m4v", "video/x-m4v"}
             };
-        
+
         private static readonly Dictionary<string, string> ExtensionLookup =
            MimeTypeLookup
            .GroupBy(i => i.Value)
@@ -267,7 +267,17 @@ namespace MediaBrowser.Model.Net
 
         public static string ToExtension(string mimeType)
         {
-            return ExtensionLookup[mimeType];
+            if (string.IsNullOrEmpty(mimeType))
+            {
+                throw new ArgumentNullException("mimeType");
+            }
+
+            string result;
+            if (ExtensionLookup.TryGetValue(mimeType, out result))
+            {
+                return result;
+            }
+            throw new ArgumentNullException("Unable to determine extension for mimeType: " + mimeType);
         }
     }
 }

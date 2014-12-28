@@ -40,7 +40,7 @@
     "LabelStopping": "Deteniendo",
     "LabelCancelled": "(cancelado)",
     "LabelFailed": "(Fallido)",
-    "ButtonHelp": "Help",
+    "ButtonHelp": "Ayuda",
     "LabelAbortedByServerShutdown": "(Abortada por apagado del servidor)",
     "LabelScheduledTaskLastRan": "Ejecutado hace {0}, tomando {1}.",
     "HeaderDeleteTaskTrigger": "Borrar Disparador de Tarea",
@@ -250,7 +250,7 @@
     "ButtonMoveRight": "Mover a la derecha",
     "ButtonBrowseOnlineImages": "Buscar im\u00e1genes en l\u00ednea",
     "HeaderDeleteItem": "Eliminar \u00cdtem",
-    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
+    "ConfirmDeleteItem": "Al eliminar este \u00edtem se eliminar\u00e1 tanto del sistema de archivos como de su biblioteca de medios. \u00bfEsta seguro de querer continuar?",
     "MessagePleaseEnterNameOrId": "Por favor ingrese un nombre o id externo.",
     "MessageValueNotCorrect": "El valor ingresado no es correcto. Intente nuevamente por favor.",
     "MessageItemSaved": "\u00cdtem guardado.",
@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Ubicaciones de Medios",
     "LabelFolderTypeValue": "Tipo de carpeta: {0}",
     "LabelPathSubstitutionHelp": "Opcional: La sustituci\u00f3n de trayectoras puede mapear trayectorias del servidor a recursos de red comaprtidos que los clientes pueden acceder para reproducir de manera directa.",
-    "FolderTypeMixed": "Mixed content",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Pel\u00edculas",
     "FolderTypeMusic": "M\u00fasica",
     "FolderTypeAdultVideos": "Videos para adultos",
@@ -589,7 +589,7 @@
     "WebClientTourMobile2": "y controla f\u00e1cilmente otros dispositivos y apps de Media Browser",
     "MessageEnjoyYourStay": "Disfrute su visita",
     "DashboardTourDashboard": "El panel de control del servidor le permite monitorear su servidor y sus usuarios. Siempre sabr\u00e1 quien est\u00e1 haciendo qu\u00e9 y donde se encuentran.",
-    "DashboardTourHelp": "In-app help provides easy buttons to open wiki pages relating to the on-screen content.",
+    "DashboardTourHelp": "La ayuda dentro de la app proporciona botones simples para abrir p\u00e1ginas de la wiki relacionadas con el contenido en pantalla.",
     "DashboardTourUsers": "Cree cuentas f\u00e1cilmente para sus amigos y familia, cada una con sus propios permisos, accesos a la biblioteca, controles parentales y m\u00e1s.",
     "DashboardTourCinemaMode": "El modo cine trae la experiencia del cine directo a su sala de TV con la capacidad de reproducir avances e intros personalizados antes de la presentaci\u00f3n estelar.",
     "DashboardTourChapters": "Active la generaci\u00f3n de im\u00e1genes de cap\u00edtulos de sus videos para una presentaci\u00f3n m\u00e1s agradable al desplegar.",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Opcional. Establece un l\u00edmite en el n\u00famero de \u00edtems que ser\u00e1n sincronizados.",
     "MessageBookPluginRequired": "Requiere instalaci\u00f3n del complemento Bookshelf",
     "MessageGamePluginRequired": "Requiere instalaci\u00f3n del complemento de GameBrowser",
-    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

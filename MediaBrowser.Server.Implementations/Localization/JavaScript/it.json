@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Posizioni Media",
     "LabelFolderTypeValue": "Tipo cartella: {0}",
     "LabelPathSubstitutionHelp": "Opzionale: cambio Path pu\u00f2 mappare i percorsi del server a condivisioni di rete che i clienti possono accedere per la riproduzione diretta.",
-    "FolderTypeMixed": "Mixed content",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Film",
     "FolderTypeMusic": "Musica",
     "FolderTypeAdultVideos": "Video per adulti",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

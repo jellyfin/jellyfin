@@ -413,7 +413,7 @@
     "HeaderMediaLocations": "Lagringsplatser f\u00f6r media",
     "LabelFolderTypeValue": "Typ av mapp: {0}",
     "LabelPathSubstitutionHelp": "Tillval: S\u00f6kv\u00e4gsutbyte betyder att en plats p\u00e5 servern kopplas till en lokal fils\u00f6kv\u00e4g p\u00e5 en klient. P\u00e5 s\u00e5 s\u00e4tt f\u00e5r klienten direkt tillg\u00e5ng till material p\u00e5 servern och kan spela upp det direkt via n\u00e4tverket.",
-    "FolderTypeMixed": "Mixed content",
+    "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musik",
     "FolderTypeAdultVideos": "Inneh\u00e5ll f\u00f6r vuxna",
@@ -652,5 +652,5 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageMixedContentHelp": "Content will be displayed as a plain folder structure"
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
 }

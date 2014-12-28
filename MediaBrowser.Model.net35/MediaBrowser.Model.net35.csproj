@@ -1008,6 +1008,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\ItemFileType.cs">
       <Link>Sync\ItemFileType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\LocalItem.cs">
+      <Link>Sync\LocalItem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
       <Link>Sync\SyncCategory.cs</Link>
     </Compile>
