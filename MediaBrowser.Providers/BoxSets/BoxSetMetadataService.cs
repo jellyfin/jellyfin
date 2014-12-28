@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.BoxSets
                 if (!string.Equals(currentOfficialRating ?? string.Empty, item.OfficialRating ?? string.Empty,
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataDownload;
+                    updateType = updateType | ItemUpdateType.MetadataEdit;
                 }
             }
 

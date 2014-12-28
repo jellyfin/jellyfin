@@ -35,19 +35,22 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = base.BeforeSave(item);
 
-            if (!item.IsAccessedByName && !item.LockedFields.Contains(MetadataFields.Genres))
+            if (!item.IsAccessedByName && !item.IsLocked)
             {
-                var songs = item.RecursiveChildren.OfType<Audio>().ToList();
-
-                var currentList = item.Genres.ToList();
-
-                item.Genres = songs.SelectMany(i => i.Genres)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (!item.LockedFields.Contains(MetadataFields.Genres))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataDownload;
+                    var songs = item.RecursiveChildren.OfType<Audio>().ToList();
+
+                    var currentList = item.Genres.ToList();
+
+                    item.Genres = songs.SelectMany(i => i.Genres)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataEdit;
+                    }
                 }
             } 
             

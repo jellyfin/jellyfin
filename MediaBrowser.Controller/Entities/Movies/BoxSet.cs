@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer, IHasShares
     {
         public List<Share> Shares { get; set; }
-        
+
         public BoxSet()
         {
             RemoteTrailers = new List<MediaUrl>();
@@ -171,10 +171,13 @@ namespace MediaBrowser.Controller.Entities.Movies
             {
                 var userId = user.Id.ToString("N");
 
-                return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
+                // Need to check Count > 0 for boxsets created prior to the introduction of Shares
+                if (Shares.Count > 0 && !Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
 
-                    // Need to support this for boxsets created prior to the creation of Shares
-                    Shares.Count == 0;
+                return true;
             }
 
             return false;

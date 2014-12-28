@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -24,6 +25,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Contains [boxset] in the path
             if (args.IsDirectory)
             {
+                if (IsInvalid(args.GetCollectionType()))
+                {
+                    return null;
+                }
+                
                 var filename = Path.GetFileName(args.Path);
 
                 if (string.IsNullOrEmpty(filename))
@@ -43,6 +49,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             return null;
+        }
+
+        private bool IsInvalid(string collectionType)
+        {
+            var validCollectionTypes = new[]
+            {
+                CollectionType.Movies,
+                CollectionType.BoxSets
+            };
+
+            return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

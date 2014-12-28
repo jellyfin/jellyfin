@@ -860,6 +860,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private async Task UpdateUserPolicy(User user, UserPolicy userPolicy, bool fireEvent)
         {
+            // The xml serializer will output differently if the type is not exact
+            if (userPolicy.GetType() != typeof(UserPolicy))
+            {
+                var json = _jsonSerializer.SerializeToString(userPolicy);
+                userPolicy = _jsonSerializer.DeserializeFromString<UserPolicy>(json);
+            }
+            
             var updateConfig = user.Policy.IsAdministrator != userPolicy.IsAdministrator ||
                 user.Policy.EnableLiveTvManagement != userPolicy.EnableLiveTvManagement ||
                 user.Policy.EnableLiveTvAccess != userPolicy.EnableLiveTvAccess ||

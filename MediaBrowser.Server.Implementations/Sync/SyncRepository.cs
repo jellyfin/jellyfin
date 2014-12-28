@@ -227,7 +227,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobCommand.GetParameter(index++).Value = job.TargetId;
                 _saveJobCommand.GetParameter(index++).Value = job.Name;
                 _saveJobCommand.GetParameter(index++).Value = job.Quality;
-                _saveJobCommand.GetParameter(index++).Value = job.Status;
+                _saveJobCommand.GetParameter(index++).Value = job.Status.ToString();
                 _saveJobCommand.GetParameter(index++).Value = job.Progress;
                 _saveJobCommand.GetParameter(index++).Value = job.UserId;
                 _saveJobCommand.GetParameter(index++).Value = string.Join(",", job.RequestedItemIds.ToArray());
@@ -466,13 +466,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                     whereClauses.Add("TargetId=@TargetId");
                     cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
+
                 if (query.Status.HasValue)
                 {
                     whereClauses.Add("Status=@Status");
                     cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = query.Status.Value.ToString();
                 }
 
-                if (query.IsCompleted.HasValue)
+                else if (query.IsCompleted.HasValue)
                 {
                     if (query.IsCompleted.Value)
                     {
@@ -561,7 +562,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.MediaSourceId;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.JobId;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.OutputPath;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.Status;
+                _saveJobItemCommand.GetParameter(index++).Value = jobItem.Status.ToString();
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.TargetId;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.DateCreated;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.Progress;

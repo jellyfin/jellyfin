@@ -99,7 +99,7 @@
 
         })[0];
 
-        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeMixed');
+        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeUnset');
 
         html += '<p style="padding-left:.5em;">';
 
@@ -252,7 +252,7 @@
             { name: Globalize.translate('FolderTypeHomeVideos'), value: "homevideos" },
             { name: Globalize.translate('FolderTypeMusicVideos'), value: "musicvideos" },
             { name: Globalize.translate('FolderTypePhotos'), value: "photos" },
-            { name: Globalize.translate('FolderTypeMixed'), value: "mixed", message: Globalize.translate('MessageMixedContentHelp') }
+            { name: Globalize.translate('FolderTypeUnset'), value: "mixed", message: Globalize.translate('MessageUnsetContentHelp') }
         ];
 
     },

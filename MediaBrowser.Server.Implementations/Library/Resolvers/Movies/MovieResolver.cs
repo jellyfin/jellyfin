@@ -2,7 +2,6 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -183,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                     }
 
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                 }
 
                 if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
@@ -346,6 +345,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 var movie = (T)result.Items[0];
                 movie.IsInMixedFolder = false;
+                movie.Name = Path.GetFileName(movie.ContainingFolderPath);
                 return movie;
             }
 
@@ -446,21 +446,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            // Don't do any resolving within a series structure
-            if (string.IsNullOrEmpty(collectionType))
-            {
-                if (HasParent<Series>(parent) || HasParent<Season>(parent))
-                {
-                    return true;
-                }
-
-                // Since the looping is expensive, this is an optimization to help us avoid it
-                if (files.Select(i => i.Name).Contains("series.xml", StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
             var validCollectionTypes = new[]
             {
                 string.Empty,
@@ -471,26 +456,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             };
 
             return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-        }
-
-        private bool HasParent<T>(Folder parent)
-            where T : Folder
-        {
-            if (parent != null)
-            {
-                var item = parent as T;
-
-                // Just in case the user decided to nest episodes. 
-                // Not officially supported but in some cases we can handle it.
-                if (item == null)
-                {
-                    item = parent.Parents.OfType<T>().FirstOrDefault();
-                }
-
-                return item != null;
-
-            }
-            return false;
         }
     }
 }
