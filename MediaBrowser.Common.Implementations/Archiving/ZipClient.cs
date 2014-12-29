@@ -63,7 +63,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
                 reader.WriteAllToDirectory(targetPath, options);
             }
         }
-        
+
         /// <summary>
         /// Extracts all from7z.
         /// </summary>
