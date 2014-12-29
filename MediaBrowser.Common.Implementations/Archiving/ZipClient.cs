@@ -4,6 +4,7 @@ using SharpCompress.Archive.SevenZip;
 using SharpCompress.Archive.Tar;
 using SharpCompress.Common;
 using SharpCompress.Reader;
+using SharpCompress.Reader.Zip;
 using System.IO;
 
 namespace MediaBrowser.Common.Implementations.Archiving
@@ -36,6 +37,21 @@ namespace MediaBrowser.Common.Implementations.Archiving
         public void ExtractAll(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using (var reader = ReaderFactory.Open(source))
+            {
+                var options = ExtractOptions.ExtractFullPath;
+
+                if (overwriteExistingFiles)
+                {
+                    options = options | ExtractOptions.Overwrite;
+                }
+
+                reader.WriteAllToDirectory(targetPath, options);
+            }
+        }
+
+        public void ExtractAllFromZip(Stream source, string targetPath, bool overwriteExistingFiles)
+        {
+            using (var reader = ZipReader.Open(source))
             {
                 var options = ExtractOptions.ExtractFullPath;
 
