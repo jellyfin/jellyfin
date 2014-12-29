@@ -401,7 +401,7 @@
             }
 
             if (commands.indexOf('refresh') != -1) {
-                html += '<li><a class="btnMoreMenuRefresh" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.refreshItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+                html += '<li><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
@@ -421,6 +421,8 @@
             });
 
             $('.btnMoreMenuRefresh', elem).on('click', function () {
+
+                $('.playFlyout').popup('close');
 
                 ApiClient.refreshItem(itemId, {
 
