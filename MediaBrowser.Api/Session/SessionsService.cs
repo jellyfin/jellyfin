@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -299,6 +300,7 @@ namespace MediaBrowser.Api.Session
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IAuthenticationRepository _authRepo;
+        private readonly IDeviceManager _deviceManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
@@ -307,12 +309,13 @@ namespace MediaBrowser.Api.Session
         /// <param name="userManager">The user manager.</param>
         /// <param name="authContext">The authentication context.</param>
         /// <param name="authRepo">The authentication repo.</param>
-        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo)
+        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
             _authContext = authContext;
             _authRepo = authRepo;
+            _deviceManager = deviceManager;
         }
 
         public void Delete(RevokeKey request)
@@ -382,6 +385,21 @@ namespace MediaBrowser.Api.Session
                 {
                     result = result.Where(i => !i.UserId.HasValue);
                 }
+
+                result = result.Where(i =>
+                {
+                    var deviceId = i.DeviceId;
+
+                    if (!string.IsNullOrWhiteSpace(deviceId))
+                    {
+                        if (!_deviceManager.CanAccessDevice(user.Id.ToString("N"), deviceId))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
             }
 
             return ToOptimizedResult(result.Select(_sessionManager.GetSessionInfoDto).ToList());

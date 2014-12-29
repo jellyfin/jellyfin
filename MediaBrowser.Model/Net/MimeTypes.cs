@@ -73,10 +73,18 @@ namespace MediaBrowser.Model.Net
                 {".m4v", "video/x-m4v"}
             };
 
-        private static readonly Dictionary<string, string> ExtensionLookup =
-           MimeTypeLookup
-           .GroupBy(i => i.Value)
-           .ToDictionary(x => x.Key, x => x.First().Key, StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, string> ExtensionLookup = CreateExtensionLookup();
+
+        private static Dictionary<string, string> CreateExtensionLookup()
+        {
+            var dict = MimeTypeLookup
+                .GroupBy(i => i.Value)
+                .ToDictionary(x => x.Key, x => x.First().Key, StringComparer.OrdinalIgnoreCase);
+
+            dict["image/jpg"] = ".jpg";
+
+            return dict;
+        }
 
         /// <summary>
         /// Gets the type of the MIME.

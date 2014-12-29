@@ -52,6 +52,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="SharpCompress, Version=0.10.2.0, Culture=neutral, PublicKeyToken=beaf6f427e128133, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
+    </Reference>
     <Reference Include="SimpleInjector, Version=2.6.1.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SimpleInjector.2.6.1\lib\net45\SimpleInjector.dll</HintPath>
@@ -65,9 +69,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Net" />
     <Reference Include="System.Xml" />
-    <Reference Include="SharpCompress">
-      <HintPath>..\packages\sharpcompress.0.10.2\lib\net40\SharpCompress.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>

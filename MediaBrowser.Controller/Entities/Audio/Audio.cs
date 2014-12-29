@@ -89,6 +89,21 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
+        public bool IsArchive
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
+
+                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         /// <summary>
         /// Gets or sets the artist.
         /// </summary>
