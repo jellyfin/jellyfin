@@ -49,6 +49,9 @@ namespace MediaBrowser.Model.Users
         /// <value><c>true</c> if [enable synchronize]; otherwise, <c>false</c>.</value>
         public bool EnableSync { get; set; }
 
+        public string[] EnabledDevices { get; set; }
+        public bool EnableAllDevices { get; set; }
+
         public UserPolicy()
         {
             EnableLiveTvManagement = true;
@@ -64,6 +67,9 @@ namespace MediaBrowser.Model.Users
             EnableUserPreferenceAccess = true;
 
             AccessSchedules = new AccessSchedule[] { };
+
+            EnabledDevices = new string[] { };
+            EnableAllDevices = true;
         }
     }
 }

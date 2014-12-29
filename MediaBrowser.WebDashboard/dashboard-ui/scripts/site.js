@@ -1284,14 +1284,18 @@ var Dashboard = {
             initializeApiClient(apiClient);
         });
 
-        if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken() && !Dashboard.isServerlessPage()) {
-            window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+        if (!Dashboard.isServerlessPage()) {
+            if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
+                window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
 
-            ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+                ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
-            initializeApiClient(ApiClient);
+                initializeApiClient(ApiClient);
 
-            ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+                ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+            } else {
+                Dashboard.logout();
+            }
         }
 
     } else {

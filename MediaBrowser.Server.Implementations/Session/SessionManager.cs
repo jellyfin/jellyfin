@@ -1191,6 +1191,14 @@ namespace MediaBrowser.Server.Implementations.Session
             var user = _userManager.Users
                 .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
 
+            if (user != null && !string.IsNullOrWhiteSpace(request.DeviceId))
+            {
+                if (!_deviceManager.CanAccessDevice(user.Id.ToString("N"), request.DeviceId))
+                {
+                    throw new UnauthorizedAccessException("User is not allowed access from this device.");
+                }
+            }
+
             var result = await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
 
             if (!result)

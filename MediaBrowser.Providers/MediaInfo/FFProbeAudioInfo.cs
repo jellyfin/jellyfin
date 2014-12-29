@@ -38,6 +38,13 @@ namespace MediaBrowser.Providers.MediaInfo
         public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
             where T : Audio
         {
+            if (item.IsArchive)
+            {
+                var ext = Path.GetExtension(item.Path) ?? string.Empty;
+                item.Container = ext.TrimStart('.');
+                return ItemUpdateType.MetadataImport;
+            }
+
             var result = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -58,8 +65,8 @@ namespace MediaBrowser.Providers.MediaInfo
             cancellationToken.ThrowIfCancellationRequested();
 
             var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath, 
-                "ffprobe-audio", 
+            var cachePath = Path.Combine(_appPaths.CachePath,
+                "ffprobe-audio",
                 idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
             try
@@ -132,7 +139,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!string.IsNullOrEmpty(data.format.size))
                 {
-                    audio.Size = long.Parse(data.format.size , _usCulture);
+                    audio.Size = long.Parse(data.format.size, _usCulture);
                 }
                 else
                 {
@@ -217,9 +224,9 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retaildate
-            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ?? 
-                FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ?? 
-                FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ?? 
+            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
             // If we don't have a ProductionYear try and get it from PremiereDate
@@ -261,8 +268,8 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             // Only use the comma as a delimeter if there are no slashes or pipes. 
             // We want to be careful not to split names that have commas in them
-            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ? 
-                _nameDelimiters : 
+            var delimeter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i) != -1) ?
+                _nameDelimiters :
                 new[] { ',' };
 
             return val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -15,10 +16,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
     {
         private readonly IServerConfigurationManager _config;
 
-        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager)
+        public AuthService(IUserManager userManager, IAuthorizationContext authorizationContext, IServerConfigurationManager config, IConnectManager connectManager, ISessionManager sessionManager, IDeviceManager deviceManager)
         {
             AuthorizationContext = authorizationContext;
             _config = config;
+            DeviceManager = deviceManager;
             SessionManager = sessionManager;
             ConnectManager = connectManager;
             UserManager = userManager;
@@ -28,6 +30,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         public IAuthorizationContext AuthorizationContext { get; private set; }
         public IConnectManager ConnectManager { get; private set; }
         public ISessionManager SessionManager { get; private set; }
+        public IDeviceManager DeviceManager { get; private set; }
 
         /// <summary>
         /// Redirect the client to a specific URL if authentication failed.
@@ -68,24 +71,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                if (user.Policy.IsDisabled)
-                {
-                    throw new SecurityException("User account has been disabled.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                    };
-                }
-
-                if (!user.Policy.IsAdministrator &&
-                    !authAttribtues.EscapeParentalControl &&
-                    !user.IsParentalScheduleAllowed())
-                {
-                    request.AddResponseHeader("X-Application-Error-Code", "ParentalControl");
-                    throw new SecurityException("This user account is not allowed access at this time.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.ParentalControl
-                    };
-                }
+                ValidateUserAccess(user, request, authAttribtues, auth);
             }
 
             if (!IsExemptFromRoles(auth, authAttribtues))
@@ -105,6 +91,42 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     auth.Device,
                     request.RemoteIp,
                     user);
+            }
+        }
+
+        private void ValidateUserAccess(User user, IServiceRequest request,
+            IAuthenticationAttributes authAttribtues,
+            AuthorizationInfo auth)
+        {
+            if (user.Policy.IsDisabled)
+            {
+                throw new SecurityException("User account has been disabled.")
+                {
+                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                };
+            }
+
+            if (!user.Policy.IsAdministrator &&
+                !authAttribtues.EscapeParentalControl &&
+                !user.IsParentalScheduleAllowed())
+            {
+                request.AddResponseHeader("X-Application-Error-Code", "ParentalControl");
+
+                throw new SecurityException("This user account is not allowed access at this time.")
+                {
+                    SecurityExceptionType = SecurityExceptionType.ParentalControl
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(auth.DeviceId))
+            {
+                if (!DeviceManager.CanAccessDevice(user.Id.ToString("N"), auth.DeviceId))
+                {
+                    throw new SecurityException("User is not allowed access from this device.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.ParentalControl
+                    };
+                }
             }
         }
 

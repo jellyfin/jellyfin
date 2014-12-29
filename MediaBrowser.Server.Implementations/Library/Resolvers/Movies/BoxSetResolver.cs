@@ -25,11 +25,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Contains [boxset] in the path
             if (args.IsDirectory)
             {
-                if (IsInvalid(args.GetCollectionType()))
-                {
-                    return null;
-                }
-                
                 var filename = Path.GetFileName(args.Path);
 
                 if (string.IsNullOrEmpty(filename))

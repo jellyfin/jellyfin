@@ -227,6 +227,12 @@
 
     function showSyncButtonsPerUser(page) {
 
+        var apiClient = ConnectionManager.currentApiClient();
+
+        if (!apiClient) {
+            return;
+        }
+
         Dashboard.getCurrentUser().done(function (user) {
 
             if (user.Policy.EnableSync) {

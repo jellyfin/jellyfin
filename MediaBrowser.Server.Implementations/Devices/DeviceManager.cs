@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -187,6 +189,41 @@ namespace MediaBrowser.Server.Implementations.Devices
             await _repo.SaveDevice(device).ConfigureAwait(false);
 
             EventHelper.FireEventIfNotNull(DeviceOptionsUpdated, this, new GenericEventArgs<DeviceInfo>(device), _logger);
+        }
+
+        public bool CanAccessDevice(string userId, string deviceId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
+
+            var user = _userManager.GetUserById(userId);
+            if (!CanAccessDevice(user.Policy, deviceId))
+            {
+                var capabilities = GetCapabilities(deviceId);
+
+                if (capabilities.SupportsUniqueIdentifier)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool CanAccessDevice(UserPolicy policy, string id)
+        {
+            if (policy.EnableAllDevices)
+            {
+                return true;
+            }
+
+            return ListHelper.ContainsIgnoreCase(policy.EnabledDevices, id);
         }
     }
 

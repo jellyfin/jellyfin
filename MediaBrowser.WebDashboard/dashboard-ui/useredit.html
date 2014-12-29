@@ -11,7 +11,7 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
@@ -86,9 +86,6 @@
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 ${ButtonSave}
-                            </button>
-                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

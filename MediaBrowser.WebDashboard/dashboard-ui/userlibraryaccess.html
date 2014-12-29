@@ -10,7 +10,7 @@
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" class="ui-btn-active">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);" class="ui-btn-active">${TabAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
@@ -27,6 +27,22 @@
                         <div class="channelAccess">
                         </div>
                         <div class="fieldDescription">${ChannelAccessHelp}</div>
+                        <br />
+                    </div>
+                    <br />
+
+                    <div>
+                        <div class="ui-controlgroup-label">${HeaderDeviceAccess}</div>
+                        <div>
+                            <label for="chkEnableAllDevices">${OptionEnableAccessFromAllDevices}</label>
+                            <input type="checkbox" id="chkEnableAllDevices" />
+                        </div>
+                        <div class="deviceAccessListContainer">
+                            <br />
+                            <div class="deviceAccess">
+                            </div>
+                            <div class="fieldDescription">${DeviceAccessHelp}</div>
+                        </div>
                         <br />
                     </div>
                     <br />
