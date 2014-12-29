@@ -191,10 +191,6 @@
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
     </NativeReference>
-    <NativeReference Include="..\ThirdParty\libgdiplus\osx\libgdiplus.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
