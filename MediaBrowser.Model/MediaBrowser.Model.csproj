@@ -372,6 +372,8 @@
     <Compile Include="Sync\ItemFileType.cs" />
     <Compile Include="Sync\LocalItem.cs" />
     <Compile Include="Sync\SyncCategory.cs" />
+    <Compile Include="Sync\SyncDataRequest.cs" />
+    <Compile Include="Sync\SyncDataResponse.cs" />
     <Compile Include="Sync\SyncDialogOptions.cs" />
     <Compile Include="Sync\SyncedItem.cs" />
     <Compile Include="Sync\SyncHelper.cs" />

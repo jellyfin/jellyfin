@@ -1055,6 +1055,12 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
       <Link>Sync\SyncCategory.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncDataRequest.cs">
+      <Link>Sync\SyncDataRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncDataResponse.cs">
+      <Link>Sync\SyncDataResponse.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
       <Link>Sync\SyncDialogOptions.cs</Link>
     </Compile>

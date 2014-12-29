@@ -92,6 +92,11 @@ namespace MediaBrowser.Api.Sync
         public string TargetId { get; set; }
     }
 
+    [Route("/Sync/Data", "POST", Summary = "Syncs data between device and server")]
+    public class SyncData : SyncDataRequest, IReturn<SyncDataResponse>
+    {
+    }
+
     [Authenticated]
     public class SyncService : BaseApiService
     {
@@ -218,6 +223,13 @@ namespace MediaBrowser.Api.Sync
         public object Get(GetReadySyncItems request)
         {
             return ToOptimizedResult(_syncManager.GetReadySyncItems(request.TargetId));
+        }
+
+        public async Task<object> Post(SyncData request)
+        {
+            var response = await _syncManager.SyncData(request).ConfigureAwait(false);
+
+            return ToOptimizedResult(response);
         }
     }
 }

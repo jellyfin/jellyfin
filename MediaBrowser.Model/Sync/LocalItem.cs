@@ -13,7 +13,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the local path.
         /// </summary>
         /// <value>The local path.</value>
-        public string[] LocalPath { get; set; }
+        public string LocalPath { get; set; }
         /// <summary>
         /// Gets or sets the server identifier.
         /// </summary>

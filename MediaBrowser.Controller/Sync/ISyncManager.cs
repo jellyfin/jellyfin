@@ -95,5 +95,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="targetId">The target identifier.</param>
         /// <returns>List&lt;SyncedItem&gt;.</returns>
         List<SyncedItem> GetReadySyncItems(string targetId);
+
+        /// <summary>
+        /// Synchronizes the data.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task&lt;SyncDataResponse&gt;.</returns>
+        Task<SyncDataResponse> SyncData(SyncDataRequest request);
     }
 }

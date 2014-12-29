@@ -388,5 +388,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return jobItemResult.Items.Select(GetJobItemInfo)
                 .ToList();
         }
+
+        public async Task<SyncDataResponse> SyncData(SyncDataRequest request)
+        {
+            var response = new SyncDataResponse();
+
+            return response;
+        }
     }
 }
