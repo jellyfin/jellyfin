@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 // Respect ItemLimit, if set
                 if (job.ItemLimit.HasValue)
                 {
-                    if (jobItems.Count >= job.ItemLimit.Value)
+                    if (jobItems.Count(j => j.Status != SyncJobItemStatus.RemovedFromDevice && j.Status != SyncJobItemStatus.Failed) >= job.ItemLimit.Value)
                     {
                         break;
                     }
@@ -310,9 +310,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             await EnsureSyncJobs(cancellationToken).ConfigureAwait(false);
 
+            // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                Status = SyncJobItemStatus.Queued
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
             });
 
             var jobItems = result.Items;
@@ -327,10 +328,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (item.Status == SyncJobItemStatus.Queued)
-                {
-                    await ProcessJobItem(item, cancellationToken).ConfigureAwait(false);
-                }
+                await ProcessJobItem(item, cancellationToken).ConfigureAwait(false);
 
                 var job = _syncRepo.GetJob(item.JobId);
                 await UpdateJobStatus(job).ConfigureAwait(false);

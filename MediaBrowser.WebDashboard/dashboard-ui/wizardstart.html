@@ -8,18 +8,23 @@
 
         <div data-role="content">
 
-            <div class="ui-corner-all ui-shadow wizardContent">
+            <div class="ui-corner-all ui-shadow wizardContent" style="position:relative;">
                 <form class="wizardStartForm">
-                    <h2>
-                        <img src="css/images/mblogoicon.png" />${WelcomeToMediaBrowser}</h2>
 
+                    <div>
+                        <h2 style="float:left;">
+                            <img src="css/images/mblogoicon.png" />${WelcomeToMediaBrowser}
+                        </h2>
+                        <a class="accentButton accentButton-g" href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" style="float:right;margin-top:20px;"><i class="fa fa-info"></i>${ButtonQuickStartGuide}</a>
+                    </div>
+
+                    <br style="clear:both;" />
                     <p>${ThisWizardWillGuideYou}</p>
 
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectLocalizationLanguage">${LabelPreferredDisplayLanguage}</label>
-                            <select id="selectLocalizationLanguage" data-mini="true">
-                            </select>
+                            <select id="selectLocalizationLanguage" data-mini="true"></select>
                         </li>
                     </ul>
 

@@ -200,53 +200,13 @@
     padding-left: 60px !important;
 }
 
-.tvshowsViewMenu, .livetvViewMenu {
-    background-image: url(images/items/folders/tv.png);
+.iconViewMenu {
+    padding-left: 13px !important;
 }
 
-.moviesViewMenu, .trailersViewMenu {
-    background-image: url(images/items/folders/movies.png);
-}
-
-.gamesViewMenu {
-    background-image: url(images/items/folders/games.png);
-}
-
-.channelsViewMenu {
-    background-image: url(images/items/folders/channels.png);
-}
-
-.booksViewMenu {
-    background-image: url(images/items/folders/books.png);
-}
-
-.musicvideosViewMenu {
-    background-image: url(images/items/folders/musicvideos.png);
-}
-
-.photosViewMenu {
-    background-image: url(images/items/folders/photos.png);
-}
-
-.homeVideosViewMenu {
-    background-image: url(images/items/folders/homevideos.png);
-}
-
-.generalViewMenu, .boxsetsViewMenu, .playlistsViewMenu, .foldersViewMenu {
-    background-image: url(images/items/folders/folder.png);
-}
-
-.editorViewMenu {
-    background-image: url(images/items/folders/edit.png);
-}
-
-.reportsViewMenu {
-    background-image: url(images/items/folders/report.png);
-}
-
-.homevideosViewMenu {
-    background-image: url(images/items/folders/homevideos.png);
-}
+    .iconViewMenu span {
+        margin-right: 11px !important;
+    }
 
 .viewMenuSecondary {
     position: absolute;

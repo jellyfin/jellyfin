@@ -78,9 +78,9 @@
 
         html += '<div class="adminMenuOptions">';
         html += '<div class="libraryMenuDivider"></div>';
-        //html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">'+Globalize.translate('ButtonDashboard')+'</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">' + Globalize.translate('ButtonMetadataManager') + '</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">' + Globalize.translate('ButtonReports') + '</a>';
+
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu iconViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
 
         return html;
@@ -131,7 +131,7 @@
 
             var html = items.map(function (i) {
 
-                var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
+                var iconCssClass = 'fa';
 
                 var itemId = i.Id;
 
@@ -143,10 +143,37 @@
                 }
 
                 if (i.Type == 'Channel') {
-                    viewMenuCssClass = 'channelsViewMenu';
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i, i.CollectionType) + '">' + i.Name + '</a>';
+                if (i.CollectionType == "photos") {
+                    iconCssClass += ' fa-photo';
+                }
+                else if (i.CollectionType == "music" || i.CollectionType == "musicvideos") {
+                    iconCssClass += ' fa-music';
+                }
+                else if (i.CollectionType == "books") {
+                    iconCssClass += ' fa-book';
+                }
+                else if (i.CollectionType == "playlists") {
+                    iconCssClass += ' fa-list';
+                }
+                else if (i.CollectionType == "games") {
+                    iconCssClass += ' fa-gamepad';
+                }
+                else if (i.CollectionType == "movies") {
+                    iconCssClass += ' fa-film';
+                }
+                else if (i.CollectionType == "channels" || i.Type == 'Channel') {
+                    iconCssClass += ' fa-globe';
+                }
+                else if (i.CollectionType == "tvshows" || i.CollectionType == "livetv") {
+                    iconCssClass += ' fa-video-camera';
+                }
+                else {
+                    iconCssClass += ' fa-folder-open-o';
+                }
+
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink iconViewMenu" href="' + getItemHref(i, i.CollectionType) + '"><span class="' + iconCssClass + '"></span><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -154,7 +181,10 @@
 
             $('.viewMenuTextLink', elem).on('click', function () {
 
-                $('.libraryMenuButtonText').html(this.innerHTML);
+                var section = $('.sectionName', this)[0];
+                var text = section ? section.innerHTML : this.innerHTML;
+
+                $('.libraryMenuButtonText').html(text);
 
             });
         });

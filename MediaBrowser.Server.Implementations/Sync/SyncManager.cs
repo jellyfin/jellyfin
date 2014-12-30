@@ -392,7 +392,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                Status = SyncJobItemStatus.Transferring
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Transferring }
             });
 
             return jobItemResult.Items.Select(GetJobItemInfo)
@@ -404,21 +404,65 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = request.TargetId,
-                Status = SyncJobItemStatus.Synced
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Synced }
             });
+
+            var response = new SyncDataResponse();
 
             foreach (var jobItem in jobItemResult.Items)
             {
-                if (!request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
+                if (request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
                 {
+                    var job = _repo.GetJob(jobItem.JobId);
+                    var user = _userManager.GetUserById(job.UserId);
+
+                    if (user == null)
+                    {
+                        // Tell the device to remove it since the user is gone now
+                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                    }
+                    else if (job.UnwatchedOnly)
+                    {
+                        var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
+                        if (IsLibraryItemAvailable(libraryItem))
+                        {
+                            if (libraryItem.IsPlayed(user) && libraryItem is Video)
+                            {
+                                // Tell the device to remove it since it has been played
+                                response.ItemIdsToRemove.Add(jobItem.ItemId);
+                            }
+                        }
+                        else
+                        {
+                            // Tell the device to remove it since it's no longer available
+                            response.ItemIdsToRemove.Add(jobItem.ItemId);
+                        }
+                    }
+                }
+                else
+                {
+                    // Content is no longer on the device
                     jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
                     await _repo.Update(jobItem).ConfigureAwait(false);
                 }
             }
-            
-            var response = new SyncDataResponse();
 
+            response.ItemIdsToRemove = response.ItemIdsToRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            
             return response;
+        }
+
+        private bool IsLibraryItemAvailable(BaseItem item)
+        {
+            if (item == null)
+            {
+                return false;
+            }
+
+            // TODO: Make sure it hasn't been deleted
+
+            return true;
         }
     }
 }
