@@ -467,10 +467,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
 
-                if (query.Status.HasValue)
+                if (query.Statuses.Count > 0)
                 {
-                    whereClauses.Add("Status=@Status");
-                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = query.Status.Value.ToString();
+                    var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+
+                    whereClauses.Add(string.Format("Status in ({0})", statuses));
                 }
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?

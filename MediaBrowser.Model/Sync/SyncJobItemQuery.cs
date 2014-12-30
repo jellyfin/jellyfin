@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Sync
 {
     public class SyncJobItemQuery
@@ -27,6 +28,11 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
-        public SyncJobItemStatus? Status { get; set; }
+        public List<SyncJobItemStatus> Statuses { get; set; }
+
+        public SyncJobItemQuery()
+        {
+            Statuses = new List<SyncJobItemStatus>();
+        }
     }
 }
