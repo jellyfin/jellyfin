@@ -422,7 +422,7 @@
     "ButtonChangeType": "Change type",
     "ButtonRemove": "Remove",
     "HeaderMediaLocations": "Media Locations",
-    "LabelFolderTypeValue": "Folder type: {0}",
+    "LabelContentTypeValue": "Content type: {0}",
     "LabelPathSubstitutionHelp": "Optional: Path substitution can map server paths to network shares that clients can access for direct playback.",
     "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Movies",

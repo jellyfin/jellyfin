@@ -41,6 +41,10 @@
     "LabelCancelled": "(cancelado)",
     "LabelFailed": "(falhou)",
     "ButtonHelp": "Ajuda",
+    "HeaderLibraryAccess": "Acesso \u00e0 Biblioteca",
+    "HeaderChannelAccess": "Acesso ao Canal",
+    "HeaderDeviceAccess": "Device Access",
+    "HeaderSelectDevices": "Select Devices",
     "LabelAbortedByServerShutdown": "(Abortada pelo desligamento do servidor)",
     "LabelScheduledTaskLastRan": "\u00daltima execu\u00e7\u00e3o {0}, demorando {1}.",
     "HeaderDeleteTaskTrigger": "Excluir Disparador da Tarefa",
@@ -413,7 +417,7 @@
     "HeaderMediaLocations": "Localiza\u00e7\u00f5es de M\u00eddia",
     "LabelFolderTypeValue": "Tipo de pasta: {0}",
     "LabelPathSubstitutionHelp": "Opcional: Substitui\u00e7\u00e3o de caminho pode mapear caminhos do servidor para compartilhamentos de rede de forma a que os clientes possam acessar para reprodu\u00e7\u00e3o direta.",
-    "FolderTypeUnset": "Unset (mixed content)",
+    "FolderTypeUnset": "Indefinida (conte\u00fado misto)",
     "FolderTypeMovies": "Filmes",
     "FolderTypeMusic": "M\u00fasica",
     "FolderTypeAdultVideos": "V\u00eddeos adultos",
@@ -652,5 +656,5 @@
     "LabelItemLimitHelp": "Opcional. Defina o n\u00famero limite de itens que ser\u00e3o sincronizados.",
     "MessageBookPluginRequired": "Requer a instala\u00e7\u00e3o do plugin Bookshelf",
     "MessageGamePluginRequired": "Requer a instala\u00e7\u00e3o do plugin GameBrowser",
-    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
+    "MessageUnsetContentHelp": "O conte\u00fado ser\u00e1 exibido em pastas simples. Para melhor resultado, use o gerenciador de metadados para definir os tipos de conte\u00fado das sub-pastas."
 }

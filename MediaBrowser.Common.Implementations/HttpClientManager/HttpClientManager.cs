@@ -41,7 +41,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IApplicationPaths _appPaths;
 
         private readonly IFileSystem _fileSystem;
-        private readonly IConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -52,7 +51,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="System.ArgumentNullException">appPaths
         /// or
         /// logger</exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IConfigurationManager config)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
             if (appPaths == null)
             {
@@ -65,7 +64,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger = logger;
             _fileSystem = fileSystem;
-            _config = config;
             _appPaths = appPaths;
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c

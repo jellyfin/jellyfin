@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -34,10 +35,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IUserManager _userManager;
         private readonly Func<IDtoService> _dtoService;
         private readonly IApplicationHost _appHost;
+        private readonly ITVSeriesManager _tvSeriesManager;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -46,6 +48,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _userManager = userManager;
             _dtoService = dtoService;
             _appHost = appHost;
+            _tvSeriesManager = tvSeriesManager;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -55,12 +58,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager);
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = processor
-                .GetItemsForSync(request.ItemIds, user, request.UnwatchedOnly)
+            var items = (await processor
+                .GetItemsForSync(request.Category, request.ParentId, request.ItemIds, user, request.UnwatchedOnly).ConfigureAwait(false))
                 .ToList();
 
             if (items.Any(i => !SupportsSync(i)))
@@ -68,9 +71,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentException("Item does not support sync.");
             }
 
-            if (string.IsNullOrWhiteSpace(request.Name) && request.ItemIds.Count == 1)
+            if (string.IsNullOrWhiteSpace(request.Name))
             {
-                request.Name = GetDefaultName(_libraryManager.GetItemById(request.ItemIds[0]));
+                if (request.Category.HasValue)
+                {
+                    request.Name = request.Category.Value.ToString();
+                }
+                else if (request.ItemIds.Count == 1)
+                {
+                    request.Name = GetDefaultName(_libraryManager.GetItemById(request.ItemIds[0]));
+                }
             }
 
             if (string.IsNullOrWhiteSpace(request.Name))
@@ -96,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = request.UserId,
                 UnwatchedOnly = request.UnwatchedOnly,
                 ItemLimit = request.ItemLimit,
-                RequestedItemIds = request.ItemIds,
+                RequestedItemIds = request.ItemIds ?? new List<string> { },
                 DateCreated = DateTime.UtcNow,
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
@@ -303,12 +313,12 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var jobItem = _repo.GetJobItem(id);
 
-            jobItem.Status = SyncJobItemStatus.Completed;
+            jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;
 
             await _repo.Update(jobItem).ConfigureAwait(false);
 
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager);
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
@@ -391,6 +401,21 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncDataResponse> SyncData(SyncDataRequest request)
         {
+            var jobItemResult = GetJobItems(new SyncJobItemQuery
+            {
+                TargetId = request.TargetId,
+                Status = SyncJobItemStatus.Synced
+            });
+
+            foreach (var jobItem in jobItemResult.Items)
+            {
+                if (!request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
+                {
+                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    await _repo.Update(jobItem).ConfigureAwait(false);
+                }
+            }
+            
             var response = new SyncDataResponse();
 
             return response;

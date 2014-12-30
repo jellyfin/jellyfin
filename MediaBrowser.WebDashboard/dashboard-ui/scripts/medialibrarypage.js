@@ -103,7 +103,7 @@
 
         html += '<p style="padding-left:.5em;">';
 
-        html += Globalize.translate('LabelFolderTypeValue').replace('{0}', '<b>' + typeName + '</b>');
+        html += Globalize.translate('LabelContentTypeValue').replace('{0}', '<b>' + typeName + '</b>');
         html += '</p><ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
         html += '<li data-role="list-divider" class="mediaLocationsHeader">' + Globalize.translate('HeaderMediaLocations');

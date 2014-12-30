@@ -14,11 +14,7 @@
             throw new Error('form cannot be null');
         }
 
-        var target = $('.radioSync:checked', form).get().map(function (c) {
-
-            return c.getAttribute('data-targetid');
-
-        })[0];
+        var target = $('#selectSyncTarget', form).val();
 
         if (!target) {
 
@@ -31,10 +27,6 @@
             userId: userId,
             TargetId: target,
 
-            ItemIds: (syncOptions.items || []).map(function (i) {
-                return i.Id || i;
-            }).join(','),
-
             Quality: $('#selectQuality', form).val(),
 
             Name: $('#txtSyncJobName', form).val(),
@@ -46,6 +38,12 @@
             ParentId: syncOptions.ParentId,
             Category: syncOptions.Category
         };
+
+        if (syncOptions.items && syncOptions.items.length) {
+            options.ItemIds = (syncOptions.items || []).map(function (i) {
+                return i.Id || i;
+            }).join(',');
+        }
 
         ApiClient.ajax({
 
@@ -96,24 +94,16 @@
             }
 
             html += '<div>';
-            html += '<fieldset data-role="controlgroup">';
-            html += '<legend>' + Globalize.translate('LabelSyncTo') + '</legend>';
-
-            var index = 0;
+            html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
+            html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
             html += targets.map(function (t) {
 
-                var targetHtml = '<label for="radioSync' + t.Id + '">' + t.Name + '</label>';
-
-                var checkedHtml = index ? '' : ' checked="checked"';
-                targetHtml += '<input class="radioSync" data-targetid="' + t.Id + '" type="radio" id="radioSync' + t.Id + '"' + checkedHtml + ' />';
-
-                index++;
-                return targetHtml;
+                return '<option value="' + t.Id + '">' + t.Name + '</option>';
 
             }).join('');
+            html += '</select>';
 
-            html += '</fieldset>';
             html += '</div>';
 
             html += '<br/>';

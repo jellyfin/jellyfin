@@ -466,7 +466,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance(FileSystemManager);
 
-			HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager, ConfigurationManager);
+			HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager);
 			RegisterSingleInstance(HttpClient);
 
 			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));

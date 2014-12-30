@@ -2,10 +2,13 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Sync;
 using MoreLinq;
@@ -24,19 +27,16 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISyncManager _syncManager;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
             _syncManager = syncManager;
             _logger = logger;
             _userManager = userManager;
-        }
-
-        public void ProcessJobItem(SyncJob job, SyncJobItem jobItem, SyncTarget target)
-        {
-
+            _tvSeriesManager = tvSeriesManager;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new InvalidOperationException("Cannot proceed with sync because user no longer exists.");
             }
 
-            var items = GetItemsForSync(job.RequestedItemIds, user, job.UnwatchedOnly)
+            var items = (await GetItemsForSync(job.Category, job.ParentId, job.RequestedItemIds, user, job.UnwatchedOnly).ConfigureAwait(false))
                 .ToList();
 
             var jobItems = _syncRepo.GetJobItems(new SyncJobItemQuery
@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var item in jobItems)
             {
-                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Completed)
+                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Synced || item.Status == SyncJobItemStatus.RemovedFromDevice)
                 {
                     pct += 100;
                 }
@@ -171,10 +171,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _syncRepo.Update(job);
         }
 
-        public IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds, User user, bool unwatchedOnly)
+        public async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory? category, string parentId, IEnumerable<string> itemIds, User user, bool unwatchedOnly)
         {
-            var items = itemIds
-                .SelectMany(i => GetItemsForSync(i, user))
+            var items = category.HasValue ?
+                await GetItemsForSync(category.Value, parentId, user).ConfigureAwait(false) :
+                itemIds.SelectMany(i => GetItemsForSync(i, user))
                 .Where(_syncManager.SupportsSync);
 
             if (unwatchedOnly)
@@ -196,6 +197,54 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return items.DistinctBy(i => i.Id);
+        }
+
+        private async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory category, string parentId, User user)
+        {
+            var parent = string.IsNullOrWhiteSpace(parentId)
+                ? user.RootFolder
+                : (Folder)_libraryManager.GetItemById(parentId);
+
+            InternalItemsQuery query;
+
+            switch (category)
+            {
+                case SyncCategory.Latest:
+                    query = new InternalItemsQuery
+                    {
+                        IsFolder = false,
+                        SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName },
+                        SortOrder = SortOrder.Descending,
+                        Recursive = true
+                    };
+                    break;
+                case SyncCategory.Resume:
+                    query = new InternalItemsQuery
+                    {
+                        IsFolder = false,
+                        SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName },
+                        SortOrder = SortOrder.Descending,
+                        Recursive = true,
+                        IsResumable = true,
+                        MediaTypes = new[] { MediaType.Video }
+                    };
+                    break;
+
+                case SyncCategory.NextUp:
+                    return _tvSeriesManager.GetNextUp(new NextUpQuery
+                    {
+                        ParentId = parentId,
+                        UserId = user.Id.ToString("N")
+                    }).Items;
+
+                default:
+                    throw new ArgumentException("Unrecognized category: " + category);
+            }
+
+            query.User = user;
+
+            var result = await parent.GetItems(query).ConfigureAwait(false);
+            return result.Items;
         }
 
         private IEnumerable<BaseItem> GetItemsForSync(string id, User user)
@@ -263,7 +312,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                IsCompleted = false
+                Status = SyncJobItemStatus.Queued
             });
 
             var jobItems = result.Items;
