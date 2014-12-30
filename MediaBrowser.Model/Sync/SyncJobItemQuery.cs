@@ -28,10 +28,5 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The status.</value>
         public SyncJobItemStatus? Status { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is completed.
-        /// </summary>
-        /// <value><c>null</c> if [is completed] contains no value, <c>true</c> if [is completed]; otherwise, <c>false</c>.</value>
-        public bool? IsCompleted { get; set; }
     }
 }

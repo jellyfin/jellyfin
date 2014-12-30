@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,14 +17,16 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISyncManager _syncManager;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
 
-        public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager)
+        public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
             _syncManager = syncManager;
             _logger = logger;
             _userManager = userManager;
+            _tvSeriesManager = tvSeriesManager;
         }
 
         public string Name
@@ -46,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager).Sync(progress,
+            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager).Sync(progress,
                 cancellationToken);
         }
 

@@ -467,7 +467,7 @@ namespace MediaBrowser.Api.Library
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = _userManager.GetUserById(auth.UserId);
 
-            if (item is Playlist)
+            if (item is Playlist || item is BoxSet)
             {
                 // For now this is allowed if user can see the playlist
             }

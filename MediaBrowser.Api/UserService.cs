@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -216,16 +217,18 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionMananger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
+        private readonly IDeviceManager _deviceManager;
 
         public IAuthorizationContext AuthorizationContext { get; set; }
 
-        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
             _config = config;
             _networkManager = networkManager;
+            _deviceManager = deviceManager;
         }
 
         public object Get(GetPublicUsers request)
@@ -239,18 +242,12 @@ namespace MediaBrowser.Api
                 });
             }
 
-            // TODO: Uncomment once clients can handle an empty user list (and below)
-            //if (Request.IsLocal || IsInLocalNetwork(Request.RemoteIp))
+            return Get(new GetUsers
             {
-                return Get(new GetUsers
-                {
-                    IsHidden = false,
-                    IsDisabled = false
-                });
-            }
+                IsHidden = false,
+                IsDisabled = false
 
-            //// Return empty when external
-            //return ToOptimizedResult(new List<UserDto>());
+            }, true);
         }
 
         /// <summary>
@@ -259,6 +256,11 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
+        {
+            return Get(request, false);
+        }
+
+        private object Get(GetUsers request, bool filterByDevice)
         {
             var users = _userManager.Users;
 
@@ -274,8 +276,17 @@ namespace MediaBrowser.Api
 
             if (request.IsGuest.HasValue)
             {
-
                 users = users.Where(i => (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest) == request.IsGuest.Value);
+            }
+
+            if (filterByDevice)
+            {
+                var deviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+                if (!string.IsNullOrWhiteSpace(deviceId))
+                {
+                    users = users.Where(i => _deviceManager.CanAccessDevice(i.Id.ToString("N"), deviceId));
+                }
             }
 
             var result = users

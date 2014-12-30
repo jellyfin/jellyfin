@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync8.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync9.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _deleteJobItemsCommand = _connection.CreateCommand();
             _deleteJobItemsCommand.CommandText = "delete from SyncJobItems where JobId=@JobId";
             _deleteJobItemsCommand.Parameters.Add(_deleteJobItemsCommand, "@JobId");
-            
+
             _saveJobCommand = _connection.CreateCommand();
             _saveJobCommand.CommandText = "replace into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
@@ -119,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 throw new ArgumentNullException("id");
             }
-            
+
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = BaseJobSelectText + " where Id=@Id";
@@ -169,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(7))
             {
-                info.RequestedItemIds = reader.GetString(7).Split(',').ToList();
+                info.RequestedItemIds = reader.GetString(7).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
             if (!reader.IsDBNull(8))
@@ -302,7 +302,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _deleteJobItemsCommand.GetParameter(index++).Value = id;
                 _deleteJobItemsCommand.Transaction = transaction;
                 _deleteJobItemsCommand.ExecuteNonQuery();
-                
+
                 transaction.Commit();
             }
             catch (OperationCanceledException)
@@ -473,19 +473,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = query.Status.Value.ToString();
                 }
 
-                else if (query.IsCompleted.HasValue)
-                {
-                    if (query.IsCompleted.Value)
-                    {
-                        whereClauses.Add("Status=@Status");
-                    }
-                    else
-                    {
-                        whereClauses.Add("Status<>@Status");
-                    }
-                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = SyncJobStatus.Completed.ToString();
-                }
-
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
@@ -616,9 +603,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 info.MediaSourceId = reader.GetString(2);
             }
-            
+
             info.JobId = reader.GetString(3);
-            
+
             if (!reader.IsDBNull(4))
             {
                 info.OutputPath = reader.GetString(4);
@@ -637,7 +624,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 info.Progress = reader.GetDouble(8);
             }
-            
+
             return info;
         }
 

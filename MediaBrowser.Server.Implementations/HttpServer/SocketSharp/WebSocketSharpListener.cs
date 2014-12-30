@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using WebSocketSharp.Net;
 
@@ -15,7 +14,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
     public class WebSocketSharpListener : IHttpListener
     {
         private HttpListener _listener;
-        private readonly ManualResetEventSlim _listenForNextRequest = new ManualResetEventSlim(false);
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
@@ -43,70 +41,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 _listener.Prefixes.Add(prefix);
             }
 
+            _listener.OnContext = ProcessContext;
+
             _listener.Start();
-
-            Task.Factory.StartNew(Listen, TaskCreationOptions.LongRunning);
         }
 
-        private bool IsListening
+        private void ProcessContext(HttpListenerContext context)
         {
-            get { return _listener != null && _listener.IsListening; }
-        }
-
-        // Loop here to begin processing of new requests.
-        private void Listen()
-        {
-            while (IsListening)
-            {
-                if (_listener == null) return;
-                _listenForNextRequest.Reset();
-
-                try
-                {
-                    _listener.BeginGetContext(ListenerCallback, _listener);
-                    _listenForNextRequest.Wait();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Listen()", ex);
-                    return;
-                }
-                if (_listener == null) return;
-            }
-        }
-
-        // Handle the processing of a request in here.
-        private void ListenerCallback(IAsyncResult asyncResult)
-        {
-            _listenForNextRequest.Set();
-
-            var listener = asyncResult.AsyncState as HttpListener;
-            HttpListenerContext context;
-
-            if (listener == null) return;
-            var isListening = listener.IsListening;
-
-            try
-            {
-                if (!isListening)
-                {
-                    _logger.Debug("Ignoring ListenerCallback() as HttpListener is no longer listening"); return;
-                }
-                // The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
-                // blocks until there is a request to be processed or some type of data is available.
-                context = listener.EndGetContext(asyncResult);
-            }
-            catch (Exception ex)
-            {
-                // You will get an exception when httpListener.Stop() is called
-                // because there will be a thread stopped waiting on the .EndGetContext()
-                // method, and again, that is just the way most Begin/End asynchronous
-                // methods of the .NET Framework work.
-                var errMsg = ex + ": " + IsListening;
-                _logger.Warn(errMsg);
-                return;
-            }
-
             Task.Factory.StartNew(() => InitTask(context));
         }
 
@@ -117,10 +58,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 var task = this.ProcessRequestAsync(context);
                 task.ContinueWith(x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
 
-                if (task.Status == TaskStatus.Created)
-                {
-                    task.RunSynchronously();
-                }
+                //if (task.Status == TaskStatus.Created)
+                //{
+                //    task.RunSynchronously();
+                //}
             }
             catch (Exception ex)
             {
