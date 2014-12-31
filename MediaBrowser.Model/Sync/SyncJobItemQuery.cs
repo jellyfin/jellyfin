@@ -29,6 +29,11 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The status.</value>
         public List<SyncJobItemStatus> Statuses { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [add metadata].
+        /// </summary>
+        /// <value><c>true</c> if [add metadata]; otherwise, <c>false</c>.</value>
+        public bool AddMetadata { get; set; }
 
         public SyncJobItemQuery()
         {

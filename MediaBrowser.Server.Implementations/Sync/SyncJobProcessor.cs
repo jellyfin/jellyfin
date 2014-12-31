@@ -81,6 +81,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     Id = Guid.NewGuid().ToString("N"),
                     ItemId = itemId,
+                    ItemName = GetSyncJobItemName(item),
                     JobId = job.Id,
                     TargetId = job.TargetId,
                     DateCreated = DateTime.UtcNow
@@ -96,6 +97,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .ToList();
 
             await UpdateJobStatus(job, jobItems).ConfigureAwait(false);
+        }
+
+        private string GetSyncJobItemName(BaseItem item)
+        {
+            return item.Name;
         }
 
         public Task UpdateJobStatus(string id)

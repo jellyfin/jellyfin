@@ -7,7 +7,8 @@ namespace MediaBrowser.Model.Sync
         Converting = 1,
         Transferring = 2,
         Synced = 3,
-        Failed = 4,
-        RemovedFromDevice = 5
+        RemovedFromDevice = 4,
+        Failed = 5,
+        Cancelled = 6
     }
 }

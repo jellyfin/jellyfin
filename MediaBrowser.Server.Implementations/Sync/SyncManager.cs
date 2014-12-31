@@ -73,11 +73,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                if (request.Category.HasValue)
-                {
-                    request.Name = request.Category.Value.ToString();
-                }
-                else if (request.ItemIds.Count == 1)
+                if (request.ItemIds.Count == 1)
                 {
                     request.Name = GetDefaultName(_libraryManager.GetItemById(request.ItemIds[0]));
                 }
@@ -132,20 +128,48 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        public QueryResult<SyncJob> GetJobs(SyncJobQuery query)
+        public Task UpdateJob(SyncJob job)
+        {
+            // Get fresh from the db and only update the fields that are supported to be changed.
+            var instance = _repo.GetJob(job.Id);
+
+            instance.Name = job.Name;
+            instance.Quality = job.Quality;
+            instance.UnwatchedOnly = job.UnwatchedOnly;
+            instance.SyncNewContent = job.SyncNewContent;
+            instance.ItemLimit = job.ItemLimit;
+
+            return _repo.Update(instance);
+        }
+
+        public async Task<QueryResult<SyncJob>> GetJobs(SyncJobQuery query)
         {
             var result = _repo.GetJobs(query);
 
-            result.Items.ForEach(FillMetadata);
+            foreach (var item in result.Items)
+            {
+                await FillMetadata(item).ConfigureAwait(false);
+            }
 
             return result;
         }
 
-        private void FillMetadata(SyncJob job)
+        private async Task FillMetadata(SyncJob job)
         {
             var item = job.RequestedItemIds
                 .Select(_libraryManager.GetItemById)
                 .FirstOrDefault(i => i != null);
+
+            if (item == null)
+            {
+                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
+
+                var user = _userManager.GetUserById(job.UserId);
+
+                item = (await processor
+                    .GetItemsForSync(job.Category, job.ParentId, job.RequestedItemIds, user, job.UnwatchedOnly).ConfigureAwait(false))
+                    .FirstOrDefault();
+            }
 
             if (item != null)
             {
@@ -162,19 +186,69 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
 
                 var primaryImage = item.GetImageInfo(ImageType.Primary, 0);
+                var itemWithImage = item;
+
+                if (primaryImage == null)
+                {
+                    var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+
+                    if (parentWithImage != null)
+                    {
+                        itemWithImage = parentWithImage;
+                        primaryImage = parentWithImage.GetImageInfo(ImageType.Primary, 0);
+                    }
+                }
 
                 if (primaryImage != null)
                 {
                     try
                     {
-                        job.PrimaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
-                        job.PrimaryImageItemId = item.Id.ToString("N");
+                        job.PrimaryImageTag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Primary);
+                        job.PrimaryImageItemId = itemWithImage.Id.ToString("N");
 
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error getting image info", ex);
                     }
+                }
+            }
+        }
+
+        private void FillMetadata(SyncJobItem jobItem)
+        {
+            var item = _libraryManager.GetItemById(jobItem.ItemId);
+
+            if (item == null)
+            {
+                return;
+            }
+
+            var primaryImage = item.GetImageInfo(ImageType.Primary, 0);
+            var itemWithImage = item;
+
+            if (primaryImage == null)
+            {
+                var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+
+                if (parentWithImage != null)
+                {
+                    itemWithImage = parentWithImage;
+                    primaryImage = parentWithImage.GetImageInfo(ImageType.Primary, 0);
+                }
+            }
+
+            if (primaryImage != null)
+            {
+                try
+                {
+                    jobItem.PrimaryImageTag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Primary);
+                    jobItem.PrimaryImageItemId = itemWithImage.Id.ToString("N");
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting image info", ex);
                 }
             }
         }
@@ -198,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider, string userId)
         {
-            return provider.GetSyncTargets().Select(i => new SyncTarget
+            return provider.GetSyncTargets(userId).Select(i => new SyncTarget
             {
                 Name = i.Name,
                 Id = GetSyncTargetId(provider, i)
@@ -330,7 +404,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
         {
-            return _repo.GetJobItems(query);
+            var result = _repo.GetJobItems(query);
+
+            if (query.AddMetadata)
+            {
+                result.Items.ForEach(FillMetadata);
+            }
+
+            return result;
         }
 
         private SyncedItem GetJobItemInfo(SyncJobItem jobItem)
@@ -449,7 +530,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             response.ItemIdsToRemove = response.ItemIdsToRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            
+
             return response;
         }
 

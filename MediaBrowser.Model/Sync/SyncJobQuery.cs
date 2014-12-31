@@ -23,5 +23,10 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The target identifier.</value>
         public string TargetId { get; set; }
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public string UserId { get; set; }
     }
 }

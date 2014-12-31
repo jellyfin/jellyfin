@@ -28,6 +28,11 @@ namespace MediaBrowser.Api.Sync
         public string Id { get; set; }
     }
 
+    [Route("/Sync/Jobs/{Id}", "POST", Summary = "Updates a sync job.")]
+    public class UpdateSyncJob : SyncJob, IReturnVoid
+    {
+    }
+
     [Route("/Sync/JobItems", "GET", Summary = "Gets sync job items.")]
     public class GetSyncJobItems : SyncJobItemQuery, IReturn<QueryResult<SyncJobItem>>
     {
@@ -118,9 +123,9 @@ namespace MediaBrowser.Api.Sync
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetSyncJobs request)
+        public async Task<object> Get(GetSyncJobs request)
         {
-            var result = _syncManager.GetJobs(request);
+            var result = await _syncManager.GetJobs(request).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -193,7 +198,7 @@ namespace MediaBrowser.Api.Sync
                     }
                 };
 
-                var dtos = request.ItemIds.Split(',')
+                var dtos = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)
                     .Where(i => i != null)
                     .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions))
@@ -230,6 +235,13 @@ namespace MediaBrowser.Api.Sync
             var response = await _syncManager.SyncData(request).ConfigureAwait(false);
 
             return ToOptimizedResult(response);
+        }
+
+        public void Post(UpdateSyncJob request)
+        {
+            var task = _syncManager.UpdateJob(request);
+
+            Task.WaitAll(task);
         }
     }
 }
