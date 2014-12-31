@@ -4,7 +4,7 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage">
+    <div id="syncJobPage" data-role="page" class="page type-interior syncConfigurationPage syncJobPage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,11 +14,17 @@
                     <a href="syncsettings.html" data-role="button">${TabSettings}</a>
                 </div>
 
-                <div class="syncActivity">
-
+                <div class="readOnlyContent">
+                    <form class="syncJobForm"></form>
+                    <br />
+                    <br />
+                    <div class="jobItems"></div>
                 </div>
             </div>
         </div>
+        <script type="text/javascript">
+            $('.syncJobForm').off('submit', SyncJobPage.onSubmit).on('submit', SyncJobPage.onSubmit);
+        </script>
     </div>
 </body>
 </html>

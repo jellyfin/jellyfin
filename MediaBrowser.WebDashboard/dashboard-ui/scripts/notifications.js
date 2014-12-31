@@ -218,7 +218,7 @@
     $(document).on('headercreated', function (e) {
 
         if (ConnectionManager.currentApiClient()) {
-            $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertBefore($('.headerUserButton')).on('click', Notifications.showNotificationsFlyout);
+            $('<a class="headerButton headerButtonRight btnNotifications" href="#" title="Notifications"><div class="btnNotificationsInner">0</div></a>').insertAfter($('.headerSearchButton')).on('click', Notifications.showNotificationsFlyout);
 
             Notifications.updateNotificationCount();
         }

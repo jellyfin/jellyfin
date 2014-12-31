@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleSync}</title>
+</head>
+<body>
+    <div id="mySyncJobPage" data-role="page" data-theme="b" class="page libraryPage syncJobPage mySyncPage" data-contextname="${TitleSync}">
+
+        <div class="libraryViewNav">
+            <a href="mysync.html" class="ui-btn-active">${TabSyncJobs}</a>
+        </div>
+
+        <div data-role="content">
+
+            <div class="readOnlyContent" style="margin: 0 auto;">
+                <h1>${HeaderSyncJobInfo}</h1>
+                <form class="syncJobForm"></form>
+                <br />
+                <br />
+                <div class="jobItems"></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('.syncJobForm').off('submit', SyncJobPage.onSubmit).on('submit', SyncJobPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

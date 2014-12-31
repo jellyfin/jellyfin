@@ -2,9 +2,9 @@
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Sync
 {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Sync
         /// Gets the jobs.
         /// </summary>
         /// <returns>QueryResult&lt;SyncJob&gt;.</returns>
-        QueryResult<SyncJob> GetJobs(SyncJobQuery query);
+        Task<QueryResult<SyncJob>> GetJobs(SyncJobQuery query);
 
         /// <summary>
         /// Gets the job items.
@@ -36,6 +36,13 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="id">The identifier.</param>
         /// <returns>SyncJob.</returns>
         SyncJob GetJob(string id);
+
+        /// <summary>
+        /// Updates the job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns>Task.</returns>
+        Task UpdateJob(SyncJob job);
 
         /// <summary>
         /// Cancels the job.

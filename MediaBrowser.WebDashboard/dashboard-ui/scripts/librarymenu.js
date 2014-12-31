@@ -76,12 +76,13 @@
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
 
-        html += '<div class="adminMenuOptions">';
         html += '<div class="libraryMenuDivider"></div>';
+        html += '<div class="adminMenuOptions">';
 
         html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu iconViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-cloud"></span>' + Globalize.translate('ButtonSync') + '</a>';
 
         return html;
     }
@@ -120,6 +121,7 @@
         if (!apiClient) {
 
             $('.adminMenuOptions').hide();
+            $('.syncViewMenu').hide();
             return;
         }
 
@@ -195,6 +197,11 @@
                 $('.adminMenuOptions').show();
             } else {
                 $('.adminMenuOptions').hide();
+            }
+            if (user.Policy.EnableSync) {
+                $('.syncViewMenu').show();
+            } else {
+                $('.syncViewMenu').hide();
             }
         });
     }
@@ -305,8 +312,9 @@
         var isChannelsPage = page.hasClass('channelsPage');
         var isEditorPage = page.hasClass('metadataEditorPage');
         var isReportsPage = page.hasClass('reportsPage');
+        var isMySyncPage = page.hasClass('mySyncPage');
 
-        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || page.hasClass('allLibraryPage') ?
+        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.hasClass('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
@@ -324,6 +332,9 @@
                 $(this).addClass('selectedMediaFolder');
             }
             else if (isReportsPage && itemId == 'reports') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (isMySyncPage && itemId == 'mysync') {
                 $(this).addClass('selectedMediaFolder');
             }
             else if (id && itemId == id) {

@@ -105,7 +105,12 @@ namespace MediaBrowser.Server.Implementations.Devices
                 var val = query.SupportsUniqueIdentifier.Value;
 
                 devices = devices.Where(i => GetCapabilities(i.Id).SupportsUniqueIdentifier == val);
-            } 
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.UserId))
+            {
+                devices = devices.Where(i => CanAccessDevice(query.UserId, i.Id));
+            }
             
             var array = devices.ToArray();
             return new QueryResult<DeviceInfo>

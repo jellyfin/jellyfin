@@ -19,7 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "This wizard will help guide you through the setup process. To begin, please select your preferred language.",
     "TellUsAboutYourself": "Tell us about yourself",
-    "ButtonQuickStartGuide":  "Quick start guide",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Your first name:",
     "MoreUsersCanBeAddedLater": "More users can be added later within the Dashboard.",
     "UserProfilesIntro": "Media Browser includes built-in support for user profiles, enabling each user to have their own display settings, playstate and parental controls.",
@@ -38,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonNew": "New",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1315,5 +1316,6 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabSyncJobs": "Sync Jobs"
 }
