@@ -111,21 +111,6 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoBitDepth,
-                            Value = "8",
-                            IsRequired = false
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
                     Codec="h264",
                     Conditions = new []
                     {
@@ -148,6 +133,28 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoLevel,
                             Value = "51"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
                         }
                     }
                 },
