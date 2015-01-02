@@ -412,7 +412,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
-                //jobItem.OutputPath = await MediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+                jobItem.OutputPath = await MediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
             }
             else
             {
@@ -420,7 +420,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     jobItem.OutputPath = mediaSource.Path;
                 }
-                if (mediaSource.Protocol == MediaProtocol.Http)
+                else if (mediaSource.Protocol == MediaProtocol.Http)
                 {
                     jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
@@ -464,7 +464,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     jobItem.OutputPath = mediaSource.Path;
                 }
-                if (mediaSource.Protocol == MediaProtocol.Http)
+                else if (mediaSource.Protocol == MediaProtocol.Http)
                 {
                     jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }

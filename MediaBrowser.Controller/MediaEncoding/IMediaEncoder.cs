@@ -107,5 +107,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> EncodeAudio(EncodingJobOptions options,
             IProgress<double> progress,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Encodes the video.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;System.String&gt;.</returns>
+        Task<string> EncodeVideo(EncodingJobOptions options,
+            IProgress<double> progress,
+            CancellationToken cancellationToken);
     }
 }

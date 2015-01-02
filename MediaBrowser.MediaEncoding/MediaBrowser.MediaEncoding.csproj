@@ -64,6 +64,7 @@
     <Compile Include="Encoder\EncodingUtils.cs" />
     <Compile Include="Encoder\JobLogger.cs" />
     <Compile Include="Encoder\MediaEncoder.cs" />
+    <Compile Include="Encoder\VideoEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Subtitles\ISubtitleParser.cs" />
     <Compile Include="Subtitles\ISubtitleWriter.cs" />

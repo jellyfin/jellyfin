@@ -64,8 +64,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly ILibraryManager LibraryManager;
         protected readonly IChannelManager ChannelManager;
         protected readonly ISessionManager SessionManager;
-        
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager)
+        protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
+
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -77,6 +78,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             LibraryManager = libraryManager;
             ChannelManager = channelManager;
             SessionManager = sessionManager;
+            SubtitleEncoder = subtitleEncoder;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -494,7 +496,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             };
 
             _logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
-            
+
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             process.Start();
@@ -537,15 +539,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var job = await new AudioEncoder(this, 
-                _logger, 
-                ConfigurationManager, 
-                FileSystem, 
+            var job = await new AudioEncoder(this,
+                _logger,
+                ConfigurationManager,
+                FileSystem,
                 LiveTvManager,
-                IsoManager, 
-                LibraryManager, 
-                ChannelManager, 
-                SessionManager)
+                IsoManager,
+                LibraryManager,
+                ChannelManager,
+                SessionManager,
+                SubtitleEncoder())
+                .Start(options, progress, cancellationToken).ConfigureAwait(false);
+
+            await job.TaskCompletionSource.Task.ConfigureAwait(false);
+
+            return job.OutputFilePath;
+        }
+
+        public async Task<string> EncodeVideo(EncodingJobOptions options,
+            IProgress<double> progress,
+            CancellationToken cancellationToken)
+        {
+            var job = await new VideoEncoder(this,
+                _logger,
+                ConfigurationManager,
+                FileSystem,
+                LiveTvManager,
+                IsoManager,
+                LibraryManager,
+                ChannelManager,
+                SessionManager,
+                SubtitleEncoder())
                 .Start(options, progress, cancellationToken).ConfigureAwait(false);
 
             await job.TaskCompletionSource.Task.ConfigureAwait(false);
