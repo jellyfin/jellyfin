@@ -367,7 +367,7 @@ a.itemTag:hover {
     left: .8em;
 }
 
-.itemCommunityRating:not(:empty) + .userDataIcons {
+span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 

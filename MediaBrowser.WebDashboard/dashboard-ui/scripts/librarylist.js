@@ -87,15 +87,21 @@
 
         if (!isMiniItem) {
             html += '<div style="margin:1.25em 0;">';
-            html += '<span class="itemCommunityRating">';
-            html += LibraryBrowser.getRatingHtml(item, false);
-            html += '</span>';
 
             if (isPortrait) {
-                html += '<span class="userDataIcons" style="display:block;margin:1.25em 0;">';
+                html += '<div class="itemCommunityRating">';
+                html += LibraryBrowser.getRatingHtml(item, false);
+                html += '</div>';
+
+                html += '<div class="userDataIcons" style="margin:1.25em 0;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</span>';
+                html += '</div>';
             } else {
+
+                html += '<span class="itemCommunityRating">';
+                html += LibraryBrowser.getRatingHtml(item, false);
+                html += '</span>';
+
                 html += '<span class="userDataIcons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
@@ -622,7 +628,13 @@
                 var item = response1[0];
                 var user = response2[0];
 
-                innerElem.html(getOverlayHtml(item, user, elem, commands)).trigger('create');
+                var card = $(elem);
+
+                if (!card.hasClass('card')) {
+                    card = card.parents('.card');
+                }
+
+                innerElem.html(getOverlayHtml(item, user, card[0], commands)).trigger('create');
 
                 $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);

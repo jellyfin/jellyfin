@@ -483,9 +483,9 @@
         html += '<p class="itemMiscInfo miscTvProgramInfo"></p>';
 
         html += '<p style="margin: 1.25em 0;">';
-        html += '<div class="itemCommunityRating" style="display:inline-block;">';
+        html += '<span class="itemCommunityRating">';
         html += LibraryBrowser.getRatingHtml(item);
-        html += '</div>';
+        html += '</span>';
         html += '<span class="userDataIcons">';
         html += LibraryBrowser.getUserDataIconsHtml(item);
         html += '</span>';

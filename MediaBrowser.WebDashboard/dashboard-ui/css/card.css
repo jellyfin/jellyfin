@@ -255,19 +255,9 @@
 }
 
     .cardProgress .itemProgressBar {
-        height: 6px;
+        height: 7px;
         width: 100%;
         opacity: .8;
-    }
-
-.miniCardProgress {
-    /* Make sure it's on top of the fade gradient '*/
-    z-index: 1000;
-}
-
-    .miniCardProgress .itemProgressBar {
-        height: 6px;
-        opacity: 1;
     }
 
 @media all and (max-width: 1200px) {

@@ -156,7 +156,7 @@
 
             var value = providerIds[idInfo.Key] || '';
 
-            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" data-mini="true" />';
+            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" />';
 
             html += '</div>';
 

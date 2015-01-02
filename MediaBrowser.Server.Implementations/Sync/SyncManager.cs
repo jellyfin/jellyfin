@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
@@ -36,10 +37,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly Func<IDtoService> _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly Func<IMediaEncoder> MediaEncoder;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -49,6 +51,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _dtoService = dtoService;
             _appHost = appHost;
             _tvSeriesManager = tvSeriesManager;
+            MediaEncoder = mediaEncoder;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -58,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -162,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (item == null)
             {
-                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
+                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
 
                 var user = _userManager.GetUserById(job.UserId);
 
@@ -392,7 +395,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await _repo.Update(jobItem).ConfigureAwait(false);
 
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager);
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }

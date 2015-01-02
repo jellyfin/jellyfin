@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Dlna
         public string ItemId { get; set; }
 
         public PlayMethod PlayMethod { get; set; }
+        public EncodingContext Context { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
 

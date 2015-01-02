@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
@@ -85,7 +86,9 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            foreach (var file in Directory.EnumerateFiles(_config.ApplicationPaths.TranscodingTempPath, "*", SearchOption.AllDirectories)
+            var path = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower());
+
+            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
                 .ToList())
             {
                 File.Delete(file);

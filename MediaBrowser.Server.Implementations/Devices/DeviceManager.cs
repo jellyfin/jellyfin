@@ -9,12 +9,12 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {

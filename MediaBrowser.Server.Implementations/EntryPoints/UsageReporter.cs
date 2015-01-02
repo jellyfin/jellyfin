@@ -1,7 +1,11 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Connect;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,13 +16,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IApplicationHost _applicationHost;
         private readonly INetworkManager _networkManager;
         private readonly IHttpClient _httpClient;
+        private readonly IUserManager _userManager;
         private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
 
-        public UsageReporter(IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient)
+        public UsageReporter(IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, IUserManager userManager)
         {
             _applicationHost = applicationHost;
             _networkManager = networkManager;
             _httpClient = httpClient;
+            _userManager = userManager;
         }
 
         public Task ReportServerUsage(CancellationToken cancellationToken)
@@ -37,6 +43,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 { "platform", _applicationHost.OperatingSystemDisplayName }, 
                 { "isservice", _applicationHost.IsRunningAsService.ToString().ToLower()}
             };
+
+            var users = _userManager.Users.ToList();
+
+            data["localusers"] = users.Count(i => !i.ConnectLinkType.HasValue).ToString(CultureInfo.InvariantCulture);
+            data["guests"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest).ToString(CultureInfo.InvariantCulture);
+            data["linkedusers"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.LinkedUser).ToString(CultureInfo.InvariantCulture);
 
             return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }

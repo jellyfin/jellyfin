@@ -45,7 +45,7 @@
             html += '<br/>';
             html += '<div>';
             html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
-            html += '<input type="number" id="txtItemLimit" data-mini="true" step="1" min="1" />';
+            html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
             html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
             html += '</div>';
         }
