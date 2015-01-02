@@ -17,7 +17,15 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mp3",
                     AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
+                    Type = DlnaProfileType.Audio,
+                    Context = EncodingContext.Streaming
+                },
+                new TranscodingProfile
+                {
+                    Container = "mp3",
+                    AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio,
+                    Context = EncodingContext.Static
                 },
                 new TranscodingProfile
                 {
