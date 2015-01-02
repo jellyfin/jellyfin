@@ -41,6 +41,8 @@
     "LabelCancelled": "(Geannuleerd)",
     "LabelFailed": "(mislukt)",
     "ButtonHelp": "Help",
+    "ButtonSave": "Opslaan",
+    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
     "HeaderLibraryAccess": "Bibliotheek toegang",
     "HeaderChannelAccess": "Kanaal toegang",
     "HeaderDeviceAccess": "Device Access",
@@ -415,7 +417,7 @@
     "ButtonRename": "Hernoem",
     "ButtonChangeType": "Verander soort",
     "HeaderMediaLocations": "Media Locaties",
-    "LabelFolderTypeValue": "Map type: {0}",
+    "LabelContentTypeValue": "Content type: {0}",
     "LabelPathSubstitutionHelp": "Optioneel: Pad vervanging kan server paden naar netwerk locaties verwijzen zodat clients direct kunnen afspelen.",
     "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Films",
@@ -656,5 +658,13 @@
     "LabelItemLimitHelp": "Optioneel. Een limiet stellen aan het aantal items die zullen worden gesynchroniseerd.",
     "MessageBookPluginRequired": "Vereist installatie van de Bookshelf plugin",
     "MessageGamePluginRequired": "Vereist installatie van de GameBrowser plugin",
-    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders.",
+    "SyncJobItemStatusQueued": "Queued",
+    "SyncJobItemStatusConverting": "Converting",
+    "SyncJobItemStatusTransferring": "Transferring",
+    "SyncJobItemStatusSynced": "Synced",
+    "SyncJobItemStatusFailed": "Failed",
+    "SyncJobItemStatusRemovedFromDevice": "Removed from device",
+    "SyncJobItemStatusCancelled": "Cancelled",
+    "MessageJobItemHasNoActions": "d"
 }

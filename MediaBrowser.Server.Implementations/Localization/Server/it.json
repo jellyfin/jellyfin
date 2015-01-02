@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media browser",
     "ThisWizardWillGuideYou": "Procedura Guidata per l'installazione.",
     "TellUsAboutYourself": "Parlaci di te",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Nome",
     "MoreUsersCanBeAddedLater": "Puoi aggiungere altri utenti in un secondo momento all'interno del pannello di configurazione",
     "UserProfilesIntro": "Media Browser include il supporto integrato per i profili utente, permettendo ad ogni utente di avere le proprie impostazioni di visualizzazione.",
@@ -37,6 +38,7 @@
     "ButtonOk": "OK",
     "ButtonCancel": "Annulla",
     "ButtonNew": "Nuovo",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "contenuto misto",
     "FolderTypeMovies": "Film",
     "FolderTypeMusic": "Musica",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Consenti sincronizzazione media per dispositivi",
     "NameSeasonUnknown": "Stagione sconosciuto",
     "NameSeasonNumber": "Stagione {0}",
-    "LabelNewUserNameHelp": "I nomi utente possono contenere lettere (az), numeri (0-9), trattini (-), underscore (_), apostrofi ('), e periodi (.)"
+    "LabelNewUserNameHelp": "I nomi utente possono contenere lettere (az), numeri (0-9), trattini (-), underscore (_), apostrofi ('), e periodi (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

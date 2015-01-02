@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "This wizard will help guide you through the setup process. To begin, please select your preferred language.",
     "TellUsAboutYourself": "Expliqui'ns sobre vost\u00e8",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "El seu nom:",
     "MoreUsersCanBeAddedLater": "M\u00e9s usuaris es poden afegir m\u00e9s tard en el tauler d'instruments.",
     "UserProfilesIntro": "Media Browser inclou suport integrat per als perfils d'usuari, la qual cosa permet que cada usuari tingui la seva pr\u00f2pia configuraci\u00f3 de pantalla, estat de reproducci\u00f3  i controls dels pares.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonNew": "New",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

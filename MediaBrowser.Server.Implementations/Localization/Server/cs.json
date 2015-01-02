@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Tento pr\u016fvodce V\u00e1m pom\u016f\u017ee proj\u00edt procesem nastaven\u00ed. Pro za\u010d\u00e1tek vyberte jazyk.",
     "TellUsAboutYourself": "\u0158ekn\u011bte n\u00e1m n\u011bco o sob\u011b",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Va\u0161e k\u0159estn\u00ed jm\u00e9no:",
     "MoreUsersCanBeAddedLater": "Dal\u0161\u00ed u\u017eivatele m\u016f\u017eete p\u0159idat pozd\u011bji na n\u00e1st\u011bnce.",
     "UserProfilesIntro": "Media Browser obsahuje zabudovanou podporu u\u017eivatelsk\u00fdch profil\u016f dovoluj\u00edc\u00ed ka\u017ed\u00e9mu u\u017eivateli konfigurovat nastaven\u00ed zobrazen\u00ed, p\u0159ehr\u00e1v\u00e1n\u00ed a rodi\u010dovskou kontrolu.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Zru\u0161it",
     "ButtonNew": "Nov\u00e9",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

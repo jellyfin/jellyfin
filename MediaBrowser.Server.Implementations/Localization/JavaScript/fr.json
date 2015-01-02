@@ -41,6 +41,8 @@
     "LabelCancelled": "(annul\u00e9)",
     "LabelFailed": "(\u00e9chou\u00e9)",
     "ButtonHelp": "Aide",
+    "ButtonSave": "Sauvegarder",
+    "MessageNoSyncJobsFound": "Aucune t\u00e2che de synchronisation trouv\u00e9e. Vous pouvez cr\u00e9er des t\u00e2ches de synchronisation gr\u00e2ce aux boutons 'Synchroniser' partout dans l'interface web.",
     "HeaderLibraryAccess": "Acc\u00e8s \u00e0 la librairie",
     "HeaderChannelAccess": "Acc\u00e8s Cha\u00eene",
     "HeaderDeviceAccess": "Acc\u00e8s \u00e0 l'appareil",
@@ -415,7 +417,7 @@
     "ButtonRename": "Renommer",
     "ButtonChangeType": "Changer le type",
     "HeaderMediaLocations": "Emplacement des M\u00e9dias",
-    "LabelFolderTypeValue": "Type de r\u00e9pertoire: {0}",
+    "LabelContentTypeValue": "Type de contenu : {0}",
     "LabelPathSubstitutionHelp": "Optionnel: La substitution de chemin peut rediriger les r\u00e9pertoires serveurs vers des partages r\u00e9seau afin que le client acc\u00e8de directement \u00e0 la lecture.",
     "FolderTypeUnset": "Non d\u00e9fini (contenu m\u00e9lang\u00e9)",
     "FolderTypeMovies": "Films",
@@ -656,5 +658,13 @@
     "LabelItemLimitHelp": "Optionnel : d\u00e9finit le nombre maximum d'\u00e9l\u00e9ments qui seront synchronis\u00e9s.",
     "MessageBookPluginRequired": "N\u00e9cessite l'installation du plugin Bookshelf",
     "MessageGamePluginRequired": "N\u00e9cessite l'installation du plugin GameBrowser",
-    "MessageUnsetContentHelp": "Le contenu sera affich\u00e9 sous forme de r\u00e9pertoires. Pour un r\u00e9sultat optimal, utilisez le gestionnaire de m\u00e9tadonn\u00e9es pour d\u00e9finir le type de contenu des sous-r\u00e9pertoires."
+    "MessageUnsetContentHelp": "Le contenu sera affich\u00e9 sous forme de r\u00e9pertoires. Pour un r\u00e9sultat optimal, utilisez le gestionnaire de m\u00e9tadonn\u00e9es pour d\u00e9finir le type de contenu des sous-r\u00e9pertoires.",
+    "SyncJobItemStatusQueued": "Mis en file d'attente",
+    "SyncJobItemStatusConverting": "Conversion en cours",
+    "SyncJobItemStatusTransferring": "Transfert en cours",
+    "SyncJobItemStatusSynced": "Synchronis\u00e9",
+    "SyncJobItemStatusFailed": "Echou\u00e9",
+    "SyncJobItemStatusRemovedFromDevice": "Supprim\u00e9 de l'appareil",
+    "SyncJobItemStatusCancelled": "Annul\u00e9",
+    "MessageJobItemHasNoActions": "D"
 }

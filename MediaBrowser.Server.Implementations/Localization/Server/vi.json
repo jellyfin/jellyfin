@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Th\u1ee7 thu\u1eadt n\u00e0y s\u1ebd h\u01b0\u1edbng d\u1eabn qu\u00e1 tr\u00ecnh c\u00e0i \u0111\u1eb7t cho b\u1ea1n. \u0110\u1ec3 b\u1eaft \u0111\u1ea7u, vui l\u00f2ng l\u1ef1a ch\u1ecdn ng\u00f4n ng\u1eef b\u1ea1n \u01b0a th\u00edch.",
     "TellUsAboutYourself": "N\u00f3i cho ch\u00fang t\u00f4i bi\u1ebft \u0111\u00f4i \u0111i\u1ec1u v\u1ec1 B\u1ea1n",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "T\u00ean c\u1ee7a B\u1ea1n",
     "MoreUsersCanBeAddedLater": "More users can be added later within the Dashboard.",
     "UserProfilesIntro": "Media Browser includes built-in support for user profiles, enabling each user to have their own display settings, playstate and parental controls.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Tho\u00e1t",
     "ButtonNew": "M\u1edbi",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

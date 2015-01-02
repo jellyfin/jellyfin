@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Den h\u00e4r guiden hj\u00e4lper dig att g\u00f6ra de f\u00f6rsta inst\u00e4llningarna. F\u00f6r att b\u00f6rja var v\u00e4nlig v\u00e4lj \u00f6nskat spr\u00e5k.",
     "TellUsAboutYourself": "Ber\u00e4tta om dig sj\u00e4lv",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Ditt f\u00f6rnamn:",
     "MoreUsersCanBeAddedLater": "Flera anv\u00e4ndare kan skapas senare i Kontrollpanelen.",
     "UserProfilesIntro": "Media Browser har inbyggt st\u00f6d f\u00f6r anv\u00e4ndarprofiler, s\u00e5 varje anv\u00e4ndare kan ha sina egna utseendeinst\u00e4llningar, visad-markeringar och f\u00f6r\u00e4ldral\u00e5s.",
@@ -37,6 +38,7 @@
     "ButtonOk": "OK",
     "ButtonCancel": "Avbryt",
     "ButtonNew": "Nytillkommet",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musik",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

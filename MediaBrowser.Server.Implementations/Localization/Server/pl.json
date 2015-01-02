@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Asystent pomo\u017ce Ci podczas instalacji. Na pocz\u0105tku, wybierz tw\u00f3j preferowany j\u0119zyk.",
     "TellUsAboutYourself": "Opowiedz nam o sobie",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Twoje imi\u0119:",
     "MoreUsersCanBeAddedLater": "Mo\u017cesz doda\u0107 wi\u0119cej u\u017cytkownik\u00f3w p\u00f3\u017aniej przez tablic\u0119 rozdzielcz\u0105.",
     "UserProfilesIntro": "Media Browser posiada wbudowane wsparcie dla profili u\u017cytkownik\u00f3w, pozwalaj\u0105c ka\u017cdemu na zapisanie opcji wy\u015bwietlania, stanu odtwarzania oraz kontroli rodzicielskiej.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Anuluj",
     "ButtonNew": "New",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

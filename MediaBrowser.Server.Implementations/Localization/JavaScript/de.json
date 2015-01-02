@@ -41,6 +41,8 @@
     "LabelCancelled": "(abgebrochen)",
     "LabelFailed": "(fehlgeschlagen)",
     "ButtonHelp": "Hilfe",
+    "ButtonSave": "Speichern",
+    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
     "HeaderLibraryAccess": "Bibliothekszugriff",
     "HeaderChannelAccess": "Channelzugriff",
     "HeaderDeviceAccess": "Ger\u00e4te Zugang",
@@ -415,7 +417,7 @@
     "ButtonRename": "Umbenennen",
     "ButtonChangeType": "\u00c4ndere Typ",
     "HeaderMediaLocations": "Medienquellen",
-    "LabelFolderTypeValue": "Verzeichnistyp: {0}",
+    "LabelContentTypeValue": "Content type: {0}",
     "LabelPathSubstitutionHelp": "Optional: Die Pfadersetzung kann Serverpfade zu Netzwerkfreigaben umleiten, die von Endger\u00e4ten f\u00fcr die direkte Wiedergabe genutzt werden k\u00f6nnen.",
     "FolderTypeUnset": "Keine Auswahl (gemischter Inhalt)",
     "FolderTypeMovies": "Filme",
@@ -656,5 +658,13 @@
     "LabelItemLimitHelp": "Optional. Legen Sie die maximale Anzahl der zu synchronisierenden Eintr\u00e4ge fest.",
     "MessageBookPluginRequired": "Setzt die Installation des Bookshelf-Plugins voraus.",
     "MessageGamePluginRequired": "Setzt die Installation des GameBrowser-Plugins voraus.",
-    "MessageUnsetContentHelp": "Inhalte werden als Verzeichnisse dargestellt. F\u00fcr eine besser Anzeige nutzen Sie nach M\u00f6glichkeit den Meta-Data Manager und w\u00e4hlen Sie einen Medien-Typen f\u00fcr Unterverzeichnisse."
+    "MessageUnsetContentHelp": "Inhalte werden als Verzeichnisse dargestellt. F\u00fcr eine besser Anzeige nutzen Sie nach M\u00f6glichkeit den Meta-Data Manager und w\u00e4hlen Sie einen Medien-Typen f\u00fcr Unterverzeichnisse.",
+    "SyncJobItemStatusQueued": "Queued",
+    "SyncJobItemStatusConverting": "Converting",
+    "SyncJobItemStatusTransferring": "Transferring",
+    "SyncJobItemStatusSynced": "Synced",
+    "SyncJobItemStatusFailed": "Failed",
+    "SyncJobItemStatusRemovedFromDevice": "Removed from device",
+    "SyncJobItemStatusCancelled": "Cancelled",
+    "MessageJobItemHasNoActions": "d"
 }
