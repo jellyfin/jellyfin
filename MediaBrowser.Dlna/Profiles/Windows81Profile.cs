@@ -7,7 +7,7 @@ namespace MediaBrowser.Dlna.Profiles
     [XmlRoot("Profile")]
     public class Windows81Profile : DefaultProfile
     {
-        public Windows81Profile()
+       public Windows81Profile()
         {
             Name = "Windows 8/RT";
 
@@ -55,7 +55,7 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "mp4,mov",
+                    Container = "mp4",
                     VideoCodec = "h264,mpeg4",
                     AudioCodec = "aac,ac3,eac3,mp3,pcm",
                     Type = DlnaProfileType.Video
@@ -96,6 +96,14 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mp3",
                     AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio
+                },
+
+                new DirectPlayProfile
+                {
+                    Container = "m4a",
+                    AudioCodec = "aac",
+                    VideoCodec = "",
                     Type = DlnaProfileType.Audio
                 },
 
