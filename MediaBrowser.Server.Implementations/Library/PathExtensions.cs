@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -31,6 +32,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 int end = str.IndexOf(']', start);
                 return str.Substring(start, end - start);
             }
+            // for imdbid we also accept pattern matching
+            if (attrib == "imdbid")
+            {
+              Regex imdbPattern = new Regex("tt\\d{7}");
+              var m = imdbPattern.Match(str);
+              return m.Success ? m.Value : null;            
+            }
+            
             return null;
         }
     }
