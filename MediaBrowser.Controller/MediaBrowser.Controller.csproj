@@ -199,6 +199,7 @@
     <Compile Include="LiveTv\TimerInfo.cs" />
     <Compile Include="Localization\ILocalizationManager.cs" />
     <Compile Include="MediaEncoding\ChapterImageRefreshOptions.cs" />
+    <Compile Include="MediaEncoding\EncodingJobOptions.cs" />
     <Compile Include="MediaEncoding\IEncodingManager.cs" />
     <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />

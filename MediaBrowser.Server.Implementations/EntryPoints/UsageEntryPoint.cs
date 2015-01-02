@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
@@ -21,6 +22,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
+        private readonly IUserManager _userManager;
 
         private Timer _timer;
         private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
@@ -65,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _networkManager, _httpClient)
+                await new UsageReporter(_applicationHost, _networkManager, _httpClient, _userManager)
                     .ReportAppUsage(client, CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -107,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _networkManager, _httpClient)
+                await new UsageReporter(_applicationHost, _networkManager, _httpClient, _userManager)
                     .ReportServerUsage(CancellationToken.None)
                     .ConfigureAwait(false);
             }

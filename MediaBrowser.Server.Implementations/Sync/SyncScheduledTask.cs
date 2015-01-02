@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Logging;
@@ -18,8 +19,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly IMediaEncoder MediaEncoder;
 
-        public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager)
+        public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -27,6 +29,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _logger = logger;
             _userManager = userManager;
             _tvSeriesManager = tvSeriesManager;
+            MediaEncoder = mediaEncoder;
         }
 
         public string Name
@@ -49,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager).Sync(progress,
+            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager, MediaEncoder).Sync(progress,
                 cancellationToken);
         }
 

@@ -1556,14 +1556,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             // Types cannot be overridden, so go from the top down until we find a configured content type
 
-            var type = GetTopFolderContentType(item);
-
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                return type;
-            }
-
-            type = GetInheritedContentType(item);
+            var type = GetInheritedContentType(item);
 
             if (!string.IsNullOrWhiteSpace(type))
             {
@@ -1575,6 +1568,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public string GetInheritedContentType(BaseItem item)
         {
+            var type = GetTopFolderContentType(item);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
             return item.Parents
                 .Select(GetConfiguredContentType)
                 .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));

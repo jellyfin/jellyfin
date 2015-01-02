@@ -1317,5 +1317,6 @@
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
     "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
     "TabSyncJobs": "Sync Jobs"
 }

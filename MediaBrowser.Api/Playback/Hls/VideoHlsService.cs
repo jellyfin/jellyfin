@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
+            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower(), file);
 
             return ResultFactory.GetStaticFileResult(Request, file);
         }

@@ -46,7 +46,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public DeviceProfile GetDeviceProfile(SyncTarget target)
         {
-            return new DeviceProfile();
+            var caps = _deviceManager.GetCapabilities(target.Id);
+
+            return caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
         }
 
         public string Name

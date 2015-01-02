@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
@@ -28,8 +29,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly IMediaEncoder MediaEncoder;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -37,6 +39,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _logger = logger;
             _userManager = userManager;
             _tvSeriesManager = tvSeriesManager;
+            MediaEncoder = mediaEncoder;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -392,7 +395,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var options = new VideoOptions
             {
-                Context = EncodingContext.Streaming,
+                Context = EncodingContext.Static,
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
@@ -406,7 +409,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
+                jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
+
+                //jobItem.OutputPath = await MediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
             }
             else
             {
@@ -418,11 +424,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
-                throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                else
+                {
+                    throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                }
             }
-
-            // TODO: Transcode
-            jobItem.OutputPath = mediaSource.Path;
 
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.Transferring;
@@ -433,7 +439,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var options = new AudioOptions
             {
-                Context = EncodingContext.Streaming,
+                Context = EncodingContext.Static,
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
@@ -447,7 +453,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
+                jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                
+                jobItem.OutputPath = await MediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
             }
             else
             {
@@ -459,11 +468,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
-                throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                else
+                {
+                    throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                }
             }
-
-            // TODO: Transcode
-            jobItem.OutputPath = mediaSource.Path;
 
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.Transferring;

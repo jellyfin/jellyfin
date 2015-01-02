@@ -476,16 +476,13 @@ namespace MediaBrowser.Server.Startup.Common
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
 
-            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
-            progress.Report(90);
-
             ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
             RegisterSingleInstance(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
@@ -547,6 +544,9 @@ namespace MediaBrowser.Server.Startup.Common
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
 
+            await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
+            progress.Report(90);
+
             EncodingManager = new EncodingManager(FileSystemManager, Logger,
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
@@ -591,7 +591,18 @@ namespace MediaBrowser.Server.Startup.Common
 
             new FFmpegValidator(Logger, ApplicationPaths).Validate(info);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), JsonSerializer, info.EncoderPath, info.ProbePath, info.Version);
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), 
+                JsonSerializer, 
+                info.EncoderPath, 
+                info.ProbePath, 
+                info.Version,
+                ServerConfigurationManager,
+                FileSystemManager,
+                LiveTvManager,
+                IsoManager,
+                LibraryManager,
+                ChannelManager,
+                SessionManager);
             RegisterSingleInstance(MediaEncoder);
         }
 
