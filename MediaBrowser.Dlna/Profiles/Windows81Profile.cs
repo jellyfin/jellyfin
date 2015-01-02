@@ -101,6 +101,14 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
+                    Container = "m4a",
+                    AudioCodec = "aac",
+                    VideoCodec = "",
+                    Type = DlnaProfileType.Audio
+                },
+
+                new DirectPlayProfile
+                {
                     Container = "jpeg",
                     Type = DlnaProfileType.Photo
                 }
