@@ -812,7 +812,7 @@ progress {
     color: green;
 }
 
-@media all and (max-width: 1440px) {
+@media all and (max-width: 1439px) {
 
     .dashboardHomeRightColumn {
         margin-top: 1em;
@@ -847,7 +847,7 @@ progress {
     }
 
         .firstDashboardHomeRightColumn .ui-collapsible-content {
-            height: 585px;
+            min-height: 585px;
         }
 }
 
