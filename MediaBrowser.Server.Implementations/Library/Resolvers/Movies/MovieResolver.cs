@@ -248,24 +248,34 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         {
             base.SetInitialItemValues(item, args);
 
-            SetProviderIdFromPath(item);
+            SetProviderIdsFromPath(item);
         }
 
         /// <summary>
         /// Sets the provider id from path.
         /// </summary>
         /// <param name="item">The item.</param>
-        private void SetProviderIdFromPath(Video item)
+        private void SetProviderIdsFromPath(Video item)
         {
             //we need to only look at the name of this actual item (not parents)
             var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
 
-            var id = justName.GetAttributeValue("tmdbid");
+            // check for tmdb id
+            var tmdbid = justName.GetAttributeValue("tmdbid");
 
-            if (!string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(tmdbid))
             {
-                item.SetProviderId(MetadataProviders.Tmdb, id);
+                item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
             }
+
+            // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
+            var imdbid = item.Path.GetAttributeValue("imdbid");
+
+            if (!string.IsNullOrEmpty(imdbid))
+            {
+              item.SetProviderId(MetadataProviders.Imdb, imdbid);
+            }
+
         }
 
         /// <summary>
