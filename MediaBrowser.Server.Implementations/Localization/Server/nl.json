@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Deze wizard helpt u door het setup-proces.",
     "TellUsAboutYourself": "Vertel ons over u zelf",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Uw voornaam:",
     "MoreUsersCanBeAddedLater": "Meer gebruikers kunnen later via het dashboard worden toegevoegd.",
     "UserProfilesIntro": "Media Browser bevat ingebouwde ondersteuning voor gebruikersprofielen, zodat iedere gebruiker zijn eigen display-instellingen, afspeelstatus en ouderlijk toezicht heeft.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuleren",
     "ButtonNew": "Nieuw",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Gemengde inhoud",
     "FolderTypeMovies": "Films",
     "FolderTypeMusic": "Muziek",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Synchroniseren van media naar apparaten toestaan",
     "NameSeasonUnknown": "Seizoen Onbekend",
     "NameSeasonNumber": "Seizoen {0}",
-    "LabelNewUserNameHelp": "Gebruikersnamen kunnen letters (az), cijfers (0-9), streepjes, underscores (_), apostrofs (') en punten (.) bevatten\n"
+    "LabelNewUserNameHelp": "Gebruikersnamen kunnen letters (az), cijfers (0-9), streepjes, underscores (_), apostrofs (') en punten (.) bevatten\n",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

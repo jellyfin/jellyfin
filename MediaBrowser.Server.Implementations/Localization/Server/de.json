@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Dieser Assistent wird dich durch den Einrichtungsprozess f\u00fchren. Um zu beginnen, w\u00e4hle bitte deine bevorzugte Sprache.",
     "TellUsAboutYourself": "Sag uns etwas \u00fcber dich selbst",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Ihr Vorname:",
     "MoreUsersCanBeAddedLater": "Weitere Benutzer k\u00f6nnen sp\u00e4ter \u00fcber die Optionsleiste hinzugef\u00fcgt werden.",
     "UserProfilesIntro": "Media Browser verf\u00fcgt \u00fcber integrierte Benutzer Profile. Verwende diese Profile um Anzeigeeinstellungen, Abspielstatus sowie Kinder- und Jugendschutzverwaltungen pro Benutzer zu speichern und zu verwalten.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Abbrechen",
     "ButtonNew": "Neu",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Gemischte Inhalte",
     "FolderTypeMovies": "Filme",
     "FolderTypeMusic": "Musik",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Erlaube das Synchronisieren zu Ger\u00e4ten.",
     "NameSeasonUnknown": "Staffel unbekannt",
     "NameSeasonNumber": "Staffel {0}",
-    "LabelNewUserNameHelp": "Benutzernamen k\u00f6nnen Zeichen (a-z), Zahlen (0-9), Striche (-), Unterstriche (_), Apostrophe (') und Punkte (.) enthalten."
+    "LabelNewUserNameHelp": "Benutzernamen k\u00f6nnen Zeichen (a-z), Zahlen (0-9), Striche (-), Unterstriche (_), Apostrophe (') und Punkte (.) enthalten.",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

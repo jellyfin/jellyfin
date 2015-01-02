@@ -41,6 +41,8 @@
     "LabelCancelled": "(cancelled)",
     "LabelFailed": "(failed)",
     "ButtonHelp": "Help",
+    "ButtonSave": "Save",
+    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
     "HeaderLibraryAccess": "Library Access",
     "HeaderChannelAccess": "Channel Access",
     "HeaderDeviceAccess": "Device Access",
@@ -415,7 +417,7 @@
     "ButtonRename": "Rename",
     "ButtonChangeType": "Change type",
     "HeaderMediaLocations": "Media Locations",
-    "LabelFolderTypeValue": "Folder type: {0}",
+    "LabelContentTypeValue": "Content type: {0}",
     "LabelPathSubstitutionHelp": "Optional: Path substitution can map server paths to network shares that clients can access for direct playback.",
     "FolderTypeUnset": "Unset (mixed content)",
     "FolderTypeMovies": "Movies",
@@ -656,5 +658,13 @@
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
     "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
-    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders."
+    "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders.",
+    "SyncJobItemStatusQueued": "Queued",
+    "SyncJobItemStatusConverting": "Converting",
+    "SyncJobItemStatusTransferring": "Transferring",
+    "SyncJobItemStatusSynced": "Synced",
+    "SyncJobItemStatusFailed": "Failed",
+    "SyncJobItemStatusRemovedFromDevice": "Removed from device",
+    "SyncJobItemStatusCancelled": "Cancelled",
+    "MessageJobItemHasNoActions": "d"
 }

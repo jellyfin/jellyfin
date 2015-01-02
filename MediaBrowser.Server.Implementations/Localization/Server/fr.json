@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Cet assistant vous guidera dans le processus de configuration. Pour commencer, merci de s\u00e9lectionner votre langue pr\u00e9f\u00e9r\u00e9e.",
     "TellUsAboutYourself": "Parlez-nous de vous",
+    "ButtonQuickStartGuide": "Guide de d\u00e9marrage rapide",
     "LabelYourFirstName": "Votre pr\u00e9nom:",
     "MoreUsersCanBeAddedLater": "D'autres utilisateurs pourront \u00eatre ajout\u00e9s ult\u00e9rieurement \u00e0 partir du tableau de bord.",
     "UserProfilesIntro": "Media Browser supporte nativement les profils utilisateurs, donnant la possibilit\u00e9 pour chaque utilisateur d'avoir ses propres param\u00e8tres d'affichage, \u00e9tats de lecture et param\u00e8tres de contr\u00f4le parental.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuler",
     "ButtonNew": "Nouveau",
+    "HeaderSyncJobInfo": "T\u00e2che de synchronisation",
     "FolderTypeMixed": "Contenus m\u00e9lang\u00e9s",
     "FolderTypeMovies": "Films",
     "FolderTypeMusic": "Musique",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Autoriser la synchronisation des media sur les p\u00e9riph\u00e9riques",
     "NameSeasonUnknown": "Saison inconnue",
     "NameSeasonNumber": "Saison {0}",
-    "LabelNewUserNameHelp": "Les noms d'utilisateur peuvent contenir des lettres (a-z), des chiffres (0-9), des tirets (-), des tirets bas (_), des apostrophes (') et des points (.)."
+    "LabelNewUserNameHelp": "Les noms d'utilisateur peuvent contenir des lettres (a-z), des chiffres (0-9), des tirets (-), des tirets bas (_), des apostrophes (') et des points (.).",
+    "TabJobs": "T\u00e2ches",
+    "TabSyncJobs": "T\u00e2ches de synchronisation"
 }

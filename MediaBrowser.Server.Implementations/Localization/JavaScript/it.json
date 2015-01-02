@@ -41,6 +41,8 @@
     "LabelCancelled": "(cancellato)",
     "LabelFailed": "(fallito)",
     "ButtonHelp": "Aiuto",
+    "ButtonSave": "Salva",
+    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
     "HeaderLibraryAccess": "Accesso libreria",
     "HeaderChannelAccess": "Accesso canali",
     "HeaderDeviceAccess": "Accesso dispositivo",
@@ -415,7 +417,7 @@
     "ButtonRename": "Rinomina",
     "ButtonChangeType": "Cambia tipo",
     "HeaderMediaLocations": "Posizioni Media",
-    "LabelFolderTypeValue": "Tipo cartella: {0}",
+    "LabelContentTypeValue": "Content type: {0}",
     "LabelPathSubstitutionHelp": "Opzionale: cambio Path pu\u00f2 mappare i percorsi del server a condivisioni di rete che i clienti possono accedere per la riproduzione diretta.",
     "FolderTypeUnset": "Disinserito (contenuto misto)",
     "FolderTypeMovies": "Film",
@@ -656,5 +658,13 @@
     "LabelItemLimitHelp": "Opzionale. Impostare un limite al numero di elementi che verranno sincronizzati.",
     "MessageBookPluginRequired": "Richiede l'installazione del plugin Bookshelf",
     "MessageGamePluginRequired": "Richiede l'installazione del plugin GameBrowser",
-    "MessageUnsetContentHelp": "Il contenuto verr\u00e0 visualizzato come pianura cartelle. Per ottenere i migliori risultati utilizzare il gestore di metadati per impostare i tipi di contenuto di sottocartelle."
+    "MessageUnsetContentHelp": "Il contenuto verr\u00e0 visualizzato come pianura cartelle. Per ottenere i migliori risultati utilizzare il gestore di metadati per impostare i tipi di contenuto di sottocartelle.",
+    "SyncJobItemStatusQueued": "Queued",
+    "SyncJobItemStatusConverting": "Converting",
+    "SyncJobItemStatusTransferring": "Transferring",
+    "SyncJobItemStatusSynced": "Synced",
+    "SyncJobItemStatusFailed": "Failed",
+    "SyncJobItemStatusRemovedFromDevice": "Removed from device",
+    "SyncJobItemStatusCancelled": "Cancelled",
+    "MessageJobItemHasNoActions": "d"
 }

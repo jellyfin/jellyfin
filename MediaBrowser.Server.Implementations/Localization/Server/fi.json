@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "T\u00e4m\u00e4 ty\u00f6kalu auttaa sinua asennus prosessin aikana. loittaaksesi valitse kieli.",
     "TellUsAboutYourself": "Kerro meille itsest\u00e4si",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Sinun ensimm\u00e4inen nimi:",
     "MoreUsersCanBeAddedLater": "K\u00e4ytt\u00e4ji\u00e4 voi lis\u00e4t\u00e4 lis\u00e4\u00e4 my\u00f6hemmin Dashboardista",
     "UserProfilesIntro": "Media Browser sis\u00e4lt\u00e4\u00e4 sis\u00e4\u00e4nrakenntun tuen k\u00e4ytt\u00e4j\u00e4 profiileille, omat asetukset jokaiselle, paystate ja rinnakkaisen hallinnan.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Lopeta",
     "ButtonNew": "New",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

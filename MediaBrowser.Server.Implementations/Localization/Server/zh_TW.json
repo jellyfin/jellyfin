@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "This wizard will help guide you through the setup process. To begin, please select your preferred language.",
     "TellUsAboutYourself": "\u8acb\u4ecb\u7d39\u4e00\u4e0b\u81ea\u5df1",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "\u4f60\u7684\u540d\u5b57\uff1a",
     "MoreUsersCanBeAddedLater": "\u5f80\u5f8c\u53ef\u4ee5\u5728\u63a7\u5236\u53f0\u5167\u6dfb\u52a0\u66f4\u591a\u7528\u6236\u3002",
     "UserProfilesIntro": "Media Browser \u5167\u7f6e\u652f\u6301\u591a\u500b\u7528\u6236\u914d\u7f6e\uff0c\u4f7f\u6bcf\u500b\u7528\u6236\u90fd\u64c1\u6709\u81ea\u5df1\u5c08\u5c6c\u7684\u986f\u793a\u8a2d\u7f6e\uff0c\u64ad\u653e\u72c0\u614b\u548c\u5bb6\u9577\u63a7\u5236\u8a2d\u7f6e\u3002",
@@ -37,6 +38,7 @@
     "ButtonOk": "OK",
     "ButtonCancel": "\u53d6\u6d88",
     "ButtonNew": "\u5275\u5efa",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

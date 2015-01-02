@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "\u05d0\u05e9\u05e3 \u05d6\u05d4 \u05d9\u05e2\u05d6\u05d5\u05e8 \u05dc\u05da \u05d1\u05d4\u05ea\u05dc\u05d9\u05da \u05d4\u05d4\u05ea\u05e7\u05e0\u05d4.",
     "TellUsAboutYourself": "\u05e1\u05e4\u05e8 \u05dc\u05e0\u05d5 \u05e2\u05dc \u05e2\u05e6\u05de\u05da",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "\u05e9\u05de\u05da \u05d4\u05e4\u05e8\u05d8\u05d9:",
     "MoreUsersCanBeAddedLater": "\u05e0\u05d9\u05ea\u05df \u05dc\u05d4\u05d2\u05d3\u05d9\u05e8 \u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd \u05e0\u05d5\u05e1\u05e4\u05d9\u05dd \u05de\u05d0\u05d5\u05d7\u05e8 \u05d9\u05d5\u05ea\u05e8 \u05d3\u05e8\u05da \u05dc\u05d5\u05d7 \u05d4\u05d1\u05e7\u05e8\u05d4.",
     "UserProfilesIntro": "Media Browser \u05db\u05d5\u05dc\u05dc \u05ea\u05de\u05d9\u05db\u05d4 \u05de\u05d5\u05d1\u05e0\u05ea \u05d1\u05de\u05e1\u05e4\u05e8 \u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd. \u05d5\u05de\u05d0\u05e4\u05e9\u05e8 \u05dc\u05db\u05dc \u05d0\u05d7\u05d3 \u05de\u05d4\u05dd \u05ea\u05e6\u05d5\u05d2\u05ea \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea, \u05de\u05e6\u05d1 \u05e0\u05d2\u05df \u05d5\u05d1\u05e7\u05e8\u05ea \u05d4\u05d5\u05e8\u05d9\u05dd \u05d0\u05d9\u05e9\u05d9\u05ea.",
@@ -37,6 +38,7 @@
     "ButtonOk": "\u05d0\u05e9\u05e8",
     "ButtonCancel": "\u05d1\u05d8\u05dc",
     "ButtonNew": "\u05d7\u05d3\u05e9",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

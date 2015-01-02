@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Ovaj pomo\u0107nik \u0107e Vas voditi kroz proces pode\u0161avanja. Za po\u010detak, odaberite \u017eeljeni jezik.",
     "TellUsAboutYourself": "Recite nam ne\u0161to o sebi",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Ime:",
     "MoreUsersCanBeAddedLater": "Vi\u0161e korisnika mo\u017eete dodati naknadno preko nadzorne plo\u010de.",
     "UserProfilesIntro": "Media Browser  ima ugra\u0111enu podr\u0161ku za korisni\u010dke profile, omogu\u0107uju\u0107i svakom korisniku da imaju svoje vlastite postavke prikaza i roditeljsku kontrolu.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Odustani",
     "ButtonNew": "Novo",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
     "FolderTypeMusic": "Music",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }

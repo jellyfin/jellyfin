@@ -19,6 +19,7 @@
     "TitleMediaBrowser": "Media Browser",
     "ThisWizardWillGuideYou": "Denne wizarden vil guide deg gjennom server-konfigurasjonen. For \u00e5 begynne, vennligst velg ditt foretrukne spr\u00e5k.",
     "TellUsAboutYourself": "Fortell om deg selv",
+    "ButtonQuickStartGuide": "Quick start guide",
     "LabelYourFirstName": "Ditt fornavn",
     "MoreUsersCanBeAddedLater": "Du kan legge til flere brukere senere via Dashboard",
     "UserProfilesIntro": "Media Browser inkluderer innebygd st\u00f8tte for bruker profiler som tilbyr brukere innstillinger for visning, avspillerstatus og begrensning p\u00e5 innhold.",
@@ -37,6 +38,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "avbryt",
     "ButtonNew": "Ny",
+    "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Filmer",
     "FolderTypeMusic": "Musikk",
@@ -1298,5 +1300,7 @@
     "OptionAllowSyncContent": "Allow syncing media to devices",
     "NameSeasonUnknown": "Season Unknown",
     "NameSeasonNumber": "Season {0}",
-    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)"
+    "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
+    "TabJobs": "Jobs",
+    "TabSyncJobs": "Sync Jobs"
 }
