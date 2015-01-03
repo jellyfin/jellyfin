@@ -3,7 +3,7 @@ using System;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
-    public class SocketSharpLogger : WebSocketSharp.Logging.ILogger
+    public class SocketSharpLogger : SocketHttpListener.Logging.ILogger
     {
         private readonly ILogger _logger;
 

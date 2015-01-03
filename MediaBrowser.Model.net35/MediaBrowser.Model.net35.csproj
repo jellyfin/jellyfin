@@ -393,9 +393,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\ChapterInfoDto.cs">
       <Link>Dto\ChapterInfoDto.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\DtoOptions.cs">
-      <Link>Dto\DtoOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\GameSystemSummary.cs">
       <Link>Dto\GameSystemSummary.cs</Link>
     </Compile>

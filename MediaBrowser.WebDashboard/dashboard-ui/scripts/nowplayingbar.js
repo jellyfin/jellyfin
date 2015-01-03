@@ -203,17 +203,6 @@
         }
 
         var playState = state.PlayState || {};
-        
-        if (playState.IsMuted) {
-
-            hideButton(muteButton);
-            showButton(unmuteButton);
-
-        } else {
-
-            showButton(muteButton);
-            hideButton(unmuteButton);
-        }
 
         if (playState.IsPaused) {
 
@@ -226,11 +215,7 @@
             hideButton(unpauseButton);
         }
 
-        if (!isVolumeSliderActive) {
-            volumeSlider.val(playState.VolumeLevel || 0);
-        }
-
-        volumeSlider.slider('refresh');
+        updatePlayerVolumeState(state);
 
         var nowPlayingItem = state.NowPlayingItem || {};
         if (!isPositionSliderActive) {
@@ -267,6 +252,32 @@
         currentTimeElement.html(timeText);
 
         updateNowPlayingInfo(state);
+    }
+
+    function updatePlayerVolumeState(state) {
+
+        if (!muteButton) {
+            getNowPlayingBar();
+        }
+
+        var playState = state.PlayState || {};
+
+        if (playState.IsMuted) {
+
+            hideButton(muteButton);
+            showButton(unmuteButton);
+
+        } else {
+
+            showButton(muteButton);
+            hideButton(unmuteButton);
+        }
+
+        if (!isVolumeSliderActive) {
+            volumeSlider.val(playState.VolumeLevel || 0);
+        }
+
+        volumeSlider.slider('refresh');
     }
 
     var currentImgUrl;
@@ -390,6 +401,20 @@
         }
     }
 
+    function onVolumeChanged(e) {
+
+        var player = this;
+
+        player.getPlayerState().done(function(state) {
+            
+            if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+                return;
+            }
+
+            updatePlayerVolumeState(state);
+        });
+    }
+
     function bindToPlayer(player) {
 
         releaseCurrentPlayer();
@@ -407,7 +432,7 @@
 
         $(player).on('playbackstart.nowplayingbar', onPlaybackStart)
             .on('playbackstop.nowplayingbar', onPlaybackStopped)
-            .on('volumechange.nowplayingbar', onStateChanged)
+            .on('volumechange.nowplayingbar', onVolumeChanged)
             .on('playstatechange.nowplayingbar', onStateChanged)
             .on('positionchange.nowplayingbar', onStateChanged);
     }

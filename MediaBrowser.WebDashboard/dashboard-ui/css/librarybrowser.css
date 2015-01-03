@@ -213,7 +213,7 @@
     height: 17px;
     display: inline-block;
     background-size: cover;
-    vertical-align: top;
+    vertical-align: middle;
     position: relative;
     top: -1px;
 }
@@ -231,6 +231,7 @@
     margin-left: 1px;
     position: relative;
     top: -1px;
+    vertical-align: middle;
 }
 
 .rottentomatoesicon {
@@ -240,7 +241,7 @@
     background-size: cover;
     background-position: left center;
     background-repeat: no-repeat;
-    vertical-align: top;
+    vertical-align: middle;
     position: relative;
     top: -1px;
 }
@@ -264,8 +265,6 @@
     font-size: 12px;
     text-align: center;
     padding: 2px 4px;
-    position: relative;
-    top: -1px;
     border-radius: 2px;
 }
 
@@ -306,6 +305,7 @@
     margin-left: 1px;
     position: relative;
     top: -1px;
+    vertical-align: middle;
 }
 
 .criticRatingSummary {

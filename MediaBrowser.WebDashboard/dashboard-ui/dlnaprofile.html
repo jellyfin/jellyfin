@@ -199,19 +199,9 @@
                                         <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtMaxStaticBitrate">${LabelMaxStaticBitrate}</label>
-                                        <input type="number" id="txtMaxStaticBitrate" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelMaxStaticBitrateHelp}</div>
-                                    </li>
-                                    <li>
                                         <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
                                         <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtMusicStaticBitrate">${LabelMusicStaticBitrate}</label>
-                                        <input type="number" id="txtMusicStaticBitrate" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelMusicStaticBitrateHelp}</div>
                                     </li>
                                     <li>
                                         <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
@@ -424,14 +414,6 @@
                                 <option value="Audio">${OptionProfileAudio}</option>
                                 <option value="Photo">${OptionProfilePhoto}</option>
                                 <option value="Video">${OptionProfileVideo}</option>
-                            </select>
-                        </div>
-
-                        <div style="margin: 1em 0;">
-                            <label for="selectTranscodingContext">${LabelContext}</label>
-                            <select id="selectTranscodingContext" data-mini="true">
-                                <option value="Streaming">${OptionContextStreaming}</option>
-                                <option value="Static">${OptionContextStatic}</option>
                             </select>
                         </div>
 

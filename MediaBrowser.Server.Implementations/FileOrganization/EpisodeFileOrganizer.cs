@@ -373,6 +373,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (episode == null)
             {
+                _logger.Warn("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
                 return null;
             }
 

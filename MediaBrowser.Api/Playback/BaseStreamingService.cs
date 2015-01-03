@@ -834,7 +834,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
                 {
-                    arg += " -i " + state.SubtitleStream.Path;
+                    arg += " -i \"" + state.SubtitleStream.Path + "\"";
                 }
             }
 

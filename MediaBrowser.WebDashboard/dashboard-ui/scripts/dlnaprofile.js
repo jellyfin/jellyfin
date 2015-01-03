@@ -80,10 +80,8 @@
 
         $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests).checkboxradio('refresh');
         $('#txtMaxAllowedBitrate', page).val(profile.MaxStreamingBitrate || '');
-        $('#txtMaxStaticBitrate', page).val(profile.MaxStaticBitrate || '');
 
         $('#txtMusicStreamingTranscodingBitrate', page).val(profile.MusicStreamingTranscodingBitrate || '');
-        $('#txtMusicStaticBitrate', page).val(profile.MusicSyncBitrate || '');
 
         $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
         $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
@@ -498,7 +496,6 @@
         $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
         $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http').selectmenu('refresh');
-        $('#selectTranscodingContext', popup).val(transcodingProfile.Context || 'Streaming').selectmenu('refresh');
 
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
         $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false).checkboxradio('refresh');
@@ -524,7 +521,7 @@
         currentSubProfile.AudioCodec = $('#txtTranscodingAudioCodec', page).val();
         currentSubProfile.VideoCodec = $('#txtTranscodingVideoCodec', page).val();
         currentSubProfile.Protocol = $('#selectTranscodingProtocol', page).val();
-        currentSubProfile.Context = $('#selectTranscodingContext', page).val();
+        currentSubProfile.Context = 'Streaming';
 
         currentSubProfile.EnableMpegtsM2TsMode = $('#chkEnableMpegtsM2TsMode', page).checked();
         currentSubProfile.EstimateContentLength = $('#chkEstimateContentLength', page).checked();
@@ -932,10 +929,8 @@
 
         profile.IgnoreTranscodeByteRangeRequests = $('#chkIgnoreTranscodeByteRangeRequests', page).checked();
         profile.MaxStreamingBitrate = $('#txtMaxAllowedBitrate', page).val();
-        profile.MaxStaticBitrate = $('#txtMaxStaticBitrate', page).val();
 
         profile.MusicStreamingTranscodingBitrate = $('#txtMusicStreamingTranscodingBitrate', page).val();
-        profile.MusicSyncBitrate = $('#txtMusicStaticBitrate', page).val();
 
         profile.ProtocolInfo = $('#txtProtocolInfo', page).val();
         profile.XDlnaCap = $('#txtXDlnaCap', page).val();

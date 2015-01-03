@@ -86,23 +86,23 @@
         }
 
         if (!isMiniItem) {
-            html += '<div style="margin:1.25em 0;">';
+            html += '<div style="margin:1em 0 .75em;">';
 
             if (isPortrait) {
                 html += '<div class="itemCommunityRating">';
                 html += LibraryBrowser.getRatingHtml(item, false);
                 html += '</div>';
 
-                html += '<div class="userDataIcons" style="margin:1.25em 0;">';
+                html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</div>';
             } else {
 
-                html += '<span class="itemCommunityRating">';
+                html += '<span class="itemCommunityRating" style="vertical-align:middle;">';
                 html += LibraryBrowser.getRatingHtml(item, false);
                 html += '</span>';
 
-                html += '<span class="userDataIcons">';
+                html += '<span class="userDataIcons" style="vertical-align:middle;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
             }
@@ -989,10 +989,14 @@
 
         $('.' + cssClass).each(function () {
 
-            this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+            var mediaType = this.getAttribute('data-mediatype');
 
-            if ($(this).hasClass('card')) {
-                renderUserDataChanges(this, userData);
+            if (mediaType == 'Video') {
+                this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+
+                if ($(this).hasClass('card')) {
+                    renderUserDataChanges(this, userData);
+                }
             }
         });
     }

@@ -767,6 +767,33 @@ progress {
 
 /* Detail Page*/
 
+.btnUserItemRating {
+    margin-right: .85em;
+    cursor: pointer;
+    vertical-align: middle;
+    color: #cc3333 !important;
+    font-size: 17px;
+    width: auto !important;
+    display: inline-block !important;
+    background: none !important;
+}
+
+    .btnUserItemRating div {
+        border: 0;
+    }
+
+    .btnUserItemRatingOff {
+        color: #aaa !important;
+    }
+
+    .btnUserItemRating:last-child {
+        margin-right: 0;
+    }
+
+    .btnUserItemRating:hover {
+        opacity: .5;
+    }
+
 .imgUserItemRating {
     height: 16px;
     width: 16px;

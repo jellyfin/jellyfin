@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly Func<IDtoService> _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly Func<IMediaEncoder> MediaEncoder;
+        private readonly Func<IMediaEncoder> _mediaEncoder;
 
         private ISyncProvider[] _providers = { };
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _dtoService = dtoService;
             _appHost = appHost;
             _tvSeriesManager = tvSeriesManager;
-            MediaEncoder = mediaEncoder;
+            _mediaEncoder = mediaEncoder;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -165,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (item == null)
             {
-                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
+                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
 
                 var user = _userManager.GetUserById(job.UserId);
 
@@ -395,7 +395,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await _repo.Update(jobItem).ConfigureAwait(false);
 
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, MediaEncoder());
+            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
@@ -529,6 +529,22 @@ namespace MediaBrowser.Server.Implementations.Sync
                     // Content is no longer on the device
                     jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
                     await _repo.Update(jobItem).ConfigureAwait(false);
+                }
+            }
+
+            // Now check each item that's on the device
+            foreach (var itemId in request.LocalItemIds)
+            {
+                // See if it's already marked for removal
+                if (response.ItemIdsToRemove.Contains(itemId, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // If there isn't a sync job for this item, mark it for removal
+                if (!jobItemResult.Items.Any(i => string.Equals(itemId, i.ItemId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    response.ItemIdsToRemove.Add(itemId);
                 }
             }
 
