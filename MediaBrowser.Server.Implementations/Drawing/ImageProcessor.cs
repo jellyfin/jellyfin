@@ -367,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     new UnplayedCountIndicator().DrawUnplayedCountIndicator(graphics, currentImageSize, options.UnplayedCount.Value);
                 }
 
-                if (options.PercentPlayed >= 0)
+                if (options.PercentPlayed > 0)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 

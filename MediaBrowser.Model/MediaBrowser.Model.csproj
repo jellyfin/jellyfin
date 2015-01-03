@@ -127,7 +127,6 @@
     <Compile Include="Dlna\SubtitleDeliveryMethod.cs" />
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
-    <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameValuePair.cs" />

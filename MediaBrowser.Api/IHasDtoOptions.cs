@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;

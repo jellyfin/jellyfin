@@ -115,6 +115,7 @@
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
     <Compile Include="Drawing\ImageProcessorExtensions.cs" />
     <Compile Include="Drawing\ImageStream.cs" />
+    <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
     <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
