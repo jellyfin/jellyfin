@@ -19,7 +19,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
-        public MovieResolver(ILibraryManager libraryManager) : base(libraryManager)
+        public MovieResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
         {
         }
 
@@ -39,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
         }
 
-        public MultiItemResolverResult ResolveMultiple(Folder parent, 
+        public MultiItemResolverResult ResolveMultiple(Folder parent,
             List<FileSystemInfo> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -237,25 +238,27 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <param name="item">The item.</param>
         private void SetProviderIdsFromPath(Video item)
         {
-            //we need to only look at the name of this actual item (not parents)
-            var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
-
-            // check for tmdb id
-            var tmdbid = justName.GetAttributeValue("tmdbid");
-
-            if (!string.IsNullOrEmpty(tmdbid))
+            if (item is Movie || item is MusicVideo)
             {
-                item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
+                //we need to only look at the name of this actual item (not parents)
+                var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
+
+                // check for tmdb id
+                var tmdbid = justName.GetAttributeValue("tmdbid");
+
+                if (!string.IsNullOrEmpty(tmdbid))
+                {
+                    item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
+                }
+
+                // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
+                var imdbid = item.Path.GetAttributeValue("imdbid");
+
+                if (!string.IsNullOrEmpty(imdbid))
+                {
+                    item.SetProviderId(MetadataProviders.Imdb, imdbid);
+                }
             }
-
-            // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
-            var imdbid = item.Path.GetAttributeValue("imdbid");
-
-            if (!string.IsNullOrEmpty(imdbid))
-            {
-              item.SetProviderId(MetadataProviders.Imdb, imdbid);
-            }
-
         }
 
         /// <summary>
@@ -272,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             where T : Video, new()
         {
             var multiDiscFolders = new List<FileSystemInfo>();
-            
+
             // Search for a folder rip
             foreach (var child in fileSystemEntries)
             {

@@ -33,13 +33,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 return str.Substring(start, end - start);
             }
             // for imdbid we also accept pattern matching
-            if (attrib == "imdbid")
+            if (string.Equals(attrib, "imdbid", StringComparison.OrdinalIgnoreCase))
             {
-              Regex imdbPattern = new Regex("tt\\d{7}");
-              var m = imdbPattern.Match(str);
-              return m.Success ? m.Value : null;            
+                var m = Regex.Match(str, "tt\\d{7}", RegexOptions.IgnoreCase);
+                return m.Success ? m.Value : null;
             }
-            
+
             return null;
         }
     }
