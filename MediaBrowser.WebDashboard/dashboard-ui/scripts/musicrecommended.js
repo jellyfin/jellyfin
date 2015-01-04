@@ -11,7 +11,7 @@
 
         var options = {
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 24 : (screenWidth >= 1600 ? 21 : (screenWidth >= 1200 ? 21 : 12)),
+            Limit: 20,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -24,7 +24,7 @@
                 items: items,
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
-                shape: "homePageSquare",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true
             })).createCardMenus();
@@ -36,7 +36,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 7 : 6)),
+            Limit: 10,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
@@ -56,7 +56,7 @@
             $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "homePageSquare",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 defaultAction: 'play'
@@ -70,7 +70,7 @@
             SortBy: "PlayCount",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: screenWidth >= 1920 ? 16 : (screenWidth >= 1600 ? 14 : (screenWidth >= 1200 ? 14 : 12)),
+            Limit: 20,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
@@ -90,7 +90,7 @@
             $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "homePageSquare",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 defaultAction: 'play'

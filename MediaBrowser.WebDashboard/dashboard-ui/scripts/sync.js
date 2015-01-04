@@ -203,7 +203,7 @@
 
     function isAvailable(item, user) {
 
-        //return false;
+        return false;
         return item.SupportsSync;
     }
 
@@ -226,7 +226,7 @@
         Dashboard.getCurrentUser().done(function (user) {
 
             if (user.Policy.EnableSync) {
-                $('.categorySyncButton', page).show();
+                $('.categorySyncButton', page).hide();
             } else {
                 $('.categorySyncButton', page).hide();
             }

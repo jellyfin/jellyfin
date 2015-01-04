@@ -19,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly IMediaEncoder MediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
         {
@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _logger = logger;
             _userManager = userManager;
             _tvSeriesManager = tvSeriesManager;
-            MediaEncoder = mediaEncoder;
+            _mediaEncoder = mediaEncoder;
         }
 
         public string Name
@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager, MediaEncoder).Sync(progress,
+            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager, _mediaEncoder).Sync(progress,
                 cancellationToken);
         }
 
@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool IsHidden
         {
-            get { return false; }
+            get { return true; }
         }
 
         public bool IsEnabled

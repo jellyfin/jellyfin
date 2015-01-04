@@ -43,7 +43,7 @@
 
         var html = '';
 
-        var cssClass = "card homePageSquareCard bottomPaddedCard";
+        var cssClass = "card squareCard bottomPaddedCard";
 
         html += "<div data-id='" + server.Id + "' data-connectserverid='" + (server.ConnectServerId || '') + "' class='" + cssClass + "'>";
 
@@ -260,7 +260,7 @@
 
         var html = '';
 
-        var cssClass = "card homePageSquareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard alternateHover bottomPaddedCard";
 
         html += "<div data-id='" + invite.Id + "' class='" + cssClass + "'>";
 

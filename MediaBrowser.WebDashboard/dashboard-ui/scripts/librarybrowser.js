@@ -953,10 +953,10 @@
                     options.shape = options.shape == 'auto' ? 'backdrop' : 'homePageBackdrop';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;
-                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
+                    options.shape = 'square';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
                     options.coverImage = true;
-                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
+                    options.shape = 'square';
                 } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
                     options.shape = 'banner';
                     options.coverImage = true;
