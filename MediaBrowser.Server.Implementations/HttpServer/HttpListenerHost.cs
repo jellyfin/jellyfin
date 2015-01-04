@@ -1,7 +1,6 @@
 ﻿using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.NetListener;
@@ -205,16 +204,23 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
 
-            _listener = _supportsNativeWebSocket && NativeWebSocket.IsSupported
-                ? _listener = new HttpListenerServer(_logger, OnRequestReceived)
-                //? _listener = new WebSocketSharpListener(_logger, OnRequestReceived)
-                : _listener = new WebSocketSharpListener(_logger, OnRequestReceived);
+            _listener = GetListener();
 
             _listener.WebSocketHandler = WebSocketHandler;
             _listener.ErrorHandler = ErrorHandler;
             _listener.RequestHandler = RequestHandler;
 
             _listener.Start(UrlPrefixes);
+        }
+
+        private IHttpListener GetListener()
+        {
+            if (_supportsNativeWebSocket && NativeWebSocket.IsSupported)
+            {
+                return new HttpListenerServer(_logger, OnRequestReceived);
+            }
+
+            return new WebSocketSharpListener(_logger, OnRequestReceived);
         }
 
         private void WebSocketHandler(WebSocketConnectEventArgs args)

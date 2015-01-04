@@ -4,11 +4,11 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.IO;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,8 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Library;
-using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
@@ -57,18 +55,23 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 FileSize = new FileInfo(path).Length
             };
 
-            var seriesName = SeriesResolver.GetSeriesNameFromEpisodeFile(path);
+            var resolver = new Naming.TV.EpisodeResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+
+            var episodeInfo = resolver.Resolve(path, FileInfoType.File) ??
+                new Naming.TV.EpisodeInfo();
+
+            var seriesName = episodeInfo.SeriesName;
 
             if (!string.IsNullOrEmpty(seriesName))
             {
-                var season = SeriesResolver.GetSeasonNumberFromEpisodeFile(path);
+                var season = episodeInfo.SeasonNumber;
 
                 result.ExtractedSeasonNumber = season;
 
                 if (season.HasValue)
                 {
                     // Passing in true will include a few extra regex's
-                    var episode = SeriesResolver.GetEpisodeNumberFromFile(path, true);
+                    var episode = episodeInfo.EpisodeNumber;
 
                     result.ExtractedEpisodeNumber = episode;
 
@@ -76,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     {
                         _logger.Debug("Extracted information from {0}. Series name {1}, Season {2}, Episode {3}", path, seriesName, season, episode);
 
-                        var endingEpisodeNumber = SeriesResolver.GetEndingEpisodeNumberFromFile(path);
+                        var endingEpisodeNumber = episodeInfo.EndingEpsiodeNumber;
 
                         result.ExtractedEndingEpisodeNumber = endingEpisodeNumber;
 
@@ -251,7 +254,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var folder = Path.GetDirectoryName(targetPath);
             var targetFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(targetPath);
-            
+
             try
             {
                 var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
@@ -370,6 +373,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (episode == null)
             {
+                _logger.Warn("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
                 return null;
             }
 
@@ -456,17 +460,21 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private bool IsSameEpisode(string sourcePath, string newPath)
         {
-            var sourceFileInfo = new FileInfo(sourcePath);
-            var destinationFileInfo = new FileInfo(newPath);
-
             try
             {
+                var sourceFileInfo = new FileInfo(sourcePath);
+                var destinationFileInfo = new FileInfo(newPath);
+
                 if (sourceFileInfo.Length == destinationFileInfo.Length)
                 {
                     return true;
                 }
             }
             catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (DirectoryNotFoundException)
             {
                 return false;
             }

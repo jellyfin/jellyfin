@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;

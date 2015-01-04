@@ -23,6 +23,18 @@ namespace MediaBrowser.Model.Sync
         public string ItemId { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>The name of the item.</value>
+        public string ItemName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the media source identifier.
+        /// </summary>
+        /// <value>The media source identifier.</value>
+        public string MediaSourceId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the target identifier.
         /// </summary>
         /// <value>The target identifier.</value>
@@ -51,5 +63,15 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The date created.</value>
         public DateTime DateCreated { get; set; }
+        /// <summary>
+        /// Gets or sets the primary image item identifier.
+        /// </summary>
+        /// <value>The primary image item identifier.</value>
+        public string PrimaryImageItemId { get; set; }
+        /// <summary>
+        /// Gets or sets the primary image tag.
+        /// </summary>
+        /// <value>The primary image tag.</value>
+        public string PrimaryImageTag { get; set; }
     }
 }

@@ -72,6 +72,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
+                }
             }
 
             return list;
@@ -98,6 +102,10 @@ namespace MediaBrowser.Providers.TV
                     result.HasMetadata = result.Item != null;
                 }
                 catch (FileNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
+                }
+                catch (DirectoryNotFoundException)
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
@@ -208,8 +216,9 @@ namespace MediaBrowser.Providers.TV
         /// Fetches the episode data.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="identity">The identity.</param>
         /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="seriesProviderIds"></param>
+        /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
         private Episode FetchEpisodeData(EpisodeInfo id, EpisodeIdentity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
@@ -276,6 +285,10 @@ namespace MediaBrowser.Providers.TV
                     FetchAdditionalPartInfo(episode, file, cancellationToken);
                 }
                 catch (FileNotFoundException)
+                {
+                    break;
+                }
+                catch (DirectoryNotFoundException)
                 {
                     break;
                 }

@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Common.Configuration
+namespace MediaBrowser.Common.Implementations.Configuration
 {
     /// <summary>
     /// Class ConfigurationHelper
@@ -54,21 +54,6 @@ namespace MediaBrowser.Common.Configuration
 
                 return configuration;
             }
-        }
-
-        /// <summary>
-        /// Reads an xml configuration file from the file system
-        /// It will immediately save the configuration after loading it, just
-        /// in case there are new serializable properties
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path">The path.</param>
-        /// <param name="xmlSerializer">The XML serializer.</param>
-        /// <returns>``0.</returns>
-        public static T GetXmlConfiguration<T>(string path, IXmlSerializer xmlSerializer)
-            where T : class
-        {
-            return GetXmlConfiguration(typeof(T), path, xmlSerializer) as T;
         }
     }
 }

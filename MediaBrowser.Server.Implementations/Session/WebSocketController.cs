@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -72,17 +72,6 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     _logger.ErrorException("Error reporting session ended.", ex);
                 }
-            }
-            else
-            {
-                var capabilities = new ClientCapabilities
-                {
-                    PlayableMediaTypes = Session.PlayableMediaTypes,
-                    SupportedCommands = Session.SupportedCommands,
-                    SupportsMediaControl = SupportsMediaControl
-                };
-
-                _sessionManager.ReportCapabilities(Session.Id, capabilities);
             }
         }
 

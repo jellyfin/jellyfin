@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class AppSyncProvider : ISyncProvider
+    public class AppSyncProvider : ISyncProvider, IHasUniqueTargetIds
     {
         private readonly IDeviceManager _deviceManager;
 
@@ -30,9 +30,25 @@ namespace MediaBrowser.Server.Implementations.Sync
             });
         }
 
+        public IEnumerable<SyncTarget> GetSyncTargets(string userId)
+        {
+            return _deviceManager.GetDevices(new DeviceQuery
+            {
+                SupportsSync = true,
+                UserId = userId
+
+            }).Items.Select(i => new SyncTarget
+            {
+                Id = i.Id,
+                Name = i.Name
+            });
+        }
+
         public DeviceProfile GetDeviceProfile(SyncTarget target)
         {
-            return new DeviceProfile();
+            var caps = _deviceManager.GetCapabilities(target.Id);
+
+            return caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
         }
 
         public string Name

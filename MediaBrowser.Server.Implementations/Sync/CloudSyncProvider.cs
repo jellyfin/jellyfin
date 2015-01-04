@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +9,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class CloudSyncProvider : ISyncProvider
     {
-        private ICloudSyncProvider[] _providers = new ICloudSyncProvider[] {};
+        private ICloudSyncProvider[] _providers = {};
 
         public CloudSyncProvider(IApplicationHost appHost)
         {
@@ -18,6 +17,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         }
 
         public IEnumerable<SyncTarget> GetSyncTargets()
+        {
+            return new List<SyncTarget>();
+        }
+
+        public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
             return new List<SyncTarget>();
         }

@@ -5,7 +5,7 @@ using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host;
 using ServiceStack.Web;
-using HttpListenerResponse = WebSocketSharp.Net.HttpListenerResponse;
+using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {

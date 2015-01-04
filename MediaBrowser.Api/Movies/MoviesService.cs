@@ -157,7 +157,11 @@ namespace MediaBrowser.Api.Movies
                 .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var result = GetRecommendationCategories(user, listEligibleForCategories, listEligibleForSuggestion, request.CategoryLimit, request.ItemLimit, request.GetItemFields().ToList());
+            var dtoOptions = new DtoOptions();
+
+            dtoOptions.Fields = request.GetItemFields().ToList();
+            
+            var result = GetRecommendationCategories(user, listEligibleForCategories, listEligibleForSuggestion, request.CategoryLimit, request.ItemLimit, dtoOptions);
 
             return ToOptimizedResult(result);
         }
@@ -232,7 +236,7 @@ namespace MediaBrowser.Api.Movies
             return result;
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<BaseItem> allMoviesForCategories, List<BaseItem> allMovies, int categoryLimit, int itemLimit, List<ItemFields> fields)
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, List<BaseItem> allMoviesForCategories, List<BaseItem> allMovies, int categoryLimit, int itemLimit, DtoOptions dtoOptions)
         {
             var categories = new List<RecommendationDto>();
 
@@ -282,11 +286,11 @@ namespace MediaBrowser.Api.Movies
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
-            var similarToRecentlyPlayed = GetSimilarTo(user, allMovies, recentlyPlayedMovies.Take(7).OrderBy(i => Guid.NewGuid()), itemLimit, fields, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
-            var similarToLiked = GetSimilarTo(user, allMovies, likedMovies, itemLimit, fields, RecommendationType.SimilarToLikedItem).GetEnumerator();
+            var similarToRecentlyPlayed = GetSimilarTo(user, allMovies, recentlyPlayedMovies.Take(7).OrderBy(i => Guid.NewGuid()), itemLimit, dtoOptions, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
+            var similarToLiked = GetSimilarTo(user, allMovies, likedMovies, itemLimit, dtoOptions, RecommendationType.SimilarToLikedItem).GetEnumerator();
 
-            var hasDirectorFromRecentlyPlayed = GetWithDirector(user, allMovies, recentDirectors, itemLimit, fields, RecommendationType.HasDirectorFromRecentlyPlayed).GetEnumerator();
-            var hasActorFromRecentlyPlayed = GetWithActor(user, allMovies, recentActors, itemLimit, fields, RecommendationType.HasActorFromRecentlyPlayed).GetEnumerator();
+            var hasDirectorFromRecentlyPlayed = GetWithDirector(user, allMovies, recentDirectors, itemLimit, dtoOptions, RecommendationType.HasDirectorFromRecentlyPlayed).GetEnumerator();
+            var hasActorFromRecentlyPlayed = GetWithActor(user, allMovies, recentActors, itemLimit, dtoOptions, RecommendationType.HasActorFromRecentlyPlayed).GetEnumerator();
 
             var categoryTypes = new List<IEnumerator<RecommendationDto>>
             {
@@ -329,7 +333,7 @@ namespace MediaBrowser.Api.Movies
             return categories.OrderBy(i => i.RecommendationType).ThenBy(i => Guid.NewGuid());
         }
 
-        private IEnumerable<RecommendationDto> GetWithDirector(User user, List<BaseItem> allMovies, IEnumerable<string> directors, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithDirector(User user, List<BaseItem> allMovies, IEnumerable<string> directors, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var userId = user.Id;
 
@@ -347,13 +351,13 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = director,
                         CategoryId = director.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray()
+                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
                     };
                 }
             }
         }
 
-        private IEnumerable<RecommendationDto> GetWithActor(User user, List<BaseItem> allMovies, IEnumerable<string> names, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithActor(User user, List<BaseItem> allMovies, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var userId = user.Id;
 
@@ -371,13 +375,13 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = name,
                         CategoryId = name.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray()
+                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
                     };
                 }
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> allMovies, IEnumerable<BaseItem> baselineItems, int itemLimit, List<ItemFields> fields, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> allMovies, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var userId = user.Id;
 
@@ -395,7 +399,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = item.Name,
                         CategoryId = item.Id.ToString("N"),
                         RecommendationType = type,
-                        Items = similar.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray()
+                        Items = similar.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
                     };
                 }
             }

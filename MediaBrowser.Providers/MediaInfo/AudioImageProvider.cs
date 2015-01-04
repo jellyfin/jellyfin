@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -132,7 +131,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool Supports(IHasImages item)
         {
-            return item is Audio;
+            var audio = item as Audio;
+
+            return item.LocationType == LocationType.FileSystem && audio != null && !audio.IsArchive;
         }
 
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)

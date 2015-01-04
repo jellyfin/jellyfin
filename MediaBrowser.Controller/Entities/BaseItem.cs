@@ -14,6 +14,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,6 +45,8 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions
         /// </summary>
         public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn" };
+
+        public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
 
         /// <summary>
         /// The trailer folder name
@@ -593,7 +596,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>PlayAccess.</returns>
         public PlayAccess GetPlayAccess(User user)
         {
-            if (!user.Configuration.EnableMediaPlayback)
+            if (!user.Policy.EnableMediaPlayback)
             {
                 return PlayAccess.None;
             }
@@ -985,7 +988,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var maxAllowedRating = user.Configuration.MaxParentalRating;
+            var maxAllowedRating = user.Policy.MaxParentalRating;
 
             if (maxAllowedRating == null)
             {
@@ -1001,7 +1004,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                return !GetBlockUnratedValue(user.Configuration);
+                return !GetBlockUnratedValue(user.Policy);
             }
 
             var value = LocalizationManager.GetRatingLevel(rating);
@@ -1021,7 +1024,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (hasTags != null)
             {
-                if (user.Configuration.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+                if (user.Policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -1035,7 +1038,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="config">The configuration.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        protected virtual bool GetBlockUnratedValue(UserConfiguration config)
+        protected virtual bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }
@@ -1574,6 +1577,11 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var newImage in images)
             {
+                if (newImage == null)
+                {
+                    throw new ArgumentException("null image found in list");
+                }
+
                 var existing = existingImages
                     .FirstOrDefault(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
 

@@ -6,16 +6,16 @@ namespace MediaBrowser.Model.Sync
         /// <summary>
         /// The good
         /// </summary>
-        Good = 0,
+        Low = 0,
 
         /// <summary>
         /// The better
         /// </summary>
-        Better = 1,
+        Medium = 1,
 
         /// <summary>
         /// The best
         /// </summary>
-        Best = 2
+        High = 2
     }
 }

@@ -1,10 +1,12 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
@@ -51,7 +53,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -66,7 +68,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -80,7 +82,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -125,7 +127,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the password.
@@ -153,6 +155,28 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class UpdateUser : UserDto, IReturnVoid
     {
+    }
+
+    /// <summary>
+    /// Class UpdateUser
+    /// </summary>
+    [Route("/Users/{Id}/Policy", "POST", Summary = "Updates a user policy")]
+    [Authenticated(Roles = "admin")]
+    public class UpdateUserPolicy : UserPolicy, IReturnVoid
+    {
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// Class UpdateUser
+    /// </summary>
+    [Route("/Users/{Id}/Configuration", "POST", Summary = "Updates a user configuration")]
+    [Authenticated]
+    public class UpdateUserConfiguration : UserConfiguration, IReturnVoid
+    {
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -193,22 +217,18 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionMananger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
+        private readonly IDeviceManager _deviceManager;
 
         public IAuthorizationContext AuthorizationContext { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserService" /> class.
-        /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="dtoService">The dto service.</param>
-        /// <param name="sessionMananger">The session mananger.</param>
-        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager)
+        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _sessionMananger = sessionMananger;
             _config = config;
             _networkManager = networkManager;
+            _deviceManager = deviceManager;
         }
 
         public object Get(GetPublicUsers request)
@@ -222,18 +242,12 @@ namespace MediaBrowser.Api
                 });
             }
 
-            // TODO: Uncomment once clients can handle an empty user list (and below)
-            //if (Request.IsLocal || IsInLocalNetwork(Request.RemoteIp))
+            return Get(new GetUsers
             {
-                return Get(new GetUsers
-                {
-                    IsHidden = false,
-                    IsDisabled = false
-                });
-            }
+                IsHidden = false,
+                IsDisabled = false
 
-            //// Return empty when external
-            //return ToOptimizedResult(new List<UserDto>());
+            }, true);
         }
 
         /// <summary>
@@ -243,22 +257,36 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetUsers request)
         {
+            return Get(request, false);
+        }
+
+        private object Get(GetUsers request, bool filterByDevice)
+        {
             var users = _userManager.Users;
 
             if (request.IsDisabled.HasValue)
             {
-                users = users.Where(i => i.Configuration.IsDisabled == request.IsDisabled.Value);
+                users = users.Where(i => i.Policy.IsDisabled == request.IsDisabled.Value);
             }
 
             if (request.IsHidden.HasValue)
             {
-                users = users.Where(i => i.Configuration.IsHidden == request.IsHidden.Value);
+                users = users.Where(i => i.Policy.IsHidden == request.IsHidden.Value);
             }
 
             if (request.IsGuest.HasValue)
             {
-
                 users = users.Where(i => (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest) == request.IsGuest.Value);
+            }
+
+            if (filterByDevice)
+            {
+                var deviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+                if (!string.IsNullOrWhiteSpace(deviceId))
+                {
+                    users = users.Where(i => _deviceManager.CanAccessDevice(i.Id.ToString("N"), deviceId));
+                }
             }
 
             var result = users
@@ -428,39 +456,13 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
-            // If removing admin access
-            if (!dtoUser.Configuration.IsAdministrator && user.Configuration.IsAdministrator)
-            {
-                if (_userManager.Users.Count(i => i.Configuration.IsAdministrator) == 1)
-                {
-                    throw new ArgumentException("There must be at least one user in the system with administrative access.");
-                }
-            }
-
-            // If disabling
-            if (dtoUser.Configuration.IsDisabled && user.Configuration.IsAdministrator)
-            {
-                throw new ArgumentException("Administrators cannot be disabled.");
-            }
-
-            // If disabling
-            if (dtoUser.Configuration.IsDisabled && !user.Configuration.IsDisabled)
-            {
-                if (_userManager.Users.Count(i => !i.Configuration.IsDisabled) == 1)
-                {
-                    throw new ArgumentException("There must be at least one enabled user in the system.");
-                }
-
-                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
-            }
-
             var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
                 _userManager.UpdateUser(user) :
                 _userManager.RenameUser(user, dtoUser.Name);
 
             await task.ConfigureAwait(false);
 
-            user.UpdateConfiguration(dtoUser.Configuration);
+            await _userManager.UpdateConfiguration(dtoUser.Id, dtoUser.Configuration);
         }
 
         /// <summary>
@@ -494,6 +496,52 @@ namespace MediaBrowser.Api
         public object Post(ForgotPasswordPin request)
         {
             return _userManager.RedeemPasswordResetPin(request.Pin);
+        }
+
+        public void Post(UpdateUserConfiguration request)
+        {
+            var task = _userManager.UpdateConfiguration(request.Id, request);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(UpdateUserPolicy request)
+        {
+            var task = UpdateUserPolicy(request);
+            Task.WaitAll(task);
+        }
+
+        private async Task UpdateUserPolicy(UpdateUserPolicy request)
+        {
+            var user = _userManager.GetUserById(request.Id);
+            
+            // If removing admin access
+            if (!request.IsAdministrator && user.Policy.IsAdministrator)
+            {
+                if (_userManager.Users.Count(i => i.Policy.IsAdministrator) == 1)
+                {
+                    throw new ArgumentException("There must be at least one user in the system with administrative access.");
+                }
+            }
+
+            // If disabling
+            if (request.IsDisabled && user.Policy.IsAdministrator)
+            {
+                throw new ArgumentException("Administrators cannot be disabled.");
+            }
+
+            // If disabling
+            if (request.IsDisabled && !user.Policy.IsDisabled)
+            {
+                if (_userManager.Users.Count(i => !i.Policy.IsDisabled) == 1)
+                {
+                    throw new ArgumentException("There must be at least one enabled user in the system.");
+                }
+
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+            }
+
+            await _userManager.UpdateUserPolicy(request.Id, request).ConfigureAwait(false);
         }
     }
 }

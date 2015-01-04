@@ -407,9 +407,6 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var query = new UserViewQuery
             {
                 UserId = request.UserId
@@ -423,7 +420,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
-            var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtoOptions = new DtoOptions();
+
+            var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -443,14 +442,16 @@ namespace MediaBrowser.Api.UserLibrary
                 user.RootFolder :
                 _libraryManager.GetItemById(request.Id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var series = item as Series;
 
             // Get them from the child tree
             if (series != null)
             {
+                var dtoOptions = new DtoOptions();
+
+                // Avoid implicitly captured closure
+                var currentUser = user;
+
                 var dtos = series
                     .GetRecursiveChildren()
                     .Where(i => i is Episode && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
@@ -468,7 +469,7 @@ namespace MediaBrowser.Api.UserLibrary
                         return DateTime.MinValue;
                     })
                     .ThenBy(i => i.SortName)
-                    .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, currentUser));
 
                 return dtos.ToList();
             }
@@ -478,10 +479,12 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the db
             if (movie != null)
             {
+                var dtoOptions = new DtoOptions();
+
                 var dtos = movie.SpecialFeatureIds
                     .Select(_libraryManager.GetItemById)
                     .OrderBy(i => i.SortName)
-                    .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
                 return dtos.ToList();
             }
@@ -507,9 +510,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var trailerIds = new List<Guid>();
 
             var hasTrailers = item as IHasTrailers;
@@ -518,10 +518,12 @@ namespace MediaBrowser.Api.UserLibrary
                 trailerIds = hasTrailers.GetTrailerIds();
             }
 
+            var dtoOptions = new DtoOptions();
+
             var dtos = trailerIds
                 .Select(_libraryManager.GetItemById)
                 .OrderBy(i => i.SortName)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user, item));
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             return dtos.ToList();
         }
@@ -537,10 +539,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+            var dtoOptions = new DtoOptions();
 
-            var result = _dtoService.GetBaseItemDto(item, fields, user);
+            var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -556,10 +557,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = user.RootFolder;
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
+            var dtoOptions = new DtoOptions();
 
-            var result = _dtoService.GetBaseItemDto(item, fields, user);
+            var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -577,12 +577,9 @@ namespace MediaBrowser.Api.UserLibrary
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                .ToList();
+            var dtoOptions = new DtoOptions();
 
-            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
             var result = new ItemsResult

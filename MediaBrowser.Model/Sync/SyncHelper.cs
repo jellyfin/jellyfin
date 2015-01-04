@@ -62,6 +62,7 @@ namespace MediaBrowser.Model.Sync
         {
             List<SyncOptions> options = new List<SyncOptions>();
 
+            options.Add(SyncOptions.Name);
             options.Add(SyncOptions.Quality);
             options.Add(SyncOptions.UnwatchedOnly);
             options.Add(SyncOptions.SyncNewContent);

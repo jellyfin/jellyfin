@@ -119,6 +119,19 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected IUserDataManager UserDataManager { get; private set; }
         protected ILogger Logger { get; private set; }
 
+        protected ItemUpdateType MinimumUpdateType
+        {
+            get
+            {
+                if (ConfigurationManager.GetNfoConfiguration().SaveImagePathsInNfo)
+                {
+                    return ItemUpdateType.ImageUpdate;
+                }
+
+                return ItemUpdateType.MetadataDownload;
+            }
+        }
+
         public string Name
         {
             get
@@ -254,6 +267,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     AddCustomTags(xmlPath, tagsUsed, writer, Logger);
                 }
                 catch (FileNotFoundException)
+                {
+
+                }
+                catch (DirectoryNotFoundException)
                 {
 
                 }

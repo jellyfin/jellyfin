@@ -109,7 +109,8 @@ namespace MediaBrowser.Model.Dlna
                 ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Audio,
                 MediaSource = item,
-                RunTimeTicks = item.RunTimeTicks
+                RunTimeTicks = item.RunTimeTicks,
+                Context = options.Context
             };
 
             int? maxBitrateSetting = options.GetMaxBitrate();
@@ -240,7 +241,8 @@ namespace MediaBrowser.Model.Dlna
                 ItemId = options.ItemId,
                 MediaType = DlnaProfileType.Video,
                 MediaSource = item,
-                RunTimeTicks = item.RunTimeTicks
+                RunTimeTicks = item.RunTimeTicks,
+                Context = options.Context
             };
 
             int? audioStreamIndex = options.AudioStreamIndex ?? item.DefaultAudioStreamIndex;

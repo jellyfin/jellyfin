@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -387,7 +388,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 playlistText = GetMasterPlaylistFileText(state, videoBitrate + audioBitrate);
             }
 
-            return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         private string GetMasterPlaylistFileText(StreamState state, int totalBitrate)
@@ -603,7 +604,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = builder.ToString();
 
-            return ResultFactory.GetResult(playlistText, Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         protected override string GetAudioArguments(StreamState state)
@@ -640,10 +641,19 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var codec = state.OutputVideoCodec;
 
-            // See if we can save come cpu cycles by avoiding encoding
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            var args = "-codec:v:0 " + codec;
+
+            if (state.EnableMpegtsM2TsMode)
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
+                args += " -mpegts_m2ts_mode 1";
+            }
+
+            // See if we can save come cpu cycles by avoiding encoding
+            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return state.VideoStream != null && IsH264(state.VideoStream) ?
+                    args + " -bsf:v h264_mp4toannexb" :
+                    args;
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
@@ -651,7 +661,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
+            args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
@@ -677,7 +687,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} -i {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,

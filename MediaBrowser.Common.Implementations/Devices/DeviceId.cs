@@ -38,7 +38,10 @@ namespace MediaBrowser.Common.Implementations.Devices
                     _logger.Error("Invalid value found in device id file");
                 }
             }
-            catch (FileNotFoundException ex)
+            catch (DirectoryNotFoundException)
+            {
+            }
+            catch (FileNotFoundException)
             {
             }
             catch (Exception ex)

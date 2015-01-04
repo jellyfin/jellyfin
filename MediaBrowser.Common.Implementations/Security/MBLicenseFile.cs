@@ -101,6 +101,10 @@ namespace MediaBrowser.Common.Implementations.Security
                 {
                     contents = File.ReadAllLines(licenseFile);
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    (File.Create(licenseFile)).Close();
+                }
                 catch (FileNotFoundException)
                 {
                     (File.Create(licenseFile)).Close();

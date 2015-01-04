@@ -46,6 +46,11 @@ namespace MediaBrowser.Controller.Providers
 
         private Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path, bool clearCache)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             Dictionary<string, FileSystemInfo> entries;
 
             if (clearCache)

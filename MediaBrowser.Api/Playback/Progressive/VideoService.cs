@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} -i {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
+            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 keyFrame,
@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <returns>System.String.</returns>
         private string GetVideoArguments(StreamState state, string codec)
         {
-            var args = "-vcodec " + codec;
+            var args = "-codec:v:0 " + codec;
 
             if (state.EnableMpegtsM2TsMode)
             {
@@ -134,7 +134,9 @@ namespace MediaBrowser.Api.Playback.Progressive
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) ? args + " -bsf:v h264_mp4toannexb" : args;
+                return state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) ?
+                    args + " -bsf:v h264_mp4toannexb" :
+                    args;
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
@@ -182,12 +184,12 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Get the output codec name
             var codec = state.OutputAudioCodec;
 
+            var args = "-codec:a:0 " + codec;
+
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return "-acodec copy";
+                return args;
             }
-
-            var args = "-acodec " + codec;
 
             // Add the number of audio channels
             var channels = state.OutputAudioChannels;

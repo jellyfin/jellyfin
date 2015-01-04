@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -22,11 +23,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
-        /// <param name="collectionType">Type of the collection.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(FileSystemInfo fileInfo, 
-            Folder parent = null, 
-            string collectionType = null);
+            Folder parent = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
@@ -258,8 +257,15 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string FindCollectionType(BaseItem item);
+        string GetContentType(BaseItem item);
 
+        /// <summary>
+        /// Gets the type of the inherited content.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>System.String.</returns>
+        string GetInheritedContentType(BaseItem item);
+        
         /// <summary>
         /// Normalizes the root path list.
         /// </summary>
@@ -340,26 +346,11 @@ namespace MediaBrowser.Controller.Library
         int? GetSeasonNumberFromPath(string path);
 
         /// <summary>
-        /// Gets the season number from episode file.
+        /// Fills the missing episode numbers from path.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetSeasonNumberFromEpisodeFile(string path);
-
-        /// <summary>
-        /// Gets the ending episode number from file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetEndingEpisodeNumberFromFile(string path);
-
-        /// <summary>
-        /// Gets the episode number from file.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="considerSeasonless">if set to <c>true</c> [consider seasonless].</param>
-        /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        int? GetEpisodeNumberFromFile(string path, bool considerSeasonless);
+        /// <param name="episode">The episode.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool FillMissingEpisodeNumbersFromPath(Episode episode);
 
         /// <summary>
         /// Parses the name.

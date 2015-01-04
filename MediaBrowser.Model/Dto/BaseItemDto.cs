@@ -366,6 +366,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
+        /// <summary>
+        /// Gets or sets the season user data.
+        /// </summary>
+        /// <value>The season user data.</value>
+        public UserItemDataDto SeasonUserData { get; set; }
 
         /// <summary>
         /// Gets or sets the recursive item count.
@@ -549,7 +554,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether [supports playlists].
         /// </summary>
         /// <value><c>true</c> if [supports playlists]; otherwise, <c>false</c>.</value>
-        public bool SupportsPlaylists { get; set; }
+        public bool SupportsPlaylists
+        {
+            get
+            {
+                return RunTimeTicks.HasValue || IsFolder || IsGenre || IsMusicGenre || IsArtist;
+            }
+        }
 
         /// <summary>
         /// Determines whether the specified type is type.

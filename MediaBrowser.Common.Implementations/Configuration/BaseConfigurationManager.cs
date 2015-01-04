@@ -105,7 +105,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
             UpdateCachePath();
         }
 
-        public void AddParts(IEnumerable<IConfigurationFactory> factories)
+        public virtual void AddParts(IEnumerable<IConfigurationFactory> factories)
         {
             _configurationFactories = factories.ToArray();
 
@@ -208,18 +208,49 @@ namespace MediaBrowser.Common.Implementations.Configuration
 
                 lock (_configurationSyncLock)
                 {
-                    return ConfigurationHelper.GetXmlConfiguration(configurationType, file, XmlSerializer);
+                    return LoadConfiguration(file, configurationType);
                 }
             });
         }
 
+        private object LoadConfiguration(string path, Type configurationType)
+        {
+            try
+            {
+                return XmlSerializer.DeserializeFromFile(configurationType, path);
+            }
+            catch (FileNotFoundException)
+            {
+                return Activator.CreateInstance(configurationType);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return Activator.CreateInstance(configurationType);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading configuration file: {0}", ex, path);
+
+                return Activator.CreateInstance(configurationType);
+            }
+        }
+
         public void SaveConfiguration(string key, object configuration)
         {
-            var configurationType = GetConfigurationType(key);
+            var configurationStore = GetConfigurationStore(key);
+            var configurationType = configurationStore.ConfigurationType;
 
             if (configuration.GetType() != configurationType)
             {
                 throw new ArgumentException("Expected configuration type is " + configurationType.Name);
+            }
+
+            var validatingStore = configurationStore as IValidatingConfiguration;
+            if (validatingStore != null)
+            {
+                var currentConfiguration = GetConfiguration(key);
+
+                validatingStore.Validate(currentConfiguration, configuration);
             }
 
             EventHelper.FireEventIfNotNull(NamedConfigurationUpdating, this, new ConfigurationUpdateEventArgs
@@ -239,6 +270,11 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 XmlSerializer.SerializeToFile(configuration, path);
             }
 
+            OnNamedConfigurationUpdated(key, configuration);
+        }
+
+        protected virtual void OnNamedConfigurationUpdated(string key, object configuration)
+        {
             EventHelper.FireEventIfNotNull(NamedConfigurationUpdated, this, new ConfigurationUpdateEventArgs
             {
                 Key = key,
@@ -249,9 +285,14 @@ namespace MediaBrowser.Common.Implementations.Configuration
 
         public Type GetConfigurationType(string key)
         {
-            return _configurationStores
-                .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase))
+            return GetConfigurationStore(key)
                 .ConfigurationType;
+        }
+
+        private ConfigurationStore GetConfigurationStore(string key)
+        {
+            return _configurationStores
+                .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Dlna;
+﻿using MediaBrowser.Controller.Dlna;
 using ServiceStack;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
@@ -77,14 +76,11 @@ namespace MediaBrowser.Api.Dlna
         private readonly IContentDirectory _contentDirectory;
         private readonly IConnectionManager _connectionManager;
 
-        private readonly IConfigurationManager _config;
-
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IConfigurationManager config)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
             _connectionManager = connectionManager;
-            _config = config;
         }
 
         public object Get(GetDescriptionXml request)

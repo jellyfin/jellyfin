@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -30,6 +31,12 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
         public bool EnableInternetProviders { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is port authorized.
+        /// </summary>
+        /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
+        public bool IsPortAuthorized { get; set; }
 
         /// <summary>
         /// Gets or sets the item by name path.
@@ -144,21 +151,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The image saving convention.</value>
         public ImageSavingConvention ImageSavingConvention { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable people prefix sub folders].
-        /// </summary>
-        /// <value><c>true</c> if [enable people prefix sub folders]; otherwise, <c>false</c>.</value>
-        public bool EnablePeoplePrefixSubFolders { get; set; }
-
-        /// <summary>
-        /// Gets or sets the encoding quality.
-        /// </summary>
-        /// <value>The encoding quality.</value>
-        public EncodingQuality MediaEncodingQuality { get; set; }
-
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableDebugEncodingLogging { get; set; }
         public string TranscodingTempPath { get; set; }
 
         public bool EnableAutomaticRestart { get; set; }
@@ -171,16 +165,15 @@ namespace MediaBrowser.Model.Configuration
 
         public string UICulture { get; set; }
 
-        public double DownMixAudioBoost { get; set; }
-
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
         public bool FindInternetTrailers { get; set; }
 
         public string[] InsecureApps7 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
+        public bool EnableWin8HttpListener { get; set; }
 
-        public bool PlaylistImagesDeleted { get; set; }
+        public NameValuePair[] ContentTypes { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -188,17 +181,15 @@ namespace MediaBrowser.Model.Configuration
         public ServerConfiguration()
             : base()
         {
-            MediaEncodingQuality = EncodingQuality.Auto;
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             HttpServerPortNumber = 8096;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
-            EnablePeoplePrefixSubFolders = true;
+            EnableWin8HttpListener = true;
 
             EnableUPnP = true;
-            DownMixAudioBoost = 2;
 
             MinResumePct = 5;
             MaxResumePct = 90;
@@ -212,6 +203,7 @@ namespace MediaBrowser.Model.Configuration
             FindInternetTrailers = true;
 
             PathSubstitutions = new PathSubstitution[] { };
+            ContentTypes = new NameValuePair[] { };
 
             PreferredMetadataLanguage = "en";
             MetadataCountryCode = "US";

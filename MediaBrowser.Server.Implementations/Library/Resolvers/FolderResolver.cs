@@ -1,10 +1,6 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -13,13 +9,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     /// </summary>
     public class FolderResolver : FolderResolver<Folder>
     {
-        private readonly IFileSystem _fileSystem;
-
-        public FolderResolver(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem;
-        }
-
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -38,47 +27,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         {
             if (args.IsDirectory)
             {
-                if (args.IsPhysicalRoot)
-                {
-                    return new AggregateFolder();
-                }
-                if (args.IsRoot)
-                {
-                    return new UserRootFolder();  //if we got here and still a root - must be user root
-                }
-                if (args.IsVf)
-                {
-                    return new CollectionFolder
-                    {
-                        CollectionType = GetCollectionType(args)
-                    };
-                }
-
                 return new Folder();
             }
 
             return null;
-        }
-
-        private string GetCollectionType(ItemResolveArgs args)
-        {
-            return args.FileSystemChildren
-                .Where(i =>
-                {
-
-                    try
-                    {
-                        return (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory &&
-                               string.Equals(".collection", i.Extension, StringComparison.OrdinalIgnoreCase);
-                    }
-                    catch (IOException)
-                    {
-                        return false;
-                    }
-
-                })
-                .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
-                .FirstOrDefault();
         }
     }
 

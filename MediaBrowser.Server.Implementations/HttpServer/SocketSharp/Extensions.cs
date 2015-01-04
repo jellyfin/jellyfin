@@ -1,6 +1,6 @@
-﻿using System;
-using MediaBrowser.Model.Logging;
-using WebSocketSharp.Net;
+﻿using MediaBrowser.Model.Logging;
+using SocketHttpListener.Net;
+using System;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {

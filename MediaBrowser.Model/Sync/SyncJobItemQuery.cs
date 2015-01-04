@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Sync
 {
     public class SyncJobItemQuery
@@ -27,11 +28,16 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
-        public SyncJobItemStatus? Status { get; set; }
+        public List<SyncJobItemStatus> Statuses { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is completed.
+        /// Gets or sets a value indicating whether [add metadata].
         /// </summary>
-        /// <value><c>null</c> if [is completed] contains no value, <c>true</c> if [is completed]; otherwise, <c>false</c>.</value>
-        public bool? IsCompleted { get; set; }
+        /// <value><c>true</c> if [add metadata]; otherwise, <c>false</c>.</value>
+        public bool AddMetadata { get; set; }
+
+        public SyncJobItemQuery()
+        {
+            Statuses = new List<SyncJobItemStatus>();
+        }
     }
 }

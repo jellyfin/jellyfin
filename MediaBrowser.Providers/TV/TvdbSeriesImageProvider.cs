@@ -87,6 +87,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     // No tvdb data yet. Don't blow up
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    // No tvdb data yet. Don't blow up
+                }
             }
 
             return new RemoteImageInfo[] { };

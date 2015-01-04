@@ -131,10 +131,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ThirdParty\libgdiplus\osx\libgdiplus.dylib">
-      <Link>libgdiplus.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
       <Link>libwebp\osx\libwebp.5.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -52,17 +52,17 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrWhiteSpace(seriesTmdbId) && seasonNumber.HasValue)
             {
-                result.HasMetadata = true;
-                result.Item = new Season();
-
                 try
                 {
                     var seasonInfo = await GetSeasonInfo(seriesTmdbId, seasonNumber.Value, info.MetadataLanguage, cancellationToken)
                       .ConfigureAwait(false);
 
+                    result.HasMetadata = true;
+                    result.Item = new Season();
                     result.Item.Name = info.Name;
-                    result.Item.Overview = seasonInfo.overview;
                     result.Item.IndexNumber = seasonNumber;
+
+                    result.Item.Overview = seasonInfo.overview;
 
                     if (seasonInfo.external_ids.tvdb_id > 0)
                     {

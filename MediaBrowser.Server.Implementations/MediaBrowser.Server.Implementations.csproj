@@ -51,7 +51,7 @@
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.18\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.24\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -63,6 +63,9 @@
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
+    </Reference>
+    <Reference Include="SocketHttpListener">
+      <HintPath>..\ThirdParty\SocketHttpListener\SocketHttpListener.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -90,10 +93,6 @@
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="websocket-sharp, Version=1.0.2.508, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\WebsocketSharp\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +182,7 @@
     <Compile Include="Library\LocalTrailerPostScanTask.cs" />
     <Compile Include="Library\MusicManager.cs" />
     <Compile Include="Library\PathExtensions.cs" />
+    <Compile Include="Library\Resolvers\SpecialFolderResolver.cs" />
     <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\PhotoResolver.cs" />
@@ -301,7 +301,6 @@
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
     <Compile Include="Sync\CloudSyncProvider.cs" />
-    <Compile Include="Sync\MockSyncProvider.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />

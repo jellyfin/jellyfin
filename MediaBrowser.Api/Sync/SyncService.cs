@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MediaBrowser.Model.Users;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,11 @@ namespace MediaBrowser.Api.Sync
     {
         [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Sync/Jobs/{Id}", "POST", Summary = "Updates a sync job.")]
+    public class UpdateSyncJob : SyncJob, IReturnVoid
+    {
     }
 
     [Route("/Sync/JobItems", "GET", Summary = "Gets sync job items.")]
@@ -55,8 +61,14 @@ namespace MediaBrowser.Api.Sync
         [ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
 
-        [ApiMember(Name = "ItemIds", Description = "ItemIds", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ItemIds", Description = "ItemIds", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ItemIds { get; set; }
+
+        [ApiMember(Name = "ParentId", Description = "ParentId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ParentId { get; set; }
+
+        [ApiMember(Name = "Category", Description = "Category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SyncCategory? Category { get; set; }
     }
 
     [Route("/Sync/JobItems/{Id}/Transferred", "POST", Summary = "Reports that a sync job item has successfully been transferred.")]
@@ -71,6 +83,23 @@ namespace MediaBrowser.Api.Sync
     {
         [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Sync/OfflineActions", "POST", Summary = "Reports an action that occurred while offline.")]
+    public class ReportOfflineActions : List<UserAction>, IReturnVoid
+    {
+    }
+
+    [Route("/Sync/Items/Ready", "GET", Summary = "Gets ready to download sync items.")]
+    public class GetReadySyncItems : IReturn<List<SyncedItem>>
+    {
+        [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string TargetId { get; set; }
+    }
+
+    [Route("/Sync/Data", "POST", Summary = "Syncs data between device and server")]
+    public class SyncData : SyncDataRequest, IReturn<SyncDataResponse>
+    {
     }
 
     [Authenticated]
@@ -94,9 +123,9 @@ namespace MediaBrowser.Api.Sync
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetSyncJobs request)
+        public async Task<object> Get(GetSyncJobs request)
         {
-            var result = _syncManager.GetJobs(request);
+            var result = await _syncManager.GetJobs(request).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -155,21 +184,64 @@ namespace MediaBrowser.Api.Sync
             result.Targets = _syncManager.GetSyncTargets(request.UserId)
                 .ToList();
 
-            var dtos = request.ItemIds.Split(',')
-                .Select(_libraryManager.GetItemById)
-                .Where(i => i != null)
-                .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions
+            if (request.Category.HasValue)
+            {
+                result.Options = SyncHelper.GetSyncOptions(request.Category.Value);
+            }
+            else
+            {
+                var dtoOptions = new DtoOptions
                 {
                     Fields = new List<ItemFields>
                     {
                         ItemFields.SyncInfo
                     }
-                }))
-                .ToList();
+                };
 
-            result.Options = SyncHelper.GetSyncOptions(dtos);
+                var dtos = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(_libraryManager.GetItemById)
+                    .Where(i => i != null)
+                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions))
+                    .ToList();
+
+                result.Options = SyncHelper.GetSyncOptions(dtos);
+            }
 
             return ToOptimizedResult(result);
+        }
+
+        public void Post(ReportOfflineActions request)
+        {
+            var task = PostAsync(request);
+
+            Task.WaitAll(task);
+        }
+
+        public async Task PostAsync(ReportOfflineActions request)
+        {
+            foreach (var action in request)
+            {
+                await _syncManager.ReportOfflineAction(action).ConfigureAwait(false);
+            }
+        }
+
+        public object Get(GetReadySyncItems request)
+        {
+            return ToOptimizedResult(_syncManager.GetReadySyncItems(request.TargetId));
+        }
+
+        public async Task<object> Post(SyncData request)
+        {
+            var response = await _syncManager.SyncData(request).ConfigureAwait(false);
+
+            return ToOptimizedResult(response);
+        }
+
+        public void Post(UpdateSyncJob request)
+        {
+            var task = _syncManager.UpdateJob(request);
+
+            Task.WaitAll(task);
         }
     }
 }

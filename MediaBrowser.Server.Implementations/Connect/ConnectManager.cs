@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -432,9 +433,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             await user.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-            user.Configuration.SyncConnectImage = false;
-            user.Configuration.SyncConnectName = false;
-            _userManager.UpdateConfiguration(user, user.Configuration);
+            await _userManager.UpdateConfiguration(user.Id.ToString("N"), user.Configuration);
 
             await RefreshAuthorizationsInternal(false, CancellationToken.None).ConfigureAwait(false);
 
@@ -791,7 +790,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         if (user == null)
                         {
                             // Add user
-                            user = await _userManager.CreateUser(connectEntry.UserName).ConfigureAwait(false);
+                            user = await _userManager.CreateUser(_userManager.MakeValidUsername(connectEntry.UserName)).ConfigureAwait(false);
 
                             user.ConnectUserName = connectEntry.UserName;
                             user.ConnectUserId = connectEntry.UserId;
@@ -800,23 +799,21 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                             await _userManager.UpdateUser(user).ConfigureAwait(false);
 
-                            user.Configuration.SyncConnectImage = true;
-                            user.Configuration.SyncConnectName = true;
-                            user.Configuration.IsHidden = true;
-                            user.Configuration.EnableLiveTvManagement = false;
-                            user.Configuration.EnableContentDeletion = false;
-                            user.Configuration.EnableRemoteControlOfOtherUsers = false;
-                            user.Configuration.EnableSharedDeviceControl = false;
-                            user.Configuration.IsAdministrator = false;
+                            user.Policy.IsHidden = true;
+                            user.Policy.EnableLiveTvManagement = false;
+                            user.Policy.EnableContentDeletion = false;
+                            user.Policy.EnableRemoteControlOfOtherUsers = false;
+                            user.Policy.EnableSharedDeviceControl = false;
+                            user.Policy.IsAdministrator = false;
 
                             if (currentPendingEntry != null)
                             {
-                                user.Configuration.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
-                                user.Configuration.BlockedMediaFolders = currentPendingEntry.ExcludedLibraries;
-                                user.Configuration.BlockedChannels = currentPendingEntry.ExcludedChannels;
+                                user.Policy.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
+                                user.Policy.BlockedMediaFolders = currentPendingEntry.ExcludedLibraries;
+                                user.Policy.BlockedChannels = currentPendingEntry.ExcludedChannels;
                             }
 
-                            _userManager.UpdateConfiguration(user, user.Configuration);
+                            await _userManager.UpdateConfiguration(user.Id.ToString("N"), user.Configuration);
                         }
                     }
                     else if (string.Equals(connectEntry.AcceptStatus, "waiting", StringComparison.OrdinalIgnoreCase))
@@ -844,7 +841,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var users = _userManager.Users
                 .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) &&
-                    (i.Configuration.SyncConnectImage || i.Configuration.SyncConnectName))
+                    (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest))
                     .ToList();
 
             foreach (var user in users)
@@ -857,7 +854,10 @@ namespace MediaBrowser.Server.Implementations.Connect
                     continue;
                 }
 
-                if (user.Configuration.SyncConnectName)
+                var syncConnectName = true;
+                var syncConnectImage = true;
+
+                if (syncConnectName)
                 {
                     var changed = !string.Equals(authorization.UserName, user.Name, StringComparison.OrdinalIgnoreCase);
 
@@ -867,7 +867,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     }
                 }
 
-                if (user.Configuration.SyncConnectImage)
+                if (syncConnectImage)
                 {
                     var imageUrl = authorization.UserImageUrl;
 

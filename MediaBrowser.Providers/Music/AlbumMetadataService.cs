@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Music
 
                     if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                     {
-                        updateType = updateType | ItemUpdateType.MetadataDownload;
+                        updateType = updateType | ItemUpdateType.MetadataEdit;
                     }
                 }
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Music
 
                     if (currentList.Count != item.Studios.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                     {
-                        updateType = updateType | ItemUpdateType.MetadataDownload;
+                        updateType = updateType | ItemUpdateType.MetadataEdit;
                     }
                 }
 
@@ -81,15 +81,15 @@ namespace MediaBrowser.Providers.Music
                         if (!string.Equals(item.Name, name, StringComparison.Ordinal))
                         {
                             item.Name = name;
-                            updateType = updateType | ItemUpdateType.MetadataDownload;
+                            updateType = updateType | ItemUpdateType.MetadataEdit;
                         }
                     }
                 }
-            }
 
-            updateType = updateType | SetAlbumArtistFromSongs(item, songs);
-            updateType = updateType | SetArtistsFromSongs(item, songs);
-            updateType = updateType | SetDateFromSongs(item, songs);
+                updateType = updateType | SetAlbumArtistFromSongs(item, songs);
+                updateType = updateType | SetArtistsFromSongs(item, songs);
+                updateType = updateType | SetDateFromSongs(item, songs);
+            }
 
             return updateType;
         }
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.Music
             if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
             {
                 item.AlbumArtists = albumArtists;
-                updateType = updateType | ItemUpdateType.MetadataDownload;
+                updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -124,7 +124,7 @@ namespace MediaBrowser.Providers.Music
 
             if (currentList.Count != item.Artists.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Artists.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
             {
-                updateType = updateType | ItemUpdateType.MetadataDownload;
+                updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -158,7 +158,7 @@ namespace MediaBrowser.Providers.Music
             if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
                 (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
             {
-                updateType = updateType | ItemUpdateType.MetadataDownload;
+                updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 
             return updateType;

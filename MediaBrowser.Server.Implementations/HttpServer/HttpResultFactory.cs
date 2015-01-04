@@ -12,7 +12,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using MimeTypes = MediaBrowser.Common.Net.MimeTypes;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {

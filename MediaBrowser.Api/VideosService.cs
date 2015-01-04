@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -79,15 +80,12 @@ namespace MediaBrowser.Api
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields))
-                    .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-                    .ToList();
+            var dtoOptions = new DtoOptions();
 
             var video = (Video)item;
 
             var items = video.GetAdditionalParts()
-                         .Select(i => _dtoService.GetBaseItemDto(i, fields, user, video))
+                         .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, video))
                          .ToArray();
 
             var result = new ItemsResult
@@ -114,11 +112,11 @@ namespace MediaBrowser.Api
             {
                 link.PrimaryVersionId = null;
 
-                await link.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
+                await link.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
 
             video.LinkedAlternateVersions.Clear();
-            await video.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
+            await video.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void Post(MergeVersions request)
@@ -186,7 +184,7 @@ namespace MediaBrowser.Api
             {
                 item.PrimaryVersionId = primaryVersion.Id;
 
-                await item.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
                 primaryVersion.LinkedAlternateVersions.Add(new LinkedChild
                 {
@@ -195,7 +193,7 @@ namespace MediaBrowser.Api
                 });
             }
 
-            await primaryVersion.UpdateToRepository(ItemUpdateType.MetadataDownload, CancellationToken.None).ConfigureAwait(false);
+            await primaryVersion.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

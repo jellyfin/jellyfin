@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.Playback
 {

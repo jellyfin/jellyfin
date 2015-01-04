@@ -49,7 +49,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     !(item is GameSystem) &&
                     !(item is Playlist))
                 {
-                    return updateType >= ItemUpdateType.MetadataDownload;
+                    return updateType >= ItemUpdateType.MetadataEdit;
                 }
             }
 

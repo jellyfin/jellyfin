@@ -49,8 +49,8 @@ namespace MediaBrowser.Controller.Entities
             : new[] { user.Configuration.AudioLanguagePreference };
 
             var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
-                ? new string[] { }
-                : new[] { user.Configuration.SubtitleLanguagePreference };
+                ? new List<string> { }
+                : new List<string> { user.Configuration.SubtitleLanguagePreference };
 
             foreach (var source in sources)
             {

@@ -66,8 +66,8 @@
     <Compile Include="Migrations\DeleteDlnaProfiles.cs" />
     <Compile Include="Migrations\DeprecatePlugins.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
+    <Compile Include="Migrations\MigrateTranscodingPath.cs" />
     <Compile Include="Migrations\MigrateUserFolders.cs" />
-    <Compile Include="Migrations\PlaylistImages.cs" />
     <Compile Include="Migrations\RenameXbmcOptions.cs" />
     <Compile Include="Migrations\RenameXmlOptions.cs" />
     <Compile Include="NativeEnvironment.cs" />
