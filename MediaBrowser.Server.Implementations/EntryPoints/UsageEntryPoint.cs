@@ -29,13 +29,14 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
 
-        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, ISessionManager sessionManager)
+        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager)
         {
             _logger = logger;
             _applicationHost = applicationHost;
             _networkManager = networkManager;
             _httpClient = httpClient;
             _sessionManager = sessionManager;
+            _userManager = userManager;
 
             _sessionManager.SessionStarted += _sessionManager_SessionStarted;
         }
