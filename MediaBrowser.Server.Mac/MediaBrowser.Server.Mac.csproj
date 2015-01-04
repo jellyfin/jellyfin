@@ -507,6 +507,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\myprofile.html">
       <Link>Resources\dashboard-ui\myprofile.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\mysync.html">
+      <Link>Resources\dashboard-ui\mysync.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\mysyncjob.html">
+      <Link>Resources\dashboard-ui\mysyncjob.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\notificationlist.html">
       <Link>Resources\dashboard-ui\notificationlist.html</Link>
     </BundleResource>
@@ -566,6 +572,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncactivity.html">
       <Link>Resources\dashboard-ui\syncactivity.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncjob.html">
+      <Link>Resources\dashboard-ui\syncjob.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncsettings.html">
       <Link>Resources\dashboard-ui\syncsettings.html</Link>
@@ -708,17 +717,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\checkmarkgreen.png">
       <Link>Resources\dashboard-ui\css\images\checkmarkgreen.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\currentuserdefaultwhite.png">
-      <Link>Resources\dashboard-ui\css\images\currentuserdefaultwhite.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\favicon.ico">
       <Link>Resources\dashboard-ui\css\images\favicon.ico</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\fresh.png">
       <Link>Resources\dashboard-ui\css\images\fresh.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\headersearch.png">
-      <Link>Resources\dashboard-ui\css\images\headersearch.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\iossplash.png">
       <Link>Resources\dashboard-ui\css\images\iossplash.png</Link>
@@ -945,9 +948,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\channels.png">
       <Link>Resources\dashboard-ui\css\images\items\folders\channels.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\edit.png">
-      <Link>Resources\dashboard-ui\css\images\items\folders\edit.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\folder.png">
       <Link>Resources\dashboard-ui\css\images\items\folders\folder.png</Link>
     </BundleResource>
@@ -971,12 +971,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\photos.png">
       <Link>Resources\dashboard-ui\css\images\items\folders\photos.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\report.png">
-      <Link>Resources\dashboard-ui\css\images\items\folders\report.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\settings.png">
-      <Link>Resources\dashboard-ui\css\images\items\folders\settings.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\folders\tv.png">
       <Link>Resources\dashboard-ui\css\images\items\folders\tv.png</Link>
@@ -1077,6 +1071,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\dashboard.png">
       <Link>Resources\dashboard-ui\css\images\tour\dashboard\dashboard.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\help.png">
+      <Link>Resources\dashboard-ui\css\images\tour\dashboard\help.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\mobile.png">
       <Link>Resources\dashboard-ui\css\images\tour\dashboard\mobile.png</Link>
     </BundleResource>
@@ -1137,32 +1134,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\administrator.png">
       <Link>Resources\dashboard-ui\css\images\userdata\administrator.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\checkedoff.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\checkedoff.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\checkedon.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\checkedon.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\heart_off.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\heart_off.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\heart_on.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\heart_on.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\password.png">
       <Link>Resources\dashboard-ui\css\images\userdata\password.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\thumbs_down_off.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\thumbs_down_off.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\thumbs_down_on.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\thumbs_down_on.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\thumbs_up_off.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\thumbs_up_off.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\thumbs_up_on.png">
-      <Link>Resources\dashboard-ui\css\images\userdata\thumbs_up_on.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\files\dummy.mp4">
       <Link>Resources\dashboard-ui\files\dummy.mp4</Link>
@@ -1536,6 +1509,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncactivity.js">
       <Link>Resources\dashboard-ui\scripts\syncactivity.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncjob.js">
+      <Link>Resources\dashboard-ui\scripts\syncjob.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncsettings.js">
       <Link>Resources\dashboard-ui\scripts\syncsettings.js</Link>
     </BundleResource>
@@ -1635,626 +1611,26 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\store.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\store.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.css">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.js">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.min.css">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.min.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.map">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.3.min.map</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\FontAwesome.otf">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\FontAwesome.otf</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.css">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.eot">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.eot</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.js">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.svg">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.svg</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.map">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\jquery.mobile-1.4.4.min.map</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.ttf">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.ttf</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\ajax-loader.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\ajax-loader.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\action-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\action-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\action-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\action-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\alert-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\alert-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\alert-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\alert-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-l-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-l-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-l-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-l-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-r-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-r-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-r-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-r-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-d-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-l-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-l-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-l-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-l-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-r-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-r-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-r-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-r-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-l-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-l-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-l-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-l-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-r-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-r-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-r-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-r-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\arrow-u-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\audio-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\audio-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\audio-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\audio-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\back-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\back-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\back-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\back-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bars-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bars-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bars-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bars-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bullets-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bullets-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bullets-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\bullets-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\calendar-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\calendar-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\calendar-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\calendar-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\camera-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\camera-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\camera-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\camera-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-d-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-d-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-d-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-d-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-l-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-l-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-l-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-l-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-r-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-r-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-r-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-r-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-u-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-u-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-u-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\carat-u-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\check-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\check-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\check-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\check-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\clock-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\clock-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\clock-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\clock-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\cloud-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\cloud-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\cloud-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\cloud-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\comment-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\comment-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\comment-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\comment-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\delete-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\delete-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\delete-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\delete-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\edit-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\edit-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\edit-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\edit-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\eye-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\eye-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\eye-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\eye-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forbidden-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forbidden-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forbidden-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forbidden-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forward-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forward-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forward-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\forward-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\gear-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\gear-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\gear-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\gear-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\grid-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\grid-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\grid-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\grid-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\heart-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\heart-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\heart-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\heart-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\home-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\home-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\home-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\home-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\info-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\info-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\info-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\info-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\location-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\location-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\location-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\location-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\lock-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\lock-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\lock-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\lock-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\mail-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\mail-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\mail-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\mail-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\minus-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\minus-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\minus-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\minus-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\navigation-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\navigation-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\navigation-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\navigation-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\phone-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\phone-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\phone-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\phone-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\plus-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\plus-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\plus-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\plus-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\power-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\power-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\power-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\power-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\recycle-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\recycle-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\recycle-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\recycle-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\refresh-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\refresh-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\refresh-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\refresh-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\search-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\search-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\search-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\search-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\shop-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\shop-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\shop-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\shop-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\star-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\star-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\star-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\star-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\tag-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\tag-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\tag-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\tag-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\user-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\user-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\user-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\user-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\video-black.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\video-black.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\video-white.png">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-png\video-white.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\action-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\action-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\action-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\action-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\alert-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\alert-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\alert-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\alert-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-l-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-l-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-l-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-l-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-r-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-r-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-r-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-r-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-d-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-l-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-l-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-l-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-l-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-r-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-r-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-r-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-r-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-l-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-l-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-l-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-l-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-r-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-r-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-r-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-r-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\arrow-u-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\audio-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\audio-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\audio-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\audio-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\back-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\back-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\back-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\back-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bars-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bars-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bars-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bars-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bullets-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bullets-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bullets-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\bullets-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\calendar-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\calendar-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\calendar-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\calendar-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\camera-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\camera-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\camera-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\camera-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-d-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-d-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-d-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-d-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-l-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-l-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-l-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-l-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-r-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-r-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-r-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-r-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-u-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-u-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-u-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\carat-u-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\check-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\check-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\check-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\check-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\clock-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\clock-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\clock-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\clock-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\cloud-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\cloud-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\cloud-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\cloud-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\comment-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\comment-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\comment-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\comment-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\delete-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\delete-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\delete-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\delete-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\edit-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\edit-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\edit-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\edit-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\eye-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\eye-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\eye-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\eye-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forbidden-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forbidden-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forbidden-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forbidden-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forward-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forward-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forward-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\forward-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\gear-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\gear-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\gear-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\gear-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\grid-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\grid-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\grid-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\grid-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\heart-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\heart-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\heart-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\heart-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\home-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\home-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\home-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\home-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\info-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\info-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\info-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\info-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\location-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\location-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\location-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\location-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\lock-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\lock-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\lock-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\lock-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\mail-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\mail-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\mail-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\mail-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\minus-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\minus-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\minus-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\minus-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\navigation-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\navigation-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\navigation-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\navigation-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\phone-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\phone-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\phone-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\phone-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\plus-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\plus-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\plus-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\plus-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\power-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\power-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\power-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\power-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\recycle-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\recycle-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\recycle-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\recycle-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\refresh-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\refresh-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\refresh-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\refresh-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\search-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\search-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\search-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\search-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\shop-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\shop-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\shop-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\shop-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\star-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\star-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\star-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\star-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\tag-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\tag-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\tag-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\tag-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\user-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\user-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\user-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\user-white.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\video-black.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\video-black.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\video-white.svg">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.4\images\icons-svg\video-white.svg</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css</Link>
@@ -2868,80 +2244,41 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\images\icons-svg\video-white.svg">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\images\icons-svg\video-white.svg</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\jquery.jstree.js">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\jquery.jstree.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\jstree.js">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\jstree.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\jquery.jstree.min.js">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\jquery.jstree.min.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\jstree.min.js">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\jstree.min.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\apple\bg.jpg">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\apple\bg.jpg</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default\32px.png">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default\32px.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\apple\d.png">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\apple\d.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default\40px.png">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default\40px.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\apple\dot_for_ie.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\apple\dot_for_ie.gif</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.css">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\apple\style.css">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\apple\style.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.min.css">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.min.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\apple\throbber.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\apple\throbber.gif</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default\throbber.gif">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default\throbber.gif</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\classic\d.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\classic\d.gif</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\32px.png">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\32px.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\classic\d.png">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\classic\d.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\40px.png">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\40px.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\classic\dot_for_ie.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\classic\dot_for_ie.gif</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.css">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\classic\style.css">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\classic\style.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.min.css">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.min.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\classic\throbber.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\classic\throbber.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default\d.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default\d.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default\d.png">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default\d.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default\style.css">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default\style.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default\throbber.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default\throbber.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.png">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\d.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\dots.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\dots.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\style.css">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\style.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\throbber.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\default-rtl\throbber.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.png">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\mb3\d.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\mb3\style.css">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\mb3\style.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree1.0\themes\mb3\throbber.gif">
-      <Link>Resources\dashboard-ui\thirdparty\jstree1.0\themes\mb3\throbber.gif</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\throbber.gif">
+      <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\throbber.gif</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\swipebox-master\css\swipebox.css">
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\css\swipebox.css</Link>
