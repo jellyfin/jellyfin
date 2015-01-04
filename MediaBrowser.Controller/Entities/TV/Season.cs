@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
+﻿using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Users;
+using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -155,24 +155,6 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
-        private IEnumerable<Episode> GetEpisodes()
-        {
-            var series = Series;
-
-            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
-            {
-                var seasonNumber = IndexNumber;
-
-                if (seasonNumber.HasValue)
-                {
-                    return series.RecursiveChildren.OfType<Episode>()
-                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value);
-                }
-            }
-
-            return Children.OfType<Episode>();
-        }
-
         [IgnoreDataMember]
         public bool IsMissingSeason
         {
@@ -220,16 +202,32 @@ namespace MediaBrowser.Controller.Entities.TV
             var episodes = GetRecursiveChildren(user)
                 .OfType<Episode>();
 
-            if (IndexNumber.HasValue)
-            {
-                var series = Series;
+            var series = Series;
 
-                if (series != null)
-                {
-                    return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes, episodes);
-                }
+            if (IndexNumber.HasValue && series != null)
+            {
+                return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes, episodes);
             }
 
+            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
+            {
+                var seasonNumber = IndexNumber;
+                var list = episodes.ToList();
+
+                if (seasonNumber.HasValue)
+                {
+                    list.AddRange(series.GetRecursiveChildren(user).OfType<Episode>()
+                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
+                }
+                else
+                {
+                    list.AddRange(series.GetRecursiveChildren(user).OfType<Episode>()
+                        .Where(i => !i.ParentIndexNumber.HasValue));
+                }
+
+                episodes = list.DistinctBy(i => i.Id);
+            }
+            
             if (!includeMissingEpisodes)
             {
                 episodes = episodes.Where(i => !i.IsMissingEpisode);
@@ -244,12 +242,39 @@ namespace MediaBrowser.Controller.Entities.TV
                 .Cast<Episode>();
         }
 
+        private IEnumerable<Episode> GetEpisodes()
+        {
+            var episodes = RecursiveChildren.OfType<Episode>();
+            var series = Series;
+
+            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
+            {
+                var seasonNumber = IndexNumber;
+                var list = episodes.ToList();
+
+                if (seasonNumber.HasValue)
+                {
+                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
+                }
+                else
+                {
+                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                        .Where(i => !i.ParentIndexNumber.HasValue));
+                }
+
+                episodes = list.DistinctBy(i => i.Id);
+            }
+
+            return episodes;
+        }
+
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetEpisodes(user);
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;

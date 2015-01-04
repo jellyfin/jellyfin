@@ -86,17 +86,23 @@
         }
 
         if (!isMiniItem) {
-            html += '<div style="margin:1.25em 0;">';
-            html += '<span class="itemCommunityRating">';
-            html += LibraryBrowser.getRatingHtml(item, false);
-            html += '</span>';
+            html += '<div style="margin:1em 0 .75em;">';
 
             if (isPortrait) {
-                html += '<span class="userDataIcons" style="display:block;margin:1.25em 0;">';
+                html += '<div class="itemCommunityRating">';
+                html += LibraryBrowser.getRatingHtml(item, false);
+                html += '</div>';
+
+                html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</span>';
+                html += '</div>';
             } else {
-                html += '<span class="userDataIcons">';
+
+                html += '<span class="itemCommunityRating" style="vertical-align:middle;">';
+                html += LibraryBrowser.getRatingHtml(item, false);
+                html += '</span>';
+
+                html += '<span class="userDataIcons" style="vertical-align:middle;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
             }
@@ -375,7 +381,7 @@
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
-            if (user.Configuration.IsAdministrator && commands.indexOf('edit') != -1) {
+            if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
@@ -426,7 +432,7 @@
             }
 
             if (commands.indexOf('sync') != -1) {
-                html += '<li data-icon="refresh"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+                html += '<li data-icon="cloud"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
@@ -622,7 +628,13 @@
                 var item = response1[0];
                 var user = response2[0];
 
-                innerElem.html(getOverlayHtml(item, user, elem, commands)).trigger('create');
+                var card = $(elem);
+
+                if (!card.hasClass('card')) {
+                    card = card.parents('.card');
+                }
+
+                innerElem.html(getOverlayHtml(item, user, card[0], commands)).trigger('create');
 
                 $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
@@ -977,10 +989,14 @@
 
         $('.' + cssClass).each(function () {
 
-            this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+            var mediaType = this.getAttribute('data-mediatype');
 
-            if ($(this).hasClass('card')) {
-                renderUserDataChanges(this, userData);
+            if (mediaType == 'Video') {
+                this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+
+                if ($(this).hasClass('card')) {
+                    renderUserDataChanges(this, userData);
+                }
             }
         });
     }

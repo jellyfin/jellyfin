@@ -3,7 +3,7 @@
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center center;
-    width: 23px;
+    width: 22px;
     height: 100%;
     display: inline-block;
 }
@@ -34,11 +34,5 @@
 @media all and (max-width: 800px) {
     .headerSelectedPlayer {
         display: none;
-    }
-}
-
-@media all and (max-width: 400px) {
-    .btnCastImage {
-        width: 26px;
     }
 }

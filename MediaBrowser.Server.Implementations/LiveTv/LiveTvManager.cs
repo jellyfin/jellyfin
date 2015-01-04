@@ -309,16 +309,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return Task.FromResult(true);
         }
 
-        private async Task RefreshIfNeeded(LiveTvProgram program, CancellationToken cancellationToken)
+        private readonly Task _cachedTask = Task.FromResult(true);
+        private Task RefreshIfNeeded(LiveTvProgram program, CancellationToken cancellationToken)
         {
-            if (_refreshedPrograms.ContainsKey(program.Id))
+            if (!_refreshedPrograms.ContainsKey(program.Id))
             {
-                return;
+                _refreshedPrograms.TryAdd(program.Id, true);
+                return program.RefreshMetadata(cancellationToken);
             }
 
-            _refreshedPrograms.TryAdd(program.Id, true);
-
-            await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            return _cachedTask;
         }
 
         public async Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)
@@ -1846,7 +1846,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Configuration.EnableLiveTvAccess && ActiveService != null;
+            return user.Policy.EnableLiveTvAccess && ActiveService != null;
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -1854,7 +1854,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = ActiveService;
 
             return _userManager.Users
-                .Where(i => i.Configuration.EnableLiveTvAccess && service != null);
+                .Where(i => i.Policy.EnableLiveTvAccess && service != null);
         }
 
         /// <summary>
@@ -1872,12 +1872,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            // Get everything
-            var fields = Enum.GetNames(typeof(ItemFields)).Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true)).ToList();
-
             var folder = await GetInternalLiveTvFolder(userId, cancellationToken).ConfigureAwait(false);
 
-            return _dtoService.GetBaseItemDto(folder, fields, user);
+            return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
         public async Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -105,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.IncludeMedia)
             {
                 // Add search hints based on item name
-                hints.AddRange(items.Where(i => !string.IsNullOrWhiteSpace(i.Name)).Select(item =>
+                hints.AddRange(items.Where(i => !string.IsNullOrWhiteSpace(i.Name) && IncludeInSearch(i)).Select(item =>
                 {
                     var index = GetIndex(item.Name, searchTerm, terms);
 
@@ -287,6 +288,20 @@ namespace MediaBrowser.Server.Implementations.Library
             });
 
             return Task.FromResult(returnValue);
+        }
+
+        private bool IncludeInSearch(BaseItem item)
+        {
+            var episode = item as Episode;
+
+            if (episode != null)
+            {
+                if (episode.IsVirtualUnaired || episode.IsMissingEpisode)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

@@ -4,14 +4,14 @@
     <title></title>
 </head>
 <body>
-    <div id="editUserPage" data-role="page" class="page type-interior userProfilesPage">
+    <div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
 
         <div data-role="content">
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
@@ -49,6 +49,8 @@
                         <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
                         <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
                         <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
+                        <input type="checkbox" id="chkEnableSync" />
+                        <label for="chkEnableSync">${OptionAllowSyncContent}</label>
                     </fieldset>
                     <br />
                     <div>
@@ -77,6 +79,7 @@
                         <div id="fldIsHidden" style="margin: 2em 0 1em;">
                             <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
                             <label for="chkIsHidden">${OptionHideUser}</label>
+                            <div class="fieldDescription">${OptionHideUserFromLoginHelp}</div>
                         </div>
                     </div>
                     <br />
@@ -84,9 +87,6 @@
                         <li>
                             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                                 ${ButtonSave}
-                            </button>
-                            <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                                ${ButtonCancel}
                             </button>
                         </li>
                     </ul>

@@ -65,7 +65,7 @@
 
             var id = 'unratedItem' + i;
 
-            var checkedAttribute = user.Configuration.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Policy.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
 
             html += '<input class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + item.name + '</label>';
@@ -81,19 +81,19 @@
         Dashboard.setPageTitle(user.Name);
 
         loadUnratedItems(page, user);
-        loadTags(page, user.Configuration.BlockedTags);
+        loadTags(page, user.Policy.BlockedTags);
 
         populateRatings(allParentalRatings, page);
 
         var ratingValue = "";
 
-        if (user.Configuration.MaxParentalRating) {
+        if (user.Policy.MaxParentalRating) {
 
             for (var i = 0, length = allParentalRatings.length; i < length; i++) {
 
                 var rating = allParentalRatings[i];
 
-                if (user.Configuration.MaxParentalRating >= rating.Value) {
+                if (user.Policy.MaxParentalRating >= rating.Value) {
                     ratingValue = rating.Value;
                 }
             }
@@ -101,13 +101,13 @@
 
         $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
 
-        if (user.Configuration.IsAdministrator) {
+        if (user.Policy.IsAdministrator) {
             $('.accessScheduleSection', page).hide();
         } else {
             $('.accessScheduleSection', page).show();
         }
 
-        renderAccessSchedule(page, user.Configuration.AccessSchedules || []);
+        renderAccessSchedule(page, user.Policy.AccessSchedules || []);
 
         Dashboard.hideLoadingMsg();
     }
@@ -199,19 +199,19 @@
 
     function saveUser(user, page) {
 
-        user.Configuration.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
+        user.Policy.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
-        user.Configuration.BlockUnratedItems = $('.chkUnratedItem:checked', page).map(function () {
+        user.Policy.BlockUnratedItems = $('.chkUnratedItem:checked', page).map(function () {
 
             return this.getAttribute('data-itemtype');
 
         }).get();
 
-        user.Configuration.AccessSchedules = getSchedulesFromPage(page);
+        user.Policy.AccessSchedules = getSchedulesFromPage(page);
 
-        user.Configuration.BlockedTags = getTagsFromPage(page);
+        user.Policy.BlockedTags = getTagsFromPage(page);
 
-        ApiClient.updateUser(user).done(function () {
+        ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
         });
     }

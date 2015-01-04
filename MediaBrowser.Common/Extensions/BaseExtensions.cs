@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -52,6 +54,15 @@ namespace MediaBrowser.Common.Extensions
             sb.Append(str.Substring(previousIndex));
 
             return sb.ToString();
+        }
+
+        public static string RemoveDiacritics(this string text)
+        {
+            return String.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
         }
 
         /// <summary>

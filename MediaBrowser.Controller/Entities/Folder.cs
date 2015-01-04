@@ -303,10 +303,10 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder)
             {
-                if (user.Configuration.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
+                if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
 
                     // Backwards compatibility
-                    user.Configuration.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                    user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -545,7 +545,7 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var child in children)
             {
-                if (tasks.Count >= 3)
+                if (tasks.Count >= 2)
                 {
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                     tasks.Clear();
@@ -708,7 +708,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            var collectionType = LibraryManager.FindCollectionType(this);
+            var collectionType = LibraryManager.GetContentType(this);
 
             return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
         }

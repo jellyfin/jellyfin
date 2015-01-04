@@ -21,9 +21,9 @@ namespace MediaBrowser.ServerApplication.Native
             return list;
         }
 
-        public void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int udpPort, string tempDirectory)
+        public void AuthorizeServer(int httpServerPort, int udpPort, string tempDirectory)
         {
-            ServerAuthorization.AuthorizeServer(httpServerPort, httpServerUrlPrefix, udpPort, tempDirectory);
+            ServerAuthorization.AuthorizeServer(udpPort, httpServerPort, tempDirectory);
         }
 
         public NativeEnvironment Environment

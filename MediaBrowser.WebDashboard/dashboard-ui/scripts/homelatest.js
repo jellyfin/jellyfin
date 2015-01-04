@@ -19,7 +19,12 @@
 
         var context = 'home-latest';
 
-        Sections.loadRecentlyAdded($('.section0', page), userId, context);
+        var latestMediElem = $('.section0', page);
+
+        Sections.loadRecentlyAdded(latestMediElem, userId, context).done(function () {
+
+            $('h1', latestMediElem).addClass('firstListHeader');
+        });
         Sections.loadLatestLiveTvRecordings($(".section1", page), userId);
         Sections.loadLatestChannelItems($(".section2", page), userId);
     }

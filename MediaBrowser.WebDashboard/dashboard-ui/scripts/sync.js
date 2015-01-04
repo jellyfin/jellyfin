@@ -14,11 +14,7 @@
             throw new Error('form cannot be null');
         }
 
-        var target = $('.radioSync:checked', form).get().map(function (c) {
-
-            return c.getAttribute('data-targetid');
-
-        })[0];
+        var target = $('#selectSyncTarget', form).val();
 
         if (!target) {
 
@@ -31,18 +27,23 @@
             userId: userId,
             TargetId: target,
 
-            ItemIds: syncOptions.items.map(function (i) {
-                return i.Id || i;
-            }).join(','),
-
             Quality: $('#selectQuality', form).val(),
 
             Name: $('#txtSyncJobName', form).val(),
 
             SyncNewContent: $('#chkSyncNewContent', form).checked(),
             UnwatchedOnly: $('#chkUnwatchedOnly', form).checked(),
-            ItemLimit: $('#txtItemLimit').val() || null
+            ItemLimit: $('#txtItemLimit').val() || null,
+
+            ParentId: syncOptions.ParentId,
+            Category: syncOptions.Category
         };
+
+        if (syncOptions.items && syncOptions.items.length) {
+            options.ItemIds = (syncOptions.items || []).map(function (i) {
+                return i.Id || i;
+            }).join(',');
+        }
 
         ApiClient.ajax({
 
@@ -66,9 +67,12 @@
         ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
 
             UserId: userId,
-            ItemIds: options.items.map(function (i) {
+            ItemIds: (options.items || []).map(function (i) {
                 return i.Id || i;
-            }).join(',')
+            }).join(','),
+
+            ParentId: options.ParentId,
+            Category: options.Category
 
         })).done(function (result) {
 
@@ -90,24 +94,16 @@
             }
 
             html += '<div>';
-            html += '<fieldset data-role="controlgroup">';
-            html += '<legend>' + Globalize.translate('LabelSyncTo') + '</legend>';
-
-            var index = 0;
+            html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
+            html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
             html += targets.map(function (t) {
 
-                var targetHtml = '<label for="radioSync' + t.Id + '">' + t.Name + '</label>';
-
-                var checkedHtml = index ? '' : ' checked="checked"';
-                targetHtml += '<input class="radioSync" data-targetid="' + t.Id + '" type="radio" id="radioSync' + t.Id + '"' + checkedHtml + ' />';
-
-                index++;
-                return targetHtml;
+                return '<option value="' + t.Id + '">' + t.Name + '</option>';
 
             }).join('');
+            html += '</select>';
 
-            html += '</fieldset>';
             html += '</div>';
 
             html += '<br/>';
@@ -147,7 +143,7 @@
                 html += '<br/>';
                 html += '<div>';
                 html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
-                html += '<input type="number" id="txtItemLimit" data-mini="true" step="1" min="1" />';
+                html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
                 html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
                 html += '</div>';
             }
@@ -157,7 +153,7 @@
 
             html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
+            html += '<button type="submit" data-icon="cloud" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
             html += '</p>';
 
             html += '</form>';
@@ -218,5 +214,53 @@
         isAvailable: isAvailable
 
     };
+
+    function showSyncButtonsPerUser(page) {
+
+        var apiClient = ConnectionManager.currentApiClient();
+
+        if (!apiClient) {
+            return;
+        }
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            if (user.Policy.EnableSync) {
+                $('.categorySyncButton', page).hide();
+            } else {
+                $('.categorySyncButton', page).hide();
+            }
+
+        });
+    }
+
+    function onCategorySyncButtonClick(page, button) {
+
+        var category = button.getAttribute('data-category');
+        var parentId = LibraryMenu.getTopParentId();
+
+        SyncManager.showMenu({
+            ParentId: parentId,
+            Category: category
+        });
+    }
+
+    $(document).on('pageinit', ".libraryPage", function () {
+
+        var page = this;
+
+        $('.categorySyncButton', page).on('click', function () {
+
+            onCategorySyncButtonClick(page, this);
+        });
+
+    }).on('pagebeforeshow', ".libraryPage", function () {
+
+        var page = this;
+
+        showSyncButtonsPerUser(page);
+
+    });
+
 
 })(window, jQuery);

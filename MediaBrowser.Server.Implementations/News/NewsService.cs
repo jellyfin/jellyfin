@@ -26,6 +26,14 @@ namespace MediaBrowser.Server.Implementations.News
             {
                 return GetProductNewsInternal(query);
             }
+            catch (DirectoryNotFoundException)
+            {
+                // No biggie
+                return new QueryResult<NewsItem>
+                {
+                    Items = new NewsItem[] { }
+                };
+            }
             catch (FileNotFoundException)
             {
                 // No biggie

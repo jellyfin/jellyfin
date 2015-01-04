@@ -19,17 +19,17 @@
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
-            $('.ehsContent', page).css('text-align', 'left');
             $('.scopedContent', page).show();
             context = 'tv';
+            $('.nextUpHeader', page).removeClass('firstListHeader');
 
             loadResume(page);
 
         } else {
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
-            $('.ehsContent', page).css('text-align', 'center');
             $('.scopedContent', page).hide();
+            $('.nextUpHeader', page).addClass('firstListHeader');
         }
 
         loadNextUp(page, context || 'home-nextup');
@@ -48,20 +48,6 @@
         };
 
         query.ParentId = LibraryMenu.getTopParentId();
-
-        if (query.ParentId) {
-
-            $('.scopedLibraryViewNav', page).show();
-            $('.globalNav', page).hide();
-            $('.ehsContent', page).css('text-align', 'left');
-            $('.scopedContent', page).show();
-
-        } else {
-            $('.scopedLibraryViewNav', page).hide();
-            $('.globalNav', page).show();
-            $('.ehsContent', page).css('text-align', 'center');
-            $('.scopedContent', page).hide();
-        }
 
         ApiClient.getNextUpEpisodes(query).done(function (result) {
 
@@ -110,7 +96,6 @@
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
-                $('.nextUpHeader', page).removeClass('firstListHeader');
             } else {
                 $('#resumableSection', page).hide();
                 $('.nextUpHeader', page).addClass('firstListHeader');

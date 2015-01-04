@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Channels
 
         public override bool IsVisible(User user)
         {
-            if (user.Configuration.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+            if (user.Policy.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }

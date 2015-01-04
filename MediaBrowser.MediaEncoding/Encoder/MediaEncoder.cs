@@ -1,10 +1,16 @@
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -51,11 +57,28 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string Version { get; private set; }
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version)
+        protected readonly IServerConfigurationManager ConfigurationManager;
+        protected readonly IFileSystem FileSystem;
+        protected readonly ILiveTvManager LiveTvManager;
+        protected readonly IIsoManager IsoManager;
+        protected readonly ILibraryManager LibraryManager;
+        protected readonly IChannelManager ChannelManager;
+        protected readonly ISessionManager SessionManager;
+        protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
+
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             Version = version;
+            ConfigurationManager = configurationManager;
+            FileSystem = fileSystem;
+            LiveTvManager = liveTvManager;
+            IsoManager = isoManager;
+            LibraryManager = libraryManager;
+            ChannelManager = channelManager;
+            SessionManager = sessionManager;
+            SubtitleEncoder = subtitleEncoder;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -473,7 +496,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             };
 
             _logger.Info(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
-            
+
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             process.Start();
@@ -510,6 +533,48 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 throw new ApplicationException(msg);
             }
+        }
+
+        public async Task<string> EncodeAudio(EncodingJobOptions options,
+            IProgress<double> progress,
+            CancellationToken cancellationToken)
+        {
+            var job = await new AudioEncoder(this,
+                _logger,
+                ConfigurationManager,
+                FileSystem,
+                LiveTvManager,
+                IsoManager,
+                LibraryManager,
+                ChannelManager,
+                SessionManager,
+                SubtitleEncoder())
+                .Start(options, progress, cancellationToken).ConfigureAwait(false);
+
+            await job.TaskCompletionSource.Task.ConfigureAwait(false);
+
+            return job.OutputFilePath;
+        }
+
+        public async Task<string> EncodeVideo(EncodingJobOptions options,
+            IProgress<double> progress,
+            CancellationToken cancellationToken)
+        {
+            var job = await new VideoEncoder(this,
+                _logger,
+                ConfigurationManager,
+                FileSystem,
+                LiveTvManager,
+                IsoManager,
+                LibraryManager,
+                ChannelManager,
+                SessionManager,
+                SubtitleEncoder())
+                .Start(options, progress, cancellationToken).ConfigureAwait(false);
+
+            await job.TaskCompletionSource.Task.ConfigureAwait(false);
+
+            return job.OutputFilePath;
         }
     }
 }

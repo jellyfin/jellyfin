@@ -1,11 +1,15 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Sync;
 using MoreLinq;
@@ -24,19 +28,18 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISyncManager _syncManager;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly IMediaEncoder MediaEncoder;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
             _syncManager = syncManager;
             _logger = logger;
             _userManager = userManager;
-        }
-
-        public void ProcessJobItem(SyncJob job, SyncJobItem jobItem, SyncTarget target)
-        {
-
+            _tvSeriesManager = tvSeriesManager;
+            MediaEncoder = mediaEncoder;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -48,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new InvalidOperationException("Cannot proceed with sync because user no longer exists.");
             }
 
-            var items = GetItemsForSync(job.RequestedItemIds, user, job.UnwatchedOnly)
+            var items = (await GetItemsForSync(job.Category, job.ParentId, job.RequestedItemIds, user, job.UnwatchedOnly).ConfigureAwait(false))
                 .ToList();
 
             var jobItems = _syncRepo.GetJobItems(new SyncJobItemQuery
@@ -62,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 // Respect ItemLimit, if set
                 if (job.ItemLimit.HasValue)
                 {
-                    if (jobItems.Count >= job.ItemLimit.Value)
+                    if (jobItems.Count(j => j.Status != SyncJobItemStatus.RemovedFromDevice && j.Status != SyncJobItemStatus.Failed) >= job.ItemLimit.Value)
                     {
                         break;
                     }
@@ -81,6 +84,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     Id = Guid.NewGuid().ToString("N"),
                     ItemId = itemId,
+                    ItemName = GetSyncJobItemName(item),
                     JobId = job.Id,
                     TargetId = job.TargetId,
                     DateCreated = DateTime.UtcNow
@@ -96,6 +100,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .ToList();
 
             await UpdateJobStatus(job, jobItems).ConfigureAwait(false);
+        }
+
+        private string GetSyncJobItemName(BaseItem item)
+        {
+            return item.Name;
         }
 
         public Task UpdateJobStatus(string id)
@@ -128,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var item in jobItems)
             {
-                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Completed)
+                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Synced || item.Status == SyncJobItemStatus.RemovedFromDevice)
                 {
                     pct += 100;
                 }
@@ -171,10 +180,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _syncRepo.Update(job);
         }
 
-        public IEnumerable<BaseItem> GetItemsForSync(IEnumerable<string> itemIds, User user, bool unwatchedOnly)
+        public async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory? category, string parentId, IEnumerable<string> itemIds, User user, bool unwatchedOnly)
         {
-            var items = itemIds
-                .SelectMany(i => GetItemsForSync(i, user))
+            var items = category.HasValue ?
+                await GetItemsForSync(category.Value, parentId, user).ConfigureAwait(false) :
+                itemIds.SelectMany(i => GetItemsForSync(i, user))
                 .Where(_syncManager.SupportsSync);
 
             if (unwatchedOnly)
@@ -196,6 +206,54 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return items.DistinctBy(i => i.Id);
+        }
+
+        private async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory category, string parentId, User user)
+        {
+            var parent = string.IsNullOrWhiteSpace(parentId)
+                ? user.RootFolder
+                : (Folder)_libraryManager.GetItemById(parentId);
+
+            InternalItemsQuery query;
+
+            switch (category)
+            {
+                case SyncCategory.Latest:
+                    query = new InternalItemsQuery
+                    {
+                        IsFolder = false,
+                        SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName },
+                        SortOrder = SortOrder.Descending,
+                        Recursive = true
+                    };
+                    break;
+                case SyncCategory.Resume:
+                    query = new InternalItemsQuery
+                    {
+                        IsFolder = false,
+                        SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName },
+                        SortOrder = SortOrder.Descending,
+                        Recursive = true,
+                        IsResumable = true,
+                        MediaTypes = new[] { MediaType.Video }
+                    };
+                    break;
+
+                case SyncCategory.NextUp:
+                    return _tvSeriesManager.GetNextUp(new NextUpQuery
+                    {
+                        ParentId = parentId,
+                        UserId = user.Id.ToString("N")
+                    }).Items;
+
+                default:
+                    throw new ArgumentException("Unrecognized category: " + category);
+            }
+
+            query.User = user;
+
+            var result = await parent.GetItems(query).ConfigureAwait(false);
+            return result.Items;
         }
 
         private IEnumerable<BaseItem> GetItemsForSync(string id, User user)
@@ -261,9 +319,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             await EnsureSyncJobs(cancellationToken).ConfigureAwait(false);
 
+            // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                IsCompleted = false
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
             });
 
             var jobItems = result.Items;
@@ -278,10 +337,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (item.Status == SyncJobItemStatus.Queued)
-                {
-                    await ProcessJobItem(item, cancellationToken).ConfigureAwait(false);
-                }
+                await ProcessJobItem(item, cancellationToken).ConfigureAwait(false);
 
                 var job = _syncRepo.GetJob(item.JobId);
                 await UpdateJobStatus(job).ConfigureAwait(false);
@@ -316,39 +372,30 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                jobItem.OutputPath = await Sync(jobItem, video, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, video, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                jobItem.OutputPath = await Sync(jobItem, (Audio)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Audio)item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
             {
-                jobItem.OutputPath = await Sync(jobItem, (Photo)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Photo)item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
 
-            else if (item is Game)
+            else
             {
-                jobItem.OutputPath = await Sync(jobItem, (Game)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await SyncGeneric(jobItem, item, deviceProfile, cancellationToken).ConfigureAwait(false);
             }
-
-            else if (item is Book)
-            {
-                jobItem.OutputPath = await Sync(jobItem, (Book)item, deviceProfile, cancellationToken).ConfigureAwait(false);
-            }
-
-            jobItem.Progress = 50;
-            jobItem.Status = SyncJobItemStatus.Transferring;
-            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, CancellationToken cancellationToken)
         {
             var options = new VideoOptions
             {
-                Context = EncodingContext.Streaming,
+                Context = EncodingContext.Static,
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
@@ -358,28 +405,41 @@ namespace MediaBrowser.Server.Implementations.Sync
             var streamInfo = new StreamBuilder().BuildVideoItem(options);
             var mediaSource = streamInfo.MediaSource;
 
-            if (streamInfo.PlayMethod != PlayMethod.Transcode)
+            jobItem.MediaSourceId = streamInfo.MediaSourceId;
+
+            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            {
+                jobItem.Status = SyncJobItemStatus.Converting;
+                await _syncRepo.Update(jobItem).ConfigureAwait(false);
+
+                jobItem.OutputPath = await MediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+            }
+            else
             {
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
-                    return mediaSource.Path;
+                    jobItem.OutputPath = mediaSource.Path;
                 }
-                if (mediaSource.Protocol == MediaProtocol.Http)
+                else if (mediaSource.Protocol == MediaProtocol.Http)
                 {
-                    return await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
+                    jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
-                throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                else
+                {
+                    throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                }
             }
 
-            // TODO: Transcode
-            return mediaSource.Path;
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, CancellationToken cancellationToken)
         {
             var options = new AudioOptions
             {
-                Context = EncodingContext.Streaming,
+                Context = EncodingContext.Static,
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
@@ -389,36 +449,52 @@ namespace MediaBrowser.Server.Implementations.Sync
             var streamInfo = new StreamBuilder().BuildAudioItem(options);
             var mediaSource = streamInfo.MediaSource;
 
-            if (streamInfo.PlayMethod != PlayMethod.Transcode)
+            jobItem.MediaSourceId = streamInfo.MediaSourceId;
+
+            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            {
+                jobItem.Status = SyncJobItemStatus.Converting;
+                await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                
+                jobItem.OutputPath = await MediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+            }
+            else
             {
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
-                    return mediaSource.Path;
+                    jobItem.OutputPath = mediaSource.Path;
                 }
-                if (mediaSource.Protocol == MediaProtocol.Http)
+                else if (mediaSource.Protocol == MediaProtocol.Http)
                 {
-                    return await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
+                    jobItem.OutputPath = await DownloadFile(jobItem, mediaSource, cancellationToken).ConfigureAwait(false);
                 }
-                throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                else
+                {
+                    throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
+                }
             }
 
-            // TODO: Transcode
-            return mediaSource.Path;
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Photo item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Photo item, DeviceProfile profile, CancellationToken cancellationToken)
         {
-            return item.Path;
+            jobItem.OutputPath = item.Path;
+
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task<string> Sync(SyncJobItem jobItem, Game item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task SyncGeneric(SyncJobItem jobItem, BaseItem item, DeviceProfile profile, CancellationToken cancellationToken)
         {
-            return item.Path;
-        }
+            jobItem.OutputPath = item.Path;
 
-        private async Task<string> Sync(SyncJobItem jobItem, Book item, DeviceProfile profile, CancellationToken cancellationToken)
-        {
-            return item.Path;
+            jobItem.Progress = 50;
+            jobItem.Status = SyncJobItemStatus.Transferring;
+            await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
         private async Task<string> DownloadFile(SyncJobItem jobItem, MediaSourceInfo mediaSource, CancellationToken cancellationToken)

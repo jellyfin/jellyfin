@@ -245,7 +245,7 @@ var Dashboard = {
 
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showServerRestartWarning(info);
                 }
             });
@@ -570,7 +570,7 @@ var Dashboard = {
 
             var isConnectMode = Dashboard.isConnectMode();
 
-            if (user.localUser && user.localUser.Configuration.EnableUserPreferenceAccess) {
+            if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
                 html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
             }
 
@@ -672,7 +672,7 @@ var Dashboard = {
 
                 link = links[i];
 
-                if (!user.Configuration.IsAdministrator) {
+                if (!user.Policy.IsAdministrator) {
                     break;
                 }
 
@@ -705,7 +705,7 @@ var Dashboard = {
 
                 link = links[i];
 
-                if (!user.Configuration.IsAdministrator) {
+                if (!user.Policy.IsAdministrator) {
                     break;
                 }
 
@@ -892,7 +892,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationCompleted") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "completed");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -901,7 +901,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationFailed") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "failed");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -910,7 +910,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstallationCancelled") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -919,7 +919,7 @@ var Dashboard = {
         else if (msg.MessageType === "PackageInstalling") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
-                if (currentUser.Configuration.IsAdministrator) {
+                if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "progress");
                     Dashboard.refreshSystemInfoFromServer();
                 }
@@ -1095,7 +1095,18 @@ var Dashboard = {
             parent = $('.ui-content', page)[0];
         }
 
-        $(parent).prepend("<h1 class='pageTitle'>" + (document.title || "&nbsp;") + "</h1>");
+        var helpUrl = page.attr('data-helpurl');
+
+        var html = '<div>';
+        html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
+
+        if (helpUrl) {
+            html += '<a href="' + helpUrl + '" target="_blank" class="accentButton accentButton-g" style="margin-top:-10px;"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</a>';
+        }
+
+        html += '</div>';
+
+        $(parent).prepend(html);
     },
 
     setPageTitle: function (title) {
@@ -1273,14 +1284,18 @@ var Dashboard = {
             initializeApiClient(apiClient);
         });
 
-        if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken() && !Dashboard.isServerlessPage()) {
-            window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+        if (!Dashboard.isServerlessPage()) {
+            if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
+                window.ApiClient = new MediaBrowser.ApiClient(Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
 
-            ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+                ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
-            initializeApiClient(ApiClient);
+                initializeApiClient(ApiClient);
 
-            ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+                ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+            } else {
+                Dashboard.logout();
+            }
         }
 
     } else {
@@ -1436,7 +1451,7 @@ $(document).on('pagebeforeshow', ".page", function () {
 
                 var isSettingsPage = page.hasClass('type-interior');
 
-                if (!user.Configuration.IsAdministrator && isSettingsPage) {
+                if (!user.Policy.IsAdministrator && isSettingsPage) {
                     window.location.replace("index.html");
                     return;
                 }

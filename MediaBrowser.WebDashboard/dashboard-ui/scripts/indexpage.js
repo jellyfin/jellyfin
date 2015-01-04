@@ -75,15 +75,11 @@
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
 
-            var style = "";
+            var style = 'background-image:url(\'' + imgUrl + '\');';
 
-            if (imgUrl) {
-                style += 'background-image:url(\'' + imgUrl + '\');';
-            }
+            var imageCssClass = '';
 
-            var imageCssClass = 'posterItemImage';
-
-            html += '<div class="' + imageCssClass + '" style="' + style + '">';
+            html += '<div class="posterItemImage ' + imageCssClass + '" style="' + style + '">';
             html += '</div>';
 
             html += "<div class='posterItemDefaultText posterItemText'>";
@@ -130,14 +126,14 @@
             IsPlayed: false
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             var html = '';
 
             if (items.length) {
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-                html += '<a href="mypreferencesdisplay.html" data-role="button" data-icon="edit" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton">d</a>';
+                html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
                 html += '</div>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
@@ -208,7 +204,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyViews') + '</h1>';
-                html += '<a href="mypreferencesdisplay.html" data-role="button" data-icon="edit" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton">d</a>';
+                html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
                 html += '</div>';
 
                 html += '<div>';

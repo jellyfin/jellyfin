@@ -4,23 +4,13 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        //html += '<a href="index.html" class="headerButton headerButtonLeft headerHomeButton">';
-        //html += '<img src="css/images/items/folders/home.png" />';
-        //html += '</a>';
-
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner">';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
+        html += '<div class="barMenuInner fa fa-bars">';
         html += '</div>';
         html += '</button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner">';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
-        html += '<span class="icon-bar"></span>';
+        html += '<div class="barMenuInner fa fa-bars">';
         html += '</div>';
         html += '</button>';
 
@@ -32,7 +22,7 @@
 
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
-            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><img src="css/images/headersearch.png" /></button>';
+            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
         } else {
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
@@ -40,8 +30,9 @@
 
         html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-        var userButtonHeight = 21;
         if (user.imageUrl) {
+
+            var userButtonHeight = 24;
 
             var url = user.imageUrl;
 
@@ -49,15 +40,15 @@
                 url += "height=" + userButtonHeight;
             }
 
-            html += '<img src="' + url + '" style="height:' + userButtonHeight + 'px;" />';
+            html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
         } else {
-            html += '<img src="css/images/currentuserdefaultwhite.png" style="height:' + userButtonHeight + 'px;" />';
+            html += '<div class="fa fa-user"></div>';
         }
 
         html += '</a>';
 
         if (user.canManageServer) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><img src="css/images/items/folders/settings.png" /></a>';
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><div class="fa fa-cog"></div></a>';
         }
 
         html += '</div>';
@@ -85,12 +76,13 @@
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
 
-        html += '<div class="adminMenuOptions">';
         html += '<div class="libraryMenuDivider"></div>';
-        //html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder dashboardViewMenu" data-itemid="dashboard" href="dashboard.html">'+Globalize.translate('ButtonDashboard')+'</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html">' + Globalize.translate('ButtonMetadataManager') + '</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder reportsViewMenu" data-itemid="reports" href="reports.html">' + Globalize.translate('ButtonReports') + '</a>';
+        html += '<div class="adminMenuOptions">';
+
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu iconViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
+        //html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-cloud"></span>' + Globalize.translate('ButtonSync') + '</a>';
 
         return html;
     }
@@ -129,6 +121,7 @@
         if (!apiClient) {
 
             $('.adminMenuOptions').hide();
+            $('.syncViewMenu').hide();
             return;
         }
 
@@ -140,7 +133,7 @@
 
             var html = items.map(function (i) {
 
-                var viewMenuCssClass = (i.CollectionType || 'general') + 'ViewMenu';
+                var iconCssClass = 'fa';
 
                 var itemId = i.Id;
 
@@ -152,10 +145,37 @@
                 }
 
                 if (i.Type == 'Channel') {
-                    viewMenuCssClass = 'channelsViewMenu';
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink ' + viewMenuCssClass + '" href="' + getItemHref(i, i.CollectionType) + '">' + i.Name + '</a>';
+                if (i.CollectionType == "photos") {
+                    iconCssClass += ' fa-photo';
+                }
+                else if (i.CollectionType == "music" || i.CollectionType == "musicvideos") {
+                    iconCssClass += ' fa-music';
+                }
+                else if (i.CollectionType == "books") {
+                    iconCssClass += ' fa-book';
+                }
+                else if (i.CollectionType == "playlists") {
+                    iconCssClass += ' fa-list';
+                }
+                else if (i.CollectionType == "games") {
+                    iconCssClass += ' fa-gamepad';
+                }
+                else if (i.CollectionType == "movies") {
+                    iconCssClass += ' fa-film';
+                }
+                else if (i.CollectionType == "channels" || i.Type == 'Channel') {
+                    iconCssClass += ' fa-globe';
+                }
+                else if (i.CollectionType == "tvshows" || i.CollectionType == "livetv") {
+                    iconCssClass += ' fa-video-camera';
+                }
+                else {
+                    iconCssClass += ' fa-folder-open-o';
+                }
+
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink iconViewMenu" href="' + getItemHref(i, i.CollectionType) + '"><span class="' + iconCssClass + '"></span><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -163,17 +183,25 @@
 
             $('.viewMenuTextLink', elem).on('click', function () {
 
-                $('.libraryMenuButtonText').html(this.innerHTML);
+                var section = $('.sectionName', this)[0];
+                var text = section ? section.innerHTML : this.innerHTML;
+
+                $('.libraryMenuButtonText').html(text);
 
             });
         });
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Configuration.IsAdministrator) {
+            if (user.Policy.IsAdministrator) {
                 $('.adminMenuOptions').show();
             } else {
                 $('.adminMenuOptions').hide();
+            }
+            if (user.Policy.EnableSync) {
+                $('.syncViewMenu').show();
+            } else {
+                $('.syncViewMenu').hide();
             }
         });
     }
@@ -284,8 +312,9 @@
         var isChannelsPage = page.hasClass('channelsPage');
         var isEditorPage = page.hasClass('metadataEditorPage');
         var isReportsPage = page.hasClass('reportsPage');
+        var isMySyncPage = page.hasClass('mySyncPage');
 
-        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || page.hasClass('allLibraryPage') ?
+        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.hasClass('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
@@ -303,6 +332,9 @@
                 $(this).addClass('selectedMediaFolder');
             }
             else if (isReportsPage && itemId == 'reports') {
+                $(this).addClass('selectedMediaFolder');
+            }
+            else if (isMySyncPage && itemId == 'mysync') {
                 $(this).addClass('selectedMediaFolder');
             }
             else if (id && itemId == id) {

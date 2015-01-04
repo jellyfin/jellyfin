@@ -94,7 +94,7 @@
 
         var cssClass = "card squareCard alternateHover bottomPaddedCard";
 
-        if (user.Configuration.IsDisabled) {
+        if (user.Policy.IsDisabled) {
             cssClass += ' grayscale';
         }
 

@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Dlna
         public string ItemId { get; set; }
 
         public PlayMethod PlayMethod { get; set; }
+        public EncodingContext Context { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
 
@@ -374,9 +375,17 @@ namespace MediaBrowser.Model.Dlna
                 MediaStream stream = TargetAudioStream;
                 int? streamChannels = stream == null ? null : stream.Channels;
 
-                return MaxAudioChannels.HasValue && !IsDirectStream
-                    ? (streamChannels.HasValue ? Math.Min(MaxAudioChannels.Value, streamChannels.Value) : MaxAudioChannels.Value)
-                    : streamChannels;
+                if (MaxAudioChannels.HasValue && !IsDirectStream)
+                {
+                    if (streamChannels.HasValue)
+                    {
+                        return Math.Min(MaxAudioChannels.Value, streamChannels.Value);
+                    }
+
+                    return MaxAudioChannels.Value;
+                }
+
+                return streamChannels;
             }
         }
 

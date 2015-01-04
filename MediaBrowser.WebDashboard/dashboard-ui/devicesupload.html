@@ -4,7 +4,7 @@
     <title>${TitleDevices}</title>
 </head>
 <body>
-    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage">
+    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload">
 
         <div data-role="content">
             <div class="content-primary">
@@ -33,7 +33,7 @@
                             <li>
                                 <label for="txtUploadPath">${LabelCameraUploadPath}</label>
                                 <div style="display: inline-block; width: 92%;">
-                                    <input type="text" id="txtUploadPath" data-mini="true" />
+                                    <input type="text" id="txtUploadPath" />
                                 </div>
                                 <button id="btnSelectUploadPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                                 <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>

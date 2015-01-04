@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Querying
     public enum ItemFields
     {
         /// <summary>
+        /// The air time
+        /// </summary>
+        AirTime,
+
+        /// <summary>
         /// The alternate episode numbers
         /// </summary>
         AlternateEpisodeNumbers,
@@ -102,11 +107,6 @@ namespace MediaBrowser.Model.Querying
         Metascore,
 
         /// <summary>
-        /// The metadata settings
-        /// </summary>
-        Settings,
-
-        /// <summary>
         /// The item overview
         /// </summary>
         Overview,
@@ -152,6 +152,16 @@ namespace MediaBrowser.Model.Querying
         Revenue,
 
         /// <summary>
+        /// The season name
+        /// </summary>
+        SeasonName,
+
+        /// <summary>
+        /// The settings
+        /// </summary>
+        Settings,
+
+        /// <summary>
         /// The short overview
         /// </summary>
         ShortOverview,
@@ -180,6 +190,11 @@ namespace MediaBrowser.Model.Querying
         /// The sort name of the item
         /// </summary>
         SortName,
+
+        /// <summary>
+        /// The special episode numbers
+        /// </summary>
+        SpecialEpisodeNumbers,
 
         /// <summary>
         /// The studios of the item
@@ -219,6 +234,11 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The media streams
         /// </summary>
-        MediaStreams
+        MediaStreams,
+
+        /// <summary>
+        /// The season user data
+        /// </summary>
+        SeasonUserData
     }
 }

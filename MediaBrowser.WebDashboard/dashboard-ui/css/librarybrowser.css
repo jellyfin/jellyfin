@@ -61,13 +61,13 @@
 }
 
 .listHeader {
-    margin-top: .7em;
-    margin-bottom: .15em;
+    margin-top: 1em;
+    margin-bottom: .25em;
     padding-left: 2px;
 }
 
 .firstListHeader {
-    margin-top: .25em;
+    margin-top: 1em;
 }
 
 .ehsContent {
@@ -132,7 +132,7 @@
 @media all and (min-width: 1920px) {
 
     .ehsContent {
-        width: 94%;
+        width: 96%;
     }
 }
 
@@ -213,7 +213,7 @@
     height: 17px;
     display: inline-block;
     background-size: cover;
-    vertical-align: top;
+    vertical-align: middle;
     position: relative;
     top: -1px;
 }
@@ -231,6 +231,7 @@
     margin-left: 1px;
     position: relative;
     top: -1px;
+    vertical-align: middle;
 }
 
 .rottentomatoesicon {
@@ -240,7 +241,7 @@
     background-size: cover;
     background-position: left center;
     background-repeat: no-repeat;
-    vertical-align: top;
+    vertical-align: middle;
     position: relative;
     top: -1px;
 }
@@ -264,8 +265,6 @@
     font-size: 12px;
     text-align: center;
     padding: 2px 4px;
-    position: relative;
-    top: -1px;
     border-radius: 2px;
 }
 
@@ -306,6 +305,7 @@
     margin-left: 1px;
     position: relative;
     top: -1px;
+    vertical-align: middle;
 }
 
 .criticRatingSummary {
@@ -367,7 +367,7 @@ a.itemTag:hover {
     left: .8em;
 }
 
-.itemCommunityRating:not(:empty) + .userDataIcons {
+span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 
@@ -1260,7 +1260,7 @@ a.itemTag:hover {
 .listItem a:first-child {
     margin-right: 0 !important;
     background-color: transparent !important;
-    border-color: #282828 !important;
+    border-color: #d8d8d8 !important;
 }
 
 .listItem a + a {
@@ -1269,7 +1269,15 @@ a.itemTag:hover {
 }
 
 .listItem:hover a {
+    background-color: #eee !important;
+}
+
+.page[data-theme='b'] .listItem:hover a {
     background-color: #333 !important;
+}
+
+.page[data-theme='b'] .listItem a:first-child {
+    border-color: #282828 !important;
 }
 
 @media all and (max-width: 600px) {

@@ -106,6 +106,10 @@ namespace MediaBrowser.Providers.Movies
                 {
                     // No biggie. Don't blow up
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    // No biggie. Don't blow up
+                }
             }
 
             var language = item.GetPreferredMetadataLanguage();

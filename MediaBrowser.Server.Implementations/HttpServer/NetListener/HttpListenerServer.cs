@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host.HttpListener;

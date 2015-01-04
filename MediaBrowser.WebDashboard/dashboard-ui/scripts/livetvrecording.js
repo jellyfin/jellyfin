@@ -71,7 +71,7 @@
                 $('#playButtonContainer', page).hide();
             }
 
-            if (user.Configuration.IsAdministrator && item.LocationType !== "Offline") {
+            if (user.Policy.IsAdministrator && item.LocationType !== "Offline") {
                 $('#deleteButtonContainer', page).show();
             } else {
                 $('#deleteButtonContainer', page).hide();

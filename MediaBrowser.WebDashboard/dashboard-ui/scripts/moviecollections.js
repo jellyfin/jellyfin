@@ -37,7 +37,7 @@
 
             var html = '';
 
-            var addiontalButtonsHtml = user.Configuration.IsAdministrator ?
+            var addiontalButtonsHtml = user.Policy.IsAdministrator ?
                 ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
                 '';
 

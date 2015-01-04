@@ -2,11 +2,11 @@
 
     function loadPage(page, config) {
 
-        $('#chkEnableDebugEncodingLogging', page).checked(config.EnableDebugEncodingLogging).checkboxradio('refresh');
+        $('#chkEnableDebugEncodingLogging', page).checked(config.EnableDebugLogging).checkboxradio('refresh');
         
         $('.radioEncodingQuality', page).each(function() {
 
-            this.checked = config.MediaEncodingQuality == this.value;
+            this.checked = config.EncodingQuality == this.value;
 
         }).checkboxradio('refresh');
         
@@ -46,7 +46,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getNamedConfiguration("encoding").done(function (config) {
 
             loadPage(page, config);
 
@@ -61,14 +61,14 @@
 
             var form = this;
 
-            ApiClient.getServerConfiguration().done(function (config) {
+            ApiClient.getNamedConfiguration("encoding").done(function (config) {
 
-                config.EnableDebugEncodingLogging = $('#chkEnableDebugEncodingLogging', form).checked();
-                config.MediaEncodingQuality = $('.radioEncodingQuality:checked', form).val();
+                config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
+                config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
 
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateNamedConfiguration("encoding", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
 
             // Disable default form submission

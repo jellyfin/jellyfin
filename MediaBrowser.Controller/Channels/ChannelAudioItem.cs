@@ -6,6 +6,7 @@ using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -25,8 +26,8 @@ namespace MediaBrowser.Controller.Channels
         public string OriginalImageUrl { get; set; }
 
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
-        
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
         }

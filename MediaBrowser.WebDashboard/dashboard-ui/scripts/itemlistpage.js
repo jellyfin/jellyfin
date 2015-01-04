@@ -119,7 +119,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Configuration.IsAdministrator && query.ParentId) {
+            if (user.Policy.IsAdministrator && query.ParentId) {
                 $('#editButtonContainer', page).show();
             } else {
                 $('#editButtonContainer', page).hide();

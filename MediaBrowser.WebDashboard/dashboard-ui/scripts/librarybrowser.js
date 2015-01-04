@@ -1,6 +1,6 @@
 ﻿var LibraryBrowser = (function (window, document, $, screen, store) {
 
-    var pageSizeKey = 'pagesize_v3';
+    var pageSizeKey = 'pagesize_v4';
 
     $(function () {
         $("body").on("create", function () {
@@ -321,7 +321,7 @@
             if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
                 commands.push('delete');
             }
-            else if (user.Configuration.EnableContentDeletion &&
+            else if (user.Policy.EnableContentDeletion &&
                 item.Type != "TvChannel" &&
                 item.Type != "Genre" &&
                 item.Type != "Studio" &&
@@ -333,7 +333,7 @@
                 commands.push('delete');
             }
 
-            if (user.Configuration.IsAdministrator) {
+            if (user.Policy.IsAdministrator) {
                 if (item.Type != "Recording" && item.Type != "Program") {
                     commands.push('edit');
                 }
@@ -379,6 +379,7 @@
                         $(LibraryBrowser).trigger('itemdeleting', [itemId]);
                     }
                 });
+
             }, 250);
         },
 
@@ -400,7 +401,7 @@
             }
 
             if (commands.indexOf('refresh') != -1) {
-                html += '<li><a class="btnMoreMenuRefresh" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.refreshItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+                html += '<li><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
@@ -420,6 +421,8 @@
             });
 
             $('.btnMoreMenuRefresh', elem).on('click', function () {
+
+                $('.playFlyout').popup('close');
 
                 ApiClient.refreshItem(itemId, {
 
@@ -950,10 +953,10 @@
                     options.shape = options.shape == 'auto' ? 'backdrop' : 'homePageBackdrop';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;
-                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
+                    options.shape = 'square';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
                     options.coverImage = true;
-                    options.shape = options.shape == 'auto' ? 'square' : 'homePageSquare';
+                    options.shape = 'square';
                 } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
                     options.shape = 'banner';
                     options.coverImage = true;
@@ -1973,6 +1976,14 @@
             return null;
         },
 
+        getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip) {
+
+            btnCssClass += " imageButton";
+
+            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '"><div class="fa ' + icon + '"></div></button>';
+
+        },
+
         getUserDataIconsHtml: function (item) {
 
             var html = '';
@@ -1984,11 +1995,11 @@
 
             var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
-            if ((item.MediaType || item.IsFolder) && item.Type != "TvChannel" && item.Type != "MusicArtist") {
+            if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist") {
                 if (userData.Played) {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayed" src="css/images/userdata/checkedon.png" alt="' + tooltipPlayed + '" title="' + tooltipPlayed + '" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRating', 'fa-check', tooltipPlayed);
                 } else {
-                    html += '<img data-type="' + type + '" data-itemid="' + itemId + '" class="imgUserItemRating imgPlayedOff" src="css/images/userdata/checkedoff.png" alt="' + tooltipPlayed + '" title="' + tooltipPlayed + '" onclick="LibraryBrowser.markPlayed(this);return false;" />';
+                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-check', tooltipPlayed);
                 }
             }
 
@@ -1996,24 +2007,24 @@
             var tooltipDislike = Globalize.translate('TooltipDislike');
 
             if (typeof userData.Likes == "undefined") {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="' + tooltipDislike + '" title="' + tooltipDislike + '" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-up', tooltipLike);
             }
             else if (userData.Likes) {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislikeOff" src="css/images/userdata/thumbs_down_off.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLike" src="css/images/userdata/thumbs_up_on.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'fa-thumbs-up', tooltipLike);
             }
             else {
-                html += '<img onclick="LibraryBrowser.markDislike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgDislike" src="css/images/userdata/thumbs_down_on.png" alt="Dislike" title="Dislike" />';
-                html += '<img onclick="LibraryBrowser.markLike(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgLikeOff" src="css/images/userdata/thumbs_up_off.png" alt="' + tooltipLike + '" title="' + tooltipLike + '" />';
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'fa-thumbs-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-up', tooltipLike);
             }
 
             var tooltipFavorite = Globalize.translate('TooltipFavorite');
             if (userData.IsFavorite) {
 
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavorite" src="css/images/userdata/heart_on.png" alt="' + tooltipFavorite + '" title="' + tooltipFavorite + '" />';
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'fa-heart', tooltipFavorite);
             } else {
-                html += '<img onclick="LibraryBrowser.markFavorite(this);return false;" data-itemid="' + itemId + '" class="imgUserItemRating imgFavoriteOff" src="css/images/userdata/heart_off.png" alt="' + tooltipFavorite + '" title="' + tooltipFavorite + '" />';
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-heart', tooltipFavorite);
             }
 
             return html;
@@ -2025,20 +2036,14 @@
 
             var $link = $(link);
 
-            var markAsPlayed = $link.hasClass('imgPlayedOff');
+            var markAsPlayed = $link.hasClass('btnUserItemRatingOff');
 
             if (markAsPlayed) {
                 ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
+                $link.removeClass('btnUserItemRatingOff');
             } else {
                 ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
-            }
-
-            if (markAsPlayed) {
-                link.src = "css/images/userdata/checkedon.png";
-                $link.addClass('imgPlayed').removeClass('imgPlayedOff');
-            } else {
-                link.src = "css/images/userdata/checkedoff.png";
-                $link.addClass('imgPlayedOff').removeClass('imgPlayed');
+                $link.addClass('btnUserItemRatingOff');
             }
         },
 
@@ -2048,16 +2053,14 @@
 
             var $link = $(link);
 
-            var markAsFavorite = $link.hasClass('imgFavoriteOff');
+            var markAsFavorite = $link.hasClass('btnUserItemRatingOff');
 
             ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
             if (markAsFavorite) {
-                link.src = "css/images/userdata/heart_on.png";
-                $link.addClass('imgFavorite').removeClass('imgFavoriteOff');
+                $link.removeClass('btnUserItemRatingOff');
             } else {
-                link.src = "css/images/userdata/heart_off.png";
-                $link.addClass('imgFavoriteOff').removeClass('imgFavorite');
+                $link.addClass('btnUserItemRatingOff');
             }
         },
 
@@ -2067,24 +2070,20 @@
 
             var $link = $(link);
 
-            if ($link.hasClass('imgLikeOff')) {
+            if ($link.hasClass('btnUserItemRatingOff')) {
 
                 ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
 
-                link.src = "css/images/userdata/thumbs_up_on.png";
-                $link.addClass('imgLike').removeClass('imgLikeOff');
+                $link.removeClass('btnUserItemRatingOff');
 
             } else {
 
                 ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                link.src = "css/images/userdata/thumbs_up_off.png";
-                $link.addClass('imgLikeOff').removeClass('imgLike');
+                $link.addClass('btnUserItemRatingOff');
             }
 
-            $link.prev().removeClass('imgDislike').addClass('imgDislikeOff').each(function () {
-                this.src = "css/images/userdata/thumbs_down_off.png";
-            });
+            $link.prev().addClass('btnUserItemRatingOff');
         },
 
         markDislike: function (link) {
@@ -2093,24 +2092,20 @@
 
             var $link = $(link);
 
-            if ($link.hasClass('imgDislikeOff')) {
+            if ($link.hasClass('btnUserItemRatingOff')) {
 
                 ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
 
-                link.src = "css/images/userdata/thumbs_down_on.png";
-                $link.addClass('imgDislike').removeClass('imgDislikeOff');
+                $link.removeClass('btnUserItemRatingOff');
 
             } else {
 
                 ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                link.src = "css/images/userdata/thumbs_down_off.png";
-                $link.addClass('imgDislikeOff').removeClass('imgDislike');
+                $link.addClass('btnUserItemRatingOff');
             }
 
-            $link.next().removeClass('imgLike').addClass('imgLikeOff').each(function () {
-                this.src = "css/images/userdata/thumbs_up_off.png";
-            });
+            $link.next().addClass('btnUserItemRatingOff');
         },
 
         getDetailImageHtml: function (item, href, preferThumb) {

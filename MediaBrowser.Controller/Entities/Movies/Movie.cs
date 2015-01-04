@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -146,14 +147,21 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
         public MovieInfo GetLookupInfo()
         {
-            return GetItemLookupInfo<MovieInfo>();
+            var info = GetItemLookupInfo<MovieInfo>();
+
+            if (!IsInMixedFolder)
+            {
+                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+            }
+
+            return info;
         }
 
         public override bool BeforeMetadataRefresh()

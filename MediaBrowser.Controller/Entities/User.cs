@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
@@ -107,37 +106,27 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The last activity date.</value>
         public DateTime? LastActivityDate { get; set; }
 
-        /// <summary>
-        /// The _configuration
-        /// </summary>
-        private UserConfiguration _configuration;
-        /// <summary>
-        /// The _configuration initialized
-        /// </summary>
-        private bool _configurationInitialized;
-        /// <summary>
-        /// The _configuration sync lock
-        /// </summary>
-        private object _configurationSyncLock = new object();
-        /// <summary>
-        /// Gets the user's configuration
-        /// </summary>
-        /// <value>The configuration.</value>
+        private UserConfiguration _config;
+        private readonly object _configSyncLock = new object();
         [IgnoreDataMember]
         public UserConfiguration Configuration
         {
             get
             {
-                // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => (UserConfiguration)ConfigurationHelper.GetXmlConfiguration(typeof(UserConfiguration), ConfigurationFilePath, XmlSerializer));
-                return _configuration;
-            }
-            private set
-            {
-                _configuration = value;
+                if (_config == null)
+                {
+                    lock (_configSyncLock)
+                    {
+                        if (_config == null)
+                        {
+                            _config = UserManager.GetUserConfiguration(this);
+                        }
+                    }
+                }
 
-                _configurationInitialized = value != null;
+                return _config;
             }
+            set { _config = value; }
         }
 
         private UserPolicy _policy;
@@ -256,35 +245,6 @@ namespace MediaBrowser.Controller.Entities
             return System.IO.Path.Combine(parentPath, Id.ToString("N"));
         }
 
-        /// <summary>
-        /// Gets the path to the user's configuration file
-        /// </summary>
-        /// <value>The configuration file path.</value>
-        [IgnoreDataMember]
-        public string ConfigurationFilePath
-        {
-            get
-            {
-                return System.IO.Path.Combine(ConfigurationDirectoryPath, "config.xml");
-            }
-        }
-
-        /// <summary>
-        /// Updates the configuration.
-        /// </summary>
-        /// <param name="config">The config.</param>
-        /// <exception cref="System.ArgumentNullException">config</exception>
-        public void UpdateConfiguration(UserConfiguration config)
-        {
-            if (config == null)
-            {
-                throw new ArgumentNullException("config");
-            }
-
-            Configuration = config;
-            UserManager.UpdateConfiguration(this, Configuration);
-        }
-
         public bool IsParentalScheduleAllowed()
         {
             return IsParentalScheduleAllowed(DateTime.UtcNow);
@@ -292,7 +252,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool IsParentalScheduleAllowed(DateTime date)
         {
-            var schedules = Configuration.AccessSchedules;
+            var schedules = Policy.AccessSchedules;
 
             if (schedules.Length == 0)
             {

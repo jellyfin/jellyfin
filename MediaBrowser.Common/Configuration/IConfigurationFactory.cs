@@ -14,4 +14,9 @@ namespace MediaBrowser.Common.Configuration
 
         public Type ConfigurationType { get; set; }
     }
+
+    public interface IValidatingConfiguration
+    {
+        void Validate(object oldConfig, object newConfig);
+    }
 }

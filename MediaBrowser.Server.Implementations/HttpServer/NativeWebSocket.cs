@@ -1,9 +1,9 @@
-﻿using System.Text;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocketMessageType = MediaBrowser.Model.Net.WebSocketMessageType;

@@ -5,9 +5,11 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -103,7 +105,12 @@ namespace MediaBrowser.Server.Implementations.Devices
                 var val = query.SupportsUniqueIdentifier.Value;
 
                 devices = devices.Where(i => GetCapabilities(i.Id).SupportsUniqueIdentifier == val);
-            } 
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.UserId))
+            {
+                devices = devices.Where(i => CanAccessDevice(query.UserId, i.Id));
+            }
             
             var array = devices.ToArray();
             return new QueryResult<DeviceInfo>
@@ -187,6 +194,41 @@ namespace MediaBrowser.Server.Implementations.Devices
             await _repo.SaveDevice(device).ConfigureAwait(false);
 
             EventHelper.FireEventIfNotNull(DeviceOptionsUpdated, this, new GenericEventArgs<DeviceInfo>(device), _logger);
+        }
+
+        public bool CanAccessDevice(string userId, string deviceId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
+
+            var user = _userManager.GetUserById(userId);
+            if (!CanAccessDevice(user.Policy, deviceId))
+            {
+                var capabilities = GetCapabilities(deviceId);
+
+                if (capabilities.SupportsUniqueIdentifier)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool CanAccessDevice(UserPolicy policy, string id)
+        {
+            if (policy.EnableAllDevices)
+            {
+                return true;
+            }
+
+            return ListHelper.ContainsIgnoreCase(policy.EnabledDevices, id);
         }
     }
 

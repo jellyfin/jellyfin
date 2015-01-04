@@ -185,7 +185,7 @@
             return i.getAttribute('data-viewid');
         });
 
-        ApiClient.updateUser(user).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
             loadForm(page, user, false);

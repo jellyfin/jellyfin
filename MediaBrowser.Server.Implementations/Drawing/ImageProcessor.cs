@@ -78,6 +78,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 // No biggie
                 sizeDictionary = new Dictionary<Guid, ImageSize>();
             }
+            catch (DirectoryNotFoundException)
+            {
+                // No biggie
+                sizeDictionary = new Dictionary<Guid, ImageSize>();
+            }
             catch (Exception ex)
             {
                 logger.ErrorException("Error parsing image size cache file", ex);
@@ -362,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     new UnplayedCountIndicator().DrawUnplayedCountIndicator(graphics, currentImageSize, options.UnplayedCount.Value);
                 }
 
-                if (options.PercentPlayed >= 0)
+                if (options.PercentPlayed > 0)
                 {
                     var currentImageSize = new Size(imageWidth, imageHeight);
 

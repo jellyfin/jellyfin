@@ -85,5 +85,13 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="file">The file.</param>
         /// <returns>Task.</returns>
         Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file);
+
+        /// <summary>
+        /// Determines whether this instance [can access device] the specified user identifier.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <returns><c>true</c> if this instance [can access device] the specified user identifier; otherwise, <c>false</c>.</returns>
+        bool CanAccessDevice(string userId, string deviceId);
     }
 }

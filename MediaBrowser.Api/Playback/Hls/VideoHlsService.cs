@@ -5,12 +5,11 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -72,7 +71,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
+            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower(), file);
 
             return ResultFactory.GetStaticFileResult(Request, file);
         }
@@ -136,18 +135,27 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var codec = state.OutputVideoCodec;
 
+            var args = "-codec:v:0 " + codec;
+
+            if (state.EnableMpegtsM2TsMode)
+            {
+                args += " -mpegts_m2ts_mode 1";
+            }
+
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) ? "-codec:v:0 copy -bsf:v h264_mp4toannexb" : "-codec:v:0 copy";
+                return state.VideoStream != null && IsH264(state.VideoStream) ?
+                    args + " -bsf:v h264_mp4toannexb" :
+                    args;
             }
-
+            
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
                 state.SegmentLength.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            var args = "-codec:v:0 " + codec + " " + GetVideoQualityParam(state, "libx264", true) + keyFrameArg;
+            args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)

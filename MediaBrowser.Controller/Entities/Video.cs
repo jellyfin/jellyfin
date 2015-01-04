@@ -91,6 +91,21 @@ namespace MediaBrowser.Controller.Entities
             get { return LocalAlternateVersions.Count > 0; }
         }
 
+        [IgnoreDataMember]
+        public bool IsArchive
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
+
+                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         public IEnumerable<Guid> GetAdditionalPartIds()
         {
             return AdditionalParts.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
@@ -246,7 +261,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         return System.IO.Path.GetFileName(Path);
                     }
-                    
+
                     return System.IO.Path.GetFileNameWithoutExtension(Path);
                 }
 

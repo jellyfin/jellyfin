@@ -1,9 +1,14 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -20,14 +25,165 @@ namespace MediaBrowser.Api
         public string ItemId { get; set; }
     }
 
+    [Route("/Items/{ItemId}/MetadataEditor", "GET", Summary = "Gets metadata editor info for an item")]
+    public class GetMetadataEditorInfo : IReturn<MetadataEditorInfo>
+    {
+        [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string ItemId { get; set; }
+    }
+
+    [Route("/Items/{ItemId}/ContentType", "POST", Summary = "Updates an item's content type")]
+    public class UpdateItemContentType : IReturnVoid
+    {
+        [ApiMember(Name = "ItemId", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string ItemId { get; set; }
+
+        [ApiMember(Name = "ContentType", Description = "The content type of the item", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ContentType { get; set; }
+    }
+    
     [Authenticated]
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IProviderManager _providerManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly IServerConfigurationManager _config;
 
-        public ItemUpdateService(ILibraryManager libraryManager)
+        public ItemUpdateService(ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
+            _providerManager = providerManager;
+            _localizationManager = localizationManager;
+            _config = config;
+        }
+
+        public object Get(GetMetadataEditorInfo request)
+        {
+            var item = _libraryManager.GetItemById(request.ItemId);
+            
+            var info = new MetadataEditorInfo
+            {
+                ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
+                ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToList(),
+                Countries = _localizationManager.GetCountries().ToList(),
+                Cultures = _localizationManager.GetCultures().ToList()
+            };
+
+            var locationType = item.LocationType;
+            if (locationType == LocationType.FileSystem ||
+                locationType == LocationType.Offline)
+            {
+                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
+                {
+                    var collectionType = _libraryManager.GetInheritedContentType(item);
+                    if (string.IsNullOrWhiteSpace(collectionType))
+                    {
+                        info.ContentTypeOptions = GetContentTypeOptions(true);
+                        info.ContentType = _libraryManager.GetContentType(item);
+                    }
+                }
+            }
+
+            return ToOptimizedResult(info);
+        }
+
+        public void Post(UpdateItemContentType request)
+        {
+            var item = _libraryManager.GetItemById(request.ItemId);
+            var path = item.ContainingFolderPath;
+
+            var types = _config.Configuration.ContentTypes
+                .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(request.ContentType))
+            {
+                types.Add(new NameValuePair
+                {
+                    Name = path,
+                    Value = request.ContentType
+                });
+            }
+
+            _config.Configuration.ContentTypes = types.ToArray();
+            _config.SaveConfiguration();
+        }
+
+        private List<NameValuePair> GetContentTypeOptions(bool isForItem)
+        {
+            var list = new List<NameValuePair>();
+
+            if (isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeInherit",
+                    Value = ""
+                });
+            }
+            
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMovies",
+                Value = "movies"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMusic",
+                Value = "music"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeTvShows",
+                Value = "tvshows"
+            });
+
+            if (!isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeBooks",
+                    Value = "books"
+                });
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeGames",
+                    Value = "games"
+                });
+            }
+
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeHomeVideos",
+                Value = "homevideos"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypeMusicVideos",
+                Value = "musicvideos"
+            });
+            list.Add(new NameValuePair
+            {
+                Name = "FolderTypePhotos",
+                Value = "photos"
+            });
+
+            if (!isForItem)
+            {
+                list.Add(new NameValuePair
+                {
+                    Name = "FolderTypeMixed",
+                    Value = ""
+                });
+            }
+
+            foreach (var val in list)
+            {
+                val.Name = _localizationManager.GetLocalizedString(val.Name);
+            }
+
+            return list;
         }
 
         public void Post(UpdateItem request)

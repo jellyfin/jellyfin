@@ -1,7 +1,8 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.TV;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -35,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             {
                 var season = new Season
                 {
-                    IndexNumber = SeriesResolver.GetSeasonNumberFromPath(args.Path, CollectionType.TvShows)
+                    IndexNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(args.Path, true).SeasonNumber
                 };
                 
                 if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)

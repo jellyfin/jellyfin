@@ -112,7 +112,8 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "Website",
                     "Zap2ItId",
                     "CollectionItems",
-                    "PlaylistItems"
+                    "PlaylistItems",
+                    "Shares"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
@@ -649,7 +650,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             var hasShares = item as IHasShares;
             if (hasShares != null)
             {
-                
+                AddShares(hasShares, builder);
             }
         }
 

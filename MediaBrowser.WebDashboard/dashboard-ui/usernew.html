@@ -4,7 +4,7 @@
     <title>${TitleNewUser}</title>
 </head>
 <body>
-    <div id="newUserPage" data-role="page" class="page type-interior userProfilesPage">
+    <div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,6 +14,7 @@
                         <li id="fldUserName">
                             <label for="txtUserName">${LabelName}</label>
                             <input id="txtUserName" required="required" type="text" />
+                            <div class="fieldDescription">${LabelNewUserNameHelp}</div>
                         </li>
                     </ul>
 

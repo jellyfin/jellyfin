@@ -1,11 +1,9 @@
-﻿using System.Text;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using WebSocketMessageType = MediaBrowser.Model.Net.WebSocketMessageType;
 using WebSocketState = MediaBrowser.Model.Net.WebSocketState;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
@@ -23,7 +21,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         /// Gets or sets the web socket.
         /// </summary>
         /// <value>The web socket.</value>
-        private WebSocketSharp.WebSocket WebSocket { get; set; }
+        private SocketHttpListener.WebSocket WebSocket { get; set; }
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -33,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         /// <param name="socket">The socket.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public SharpWebSocket(WebSocketSharp.WebSocket socket, ILogger logger)
+        public SharpWebSocket(SocketHttpListener.WebSocket socket, ILogger logger)
         {
             if (socket == null)
             {
@@ -55,17 +53,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             WebSocket.ConnectAsServer();
         }
 
-        void socket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
+        void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
             EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 
-        void socket_OnClose(object sender, WebSocketSharp.CloseEventArgs e)
+        void socket_OnClose(object sender, SocketHttpListener.CloseEventArgs e)
         {
             EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 
-        void socket_OnMessage(object sender, WebSocketSharp.MessageEventArgs e)
+        void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)
         {
             if (OnReceive != null)
             {

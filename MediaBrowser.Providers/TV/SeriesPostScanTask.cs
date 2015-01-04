@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,12 +26,14 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
+        private readonly ILocalizationManager _localization;
 
-        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config)
+        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _config = config;
+            _localization = localization;
         }
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
@@ -47,7 +50,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-            await new MissingEpisodeProvider(_logger, _config, _libraryManager).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
+            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
 
@@ -72,10 +75,6 @@ namespace MediaBrowser.Providers.TV
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .Select(i => i.Id)
                     .ToList();
-
-                series.DateLastEpisodeAdded = physicalEpisodes.Select(i => i.DateCreated)
-                    .OrderByDescending(i => i)
-                    .FirstOrDefault();
 
                 numComplete++;
                 double percent = numComplete;

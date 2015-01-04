@@ -15,7 +15,7 @@
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "homePageSquare",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
@@ -38,7 +38,7 @@
             var html = LibraryBrowser.getPosterViewHtml({
 
                 items: result.Items,
-                shape: "homePageSquare",
+                shape: "square",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,

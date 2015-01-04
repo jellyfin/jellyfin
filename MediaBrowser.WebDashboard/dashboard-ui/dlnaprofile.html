@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage">
+    <div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles">
 
         <div data-role="content">
             <div class="content-primary">
@@ -38,7 +38,7 @@
                         <ul data-role="listview" class="ulForm">
                             <li>
                                 <label for="txtName">${LabelName}</label>
-                                <input type="text" id="txtName" data-mini="true" required="required" />
+                                <input type="text" id="txtName" required="required" />
                             </li>
                         </ul>
 
@@ -73,47 +73,47 @@
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
-                                        <input type="text" id="txtIdFriendlyName" data-mini="true" />
+                                        <input type="text" id="txtIdFriendlyName" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdManufacturer">${LabelManufacturer}</label>
-                                        <input type="text" id="txtIdManufacturer" data-mini="true" />
+                                        <input type="text" id="txtIdManufacturer" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
-                                        <input type="text" id="txtIdManufacturerUrl" data-mini="true" />
+                                        <input type="text" id="txtIdManufacturerUrl" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdModelName">${LabelModelName}</label>
-                                        <input type="text" id="txtIdModelName" data-mini="true" />
+                                        <input type="text" id="txtIdModelName" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdModelNumber">${LabelModelNumber}</label>
-                                        <input type="text" id="txtIdModelNumber" data-mini="true" />
+                                        <input type="text" id="txtIdModelNumber" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdModelDesription">${LabelModelDescription}</label>
-                                        <input type="text" id="txtIdModelDesription" data-mini="true" />
+                                        <input type="text" id="txtIdModelDesription" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdModelUrl">${LabelModelUrl}</label>
-                                        <input type="text" id="txtIdModelUrl" data-mini="true" />
+                                        <input type="text" id="txtIdModelUrl" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
-                                        <input type="text" id="txtIdSerialNumber" data-mini="true" />
+                                        <input type="text" id="txtIdSerialNumber" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
-                                        <input type="text" id="txtIdDeviceDescription" data-mini="true" />
+                                        <input type="text" id="txtIdDeviceDescription" />
                                         <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                                     </li>
                                 </ul>
@@ -161,27 +161,27 @@
                                     </li>
                                     <li>
                                         <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
-                                        <input type="text" id="txtAlbumArtPn" data-mini="true" />
+                                        <input type="text" id="txtAlbumArtPn" />
                                         <div class="fieldDescription">${LabelAlbumArtHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
-                                        <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
-                                        <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
-                                        <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
-                                        <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
                                     </li>
                                 </ul>
@@ -195,23 +195,13 @@
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
-                                        <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
                                     </li>
                                     <li>
-                                        <label for="txtMaxStaticBitrate">${LabelMaxStaticBitrate}</label>
-                                        <input type="number" id="txtMaxStaticBitrate" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">${LabelMaxStaticBitrateHelp}</div>
-                                    </li>
-                                    <li>
                                         <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
-                                        <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" data-mini="true" />
+                                        <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
                                         <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtMusicStaticBitrate">${LabelMusicStaticBitrate}</label>
-                                        <input type="number" id="txtMusicStaticBitrate" pattern="[0-9]*" min="1" data-mini="true" />
-                                        <div class="fieldDescription">${LabelMusicStaticBitrateHelp}</div>
                                     </li>
                                     <li>
                                         <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
@@ -229,54 +219,54 @@
                                 <ul data-role="listview" class="ulForm">
                                     <li>
                                         <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
-                                        <input type="text" id="txtInfoFriendlyName" data-mini="true" required="required" />
+                                        <input type="text" id="txtInfoFriendlyName" required="required" />
                                     </li>
                                     <li>
                                         <label for="txtInfoManufacturer">${LabelManufacturer}</label>
-                                        <input type="text" id="txtInfoManufacturer" data-mini="true" />
+                                        <input type="text" id="txtInfoManufacturer" />
                                     </li>
                                     <li>
                                         <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
-                                        <input type="text" id="txtInfoManufacturerUrl" data-mini="true" />
+                                        <input type="text" id="txtInfoManufacturerUrl" />
                                     </li>
                                     <li>
                                         <label for="txtInfoModelName">${LabelModelName}</label>
-                                        <input type="text" id="txtInfoModelName" data-mini="true" />
+                                        <input type="text" id="txtInfoModelName" />
                                     </li>
                                     <li>
                                         <label for="txtInfoModelNumber">${LabelModelNumber}</label>
-                                        <input type="text" id="txtInfoModelNumber" data-mini="true" />
+                                        <input type="text" id="txtInfoModelNumber" />
                                     </li>
                                     <li>
                                         <label for="txtInfoModelDesription">${LabelModelDescription}</label>
-                                        <input type="text" id="txtInfoModelDesription" data-mini="true" />
+                                        <input type="text" id="txtInfoModelDesription" />
                                     </li>
                                     <li>
                                         <label for="txtInfoModelUrl">${LabelModelUrl}</label>
-                                        <input type="text" id="txtInfoModelUrl" data-mini="true" />
+                                        <input type="text" id="txtInfoModelUrl" />
                                     </li>
                                     <li>
                                         <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
-                                        <input type="text" id="txtInfoSerialNumber" data-mini="true" />
+                                        <input type="text" id="txtInfoSerialNumber" />
                                     </li>
                                     <li>
                                         <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
-                                        <input type="text" id="txtProtocolInfo" data-mini="true" />
+                                        <input type="text" id="txtProtocolInfo" />
                                         <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
-                                        <input type="text" id="txtXDlnaCap" data-mini="true" />
+                                        <input type="text" id="txtXDlnaCap" />
                                         <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
-                                        <input type="text" id="txtXDlnaDoc" data-mini="true" />
+                                        <input type="text" id="txtXDlnaDoc" />
                                         <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
                                     </li>
                                     <li>
                                         <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
-                                        <input type="text" id="txtSonyAggregationFlags" data-mini="true" />
+                                        <input type="text" id="txtSonyAggregationFlags" />
                                         <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
                                     </li>
                                 </ul>
@@ -373,19 +363,19 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtDirectPlayContainer">${LabelProfileContainer}</label>
-                        <input type="text" id="txtDirectPlayContainer" data-mini="true" />
+                        <input type="text" id="txtDirectPlayContainer" />
                         <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                     </div>
 
                     <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
                         <label for="txtDirectPlayVideoCodec">${LabelProfileVideoCodecs}</label>
-                        <input type="text" id="txtDirectPlayVideoCodec" data-mini="true" />
+                        <input type="text" id="txtDirectPlayVideoCodec" />
                         <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
                         <label for="txtDirectPlayAudioCodec">${LabelProfileAudioCodecs}</label>
-                        <input type="text" id="txtDirectPlayAudioCodec" data-mini="true" />
+                        <input type="text" id="txtDirectPlayAudioCodec" />
                         <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
@@ -427,14 +417,6 @@
                             </select>
                         </div>
 
-                        <div style="margin: 1em 0;">
-                            <label for="selectTranscodingContext">${LabelContext}</label>
-                            <select id="selectTranscodingContext" data-mini="true">
-                                <option value="Streaming">${OptionContextStreaming}</option>
-                                <option value="Static">${OptionContextStatic}</option>
-                            </select>
-                        </div>
-
                         <div id="fldTranscodingProtocol" style="margin: 1em 0;">
                             <label for="selectTranscodingProtocol">${LabelProtocol}</label>
                             <select id="selectTranscodingProtocol" data-mini="true">
@@ -445,17 +427,17 @@
 
                         <div style="margin: 1em 0;">
                             <label for="txtTranscodingContainer">${LabelTranscodingContainer}</label>
-                            <input type="text" id="txtTranscodingContainer" data-mini="true" required="required" />
+                            <input type="text" id="txtTranscodingContainer" required="required" />
                         </div>
 
                         <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
                             <label for="txtTranscodingVideoCodec">${LabelTranscodingVideoCodec}</label>
-                            <input type="text" id="txtTranscodingVideoCodec" data-mini="true" />
+                            <input type="text" id="txtTranscodingVideoCodec" />
                         </div>
 
                         <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
                             <label for="txtTranscodingAudioCodec">${LabelTranscodingAudioCodec}</label>
-                            <input type="text" id="txtTranscodingAudioCodec" data-mini="true" />
+                            <input type="text" id="txtTranscodingAudioCodec" />
                         </div>
                     </div>
                     <div class="tabContent tabTranscodingAdvanced" style="display: none;">
@@ -519,7 +501,7 @@
 
                         <div style="margin: 1em 0;">
                             <label for="txtContainerProfileContainer">Containers:</label>
-                            <input type="text" id="txtContainerProfileContainer" data-mini="true" />
+                            <input type="text" id="txtContainerProfileContainer" />
                             <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                         </div>
 
@@ -562,7 +544,7 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtCodecProfileCodec">${LabelProfileCodecs}</label>
-                        <input type="text" id="txtCodecProfileCodec" data-mini="true" />
+                        <input type="text" id="txtCodecProfileCodec" />
                         <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
@@ -598,19 +580,19 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtResponseProfileContainer">${LabelProfileContainer}</label>
-                        <input type="text" id="txtResponseProfileContainer" data-mini="true" />
+                        <input type="text" id="txtResponseProfileContainer" />
                         <div class="fieldDescription">${LabelProfileContainersHelp}</div>
                     </div>
 
                     <div id="fldResponseProfileVideoCodec" style="margin: 1em 0;">
                         <label for="txtResponseProfileVideoCodec">${LabelProfileVideoCodecs}</label>
-                        <input type="text" id="txtResponseProfileVideoCodec" data-mini="true" />
+                        <input type="text" id="txtResponseProfileVideoCodec" />
                         <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
                     <div id="fldResponseProfileAudioCodec" style="margin: 1em 0 2em;">
                         <label for="txtResponseProfileAudioCodec">${LabelProfileAudioCodecs}</label>
-                        <input type="text" id="txtResponseProfileAudioCodec" data-mini="true" />
+                        <input type="text" id="txtResponseProfileAudioCodec" />
                         <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
                     </div>
 
@@ -637,12 +619,12 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtIdentificationHeaderName">${LabelName}</label>
-                        <input type="text" id="txtIdentificationHeaderName" data-mini="true" required="required" />
+                        <input type="text" id="txtIdentificationHeaderName" required="required" />
                     </div>
 
                     <div style="margin: 1em 0;">
                         <label for="txtIdentificationHeaderValue">${LabelValue}</label>
-                        <input type="text" id="txtIdentificationHeaderValue" data-mini="true" required="required" />
+                        <input type="text" id="txtIdentificationHeaderValue" required="required" />
                     </div>
 
                     <div style="margin: 1em 0;">
@@ -677,12 +659,12 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtXmlAttributeName">${LabelName}</label>
-                        <input type="text" id="txtXmlAttributeName" data-mini="true" required="required" />
+                        <input type="text" id="txtXmlAttributeName" required="required" />
                     </div>
 
                     <div style="margin: 1em 0;">
                         <label for="txtXmlAttributeValue">${LabelValue}</label>
-                        <input type="text" id="txtXmlAttributeValue" data-mini="true" required="required" />
+                        <input type="text" id="txtXmlAttributeValue" required="required" />
                     </div>
 
                     <p>
@@ -709,7 +691,7 @@
 
                     <div style="margin: 1em 0;">
                         <label for="txtSubtitleProfileFormat">${LabelFormat}</label>
-                        <input type="text" id="txtSubtitleProfileFormat" data-mini="true" required="required" />
+                        <input type="text" id="txtSubtitleProfileFormat" required="required" />
                         <div class="fieldDescription">${LabelSubtitleFormatHelp}</div>
                     </div>
 

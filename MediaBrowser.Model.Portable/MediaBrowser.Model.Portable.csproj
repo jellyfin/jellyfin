@@ -10,8 +10,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaBrowser.Model</RootNamespace>
     <AssemblyName>MediaBrowser.Model</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile344</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -187,6 +187,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\DynamicDayOfWeek.cs">
       <Link>Configuration\DynamicDayOfWeek.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\EncodingOptions.cs">
+      <Link>Configuration\EncodingOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\EncodingQuality.cs">
       <Link>Configuration\EncodingQuality.cs</Link>
@@ -425,9 +428,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\ChapterInfoDto.cs">
       <Link>Dto\ChapterInfoDto.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\DtoOptions.cs">
-      <Link>Dto\DtoOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\GameSystemSummary.cs">
       <Link>Dto\GameSystemSummary.cs</Link>
     </Compile>
@@ -461,6 +461,12 @@
     <Compile Include="..\MediaBrowser.Model\Dto\MediaSourceType.cs">
       <Link>Dto\MediaSourceType.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\MetadataEditorInfo.cs">
+      <Link>Dto\MetadataEditorInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\NameValuePair.cs">
+      <Link>Dto\NameValuePair.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RatingType.cs">
       <Link>Dto\RatingType.cs</Link>
     </Compile>
@@ -469,9 +475,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\RecommendationType.cs">
       <Link>Dto\RecommendationType.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\StreamOptions.cs">
-      <Link>Dto\StreamOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\StudioDto.cs">
       <Link>Dto\StudioDto.cs</Link>
@@ -788,6 +791,12 @@
     <Compile Include="..\MediaBrowser.Model\Net\HttpException.cs">
       <Link>Net\HttpException.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\HttpResponse.cs">
+      <Link>Net\HttpResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\MimeTypes.cs">
+      <Link>Net\MimeTypes.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Net\NetworkShare.cs">
       <Link>Net\NetworkShare.cs</Link>
     </Compile>
@@ -1028,11 +1037,35 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\DeviceFileInfo.cs">
+      <Link>Sync\DeviceFileInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\ItemFIleInfo.cs">
+      <Link>Sync\ItemFIleInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\ItemFileType.cs">
+      <Link>Sync\ItemFileType.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\LocalItem.cs">
+      <Link>Sync\LocalItem.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncCategory.cs">
       <Link>Sync\SyncCategory.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncDataRequest.cs">
+      <Link>Sync\SyncDataRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncDataResponse.cs">
+      <Link>Sync\SyncDataResponse.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncDialogOptions.cs">
       <Link>Sync\SyncDialogOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncedItem.cs">
+      <Link>Sync\SyncedItem.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncHelper.cs">
+      <Link>Sync\SyncHelper.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>
@@ -1135,6 +1168,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\PinRedeemResult.cs">
       <Link>Users\PinRedeemResult.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\UserAction.cs">
+      <Link>Users\UserAction.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Users\UserActionType.cs">
+      <Link>Users\UserActionType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\UserPolicy.cs">
       <Link>Users\UserPolicy.cs</Link>

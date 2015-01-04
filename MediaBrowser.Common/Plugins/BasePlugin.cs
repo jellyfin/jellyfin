@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -164,11 +163,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// The _configuration sync lock
         /// </summary>
-        private object _configurationSyncLock = new object();
-        /// <summary>
-        /// The _configuration initialized
-        /// </summary>
-        private bool _configurationInitialized;
+        private readonly object _configurationSyncLock = new object();
         /// <summary>
         /// The _configuration
         /// </summary>
@@ -182,17 +177,43 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                LazyInitializer.EnsureInitialized(ref _configuration, ref _configurationInitialized, ref _configurationSyncLock, () => ConfigurationHelper.GetXmlConfiguration(ConfigurationType, ConfigurationFilePath, XmlSerializer) as TConfigurationType);
+                if (_configuration == null)
+                {
+                    lock (_configurationSyncLock)
+                    {
+                        if (_configuration == null)
+                        {
+                            _configuration = LoadConfiguration();
+                        }
+                    }
+                } 
                 return _configuration;
             }
             protected set
             {
                 _configuration = value;
+            }
+        }
 
-                if (value == null)
-                {
-                    _configurationInitialized = false;
-                }
+        private TConfigurationType LoadConfiguration()
+        {
+            var path = ConfigurationFilePath;
+
+            try
+            {
+                return (TConfigurationType)XmlSerializer.DeserializeFromFile(typeof(TConfigurationType), path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+            }
+            catch (FileNotFoundException)
+            {
+                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
+            }
+            catch (Exception ex)
+            {
+                return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
             }
         }
 

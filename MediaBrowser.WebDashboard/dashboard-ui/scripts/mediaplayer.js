@@ -103,8 +103,11 @@
                 return '.m3u8';
             }
 
-            // Chrome or IE with plugin installed
-            if (self.canPlayWebm()) {
+            // Chrome, Firefox or IE with plugin installed
+            // For some reason in chrome pausing mp4 is causing the video to fail. 
+            // So for now it will have to prioritize webm
+            if (self.canPlayWebm() && ($.browser.chrome || $.browser.msie)) {
+
                 return '.webm';
             }
 
@@ -294,7 +297,7 @@
                 return false;
             }
 
-            if (subtitleStream && (subtitleStream.IsGraphicalSubtitleStream || !self.supportsTextTracks())) {
+            if (subtitleStream && (!subtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
                 return false;
             }

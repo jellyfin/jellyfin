@@ -17,8 +17,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         protected override Photo Resolve(ItemResolveArgs args)
         {
             // Must be an image file within a photo collection
-            if (!args.IsDirectory && 
-                string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase) && 
+            if (string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase) &&
+                !args.IsDirectory &&
                 IsImageFile(args.Path))
             {
                 return new Photo

@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = item as Video;
 
-            return item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut;
+            return item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut && !video.IsArchive;
         }
 
         public int Order

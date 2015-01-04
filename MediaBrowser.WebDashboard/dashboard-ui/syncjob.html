@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleSync}</title>
+</head>
+<body>
+    <div id="syncJobPage" data-role="page" class="page type-interior syncConfigurationPage syncJobPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="#" data-role="button" class="ui-btn-active">${TabActivity}</a>
+                    <a href="syncsettings.html" data-role="button">${TabSettings}</a>
+                </div>
+
+                <div class="readOnlyContent">
+                    <form class="syncJobForm"></form>
+                    <br />
+                    <br />
+                    <div class="jobItems"></div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $('.syncJobForm').off('submit', SyncJobPage.onSubmit).on('submit', SyncJobPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

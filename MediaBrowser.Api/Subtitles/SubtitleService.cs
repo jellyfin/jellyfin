@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Subtitles
 {
@@ -175,7 +176,7 @@ namespace MediaBrowser.Api.Subtitles
 
             builder.AppendLine("#EXT-X-ENDLIST");
 
-            return ResultFactory.GetResult(builder.ToString(), Common.Net.MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+            return ResultFactory.GetResult(builder.ToString(), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
         public object Get(GetSubtitle request)
@@ -199,7 +200,7 @@ namespace MediaBrowser.Api.Subtitles
 
             var stream = GetSubtitles(request).Result;
 
-            return ResultFactory.GetResult(stream, Common.Net.MimeTypes.GetMimeType("file." + request.Format));
+            return ResultFactory.GetResult(stream, MimeTypes.GetMimeType("file." + request.Format));
         }
 
         private async Task<Stream> GetSubtitles(GetSubtitle request)
@@ -240,7 +241,7 @@ namespace MediaBrowser.Api.Subtitles
         {
             var result = _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).Result;
 
-            return ResultFactory.GetResult(result.Stream, Common.Net.MimeTypes.GetMimeType("file." + result.Format));
+            return ResultFactory.GetResult(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
         }
 
         public void Post(DownloadRemoteSubtitles request)

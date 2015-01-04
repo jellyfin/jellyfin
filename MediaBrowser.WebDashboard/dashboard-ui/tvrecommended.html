@@ -23,22 +23,29 @@
             <a href="tvpeople.html">${TabPeople}</a>
             <a href="tvstudios.html">${TabNetworks}</a>
         </div>
-        <br />
         <div data-role="content">
             <div class="ehsContent">
 
                 <div class="scopedContent">
                     <div id="resumableSection" style="display: none;">
-                        <h1 class="listHeader firstListHeader">${HeaderResume}</h1>
+                        <div>
+                            <h1 class="listHeader firstListHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
+                            <a href="#" class="accentButton categorySyncButton" data-category="Resume"><i class="fa fa-cloud"></i>${ButtonSync}</a>
+                        </div>
 
                         <div id="resumableItems">
                         </div>
                     </div>
 
-                    <h1 class="listHeader nextUpHeader firstListHeader">${HeaderNextUp}</h1>
                 </div>
-
-                <div id="nextUpItems">
+                
+                <div>
+                    <div>
+                        <h1 class="listHeader nextUpHeader" style="display:inline-block;vertical-align:middle;">${HeaderNextUp}</h1>
+                        <a href="#" class="accentButton categorySyncButton" data-category="NextUp"><i class="fa fa-cloud"></i>${ButtonSync}</a>
+                    </div>
+                    <div id="nextUpItems">
+                    </div>
                 </div>
                 <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
             </div>

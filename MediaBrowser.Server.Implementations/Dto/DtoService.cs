@@ -73,11 +73,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 Fields = fields
             };
-
-            // Get everything
-            options.ImageTypes = Enum.GetNames(typeof(ImageType))
-                .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-                .ToList();
             
             return GetBaseItemDto(item, options, user, owner);
         }
@@ -120,8 +115,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 ServerId = _appHost.SystemId
             };
-
-            dto.SupportsPlaylists = item.SupportsAddingToPlaylist;
 
             if (fields.Contains(ItemFields.People))
             {
@@ -275,6 +268,21 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.PlayAccess = item.GetPlayAccess(user);
+
+            if (fields.Contains(ItemFields.SeasonUserData))
+            {
+                var episode = item as Episode;
+
+                if (episode != null)
+                {
+                    var season = episode.Season;
+
+                    if (season != null)
+                    {
+                        dto.SeasonUserData = _userDataRepository.GetUserDataDto(season, user);
+                    }
+                }
+            }
         }
 
         private int GetChildCount(Folder folder, User user)
@@ -750,7 +758,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
 
-            if (fields.Contains(ItemFields.ProductionLocations))
+            if (fields.Contains(ItemFields.Metascore))
             {
                 var hasMetascore = item as IHasMetascore;
                 if (hasMetascore != null)
@@ -1132,15 +1140,22 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
                 }
 
-                dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
-                dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
-                dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
+                //if (fields.Contains(ItemFields.SpecialEpisodeNumbers))
+                {
+                    dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
+                    dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
+                    dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
+                }
 
                 var episodeSeason = episode.Season;
                 if (episodeSeason != null)
                 {
                     dto.SeasonId = episodeSeason.Id.ToString("N");
-                    dto.SeasonName = episodeSeason.Name;
+
+                    if (fields.Contains(ItemFields.SeasonName))
+                    {
+                        dto.SeasonName = episodeSeason.Name;
+                    }
                 }
 
                 if (fields.Contains(ItemFields.SeriesGenres))
@@ -1180,7 +1195,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.SeriesId = GetDtoId(series);
                     dto.SeriesName = series.Name;
-                    dto.AirTime = series.AirTime;
+
+                    if (fields.Contains(ItemFields.AirTime))
+                    {
+                        dto.AirTime = series.AirTime;
+                    }
 
                     if (options.GetImageLimit(ImageType.Thumb) > 0)
                     {

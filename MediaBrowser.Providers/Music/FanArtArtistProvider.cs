@@ -91,6 +91,10 @@ namespace MediaBrowser.Providers.Music
                 {
 
                 }
+                catch (DirectoryNotFoundException)
+                {
+
+                }
             }
 
             var language = item.GetPreferredMetadataLanguage();

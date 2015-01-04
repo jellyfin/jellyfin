@@ -71,6 +71,13 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
             where T : Video
         {
+            if (item.IsArchive)
+            {
+                var ext = Path.GetExtension(item.Path) ?? string.Empty;
+                item.Container = ext.TrimStart('.');
+                return ItemUpdateType.MetadataImport;
+            }
+
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
 
             BlurayDiscInfo blurayDiscInfo = null;

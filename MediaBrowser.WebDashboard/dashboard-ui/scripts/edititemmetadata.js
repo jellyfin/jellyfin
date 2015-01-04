@@ -1,14 +1,7 @@
 ﻿(function ($, document, window) {
 
     var currentItem;
-
-    var languagesPromise;
-    var countriesPromise;
-
-    function ensureLanguagePromises() {
-        languagesPromise = languagesPromise || ApiClient.getCultures();
-        countriesPromise = countriesPromise || ApiClient.getCountries();
-    }
+    var metadataEditorInfo;
 
     function updateTabs(page, item) {
 
@@ -23,15 +16,15 @@
 
         Dashboard.showLoadingMsg();
 
-        ensureLanguagePromises();
-
         var promise1 = MetadataEditor.getItemPromise();
-        var promise2 = languagesPromise;
-        var promise3 = countriesPromise;
+        var promise2 = MetadataEditor.currentItemId ?
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.currentItemId + '/MetadataEditor')) :
+            {};
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
             var item = response1[0];
+            metadataEditorInfo = response2[0];
 
             currentItem = item;
 
@@ -41,12 +34,13 @@
             } else {
                 $('.editPageInnerContent', page).show();
             }
-            var languages = response2[0];
-            var countries = response3[0];
 
-            ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
-                loadExternalIds(page, item, idList);
-            });
+            var languages = metadataEditorInfo.Cultures;
+            var countries = metadataEditorInfo.Countries;
+
+            renderContentTypeOptions(page, metadataEditorInfo);
+
+            loadExternalIds(page, item, metadataEditorInfo.ExternalIdInfos);
 
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
@@ -62,7 +56,7 @@
             updateTabs(page, item);
 
             setFieldVisibilities(page, item);
-            fillItemInfo(page, item);
+            fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
             if (item.Type == "BoxSet") {
                 $('#btnEditCollectionTitles', page).show();
@@ -110,6 +104,24 @@
         });
     }
 
+    function renderContentTypeOptions(page, metadataInfo) {
+
+        if (metadataInfo.ContentTypeOptions.length) {
+            $('#fldContentType', page).show();
+        } else {
+            $('#fldContentType', page).hide();
+        }
+
+        var html = metadataInfo.ContentTypeOptions.map(function (i) {
+
+
+            return '<option value="' + i.Value + '">' + i.Name + '</option>';
+
+        }).join('');
+
+        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '').selectmenu('refresh');
+    }
+
     function onExternalIdChange() {
 
         var formatString = this.getAttribute('data-formatstring');
@@ -136,15 +148,15 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            html += '<div data-role="fieldcontain">';
+            html += '<div>';
             var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
             html += '<label for="' + id + '">' + idLabel + '</label>';
 
-            html += '<div style="display: inline-block; width: 250px;">';
+            html += '<div style="display: inline-block; width: 80%;">';
 
             var value = providerIds[idInfo.Key] || '';
 
-            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" data-mini="true" />';
+            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" />';
 
             html += '</div>';
 
@@ -392,7 +404,7 @@
             $('#fldDisplayOrder', page).show();
 
             $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
-            $('#selectDisplayOrder', page).html('<option value="SortName">'+Globalize.translate('OptionSortName')+'</option><option value="PremiereDate">'+Globalize.translate('OptionReleaseDate')+'</option>').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>').selectmenu('refresh');
         } else {
             $('#selectDisplayOrder', page).html('').selectmenu('refresh');
             $('#fldDisplayOrder', page).hide();
@@ -410,22 +422,19 @@
         }
     }
 
-    function fillItemInfo(page, item) {
+    function fillItemInfo(page, item, parentalRatingOptions) {
 
-        ApiClient.getParentalRatings().done(function (result) {
+        var select = $('#selectOfficialRating', page);
 
-            var select = $('#selectOfficialRating', page);
+        populateRatings(parentalRatingOptions, select, item.OfficialRating);
 
-            populateRatings(result, select, item.OfficialRating);
+        select.val(item.OfficialRating || "").selectmenu('refresh');
 
-            select.val(item.OfficialRating || "").selectmenu('refresh');
+        select = $('#selectCustomRating', page);
 
-            select = $('#selectCustomRating', page);
+        populateRatings(parentalRatingOptions, select, item.CustomRating);
 
-            populateRatings(result, select, item.CustomRating);
-
-            select.val(item.CustomRating || "").selectmenu('refresh');
-        });
+        select.val(item.CustomRating || "").selectmenu('refresh');
 
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
@@ -785,7 +794,7 @@
     }
 
     function onDeleted(id) {
-        
+
         var elem = $('#' + id)[0];
 
         $('.libraryTree').jstree("select_node", elem, true)
@@ -839,9 +848,9 @@
                 Keywords: editableListViewValues($("#listKeywords", form)),
                 Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
 
-                PremiereDate: $('#txtPremiereDate', form).val() || null,
-                DateCreated: $('#txtDateAdded', form).val() || null,
-                EndDate: $('#txtEndDate', form).val() || null,
+                PremiereDate: EditItemMetadataPage.getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
+                DateCreated: EditItemMetadataPage.getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
+                EndDate: EditItemMetadataPage.getDateFromForm(form, '#txtEndDate', 'EndDate'),
                 ProductionYear: $('#txtProductionYear', form).val(),
                 AspectRatio: $('#txtOriginalAspectRatio', form).val(),
                 Video3DFormat: $('#select3dFormat', form).val(),
@@ -885,17 +894,71 @@
             var tagline = $('#txtTagline', form).val();
             item.Taglines = tagline ? [tagline] : [];
 
-            ApiClient.updateItem(item).done(function () {
+            self.submitUpdatedItem(form, item);
+
+            return false;
+        };
+
+        self.submitUpdatedItem = function (form, item) {
+
+            function afterContentTypeUpdated() {
 
                 Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
                     $(form).parents('.page').trigger('itemsaved', [i]);
                 });
+            }
+
+            ApiClient.updateItem(item).done(function () {
+
+                var newContentType = $('#selectContentType', form).val() || '';
+
+                if ((metadataEditorInfo.ContentType || '') != newContentType) {
+
+                    ApiClient.ajax({
+
+                        url: ApiClient.getUrl('Items/' + item.Id + '/ContentType', {
+                            ContentType: newContentType
+                        }),
+
+                        type: 'POST'
+
+                    }).done(function () {
+                        afterContentTypeUpdated();
+                    });
+
+                } else {
+                    afterContentTypeUpdated();
+                }
 
             });
+        };
 
-            return false;
+        self.getDateFromForm = function (form, element, property) {
+
+            var val = $(element, form).val();
+
+            if (!val) {
+                return null;
+            }
+
+            if (currentItem[property]) {
+
+                var date = parseISO8601Date(currentItem[property], { toLocal: true });
+
+                var parts = date.toISOString().split('T');
+
+                // If the date is the same, preserve the time
+                if (parts[0].indexOf(val) == 0) {
+
+                    var iso = parts[1];
+
+                    val += 'T' + iso;
+                }
+            }
+
+            return val;
         };
 
         self.addElementToEditableListview = function (source, sortCallback) {
@@ -921,19 +984,6 @@
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
             list.listview('refresh');
-        };
-
-        self.onDeleteFormSubmitted = function () {
-
-            var page = $(this).parents('.page');
-
-            if ($('#fldChallengeValue', page).val() != $('#txtDeleteTest', page).val()) {
-                Dashboard.alert(Globalize.translate('MessageValueNotCorrect'));
-            } else {
-                performDelete(page);
-            }
-
-            return false;
         };
 
         self.onIdentificationFormSubmitted = function () {
@@ -979,8 +1029,8 @@
                 var id = "txtLookup" + idInfo.Key;
 
                 html += '<div data-role="fieldcontain">';
-				
-				var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+
+                var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
                 html += '<label for="' + id + '">' + idLabel + '</label>';
 
                 var value = providerIds[idInfo.Key] || '';
@@ -1245,7 +1295,6 @@
             if (data.id != currentItem.Id) {
 
                 MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemName = data.itemName;
                 MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 

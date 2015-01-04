@@ -89,7 +89,6 @@ namespace MediaBrowser.Model.Sync
         public string ParentName { get; set; }
         public string PrimaryImageItemId { get; set; }
         public string PrimaryImageTag { get; set; }
-        public double? PrimaryImageAspectRatio { get; set; }
 
         public SyncJob()
         {

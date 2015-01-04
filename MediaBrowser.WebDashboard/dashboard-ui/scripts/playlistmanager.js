@@ -237,7 +237,7 @@
 
         supportsPlaylists: function (item) {
 
-            return item.SupportsPlaylists;
+            return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
         }
     };
 

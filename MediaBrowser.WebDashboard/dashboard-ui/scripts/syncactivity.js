@@ -38,18 +38,20 @@
         return target ? target.Name : 'Unknown Device';
     }
 
-    function getSyncJobHtml(job) {
+    function getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage) {
 
         var html = '';
 
         html += "<div class='card squareCard' data-id='" + job.Id + "'>";
 
-        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable">';
 
         html += '<div class="cardPadder"></div>';
 
-        html += '<div class="cardContent">';
+        syncJobPage += '?id=' + job.Id;
+
+        html += '<a class="cardContent" href="' + syncJobPage + '">';
 
         var imgUrl;
         var style = '';
@@ -68,7 +70,7 @@
 
         html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '" style="' + style + '">';
 
-        if (job.Progress) {
+        if (job.Progress && job.Progress < 100) {
             html += '<div class="cardFooter">';
             html += "<div class='cardText cardProgress'>";
             html += '<progress class="itemProgressBar" min="0" max="100" value="' + job.Progress + '"></progress>';
@@ -86,7 +88,7 @@
         }
 
         // cardContent
-        html += "</div>";
+        html += "</a>";
 
         // cardScalable
         html += "</div>";
@@ -138,18 +140,39 @@
         var html = '';
         var lastTargetName = '';
 
+        var cardBoxCssClass = 'cardBox visualCardBox';
+        var barCssClass = 'ui-bar-a';
+
+        if ($(page).hasClass('libraryPage')) {
+            cardBoxCssClass += ' visualCardBox-b';
+            barCssClass = 'detailSectionHeader';
+        }
+
+        var syncJobPage = 'syncjob.html';
+
+        if ($(page).hasClass('mySyncPage')) {
+            syncJobPage = 'mysyncjob.html';
+        }
+
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
             var targetName = getSyncTargetName(targets, job.TargetId);
 
             if (targetName != lastTargetName) {
-                html += '<p style="font-size: 24px; border-bottom: 1px solid #ddd; margin: .5em 0; font-weight:300;">' + targetName + '</p>';
+
+                if (lastTargetName) {
+                    html += '<br/>';
+                    html += '<br/>';
+                    html += '<br/>';
+                }
 
                 lastTargetName = targetName;
+
+                html += '<div class="' + barCssClass + '" style="padding: 0 1em;"><p>' + targetName + '</p></div>';
             }
 
-            html += getSyncJobHtml(job);
+            html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
         }
 
         var elem = $('.syncActivity', page).html(html).trigger('create');
@@ -157,6 +180,11 @@
         $('.btnJobMenu', elem).on('click', function () {
             showJobMenu(this);
         });
+
+        if (!jobs.length) {
+
+            elem.html('<div style="padding:1em .25em;">' + Globalize.translate('MessageNoSyncJobsFound') + '</div>');
+        }
     }
 
     function showJobMenu(elem) {
@@ -195,28 +223,33 @@
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs'));
+        var options = {};
 
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Sync/Targets'));
+        Dashboard.getCurrentUser().done(function (user) {
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+            if ($(page).hasClass('mySyncPage')) {
+                options.UserId = Dashboard.getCurrentUserId();
+            }
 
-            loadData(page, response1[0].Items, response2[0]);
+            var promise1 = ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options));
 
-            Dashboard.hideLoadingMsg();
+            var promise2 = ApiClient.getJSON(ApiClient.getUrl('Sync/Targets', options));
 
+            $.when(promise1, promise2).done(function (response1, response2) {
+
+                loadData(page, response1[0].Items, response2[0]);
+
+                Dashboard.hideLoadingMsg();
+
+            });
         });
     }
 
-    $(document).on('pageshow', "#syncActivityPage", function () {
+    $(document).on('pageshow', ".syncActivityPage", function () {
 
         var page = this;
 
         reloadData(page);
-
-    }).on('pageinit', "#syncActivityPage", function () {
-
-        var page = this;
 
     });
 

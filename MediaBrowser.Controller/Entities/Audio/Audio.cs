@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -85,6 +86,21 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return Parents.OfType<MusicAlbum>().FirstOrDefault();
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsArchive
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Path))
+                {
+                    return false;
+                }
+                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
+
+                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -173,7 +189,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.GetUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }

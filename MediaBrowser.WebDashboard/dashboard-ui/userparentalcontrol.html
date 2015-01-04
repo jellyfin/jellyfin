@@ -4,13 +4,13 @@
     <title></title>
 </head>
 <body>
-    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage">
+    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
 
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" onclick="Dashboard.navigate('useredit.html', true);">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabLibraryAccess}</a>
+                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);" class="ui-btn-active">${TabParentalControl}</a>
                     <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
                 </div>
@@ -79,7 +79,7 @@
                             <ul data-role="listview" class="ulForm" style="margin-bottom:10px!important;">
                                 <li>
                                     <label for="txtTag">${LabelTag}</label>
-                                    <input id="txtTag" data-mini="true" type="text" required="required" />
+                                    <input id="txtTag" type="text" required="required" />
                                 </li>
                                 <li>
                                     <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>

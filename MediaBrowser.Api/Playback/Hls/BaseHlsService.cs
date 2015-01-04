@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -119,11 +120,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isLive)
             {
-                //var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
-
-                //file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
-
-                return ResultFactory.GetStaticFileResult(Request, playlist, FileShare.ReadWrite);
+                return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 
             var audioBitrate = state.OutputAudioBitrate ?? 0;
@@ -142,6 +139,22 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
+        }
+
+        private string GetLivePlaylistText(string path, int segmentLength)
+        {
+            using (var stream = FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    var text = reader.ReadToEnd();
+
+                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture) + Environment.NewLine + "#EXT-X-ALLOW-CACHE:NO";
+
+                    // ffmpeg pads the reported length by a full second
+                    return text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                }
+            }
         }
 
         private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
@@ -227,7 +240,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     "hls/" + Path.GetFileNameWithoutExtension(outputPath));
             }
 
-            var args = string.Format("{0} {1} -i {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
+            var args = string.Format("{0} {1} {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),

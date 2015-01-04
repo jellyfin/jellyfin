@@ -1,6 +1,6 @@
 ﻿(function ($, window, document) {
 
-    function loadMediaFolders(page, user, mediaFolders) {
+    function loadMediaFolders(page, mediaFolders) {
 
         var html = '';
 
@@ -14,7 +14,7 @@
 
             var id = 'mediaFolder' + i;
 
-            var checkedAttribute = user.Configuration.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Configuration.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = ' checked="checked"';
 
             html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
@@ -25,7 +25,7 @@
         $('.mediaFolderAccess', page).html(html).trigger('create');
     }
 
-    function loadChannels(page, user, channels) {
+    function loadChannels(page, channels) {
 
         var html = '';
 
@@ -39,7 +39,7 @@
 
             var id = 'channels' + i;
 
-            var checkedAttribute = user.Configuration.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = ' checked="checked"';
 
             html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
@@ -56,9 +56,9 @@
         }
     }
 
-    function loadUser(page, user) {
+    function loadUser(page) {
 
-        $('#txtUserName', page).val(user.Name);
+        $('#txtUserName', page).val('');
 
         Dashboard.showLoadingMsg();
 
@@ -68,8 +68,8 @@
 
         $.when(promise4, promise5).done(function (response4, response5) {
 
-            loadMediaFolders(page, user, response4[0].Items);
-            loadChannels(page, user, response5[0].Items);
+            loadMediaFolders(page, response4[0].Items);
+            loadChannels(page, response5[0].Items);
 
             Dashboard.hideLoadingMsg();
         });
@@ -81,19 +81,19 @@
 
         ApiClient.createUser(name).done(function (user) {
 
-            user.Configuration.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+            user.Policy.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
 
                 return this.getAttribute('data-foldername');
 
             }).get();
 
-            user.Configuration.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
+            user.Policy.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
 
                 return this.getAttribute('data-foldername');
 
             }).get();
 
-            ApiClient.updateUser(user).done(function () {
+            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
         });
@@ -116,19 +116,9 @@
         };
     }
 
-    function getUser() {
-
-        return {
-            Configuration: {
-                BlockedMediaFolders: [],
-                BlockedChannels: []
-            }
-        };
-    }
-
     function loadData(page) {
 
-        loadUser(page, getUser());
+        loadUser(page);
     }
 
     window.NewUserPage = new newUserPage();

@@ -1,14 +1,42 @@
 ﻿(function ($, document, window) {
 
-    function getNode(item, folderState) {
-
-        var state = item.IsFolder ? folderState : '';
+    function getNode(item, folderState, selected) {
 
         var htmlName = getNodeInnerHtml(item);
 
-        var rel = item.IsFolder ? 'folder' : 'default';
+        var node = {
+            id: item.Id,
+            text: htmlName,
 
-        return { attr: { id: item.Id, rel: rel, itemtype: item.Type }, data: htmlName, state: state };
+            state: {
+                opened: item.IsFolder && folderState == 'open',
+                selected: selected
+            },
+
+            li_attr: {}
+        };
+
+        if (item.IsFolder) {
+            node.children = [
+                    {
+                        text: 'Loading...',
+                        icon: false
+                    }];
+            node.icon = false;
+        }
+        else {
+            node.icon = false;
+        }
+
+        if (node.state.opened) {
+            node.li_attr.loadedFromServer = true;
+        }
+
+        if (selected) {
+            selectedNodeId = item.Id;
+        }
+
+        return node;
     }
 
     function getNodeInnerHtml(item) {
@@ -74,7 +102,7 @@
         return htmlName;
     }
 
-    function loadChildrenOfRootNode(page, callback, openItems, selectedId) {
+    function loadChildrenOfRootNode(page, scope, callback) {
 
         var promise2 = ApiClient.getLiveTvChannels({ limit: 0 });
 
@@ -84,22 +112,44 @@
 
             var nodes = [];
 
-            nodes.push({ attr: { id: 'MediaFolders', rel: 'folder', itemtype: 'mediafolders' }, data: Globalize.translate('HeaderMediaFolders'), state: 'open' });
+            nodes.push({
+
+                id: 'MediaFolders',
+                text: Globalize.translate('HeaderMediaFolders'),
+                state: {
+                    opened: true
+                },
+                li_attr: {
+                    itemtype: 'mediafolders',
+                    loadedFromServer: true
+                },
+                icon: false
+            });
 
             if (result.TotalRecordCount) {
-                nodes.push({ attr: { id: 'livetv', rel: 'folder', itemtype: 'livetv' }, data: Globalize.translate('HeaderLiveTV'), state: 'closed' });
+
+                nodes.push({
+
+                    id: 'livetv',
+                    text: Globalize.translate('HeaderLiveTV'),
+                    state: {
+                        opened: false
+                    },
+                    li_attr: {
+                        itemtype: 'livetv'
+                    },
+                    children: [
+                    {
+                        text: 'Loading...',
+                        icon: false
+                    }],
+                    icon: false
+                });
             }
 
-            callback(nodes);
+            callback.call(scope, nodes);
 
-            if (selectedId && nodes.filter(function (f) {
-
-                return f.attr.id == selectedId;
-
-            }).length) {
-
-                selectNode(page, selectedId);
-            }
+            nodesToLoad.push('MediaFolders');
         });
     }
 
@@ -111,7 +161,7 @@
 
                 var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
 
-                return getNode(i, state);
+                return getNode(i, state, false);
 
             });
 
@@ -121,45 +171,50 @@
 
     }
 
-    function loadMediaFolders(service, openItems, callback) {
+    function loadMediaFolders(page, scope, openItems, callback) {
 
         ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
 
-            var nodes = result.Items.map(function (i) {
+            var nodes = result.Items.map(function (n) {
 
-                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+                var state = openItems.indexOf(n.Id) == -1 ? 'closed' : 'open';
 
-                return getNode(i, state);
+                return getNode(n, state, false);
 
             });
 
-            callback(nodes);
+            callback.call(scope, nodes);
+
+            for (var i = 0, length = nodes.length; i < length; i++) {
+                if (nodes[i].state.opened) {
+
+                    nodesToLoad.push(nodes[i].id);
+                }
+            }
 
         });
 
     }
 
-    function loadNode(page, node, openItems, selectedId, currentUser, callback) {
+    function loadNode(page, scope, node, openItems, selectedId, currentUser, callback) {
 
-        if (node == '-1') {
+        var id = node.id;
 
-            loadChildrenOfRootNode(page, callback, openItems, selectedId);
+        if (id == '#') {
+
+            loadChildrenOfRootNode(page, scope, callback);
             return;
         }
 
-        var id = node.attr("id");
-
-        var itemtype = node.attr("itemtype");
-
-        if (itemtype == 'livetv') {
+        if (id == 'livetv') {
 
             loadLiveTvChannels(id, openItems, callback);
             return;
         }
 
-        if (itemtype == 'mediafolders') {
+        if (id == 'MediaFolders') {
 
-            loadMediaFolders(id, openItems, callback);
+            loadMediaFolders(page, scope, openItems, callback);
             return;
         }
 
@@ -168,40 +223,38 @@
             Fields: 'Settings'
         };
 
+        var itemtype = node.li_attr.itemtype;
+
         if (itemtype != "Season" && itemtype != "Series") {
             query.SortBy = "SortName";
         }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
-            var nodes = result.Items.map(function (i) {
+            var nodes = result.Items.map(function (n) {
 
-                var state = openItems.indexOf(i.Id) == -1 ? 'closed' : 'open';
+                var state = openItems.indexOf(n.Id) == -1 ? 'closed' : 'open';
 
-                return getNode(i, state);
+                return getNode(n, state, n.Id == selectedId);
 
             });
 
-            callback(nodes);
+            callback.call(scope, nodes);
 
-            if (selectedId && result.Items.filter(function (f) {
+            for (var i = 0, length = nodes.length; i < length; i++) {
+                if (nodes[i].state.opened) {
 
-                return f.Id == selectedId;
-
-            }).length) {
-
-                selectNode(page, selectedId);
+                    nodesToLoad.push(nodes[i].id);
+                }
             }
 
         });
 
     }
 
-    function selectNode(page, id) {
+    function scrollToNode(page, id) {
 
         var elem = $('#' + id, page)[0];
-
-        $.jstree._reference(".libraryTree", page).select_node(elem);
 
         if (elem) {
             elem.scrollIntoView();
@@ -212,43 +265,106 @@
 
     function initializeTree(page, currentUser, openItems, selectedId) {
 
+        nodesToLoad = [];
+        selectedNodeId = null;
+
+        $.jstree.destroy();
+
         $('.libraryTree', page).jstree({
 
-            "plugins": ["themes", "ui", "json_data"],
+            "plugins": ["wholerow"],
 
-            data: function (node, callback) {
-                loadNode(page, node, openItems, selectedId, currentUser, callback);
-            },
+            core: {
 
-            json_data: {
-
+                check_callback: true,
                 data: function (node, callback) {
-                    loadNode(page, node, openItems, selectedId, currentUser, callback);
+
+                    loadNode(page, this, node, openItems, selectedId, currentUser, callback);
+                },
+
+                themes: {
+                    variant: 'large'
                 }
-
-            },
-
-            core: { initially_open: [], load_open: true, html_titles: true },
-            ui: { initially_select: [] },
-
-            themes: {
-                theme: 'mb3',
-                url: 'thirdparty/jstree1.0/themes/mb3/style.css?v=' + Dashboard.initialServerVersion
             }
 
         }).off('select_node.jstree').on('select_node.jstree', function (event, data) {
 
+            var node = data.node;
+
             var eventData = {
-                id: data.rslt.obj.attr("id"),
-                itemType: data.rslt.obj.attr("itemtype")
+                id: node.id,
+                itemType: node.li_attr.itemtype
             };
 
             if (eventData.itemType != 'livetv' && eventData.itemType != 'mediafolders') {
                 $(this).trigger('itemclicked', [eventData]);
             }
 
+        }).off('open_node.jstree').on('open_node.jstree', function (event, data) {
+
+            var node = data.node;
+
+            if (node.children && node.children) {
+                loadNodesToLoad(page, node);
+            }
+
+            if (node.li_attr && node.id != '#' && !node.li_attr.loadedFromServer) {
+
+                node.li_attr.loadedFromServer = true;
+
+                $.jstree.reference(".libraryTree", page).load_node(node.id, loadNodeCallback);
+            }
+
+        }).off('load_node.jstree').on('load_node.jstree', function (event, data) {
+
+            var node = data.node;
+
+            if (node.children && node.children) {
+                loadNodesToLoad(page, node);
+            }
+
+            if (node.li_attr && node.id != '#' && !node.li_attr.loadedFromServer) {
+
+                node.li_attr.loadedFromServer = true;
+
+                $.jstree.reference(".libraryTree", page).load_node(node.id, loadNodeCallback);
+            }
+
         });
     }
+
+    function loadNodesToLoad(page, node) {
+
+        var children = node.children;
+
+        for (var i = 0, length = children.length; i < length; i++) {
+
+            var child = children[i];
+
+            if (nodesToLoad.indexOf(child) != -1) {
+
+                nodesToLoad = nodesToLoad.filter(function (n) {
+                    return n != child;
+                });
+
+                $.jstree.reference(".libraryTree", page).load_node(child, loadNodeCallback);
+            }
+        }
+    }
+
+    function loadNodeCallback(node) {
+
+        if (selectedNodeId && node.children && node.children.indexOf(selectedNodeId) != -1) {
+
+            setTimeout(function() {
+                
+                scrollToNode($.mobile.activePage, selectedNodeId);
+            }, 500);
+        }
+    }
+
+    var nodesToLoad = [];
+    var selectedNodeId;
 
     function updateEditorNode(page, item) {
 

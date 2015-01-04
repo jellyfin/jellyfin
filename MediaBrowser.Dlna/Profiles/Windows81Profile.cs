@@ -22,7 +22,15 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mp3",
                     AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
+                    Type = DlnaProfileType.Audio,
+                    Context = EncodingContext.Streaming
+                },
+                new TranscodingProfile
+                {
+                    Container = "mp3",
+                    AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio,
+                    Context = EncodingContext.Static
                 },
                 new TranscodingProfile
                 {
@@ -101,6 +109,14 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
+                    Container = "m4a",
+                    AudioCodec = "aac",
+                    VideoCodec = "",
+                    Type = DlnaProfileType.Audio
+                },
+
+                new DirectPlayProfile
+                {
                     Container = "jpeg",
                     Type = DlnaProfileType.Photo
                 }
@@ -108,21 +124,6 @@ namespace MediaBrowser.Dlna.Profiles
 
             CodecProfiles = new[]
             {
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Conditions = new []
-                    {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.VideoBitDepth,
-                            Value = "8",
-                            IsRequired = false
-                        }
-                    }
-                },
-
                 new CodecProfile
                 {
                     Type = CodecType.Video,
@@ -148,6 +149,28 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoLevel,
                             Value = "51"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
                         }
                     }
                 },

@@ -71,7 +71,7 @@
         user.Configuration.PlayDefaultAudioTrack = $('#chkPlayDefaultAudioTrack', page).checked();
         user.Configuration.EnableCinemaMode = $('#chkEnableCinemaMode', page).checked();
 
-        ApiClient.updateUser(user).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
         });
     }

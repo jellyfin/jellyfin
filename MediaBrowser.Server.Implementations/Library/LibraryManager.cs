@@ -18,8 +18,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
+using MediaBrowser.Naming.TV;
 using MediaBrowser.Naming.Video;
-using MediaBrowser.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
@@ -68,6 +68,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
+        private IMultiItemResolver[] MultiItemResolvers { get; set; }
 
         /// <summary>
         /// Gets or sets the comparers.
@@ -196,9 +197,10 @@ namespace MediaBrowser.Server.Implementations.Library
             EntityResolutionIgnoreRules = rules.ToArray();
             PluginFolderCreators = pluginFolders.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
+            MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
-
+            
             PostscanTasks = postscanTasks.OrderBy(i =>
             {
                 var hasOrder = i as IHasOrder;
@@ -344,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
+                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -560,10 +562,9 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public BaseItem ResolvePath(FileSystemInfo fileInfo,
-            Folder parent = null,
-            string collectionType = null)
+            Folder parent = null)
         {
-            return ResolvePath(fileInfo, new DirectoryService(_logger), parent, collectionType);
+            return ResolvePath(fileInfo, new DirectoryService(_logger), parent);
         }
 
         private BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
@@ -573,10 +574,17 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("fileInfo");
             }
 
+            var fullPath = fileInfo.FullName;
+
+            if (string.IsNullOrWhiteSpace(collectionType))
+            {
+                collectionType = GetConfiguredContentType(fullPath);
+            }
+
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
             {
                 Parent = parent,
-                Path = fileInfo.FullName,
+                Path = fullPath,
                 FileInfo = fileInfo,
                 CollectionType = collectionType
             };
@@ -652,9 +660,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parent != null)
             {
-                var multiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>();
-
-                foreach (var resolver in multiItemResolvers)
+                foreach (var resolver in MultiItemResolvers)
                 {
                     var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService);
 
@@ -862,7 +868,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var type = typeof(T);
 
-            if (type == typeof(Person) && ConfigurationManager.Configuration.EnablePeoplePrefixSubFolders)
+            if (type == typeof(Person))
             {
                 subFolderPrefix = validFilename.Substring(0, 1);
             }
@@ -1546,12 +1552,48 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id);
         }
 
-        /// <summary>
-        /// Finds the type of the collection.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        public string FindCollectionType(BaseItem item)
+        public string GetContentType(BaseItem item)
+        {
+            // Types cannot be overridden, so go from the top down until we find a configured content type
+
+            var type = GetInheritedContentType(item);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
+            return GetConfiguredContentType(item);
+        }
+
+        public string GetInheritedContentType(BaseItem item)
+        {
+            var type = GetTopFolderContentType(item);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
+            return item.Parents
+                .Select(GetConfiguredContentType)
+                .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));
+        }
+
+        private string GetConfiguredContentType(BaseItem item)
+        {
+            return GetConfiguredContentType(item.ContainingFolderPath);
+        }
+
+        private string GetConfiguredContentType(string path)
+        {
+            var type = ConfigurationManager.Configuration.ContentTypes
+                .FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i.Name, path));
+
+            return type == null ? null : type.Value;
+        }
+
+        private string GetTopFolderContentType(BaseItem item)
         {
             while (!(item.Parent is AggregateFolder) && item.Parent != null)
             {
@@ -1563,14 +1605,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 return null;
             }
 
-            var collectionTypes = GetUserRootFolder().Children
+            return GetUserRootFolder().Children
                 .OfType<ICollectionFolder>()
-                .Where(i => !string.IsNullOrEmpty(i.CollectionType) && (string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path)))
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
-                .Distinct()
-                .ToList();
-
-            return collectionTypes.Count == 1 ? collectionTypes[0] : null;
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
         public async Task<UserView> GetNamedView(string name,
@@ -1708,22 +1747,127 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return SeriesResolver.GetSeasonNumberFromPath(path, CollectionType.TvShows);
+            return new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true).SeasonNumber;
         }
 
-        public int? GetSeasonNumberFromEpisodeFile(string path)
+        public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
-            return SeriesResolver.GetSeasonNumberFromEpisodeFile(path);
-        }
+            var resolver = new EpisodeResolver(new ExtendedNamingOptions(),
+                new Naming.Logging.NullLogger());
 
-        public int? GetEndingEpisodeNumberFromFile(string path)
-        {
-            return SeriesResolver.GetEndingEpisodeNumberFromFile(path);
-        }
+            var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ? 
+                FileInfoType.Directory : 
+                FileInfoType.File;
 
-        public int? GetEpisodeNumberFromFile(string path, bool considerSeasonless)
-        {
-            return SeriesResolver.GetEpisodeNumberFromFile(path, considerSeasonless);
+            var locationType = episode.LocationType;
+
+            var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
+                resolver.Resolve(episode.Path, fileType) :
+                new Naming.TV.EpisodeInfo();
+
+            if (episodeInfo == null)
+            {
+                episodeInfo = new Naming.TV.EpisodeInfo();
+            }
+
+            var changed = false;
+
+            if (episodeInfo.IsByDate)
+            {
+                if (episode.IndexNumber.HasValue)
+                {
+                    episode.IndexNumber = null;
+                    changed = true;
+                }
+
+                if (episode.IndexNumberEnd.HasValue)
+                {
+                    episode.IndexNumberEnd = null;
+                    changed = true;
+                }
+
+                if (!episode.PremiereDate.HasValue)
+                {
+                    if (episodeInfo.Year.HasValue && episodeInfo.Month.HasValue && episodeInfo.Day.HasValue)
+                    {
+                        episode.PremiereDate = new DateTime(episodeInfo.Year.Value, episodeInfo.Month.Value, episodeInfo.Day.Value).ToUniversalTime();
+                    }
+
+                    if (episode.PremiereDate.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.ProductionYear.HasValue)
+                {
+                    episode.ProductionYear = episodeInfo.Year;
+
+                    if (episode.ProductionYear.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.ParentIndexNumber.HasValue)
+                {
+                    var season = episode.Season;
+
+                    if (season != null)
+                    {
+                        episode.ParentIndexNumber = season.IndexNumber;
+                    }
+
+                    if (episode.ParentIndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+            }
+            else
+            {
+                if (!episode.IndexNumber.HasValue)
+                {
+                    episode.IndexNumber = episodeInfo.EpisodeNumber;
+
+                    if (episode.IndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.IndexNumberEnd.HasValue)
+                {
+                    episode.IndexNumberEnd = episodeInfo.EndingEpsiodeNumber;
+
+                    if (episode.IndexNumberEnd.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (!episode.ParentIndexNumber.HasValue)
+                {
+                    episode.ParentIndexNumber = episodeInfo.SeasonNumber;
+
+                    if (!episode.ParentIndexNumber.HasValue)
+                    {
+                        var season = episode.Season;
+
+                        if (season != null)
+                        {
+                            episode.ParentIndexNumber = season.IndexNumber;
+                        }
+                    }
+
+                    if (episode.ParentIndexNumber.HasValue)
+                    {
+                        changed = true;
+                    }
+                }
+            }
+
+            return changed;
         }
 
         public ItemLookupInfo ParseName(string name)

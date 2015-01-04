@@ -767,6 +767,33 @@ progress {
 
 /* Detail Page*/
 
+.btnUserItemRating {
+    margin-right: .85em;
+    cursor: pointer;
+    vertical-align: middle;
+    color: #cc3333 !important;
+    font-size: 17px;
+    width: auto !important;
+    display: inline-block !important;
+    background: none !important;
+}
+
+    .btnUserItemRating div {
+        border: 0;
+    }
+
+    .btnUserItemRatingOff {
+        color: #aaa !important;
+    }
+
+    .btnUserItemRating:last-child {
+        margin-right: 0;
+    }
+
+    .btnUserItemRating:hover {
+        opacity: .5;
+    }
+
 .imgUserItemRating {
     height: 16px;
     width: 16px;
@@ -812,7 +839,7 @@ progress {
     color: green;
 }
 
-@media all and (max-width: 1440px) {
+@media all and (max-width: 1439px) {
 
     .dashboardHomeRightColumn {
         margin-top: 1em;
@@ -847,7 +874,7 @@ progress {
     }
 
         .firstDashboardHomeRightColumn .ui-collapsible-content {
-            height: 585px;
+            min-height: 585px;
         }
 }
 
@@ -1075,4 +1102,31 @@ progress {
     .activeSession {
         width: 100%;
     }
+}
+
+.accentButton {
+    display: inline-block;
+    background: rgba(51, 136, 204, .8);
+    border-radius: 1000px;
+    padding: 4px 12px;
+    color: #fff !important;
+    font-weight: normal !important;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.accentButton-g {
+    background: #52B54B;
+}
+
+.accentButton:hover {
+    opacity: .5;
+}
+
+.accentButton .fa:not(.notext) {
+    margin-right: 7px;
+}
+
+h1 + .accentButton {
+    margin: 18px 0 0 20px;
 }

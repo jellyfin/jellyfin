@@ -4,7 +4,7 @@
     <title>${TitleServer}</title>
 </head>
 <body>
-    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage">
+    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -20,7 +20,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="txtServerName">${LabelFriendlyServerName}</label>
-                            <input id="txtServerName" data-mini="true" />
+                            <input id="txtServerName" />
                             <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
                         </li>
                         <li>
@@ -43,12 +43,12 @@
                             <ul data-role="listview" class="ulForm">
                                 <li>
                                     <label for="txtPortNumber">${LabelLocalHttpServerPortNumber}</label>
-                                    <input type="number" id="txtPortNumber" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                                    <input type="number" id="txtPortNumber" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" />
                                     <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
                                 </li>
                                 <li>
                                     <label for="txtPublicPort">${LabelPublicPort}</label>
-                                    <input type="number" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" data-mini="true" />
+                                    <input type="number" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" />
                                     <div class="fieldDescription">${LabelPublicPortHelp}</div>
                                 </li>
                                 <li>
@@ -58,7 +58,7 @@
                                 </li>
                                 <li>
                                     <label for="txtDdns">${LabelExternalDDNS}</label>
-                                    <input id="txtDdns" data-mini="true" />
+                                    <input id="txtDdns" />
                                     <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
                                 </li>
                             </ul>
@@ -66,7 +66,7 @@
                                 <li>
                                     <label for="txtCachePath">${LabelCachePath}</label>
                                     <div style="display: inline-block; width: 92%;">
-                                        <input type="text" id="txtCachePath" name="txtCachePath" data-mini="true" />
+                                        <input type="text" id="txtCachePath" name="txtCachePath" />
                                     </div>
                                     <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
                                     <div class="fieldDescription">${LabelCachePathHelp}</div>
@@ -84,7 +84,7 @@
                             <ul data-role="listview" class="ulForm">
                                 <li>
                                     <label for="txtLoginDisclaimer">${LabelLoginDisclaimer}</label>
-                                    <input id="txtLoginDisclaimer" data-mini="true" />
+                                    <input id="txtLoginDisclaimer" type="text" />
                                     <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
                                 </li>
                             </ul>

@@ -81,7 +81,7 @@
 
             Dashboard.getCurrentUser().done(function (user) {
 
-                if (user.Configuration.EnableMediaPlayback && result.Items.length) {
+                if (user.Policy.EnableMediaPlayback && result.Items.length) {
                     $('.btnTrailerReel', page).show();
                 } else {
                     $('.btnTrailerReel', page).hide();

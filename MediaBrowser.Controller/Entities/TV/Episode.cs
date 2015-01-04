@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -179,6 +179,15 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public bool IsInSeasonFolder
+        {
+            get
+            {
+                return FindParent<Season>() != null;
+            }
+        }
+
+        [IgnoreDataMember]
         public string SeriesName
         {
             get
@@ -275,7 +284,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return new[] { Path };
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }
@@ -301,51 +310,9 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var hasChanges = base.BeforeMetadataRefresh();
 
-            var locationType = LocationType;
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            if (LibraryManager.FillMissingEpisodeNumbersFromPath(this))
             {
-                if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
-                {
-                    IndexNumber = LibraryManager.GetEpisodeNumberFromFile(Path, true);
-
-                    // If a change was made record it
-                    if (IndexNumber.HasValue)
-                    {
-                        hasChanges = true;
-                    }
-                }
-
-                if (!IndexNumberEnd.HasValue && !string.IsNullOrEmpty(Path))
-                {
-                    IndexNumberEnd = LibraryManager.GetEndingEpisodeNumberFromFile(Path);
-
-                    // If a change was made record it
-                    if (IndexNumberEnd.HasValue)
-                    {
-                        hasChanges = true;
-                    }
-                }
-            }
-
-            if (!ParentIndexNumber.HasValue)
-            {
-                var season = Season;
-
-                if (season != null)
-                {
-                    ParentIndexNumber = season.IndexNumber;
-                }
-
-                if (!ParentIndexNumber.HasValue && !string.IsNullOrEmpty(Path))
-                {
-                    ParentIndexNumber = LibraryManager.GetSeasonNumberFromEpisodeFile(Path);
-                }
-
-                // If a change was made record it
-                if (ParentIndexNumber.HasValue)
-                {
-                    hasChanges = true;
-                }
+                hasChanges = true;
             }
 
             return hasChanges;

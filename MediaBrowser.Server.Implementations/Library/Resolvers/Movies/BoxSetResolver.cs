@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -30,12 +31,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     return null;
                 }
-
-                // This is a bit of a one-off but it's here to combat MCM's over-aggressive placement of collection.xml files where they don't belong, including in series folders.
-                if (args.ContainsMetaFileByName("series.xml"))
-                {
-                    return null;
-                }
                 
                 if (filename.IndexOf("[boxset]", StringComparison.OrdinalIgnoreCase) != -1 || 
                     args.ContainsFileSystemEntryByName("collection.xml"))
@@ -49,6 +44,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             return null;
+        }
+
+        private bool IsInvalid(string collectionType)
+        {
+            var validCollectionTypes = new[]
+            {
+                CollectionType.Movies,
+                CollectionType.BoxSets
+            };
+
+            return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

@@ -1062,7 +1062,7 @@
                 level: '3',
 
                 // None of the browsers seem to like this
-                EnableAutoStreamCopy: false
+                //EnableAutoStreamCopy: false
             }));
 
             if (isStatic && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
@@ -1119,7 +1119,6 @@
                 html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
             }
 
-            // Live streams seem to function better with mp4
             var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm';
 
             if (mp4BeforeWebm) {

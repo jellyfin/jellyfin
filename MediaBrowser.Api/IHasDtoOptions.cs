@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Linq;
@@ -28,17 +28,7 @@ namespace MediaBrowser.Api
                 options.ImageTypeLimit = request.ImageTypeLimit.Value;
             }
 
-            if (string.IsNullOrWhiteSpace(request.EnableImageTypes))
-            {
-                if (options.EnableImages)
-                {
-                    // Get everything
-                    options.ImageTypes = Enum.GetNames(typeof(ImageType))
-                        .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-                        .ToList();
-                }
-            }
-            else
+            if (!string.IsNullOrWhiteSpace(request.EnableImageTypes))
             {
                 options.ImageTypes = (request.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
             }

@@ -61,5 +61,9 @@ namespace MediaBrowser.Controller.Library
         /// <returns></returns>
         Task SaveAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Updates playstate for an item and returns true or false indicating if it was played to completion
+        /// </summary>
+        bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks);
     }
 }

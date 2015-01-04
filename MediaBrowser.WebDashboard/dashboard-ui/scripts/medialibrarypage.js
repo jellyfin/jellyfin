@@ -12,7 +12,17 @@
                     .replace('*', '')
                     .replace('&amp;', '&');
 
+                var value = this.value;
+
                 $('#txtValue', page).val(name);
+
+                var folderOption = MediaLibraryPage.getCollectionTypeOptions().filter(function (i) {
+
+                    return i.value == value;
+
+                })[0];
+
+                $('.collectionTypeFieldDescription', page).html(folderOption.message || '');
             }
         });
     },
@@ -89,11 +99,11 @@
 
         })[0];
 
-        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeMixed');
+        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeUnset');
 
         html += '<p style="padding-left:.5em;">';
 
-        html += Globalize.translate('LabelFolderTypeValue').replace('{0}', '<b>' + typeName + '</b>');
+        html += Globalize.translate('LabelContentTypeValue').replace('{0}', '<b>' + typeName + '</b>');
         html += '</p><ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
         html += '<li data-role="list-divider" class="mediaLocationsHeader">' + Globalize.translate('HeaderMediaLocations');
@@ -237,12 +247,12 @@
             { name: Globalize.translate('FolderTypeMovies'), value: "movies" },
             { name: Globalize.translate('FolderTypeMusic'), value: "music" },
             { name: Globalize.translate('FolderTypeTvShows'), value: "tvshows" },
-            { name: Globalize.translate('FolderTypeBooks') + '*', value: "books" },
-            { name: Globalize.translate('FolderTypeGames') + '*', value: "games" },
+            { name: Globalize.translate('FolderTypeBooks'), value: "books", message: Globalize.translate('MessageBookPluginRequired') },
+            { name: Globalize.translate('FolderTypeGames'), value: "games", message: Globalize.translate('MessageGamePluginRequired') },
             { name: Globalize.translate('FolderTypeHomeVideos'), value: "homevideos" },
             { name: Globalize.translate('FolderTypeMusicVideos'), value: "musicvideos" },
             { name: Globalize.translate('FolderTypePhotos'), value: "photos" },
-            { name: Globalize.translate('FolderTypeMixed'), value: "mixed" }
+            { name: Globalize.translate('FolderTypeUnset'), value: "mixed", message: Globalize.translate('MessageUnsetContentHelp') }
         ];
 
     },

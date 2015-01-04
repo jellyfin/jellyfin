@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -43,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
             return base.GetUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserConfiguration config)
+        protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             // Don't block. Determine by game
             return false;

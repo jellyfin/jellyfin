@@ -187,7 +187,7 @@
 
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
-            if (loggedInUser.Configuration.IsAdministrator) {
+            if (loggedInUser.Policy.IsAdministrator) {
                 $('#lnkParentalControl', page).show();
             } else {
                 $('#lnkParentalControl', page).hide();
@@ -264,7 +264,7 @@
 
             user.Configuration.EnableLocalPassword = $('#chkEnableLocalAccessWithoutPassword', page).checked();
 
-            ApiClient.updateUser(user).done(function () {
+            ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
 
                 Dashboard.hideLoadingMsg();
 
@@ -367,7 +367,7 @@
 
         Dashboard.getCurrentUser().done(function (loggedInUser) {
 
-            if (loggedInUser.Configuration.IsAdministrator) {
+            if (loggedInUser.Policy.IsAdministrator) {
                 $('#lnkParentalControl', page).show();
             } else {
                 $('#lnkParentalControl', page).hide();

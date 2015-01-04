@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Mono.Native
             return list;
         }
 
-        public void AuthorizeServer(int httpServerPort, string httpServerUrlPrefix, int udpPort, string tempDirectory)
+        public void AuthorizeServer(int udpPort, int httpServerPort, string tempDirectory)
         {
         }
 

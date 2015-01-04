@@ -21,20 +21,21 @@
         $('#txtUserName', page).val(user.Name);
         $('#txtConnectUserName', page).val(currentUser.ConnectUserName);
 
-        $('#chkIsAdmin', page).checked(user.Configuration.IsAdministrator || false).checkboxradio("refresh");
-        $('#chkBlockNotRated', page).checked(user.Configuration.BlockNotRated || false).checkboxradio("refresh");
+        $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator || false).checkboxradio("refresh");
 
-        $('#chkDisabled', page).checked(user.Configuration.IsDisabled || false).checkboxradio("refresh");
-        $('#chkIsHidden', page).checked(user.Configuration.IsHidden || false).checkboxradio("refresh");
-        $('#chkRemoteControlSharedDevices', page).checked(user.Configuration.EnableSharedDeviceControl);
-        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Configuration.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
-        $('#chkEnableMediaPlayback', page).checked(user.Configuration.EnableMediaPlayback || false).checkboxradio("refresh");
+        $('#chkDisabled', page).checked(user.Policy.IsDisabled || false).checkboxradio("refresh");
+        $('#chkIsHidden', page).checked(user.Policy.IsHidden || false).checkboxradio("refresh");
+        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl);
+        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
+        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback || false).checkboxradio("refresh");
 
-        $('#chkManageLiveTv', page).checked(user.Configuration.EnableLiveTvManagement || false).checkboxradio("refresh");
-        $('#chkEnableLiveTvAccess', page).checked(user.Configuration.EnableLiveTvAccess || false).checkboxradio("refresh");
-        $('#chkEnableContentDeletion', page).checked(user.Configuration.EnableContentDeletion || false).checkboxradio("refresh");
+        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement || false).checkboxradio("refresh");
+        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess || false).checkboxradio("refresh");
+        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion || false).checkboxradio("refresh");
 
-        $('#chkDisableUserPreferences', page).checked((!user.Configuration.EnableUserPreferenceAccess) || false).checkboxradio("refresh");
+        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess) || false).checkboxradio("refresh");
+
+        $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -61,22 +62,26 @@
 
         user.Name = $('#txtUserName', page).val();
 
-        user.Configuration.IsAdministrator = $('#chkIsAdmin', page).checked();
+        user.Policy.IsAdministrator = $('#chkIsAdmin', page).checked();
 
-        user.Configuration.BlockNotRated = $('#chkBlockNotRated', page).checked();
+        user.Policy.IsHidden = $('#chkIsHidden', page).checked();
+        user.Policy.IsDisabled = $('#chkDisabled', page).checked();
+        user.Policy.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
+        user.Policy.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
+        user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
+        user.Policy.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
+        user.Policy.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
+        user.Policy.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
+        user.Policy.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
 
-        user.Configuration.IsHidden = $('#chkIsHidden', page).checked();
-        user.Configuration.IsDisabled = $('#chkDisabled', page).checked();
-        user.Configuration.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
-        user.Configuration.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
-        user.Configuration.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
-        user.Configuration.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
-        user.Configuration.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
-        user.Configuration.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
-        user.Configuration.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
+        user.Policy.EnableSync = $('#chkEnableSync', page).checked();
 
         ApiClient.updateUser(user).done(function () {
-            onSaveComplete(page, user);
+
+            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+
+                onSaveComplete(page, user);
+            });
         });
     }
 
