@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {

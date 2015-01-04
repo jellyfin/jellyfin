@@ -55,7 +55,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
             // Check parent for null to avoid running this against things like video backdrops
             if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
-                return updateType >= ItemUpdateType.ImageUpdate;
+                // If it's a plain video, skip if content type is unset (unless editing)
+                if (video.GetType() == typeof (Video))
+                {
+                    if (updateType < ItemUpdateType.MetadataEdit && string.IsNullOrEmpty(LibraryManager.GetContentType(video)))
+                    {
+                        return false;
+                    }
+                }
+                return updateType >= MinimumUpdateType;
             }
 
             return false;
@@ -94,8 +102,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
         }
-
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         protected override List<string> GetTagsUsed()
         {

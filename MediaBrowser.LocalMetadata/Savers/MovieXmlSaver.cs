@@ -19,11 +19,13 @@ namespace MediaBrowser.LocalMetadata.Savers
     {
         private readonly IItemRepository _itemRepository;
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public MovieXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config)
+        public MovieXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _itemRepository = itemRepository;
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         public string Name
@@ -52,6 +54,15 @@ namespace MediaBrowser.LocalMetadata.Savers
             // Check parent for null to avoid running this against things like video backdrops
             if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
+                // If it's a plain video, skip if content type is unset (unless editing)
+                if (video.GetType() == typeof(Video))
+                {
+                    if (updateType < ItemUpdateType.MetadataEdit && string.IsNullOrEmpty(_libraryManager.GetContentType(video)))
+                    {
+                        return false;
+                    }
+                }
+                
                 return updateType >= ItemUpdateType.MetadataDownload;
             }
 

@@ -309,16 +309,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return Task.FromResult(true);
         }
 
-        private async Task RefreshIfNeeded(LiveTvProgram program, CancellationToken cancellationToken)
+        private readonly Task _cachedTask = Task.FromResult(true);
+        private Task RefreshIfNeeded(LiveTvProgram program, CancellationToken cancellationToken)
         {
-            if (_refreshedPrograms.ContainsKey(program.Id))
+            if (!_refreshedPrograms.ContainsKey(program.Id))
             {
-                return;
+                _refreshedPrograms.TryAdd(program.Id, true);
+                return program.RefreshMetadata(cancellationToken);
             }
 
-            _refreshedPrograms.TryAdd(program.Id, true);
-
-            await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            return _cachedTask;
         }
 
         public async Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)

@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Text;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -10,7 +8,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -24,9 +21,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Library;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
@@ -1293,16 +1291,16 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        private async Task RefreshIfNeeded(BaseItem program, CancellationToken cancellationToken)
+        private readonly Task _cachedTask = Task.FromResult(true);
+        private Task RefreshIfNeeded(BaseItem program, CancellationToken cancellationToken)
         {
-            if (_refreshedItems.ContainsKey(program.Id))
+            if (!_refreshedItems.ContainsKey(program.Id))
             {
-                return;
+                _refreshedItems.TryAdd(program.Id, true);
+                return program.RefreshMetadata(cancellationToken);
             }
 
-            await program.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            _refreshedItems.TryAdd(program.Id, true);
+            return _cachedTask;
         }
 
         internal IChannel GetChannelProvider(Channel channel)

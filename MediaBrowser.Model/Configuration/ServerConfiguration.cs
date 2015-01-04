@@ -33,6 +33,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableInternetProviders { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is port authorized.
+        /// </summary>
+        /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
+        public bool IsPortAuthorized { get; set; }
+
+        /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
         /// <value>The item by name path.</value>

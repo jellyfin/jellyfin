@@ -750,7 +750,14 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         protected override void FindParts()
         {
-            if (IsFirstRun)
+            // TODO: Remove after next release
+            if (!IsFirstRun && !ServerConfigurationManager.Configuration.IsPortAuthorized)
+            {
+                ServerConfigurationManager.Configuration.IsPortAuthorized = true;
+                ConfigurationManager.SaveConfiguration();
+            }
+
+            if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 RegisterServerWithAdministratorAccess();
             }
@@ -824,6 +831,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
             {
+                ServerConfigurationManager.Configuration.IsPortAuthorized = false;
+                ServerConfigurationManager.SaveConfiguration();
+
                 NotifyPendingRestart();
             }
         }
