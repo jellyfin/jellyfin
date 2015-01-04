@@ -1577,6 +1577,11 @@ namespace MediaBrowser.Controller.Entities
 
             foreach (var newImage in images)
             {
+                if (newImage == null)
+                {
+                    throw new ArgumentException("null image found in list");
+                }
+
                 var existing = existingImages
                     .FirstOrDefault(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
 

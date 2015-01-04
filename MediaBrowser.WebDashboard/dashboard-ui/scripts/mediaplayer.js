@@ -104,7 +104,9 @@
             }
 
             // Chrome, Firefox or IE with plugin installed
-            if (self.canPlayWebm()) {
+            // For some reason in chrome pausing mp4 is causing the video to fail. 
+            // So for now it will have to prioritize webm
+            if (self.canPlayWebm() && ($.browser.chrome || $.browser.msie)) {
 
                 return '.webm';
             }

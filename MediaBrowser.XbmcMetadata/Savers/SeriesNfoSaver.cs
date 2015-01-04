@@ -35,7 +35,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            return item is Series && updateType >= ItemUpdateType.ImageUpdate;
+            return item is Series && updateType >= MinimumUpdateType;
         }
 
         protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
