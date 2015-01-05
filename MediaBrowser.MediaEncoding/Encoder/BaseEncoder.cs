@@ -142,6 +142,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw;
             }
 
+            cancellationToken.Register(() => Cancel(process, encodingJob));
+            
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
@@ -157,6 +159,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return encodingJob;
         }
 
+        private void Cancel(Process process, EncodingJob job)
+        {
+            Logger.Info("Killing ffmpeg process for {0}", job.OutputFilePath);
+
+            //process.Kill();
+            process.StandardInput.WriteLine("q");
+
+            job.IsCancelled = true;
+        }
+
         /// <summary>
         /// Processes the exited.
         /// </summary>
@@ -169,25 +181,53 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Logger.Debug("Disposing stream resources");
             job.Dispose();
 
+            var isSuccesful = false;
+
             try
             {
-                Logger.Info("FFMpeg exited with code {0}", process.ExitCode);
+                var exitCode = process.ExitCode;
+                Logger.Info("FFMpeg exited with code {0}", exitCode);
 
+                isSuccesful = exitCode == 0;
+            }
+            catch
+            {
+                Logger.Error("FFMpeg exited with an error.");
+            }
+
+            if (isSuccesful && !job.IsCancelled)
+            {
+                job.TaskCompletionSource.TrySetResult(true);
+            }
+            else if (job.IsCancelled)
+            {
                 try
                 {
-                    job.TaskCompletionSource.TrySetResult(true);
+                    DeleteFiles(job);
+                }
+                catch
+                {
+                }
+                try
+                {
+                    job.TaskCompletionSource.TrySetException(new OperationCanceledException());
                 }
                 catch
                 {
                 }
             }
-            catch
+            else
             {
-                Logger.Error("FFMpeg exited with an error.");
-
                 try
                 {
-                    job.TaskCompletionSource.TrySetException(new ApplicationException());
+                    DeleteFiles(job);
+                }
+                catch
+                {
+                }
+                try
+                {
+                    job.TaskCompletionSource.TrySetException(new ApplicationException("Encoding failed"));
                 }
                 catch
                 {
@@ -206,6 +246,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //}
         }
 
+        protected virtual void DeleteFiles(EncodingJob job)
+        {
+            File.Delete(job.OutputFilePath);
+        }
+
         private void OnTranscodeBeginning(EncodingJob job)
         {
             job.ReportTranscodingProgress(null, null, null, null);
@@ -219,10 +264,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        protected virtual bool IsVideoEncoder
-        {
-            get { return false; }
-        }
+        protected abstract bool IsVideoEncoder { get; }
 
         protected virtual string GetWorkingDirectory(EncodingJobOptions options)
         {
@@ -263,6 +305,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.Int32.</returns>
         protected int GetNumberOfThreads(EncodingJob job, bool isWebm)
         {
+            // Only need one thread for sync
+            if (job.Options.Context == EncodingContext.Static)
+            {
+                return 1;
+            }
+
             if (isWebm)
             {
                 // Recommended per docs

@@ -18,6 +18,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class EncodingJob : IDisposable
     {
         public bool HasExited { get; internal set; }
+        public bool IsCancelled { get; internal set; }
 
         public Stream LogFileStream { get; set; }
         public IProgress<double> Progress { get; set; }
@@ -398,6 +399,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
 
             //    job.Framerate = framerate;
+
+            if (!percentComplete.HasValue && ticks.HasValue && RunTimeTicks.HasValue)
+            {
+                var pct = ticks.Value/RunTimeTicks.Value;
+                percentComplete = pct*100;
+            }
 
             if (percentComplete.HasValue)
             {

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -337,7 +338,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await ProcessJobItem(item, cancellationToken).ConfigureAwait(false);
+                var innerProgress = new ActionableProgress<double>();
+
+                await ProcessJobItem(item, innerProgress, cancellationToken).ConfigureAwait(false);
 
                 var job = _syncRepo.GetJob(item.JobId);
                 await UpdateJobStatus(job).ConfigureAwait(false);
@@ -346,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task ProcessJobItem(SyncJobItem jobItem, CancellationToken cancellationToken)
+        private async Task ProcessJobItem(SyncJobItem jobItem, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
@@ -372,12 +375,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, video, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, video, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                await Sync(jobItem, (Audio)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Audio)item, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
@@ -391,7 +394,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new VideoOptions
             {
@@ -412,7 +415,26 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
-                jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+                try
+                {
+                    jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), progress,
+                                cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    jobItem.Status = SyncJobItemStatus.Queued;
+                }
+                catch (Exception ex)
+                {
+                    jobItem.Status = SyncJobItemStatus.Failed;
+                    _logger.ErrorException("Error during sync transcoding", ex);
+                }
+
+                if (jobItem.Status == SyncJobItemStatus.Failed || jobItem.Status == SyncJobItemStatus.Queued)
+                {
+                    await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                    return;
+                }
             }
             else
             {
@@ -435,7 +457,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new AudioOptions
             {
@@ -455,8 +477,26 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
-                
-                jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+
+                try
+                {
+                    jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), progress, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    jobItem.Status = SyncJobItemStatus.Queued;
+                }
+                catch (Exception ex)
+                {
+                    jobItem.Status = SyncJobItemStatus.Failed;
+                    _logger.ErrorException("Error during sync transcoding", ex);
+                }
+
+                if (jobItem.Status == SyncJobItemStatus.Failed || jobItem.Status == SyncJobItemStatus.Queued)
+                {
+                    await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                    return;
+                }
             }
             else
             {
