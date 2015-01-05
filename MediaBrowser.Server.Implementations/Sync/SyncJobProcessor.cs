@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly IMediaEncoder MediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
         {
@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _logger = logger;
             _userManager = userManager;
             _tvSeriesManager = tvSeriesManager;
-            MediaEncoder = mediaEncoder;
+            _mediaEncoder = mediaEncoder;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -412,7 +412,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
-                jobItem.OutputPath = await MediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+                jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
             }
             else
             {
@@ -456,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
                 
-                jobItem.OutputPath = await MediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
+                jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile), new Progress<double>(), cancellationToken);
             }
             else
             {
