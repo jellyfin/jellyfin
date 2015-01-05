@@ -82,5 +82,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             return null;
         }
+
+        protected override bool IsVideoEncoder
+        {
+            get { return false; }
+        }
     }
 }
