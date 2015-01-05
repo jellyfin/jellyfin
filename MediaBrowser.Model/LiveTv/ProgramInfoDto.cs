@@ -1,12 +1,12 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.Serialization;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using System;
-using System.Collections.Generic;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.LiveTv
 {

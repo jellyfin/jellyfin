@@ -160,9 +160,24 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             Users = await LoadUsers().ConfigureAwait(false);
 
-            foreach (var user in Users.ToList())
+            var users = Users.ToList();
+
+            foreach (var user in users)
             {
                 await DoPolicyMigration(user).ConfigureAwait(false);
+            }
+
+            // If there are no local users with admin rights, make them all admins
+            if (!users.Any(i => i.Policy.IsAdministrator))
+            {
+                foreach (var user in users)
+                {
+                    if (!user.ConnectLinkType.HasValue || user.ConnectLinkType.Value == UserLinkType.LinkedUser)
+                    {
+                        user.Policy.IsAdministrator = true;
+                        await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
+                    }
+                }
             }
         }
 
@@ -331,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 user.Policy.IsHidden = user.Configuration.IsHidden;
                 user.Policy.MaxParentalRating = user.Configuration.MaxParentalRating;
 
-                await UpdateUserPolicy(user.Id.ToString("N"), user.Policy);
+                await UpdateUserPolicy(user, user.Policy, false);
 
                 user.Configuration.HasMigratedToPolicy = true;
                 await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
@@ -867,12 +882,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 userPolicy = _jsonSerializer.DeserializeFromString<UserPolicy>(json);
             }
             
-            var updateConfig = user.Policy.IsAdministrator != userPolicy.IsAdministrator ||
-                user.Policy.EnableLiveTvManagement != userPolicy.EnableLiveTvManagement ||
-                user.Policy.EnableLiveTvAccess != userPolicy.EnableLiveTvAccess ||
-                user.Policy.EnableMediaPlayback != userPolicy.EnableMediaPlayback ||
-                user.Policy.EnableContentDeletion != userPolicy.EnableContentDeletion;
-            
             var path = GetPolifyFilePath(user);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -883,16 +892,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 user.Policy = userPolicy;
             }
 
-            if (updateConfig)
-            {
-                user.Configuration.IsAdministrator = user.Policy.IsAdministrator;
-                user.Configuration.EnableLiveTvManagement = user.Policy.EnableLiveTvManagement;
-                user.Configuration.EnableLiveTvAccess = user.Policy.EnableLiveTvAccess;
-                user.Configuration.EnableMediaPlayback = user.Policy.EnableMediaPlayback;
-                user.Configuration.EnableContentDeletion = user.Policy.EnableContentDeletion;
+            user.Configuration.IsAdministrator = user.Policy.IsAdministrator;
+            user.Configuration.EnableLiveTvManagement = user.Policy.EnableLiveTvManagement;
+            user.Configuration.EnableLiveTvAccess = user.Policy.EnableLiveTvAccess;
+            user.Configuration.EnableMediaPlayback = user.Policy.EnableMediaPlayback;
+            user.Configuration.EnableContentDeletion = user.Policy.EnableContentDeletion;
 
-                await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
-            }
+            await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
         }
 
         private void DeleteUserPolicy(User user)
