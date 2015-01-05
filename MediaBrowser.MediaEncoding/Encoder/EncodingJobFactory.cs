@@ -556,33 +556,28 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var codec = request.VideoCodec;
 
-            if (!string.IsNullOrEmpty(codec))
+            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libx264";
-                }
-                if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libx265";
-                }
-                if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libvpx";
-                }
-                if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "wmv2";
-                }
-                if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "libtheora";
-                }
-
-                return codec.ToLower();
+                return "libx264";
+            }
+            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libx265";
+            }
+            if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libvpx";
+            }
+            if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
+            {
+                return "wmv2";
+            }
+            if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libtheora";
             }
 
-            return "copy";
+            return (codec ?? string.Empty).ToLower();
         }
 
         internal static bool CanStreamCopyVideo(EncodingJobOptions request, MediaStream videoStream)
