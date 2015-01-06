@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
@@ -18,12 +19,14 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config)
+        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -123,7 +126,21 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = item as Video;
 
-            return item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut && !video.IsArchive;
+            if (item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder &&
+                !video.IsShortcut && !video.IsArchive)
+            {
+                if (video.GetType() == typeof(Video))
+                {
+                    if (string.IsNullOrEmpty(_libraryManager.GetContentType(video)))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public int Order

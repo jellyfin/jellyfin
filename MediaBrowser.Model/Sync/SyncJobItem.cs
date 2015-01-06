@@ -73,5 +73,10 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The primary image tag.</value>
         public string PrimaryImageTag { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires conversion].
+        /// </summary>
+        /// <value><c>true</c> if [requires conversion]; otherwise, <c>false</c>.</value>
+        public bool RequiresConversion { get; set; }
     }
 }

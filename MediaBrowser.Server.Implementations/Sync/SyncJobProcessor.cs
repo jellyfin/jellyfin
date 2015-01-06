@@ -340,16 +340,17 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var innerProgress = new ActionableProgress<double>();
 
-                await ProcessJobItem(item, innerProgress, cancellationToken).ConfigureAwait(false);
-
                 var job = _syncRepo.GetJob(item.JobId);
+                await ProcessJobItem(job, item, innerProgress, cancellationToken).ConfigureAwait(false);
+
+                job = _syncRepo.GetJob(item.JobId);
                 await UpdateJobStatus(job).ConfigureAwait(false);
 
                 index++;
             }
         }
 
-        private async Task ProcessJobItem(SyncJobItem jobItem, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ProcessJobItem(SyncJob job, SyncJobItem jobItem, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
@@ -372,15 +373,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.Progress = 0;
             jobItem.Status = SyncJobItemStatus.Converting;
 
+            var user = _userManager.GetUserById(job.UserId);
+
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, video, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, video, user, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                await Sync(jobItem, (Audio)item, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Audio)item, user, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
@@ -394,7 +397,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, Video item, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Video item, User user, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new VideoOptions
             {
@@ -402,7 +405,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
-                MediaSources = item.GetMediaSources(false).ToList()
+                MediaSources = item.GetMediaSources(false, user).ToList()
             };
 
             var streamInfo = new StreamBuilder().BuildVideoItem(options);
@@ -413,6 +416,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
                 jobItem.Status = SyncJobItemStatus.Converting;
+                jobItem.RequiresConversion = true;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
                 try
@@ -438,6 +442,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else
             {
+                jobItem.RequiresConversion = false;
+                
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
                     jobItem.OutputPath = mediaSource.Path;
@@ -457,7 +463,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task Sync(SyncJobItem jobItem, Audio item, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new AudioOptions
             {
@@ -465,7 +471,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = item.Id.ToString("N"),
                 DeviceId = jobItem.TargetId,
                 Profile = profile,
-                MediaSources = item.GetMediaSources(false).ToList()
+                MediaSources = item.GetMediaSources(false, user).ToList()
             };
 
             var streamInfo = new StreamBuilder().BuildAudioItem(options);
@@ -476,6 +482,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
                 jobItem.Status = SyncJobItemStatus.Converting;
+                jobItem.RequiresConversion = true;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
 
                 try
@@ -500,6 +507,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else
             {
+                jobItem.RequiresConversion = false;
+                
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
                     jobItem.OutputPath = mediaSource.Path;
