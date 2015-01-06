@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
@@ -11,7 +9,6 @@ namespace MediaBrowser.Common.Implementations.Devices
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
-        private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
 
         private readonly object _syncLock = new object();
@@ -73,23 +70,7 @@ namespace MediaBrowser.Common.Implementations.Devices
 
         private string GetNewId()
         {
-            // When generating an Id, base it off of the app path + mac address
-            // But we can't fail here, so if we can't get the mac address then just use a random guid
-
-            string mac;
-
-            try
-            {
-                mac = _networkManager.GetMacAddress();
-            }
-            catch
-            {
-                mac = Guid.NewGuid().ToString("N");
-            }
-
-            mac += "-" + _appPaths.ApplicationPath;
-
-            return mac.GetMD5().ToString("N");
+            return Guid.NewGuid().ToString("N");
         }
 
         private string GetDeviceId()
@@ -107,11 +88,10 @@ namespace MediaBrowser.Common.Implementations.Devices
 
         private string _id;
 
-        public DeviceId(IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager)
+        public DeviceId(IApplicationPaths appPaths, ILogger logger)
         {
             _appPaths = appPaths;
             _logger = logger;
-            _networkManager = networkManager;
         }
 
         public string Value

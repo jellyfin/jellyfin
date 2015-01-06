@@ -12,7 +12,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
@@ -392,6 +391,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;
+
+            if (jobItem.RequiresConversion)
+            {
+                try
+                {
+                    File.Delete(jobItem.OutputPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting temporary job file: {0}", ex, jobItem.OutputPath);
+                }
+            }
 
             await _repo.Update(jobItem).ConfigureAwait(false);
 

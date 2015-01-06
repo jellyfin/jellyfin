@@ -6,7 +6,7 @@
 
         $('#btnNextPage', page).on('click', function () {
 
-            Dashboard.navigate('wizardfinish.html');
+            Dashboard.navigate('wizardagreement.html');
         });
     });
 
