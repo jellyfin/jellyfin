@@ -133,6 +133,11 @@ namespace MediaBrowser.Server.Startup.Common
                     "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/"
                 };
 
+                if (ServerConfigurationManager.Configuration.UseHttps)
+                {
+                    list.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/" + WebApplicationName + "/");
+                }
+
                 return list;
             }
         }
@@ -805,7 +810,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefixes);
+                ServerManager.Start(HttpServerUrlPrefixes, CertificatePath);
             }
             catch (Exception ex)
             {
@@ -972,6 +977,8 @@ namespace MediaBrowser.Server.Startup.Common
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = HttpServerPort,
+                UseHttps = UseHttps,
+                CertificatePath = CertificatePath,
                 OperatingSystem = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
@@ -1044,6 +1051,21 @@ namespace MediaBrowser.Server.Startup.Common
         public int HttpServerPort
         {
             get { return ServerConfigurationManager.Configuration.HttpServerPortNumber; }
+        }
+
+        public bool UseHttps
+        {
+            get { return this.ServerConfigurationManager.Configuration.UseHttps; }
+        }
+
+        public string CertificatePath
+        {
+            get { return this.ServerConfigurationManager.Configuration.CertificatePath; }
+        }
+
+        public int HttpsServerPort
+        {
+            get { return ServerConfigurationManager.Configuration.HttpsPortNumber; }
         }
 
         /// <summary>
