@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -159,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 return false;
             }
 
-            return discSubfolderCount > 0 && discSubfolderCount > 10;
+            return discSubfolderCount > 0;
         }
 
         private static bool IsMultiDiscFolder(string path)
