@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -114,7 +115,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 
                 // Ignore samples
-                if (filename.IndexOf(".sample.", StringComparison.OrdinalIgnoreCase) != -1)
+                var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
+                    .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
+                    .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
+                    .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
+
+                if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     return true;
                 }
