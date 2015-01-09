@@ -68,12 +68,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
                 }
 
-                return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
+                return ResolveVideos<Movie>(parent, files, directoryService, collectionType, false);
             }
 
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Movie>(parent, files, directoryService, collectionType, false);
+                return ResolveVideos<Movie>(parent, files, directoryService, collectionType, true);
             }
 
             return null;
@@ -173,7 +173,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                     }
 
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                 }
 
                 if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
@@ -209,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
             else if (string.IsNullOrEmpty(collectionType))
             {
-                item = ResolveVideo<Video>(args, false);
+                item = ResolveVideo<Movie>(args, true);
             }
 
             if (item != null)
