@@ -129,14 +129,6 @@ namespace MediaBrowser.Providers.MediaInfo
             if (item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder &&
                 !video.IsShortcut && !video.IsArchive)
             {
-                if (video.GetType() == typeof(Video))
-                {
-                    if (string.IsNullOrEmpty(_libraryManager.GetContentType(video)))
-                    {
-                        return false;
-                    }
-                }
-
                 return true;
             }
 

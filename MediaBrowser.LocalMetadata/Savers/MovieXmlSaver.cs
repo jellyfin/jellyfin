@@ -54,15 +54,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             // Check parent for null to avoid running this against things like video backdrops
             if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
-                // If it's a plain video, skip if content type is unset (unless editing)
-                if (video.GetType() == typeof(Video))
-                {
-                    if (updateType < ItemUpdateType.MetadataEdit && string.IsNullOrEmpty(_libraryManager.GetContentType(video)))
-                    {
-                        return false;
-                    }
-                }
-                
                 return updateType >= ItemUpdateType.MetadataDownload;
             }
 

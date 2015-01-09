@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Xml;
 
@@ -55,14 +54,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             // Check parent for null to avoid running this against things like video backdrops
             if (video != null && !(item is Episode) && !video.IsOwnedItem)
             {
-                // If it's a plain video, skip if content type is unset (unless editing)
-                if (video.GetType() == typeof (Video))
-                {
-                    if (updateType < ItemUpdateType.MetadataEdit && string.IsNullOrEmpty(LibraryManager.GetContentType(video)))
-                    {
-                        return false;
-                    }
-                }
                 return updateType >= MinimumUpdateType;
             }
 
