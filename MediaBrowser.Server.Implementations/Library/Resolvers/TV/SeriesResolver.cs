@@ -141,7 +141,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                             return true;
                         }
 
-                        var episodeResolver = new Naming.TV.EpisodeResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+                        var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
+
+                        var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions, new Naming.Logging.NullLogger());
                         var episodeInfo = episodeResolver.Resolve(fullName, FileInfoType.File, false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {

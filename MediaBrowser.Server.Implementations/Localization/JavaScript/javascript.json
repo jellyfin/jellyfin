@@ -262,10 +262,13 @@
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageValueNotCorrect": "The value entered is not correct. Please try again.",
     "MessageItemSaved": "Item saved.",
+    "MessagePleaseAcceptTermsOfServiceBeforeContinuing": "Please accept the terms of service before continuing.",
     "OptionEnded": "Ended",
     "OptionContinuing": "Continuing",
     "OptionOff": "Off",
     "OptionOn": "On",
+    "ButtonSettings": "Settings",
+    "ButtonUninstall": "Uninstall",
     "HeaderFields": "Fields",
     "HeaderFieldsHelp": "Slide a field to 'off' to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "Live TV",
@@ -674,5 +677,5 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "MessageJobItemHasNoActions":  "d"
+    "MessageJobItemHasNoActions": "d"
 }

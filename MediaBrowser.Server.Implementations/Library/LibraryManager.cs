@@ -1754,24 +1754,24 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsVideoFile(string path)
         {
-            var resolver = new VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
             return resolver.IsVideoFile(path);
         }
 
         public bool IsAudioFile(string path)
         {
-            var parser = new AudioFileParser(new ExtendedNamingOptions());
+            var parser = new AudioFileParser(GetNamingOptions());
             return parser.IsAudioFile(path);
         }
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true, true).SeasonNumber;
+            return new SeasonPathParser(GetNamingOptions(), new RegexProvider()).Parse(path, true, true).SeasonNumber;
         }
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
-            var resolver = new EpisodeResolver(new ExtendedNamingOptions(),
+            var resolver = new EpisodeResolver(GetNamingOptions(),
                 new Naming.Logging.NullLogger());
 
             var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ?
@@ -1889,9 +1889,28 @@ namespace MediaBrowser.Server.Implementations.Library
             return changed;
         }
 
+        public NamingOptions GetNamingOptions()
+        {
+            var options = new ExtendedNamingOptions();
+
+            if (!ConfigurationManager.Configuration.EnableAudioArchiveFiles)
+            {
+                options.AudioFileExtensions.Remove(".rar");
+                options.AudioFileExtensions.Remove(".zip");
+            }
+
+            if (!ConfigurationManager.Configuration.EnableVideoArchiveFiles)
+            {
+                options.VideoFileExtensions.Remove(".rar");
+                options.VideoFileExtensions.Remove(".zip");
+            }
+            
+            return options;
+        }
+
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -1910,7 +1929,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -1963,7 +1982,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -2001,7 +2020,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new Naming.Logging.NullLogger(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 
