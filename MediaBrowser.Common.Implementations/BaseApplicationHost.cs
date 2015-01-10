@@ -472,10 +472,10 @@ namespace MediaBrowser.Common.Implementations
 			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
 			RegisterSingleInstance(NetworkManager);
 
-			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, NetworkManager, LogManager);
+			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager);
 			RegisterSingleInstance(SecurityManager);
 
-			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, NetworkManager, ConfigurationManager);
+			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager);
 			RegisterSingleInstance(InstallationManager);
 
 			ZipClient = new ZipClient();

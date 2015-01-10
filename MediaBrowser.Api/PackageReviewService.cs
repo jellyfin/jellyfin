@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
@@ -100,15 +101,15 @@ namespace MediaBrowser.Api
     public class PackageReviewService : BaseApiService
     {
         private readonly IHttpClient _httpClient;
-        private readonly INetworkManager _netManager;
         private readonly IJsonSerializer _serializer;
         private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private readonly IServerApplicationHost _appHost;
 
-        public PackageReviewService(IHttpClient client, INetworkManager net, IJsonSerializer serializer)
+        public PackageReviewService(IHttpClient httpClient, IJsonSerializer serializer, IServerApplicationHost appHost)
         {
-            _httpClient = client;
-            _netManager = net;
+            _httpClient = httpClient;
             _serializer = serializer;
+            _appHost = appHost;
         }
 
         public object Get(ReviewRequest request)
@@ -146,7 +147,7 @@ namespace MediaBrowser.Api
 
             var review = new Dictionary<string, string>
                              { { "id", request.Id.ToString(CultureInfo.InvariantCulture) },
-                               { "mac", _netManager.GetMacAddress() },
+                               { "mac", _appHost.SystemId },
                                { "rating", request.Rating.ToString(CultureInfo.InvariantCulture) },
                                { "recommend", request.Recommend.ToString() },
                                { "title", title },

@@ -467,7 +467,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (job.SubtitleStream.IsExternal && !job.SubtitleStream.IsTextSubtitleStream)
                 {
-                    arg += " -i " + job.SubtitleStream.Path;
+                    arg += " -i \"" + job.SubtitleStream.Path + "\"";
                 }
             }
 
