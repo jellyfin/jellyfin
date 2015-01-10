@@ -129,17 +129,26 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                     {
                         var path = fileSystemInfo.FullName;
                         var isMultiDisc = IsMultiDiscFolder(path);
-                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
 
-                        if (isMultiDisc && hasMusic)
+                        if (isMultiDisc)
                         {
-                            logger.Debug("Found multi-disc folder: " + path);
-                            discSubfolderCount++;
+                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+
+                            if (hasMusic)
+                            {
+                                logger.Debug("Found multi-disc folder: " + path);
+                                discSubfolderCount++;
+                            }
                         }
-                        else if (hasMusic)
+                        else
                         {
-                            // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
-                            notMultiDisc = true;
+                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+
+                            if (hasMusic)
+                            {
+                                // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
+                                notMultiDisc = true;
+                            }
                         }
                     }
                 }
