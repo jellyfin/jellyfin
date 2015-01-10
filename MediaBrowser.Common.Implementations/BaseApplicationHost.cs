@@ -186,7 +186,7 @@ namespace MediaBrowser.Common.Implementations
             {
                 if (_deviceId == null)
                 {
-                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"), NetworkManager);
+                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"));
                 }
 
                 return _deviceId.Value;

@@ -76,6 +76,14 @@ namespace MediaBrowser.LocalMetadata
             }
         }
 
+        public int Order
+        {
+            get
+            {
+                // After Nfo
+                return 1;
+            }
+        }
     }
 
     static class XmlProviderUtils

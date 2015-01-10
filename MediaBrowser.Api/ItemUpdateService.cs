@@ -76,11 +76,13 @@ namespace MediaBrowser.Api
             {
                 if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
                 {
-                    var collectionType = _libraryManager.GetInheritedContentType(item);
-                    if (string.IsNullOrWhiteSpace(collectionType))
+                    var inheritedContentType = _libraryManager.GetInheritedContentType(item);
+                    var configuredContentType = _libraryManager.GetConfiguredContentType(item);
+
+                    if (string.IsNullOrWhiteSpace(inheritedContentType) || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(configuredContentType))
                     {
                         info.ContentTypeOptions = GetContentTypeOptions(true);
-                        info.ContentType = _libraryManager.GetContentType(item);
+                        info.ContentType = configuredContentType;
                     }
                 }
             }

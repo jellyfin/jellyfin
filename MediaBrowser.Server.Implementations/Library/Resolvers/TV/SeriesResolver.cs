@@ -1,9 +1,17 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Naming.Common;
+using MediaBrowser.Naming.IO;
+using MediaBrowser.Naming.TV;
+using EpisodeInfo = MediaBrowser.Controller.Providers.EpisodeInfo;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -12,6 +20,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeriesResolver : FolderResolver<Series>
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
+
+        public SeriesResolver(IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
+        {
+            _fileSystem = fileSystem;
+            _logger = logger;
+            _libraryManager = libraryManager;
+        }
+
         /// <summary>
         /// Gets the priority.
         /// </summary>
@@ -34,24 +53,139 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             if (args.IsDirectory)
             {
                 var collectionType = args.GetCollectionType();
-
-                // If there's a collection type and it's not tv, it can't be a series
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
                     if (args.HasParent<Series>())
                     {
                         return null;
-                    } 
-                    
-                    return new Series
+                    }
+
+                    var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
+                    if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
-                        Path = args.Path,
-                        Name = Path.GetFileName(args.Path)
-                    };
+                        return new Series
+                        {
+                            Path = args.Path,
+                            Name = Path.GetFileName(args.Path)
+                        };
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(collectionType))
+                    {
+                        if (args.HasParent<Series>())
+                        {
+                            return null;
+                        }
+
+                        if (args.Parent.IsRoot)
+                        {
+                            return null;
+                        }
+                        if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, false))
+                        {
+                            return new Series
+                            {
+                                Path = args.Path,
+                                Name = Path.GetFileName(args.Path)
+                            };
+                        }
+                    }
                 }
             }
 
             return null;
+        }
+
+        public static bool IsSeriesFolder(string path,
+            IEnumerable<FileSystemInfo> fileSystemChildren,
+            IDirectoryService directoryService,
+            IFileSystem fileSystem,
+            ILogger logger,
+            ILibraryManager libraryManager,
+            bool isTvContentType)
+        {
+            foreach (var child in fileSystemChildren)
+            {
+                var attributes = child.Attributes;
+
+                if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
+                    continue;
+                }
+
+                // Can't enforce this because files saved by Bitcasa are always marked System
+                //if ((attributes & FileAttributes.System) == FileAttributes.System)
+                //{
+                //    logger.Debug("Igoring series subfolder marked system: {0}", child.FullName);
+                //    continue;
+                //}
+
+                if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    if (IsSeasonFolder(child.FullName, isTvContentType))
+                    {
+                        //logger.Debug("{0} is a series because of season folder {1}.", path, child.FullName);
+                        return true;
+                    }
+                }
+                else
+                {
+                    string fullName = child.FullName;
+                    if (libraryManager.IsVideoFile(fullName))
+                    {
+                        if (isTvContentType)
+                        {
+                            return true;
+                        }
+
+                        var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
+
+                        var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions, new Naming.Logging.NullLogger());
+                        var episodeInfo = episodeResolver.Resolve(fullName, FileInfoType.File, false);
+                        if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            logger.Debug("{0} is not a series folder.", path);
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether [is place holder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">path</exception>
+        private static bool IsVideoPlaceHolder(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var extension = Path.GetExtension(path);
+
+            return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Determines whether [is season folder] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
+        /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
+        private static bool IsSeasonFolder(string path, bool isTvContentType)
+        {
+            var seasonNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, isTvContentType, isTvContentType).SeasonNumber;
+
+            return seasonNumber.HasValue;
         }
 
         /// <summary>

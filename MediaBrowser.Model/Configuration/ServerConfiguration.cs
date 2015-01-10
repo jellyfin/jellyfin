@@ -175,6 +175,9 @@ namespace MediaBrowser.Model.Configuration
 
         public NameValuePair[] ContentTypes { get; set; }
 
+        public bool EnableAudioArchiveFiles { get; set; }
+        public bool EnableVideoArchiveFiles { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Threading;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -155,9 +157,30 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetPlugins request)
+        public async Task<object> Get(GetPlugins request)
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
+
+            // Don't fail just on account of image url's
+            try
+            {
+                var packages = (await _installationManager.GetAvailablePackagesWithoutRegistrationInfo(CancellationToken.None))
+                    .ToList();
+
+                foreach (var plugin in result)
+                {
+                    var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
+
+                    if (pkg != null)
+                    {
+                        plugin.ImageUrl = pkg.thumbImage;
+                    }
+                }
+            }
+            catch
+            {
+                
+            }
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
