@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -142,6 +143,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                         }
 
                         var namingOptions = ((LibraryManager)libraryManager).GetNamingOptions();
+
+                        // In mixed folders we need to be conservative and avoid expressions that may result in false positives (e.g. movies with numbers in the title)
+                        if (!isTvContentType)
+                        {
+                            namingOptions.EpisodeExpressions = namingOptions.EpisodeExpressions
+                                .Where(i => i.IsNamed)
+                                .ToList();
+                        }
 
                         var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions, new Naming.Logging.NullLogger());
                         var episodeInfo = episodeResolver.Resolve(fullName, FileInfoType.File, false);

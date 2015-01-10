@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UniversalDetector;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
@@ -611,7 +612,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (FileNotFoundException)
                 {
-                    
+
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -699,6 +700,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>System.String.</returns>
         public string GetSubtitleFileCharacterSet(string path, string language)
         {
+            var charset = DetectCharset(path);
+
+            if (!string.IsNullOrWhiteSpace(charset))
+            {
+                if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
+                {
+                    //return null;
+                }
+
+                //return charset;
+            }
+
             if (GetFileEncoding(path).Equals(Encoding.UTF8))
             {
                 return string.Empty;
@@ -741,6 +754,34 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 default:
                     return "windows-1252";
             }
+        }
+
+        private string DetectCharset(string path)
+        {
+            try
+            {
+                using (var file = new FileStream(path, FileMode.Open))
+                {
+                    var detector = new CharsetDetector();
+                    detector.Feed(file);
+                    detector.DataEnd();
+
+                    var charset = detector.Charset;
+
+                    if (!string.IsNullOrWhiteSpace(charset))
+                    {
+                        _logger.Info("UniversalDetector detected charset {0} for {1}", charset, path);
+                    }
+
+                    return charset;
+                }
+            }
+            catch (IOException ex)
+            {
+                _logger.ErrorException("Error attempting to determine subtitle charset from {0}", ex, path);
+            }
+
+            return null;
         }
 
         private static Encoding GetFileEncoding(string srcFile)

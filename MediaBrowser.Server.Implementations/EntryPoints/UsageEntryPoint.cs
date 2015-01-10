@@ -18,7 +18,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
     public class UsageEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationHost _applicationHost;
-        private readonly INetworkManager _networkManager;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -29,11 +28,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
 
-        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager)
+        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager)
         {
             _logger = logger;
             _applicationHost = applicationHost;
-            _networkManager = networkManager;
             _httpClient = httpClient;
             _sessionManager = sessionManager;
             _userManager = userManager;
@@ -68,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _networkManager, _httpClient, _userManager)
+                await new UsageReporter(_applicationHost, _httpClient, _userManager)
                     .ReportAppUsage(client, CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -110,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _networkManager, _httpClient, _userManager)
+                await new UsageReporter(_applicationHost, _httpClient, _userManager)
                     .ReportServerUsage(CancellationToken.None)
                     .ConfigureAwait(false);
             }
