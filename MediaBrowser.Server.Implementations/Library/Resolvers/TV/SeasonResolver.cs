@@ -16,13 +16,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         private readonly IServerConfigurationManager _config;
 
+        private readonly ILibraryManager _libraryManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
         /// <param name="config">The config.</param>
-        public SeasonResolver(IServerConfigurationManager config)
+        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -34,9 +37,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             if (args.Parent is Series && args.IsDirectory)
             {
+                var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
+                
                 var season = new Season
                 {
-                    IndexNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(args.Path, true, true).SeasonNumber
+                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber
                 };
                 
                 if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)

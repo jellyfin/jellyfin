@@ -44,8 +44,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
+            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            
             // If the path is a file check for a matching extensions
-            var parser = new Naming.Video.VideoResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var parser = new Naming.Video.VideoResolver(namingOptions, new Naming.Logging.NullLogger());
 
             if (args.IsDirectory)
             {
@@ -229,7 +231,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
         protected void Set3DFormat(Video video)
         {
-            var resolver = new Format3DParser(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+
+            var resolver = new Format3DParser(namingOptions, new Naming.Logging.NullLogger());
             var result = resolver.Parse(video.Path);
 
             Set3DFormat(video, result.Is3D, result.Format3D);

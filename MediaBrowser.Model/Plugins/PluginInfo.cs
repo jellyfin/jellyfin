@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Updates;
-using System;
+﻿using System;
 
 namespace MediaBrowser.Model.Plugins
 {
@@ -49,5 +48,10 @@ namespace MediaBrowser.Model.Plugins
         /// </summary>
         /// <value>The unique id.</value>
         public string Id { get; set; }
+        /// <summary>
+        /// Gets or sets the image URL.
+        /// </summary>
+        /// <value>The image URL.</value>
+        public string ImageUrl { get; set; }
     }
 }

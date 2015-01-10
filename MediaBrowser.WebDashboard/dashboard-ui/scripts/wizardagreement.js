@@ -4,6 +4,12 @@
 
         if ($('#chkAccept', page).checked()) {
             Dashboard.navigate('wizardfinish.html');
+        } else {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessagePleaseAcceptTermsOfServiceBeforeContinuing'),
+                title: ''
+            });
         }
     }
 

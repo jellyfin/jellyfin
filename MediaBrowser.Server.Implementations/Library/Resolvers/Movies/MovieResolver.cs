@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
 using System;
@@ -68,6 +69,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
                 }
 
+                if (parent is Series || parent.Parents.OfType<Series>().Any())
+                {
+                    return null;
+                }
+
                 return ResolveVideos<Movie>(parent, files, directoryService, collectionType, false);
             }
 
@@ -93,13 +99,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 {
                     leftOver.Add(child);
                 }
+                else if (IsIgnored(child.Name))
+                {
+                    
+                }
                 else
                 {
                     files.Add(child);
                 }
             }
 
-            var resolver = new VideoListResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+
+            var resolver = new VideoListResolver(namingOptions, new Naming.Logging.NullLogger());
             var resolverResult = resolver.Resolve(files.Select(i => new PortableFileInfo
             {
                 FullName = i.FullName,
@@ -173,6 +185,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                     }
 
+                    if (args.HasParent<Series>())
+                    {
+                        return null;
+                    }
+
                     return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
                 }
 
@@ -209,7 +226,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
             else if (string.IsNullOrEmpty(collectionType))
             {
-                item = ResolveVideo<Movie>(args, true);
+                if (args.HasParent<Series>())
+                {
+                    return null;
+                }
+
+                item = ResolveVideo<Video>(args, false);
             }
 
             if (item != null)
@@ -218,6 +240,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             return item;
+        }
+
+        private bool IsIgnored(string filename)
+        {
+            // Ignore samples
+            var sampleFilename = " " + filename.Replace(".", " ", StringComparison.OrdinalIgnoreCase)
+                .Replace("-", " ", StringComparison.OrdinalIgnoreCase)
+                .Replace("_", " ", StringComparison.OrdinalIgnoreCase)
+                .Replace("!", " ", StringComparison.OrdinalIgnoreCase);
+
+            if (sampleFilename.IndexOf(" sample ", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -397,7 +435,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            var resolver = new StackResolver(new ExtendedNamingOptions(), new Naming.Logging.NullLogger());
+            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            var resolver = new StackResolver(namingOptions, new Naming.Logging.NullLogger());
 
             var result = resolver.ResolveDirectories(folderPaths);
 
