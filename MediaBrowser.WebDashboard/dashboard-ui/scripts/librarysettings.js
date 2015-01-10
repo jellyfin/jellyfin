@@ -8,6 +8,9 @@
 
         $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
 
+        $('#chkEnableAudioArchiveFiles', page).checked(config.EnableAudioArchiveFiles).checkboxradio("refresh");
+        $('#chkEnableVideoArchiveFiles', page).checked(config.EnableVideoArchiveFiles).checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -64,6 +67,9 @@
                 config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
                 config.EnableRealtimeMonitor = $('#chkEnableRealtimeMonitor', form).checked();
+
+                config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
+                config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

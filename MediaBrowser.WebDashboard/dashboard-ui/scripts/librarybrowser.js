@@ -833,7 +833,7 @@
 
                 if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
                     if (item.UserData.UnplayedItemCount) {
-                        html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
+                        //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
                     } else if (item.UserData.Played && item.Type != 'TvChannel') {
                         html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
                     }

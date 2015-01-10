@@ -67,7 +67,7 @@
                 Dashboard.navigate('wizardservice.html');
 
             } else {
-                Dashboard.navigate('wizardfinish.html');
+                Dashboard.navigate('wizardagreement.html');
             }
         });
     }

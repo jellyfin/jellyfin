@@ -471,6 +471,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",
                                 "userlibraryaccess.js",
+                                "wizardagreement.js",
                                 "wizardfinishpage.js",
                                 "wizardservice.js",
                                 "wizardstartpage.js",

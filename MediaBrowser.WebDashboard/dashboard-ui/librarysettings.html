@@ -27,11 +27,45 @@
                         </li>
                     </ul>
 
+                    <div data-role="collapsible">
+                        <h2>${HeaderAudio}</h2>
+                        <div>
+                            <br />
+                            <div>
+                                <label for="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
+                                <input type="checkbox" id="chkEnableAudioArchiveFiles" />
+                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderVideo}</h2>
+                        <div>
+                            <br />
+                            <div>
+                                <label for="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
+                                <input type="checkbox" id="chkEnableVideoArchiveFiles" />
+                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>${HeaderTV}</h2>
+                        <div>
+                            <br />
+                            <div>
+                                <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
+                                <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
+                            </div>
+                            <br />
+                        </div>
+                    </div>
+                    <br />
                     <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
-                        </li>
                         <li>
                             <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
                             <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>

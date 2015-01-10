@@ -343,7 +343,7 @@
             }
 
             if (extension == 'm4v' || extension == 'mkv') {
-                return $.browser.chrome;
+                return $.browser.chrome != null;
             }
 
             return extension == 'mp4';

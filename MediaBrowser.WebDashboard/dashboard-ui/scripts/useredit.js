@@ -21,19 +21,19 @@
         $('#txtUserName', page).val(user.Name);
         $('#txtConnectUserName', page).val(currentUser.ConnectUserName);
 
-        $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator || false).checkboxradio("refresh");
+        $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator).checkboxradio("refresh");
 
-        $('#chkDisabled', page).checked(user.Policy.IsDisabled || false).checkboxradio("refresh");
-        $('#chkIsHidden', page).checked(user.Policy.IsHidden || false).checkboxradio("refresh");
-        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl);
+        $('#chkDisabled', page).checked(user.Policy.IsDisabled).checkboxradio("refresh");
+        $('#chkIsHidden', page).checked(user.Policy.IsHidden).checkboxradio("refresh");
+        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl).checkboxradio("refresh");
         $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
-        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback || false).checkboxradio("refresh");
+        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
 
-        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement || false).checkboxradio("refresh");
-        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess || false).checkboxradio("refresh");
-        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion || false).checkboxradio("refresh");
+        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement).checkboxradio("refresh");
+        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess).checkboxradio("refresh");
+        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion).checkboxradio("refresh");
 
-        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess) || false).checkboxradio("refresh");
+        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess)).checkboxradio("refresh");
 
         $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
 

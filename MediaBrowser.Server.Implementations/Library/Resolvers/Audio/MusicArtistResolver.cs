@@ -70,9 +70,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             }
 
             var directoryService = args.DirectoryService;
-            
+
+            var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
+
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => MusicAlbumResolver.IsMusicAlbum(i.FullName, directoryService, _logger, _fileSystem, _libraryManager)) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService)) ? new MusicArtist() : null;
         }
 
     }

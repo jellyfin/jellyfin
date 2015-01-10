@@ -12,11 +12,17 @@
 
                 <h2 style="text-align: left;">${HeaderSignInWithConnect}</h2>
 
-                <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
-                <input type="text" id="txtManualName" required="required" />
+                <div>
+                    <label for="txtManualName" style="text-align: left;">${LabelEnterConnectUserName}</label>
+                    <input type="text" id="txtManualName" required="required" />
+                    <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
+                </div>
+                <br/>
+                <div>
+                    <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
+                    <input type="password" id="txtManualPassword" placeholder="password" required="required" />
+                </div>
 
-                <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
-                <input type="password" id="txtManualPassword" placeholder="password" required="required" />
                 <button type="submit" data-icon="check">
                     ${ButtonSignIn}
                 </button>

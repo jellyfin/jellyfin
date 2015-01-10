@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync10.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync11.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
@@ -45,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
-                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT)",
+                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, RequiresConversion BIT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT)",
                                 "create index if not exists idx_SyncJobItems on SyncJobs(Id)",
 
                                 //pragmas
@@ -90,13 +90,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemCount");
 
             _saveJobItemCommand = _connection.CreateCommand();
-            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, OutputPath, Status, TargetId, DateCreated, Progress) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @OutputPath, @Status, @TargetId, @DateCreated, @Progress)";
+            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, RequiresConversion, OutputPath, Status, TargetId, DateCreated, Progress) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @RequiresConversion, @OutputPath, @Status, @TargetId, @DateCreated, @Progress)";
 
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Id");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@ItemId");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@ItemName");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@MediaSourceId");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@JobId");
+            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@RequiresConversion");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@OutputPath");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Status");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@TargetId");
@@ -105,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         }
 
         private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
-        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, OutputPath, Status, TargetId, DateCreated, Progress from SyncJobItems";
+        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, RequiresConversion, OutputPath, Status, TargetId, DateCreated, Progress from SyncJobItems";
 
         public SyncJob GetJob(string id)
         {
@@ -556,6 +557,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.ItemName;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.MediaSourceId;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.JobId;
+                _saveJobItemCommand.GetParameter(index++).Value = jobItem.RequiresConversion;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.OutputPath;
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.Status.ToString();
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.TargetId;
@@ -618,24 +620,25 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             info.JobId = reader.GetString(4);
-
-            if (!reader.IsDBNull(5))
-            {
-                info.OutputPath = reader.GetString(5);
-            }
+            info.RequiresConversion = reader.GetBoolean(5);
 
             if (!reader.IsDBNull(6))
             {
-                info.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(6), true);
+                info.OutputPath = reader.GetString(6);
             }
 
-            info.TargetId = reader.GetString(7);
-
-            info.DateCreated = reader.GetDateTime(8);
-
-            if (!reader.IsDBNull(9))
+            if (!reader.IsDBNull(7))
             {
-                info.Progress = reader.GetDouble(9);
+                info.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(7), true);
+            }
+
+            info.TargetId = reader.GetString(8);
+
+            info.DateCreated = reader.GetDateTime(9);
+
+            if (!reader.IsDBNull(10))
+            {
+                info.Progress = reader.GetDouble(10);
             }
 
             return info;

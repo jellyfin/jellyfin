@@ -204,7 +204,7 @@
     function isAvailable(item, user) {
 
         return false;
-        return item.SupportsSync;
+        //return item.SupportsSync;
     }
 
     window.SyncManager = {

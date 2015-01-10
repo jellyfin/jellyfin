@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -97,6 +98,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("searchTerm");
             }
 
+            searchTerm = searchTerm.RemoveDiacritics();
+            
             var terms = GetWords(searchTerm);
 
             var hints = new List<Tuple<BaseItem, string, int>>();
@@ -317,6 +320,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 throw new ArgumentNullException("input");
             }
+
+            input = input.RemoveDiacritics();
 
             if (string.Equals(input, searchInput, StringComparison.OrdinalIgnoreCase))
             {
