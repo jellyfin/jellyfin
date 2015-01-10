@@ -72,13 +72,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 }
                 else
                 {
-                    if (args.HasParent<Series>())
-                    {
-                        return null;
-                    }
-
                     if (string.IsNullOrWhiteSpace(collectionType))
                     {
+                        if (args.HasParent<Series>())
+                        {
+                            return null;
+                        }
+
                         if (args.Parent.IsRoot)
                         {
                             return null;
