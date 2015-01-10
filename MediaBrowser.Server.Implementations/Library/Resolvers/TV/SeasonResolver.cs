@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             {
                 var season = new Season
                 {
-                    IndexNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(args.Path, true).SeasonNumber
+                    IndexNumber = new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(args.Path, true, true).SeasonNumber
                 };
                 
                 if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)

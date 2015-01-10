@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
@@ -200,7 +201,7 @@ namespace MediaBrowser.Server.Implementations.Library
             MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
-            
+
             PostscanTasks = postscanTasks.OrderBy(i =>
             {
                 var hasOrder = i as IHasOrder;
@@ -578,7 +579,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (string.IsNullOrWhiteSpace(collectionType))
             {
-                collectionType = GetConfiguredContentType(fullPath);
+                collectionType = GetContentTypeOverride(fullPath, true);
             }
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
@@ -1554,16 +1555,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public string GetContentType(BaseItem item)
         {
-            // Types cannot be overridden, so go from the top down until we find a configured content type
-
-            var type = GetInheritedContentType(item);
-
-            if (!string.IsNullOrWhiteSpace(type))
+            string configuredContentType = GetConfiguredContentType(item, false);
+            if (!string.IsNullOrWhiteSpace(configuredContentType))
             {
-                return type;
+                return configuredContentType;
             }
-
-            return GetConfiguredContentType(item);
+            configuredContentType = GetConfiguredContentType(item, true);
+            if (!string.IsNullOrWhiteSpace(configuredContentType))
+            {
+                return configuredContentType;
+            }
+            return GetInheritedContentType(item);
         }
 
         public string GetInheritedContentType(BaseItem item)
@@ -1580,19 +1582,36 @@ namespace MediaBrowser.Server.Implementations.Library
                 .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private string GetConfiguredContentType(BaseItem item)
+        public string GetConfiguredContentType(BaseItem item)
         {
-            return GetConfiguredContentType(item.ContainingFolderPath);
+            return GetConfiguredContentType(item, false);
         }
 
-        private string GetConfiguredContentType(string path)
+        public string GetConfiguredContentType(string path)
         {
-            var type = ConfigurationManager.Configuration.ContentTypes
-                .FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i.Name, path));
-
-            return type == null ? null : type.Value;
+            return GetContentTypeOverride(path, false);
         }
 
+        public string GetConfiguredContentType(BaseItem item, bool inheritConfiguredPath)
+        {
+            ICollectionFolder collectionFolder = item as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                return collectionFolder.CollectionType;
+            }
+            return GetContentTypeOverride(item.ContainingFolderPath, inheritConfiguredPath);
+        }
+
+        private string GetContentTypeOverride(string path, bool inherit)
+        {
+            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && _fileSystem.ContainsSubPath(i.Name, path)));
+            if (nameValuePair != null)
+            {
+                return nameValuePair.Value;
+            }
+            return null;
+        }
+        
         private string GetTopFolderContentType(BaseItem item)
         {
             while (!(item.Parent is AggregateFolder) && item.Parent != null)
@@ -1747,7 +1766,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public int? GetSeasonNumberFromPath(string path)
         {
-            return new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true).SeasonNumber;
+            return new SeasonPathParser(new ExtendedNamingOptions(), new RegexProvider()).Parse(path, true, true).SeasonNumber;
         }
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
@@ -1755,8 +1774,8 @@ namespace MediaBrowser.Server.Implementations.Library
             var resolver = new EpisodeResolver(new ExtendedNamingOptions(),
                 new Naming.Logging.NullLogger());
 
-            var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ? 
-                FileInfoType.Directory : 
+            var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ?
+                FileInfoType.Directory :
                 FileInfoType.File;
 
             var locationType = episode.LocationType;
