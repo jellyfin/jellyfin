@@ -1250,7 +1250,7 @@
                 var cardboxCssClass = 'cardBox';
 
                 if (options.cardLayout) {
-                    cardboxCssClass += ' visualCardBox visualCardBox-b';
+                    cardboxCssClass += ' visualCardBox';
                 }
                 html += '<div class="' + cardboxCssClass + '">';
                 html += '<div class="cardScalable">';

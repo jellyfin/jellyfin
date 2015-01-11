@@ -640,11 +640,12 @@ var Dashboard = {
 
             headerHtml += '<div class="header">';
 
-            headerHtml += '<a class="logo" href="index.html">';
+            headerHtml += '<a class="logo" href="index.html" style="text-decoration:none;font-size: 22px;">';
 
             if (page.hasClass('standalonePage')) {
 
-                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" /><img class="imgLogoText" src="css/images/mblogotextblack.png" />';
+                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" />';
+                headerHtml += '<span class="logoLibraryMenuButtonText">MEDIA</span><span class="logoLibraryMenuButtonText mediaBrowserAccent">BROWSER</span>';
             }
 
             headerHtml += '</a>';

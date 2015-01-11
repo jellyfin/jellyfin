@@ -144,7 +144,6 @@
         var barCssClass = 'ui-bar-a';
 
         if ($(page).hasClass('libraryPage')) {
-            cardBoxCssClass += ' visualCardBox-b';
             barCssClass = 'detailSectionHeader';
         }
 

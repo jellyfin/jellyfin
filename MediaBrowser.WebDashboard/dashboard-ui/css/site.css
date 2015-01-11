@@ -203,12 +203,12 @@ pre, textarea.pre {
 
 .imgLogoIcon {
     height: 45px;
+    vertical-align: middle;
 }
 
-.imgLogoText {
-    height: 45px;
-    margin-left: 5px;
-}
+    .imgLogoIcon + span {
+        margin-left: 10px;
+    }
 
 .ui-popup-container {
     z-index: 99999;
@@ -444,10 +444,6 @@ h1 .imageLink {
     */
     form, .readOnlyContent {
         max-width: 600px;
-    }
-
-    .imgLogoText {
-        height: 50px;
     }
 
     .header {
@@ -782,17 +778,17 @@ progress {
         border: 0;
     }
 
-    .btnUserItemRatingOff {
-        color: #aaa !important;
-    }
+.btnUserItemRatingOff {
+    color: #aaa !important;
+}
 
-    .btnUserItemRating:last-child {
-        margin-right: 0;
-    }
+.btnUserItemRating:last-child {
+    margin-right: 0;
+}
 
-    .btnUserItemRating:hover {
-        opacity: .5;
-    }
+.btnUserItemRating:hover {
+    opacity: .5;
+}
 
 .imgUserItemRating {
     height: 16px;

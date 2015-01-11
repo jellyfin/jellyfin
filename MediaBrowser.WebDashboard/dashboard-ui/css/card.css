@@ -82,7 +82,7 @@
     background: #fff;
 }
 
-.visualCardBox-b {
+.ui-page-theme-b .visualCardBox {
     background: rgb(51, 51, 51);
     border: 1px solid rgb(31, 31, 31);
     border-radius: 3px;
@@ -147,9 +147,6 @@
     top: 0;
     width: 100%;
 }*/
-
-.cardFooter {
-}
 
 .cardContent .cardFooter {
     position: absolute;

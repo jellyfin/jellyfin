@@ -1,6 +1,7 @@
 ﻿(function ($, document, window) {
 
     var currentItem;
+    var currentSearchResult;
     var metadataEditorInfo;
 
     function updateTabs(page, item) {
@@ -148,7 +149,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            html += '<div>';
+            html += '<div data-role="fieldcontain">';
             var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
             html += '<label for="' + id + '">' + idLabel + '</label>';
 
@@ -1008,6 +1009,14 @@
             savePersonInfo(page);
             return false;
         };
+
+        self.onIdentificationOptionsSubmit = function () {
+
+            var page = $(this).parents('.page');
+
+            submitIdentficationResult(page);
+            return false;
+        };
     }
 
     window.EditItemMetadataPage = new editItemMetadataPage();
@@ -1058,7 +1067,8 @@
 
             $('.popupIdentifyForm', page).show();
             $('.identificationSearchResults', page).hide();
-            $('.btnSearchAgain', page).hide();
+            $('.identifyOptionsForm', page).hide();
+            $('.btnIdentifyBack', page).hide();
 
             $('.popupIdentify', page).popup('open');
         });
@@ -1131,11 +1141,57 @@
         return ApiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
     }
 
+    function getSearchResultHtml(result, index) {
+
+        var html = '';
+        var cssClass = "searchImageContainer remoteImageContainer";
+
+        if (currentItem.Type == "Episode") {
+            cssClass += " searchBackdropImageContainer";
+        }
+        else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
+            cssClass += " searchDiscImageContainer";
+        }
+        else {
+            cssClass += " searchPosterImageContainer";
+        }
+
+        html += '<div class="' + cssClass + '">';
+
+        if (result.ImageUrl) {
+            var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
+
+            html += '<a href="#" class="searchImage" data-index="' + index + '" style="background-image:url(\'' + displayUrl + '\');">';
+        } else {
+
+            html += '<a href="#" class="searchImage" data-index="' + index + '" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
+        }
+        html += '</a>';
+
+        html += '<div class="remoteImageDetails">';
+        html += result.Name;
+        html += '</div>';
+
+        html += '<div class="remoteImageDetails">';
+        html += result.ProductionYear || '&nbsp;';
+        html += '</div>';
+
+        if (result.GameSystem) {
+            html += '<div class="remoteImageDetails">';
+            html += result.GameSystem;
+            html += '</div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
     function showIdentificationSearchResults(page, results) {
 
         $('.popupIdentifyForm', page).hide();
         $('.identificationSearchResults', page).show();
-        $('.btnSearchAgain', page).show();
+        $('.identifyOptionsForm', page).hide();
+        $('.btnIdentifyBack', page).show();
 
         var html = '';
 
@@ -1143,71 +1199,74 @@
 
             var result = results[i];
 
-            var cssClass = "searchImageContainer remoteImageContainer";
-
-            if (currentItem.Type == "Episode") {
-                cssClass += " searchBackdropImageContainer";
-            }
-            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
-                cssClass += " searchDiscImageContainer";
-            }
-            else {
-                cssClass += " searchPosterImageContainer";
-            }
-
-            html += '<div class="' + cssClass + '">';
-
-            if (result.ImageUrl) {
-                var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
-
-                html += '<a href="#" class="searchImage" data-index="' + i + '" style="background-image:url(\'' + displayUrl + '\');">';
-            } else {
-
-                html += '<a href="#" class="searchImage" data-index="' + i + '" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
-            }
-            html += '</a>';
-
-            html += '<div class="remoteImageDetails">';
-            html += result.Name;
-            html += '</div>';
-
-            html += '<div class="remoteImageDetails">';
-            html += result.ProductionYear || '&nbsp;';
-            html += '</div>';
-
-            if (result.GameSystem) {
-                html += '<div class="remoteImageDetails">';
-                html += result.GameSystem;
-                html += '</div>';
-            }
-
-            html += '</div>';
+            html += getSearchResultHtml(result, i);
         }
 
         var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
 
         $('.searchImage', elem).on('click', function () {
 
-            Dashboard.showLoadingMsg();
-
             var index = parseInt(this.getAttribute('data-index'));
 
             var currentResult = results[index];
 
-            ApiClient.ajax({
-                type: "POST",
-                url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id),
-                data: JSON.stringify(currentResult),
-                contentType: "application/json"
+            showIdentifyOptions(page, currentResult);
+        });
+    }
 
-            }).done(function () {
+    function showIdentifyOptions(page, identifyResult) {
 
-                Dashboard.hideLoadingMsg();
+        $('.popupIdentifyForm', page).hide();
+        $('.identificationSearchResults', page).hide();
+        $('.identifyOptionsForm', page).show();
+        $('.btnIdentifyBack', page).show();
+        $('#chkIdentifyReplaceImages', page).checked(true).checkboxradio('refresh');
 
-                $('.popupIdentify', page).popup('close');
+        currentSearchResult = identifyResult;
 
-                reload(page);
-            });
+        var lines = [];
+        lines.push(identifyResult.Name);
+
+        if (identifyResult.ProductionYear) {
+            lines.push(identifyResult.ProductionYear);
+        }
+
+        if (identifyResult.GameSystem) {
+            lines.push(identifyResult.GameSystem);
+        }
+
+        var resultHtml = lines.join('<br/>');
+
+        if (identifyResult.ImageUrl) {
+            var displayUrl = getSearchImageDisplayUrl(identifyResult.ImageUrl, identifyResult.SearchProviderName);
+
+            resultHtml = '<img src="' + displayUrl + '" style="max-height:160px;" /><br/>' + resultHtml;
+        }
+
+        $('.selectedSearchResult', page).html(resultHtml);
+    }
+
+    function submitIdentficationResult(page) {
+
+        Dashboard.showLoadingMsg();
+
+        var options = {
+            ReplaceAllImages: $('#chkIdentifyReplaceImages', page).checked()
+        };
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
+            data: JSON.stringify(currentSearchResult),
+            contentType: "application/json"
+
+        }).done(function () {
+
+            Dashboard.hideLoadingMsg();
+
+            $('.popupIdentify', page).popup('close');
+
+            reload(page);
         });
     }
 
@@ -1279,11 +1338,20 @@
             showIdentificationForm(page);
         });
 
-        $('.btnSearchAgain', page).on('click', function () {
+        $('.btnIdentifyBack', page).on('click', function () {
 
-            $('.popupIdentifyForm', page).show();
-            $('.identificationSearchResults', page).hide();
-            $('.btnSearchAgain', page).hide();
+            if ($('.identifyOptionsForm', page).is(':visible')) {
+
+                $('.identifyOptionsForm', page).hide();
+
+                $('.identificationSearchResults', page).show();
+                $('.popupIdentifyForm', page).hide();
+            } else {
+
+                $('.identificationSearchResults', page).hide();
+                $('.popupIdentifyForm', page).show();
+                $(this).hide();
+            }
         });
 
         $('#btnDelete', this).on('click', function () {
