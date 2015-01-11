@@ -79,7 +79,7 @@
 
             var port = systemInfo.HttpServerPortNumber;
 
-            $('#ports', page).html(Globalize.translate('LabelRunningOnPort').replace('{0}', '<b>' + port + '</b>'));
+            $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + port + '</b>'));
 
             if (systemInfo.CanSelfRestart) {
                 $('.btnRestartContainer', page).removeClass('hide');
