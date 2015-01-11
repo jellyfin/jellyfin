@@ -700,17 +700,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>System.String.</returns>
         public string GetSubtitleFileCharacterSet(string path, string language)
         {
-            var charset = DetectCharset(path);
+            //var charset = DetectCharset(path);
 
-            if (!string.IsNullOrWhiteSpace(charset))
-            {
-                if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-                {
-                    //return null;
-                }
+            //if (!string.IsNullOrWhiteSpace(charset))
+            //{
+            //    if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        return null;
+            //    }
 
-                //return charset;
-            }
+            //    return charset;
+            //}
 
             if (GetFileEncoding(path).Equals(Encoding.UTF8))
             {
