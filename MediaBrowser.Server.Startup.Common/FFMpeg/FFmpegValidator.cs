@@ -88,6 +88,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             var required = new[]
             {
                 "libx264",
+                "libx265",
                 "mpeg4",
                 "msmpeg4",
                 "libvpx",
