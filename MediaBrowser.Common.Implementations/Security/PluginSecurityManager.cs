@@ -55,7 +55,6 @@ namespace MediaBrowser.Common.Implementations.Security
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
-        private readonly INetworkManager _networkManager;
         private readonly IApplicationPaths _appPaths;
 
         private IEnumerable<IRequiresRegistration> _registeredEntities;
@@ -71,7 +70,7 @@ namespace MediaBrowser.Common.Implementations.Security
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
-            IApplicationPaths appPaths, INetworkManager networkManager, ILogManager logManager)
+            IApplicationPaths appPaths, ILogManager logManager)
         {
             if (httpClient == null)
             {
@@ -81,7 +80,6 @@ namespace MediaBrowser.Common.Implementations.Security
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            _networkManager = networkManager;
             _appPaths = appPaths;
             _logger = logManager.GetLogger("SecurityManager");
         }
@@ -199,12 +197,11 @@ namespace MediaBrowser.Common.Implementations.Security
 
             if (!(lastChecked > DateTime.UtcNow.AddDays(-1)))
             {
-                var mac = _networkManager.GetMacAddress();
                 var data = new Dictionary<string, string>
                 {
                     { "feature", feature }, 
                     { "key", SupporterKey }, 
-                    { "mac", mac }, 
+                    { "mac", _appHost.SystemId }, 
                     { "systemid", _appHost.SystemId }, 
                     { "mb2equiv", mb2Equivalent }, 
                     { "ver", version }, 

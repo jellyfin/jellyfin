@@ -102,6 +102,11 @@
 .logoLibraryMenuButtonText {
     font-family: MBLogo;
     font-weight: 200;
+    color: #000;
+}
+
+.ui-page-theme-b .logoLibraryMenuButtonText, .ui-bar-b .logoLibraryMenuButtonText {
+    color: #fff;
 }
 
 .viewMenuBar {

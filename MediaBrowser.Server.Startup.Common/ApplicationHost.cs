@@ -1098,6 +1098,7 @@ namespace MediaBrowser.Server.Startup.Common
                 NativeApp.AuthorizeServer(
                     UdpServerEntryPoint.PortNumber,
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                    ServerConfigurationManager.Configuration.HttpsPortNumber,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }
             catch (Exception ex)

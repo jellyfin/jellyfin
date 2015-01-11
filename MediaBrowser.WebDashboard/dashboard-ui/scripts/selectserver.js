@@ -47,7 +47,7 @@
 
         html += "<div data-id='" + server.Id + "' data-connectserverid='" + (server.ConnectServerId || '') + "' class='" + cssClass + "'>";
 
-        html += '<div class="cardBox visualCardBox visualCardBox-b">';
+        html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
         html += '<div class="cardPadder"></div>';
@@ -264,7 +264,7 @@
 
         html += "<div data-id='" + invite.Id + "' class='" + cssClass + "'>";
 
-        html += '<div class="cardBox visualCardBox visualCardBox-b">';
+        html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
         html += '<div class="cardPadder"></div>';

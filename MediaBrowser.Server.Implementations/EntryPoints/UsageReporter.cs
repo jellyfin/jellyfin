@@ -14,15 +14,13 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
     public class UsageReporter
     {
         private readonly IApplicationHost _applicationHost;
-        private readonly INetworkManager _networkManager;
         private readonly IHttpClient _httpClient;
         private readonly IUserManager _userManager;
         private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
 
-        public UsageReporter(IApplicationHost applicationHost, INetworkManager networkManager, IHttpClient httpClient, IUserManager userManager)
+        public UsageReporter(IApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager)
         {
             _applicationHost = applicationHost;
-            _networkManager = networkManager;
             _httpClient = httpClient;
             _userManager = userManager;
         }
@@ -31,12 +29,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var mac = _networkManager.GetMacAddress();
-
             var data = new Dictionary<string, string>
             {
                 { "feature", _applicationHost.Name }, 
-                { "mac", mac }, 
+                { "mac", _applicationHost.SystemId }, 
                 { "serverid", _applicationHost.SystemId }, 
                 { "deviceid", _applicationHost.SystemId }, 
                 { "ver", _applicationHost.ApplicationVersion.ToString() }, 

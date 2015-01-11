@@ -533,8 +533,25 @@
         });
     }
 
-    function showWelcomeIfNeeded() {
-        
+    function showWelcomeIfNeeded(page, displayPreferences) {
+
+        if (displayPreferences.CustomPrefs[homePageTourKey] == homePageDismissValue) {
+            $('.welcomeMessage', page).hide();
+        } else {
+
+            var elem = $('.welcomeMessage', page).show();
+
+            if (displayPreferences.CustomPrefs[homePageTourKey]) {
+
+                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeBack'));
+                $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTourToSeeWhatsNew'));
+
+            } else {
+
+                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToMediaBrowserWebClient'));
+                $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTour'));
+            }
+        }
     }
 
     function takeTour(page, userId) {
@@ -581,12 +598,7 @@
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
-            if (result.CustomPrefs[homePageTourKey] == homePageDismissValue) {
-                $('.welcomeMessage', page).hide();
-            } else {
-                $('.welcomeMessage', page).show();
-            }
-
+            showWelcomeIfNeeded(page, result);
             loadSections(page, userId, result);
         });
 
