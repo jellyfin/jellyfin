@@ -16,9 +16,9 @@
                 </div>
                 <div class="dashboardContent">
                     <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
-                        <h1 style="margin-top: 0;">${HeaderWelcomeToMediaBrowserServerDashboard}</h1>
+                        <h1 style="margin-top: 0;" class="tourHeader"></h1>
                         <p>
-                            <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right">${ButtonTakeTheTour}</button>
+                            <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right"><span class="tourButtonText"></span></button>
                         </p>
                     </div>
 
@@ -120,9 +120,7 @@
                         <div id="contribute" style="margin-top: 2em; display: none;">
                             <h2 style="margin: 0 0 .35em;">${HeaderHelpImproveMediaBrowser}</h2>
                             <div>
-                                <a data-role="button" data-icon="mail" data-mini="true" href="supporter.html">
-                                    <img src="css/images/supporter/donatepaypal.png" />
-                                </a>
+                                <a data-role="button" data-icon="mail" data-mini="true" href="supporter.html">${ButtonDonate}</a>
                                 <a href="https://github.com/MediaBrowser/MediaBrowser/wiki" data-role="button" target="_blank" data-icon="user" data-mini="true">Join the Development Team</a>
 
                                 <p class="appLinks" style="padding-left: 5px;">

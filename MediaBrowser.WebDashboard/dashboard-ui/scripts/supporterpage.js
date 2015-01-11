@@ -105,14 +105,14 @@
 
                 $('.planSummary', page)
                     .html(Globalize.translate('MessageYouHaveALifetimeMembership'))
-                    .css('color', 'blue');
+                    .css('color', 'green');
 
             }
             else if (info.IsActiveSupporter) {
 
                 $('.planSummary', page)
                     .html(Globalize.translate('MessageYouHaveAnActiveRecurringMembership').replace('{0}', info.PlanType))
-                    .css('color', 'blue');
+                    .css('color', 'green');
 
             }
             else if (info.IsExpiredSupporter) {
@@ -190,6 +190,8 @@
         $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
 
         $('.radioDonationType', page).trigger('change');
+
+        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://mediabrowser.tv/donate" target="_blank">', '</a>')).trigger('create');
 
         loadUserInfo(page);
     });
