@@ -45,20 +45,13 @@
 }
 
 .cardBox {
-    margin: 4px;
+    margin: 3px;
 }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
     -moz-filter: grayscale(100%);
     filter: grayscale(100%);
-}
-
-@media all and (max-width: 800px) {
-
-    .cardBox {
-        margin: 0 2px;
-    }
 }
 
 @media all and (max-width: 600px) {
