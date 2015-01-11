@@ -761,10 +761,10 @@ var Dashboard = {
             name: Globalize.translate('TabPlayback'),
             href: "playbackconfiguration.html",
             selected: page.hasClass('playbackConfigurationPage')
-        }, {
-            name: Globalize.translate('TabSync'),
-            href: "syncactivity.html",
-            selected: page.hasClass('syncConfigurationPage')
+        //}, {
+        //    name: Globalize.translate('TabSync'),
+        //    href: "syncactivity.html",
+        //    selected: page.hasClass('syncConfigurationPage')
         }, {
             divider: true,
             name: Globalize.translate('TabAutoOrganize'),
