@@ -18,8 +18,9 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         /// <param name="udpPort">The UDP port.</param>
         /// <param name="httpServerPort">The HTTP server port.</param>
+        /// <param name="httpsServerPort">The HTTPS server port.</param>
         /// <param name="tempDirectory">The temporary directory.</param>
-        void AuthorizeServer(int udpPort, int httpServerPort, string tempDirectory);
+        void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string tempDirectory);
 
         /// <summary>
         /// Gets the environment.

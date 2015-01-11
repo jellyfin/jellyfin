@@ -279,32 +279,7 @@ namespace MediaBrowser.Api.Playback
                 return Math.Max(Environment.ProcessorCount - 1, 2);
             }
 
-            // Use more when this is true. -re will keep cpu usage under control
-            if (state.ReadInputAtNativeFramerate)
-            {
-                if (isWebm)
-                {
-                    return Math.Max(Environment.ProcessorCount - 1, 2);
-                }
-
-                return 0;
-            }
-
-            // Webm: http://www.webmproject.org/docs/encoder-parameters/
-            // The decoder will usually automatically use an appropriate number of threads according to how many cores are available but it can only use multiple threads 
-            // for the coefficient data if the encoder selected --token-parts > 0 at encode time.
-
-            switch (GetQualitySetting())
-            {
-                case EncodingQuality.HighSpeed:
-                    return 2;
-                case EncodingQuality.HighQuality:
-                    return 2;
-                case EncodingQuality.MaxQuality:
-                    return isWebm ? Math.Max(Environment.ProcessorCount - 1, 2) : 0;
-                default:
-                    throw new Exception("Unrecognized MediaEncodingQuality value.");
-            }
+            return 0;
         }
 
         protected string H264Encoder
@@ -338,20 +313,9 @@ namespace MediaBrowser.Api.Playback
 
             var qualitySetting = GetQualitySetting();
 
-            if (string.Equals(videoCodec, H264Encoder, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param = "-preset superfast";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param = "-preset superfast";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param = "-preset superfast";
-                        break;
-                }
+                param = "-preset superfast";
 
                 switch (qualitySetting)
                 {
@@ -363,6 +327,24 @@ namespace MediaBrowser.Api.Playback
                         break;
                     case EncodingQuality.MaxQuality:
                         param += " -crf 18";
+                        break;
+                }
+            }
+
+            else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-preset fast";
+
+                switch (qualitySetting)
+                {
+                    case EncodingQuality.HighSpeed:
+                        param += " -crf 28";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param += " -crf 25";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param += " -crf 21";
                         break;
                 }
             }

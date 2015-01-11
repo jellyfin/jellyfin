@@ -105,7 +105,6 @@ namespace MediaBrowser.Common.Implementations.Updates
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ISecurityManager _securityManager;
-        private readonly INetworkManager _networkManager;
         private readonly IConfigurationManager _config;
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, INetworkManager networkManager, IConfigurationManager config)
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config)
         {
             if (logger == null)
             {
@@ -129,7 +128,6 @@ namespace MediaBrowser.Common.Implementations.Updates
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _securityManager = securityManager;
-            _networkManager = networkManager;
             _config = config;
             _logger = logger;
         }
@@ -158,7 +156,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             var data = new Dictionary<string, string>
             {
                 { "key", _securityManager.SupporterKey }, 
-                { "mac", _networkManager.GetMacAddress() }, 
+                { "mac", _applicationHost.SystemId }, 
                 { "systemid", _applicationHost.SystemId }
             };
 
