@@ -27,6 +27,12 @@ namespace MediaBrowser.Model.Configuration
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the HTTPS server port number.
+        /// </summary>
+        /// <value>The HTTPS server port number.</value>
+        public int HttpsPortNumber { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
         /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
@@ -187,6 +193,7 @@ namespace MediaBrowser.Model.Configuration
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             HttpServerPortNumber = 8096;
+            HttpsPortNumber = 8920;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;
