@@ -93,8 +93,16 @@ namespace MediaBrowser.Api
     [Authenticated(Roles = "Admin")]
     public class ApplySearchCriteria : RemoteSearchResult, IReturnVoid
     {
-        [ApiMember(Name = "Id", Description = "The item id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "The item id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Id { get; set; }
+
+        [ApiMember(Name = "ReplaceAllImages", Description = "Whether or not to replace all images", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
+        public bool ReplaceAllImages { get; set; }
+
+        public ApplySearchCriteria()
+        {
+            ReplaceAllImages = true;
+        }
     }
 
     public class ItemLookupService : BaseApiService
@@ -206,7 +214,7 @@ namespace MediaBrowser.Api
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
-                ReplaceAllImages = true,
+                ReplaceAllImages = request.ReplaceAllImages,
                 Recursive = true
             });
         }
