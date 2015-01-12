@@ -283,6 +283,11 @@ namespace MediaBrowser.Providers.Movies
 
             var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, id);
 
+            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            {
+                url += "&client_key=" + _config.Configuration.FanartApiKey;
+            }
+
             var path = GetFanartJsonPath(id);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));

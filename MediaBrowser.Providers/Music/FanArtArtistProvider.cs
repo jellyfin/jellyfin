@@ -423,6 +423,11 @@ namespace MediaBrowser.Providers.Music
 
             var url = string.Format(FanArtBaseUrl, ApiKey, musicBrainzId);
 
+            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            {
+                url += "&client_key=" + _config.Configuration.FanartApiKey;
+            }
+
             var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
 
             Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
