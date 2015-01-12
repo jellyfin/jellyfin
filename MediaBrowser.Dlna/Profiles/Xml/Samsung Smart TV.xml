@@ -110,6 +110,9 @@
     <ResponseProfile container="mkv" type="Video" mimeType="video/x-mkv">
       <Conditions />
     </ResponseProfile>
+    <ResponseProfile container="flac" type="Audio" mimeType="audio/x-flac">
+      <Conditions />
+    </ResponseProfile>
   </ResponseProfiles>
   <SubtitleProfiles>
     <SubtitleProfile format="srt" method="External" didlMode="CaptionInfoEx" />
