@@ -798,7 +798,7 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
