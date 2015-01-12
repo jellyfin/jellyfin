@@ -618,6 +618,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\userprofiles.html">
       <Link>Resources\dashboard-ui\userprofiles.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html">
+      <Link>Resources\dashboard-ui\wizardagreement.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardfinish.html">
       <Link>Resources\dashboard-ui\wizardfinish.html</Link>
     </BundleResource>
@@ -1556,6 +1559,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\userprofilespage.js">
       <Link>Resources\dashboard-ui\scripts\userprofilespage.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardagreement.js">
+      <Link>Resources\dashboard-ui\scripts\wizardagreement.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardfinishpage.js">
       <Link>Resources\dashboard-ui\scripts\wizardfinishpage.js</Link>
