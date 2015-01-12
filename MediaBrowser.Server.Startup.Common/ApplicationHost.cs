@@ -750,16 +750,11 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         protected override void FindParts()
         {
-            // TODO: Remove after next release
-            if (!IsFirstRun && !ServerConfigurationManager.Configuration.IsPortAuthorized)
-            {
-                ServerConfigurationManager.Configuration.IsPortAuthorized = true;
-                ConfigurationManager.SaveConfiguration();
-            }
-
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 RegisterServerWithAdministratorAccess();
+                ServerConfigurationManager.Configuration.IsPortAuthorized = true;
+                ConfigurationManager.SaveConfiguration();
             }
 
             base.FindParts();

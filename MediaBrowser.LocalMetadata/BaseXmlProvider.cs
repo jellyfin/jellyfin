@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.LocalMetadata
 {
-    public abstract class BaseXmlProvider<T> : ILocalMetadataProvider<T>, IHasChangeMonitor
+    public abstract class BaseXmlProvider<T> : ILocalMetadataProvider<T>, IHasChangeMonitor, IHasOrder
         where T : IHasMetadata, new()
     {
         protected IFileSystem FileSystem;

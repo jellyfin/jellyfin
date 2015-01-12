@@ -224,12 +224,6 @@ namespace MediaBrowser.Model.Dto
         public long? RunTimeTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        public int? RecursiveUnplayedItemCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the play access.
         /// </summary>
         /// <value>The play access.</value>

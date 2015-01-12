@@ -1140,7 +1140,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
                 }
 
-                //if (fields.Contains(ItemFields.SpecialEpisodeNumbers))
+                if (fields.Contains(ItemFields.SpecialEpisodeNumbers))
                 {
                     dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
                     dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
@@ -1449,7 +1449,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.RecursiveItemCount = recursiveItemCount;
             dto.UserData.UnplayedItemCount = unplayed;
-            dto.RecursiveUnplayedItemCount = unplayed;
 
             if (recursiveItemCount > 0)
             {

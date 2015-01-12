@@ -1633,11 +1633,11 @@
             Provides means to populate factories of named items (such as targets, layouts, layout renderers, etc.).
             </summary>
         </member>
-        <member name="M:NLog.Config.Factory`2.ScanAssembly(System.Reflection.Assembly,System.String)">
+        <member name="M:NLog.Config.Factory`2.ScanTypes(System.Type[],System.String)">
             <summary>
             Scans the assembly.
             </summary>
-            <param name="theAssembly">The assembly.</param>
+            <param name="types">The types to scane.</param>
             <param name="prefix">The prefix.</param>
         </member>
         <member name="M:NLog.Config.Factory`2.RegisterType(System.Type,System.String)">
@@ -2064,13 +2064,13 @@
             <typeparam name="TClassAttributeType">The type of the class marker attribute.</typeparam>
             <typeparam name="TMethodAttributeType">The type of the method marker attribute.</typeparam>
         </member>
-        <member name="M:NLog.Config.MethodFactory`2.ScanAssembly(System.Reflection.Assembly,System.String)">
+        <member name="M:NLog.Config.MethodFactory`2.ScanTypes(System.Type[],System.String)">
             <summary>
             Scans the assembly for classes marked with <typeparamref name="TClassAttributeType"/>
             and methods marked with <typeparamref name="TMethodAttributeType"/> and adds them 
             to the factory.
             </summary>
-            <param name="theAssembly">The assembly.</param>
+            <param name="types">The types to scan.</param>
             <param name="prefix">The prefix to use for names.</param>
         </member>
         <member name="M:NLog.Config.MethodFactory`2.RegisterType(System.Type,System.String)">
@@ -2124,6 +2124,16 @@
             of the item and value is the <see cref="T:System.Reflection.MethodInfo"/> of
             the item.
             </returns>
+        </member>
+        <member name="T:NLog.Config.NLogConfigurationIgnorePropertyAttribute">
+            <summary>
+            Indicates NLog should not scan this property during configuration.
+            </summary>
+        </member>
+        <member name="M:NLog.Config.NLogConfigurationIgnorePropertyAttribute.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NLog.Config.NLogConfigurationIgnorePropertyAttribute"/> class.
+            </summary>
         </member>
         <member name="T:NLog.Config.NLogConfigurationItemAttribute">
             <summary>
@@ -2366,6 +2376,11 @@
             <summary>
             Gets the default <see cref="T:NLog.Config.LoggingConfiguration"/> object by parsing 
             the application configuration file (<c>app.exe.config</c>).
+            </summary>
+        </member>
+        <member name="P:NLog.Config.XmlLoggingConfiguration.Variables">
+            <summary>
+            Gets the variables defined in the configuration.
             </summary>
         </member>
         <member name="P:NLog.Config.XmlLoggingConfiguration.AutoReload">
@@ -2620,6 +2635,271 @@
             Gets or sets a value indicating whether to ignore case when comparing strings.
             </summary>
             <docgen category='Filtering Options' order='10' />
+        </member>
+        <member name="T:NLog.Fluent.Log">
+            <summary>
+            A global logging class using caller info to find the logger.
+            </summary>
+        </member>
+        <member name="M:NLog.Fluent.Log.Level(NLog.LogLevel,System.String)">
+            <summary>
+            Starts building a log event with the specified <see cref="T:NLog.LogLevel"/>.
+            </summary>
+            <param name="logLevel">The log level.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Trace(System.String)">
+            <summary>
+            Starts building a log event at the <c>Trace</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Debug(System.String)">
+            <summary>
+            Starts building a log event at the <c>Debug</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Info(System.String)">
+            <summary>
+            Starts building a log event at the <c>Info</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Warn(System.String)">
+            <summary>
+            Starts building a log event at the <c>Warn</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Error(System.String)">
+            <summary>
+            Starts building a log event at the <c>Error</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Fatal(System.String)">
+            <summary>
+            Starts building a log event at the <c>Fatal</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="T:NLog.Fluent.LogBuilder">
+            <summary>
+            A fluent class to build log events for NLog.
+            </summary>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.#ctor(NLog.Logger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NLog.Fluent.LogBuilder"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:NLog.Logger"/> to send the log event.</param>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.#ctor(NLog.Logger,NLog.LogLevel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NLog.Fluent.LogBuilder"/> class.
+            </summary>
+            <param name="logger">The <see cref="T:NLog.Logger"/> to send the log event.</param>
+            <param name="logLevel">The <see cref="T:NLog.LogLevel"/> for the log event.</param>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Exception(System.Exception)">
+            <summary>
+            Sets the <paramref name="exception"/> information of the logging event.
+            </summary>
+            <param name="exception">The exception information of the logging event.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Level(NLog.LogLevel)">
+            <summary>
+            Sets the level of the logging event.
+            </summary>
+            <param name="logLevel">The level of the logging event.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.LoggerName(System.String)">
+            <summary>
+            Sets the logger name of the logging event.
+            </summary>
+            <param name="loggerName">The logger name of the logging event.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String)">
+            <summary>
+            Sets the log message on the logging event.
+            </summary>
+            <param name="message">The log message for the logging event.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String,System.Object)">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="arg0">The object to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String,System.Object,System.Object)">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="arg0">The first object to format.</param>
+            <param name="arg1">The second object to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String,System.Object,System.Object,System.Object)">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="arg0">The first object to format.</param>
+            <param name="arg1">The second object to format.</param>
+            <param name="arg2">The third object to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String,System.Object,System.Object,System.Object,System.Object)">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="arg0">The first object to format.</param>
+            <param name="arg1">The second object to format.</param>
+            <param name="arg2">The third object to format.</param>
+            <param name="arg3">The fourth object to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.String,System.Object[])">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="args">An object array that contains zero or more objects to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Message(System.IFormatProvider,System.String,System.Object[])">
+            <summary>
+            Sets the log message and parameters for formating on the logging event.
+            </summary>
+            <param name="provider">An object that supplies culture-specific formatting information.</param>
+            <param name="format">A composite format string.</param>
+            <param name="args">An object array that contains zero or more objects to format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Property(System.Object,System.Object)">
+            <summary>
+            Sets a per-event context property on the logging event.
+            </summary>
+            <param name="name">The name of the context property.</param>
+            <param name="value">The value of the context property.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.TimeStamp(System.DateTime)">
+            <summary>
+            Sets the timestamp of the logging event.
+            </summary>
+            <param name="timeStamp">The timestamp of the logging event.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.StackTrace(System.Diagnostics.StackTrace,System.Int32)">
+            <summary>
+            Sets the stack trace for the event info.
+            </summary>
+            <param name="stackTrace">The stack trace.</param>
+            <param name="userStackFrame">Index of the first user stack frame within the stack trace.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.Write(System.String,System.String,System.Int32)">
+            <summary>
+            Writes the log event to the underlying logger.
+            </summary>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean},System.String,System.String,System.Int32)">
+            <summary>
+            Writes the log event to the underlying logger if the condition delegate is true.
+            </summary>
+            <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
+        </member>
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean,System.String,System.String,System.Int32)">
+            <summary>
+            Writes the log event to the underlying logger if the condition is true.
+            </summary>
+            <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
+        </member>
+        <member name="P:NLog.Fluent.LogBuilder.LogEventInfo">
+            <summary>
+            Gets the <see cref="P:NLog.Fluent.LogBuilder.LogEventInfo"/> created by the builder.
+            </summary>
+        </member>
+        <member name="T:NLog.Fluent.LoggerExtensions">
+            <summary>
+            Extension methods for NLog <see cref="T:NLog.Logger"/>.
+            </summary>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Log(NLog.Logger,NLog.LogLevel)">
+            <summary>
+            Starts building a log event with the specified <see cref="T:NLog.LogLevel"/>.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <param name="logLevel">The log level.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Trace(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Trace</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Debug(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Debug</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Info(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Info</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Warn(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Warn</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Error(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Error</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NLog.Fluent.LoggerExtensions.Fatal(NLog.Logger)">
+            <summary>
+            Starts building a log event at the <c>Fatal</c> level.
+            </summary>
+            <param name="logger">The logger to write the log event to.</param>
+            <returns></returns>
         </member>
         <member name="T:NLog.GDC">
             <summary>
@@ -2911,56 +3191,6 @@
             <returns>
             The current element in the collection.
             </returns>
-        </member>
-        <member name="T:NLog.Internal.EnumerableHelpers">
-            <summary>
-            LINQ-like helpers (cannot use LINQ because we must work with .NET 2.0 profile).
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.EnumerableHelpers.OfType``1(System.Collections.IEnumerable)">
-            <summary>
-            Filters the given enumerable to return only items of the specified type.
-            </summary>
-            <typeparam name="T">
-            Type of the item.
-            </typeparam>
-            <param name="enumerable">
-            The enumerable.
-            </param>
-            <returns>
-            Items of specified type.
-            </returns>
-        </member>
-        <member name="M:NLog.Internal.EnumerableHelpers.Reverse``1(System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Reverses the specified enumerable.
-            </summary>
-            <typeparam name="T">
-            Type of enumerable item.
-            </typeparam>
-            <param name="enumerable">
-            The enumerable.
-            </param>
-            <returns>
-            Reversed enumerable.
-            </returns>
-        </member>
-        <member name="M:NLog.Internal.EnumerableHelpers.Any``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
-            <summary>
-            Determines is the given predicate is met by any element of the enumerable.
-            </summary>
-            <typeparam name="T">Element type.</typeparam>
-            <param name="enumerable">The enumerable.</param>
-            <param name="predicate">The predicate.</param>
-            <returns>True if predicate returns true for any element of the collection, false otherwise.</returns>
-        </member>
-        <member name="M:NLog.Internal.EnumerableHelpers.ToList``1(System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Converts the enumerable to list.
-            </summary>
-            <typeparam name="T">Type of the list element.</typeparam>
-            <param name="enumerable">The enumerable.</param>
-            <returns>List of elements.</returns>
         </member>
         <member name="T:NLog.Internal.EnvironmentHelper">
             <summary>
@@ -3769,6 +3999,11 @@
         <member name="M:NLog.Internal.NetworkSenders.SocketProxy.Dispose">
             <summary>
             Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="P:NLog.Internal.NetworkSenders.SocketProxy.UnderlyingSocket">
+            <summary>
+            Gets underlying socket instance.
             </summary>
         </member>
         <member name="T:NLog.Internal.NetworkSenders.TcpNetworkSender">
@@ -4729,6 +4964,55 @@
             </summary>
             <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
             <param name="logEvent">Logging event.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendMessage(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the Message of an Exception to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The exception containing the Message to append.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendMethod(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the method name from Exception's stack trace to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose method name should be appended.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendStackTrace(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the stack trace from an Exception to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose stack trace should be appended.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendToString(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the result of calling ToString() on an Exception to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose call to ToString() should be appended.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendType(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the type of an Exception to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose type should be appended.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendShortType(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the short type of an Exception to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose short type should be appended.</param>
+        </member>
+        <member name="M:NLog.LayoutRenderers.ExceptionLayoutRenderer.AppendData(System.Text.StringBuilder,System.Exception)">
+            <summary>
+            Appends the contents of an Exception's Data property to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="sb">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="ex">The Exception whose Data property elements should be appended.</param>
         </member>
         <member name="P:NLog.LayoutRenderers.ExceptionLayoutRenderer.Format">
             <summary>
@@ -10036,6 +10320,13 @@
             Prevents a default instance of the LogManager class from being created.
             </summary>
         </member>
+        <member name="M:NLog.LogManager.AddHiddenAssembly(System.Reflection.Assembly)">
+            <summary>
+            Adds the given assembly which will be skipped 
+            when NLog is trying to find the calling method on stack trace.
+            </summary>
+            <param name="assembly">The assembly to skip.</param>
+        </member>
         <member name="M:NLog.LogManager.GetCurrentClassLogger">
             <summary>
             Gets the logger named after the currently-being-initialized class.
@@ -10894,6 +11185,13 @@
         <member name="F:NLog.Targets.ArchiveNumberingMode.Date">
             <summary>
             Date style numbering.  Archives will be stamped with the prior period (Year, Month, Day, Hour, Minute) datetime.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.ArchiveNumberingMode.DateAndSequence">
+            <summary>
+            Date and sequence style numbering.
+            Archives will be stamped with the prior period (Year, Month, Day) datetime.
+            The most recent archive has the highest number (in combination with the date).
             </summary>
         </member>
         <member name="T:NLog.Targets.AspResponseTarget">
@@ -12378,6 +12676,16 @@
             </remarks>
             <docgen category='Output Options' order='10' />
         </member>
+        <member name="P:NLog.Targets.FileTarget.ArchiveOldFileOnStartup">
+            <summary>
+            Gets or sets a value indicating whether to archive old log file on startup.
+            </summary>
+            <remarks>
+            This option works only when the "FileName" parameter denotes a single file.
+            After archiving the old file, the current log file will be empty.
+            </remarks>
+            <docgen category='Output Options' order='10' />
+        </member>
         <member name="P:NLog.Targets.FileTarget.ReplaceFileContentsOnEachWrite">
             <summary>
             Gets or sets a value indicating whether to replace file contents on each write instead of appending log message at the end.
@@ -12693,6 +13001,12 @@
             optimize batch writes.
             </summary>
             <param name="logEvents">Logging events to be written out.</param>
+        </member>
+        <member name="M:NLog.Targets.LogReceiverWebServiceTarget.FlushAsync(NLog.Common.AsyncContinuation)">
+            <summary>
+            Flush any pending log messages asynchronously (in case of asynchronous targets).
+            </summary>
+            <param name="asyncContinuation">The asynchronous continuation.</param>
         </member>
         <member name="M:NLog.Targets.LogReceiverWebServiceTarget.CreateWcfLogReceiverClient">
             <summary>
