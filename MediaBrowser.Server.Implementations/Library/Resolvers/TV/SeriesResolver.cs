@@ -148,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                         if (!isTvContentType)
                         {
                             namingOptions.EpisodeExpressions = namingOptions.EpisodeExpressions
-                                .Where(i => i.IsNamed)
+                                .Where(i => i.IsNamed && !i.IsOptimistic)
                                 .ToList();
                         }
 
