@@ -577,7 +577,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var fullPath = fileInfo.FullName;
 
-            if (string.IsNullOrWhiteSpace(collectionType))
+            if (string.IsNullOrWhiteSpace(collectionType) && parent != null)
             {
                 collectionType = GetContentTypeOverride(fullPath, true);
             }

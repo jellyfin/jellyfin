@@ -48,9 +48,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NLog, Version=3.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog, Version=3.2.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.3.2.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="SharpCompress, Version=0.10.2.0, Culture=neutral, PublicKeyToken=beaf6f427e128133, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
