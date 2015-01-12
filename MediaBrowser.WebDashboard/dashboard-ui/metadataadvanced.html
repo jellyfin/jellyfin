@@ -47,11 +47,6 @@
                         <div>
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
-                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                                </li>
-                                <li>
                                     <input type="checkbox" id="chkEnableTmdbPersonUpdates" data-mini="true" />
                                     <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
                                     <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
@@ -108,13 +103,33 @@
                                     <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
                                 </li>
                             </ul>
-                            <br/>
+                            <br />
                             <div>
                                 <label for="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</label>
                                 <input type="checkbox" id="chkExtractChaptersDuringLibraryScan" />
                                 <div class="fieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
                             </div>
                             <br />
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Fanart.tv</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtFanartApiKey">${LabelFanartApiKey}</label>
+                                    <input type="text" id="txtFanartApiKey" />
+                                    <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
+                                    <div class="fieldDescription"><a href="https://fanart.tv/get-an-api-key" target="_blank">${ButtonLearnMore}</a></div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
+                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdates}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 

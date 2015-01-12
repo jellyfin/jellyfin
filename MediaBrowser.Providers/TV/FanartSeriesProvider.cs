@@ -295,6 +295,11 @@ namespace MediaBrowser.Providers.TV
 
             var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tvdbId);
 
+            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            {
+                url += "&client_key=" + _config.Configuration.FanartApiKey;
+            }
+            
             var path = GetFanartJsonPath(tvdbId);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));

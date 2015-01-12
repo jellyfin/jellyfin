@@ -105,10 +105,17 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{IEnumerable{System.String}}.</returns>
         private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
         {
+            var url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime);
+
+            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            {
+                url += "&client_key=" + _config.Configuration.FanartApiKey;
+            }
+
             // First get last time
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
-                Url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime),
+                Url = url,
                 CancellationToken = cancellationToken,
                 EnableHttpCompression = true,
                 ResourcePool = FanartArtistProvider.Current.FanArtResourcePool

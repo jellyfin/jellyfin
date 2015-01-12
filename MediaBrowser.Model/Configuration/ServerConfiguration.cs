@@ -149,7 +149,9 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
         public bool EnableTvDbUpdates { get; set; }
         public bool EnableTmdbUpdates { get; set; }
+
         public bool EnableFanArtUpdates { get; set; }
+        public string FanartApiKey { get; set; }
 
         /// <summary>
         /// Gets or sets the image saving convention.
