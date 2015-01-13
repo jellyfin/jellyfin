@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
@@ -126,6 +127,16 @@ namespace MediaBrowser.Server.Implementations.Sync
             await _repo.Create(job).ConfigureAwait(false);
 
             await processor.EnsureJobItems(job).ConfigureAwait(false);
+            
+            // If it already has a converting status then is must have been aborted during conversion
+            var jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                JobId = jobId
+            });
+
+            await processor.SyncJobItems(jobItemsResult.Items, false, new Progress<double>(), CancellationToken.None)
+                    .ConfigureAwait(false);
 
             return new SyncJobCreationResult
             {

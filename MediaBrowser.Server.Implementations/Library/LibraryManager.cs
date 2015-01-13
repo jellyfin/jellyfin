@@ -909,14 +909,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return obj as T;
         }
 
-        /// <summary>
-        /// Creates an IBN item based on a given path
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path">The path.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{``0}.</returns>
-        /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
         private T CreateItemByName<T>(string path, string name, Guid id)
             where T : BaseItem, new()
         {
@@ -942,7 +934,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!fileInfo.Exists)
             {
-                fileInfo = Directory.CreateDirectory(path);
+                try
+                {
+                    fileInfo = Directory.CreateDirectory(path);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    _logger.Error("Error creating directory {0}", ex, path);
+                    throw new Exception(string.Format("Error creating directory {0}", path), ex);
+                }
 
                 isNew = true;
             }
