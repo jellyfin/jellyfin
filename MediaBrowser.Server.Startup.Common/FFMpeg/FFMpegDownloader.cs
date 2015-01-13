@@ -129,7 +129,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         {
             try
             {
-                Directory.Delete(path, true);
+                _fileSystem.DeleteDirectory(path, true);
             }
             catch (Exception ex)
             {
@@ -272,7 +272,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         {
             try
             {
-                File.Delete(path);
+                _fileSystem.DeleteFile(path);
             }
             catch (IOException ex)
             {
@@ -380,10 +380,10 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
 
             Extract7zArchive(tempFile, fontsDirectory);
-
+            
             try
             {
-                File.Delete(tempFile);
+                _fileSystem.DeleteFile(tempFile);
             }
             catch (IOException ex)
             {

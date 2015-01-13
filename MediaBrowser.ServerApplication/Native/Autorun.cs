@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Common.IO;
+using System;
 using System.IO;
 
 namespace MediaBrowser.ServerApplication.Native
@@ -12,7 +13,8 @@ namespace MediaBrowser.ServerApplication.Native
         /// Configures the specified autorun.
         /// </summary>
         /// <param name="autorun">if set to <c>true</c> [autorun].</param>
-        public static void Configure(bool autorun)
+        /// <param name="fileSystem">The file system.</param>
+        public static void Configure(bool autorun, IFileSystem fileSystem)
         {
             var shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk");
 
@@ -26,7 +28,7 @@ namespace MediaBrowser.ServerApplication.Native
             else
             {
                 //Remove our shortcut from the startup folder for this user
-                File.Delete(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "MBstartup.lnk"));
+                fileSystem.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "MBstartup.lnk"));
             }
         }
     }

@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
@@ -11,6 +13,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -69,9 +72,11 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly Func<IConnectManager> _connectFactory;
+        private readonly Func<IChannelManager> _channelManager;
         private readonly IServerApplicationHost _appHost;
+        private readonly IFileSystem _fileSystem;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, Func<IChannelManager> channelManager)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -82,6 +87,8 @@ namespace MediaBrowser.Server.Implementations.Library
             _connectFactory = connectFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
+            _fileSystem = fileSystem;
+            _channelManager = channelManager;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -165,6 +172,7 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var user in users)
             {
                 await DoPolicyMigration(user).ConfigureAwait(false);
+                await DoChannelMigration(user).ConfigureAwait(false);
             }
 
             // If there are no local users with admin rights, make them all admins
@@ -204,7 +212,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return username;
             }
-            
+
             // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
             var builder = new StringBuilder();
 
@@ -329,27 +337,55 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (!user.Configuration.HasMigratedToPolicy)
             {
-                user.Policy.AccessSchedules = user.Configuration.AccessSchedules;
-                user.Policy.BlockedChannels = user.Configuration.BlockedChannels;
-                user.Policy.BlockedMediaFolders = user.Configuration.BlockedMediaFolders;
-                user.Policy.BlockedTags = user.Configuration.BlockedTags;
                 user.Policy.BlockUnratedItems = user.Configuration.BlockUnratedItems;
                 user.Policy.EnableContentDeletion = user.Configuration.EnableContentDeletion;
                 user.Policy.EnableLiveTvAccess = user.Configuration.EnableLiveTvAccess;
                 user.Policy.EnableLiveTvManagement = user.Configuration.EnableLiveTvManagement;
                 user.Policy.EnableMediaPlayback = user.Configuration.EnableMediaPlayback;
-                user.Policy.EnableRemoteControlOfOtherUsers = user.Configuration.EnableRemoteControlOfOtherUsers;
-                user.Policy.EnableSharedDeviceControl = user.Configuration.EnableSharedDeviceControl;
-                user.Policy.EnableUserPreferenceAccess = user.Configuration.EnableUserPreferenceAccess;
                 user.Policy.IsAdministrator = user.Configuration.IsAdministrator;
-                user.Policy.IsDisabled = user.Configuration.IsDisabled;
-                user.Policy.IsHidden = user.Configuration.IsHidden;
-                user.Policy.MaxParentalRating = user.Configuration.MaxParentalRating;
 
                 await UpdateUserPolicy(user, user.Policy, false);
 
                 user.Configuration.HasMigratedToPolicy = true;
                 await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
+            }
+        }
+
+        private async Task DoChannelMigration(User user)
+        {
+            if (user.Policy.BlockedChannels != null)
+            {
+                if (user.Policy.BlockedChannels.Length > 0)
+                {
+                    user.Policy.EnableAllChannels = false;
+
+                    try
+                    {
+                        var channelResult = await _channelManager().GetChannelsInternal(new ChannelQuery
+                        {
+                            UserId = user.Id.ToString("N")
+
+                        }, CancellationToken.None).ConfigureAwait(false);
+
+                        user.Policy.EnabledChannels = channelResult.Items
+                            .Select(i => i.Id.ToString("N"))
+                            .Except(user.Policy.BlockedChannels)
+                            .ToArray();
+                    }
+                    catch
+                    {
+                        user.Policy.EnabledChannels = new string[] { };
+                    }
+                }
+                else
+                {
+                    user.Policy.EnableAllChannels = true;
+                    user.Policy.EnabledChannels = new string[] { };
+                }
+
+                user.Policy.BlockedChannels = null;
+
+                await UpdateUserPolicy(user, user.Policy, false);
             }
         }
 
@@ -591,7 +627,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    File.Delete(configPath);
+                    _fileSystem.DeleteFile(configPath);
                 }
                 catch (IOException ex)
                 {
@@ -817,7 +853,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             try
             {
-                File.Delete(PasswordResetFile);
+                _fileSystem.DeleteFile(PasswordResetFile);
             }
             catch
             {
@@ -881,7 +917,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var json = _jsonSerializer.SerializeToString(userPolicy);
                 userPolicy = _jsonSerializer.DeserializeFromString<UserPolicy>(json);
             }
-            
+
             var path = GetPolifyFilePath(user);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -909,7 +945,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 lock (_policySyncLock)
                 {
-                    File.Delete(path);
+                    _fileSystem.DeleteFile(path);
                 }
             }
             catch (IOException)
@@ -971,14 +1007,14 @@ namespace MediaBrowser.Server.Implementations.Library
             var path = GetConfigurationFilePath(user);
 
             // The xml serializer will output differently if the type is not exact
-            if (config.GetType() != typeof (UserConfiguration))
+            if (config.GetType() != typeof(UserConfiguration))
             {
                 var json = _jsonSerializer.SerializeToString(config);
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            
+
             lock (_configSyncLock)
             {
                 _xmlSerializer.SerializeToFile(config, path);

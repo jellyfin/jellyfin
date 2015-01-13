@@ -2,7 +2,6 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -44,28 +43,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ITaskManager _taskManager;
 
-        private readonly IDtoService _dtoService;
-
         private readonly ISessionManager _sessionManager;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerEventNotifier" /> class.
-        /// </summary>
-        /// <param name="serverManager">The server manager.</param>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="installationManager">The installation manager.</param>
-        /// <param name="taskManager">The task manager.</param>
-        /// <param name="dtoService">The dto service.</param>
-        /// <param name="sessionManager">The session manager.</param>
-        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, IDtoService dtoService, ISessionManager sessionManager)
+        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager)
         {
             _serverManager = serverManager;
             _userManager = userManager;
             _installationManager = installationManager;
             _appHost = appHost;
             _taskManager = taskManager;
-            _dtoService = dtoService;
             _sessionManager = sessionManager;
         }
 
@@ -84,13 +70,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
-        }
-
-        void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
-        {
-            var dto = _userManager.GetUserDto(e.Argument);
-
-            _serverManager.SendWebSocketMessage("UserConfigurationUpdated", dto);
         }
 
         void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
@@ -146,8 +125,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
-            
-            _serverManager.SendWebSocketMessage("UserUpdated", dto);
+
+            SendMessageToUserSession(e.Argument, "UserUpdated", dto);
         }
 
         /// <summary>
@@ -157,7 +136,19 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
         {
-            _serverManager.SendWebSocketMessage("UserDeleted", e.Argument.Id.ToString("N"));
+            SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N"));
+        }
+
+        void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        {
+            var dto = _userManager.GetUserDto(e.Argument);
+
+            SendMessageToUserSession(e.Argument, "UserConfigurationUpdated", dto);
+        }
+
+        private async void SendMessageToUserSession<T>(User user, string name, T data)
+        {
+            await _sessionManager.SendMessageToUserSessions(user.Id.ToString("N"), name, data, CancellationToken.None);
         }
 
         /// <summary>

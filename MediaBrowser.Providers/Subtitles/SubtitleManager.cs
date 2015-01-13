@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             try
             {
-                File.Delete(path);
+                _fileSystem.DeleteFile(path);
             }
             finally
             {

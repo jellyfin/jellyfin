@@ -548,7 +548,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     ImageUrl = response.UserImageUrl,
                     UserName = response.UserName,
                     ExcludedLibraries = request.ExcludedLibraries,
-                    ExcludedChannels = request.ExcludedChannels,
+                    EnabledChannels = request.EnabledChannels,
                     EnableLiveTv = request.EnableLiveTv,
                     AccessToken = accessToken
                 });
@@ -810,7 +810,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                             {
                                 user.Policy.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
                                 user.Policy.BlockedMediaFolders = currentPendingEntry.ExcludedLibraries;
-                                user.Policy.BlockedChannels = currentPendingEntry.ExcludedChannels;
+                                user.Policy.EnabledChannels = currentPendingEntry.EnabledChannels;
+                                user.Policy.EnableAllChannels = false;
                             }
 
                             await _userManager.UpdateConfiguration(user.Id.ToString("N"), user.Configuration);
@@ -937,7 +938,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 ConnectUserId = i.ConnectUserId,
                 EnableLiveTv = i.EnableLiveTv,
-                ExcludedChannels = i.ExcludedChannels,
+                EnabledChannels = i.EnabledChannels,
                 ExcludedLibraries = i.ExcludedLibraries,
                 Id = i.Id,
                 ImageUrl = i.ImageUrl,

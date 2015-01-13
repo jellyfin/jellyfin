@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using System.IO;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
@@ -6,10 +7,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
     public class DeleteDlnaProfiles : IVersionMigration
     {
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public DeleteDlnaProfiles(IServerApplicationPaths appPaths)
+        public DeleteDlnaProfiles(IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public void Run()
@@ -23,7 +26,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
         {
             try
             {
-                File.Delete(Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system", filename + ".xml"));
+                _fileSystem.DeleteFile(Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system", filename + ".xml"));
             }
             catch
             {
@@ -31,7 +34,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             }
             try
             {
-                File.Delete(Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user", filename + ".xml"));
+                _fileSystem.DeleteFile(Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "user", filename + ".xml"));
             }
             catch
             {

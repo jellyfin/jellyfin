@@ -73,6 +73,12 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable localized guids]; otherwise, <c>false</c>.</value>
         public bool EnableLocalizedGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable library metadata sub folder].
+        /// </summary>
+        /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
+        public bool EnableLibraryMetadataSubFolder { get; set; }
         
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -149,6 +155,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value><c>true</c> if [enable tv db updates]; otherwise, <c>false</c>.</value>
         public bool EnableTvDbUpdates { get; set; }
         public bool EnableTmdbUpdates { get; set; }
+
+        public bool StoreArtistsInMetadata { get; set; }
 
         public bool EnableFanArtUpdates { get; set; }
         public string FanartApiKey { get; set; }

@@ -145,5 +145,10 @@ namespace MediaBrowser.Controller.LiveTv
 
             return list;
         }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"), "metadata");
+        }
     }
 }

@@ -348,7 +348,7 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                Directory.Delete(path, true);
+                _fileSystem.DeleteDirectory(path, true);
 
                 // Need to add a delay here or directory watchers may still pick up the changes
                 var delayTask = Task.Delay(1000);

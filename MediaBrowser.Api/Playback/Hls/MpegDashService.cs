@@ -489,7 +489,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    File.Delete(file.FullName);
+                    FileSystem.DeleteFile(file.FullName);
                 }
                 catch (IOException ex)
                 {

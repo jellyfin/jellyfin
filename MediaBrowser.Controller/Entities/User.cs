@@ -177,7 +177,7 @@ namespace MediaBrowser.Controller.Entities
                 // Exceptions will be thrown if these paths already exist
                 if (Directory.Exists(newConfigDirectory))
                 {
-                    Directory.Delete(newConfigDirectory, true);
+                    FileSystem.DeleteDirectory(newConfigDirectory, true);
                 }
 
                 if (Directory.Exists(oldConfigurationDirectory))

@@ -1492,7 +1492,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
-                File.Delete(response.TempFilePath);
+                _fileSystem.DeleteFile(response.TempFilePath);
 
                 throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
             }
@@ -1501,7 +1501,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             try
             {
-                File.Delete(response.TempFilePath);
+                _fileSystem.DeleteFile(response.TempFilePath);
             }
             catch
             {

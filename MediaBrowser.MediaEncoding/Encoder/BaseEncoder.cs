@@ -248,7 +248,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         protected virtual void DeleteFiles(EncodingJob job)
         {
-            File.Delete(job.OutputFilePath);
+            FileSystem.DeleteFile(job.OutputFilePath);
         }
 
         private void OnTranscodeBeginning(EncodingJob job)

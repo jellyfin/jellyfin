@@ -7,12 +7,6 @@ namespace MediaBrowser.Model.Configuration
     public class UserConfiguration
     {
         /// <summary>
-        /// Gets or sets the max parental rating.
-        /// </summary>
-        /// <value>The max parental rating.</value>
-        public int? MaxParentalRating { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is administrator.
         /// </summary>
         /// <value><c>true</c> if this instance is administrator; otherwise, <c>false</c>.</value>
@@ -36,22 +30,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The subtitle language preference.</value>
         public string SubtitleLanguagePreference { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is hidden.
-        /// </summary>
-        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is disabled.
-        /// </summary>
-        /// <value><c>true</c> if this instance is disabled; otherwise, <c>false</c>.</value>
-        public bool IsDisabled { get; set; }
-
         public bool DisplayMissingEpisodes { get; set; }
         public bool DisplayUnairedEpisodes { get; set; }
-        public bool EnableRemoteControlOfOtherUsers { get; set; }
-        public bool EnableSharedDeviceControl { get; set; }
 
         public bool EnableLiveTvManagement { get; set; }
         public bool EnableLiveTvAccess { get; set; }
@@ -60,9 +40,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableContentDeletion { get; set; }
 
         public bool GroupMoviesIntoBoxSets { get; set; }
-
-        public string[] BlockedMediaFolders { get; set; }
-        public string[] BlockedChannels { get; set; }
 
         public string[] DisplayChannelsWithinViews { get; set; }
 
@@ -82,12 +59,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableCinemaMode { get; set; }
 
-        public AccessSchedule[] AccessSchedules { get; set; }
-
-        public bool EnableUserPreferenceAccess { get; set; }
-
         public string[] LatestItemsExcludes { get; set; }
-        public string[] BlockedTags { get; set; }
 
         public bool HasMigratedToPolicy { get; set; }
 
@@ -100,14 +72,10 @@ namespace MediaBrowser.Model.Configuration
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;
-            EnableSharedDeviceControl = true;
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
-            BlockedMediaFolders = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
-            BlockedTags = new string[] { };
-            BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
@@ -115,9 +83,6 @@ namespace MediaBrowser.Model.Configuration
 
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
-            EnableUserPreferenceAccess = true;
-
-            AccessSchedules = new AccessSchedule[] { };
         }
     }
 }

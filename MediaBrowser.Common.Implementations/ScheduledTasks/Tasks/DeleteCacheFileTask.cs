@@ -125,7 +125,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         {
             try
             {
-                File.Delete(path);
+                _fileSystem.DeleteFile(path);
             }
             catch (IOException ex)
             {

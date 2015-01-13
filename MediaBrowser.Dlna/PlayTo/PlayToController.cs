@@ -899,5 +899,11 @@ namespace MediaBrowser.Dlna.PlayTo
                 return request;
             }
         }
+
+        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            // Not supported or needed right now
+            return Task.FromResult(true);
+        }
     }
 }

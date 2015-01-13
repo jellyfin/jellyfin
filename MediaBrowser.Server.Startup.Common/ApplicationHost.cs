@@ -365,11 +365,11 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new MigrateUserFolders(ApplicationPaths),
+                new MigrateUserFolders(ApplicationPaths, FileSystemManager),
                 new RenameXbmcOptions(ServerConfigurationManager),
                 new RenameXmlOptions(ServerConfigurationManager),
-                new DeprecatePlugins(ApplicationPaths),
-                new DeleteDlnaProfiles(ApplicationPaths)
+                new DeprecatePlugins(ApplicationPaths, FileSystemManager),
+                new DeleteDlnaProfiles(ApplicationPaths, FileSystemManager)
             };
 
             foreach (var task in migrations)
@@ -435,7 +435,7 @@ namespace MediaBrowser.Server.Startup.Common
             SyncRepository = await GetSyncRepository().ConfigureAwait(false);
             RegisterSingleInstance(SyncRepository);
 
-            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer);
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, () => ChannelManager);
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
@@ -483,7 +483,7 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
@@ -495,7 +495,7 @@ namespace MediaBrowser.Server.Startup.Common
             ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager);
             RegisterSingleInstance(ConnectManager);
 
-            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
+            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger, FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
 
             SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);

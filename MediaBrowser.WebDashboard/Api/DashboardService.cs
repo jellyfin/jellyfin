@@ -275,11 +275,11 @@ namespace MediaBrowser.WebDashboard.Api
 
             try
             {
-                Directory.Delete(path, true);
+                _fileSystem.DeleteDirectory(path, true);
             }
             catch (IOException)
             {
-
+                
             }
 
             var creator = GetPackageCreator();

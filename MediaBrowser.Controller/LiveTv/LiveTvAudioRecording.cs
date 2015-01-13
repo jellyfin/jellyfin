@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using System.Linq;
 using MediaBrowser.Model.Users;
+using System.Linq;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -82,6 +82,11 @@ namespace MediaBrowser.Controller.LiveTv
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"));
         }
     }
 }

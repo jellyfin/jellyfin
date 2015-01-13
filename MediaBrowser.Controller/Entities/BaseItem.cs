@@ -379,7 +379,14 @@ namespace MediaBrowser.Controller.Entities
 
         public string GetInternalMetadataPath()
         {
-            return GetInternalMetadataPath(ConfigurationManager.ApplicationPaths.InternalMetadataPath);
+            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+
+            if (ConfigurationManager.Configuration.EnableLibraryMetadataSubFolder)
+            {
+                basePath = System.IO.Path.Combine(basePath, "library");
+            }
+
+            return GetInternalMetadataPath(basePath);
         }
 
         protected virtual string GetInternalMetadataPath(string basePath)
@@ -1458,7 +1465,7 @@ namespace MediaBrowser.Controller.Entities
                     currentFile.Attributes &= ~FileAttributes.Hidden;
                 }
 
-                currentFile.Delete();
+                FileSystem.DeleteFile(currentFile.FullName);
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);

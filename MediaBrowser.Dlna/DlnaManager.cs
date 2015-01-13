@@ -393,7 +393,7 @@ namespace MediaBrowser.Dlna
                 throw new ArgumentException("System profiles cannot be deleted.");
             }
 
-            File.Delete(info.Path);
+            _fileSystem.DeleteFile(info.Path);
         }
 
         public void CreateProfile(DeviceProfile profile)
@@ -432,9 +432,9 @@ namespace MediaBrowser.Dlna
             if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
                 current.Info.Type != DeviceProfileType.System)
             {
-                File.Delete(current.Path);
+                _fileSystem.DeleteFile(current.Path);
             }
-
+            
             _xmlSerializer.SerializeToFile(profile, path);
         }
 

@@ -76,7 +76,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                File.Delete(file.FullName);
+                _fileSystem.DeleteFile(file.FullName);
 
                 index++;
             }

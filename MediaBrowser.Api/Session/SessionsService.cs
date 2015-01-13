@@ -245,6 +245,11 @@ namespace MediaBrowser.Api.Session
 
         [ApiMember(Name = "SupportsUniqueIdentifier", Description = "Determines whether the device supports a unique identifier.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsUniqueIdentifier { get; set; }
+
+        public PostCapabilities()
+        {
+            SupportsUniqueIdentifier = true;
+        }
     }
 
     [Route("/Sessions/Capabilities/Full", "POST", Summary = "Updates capabilities for a device")]

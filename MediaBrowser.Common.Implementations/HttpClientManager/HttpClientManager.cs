@@ -690,7 +690,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             try
             {
-                File.Delete(file);
+                _fileSystem.DeleteFile(file);
             }
             catch (IOException)
             {

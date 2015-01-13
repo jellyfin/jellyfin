@@ -9,12 +9,12 @@ namespace MediaBrowser.Model.Connect
         public string Id { get; set; }
         public string[] ExcludedLibraries { get; set; }
         public bool EnableLiveTv { get; set; }
-        public string[] ExcludedChannels { get; set; }
+        public string[] EnabledChannels { get; set; }
 
         public ConnectAuthorization()
         {
             ExcludedLibraries = new string[] { };
-            ExcludedChannels = new string[] { };
+            EnabledChannels = new string[] { };
         }
     }
 }

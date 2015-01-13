@@ -1632,5 +1632,26 @@ namespace MediaBrowser.Server.Implementations.Session
             return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
                 string.Equals(i.Client, client));
         }
+
+        public Task SendMessageToUserSessions<T>(string userId, string name, T data,
+            CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && i.ContainsUser(userId)).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendMessage(name, data, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in SendPlaybackStoppedNotification.", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
     }
 }

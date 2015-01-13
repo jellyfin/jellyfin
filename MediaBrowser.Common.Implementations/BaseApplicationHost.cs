@@ -475,7 +475,7 @@ namespace MediaBrowser.Common.Implementations
 			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager);
 			RegisterSingleInstance(SecurityManager);
 
-			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager);
+			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
 			RegisterSingleInstance(InstallationManager);
 
 			ZipClient = new ZipClient();

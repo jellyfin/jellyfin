@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -37,10 +38,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IApplicationHost _appHost;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IFileSystem _fileSystem;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -51,6 +53,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _appHost = appHost;
             _tvSeriesManager = tvSeriesManager;
             _mediaEncoder = mediaEncoder;
+            _fileSystem = fileSystem;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -396,7 +399,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 try
                 {
-                    File.Delete(jobItem.OutputPath);
+                    _fileSystem.DeleteFile(jobItem.OutputPath);
                 }
                 catch (Exception ex)
                 {

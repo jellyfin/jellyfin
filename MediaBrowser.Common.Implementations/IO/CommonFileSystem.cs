@@ -270,8 +270,8 @@ namespace MediaBrowser.Common.Implementations.IO
             File.Copy(temp1, file2, true);
             File.Copy(temp2, file1, true);
 
-            File.Delete(temp1);
-            File.Delete(temp2);
+            DeleteFile(temp1);
+            DeleteFile(temp2);
         }
 
         /// <summary>
@@ -408,6 +408,26 @@ namespace MediaBrowser.Common.Implementations.IO
             return true;
 
             //return Path.IsPathRooted(path);
+        }
+
+        public void DeleteFile(string path, bool sendToRecycleBin)
+        {
+            File.Delete(path);
+        }
+
+        public void DeleteDirectory(string path, bool recursive, bool sendToRecycleBin)
+        {
+            Directory.Delete(path, recursive);
+        }
+
+        public void DeleteFile(string path)
+        {
+            DeleteFile(path, false);
+        }
+
+        public void DeleteDirectory(string path, bool recursive)
+        {
+            DeleteDirectory(path, recursive, false);
         }
     }
 }

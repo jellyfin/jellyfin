@@ -209,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     try
                     {
-                        File.Delete(path);
+                        _fileSystem.DeleteFile(path);
                     }
                     catch (IOException ex)
                     {
@@ -315,7 +315,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 try
                 {
-                    File.Delete(result.OriginalPath);
+                    _fileSystem.DeleteFile(result.OriginalPath);
                 }
                 catch (Exception ex)
                 {

@@ -86,6 +86,7 @@
     "TabCollectionTitles": "Titles",
     "HeaderDeviceAccess": "Device Access",
     "OptionEnableAccessFromAllDevices": "Enable access from all devices",
+    "OptionEnableAccessToAllChannels": "Enable access to all channels",
     "DeviceAccessHelp": "This only applies to devices that can be uniquely identified and will not prevent browser access. Filtering user device access will prevent them from using new devices until they've been approved here.",
     "LabelDisplayMissingEpisodesWithinSeasons": "Display missing episodes within seasons",
     "LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",

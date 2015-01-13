@@ -166,7 +166,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 try
                 {
-                    File.Delete(file.FullName);
+                    _fileSystem.DeleteFile(file.FullName);
                 }
                 catch (Exception ex)
                 {

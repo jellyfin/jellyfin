@@ -42,8 +42,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "ExcludeLibraries", Description = "ExcludeLibraries", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public string ExcludedLibraries { get; set; }
 
-        [ApiMember(Name = "ExcludedChannels", Description = "ExcludedChannels", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
-        public string ExcludedChannels { get; set; }
+        [ApiMember(Name = "EnabledChannels", Description = "EnabledChannels", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string EnabledChannels { get; set; }
 
         [ApiMember(Name = "EnableLiveTv", Description = "EnableLiveTv", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
         public bool EnableLiveTv { get; set; }
@@ -96,7 +96,7 @@ namespace MediaBrowser.Api
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .ToArray();
 
-            var excludedChannels = (request.ExcludedChannels ?? string.Empty)
+            var enabledChannels = (request.EnabledChannels ?? string.Empty)
                 .Split(',')
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .ToArray();
@@ -106,7 +106,7 @@ namespace MediaBrowser.Api
                 ConnectUserName = request.ConnectUsername,
                 SendingUserId = request.SendingUserId,
                 ExcludedLibraries = excludeLibraries,
-                ExcludedChannels = excludedChannels,
+                EnabledChannels = enabledChannels,
                 EnableLiveTv = request.EnableLiveTv
             });
         }
