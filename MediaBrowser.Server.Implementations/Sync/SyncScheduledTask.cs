@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool IsHidden
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsEnabled

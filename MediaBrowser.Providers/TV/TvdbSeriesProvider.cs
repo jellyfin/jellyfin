@@ -1108,7 +1108,7 @@ namespace MediaBrowser.Providers.TV
                     .EnumerateFiles("*.xml", SearchOption.AllDirectories)
                     .ToList())
                 {
-                    file.Delete();
+                    _fileSystem.DeleteFile(file.FullName);
                 }
             }
             catch (DirectoryNotFoundException)

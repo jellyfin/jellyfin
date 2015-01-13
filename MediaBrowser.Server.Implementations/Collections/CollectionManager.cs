@@ -258,7 +258,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             {
                 foreach (var file in shortcutFilesToDelete)
                 {
-                    File.Delete(file);
+                    _fileSystem.DeleteFile(file);
                 }
 
                 foreach (var child in list)

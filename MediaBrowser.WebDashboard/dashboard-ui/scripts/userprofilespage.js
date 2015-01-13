@@ -356,7 +356,6 @@
 
                     ConnectUsername: $('#txtConnectUsername', page).val(),
                     ExcludedLibraries: shareExcludes.join(','),
-                    ExcludedChannels: channelsResult.Items.map(function (c) { return c.Id; }).join(','),
                     SendingUserId: Dashboard.getCurrentUserId(),
                     EnableLiveTv: false
                 }

@@ -52,6 +52,9 @@ namespace MediaBrowser.Model.Users
         public string[] EnabledDevices { get; set; }
         public bool EnableAllDevices { get; set; }
 
+        public string[] EnabledChannels { get; set; }
+        public bool EnableAllChannels { get; set; }
+        
         public UserPolicy()
         {
             EnableLiveTvManagement = true;
@@ -61,7 +64,6 @@ namespace MediaBrowser.Model.Users
 
             BlockedMediaFolders = new string[] { };
             BlockedTags = new string[] { };
-            BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             EnableUserPreferenceAccess = true;

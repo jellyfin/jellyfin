@@ -31,7 +31,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>' + Globalize.translate('HeaderChannelAccess') + '</legend>';
+        html += '<legend>' + Globalize.translate('HeaderChannels') + '</legend>';
 
         for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -39,9 +39,9 @@
 
             var id = 'channels' + i;
 
-            var checkedAttribute = user.Policy.BlockedChannels.indexOf(folder.Id) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -54,6 +54,8 @@
         } else {
             $('.channelAccessContainer', page).hide();
         }
+
+        $('#chkEnableAllChannels', page).checked(user.Policy.EnableAllChannels).checkboxradio('refresh').trigger('change');
     }
 
     function loadDevices(page, user, devices) {
@@ -62,7 +64,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>' + Globalize.translate('HeaderSelectDevices') + '</legend>';
+        html += '<legend>' + Globalize.translate('HeaderDevices') + '</legend>';
 
         for (var i = 0, length = devices.length; i < length; i++) {
 
@@ -72,7 +74,7 @@
 
             var checkedAttribute = user.Policy.EnableAllDevices || user.Policy.EnabledDevices.indexOf(device.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkDevice" data-deviceid="' + device.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkDevice" data-id="' + device.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + device.Name;
 
             html += '<br/><span style="font-weight:normal;font-size: 90%;">' + device.AppName + '</span>';
@@ -114,19 +116,21 @@
 
         }).get();
 
-        user.Policy.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
+        user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
+        user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
+            [] :
+            $('.chkChannel:checked', page).map(function () {
 
-            return this.getAttribute('data-foldername');
+                return this.getAttribute('data-id');
 
-        }).get();
+            }).get();
 
         user.Policy.EnableAllDevices = $('#chkEnableAllDevices', page).checked();
-
         user.Policy.EnabledDevices = user.Policy.EnableAllDevices ?
             [] :
             $('.chkDevice:checked', page).map(function () {
 
-                return this.getAttribute('data-deviceid');
+                return this.getAttribute('data-id');
 
             }).get();
 
@@ -164,6 +168,16 @@
                 $('.deviceAccessListContainer', page).hide();
             } else {
                 $('.deviceAccessListContainer', page).show();
+            }
+
+        });
+
+        $('#chkEnableAllChannels', page).on('change', function () {
+
+            if (this.checked) {
+                $('.channelAccessListContainer', page).hide();
+            } else {
+                $('.channelAccessListContainer', page).show();
             }
 
         });

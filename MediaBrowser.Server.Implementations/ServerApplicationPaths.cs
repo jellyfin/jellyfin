@@ -198,19 +198,6 @@ namespace MediaBrowser.Server.Implementations
         }
 
         /// <summary>
-        /// Gets the artists path.
-        /// </summary>
-        /// <value>The artists path.</value>
-        public string ArtistsPath
-        {
-            get
-            {
-                return Path.Combine(ItemsByNamePath, "artists");
-            }
-        }
-
-
-        /// <summary>
         /// Gets the game genre path.
         /// </summary>
         /// <value>The game genre path.</value>

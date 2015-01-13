@@ -210,10 +210,10 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 return;
             }
-
+            
             try
             {
-                File.Delete(file.FullName);
+                FileSystem.DeleteFile(file.FullName);
             }
             catch (IOException ex)
             {

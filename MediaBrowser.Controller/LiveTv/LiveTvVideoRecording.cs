@@ -83,5 +83,10 @@ namespace MediaBrowser.Controller.LiveTv
         {
             return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
         }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"));
+        }
     }
 }

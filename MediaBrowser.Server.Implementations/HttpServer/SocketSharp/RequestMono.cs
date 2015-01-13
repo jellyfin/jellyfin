@@ -556,31 +556,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                     return (stream);
                 }
             }
-
-            public void SaveAs(string filename)
-            {
-                byte[] buffer = new byte[16 * 1024];
-                long old_post = stream.Position;
-
-                try
-                {
-                    File.Delete(filename);
-                    using (FileStream fs = File.Create(filename))
-                    {
-                        stream.Position = 0;
-                        int n;
-
-                        while ((n = stream.Read(buffer, 0, 16 * 1024)) != 0)
-                        {
-                            fs.Write(buffer, 0, n);
-                        }
-                    }
-                }
-                finally
-                {
-                    stream.Position = old_post;
-                }
-            }
         }
 
         class Helpers

@@ -215,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                 try
                 {
-                    File.Delete(image);
+                    _fileSystem.DeleteFile(image);
                 }
                 catch (IOException ex)
                 {

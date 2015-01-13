@@ -183,7 +183,7 @@ namespace MediaBrowser.Providers.Manager
                             currentFile.Attributes &= ~FileAttributes.Hidden;
                         }
 
-                        currentFile.Delete();
+                        _fileSystem.DeleteFile(currentFile.FullName);
                     }
                 }
                 finally

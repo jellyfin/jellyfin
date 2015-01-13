@@ -96,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public static string GetUserDistinctValue(User user)
         {
-            var channels = user.Policy.BlockedChannels
+            var channels = user.Policy.EnabledChannels
                 .OrderBy(i => i)
                 .ToList();
 
@@ -374,7 +374,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             try
             {
-                File.Delete(path);
+                _fileSystem.DeleteFile(path);
             }
             catch (IOException ex)
             {

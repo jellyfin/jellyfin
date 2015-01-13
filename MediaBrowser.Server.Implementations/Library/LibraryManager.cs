@@ -401,11 +401,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    Directory.Delete(metadataPath, true);
+                    _fileSystem.DeleteDirectory(metadataPath, true);
                 }
                 catch (DirectoryNotFoundException)
                 {
-
+                    
                 }
                 catch (Exception ex)
                 {
@@ -420,12 +420,12 @@ namespace MediaBrowser.Server.Implementations.Library
                     if (Directory.Exists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
-                        Directory.Delete(path, true);
+                        _fileSystem.DeleteDirectory(path, true);
                     }
                     else if (File.Exists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
-                        File.Delete(path);
+                        _fileSystem.DeleteFile(path);
                     }
                 }
 
@@ -841,13 +841,30 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets the artists path.
+        /// </summary>
+        /// <value>The artists path.</value>
+        public string ArtistsPath
+        {
+            get
+            {
+                if (ConfigurationManager.Configuration.StoreArtistsInMetadata)
+                {
+                    return Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "artists");
+                }
+
+                return Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath, "artists");
+            }
+        }
+
+        /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
         public MusicArtist GetArtist(string name)
         {
-            return GetItemByName<MusicArtist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
+            return GetItemByName<MusicArtist>(ArtistsPath, name);
         }
 
         private T GetItemByName<T>(string path, string name)
@@ -976,7 +993,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.ArtistsPath);
+            Directory.CreateDirectory(ArtistsPath);
 
             return new ArtistsValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }

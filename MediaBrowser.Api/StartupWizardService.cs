@@ -62,6 +62,8 @@ namespace MediaBrowser.Api
         {
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.Configuration.EnableLocalizedGuids = true;
+            _config.Configuration.StoreArtistsInMetadata = true;
+            _config.Configuration.EnableLibraryMetadataSubFolder = true;
             _config.SaveConfiguration();
         }
 
