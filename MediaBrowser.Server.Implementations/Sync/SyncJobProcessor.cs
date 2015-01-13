@@ -326,13 +326,17 @@ namespace MediaBrowser.Server.Implementations.Sync
                 Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
             });
 
-            var jobItems = result.Items;
+            await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task SyncJobItems(SyncJobItem[] items, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        {
             var index = 0;
 
-            foreach (var item in jobItems)
+            foreach (var item in items)
             {
                 double percent = index;
-                percent /= result.TotalRecordCount;
+                percent /= items.Length;
 
                 progress.Report(100 * percent);
 
@@ -341,7 +345,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var innerProgress = new ActionableProgress<double>();
 
                 var job = _syncRepo.GetJob(item.JobId);
-                await ProcessJobItem(job, item, innerProgress, cancellationToken).ConfigureAwait(false);
+                await ProcessJobItem(job, item, enableConversion, innerProgress, cancellationToken).ConfigureAwait(false);
 
                 job = _syncRepo.GetJob(item.JobId);
                 await UpdateJobStatus(job).ConfigureAwait(false);
@@ -350,7 +354,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task ProcessJobItem(SyncJob job, SyncJobItem jobItem, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task ProcessJobItem(SyncJob job, SyncJobItem jobItem, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
@@ -378,12 +382,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, video, user, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, video, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                await Sync(jobItem, (Audio)item, user, deviceProfile, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Audio)item, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
@@ -397,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, Video item, User user, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Video item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new VideoOptions
             {
@@ -415,6 +419,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
+                if (!enableConversion)
+                {
+                    return;
+                }
+
                 jobItem.Status = SyncJobItemStatus.Converting;
                 jobItem.RequiresConversion = true;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
@@ -463,7 +472,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = new AudioOptions
             {
@@ -481,6 +490,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (streamInfo.PlayMethod == PlayMethod.Transcode)
             {
+                if (!enableConversion)
+                {
+                    return;
+                }
+
                 jobItem.Status = SyncJobItemStatus.Converting;
                 jobItem.RequiresConversion = true;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);

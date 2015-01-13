@@ -1440,5 +1440,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="request">The request.</param>
         /// <returns>Task&lt;SyncDataResponse&gt;.</returns>
         Task<SyncDataResponse> SyncData(SyncDataRequest request);
+
+        /// <summary>
+        /// Gets the synchronize job item file URL.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>System.String.</returns>
+        string GetSyncJobItemFileUrl(string id);
     }
 }

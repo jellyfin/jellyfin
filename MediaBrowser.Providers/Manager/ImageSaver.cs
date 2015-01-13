@@ -233,7 +233,8 @@ namespace MediaBrowser.Providers.Manager
 
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
-                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken)
+                            .ConfigureAwait(false);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)
@@ -243,6 +244,11 @@ namespace MediaBrowser.Providers.Manager
                     // Add back the attribute
                     file.Attributes |= FileAttributes.Hidden;
                 }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.Error("Error saving image to {0}", ex, path);
+                throw new Exception(string.Format("Error saving image to {0}", path), ex);
             }
             finally
             {
