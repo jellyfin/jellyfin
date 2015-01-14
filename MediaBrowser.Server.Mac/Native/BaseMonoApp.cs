@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Mac
             return list;
         }
 
-        public void AuthorizeServer(int udpPort, int httpServerPort, string tempDirectory)
+        public void AuthorizeServer(int udpPort, int httpServerPort, int httpsPort, string tempDirectory)
         {
         }
 
