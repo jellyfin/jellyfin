@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 Items = videos
             };
 
-            var isInMixedFolder = resolverResult.Count > 0;
+            var isInMixedFolder = resolverResult.Count > 1;
 
             foreach (var video in resolverResult)
             {

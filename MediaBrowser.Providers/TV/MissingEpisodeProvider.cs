@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization)
         {
@@ -78,11 +78,11 @@ namespace MediaBrowser.Providers.TV
                     {
                         int seasonNumber;
 
-                        if (int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out seasonNumber))
+                        if (int.TryParse(parts[1], NumberStyles.Integer, _usCulture, out seasonNumber))
                         {
                             int episodeNumber;
 
-                            if (int.TryParse(parts[2], NumberStyles.Integer, UsCulture, out episodeNumber))
+                            if (int.TryParse(parts[2], NumberStyles.Integer, _usCulture, out episodeNumber))
                             {
                                 return new Tuple<int, int>(seasonNumber, episodeNumber);
                             }
@@ -103,12 +103,6 @@ namespace MediaBrowser.Providers.TV
                 .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
-            var hasNewSeasons = false;
-
-            foreach (var series in group)
-            {
-                hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
-            }
 
             if (_config.Configuration.EnableInternetProviders)
             {
@@ -121,7 +115,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (hasNewSeasons || hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
+            if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
                 foreach (var series in group)
                 {
@@ -158,55 +152,6 @@ namespace MediaBrowser.Providers.TV
                        // You could have episodes under season 0 with no number
                        return false;
                    });
-        }
-
-        /// <summary>
-        /// For series with episodes directly under the series folder, this adds dummy seasons to enable regular browsing and metadata
-        /// </summary>
-        /// <param name="series"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        private async Task<bool> AddDummySeasonFolders(Series series, CancellationToken cancellationToken)
-        {
-            var episodesInSeriesFolder = series.RecursiveChildren
-                .OfType<Episode>()
-                .Where(i => !i.IsInSeasonFolder)
-                .ToList();
-
-            var hasChanges = false;
-
-            // Loop through the unique season numbers
-            foreach (var seasonNumber in episodesInSeriesFolder.Select(i => i.ParentIndexNumber ?? -1)
-                .Where(i => i >= 0)
-                .Distinct()
-                .ToList())
-            {
-                var hasSeason = series.Children.OfType<Season>()
-                    .Any(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
-
-                if (!hasSeason)
-                {
-                    await AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
-
-                    hasChanges = true;
-                }
-            }
-
-            // Unknown season - create a dummy season to put these under
-            if (episodesInSeriesFolder.Any(i => !i.ParentIndexNumber.HasValue))
-            {
-                var hasSeason = series.Children.OfType<Season>()
-                    .Any(i => !i.IndexNumber.HasValue);
-
-                if (!hasSeason)
-                {
-                    await AddSeason(series, null, cancellationToken).ConfigureAwait(false);
-
-                    hasChanges = true;
-                }
-            }
-
-            return hasChanges;
         }
 
         /// <summary>
@@ -449,10 +394,11 @@ namespace MediaBrowser.Providers.TV
 
             if (season == null)
             {
-                season = await AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
+                var provider = new DummySeasonProvider(_config, _logger, _localization);
+                season = await provider.AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
             }
 
-            var name = string.Format("Episode {0}", episodeNumber.ToString(UsCulture));
+            var name = string.Format("Episode {0}", episodeNumber.ToString(_usCulture));
 
             var episode = new Episode
             {
@@ -461,7 +407,7 @@ namespace MediaBrowser.Providers.TV
                 ParentIndexNumber = seasonNumber,
                 Parent = season,
                 DisplayMediaType = typeof(Episode).Name,
-                Id = (series.Id + seasonNumber.ToString(UsCulture) + name).GetMBId(typeof(Episode))
+                Id = (series.Id + seasonNumber.ToString(_usCulture) + name).GetMBId(typeof(Episode))
             };
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
@@ -469,39 +415,6 @@ namespace MediaBrowser.Providers.TV
             await episode.RefreshMetadata(new MetadataRefreshOptions
             {
             }, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Adds the season.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="seasonNumber">The season number.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Season}.</returns>
-        private async Task<Season> AddSeason(Series series, 
-            int? seasonNumber, 
-            CancellationToken cancellationToken)
-        {
-            var seasonName = seasonNumber == 0 ? 
-                _config.Configuration.SeasonZeroDisplayName :
-                (seasonNumber.HasValue ? string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.Value.ToString(UsCulture)) : _localization.GetLocalizedString("NameSeasonUnknown"));
-
-            _logger.Info("Creating Season {0} entry for {1}", seasonName, series.Name);
-
-            var season = new Season
-            {
-                Name = seasonName,
-                IndexNumber = seasonNumber,
-                Parent = series,
-                DisplayMediaType = typeof(Season).Name,
-                Id = (series.Id + (seasonNumber ?? -1).ToString(UsCulture) + seasonName).GetMBId(typeof(Season))
-            };
-
-            await series.AddChild(season, cancellationToken).ConfigureAwait(false);
-
-            await season.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken).ConfigureAwait(false);
-
-            return season;
         }
 
         /// <summary>
@@ -551,7 +464,7 @@ namespace MediaBrowser.Providers.TV
         private DateTime? GetAirDate(string seriesDataPath, int seasonNumber, int episodeNumber)
         {
             // First open up the tvdb xml file and make sure it has valid data
-            var filename = string.Format("episode-{0}-{1}.xml", seasonNumber.ToString(UsCulture), episodeNumber.ToString(UsCulture));
+            var filename = string.Format("episode-{0}-{1}.xml", seasonNumber.ToString(_usCulture), episodeNumber.ToString(_usCulture));
 
             var xmlPath = Path.Combine(seriesDataPath, filename);
 

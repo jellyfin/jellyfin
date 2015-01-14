@@ -300,7 +300,7 @@
     "LabelCachePath": "Cache path:",
     "LabelCachePathHelp": "Specify a custom location for server cache files, such as images.",
     "LabelImagesByNamePath": "Images by name path:",
-    "LabelImagesByNamePathHelp": "Specify a custom location for downloaded actor, artist, genre and studio images.",
+    "LabelImagesByNamePathHelp": "Specify a custom location for downloaded actor, genre and studio images.",
     "LabelMetadataPath": "Metadata path:",
     "LabelMetadataPathHelp": "Specify a custom location for downloaded artwork and metadata, if not saving within media folders.",
     "LabelTranscodingTempPath": "Transcoding temporary path:",
