@@ -42,6 +42,7 @@
     "LabelFailed": "(failed)",
     "ButtonHelp": "Help",
     "ButtonSave": "\u0391\u03c0\u03bf\u03b8\u03b7\u03ba\u03b5\u03cd\u03c3\u03c4\u03b5",
+    "HeaderDevices": "Devices",
     "HeaderSupporterBenefit": "A supporter membership provides additional benefits such as access to premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToMediaBrowserServerDashboard": "Welcome to the Media Browser Dashboard",
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
