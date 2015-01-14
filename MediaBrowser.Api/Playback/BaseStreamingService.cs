@@ -349,6 +349,24 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            // h264 (h264_qsv)
+            else if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                switch (qualitySetting)
+                {
+                    case EncodingQuality.HighSpeed:
+                        param = "-preset 7";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param = "-preset 4";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param = "-preset 1";
+                        break;
+                }
+
+            }
+
             // webm
             else if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
@@ -565,6 +583,11 @@ namespace MediaBrowser.Api.Playback
 
                     filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", manualWidthParam, manualHeightParam));
                 }
+            }
+
+            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                filters[filters.Count - 1] += ":flags=fast_bilinear";
             }
 
             var output = string.Empty;
@@ -1181,6 +1204,22 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
                 {
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+
+                // h264_qsv
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (hasFixedResolution)
+                    {
+                        if (isHls)
+                        {
+                            return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
+                        }
+
+                        return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    }
+
+                    return string.Format(" -b:v {0} -maxrate ({0}*1.2) -bufsize ({0}*2)", bitrate.Value.ToString(UsCulture));
                 }
 
                 // H264
