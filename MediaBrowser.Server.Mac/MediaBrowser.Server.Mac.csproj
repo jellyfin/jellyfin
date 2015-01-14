@@ -735,12 +735,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogoicon.png">
       <Link>Resources\dashboard-ui\css\images\mblogoicon.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogotextblack.png">
-      <Link>Resources\dashboard-ui\css\images\mblogotextblack.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogotextwhite.png">
-      <Link>Resources\dashboard-ui\css\images\mblogotextwhite.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\rightarrow.png">
       <Link>Resources\dashboard-ui\css\images\rightarrow.png</Link>
     </BundleResource>
