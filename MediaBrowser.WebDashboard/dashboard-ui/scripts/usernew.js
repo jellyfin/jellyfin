@@ -16,7 +16,7 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkMediaFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -41,7 +41,7 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -83,15 +83,22 @@
 
             user.Policy.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
 
-                return this.getAttribute('data-foldername');
+                return this.getAttribute('data-id');
 
             }).get();
 
-            user.Policy.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
+            var allChannels = $('.chkChannel', page);
+            var enabledChannels = $('.chkChannel:checked', page).map(function () {
 
-                return this.getAttribute('data-foldername');
+                return this.getAttribute('data-id');
 
             }).get();
+
+            user.Policy.EnableAllChannels = enabledChannels.length == allChannels.length;
+
+            if (!user.Policy.EnableAllChannels) {
+                user.Policy.EnabledChannels = enabledChannels;
+            }
 
             ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);

@@ -814,20 +814,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-weight: bold;
 }
 
-.scenePosterViewItem img {
-    max-width: 150px !important;
-}
-
 @media all and (min-width: 650px) {
     .libraryTabs .ui-btn-inner {
         padding: .5em 15px !important;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .scenePosterViewItem img {
-        max-width: 200px !important;
     }
 }
 

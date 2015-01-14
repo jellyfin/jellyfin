@@ -337,7 +337,7 @@ h1 .imageLink {
         display: block;
         padding: .6em 20px .6em 20px;
         text-decoration: none;
-        color: #333 !important;
+        color: inherit !important;
         text-shadow: none !important;
         font-weight: 500 !important;
         font-size: 14px;
@@ -356,9 +356,11 @@ h1 .imageLink {
         }
 
 .sidebarDivider {
-    height: 1px;
-    background: #ddd;
+    height: 0;
+    border-width: 1px 0 0;
+    border-style: solid;
     margin: .25em 0;
+    border-radius: 0;
 }
 
 .invalidEntry {
@@ -527,39 +529,6 @@ h1 .imageLink {
     border-radius: 5px;
 }
 
-/*
-    List Vew Items
-    */
-
-.posterViewItem {
-    display: inline-block;
-    margin: 5px;
-    text-align: center;
-    padding: 0;
-    position: relative;
-    padding-bottom: 28px;
-}
-
-.posterViewItemWithDualText {
-    padding-bottom: 56px;
-}
-
-.posterViewItemWithNoText {
-    padding-bottom: 0 !important;
-}
-
-.posterViewItem a {
-    color: white !important;
-    font-weight: normal !important;
-    text-decoration: none;
-}
-
-.posterViewItem img {
-    max-width: 155px;
-    max-height: 110px;
-    vertical-align: bottom;
-}
-
 .premiumBanner img {
     position: absolute;
     text-align: right;
@@ -567,84 +536,6 @@ h1 .imageLink {
     right: 0;
     width: 60px;
     height: 60px;
-}
-
-.posterViewItemText {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-wrap: none;
-    white-space: nowrap;
-    margin: 0;
-    padding: 4px 5px 0;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 24px;
-    background: #181818;
-    text-shadow: none;
-}
-
-.posterViewItemWithDualText .posterViewItemText {
-    text-align: left;
-    color: #fff;
-    padding-top: 5px;
-    height: 23px;
-}
-
-.posterViewItemPrimaryText {
-    bottom: 28px;
-}
-
-.posterViewItem:hover, .userItem:hover, .tileItem:hover {
-    -moz-box-shadow: 0 0 0 5px #38c;
-    -webkit-box-shadow: 0 0 0 5px #38c;
-    box-shadow: 0 0 0 5px #38c;
-}
-
-@media all and (min-width: 750px) {
-
-    .posterViewItem img {
-        max-width: 190px;
-        max-height: 130px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .posterViewItem {
-        font-size: 15px;
-    }
-
-        .posterViewItem img {
-            max-width: 270px;
-            max-height: 160px;
-        }
-}
-
-@media all and (min-width: 1920px) {
-
-    .posterViewItemText {
-        height: 25px !important;
-    }
-
-    .posterViewItem {
-        font-size: 17px;
-        padding-bottom: 29px;
-    }
-
-    .posterViewItemWithDualText {
-        padding-bottom: 60px;
-    }
-
-    .posterViewItemPrimaryText {
-        bottom: 30px;
-    }
-
-    .posterViewItem img {
-        max-width: 310px;
-        max-height: 210px;
-    }
 }
 
 .wizardContent {

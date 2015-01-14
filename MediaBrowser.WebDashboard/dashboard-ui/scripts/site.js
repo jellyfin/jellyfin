@@ -678,7 +678,7 @@ var Dashboard = {
                 }
 
                 if (link.divider) {
-                    html += "<div class='sidebarDivider'></div>";
+                    html += "<div class='sidebarDivider ui-bar-inherit'></div>";
                 }
 
                 if (link.href) {
