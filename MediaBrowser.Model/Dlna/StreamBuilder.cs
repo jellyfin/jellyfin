@@ -267,7 +267,10 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        playlistItem.SubtitleDeliveryMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
+
+                        playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                        playlistItem.SubtitleFormat = subtitleProfile.Format;
                     }
 
                     return playlistItem;
@@ -289,7 +292,10 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (subtitleStream != null)
                 {
-                    playlistItem.SubtitleDeliveryMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
+
+                    playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                    playlistItem.SubtitleFormat = subtitleProfile.Format;
                 }
 
                 playlistItem.PlayMethod = PlayMethod.Transcode;
@@ -525,9 +531,9 @@ namespace MediaBrowser.Model.Dlna
                     return false;
                 }
 
-                SubtitleDeliveryMethod subtitleMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
 
-                if (subtitleMethod != SubtitleDeliveryMethod.External && subtitleMethod != SubtitleDeliveryMethod.Embed)
+                if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     return false;
                 }
@@ -536,43 +542,43 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        private SubtitleDeliveryMethod GetSubtitleDeliveryMethod(MediaStream subtitleStream,
-            VideoOptions options)
+        private SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, VideoOptions options)
         {
             if (subtitleStream.IsTextSubtitleStream)
             {
-                // See if the device can retrieve the subtitles externally
-                bool supportsSubsExternally = options.Context == EncodingContext.Streaming &&
-                    ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
+                SubtitleProfile externalProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
 
-                if (supportsSubsExternally)
+                if (options.Context == EncodingContext.Streaming && externalProfile != null)
                 {
-                    return SubtitleDeliveryMethod.External;
+                    return externalProfile;
                 }
 
-                // See if the device can retrieve the subtitles externally
-                bool supportsEmbedded = ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed, _serverTextSubtitleOutputs);
+                SubtitleProfile embedProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed, _serverTextSubtitleOutputs);
 
-                if (supportsEmbedded)
+                if (embedProfile != null)
                 {
-                    return SubtitleDeliveryMethod.Embed;
+                    return embedProfile;
                 }
             }
 
-            return SubtitleDeliveryMethod.Encode;
+            return new SubtitleProfile
+            {
+                Method = SubtitleDeliveryMethod.Embed,
+                Format = subtitleStream.Codec
+            };
         }
 
-        private bool ContainsSubtitleFormat(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
+        private SubtitleProfile GetSubtitleProfile(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
         {
             foreach (SubtitleProfile profile in profiles)
             {
                 if (method == profile.Method && ListHelper.ContainsIgnoreCase(formats, profile.Format))
                 {
-                    return true;
+                    return profile;
                 }
             }
 
-            return false;
+            return null;
         }
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)
