@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -13,12 +12,12 @@ using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Net;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Dlna.Didl
 {
@@ -801,7 +800,10 @@ namespace MediaBrowser.Dlna.Didl
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    return;
+                    if (!stubType.HasValue)
+                    {
+                        return;
+                    }
                 }
             }
 

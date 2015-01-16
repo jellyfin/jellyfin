@@ -264,6 +264,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in new[]
             {
+                "thirdparty/apiclient/logger.js",
                 "thirdparty/apiclient/md5.js",
                 "thirdparty/apiclient/sha1.js",
                 "thirdparty/apiclient/store.js",

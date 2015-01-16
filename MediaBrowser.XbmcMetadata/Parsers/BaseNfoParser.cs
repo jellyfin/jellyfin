@@ -130,6 +130,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         item.SetProviderId(MetadataProviders.Imdb, imdbId);
                     }
 
+                    // If the file is just an imdb url, don't go any further
+                    if (index == 0)
+                    {
+                        return;
+                    }
+
                     xml = xml.Substring(0, index + 1);
                 }
 

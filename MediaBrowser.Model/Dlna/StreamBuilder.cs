@@ -563,7 +563,7 @@ namespace MediaBrowser.Model.Dlna
 
             return new SubtitleProfile
             {
-                Method = SubtitleDeliveryMethod.Embed,
+                Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
             };
         }

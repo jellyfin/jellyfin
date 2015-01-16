@@ -1,4 +1,4 @@
-﻿(function (globalScope, $, JSON, WebSocket, setTimeout, devicePixelRatio, FileReader) {
+﻿(function (globalScope, JSON, WebSocket, setTimeout, devicePixelRatio, FileReader) {
 
     if (!globalScope.MediaBrowser) {
         globalScope.MediaBrowser = {};
@@ -10,17 +10,17 @@
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    globalScope.MediaBrowser.ApiClient = function (serverAddress, clientName, applicationVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ApiClient = function ($, logger, serverAddress, clientName, applicationVersion, deviceName, deviceId, capabilities) {
 
         if (!serverAddress) {
             throw new Error("Must supply a serverAddress");
         }
 
-        console.log('ApiClient serverAddress: ' + serverAddress);
-        console.log('ApiClient clientName: ' + clientName);
-        console.log('ApiClient applicationVersion: ' + applicationVersion);
-        console.log('ApiClient deviceName: ' + deviceName);
-        console.log('ApiClient deviceId: ' + deviceId);
+        logger.log('ApiClient serverAddress: ' + serverAddress);
+        logger.log('ApiClient clientName: ' + clientName);
+        logger.log('ApiClient applicationVersion: ' + applicationVersion);
+        logger.log('ApiClient deviceName: ' + deviceName);
+        logger.log('ApiClient deviceId: ' + deviceId);
 
         var self = this;
         var currentUserId;
@@ -152,7 +152,7 @@
             }
 
             if (!self.enableAutomaticNetwork || !self.serverInfo() || self.connectionMode == null) {
-                console.log('Requesting url without automatic networking: ' + request.url);
+                logger.log('Requesting url without automatic networking: ' + request.url);
                 return $.ajax(request).fail(onRequestFail);
             }
 
@@ -184,7 +184,7 @@
                 self.serverInfo().LocalAddress :
                 self.serverInfo().RemoteAddress;
 
-            console.log("Attempting reconnection to " + url);
+            logger.log("Attempting reconnection to " + url);
 
             $.ajax({
 
@@ -196,7 +196,7 @@
 
             }).done(function () {
 
-                console.log("Reconnect succeeeded to " + url);
+                logger.log("Reconnect succeeeded to " + url);
 
                 self.connectionMode = connectionMode;
                 self.serverAddress(url);
@@ -205,7 +205,7 @@
 
             }).fail(function () {
 
-                console.log("Reconnect attempt failed to " + url);
+                logger.log("Reconnect attempt failed to " + url);
 
                 if (currentRetryCount <= 6) {
 
@@ -252,7 +252,7 @@
                 request.url = replaceServerAddress(request.url, baseUrl);
             }
 
-            console.log("Requesting " + request.url);
+            logger.log("Requesting " + request.url);
 
             request.timeout = 15000;
 
@@ -262,7 +262,7 @@
 
             }).fail(function (e, textStatus) {
 
-                console.log("Request failed with textStatus " + textStatus + " to " + request.url);
+                logger.log("Request failed with textStatus " + textStatus + " to " + request.url);
 
                 var statusCode = parseInt(e.status || '0');
                 var isUserErrorCode = statusCode >= 400 && statusCode < 500;
@@ -271,12 +271,12 @@
                 if (enableReconnection && !isUserErrorCode) {
                     tryReconnect().done(function () {
 
-                        console.log("Reconnect succeesed");
+                        logger.log("Reconnect succeesed");
                         self.ajaxWithFailover(request, deferred, false, true);
 
                     }).fail(function () {
 
-                        console.log("Reconnect failed");
+                        logger.log("Reconnect failed");
                         onRetryRequestFail(request);
                         deferred.reject();
 
@@ -361,7 +361,7 @@
 
             webSocket.onopen = function () {
 
-                console.log('web socket connection opened');
+                logger.log('web socket connection opened');
                 setTimeout(function () {
 
                     self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
@@ -392,7 +392,7 @@
 
         self.sendWebSocketMessage = function (name, data) {
 
-            console.log('Sending web socket message: ' + name);
+            logger.log('Sending web socket message: ' + name);
 
             var msg = { MessageType: name };
 
@@ -3403,4 +3403,4 @@
 
     };
 
-})(window, jQuery, window.JSON, window.WebSocket, window.setTimeout, window.devicePixelRatio, window.FileReader);
+})(window, window.JSON, window.WebSocket, window.setTimeout, window.devicePixelRatio, window.FileReader);

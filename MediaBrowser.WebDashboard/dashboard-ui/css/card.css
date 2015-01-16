@@ -159,7 +159,7 @@
     background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
     left: 0;
     right: 0;
-    color: inherit;
+    color: #fff;
 }
 
 .cardText {
@@ -173,7 +173,7 @@
 }
 
 .cardOverlayInner {
-    color: inherit;
+    color: #fff;
 }
 
 .cardTextCentered {
@@ -186,10 +186,6 @@
     left: 0;
     right: 0;
     text-align: center;
-}
-
-.libraryPage .cardDefaultText, .libraryPage .cardText {
-    color: inherit;
 }
 
 .cardContent .cardText {

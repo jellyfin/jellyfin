@@ -63,12 +63,6 @@ namespace MediaBrowser.Model.System
         public List<InstallationInfo> CompletedInstallations { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [supports native web socket].
-        /// </summary>
-        /// <value><c>true</c> if [supports native web socket]; otherwise, <c>false</c>.</value>
-        public bool SupportsNativeWebSocket { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
