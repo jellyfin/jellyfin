@@ -357,6 +357,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             };
 
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             process.Start();

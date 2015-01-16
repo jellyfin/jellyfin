@@ -31,8 +31,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IUserManager _userManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly ISubtitleEncoder _subtitleEncoder;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -41,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _userManager = userManager;
             _tvSeriesManager = tvSeriesManager;
             _mediaEncoder = mediaEncoder;
+            _subtitleEncoder = subtitleEncoder;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -443,6 +445,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     _logger.ErrorException("Error during sync transcoding", ex);
                 }
 
+                await ConvertSubtitles(jobItem, streamInfo, cancellationToken).ConfigureAwait(false);
+
                 if (jobItem.Status == SyncJobItemStatus.Failed || jobItem.Status == SyncJobItemStatus.Queued)
                 {
                     await _syncRepo.Update(jobItem).ConfigureAwait(false);
@@ -452,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             else
             {
                 jobItem.RequiresConversion = false;
-                
+
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
                     jobItem.OutputPath = mediaSource.Path;
@@ -470,6 +474,20 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.Transferring;
             await _syncRepo.Update(jobItem).ConfigureAwait(false);
+        }
+
+        private async Task ConvertSubtitles(SyncJobItem jobItem, StreamInfo streamInfo, CancellationToken cancellationToken)
+        {
+            if (streamInfo.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External || !streamInfo.SubtitleStreamIndex.HasValue)
+            {
+                // Nothing to do
+                return;
+            }
+
+            //using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, streamInfo.SubtitleStreamIndex.Value, streamInfo.SubtitleFormat, 0, null, cancellationToken).ConfigureAwait(false))
+            //{
+
+            //}
         }
 
         private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
@@ -522,7 +540,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             else
             {
                 jobItem.RequiresConversion = false;
-                
+
                 if (mediaSource.Protocol == MediaProtocol.File)
                 {
                     jobItem.OutputPath = mediaSource.Path;
