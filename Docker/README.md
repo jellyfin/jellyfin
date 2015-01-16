@@ -8,7 +8,7 @@ This is a Dockerfile for "MediaBrowser Server" - (http://mediabrowser.tv/)
 
 ```
 git clone --depth=1 https://github.com/MediaBrowser/MediaBrowser.git 
-rd MediaBrowser/Docker
+cd MediaBrowser/Docker
 docker build --rm=true -t mbserver . 
 ```
 
