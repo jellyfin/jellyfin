@@ -7,6 +7,7 @@ using MediaBrowser.Naming.Video;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -47,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
             
             // If the path is a file check for a matching extensions
-            var parser = new Naming.Video.VideoResolver(namingOptions, new Naming.Logging.NullLogger());
+            var parser = new Naming.Video.VideoResolver(namingOptions, new PatternsLogger());
 
             if (args.IsDirectory)
             {
@@ -233,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         {
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new Format3DParser(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new Format3DParser(namingOptions, new PatternsLogger());
             var result = resolver.Parse(video.Path);
 
             Set3DFormat(video, result.Is3D, result.Format3D);

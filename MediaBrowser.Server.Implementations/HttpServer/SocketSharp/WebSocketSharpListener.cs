@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.Logging;
 using ServiceStack;
 using ServiceStack.Web;
 using System;
@@ -33,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(new SocketSharpLogger(_logger));
+                _listener = new HttpListener(new PatternsLogger(_logger), null);
 
             foreach (var prefix in urlPrefixes)
             {
