@@ -436,40 +436,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "tvchannels", _fileSystem.GetValidFilename(channelInfo.Name));
-
-            var fileInfo = new DirectoryInfo(path);
-
             var isNew = false;
-
-            if (!fileInfo.Exists)
-            {
-                _logger.Debug("Creating directory {0}", path);
-
-                Directory.CreateDirectory(path);
-                fileInfo = new DirectoryInfo(path);
-
-                if (!fileInfo.Exists)
-                {
-                    throw new IOException("Path not created: " + path);
-                }
-
-                isNew = true;
-            }
 
             var id = _tvDtoService.GetInternalChannelId(serviceName, channelInfo.Id);
 
             var item = _itemRepo.RetrieveItem(id) as LiveTvChannel;
 
-            if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
+            if (item == null)
             {
                 item = new LiveTvChannel
                 {
                     Name = channelInfo.Name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
-                    Path = path
+                    DateCreated = DateTime.UtcNow,
                 };
 
                 isNew = true;

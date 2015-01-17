@@ -2,18 +2,26 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
     public class SeriesMetadataService : MetadataService<Series, SeriesInfo>
     {
-        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        private readonly ILocalizationManager _localization;
+        private readonly ILibraryManager _libraryManager;
+
+        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILocalizationManager localization, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
+            _localization = localization;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -52,6 +60,17 @@ namespace MediaBrowser.Providers.TV
             {
                 target.DisplaySpecialsWithSeasons = source.DisplaySpecialsWithSeasons;
             }
+        }
+
+        protected override async Task<ItemUpdateType> BeforeSave(Series item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
+
+            //var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, _libraryManager);
+
+            //await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
+
+            return updateType;
         }
     }
 }

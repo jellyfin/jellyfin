@@ -9,6 +9,7 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -36,59 +37,62 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        protected override ItemUpdateType BeforeSave(MusicAlbum item)
+        protected override async Task<ItemUpdateType> BeforeSave(MusicAlbum item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = base.BeforeSave(item);
+            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
 
-            var songs = item.RecursiveChildren.OfType<Audio>().ToList();
-
-            if (!item.IsLocked)
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                if (!item.LockedFields.Contains(MetadataFields.Genres))
+                if (!item.IsLocked)
                 {
-                    var currentList = item.Genres.ToList();
+                    var songs = item.RecursiveChildren.OfType<Audio>().ToList();
 
-                    item.Genres = songs.SelectMany(i => i.Genres)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                    if (!item.LockedFields.Contains(MetadataFields.Genres))
                     {
-                        updateType = updateType | ItemUpdateType.MetadataEdit;
-                    }
-                }
+                        var currentList = item.Genres.ToList();
 
-                if (!item.LockedFields.Contains(MetadataFields.Studios))
-                {
-                    var currentList = item.Studios.ToList();
+                        item.Genres = songs.SelectMany(i => i.Genres)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
 
-                    item.Studios = songs.SelectMany(i => i.Studios)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    if (currentList.Count != item.Studios.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
-                    {
-                        updateType = updateType | ItemUpdateType.MetadataEdit;
-                    }
-                }
-
-                if (!item.LockedFields.Contains(MetadataFields.Name))
-                {
-                    var name = songs.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
-
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        if (!string.Equals(item.Name, name, StringComparison.Ordinal))
+                        if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                         {
-                            item.Name = name;
                             updateType = updateType | ItemUpdateType.MetadataEdit;
                         }
                     }
-                }
 
-                updateType = updateType | SetAlbumArtistFromSongs(item, songs);
-                updateType = updateType | SetArtistsFromSongs(item, songs);
-                updateType = updateType | SetDateFromSongs(item, songs);
+                    if (!item.LockedFields.Contains(MetadataFields.Studios))
+                    {
+                        var currentList = item.Studios.ToList();
+
+                        item.Studios = songs.SelectMany(i => i.Studios)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
+
+                        if (currentList.Count != item.Studios.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                        {
+                            updateType = updateType | ItemUpdateType.MetadataEdit;
+                        }
+                    }
+
+                    if (!item.LockedFields.Contains(MetadataFields.Name))
+                    {
+                        var name = songs.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            if (!string.Equals(item.Name, name, StringComparison.Ordinal))
+                            {
+                                item.Name = name;
+                                updateType = updateType | ItemUpdateType.MetadataEdit;
+                            }
+                        }
+                    }
+
+                    updateType = updateType | SetAlbumArtistFromSongs(item, songs);
+                    updateType = updateType | SetArtistsFromSongs(item, songs);
+                    updateType = updateType | SetDateFromSongs(item, songs);
+                }
             }
 
             return updateType;

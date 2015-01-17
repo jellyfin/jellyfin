@@ -1,7 +1,5 @@
-﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,11 +21,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
@@ -36,12 +29,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userManager">The user manager.</param>
         /// <param name="logger">The logger.</param>
-        public ArtistsValidator(ILibraryManager libraryManager, IUserManager userManager, ILogger logger)
+        public ArtistsValidator(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
             _logger = logger;
         }
 
@@ -55,56 +46,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         {
             var allItems = _libraryManager.RootFolder.GetRecursiveChildren();
 
-            var allSongs = allItems.OfType<Audio>().ToList();
+            var allSongs = allItems.Where(i => !i.IsFolder).OfType<IHasArtist>().ToList();
 
-            var innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(pct * .8));
-
-            var allArtists = await GetAllArtists(allSongs, cancellationToken, innerProgress).ConfigureAwait(false);
-
-            progress.Report(80);
-
-            var numComplete = 0;
-
-            var numArtists = allArtists.Count;
-
-            foreach (var artist in allArtists)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // Only do this for artists accessed by name. Folder-based artists get it from the normal refresh
-                if (artist.IsAccessedByName && !artist.LockedFields.Contains(MetadataFields.Genres))
-                {
-                    // Avoid implicitly captured closure
-                    var artist1 = artist;
-
-                    artist.Genres = allSongs.Where(i => i.HasArtist(artist1.Name))
-                        .SelectMany(i => i.Genres)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numArtists;
-                percent *= 20;
-
-                progress.Report(80 + percent);
-            }
-
-            progress.Report(100);
-        }
-
-        /// <summary>
-        /// Gets all artists.
-        /// </summary>
-        /// <param name="allSongs">All songs.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task{Artist[]}.</returns>
-        private async Task<List<MusicArtist>> GetAllArtists(IEnumerable<Audio> allSongs, CancellationToken cancellationToken, IProgress<double> progress)
-        {
             var allArtists = allSongs.SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -138,8 +81,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 progress.Report(100 * percent);
             }
-
-            return returnArtists;
         }
     }
 }

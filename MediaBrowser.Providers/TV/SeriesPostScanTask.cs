@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.TV
                 .OfType<Series>()
                 .ToList();
 
-            var provider = new DummySeasonProvider(_config, _logger, _localization);
+            var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager);
             
             foreach (var series in seriesList)
             {

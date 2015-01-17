@@ -15,19 +15,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
 
-        public StudiosValidator(ILibraryManager libraryManager, IUserManager userManager, ILogger logger)
+        public StudiosValidator(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
-            _userManager = userManager;
             _logger = logger;
         }
 
@@ -44,14 +38,11 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            progress.Report(2);
             var numComplete = 0;
             var count = items.Count;
 
             foreach (var name in items)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 try
                 {
                     var itemByName = _libraryManager.GetStudio(name);
@@ -71,9 +62,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 numComplete++;
                 double percent = numComplete;
                 percent /= count;
-                percent *= 90;
+                percent *= 100;
 
-                progress.Report(percent + 10);
+                progress.Report(percent);
             }
 
             progress.Report(100);

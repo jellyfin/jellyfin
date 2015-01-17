@@ -4,9 +4,9 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -19,19 +19,6 @@ namespace MediaBrowser.Controller.LiveTv
         public override string GetUserDataKey()
         {
             return GetClientTypeName() + "-" + Name;
-        }
-
-        /// <summary>
-        /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
@@ -49,11 +36,6 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return false;
             }
-        }
-
-        public override bool IsSaveLocalMetadataEnabled()
-        {
-            return true;
         }
 
         /// <summary>
