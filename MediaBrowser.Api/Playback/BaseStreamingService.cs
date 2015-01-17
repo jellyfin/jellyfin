@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;

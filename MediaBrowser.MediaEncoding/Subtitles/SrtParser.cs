@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Model.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
-using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {

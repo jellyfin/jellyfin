@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
