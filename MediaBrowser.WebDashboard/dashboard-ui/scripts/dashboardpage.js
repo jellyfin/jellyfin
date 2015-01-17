@@ -77,9 +77,17 @@
 
             $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
 
-            var port = systemInfo.HttpServerPortNumber;
+            var httpPort = systemInfo.HttpServerPortNumber;
 
-            $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + port + '</b>'));
+            var portHtml = Globalize.translate('LabelRunningOnPort', '<b>' + httpPort + '</b>');
+
+            if (systemInfo.UseHttps) {
+                var httpsPort = systemInfo.HttpsPortNumber;
+                portHtml += '<br>';
+                portHtml += Globalize.translate('LabelRunningOnHttpsPort', '<b>' + httpsPort + '</b>');
+            }
+
+            $('#ports', page).html(portHtml);
 
             if (systemInfo.CanSelfRestart) {
                 $('.btnRestartContainer', page).removeClass('hide');
