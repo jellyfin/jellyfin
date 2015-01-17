@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     if (!ip.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                         !ip.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                     {
-                        ip = "http://" + ip;
+                        ip = (_config.Configuration.UseHttps ? "https://" : "http://") + ip;
                     }
 
                     return ip + ":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture);
