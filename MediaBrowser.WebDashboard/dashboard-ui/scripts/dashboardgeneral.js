@@ -15,6 +15,10 @@
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
         $('#txtPublicPort', page).val(config.PublicPort);
 
+        $('#chkUseHttps', page).checked(config.UseHttps).checkboxradio('refresh');
+        $('#txtHttpsPort', page).val(config.HttpsPortNumber);
+        $('#txtCertificatePath', page).val(config.CertificatePath);
+
         $('#txtDdns', page).val(config.WanDdns || '');
 
         $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
@@ -83,6 +87,11 @@
 
                 config.HttpServerPortNumber = $('#txtPortNumber', form).val();
                 config.PublicPort = $('#txtPublicPort', form).val();
+
+                config.UseHttps = $('#chkUseHttps', form).checked();
+                config.HttpsPortNumber = $('#txtHttpsPort', form).val();
+                config.CertificatePath = $('#txtCertificatePath', form).val();
+
 
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
 
