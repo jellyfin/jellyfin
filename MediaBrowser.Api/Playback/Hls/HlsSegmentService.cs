@@ -1,10 +1,6 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Model.Dlna;
 using ServiceStack;
-using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -66,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(_appPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower(), file);
+            file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }
@@ -85,7 +81,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(_appPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower(), file);
+            file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
         }

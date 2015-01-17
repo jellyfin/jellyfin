@@ -5,6 +5,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     public class EncodingJobOptions
     {
         public string OutputContainer { get; set; }
+        public string OutputDirectory { get; set; }
 
         public long? StartTimeTicks { get; set; }
         public int? Width { get; set; }

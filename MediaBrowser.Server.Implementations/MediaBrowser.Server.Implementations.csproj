@@ -300,6 +300,7 @@
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
     <Compile Include="Sync\CloudSyncProvider.cs" />
+    <Compile Include="Sync\SyncConfig.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />

@@ -1094,6 +1094,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncOptions.cs">
       <Link>Sync\SyncOptions.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Sync\SyncParameter.cs">
+      <Link>Sync\SyncParameter.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncQuality.cs">
       <Link>Sync\SyncQuality.cs</Link>
     </Compile>

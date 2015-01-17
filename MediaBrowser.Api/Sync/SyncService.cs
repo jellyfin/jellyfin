@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
@@ -83,6 +82,16 @@ namespace MediaBrowser.Api.Sync
     {
         [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}/AdditionalFiles", "GET", Summary = "Gets a sync job item file")]
+    public class GetSyncJobItemAdditionalFile
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Name { get; set; }
     }
 
     [Route("/Sync/OfflineActions", "POST", Summary = "Reports an action that occurred while offline.")]
@@ -242,6 +251,25 @@ namespace MediaBrowser.Api.Sync
             var task = _syncManager.UpdateJob(request);
 
             Task.WaitAll(task);
+        }
+
+        public object Get(GetSyncJobItemAdditionalFile request)
+        {
+            var jobItem = _syncManager.GetJobItem(request.Id);
+
+            if (jobItem.Status != SyncJobItemStatus.Transferring)
+            {
+                throw new ArgumentException("The job item is not yet ready for transfer.");
+            }
+
+            var file = jobItem.AdditionalFiles.FirstOrDefault(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (file == null)
+            {
+                throw new ArgumentException("Sync job additional file not found.");
+            }
+
+            return ToStaticFileResult(file.Path);
         }
     }
 }

@@ -280,13 +280,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetOutputFilePath(EncodingJob state)
         {
-            var folder = ConfigurationManager.ApplicationPaths.TranscodingTempPath;
+            var folder = string.IsNullOrWhiteSpace(state.Options.OutputDirectory) ? 
+                ConfigurationManager.ApplicationPaths.TranscodingTempPath :
+                state.Options.OutputDirectory;
 
             var outputFileExtension = GetOutputFileExtension(state);
-            var context = state.Options.Context;
 
             var filename = state.Id + (outputFileExtension ?? string.Empty).ToLower();
-            return Path.Combine(folder, context.ToString().ToLower(), filename);
+            return Path.Combine(folder, filename);
         }
 
         protected virtual string GetOutputFileExtension(EncodingJob state)

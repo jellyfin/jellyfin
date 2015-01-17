@@ -307,21 +307,21 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="libraryItem">The library item.</param>
         private void UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
         {
-            var runtimeTicks = libraryItem == null ? null : libraryItem.RunTimeTicks;
-
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
                 info.MediaSourceId = info.ItemId;
             }
 
-            if (!string.Equals(info.ItemId, info.MediaSourceId) &&
-                !string.IsNullOrWhiteSpace(info.MediaSourceId))
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && info.Item == null && libraryItem != null)
             {
-                runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
-            }
+                var runtimeTicks = libraryItem.RunTimeTicks;
 
-            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
-            {
+                if (!string.Equals(info.ItemId, info.MediaSourceId) &&
+                    !string.IsNullOrWhiteSpace(info.MediaSourceId))
+                {
+                    runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
+                }
+
                 var current = session.NowPlayingItem;
 
                 if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
@@ -711,7 +711,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && info.Item == null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
