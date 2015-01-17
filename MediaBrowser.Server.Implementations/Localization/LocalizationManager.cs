@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Localization;

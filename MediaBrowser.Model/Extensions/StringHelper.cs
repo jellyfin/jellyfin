@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Model.Extensions
@@ -93,6 +94,36 @@ namespace MediaBrowser.Model.Extensions
         public static string[] RegexSplit(string str, string term, int limit)
         {
             return new Regex(term).Split(str, limit);
+        }
+
+        /// <summary>
+        /// Replaces the specified STR.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <param name="oldValue">The old value.</param>
+        /// <param name="newValue">The new value.</param>
+        /// <param name="comparison">The comparison.</param>
+        /// <returns>System.String.</returns>
+        public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
+        {
+            var sb = new StringBuilder();
+
+            var previousIndex = 0;
+            var index = str.IndexOf(oldValue, comparison);
+
+            while (index != -1)
+            {
+                sb.Append(str.Substring(previousIndex, index - previousIndex));
+                sb.Append(newValue);
+                index += oldValue.Length;
+
+                previousIndex = index;
+                index = str.IndexOf(oldValue, index, comparison);
+            }
+
+            sb.Append(str.Substring(previousIndex));
+
+            return sb.ToString();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;

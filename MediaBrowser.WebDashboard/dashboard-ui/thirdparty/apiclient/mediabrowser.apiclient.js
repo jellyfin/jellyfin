@@ -230,15 +230,9 @@
             return deferred.promise();
         }
 
-        function replaceServerAddress(url, newBaseUrl) {
+        function replaceServerAddress(url, oldBaseUrl, newBaseUrl) {
 
-            var index = url.toLowerCase().indexOf("/mediabrowser");
-
-            if (index != -1) {
-                return newBaseUrl + url.substring(index);
-            }
-
-            return url;
+            return url.replace(oldBaseUrl, newBaseUrl);
         }
 
         self.ajaxWithFailover = function (request, deferred, enableReconnection, replaceUrl) {
