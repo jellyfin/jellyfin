@@ -138,16 +138,59 @@
         </member>
         <member name="F:SimpleInjector.Diagnostics.DiagnosticType.SingleResponsibilityViolation">
             <summary>
-            Diagnostic type that warns when a
-            component depends on (too) many services.
+            Diagnostic type that warns when a component depends on (too) many services.
             For more information, see: https://simpleinjector.org/diasr.
             </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.TornLifestyle">
+            <summary>
+            Diagnostic type that warns when a multiple registrations map to the same implementation type and
+            lifestyle, which might cause multiple instances to be created during the lifespan of that lifestyle.
+            For more information, see: https://simpleinjector.org/diatl.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.DisposableTransientComponent">
+            <summary>
+            Diagnostic type that warns when a component is registered as transient, while implementing
+            <see cref="T:System.IDisposable"/>.
+            For more information, see: https://simpleinjector.org/diadt.
+            </summary>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.DisposableTransientComponentDiagnosticResult">
+            <summary>
+            Diagnostic result for a warning about a component that is registered as transient, but implements 
+            <see cref="T:System.IDisposable"/>.
+            For more information, see: https://simpleinjector.org/diadt.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DisposableTransientComponentDiagnosticResult.Registration">
+            <summary>Gets the object that describes the relationship between the component and its dependency.</summary>
+            <value>A <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instance.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult">
+            <summary>
+            Diagnostic result that warns about when a multiple registrations map to the same implementation type 
+            and lifestyle, which might cause multiple instances to be created during the lifespan of that lifestyle.
+            For more information, see: https://simpleinjector.org/diatl.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.Lifestyle">
+            <summary>Gets the lifestyle on which instances are torn.</summary>
+            /// <value>A <see cref="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.Lifestyle"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.ImplementationType">
+            <summary>Gets the implementation type that the affected registrations map to.</summary>
+            <value>A <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.AffectedRegistrations">
+            <summary>Gets the list of registrations that are affected by this warning.</summary>
+            <value>A list of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</value>
         </member>
         <member name="T:SimpleInjector.Diagnostics.PotentialLifestyleMismatchDiagnosticResult">
             <summary>
             Diagnostic result for a warning about a
             component that depends on a service with a lifestyle that is shorter than that of the component.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=PotentialLifestyleMismatches.
+            For more information, see: https://simpleinjector.org/dialm.
             </summary>
         </member>
         <member name="P:SimpleInjector.Diagnostics.PotentialLifestyleMismatchDiagnosticResult.Relationship">
@@ -160,7 +203,7 @@
             component that depends on an unregistered concrete type and this concrete type has a lifestyle that is 
             different than the lifestyle of an explicitly registered type that uses this concrete type as its 
             implementation.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=ShortCircuitedDependencies.
+            For more information, see: https://simpleinjector.org/diasc.
             </summary>
         </member>
         <member name="P:SimpleInjector.Diagnostics.ShortCircuitedDependencyDiagnosticResult.Relationship">
@@ -178,7 +221,7 @@
         <member name="T:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult">
             <summary>
             Diagnostic result that warns about a component that depends on (too) many services.
-            For more information, see: https://simpleinjector.codeplex.com/wikipage?title=PotentialSingleResponsibilityViolations.
+            For more information, see: https://simpleinjector.org/diasr.
             </summary>
         </member>
         <member name="P:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult.ImplementationType">

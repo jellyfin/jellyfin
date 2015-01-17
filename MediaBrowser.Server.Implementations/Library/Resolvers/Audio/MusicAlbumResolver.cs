@@ -10,6 +10,7 @@ using MediaBrowser.Naming.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -169,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         {
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
 
-            var parser = new AlbumParser(namingOptions, new Naming.Logging.NullLogger());
+            var parser = new AlbumParser(namingOptions, new PatternsLogger());
             var result = parser.ParseMultiPart(path);
 
             return result.IsMultiPart;

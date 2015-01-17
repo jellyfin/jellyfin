@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -111,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new VideoListResolver(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new VideoListResolver(namingOptions, new PatternsLogger());
             var resolverResult = resolver.Resolve(files.Select(i => new PortableFileInfo
             {
                 FullName = i.FullName,
@@ -436,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-            var resolver = new StackResolver(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new StackResolver(namingOptions, new PatternsLogger());
 
             var result = resolver.ResolveDirectories(folderPaths);
 

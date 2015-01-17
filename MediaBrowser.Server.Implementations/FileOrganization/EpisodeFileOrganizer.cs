@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
@@ -57,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             };
 
             var namingOptions = ((LibraryManager) _libraryManager).GetNamingOptions();
-            var resolver = new Naming.TV.EpisodeResolver(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
 
             var episodeInfo = resolver.Resolve(path, FileInfoType.File) ??
                 new Naming.TV.EpisodeInfo();

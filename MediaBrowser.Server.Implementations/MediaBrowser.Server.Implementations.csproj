@@ -50,7 +50,8 @@
       <HintPath>..\ThirdParty\libwebp\Imazen.WebP.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Naming">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.29\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.30\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -60,11 +61,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\morelinq.1.1.0\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Patterns.Logging">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener">
-      <HintPath>..\ThirdParty\SocketHttpListener\SocketHttpListener.dll</HintPath>
+    <Reference Include="SocketHttpListener, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SocketHttpListener.1.0.0.0\lib\net45\SocketHttpListener.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -164,7 +170,6 @@
     <Compile Include="HttpServer\ServerLogger.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
-    <Compile Include="HttpServer\SocketSharp\SocketSharpLogger.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Drawing\ImageProcessor.cs" />
@@ -224,6 +229,7 @@
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
+    <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Photos\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />

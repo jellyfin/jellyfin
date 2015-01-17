@@ -22,6 +22,7 @@ using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.TV;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Validators;
+using MediaBrowser.Server.Implementations.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
 using System.Collections.Concurrent;
@@ -1771,7 +1772,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsVideoFile(string path)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new PatternsLogger());
             return resolver.IsVideoFile(path);
         }
 
@@ -1789,7 +1790,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
             var resolver = new EpisodeResolver(GetNamingOptions(),
-                new Naming.Logging.NullLogger());
+                new PatternsLogger());
 
             var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ?
                 FileInfoType.Directory :
@@ -1927,7 +1928,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new PatternsLogger());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -1946,7 +1947,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -1999,7 +2000,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -2037,7 +2038,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(GetNamingOptions(), new Naming.Logging.NullLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new PatternsLogger(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 

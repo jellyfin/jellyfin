@@ -100,7 +100,7 @@
             </summary>
             <remarks>
             <b>Thread-safety:</b> Calls to this method are thread-safe, but users should take proper
-            percausions when they call both <b>GetItem</b> and <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.SetItem(SimpleInjector.Container,System.Object,System.Object)"/>.
+            percussions when they call both <b>GetItem</b> and <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.SetItem(SimpleInjector.Container,System.Object,System.Object)"/>.
             </remarks>
             <param name="container">The container.</param>
             <param name="key">The key of the item to retrieve.</param>
@@ -114,7 +114,7 @@
             </summary>
             <remarks>
             <b>Thread-safety:</b> Calls to this method are thread-safe, but users should take proper
-            percausions when they call both <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.GetItem(SimpleInjector.Container,System.Object)"/> and <b>SetItem</b>.
+            percussions when they call both <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.GetItem(SimpleInjector.Container,System.Object)"/> and <b>SetItem</b>.
             </remarks>
             <param name="container">The container.</param>
             <param name="key">The key of the item to insert or override.</param>
@@ -134,6 +134,23 @@
             reference (Nothing in VB).</exception>
             <exception cref="T:System.ArgumentException">Thrown when the <paramref name="serviceType"/> is not a
             reference type, is open generic, or ambiguous.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when the container is locked.</exception>
+            <exception cref="T:System.NotSupportedException">Thrown when the method is called for a registration
+            that is made with one of the <b>RegisterAll</b> overloads that accepts a dynamic collection
+            (an <b>IEnumerable</b> or <b>IEnumerable&lt;TService&gt;</b>).</exception>
+        </member>
+        <member name="M:SimpleInjector.Advanced.AdvancedExtensions.AppendToCollection(SimpleInjector.Container,System.Type,System.Type)">
+            <summary>
+            Allows appending new registrations to existing registrations made using one of the
+            <b>RegisterAll</b> overloads.
+            </summary>
+            <param name="container">The container.</param>
+            <param name="serviceType">The service type of the collection.</param>
+            <param name="implementationType">The implementation type to append.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when one of the supplied arguments is a null
+            reference (Nothing in VB).</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the <paramref name="serviceType"/> is not a
+            reference type, or ambiguous.</exception>
             <exception cref="T:System.InvalidOperationException">Thrown when the container is locked.</exception>
             <exception cref="T:System.NotSupportedException">Thrown when the method is called for a registration
             that is made with one of the <b>RegisterAll</b> overloads that accepts a dynamic collection
@@ -334,6 +351,18 @@
             <summary>Gets the lazily initialized instance for the of the current LazyScopedRegistration.</summary>
             <param name="scope">The scope that is used to retrieve the instance.</param>
             <returns>The cached instance.</returns>
+        </member>
+        <member name="T:SimpleInjector.Advanced.ContainerControlledItem">
+            <summary>
+            Container controlled collections can be supplied with both Type objects or direct Registration
+            instances.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Advanced.ContainerControlledItem.ImplementationType">
+            <summary>Will never be null. Can be open-generic.</summary>
+        </member>
+        <member name="F:SimpleInjector.Advanced.ContainerControlledItem.Registration">
+            <summary>Can be null.</summary>
         </member>
         <member name="T:SimpleInjector.Container">
             <summary>
@@ -938,7 +967,7 @@
             not assignable from one of the given <paramref name="serviceTypes"/> elements.
             </exception>
         </member>
-        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,SimpleInjector.Registration[])">
+        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{SimpleInjector.Registration})">
             <summary>
             Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
             each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
@@ -959,7 +988,7 @@
             not assignable from one of the given <paramref name="registrations"/> elements.
             </exception>
         </member>
-        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{SimpleInjector.Registration})">
+        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,SimpleInjector.Registration[])">
             <summary>
             Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
             each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
@@ -2518,7 +2547,7 @@
             <summary>Please do not use.</summary>
             <returns>Do not use.</returns>
         </member>
-        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.Append(SimpleInjector.Registration)">
+        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.Append(SimpleInjector.Advanced.ContainerControlledItem)">
             <summary>PLease do not use.</summary>
             <param name="registration">Do not use.</param>
         </member>
@@ -2644,6 +2673,10 @@
         <member name="P:SimpleInjector.Registration.Lifestyle">
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</summary>
             <value>The <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</value>
+        </member>
+        <member name="P:SimpleInjector.Registration.WrapsInstanceCreationDelegate">
+            <summary>Gets or sets a value indicating whether this registration object contains a user 
+            supplied instanceCreator factory delegate.</summary>
         </member>
         <member name="P:SimpleInjector.Registration.Container">
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Container"/> instance for this registration.</summary>

@@ -34,6 +34,25 @@
             Basic) if no inner exception is specified. 
             </param>
         </member>
+        <member name="M:SimpleInjector.ActivationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.ActivationException"/> class with serialized data.
+            </summary>
+            <param name="info">
+            The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception 
+            being thrown. 
+            </param>
+            <param name="context">
+            The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or 
+            destination. 
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            The <paramref name="info"/> parameter is null. 
+            </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">
+            The class name is null or hresult is zero (0). 
+            </exception>
+        </member>
         <member name="T:SimpleInjector.Advanced.AdvancedExtensions">
             <summary>
             Extension methods for enable advanced scenarios.
@@ -81,7 +100,7 @@
             </summary>
             <remarks>
             <b>Thread-safety:</b> Calls to this method are thread-safe, but users should take proper
-            percausions when they call both <b>GetItem</b> and <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.SetItem(SimpleInjector.Container,System.Object,System.Object)"/>.
+            percussions when they call both <b>GetItem</b> and <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.SetItem(SimpleInjector.Container,System.Object,System.Object)"/>.
             </remarks>
             <param name="container">The container.</param>
             <param name="key">The key of the item to retrieve.</param>
@@ -95,7 +114,7 @@
             </summary>
             <remarks>
             <b>Thread-safety:</b> Calls to this method are thread-safe, but users should take proper
-            percausions when they call both <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.GetItem(SimpleInjector.Container,System.Object)"/> and <b>SetItem</b>.
+            percussions when they call both <see cref="M:SimpleInjector.Advanced.AdvancedExtensions.GetItem(SimpleInjector.Container,System.Object)"/> and <b>SetItem</b>.
             </remarks>
             <param name="container">The container.</param>
             <param name="key">The key of the item to insert or override.</param>
@@ -120,16 +139,22 @@
             that is made with one of the <b>RegisterAll</b> overloads that accepts a dynamic collection
             (an <b>IEnumerable</b> or <b>IEnumerable&lt;TService&gt;</b>).</exception>
         </member>
-        <member name="T:SimpleInjector.Advanced.IContainerControlledCollection">
-            <summary>This interface is not meant for public use.</summary>
-        </member>
-        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.GetRelationships">
-            <summary>Please do not use.</summary>
-            <returns>Do not use.</returns>
-        </member>
-        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.Append(SimpleInjector.Registration)">
-            <summary>PLease do not use.</summary>
-            <param name="registration">Do not use.</param>
+        <member name="M:SimpleInjector.Advanced.AdvancedExtensions.AppendToCollection(SimpleInjector.Container,System.Type,System.Type)">
+            <summary>
+            Allows appending new registrations to existing registrations made using one of the
+            <b>RegisterAll</b> overloads.
+            </summary>
+            <param name="container">The container.</param>
+            <param name="serviceType">The service type of the collection.</param>
+            <param name="implementationType">The implementation type to append.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when one of the supplied arguments is a null
+            reference (Nothing in VB).</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the <paramref name="serviceType"/> is not a
+            reference type, or ambiguous.</exception>
+            <exception cref="T:System.InvalidOperationException">Thrown when the container is locked.</exception>
+            <exception cref="T:System.NotSupportedException">Thrown when the method is called for a registration
+            that is made with one of the <b>RegisterAll</b> overloads that accepts a dynamic collection
+            (an <b>IEnumerable</b> or <b>IEnumerable&lt;TService&gt;</b>).</exception>
         </member>
         <member name="T:SimpleInjector.Advanced.IConstructorInjectionBehavior">
             <summary>
@@ -187,22 +212,6 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="parameter"/> is a
             null reference.</exception>
         </member>
-        <member name="T:SimpleInjector.Advanced.IPropertySelectionBehavior">
-            <summary>
-            Defines the container's behavior for selecting properties to inject during the creation of a type.
-            Set the <see cref="P:SimpleInjector.ContainerOptions.PropertySelectionBehavior">PropertySelectionBehavior</see> 
-            property of the container's <see cref="P:SimpleInjector.Container.Options"/> property to change the default behavior 
-            of the container. By default, no properties will be injected by the container.
-            </summary>
-        </member>
-        <member name="M:SimpleInjector.Advanced.IPropertySelectionBehavior.SelectProperty(System.Type,System.Reflection.PropertyInfo)">
-            <summary>
-            Determines whether a property should be injected by the container upon creation of its type.
-            </summary>
-            <param name="serviceType">Type of the abstraction that is requested.</param>
-            <param name="propertyInfo">The property to check.</param>
-            <returns>True when the property should be injected.</returns>
-        </member>
         <member name="T:SimpleInjector.Advanced.ILifestyleSelectionBehavior">
             <summary>
             Defines the container's behavior for selecting the lifestyle for a registration in case no lifestyle
@@ -219,6 +228,22 @@
             <param name="implementationType">Type of the implementation to that is registered.</param>
             <returns>The suited <see cref="T:SimpleInjector.Lifestyle"/> for the given type.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when either one of the arguments is a null reference.</exception>
+        </member>
+        <member name="T:SimpleInjector.Advanced.IPropertySelectionBehavior">
+            <summary>
+            Defines the container's behavior for selecting properties to inject during the creation of a type.
+            Set the <see cref="P:SimpleInjector.ContainerOptions.PropertySelectionBehavior">PropertySelectionBehavior</see> 
+            property of the container's <see cref="P:SimpleInjector.Container.Options"/> property to change the default behavior 
+            of the container. By default, no properties will be injected by the container.
+            </summary>
+        </member>
+        <member name="M:SimpleInjector.Advanced.IPropertySelectionBehavior.SelectProperty(System.Type,System.Reflection.PropertyInfo)">
+            <summary>
+            Determines whether a property should be injected by the container upon creation of its type.
+            </summary>
+            <param name="serviceType">Type of the abstraction that is requested.</param>
+            <param name="propertyInfo">The property to check.</param>
+            <returns>True when the property should be injected.</returns>
         </member>
         <member name="T:SimpleInjector.Advanced.InitializationContext">
             <summary>
@@ -327,42 +352,17 @@
             <param name="scope">The scope that is used to retrieve the instance.</param>
             <returns>The cached instance.</returns>
         </member>
-        <member name="T:SimpleInjector.Advanced.KnownRelationship">
+        <member name="T:SimpleInjector.Advanced.ContainerControlledItem">
             <summary>
-            A known relationship defines a relationship between two types. The Diagnostics Debug View uses this
-            information to spot possible misconfigurations. 
+            Container controlled collections can be supplied with both Type objects or direct Registration
+            instances.
             </summary>
         </member>
-        <member name="M:SimpleInjector.Advanced.KnownRelationship.#ctor(System.Type,SimpleInjector.Lifestyle,SimpleInjector.InstanceProducer)">
-            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> class.</summary>
-            <param name="implementationType">The implementation type of the parent type.</param>
-            <param name="lifestyle">The lifestyle of the parent type.</param>
-            <param name="dependency">The type that the parent depends on (it is injected into the parent).</param>
+        <member name="F:SimpleInjector.Advanced.ContainerControlledItem.ImplementationType">
+            <summary>Will never be null. Can be open-generic.</summary>
         </member>
-        <member name="M:SimpleInjector.Advanced.KnownRelationship.GetHashCode">
-            <summary>Serves as a hash function for a particular type.</summary>
-            <returns>A hash code for the current <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>.</returns>
-        </member>
-        <member name="M:SimpleInjector.Advanced.KnownRelationship.Equals(SimpleInjector.Advanced.KnownRelationship)">
-            <summary>
-            Determines whether the specified <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> is equal to the current 
-            <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>.
-            </summary>
-            <param name="other">The object to compare with the current object.</param>
-            <returns>True if the specified <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> is equal to the current 
-            <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>; otherwise, false.</returns>
-        </member>
-        <member name="P:SimpleInjector.Advanced.KnownRelationship.ImplementationType">
-            <summary>Gets the implementation type of the parent type of the relationship.</summary>
-            <value>The implementation type of the parent type of the relationship.</value>
-        </member>
-        <member name="P:SimpleInjector.Advanced.KnownRelationship.Lifestyle">
-            <summary>Gets the lifestyle of the parent type of the relationship.</summary>
-            <value>The lifestyle of the parent type of the relationship.</value>
-        </member>
-        <member name="P:SimpleInjector.Advanced.KnownRelationship.Dependency">
-            <summary>Gets the type that the parent depends on (it is injected into the parent).</summary>
-            <value>The type that the parent depends on.</value>
+        <member name="F:SimpleInjector.Advanced.ContainerControlledItem.Registration">
+            <summary>Can be null.</summary>
         </member>
         <member name="T:SimpleInjector.Container">
             <summary>
@@ -384,101 +384,6 @@
             <see cref="M:SimpleInjector.Container.AddRegistration(System.Type,SimpleInjector.Registration)"/> or anything related to registering from multiple threads concurrently.
             </para>
             </remarks>
-        </member>
-        <member name="M:SimpleInjector.Container.#ctor">
-            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Container"/> class.</summary>
-        </member>
-        <member name="M:SimpleInjector.Container.#ctor(SimpleInjector.ContainerOptions)">
-            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Container"/> class.</summary>
-            <param name="options">The container options.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="options"/> is a null
-            reference.</exception>
-            <exception cref="T:System.ArgumentException">Thrown when supplied <paramref name="options"/> is an instance
-            that already is supplied to another <see cref="T:SimpleInjector.Container"/> instance. Every container must get
-            its own <see cref="T:SimpleInjector.ContainerOptions"/> instance.</exception>
-        </member>
-        <member name="M:SimpleInjector.Container.GetCurrentRegistrations">
-            <summary>
-            Returns an array with the current registrations. This list contains all explicitly registered
-            types, and all implicitly registered instances. Implicit registrations are  all concrete 
-            unregistered types that have been requested, all types that have been resolved using
-            unregistered type resolution (using the <see cref="E:SimpleInjector.Container.ResolveUnregisteredType"/> event), and
-            requested unregistered collections. Note that the result of this method may change over time, 
-            because of these implicit registrations.
-            </summary>
-            <remarks>
-            <para>
-            This method has a performance characteristic of O(n). Prevent from calling this in a performance
-            critical path of the application.
-            </para>
-            <para>
-            <b>Note:</b> This method is <i>not</i> guaranteed to always return the same 
-            <see cref="T:SimpleInjector.InstanceProducer"/> instance for a given registration. It will however either 
-            always return a producer that is able to return the expected instance. Because of this, do not 
-            compare sets of instances returned by different calls to <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> 
-            by reference. The way of comparing lists is by the actual type. The type of each instance is 
-            guaranteed to be unique in the returned list.
-            </para>
-            </remarks>
-            <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
-        </member>
-        <member name="M:SimpleInjector.Container.GetRootRegistrations">
-            <summary>
-            Returns an array with the current registrations for root objects. Root objects are registrations
-            that are in the root of the object graph, meaning that no other registration is depending on it.
-            </summary>
-            <remarks>
-            <para>
-            This method has a performance characteristic of O(n). Prevent from calling this in a performance
-            critical path of the application.
-            </para>
-            <para>
-            This list contains the root objects of all explicitly registered types, and all implicitly 
-            registered instances. Implicit registrations are all concrete unregistered types that have been 
-            requested, all types that have been resolved using unregistered type resolution (using the 
-            <see cref="E:SimpleInjector.Container.ResolveUnregisteredType"/> event), and requested unregistered collections. Note that 
-            the result of this method may change over time, because of these implicit registrations.
-            </para>
-            <para>
-            <b>Note:</b> This method is <i>not</i> guaranteed to always return the same 
-            <see cref="T:SimpleInjector.InstanceProducer"/> instance for a given registration. It will however either 
-            always return a producer that is able to return the expected instance. Because of this, do not 
-            compare sets of instances returned by different calls to <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> 
-            by reference. The way of comparing lists is by the actual type. The type of each instance is 
-            guaranteed to be unique in the returned list.
-            </para>
-            </remarks>
-            <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before
-            <see cref="M:SimpleInjector.Container.Verify"/> has been successfully called.</exception>
-        </member>
-        <member name="M:SimpleInjector.Container.Equals(System.Object)">
-            <summary>Determines whether the specified System.Object is equal to the current System.Object.
-            </summary>
-            <param name="obj">The System.Object to compare with the current System.Object.</param>
-            <returns>
-            True if the specified System.Object is equal to the current System.Object; otherwise, false.
-            </returns>
-        </member>
-        <member name="M:SimpleInjector.Container.GetHashCode">
-            <summary>Returns the hash code of the current instance.</summary>
-            <returns>The hash code of the current instance.</returns>
-        </member>
-        <member name="M:SimpleInjector.Container.ToString">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents the <see cref="T:SimpleInjector.Container"/>.
-            </summary>
-            <returns>
-            A <see cref="T:System.String"/> that represents the <see cref="T:SimpleInjector.Container"/>.
-            </returns>
-        </member>
-        <member name="M:SimpleInjector.Container.GetType">
-            <summary>Gets the <see cref="T:System.Type"/> of the current instance.</summary>
-            <returns>The <see cref="T:System.Type"/> instance that represents the exact runtime 
-            type of the current instance.</returns>
-        </member>
-        <member name="M:SimpleInjector.Container.LockContainer">
-            <summary>Prevents any new registrations to be made to the container.</summary>
         </member>
         <member name="M:SimpleInjector.Container.Register``1">
             <summary>
@@ -1062,7 +967,7 @@
             not assignable from one of the given <paramref name="serviceTypes"/> elements.
             </exception>
         </member>
-        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,SimpleInjector.Registration[])">
+        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{SimpleInjector.Registration})">
             <summary>
             Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
             each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
@@ -1083,7 +988,7 @@
             not assignable from one of the given <paramref name="registrations"/> elements.
             </exception>
         </member>
-        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,System.Collections.Generic.IEnumerable{SimpleInjector.Registration})">
+        <member name="M:SimpleInjector.Container.RegisterAll(System.Type,SimpleInjector.Registration[])">
             <summary>
             Registers a collection of <paramref name="registrations"/>, whose instances will be resolved lazily
             each time the resolved collection of <paramref name="serviceType"/> is enumerated. 
@@ -1329,15 +1234,100 @@
             failed due to security constraints of the sandbox. This can happen when injecting properties
             on an internal type in a Silverlight sandbox, or when running in partial trust.</exception>
         </member>
-        <member name="P:SimpleInjector.Container.Options">
-            <summary>Gets the container options.</summary>
-            <value>The <see cref="T:SimpleInjector.ContainerOptions"/> instance for this container.</value>
+        <member name="M:SimpleInjector.Container.#ctor">
+            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Container"/> class.</summary>
         </member>
-        <member name="P:SimpleInjector.Container.SelectionBasedLifestyle">
+        <member name="M:SimpleInjector.Container.#ctor(SimpleInjector.ContainerOptions)">
+            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Container"/> class.</summary>
+            <param name="options">The container options.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="options"/> is a null
+            reference.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when supplied <paramref name="options"/> is an instance
+            that already is supplied to another <see cref="T:SimpleInjector.Container"/> instance. Every container must get
+            its own <see cref="T:SimpleInjector.ContainerOptions"/> instance.</exception>
+        </member>
+        <member name="M:SimpleInjector.Container.GetCurrentRegistrations">
             <summary>
-            Gets the intermediate lifestyle that forwards CreateRegistration calls to the lifestyle that is 
-            returned from the registered container.Options.LifestyleSelectionBehavior.
+            Returns an array with the current registrations. This list contains all explicitly registered
+            types, and all implicitly registered instances. Implicit registrations are  all concrete 
+            unregistered types that have been requested, all types that have been resolved using
+            unregistered type resolution (using the <see cref="E:SimpleInjector.Container.ResolveUnregisteredType"/> event), and
+            requested unregistered collections. Note that the result of this method may change over time, 
+            because of these implicit registrations.
             </summary>
+            <remarks>
+            <para>
+            This method has a performance characteristic of O(n). Prevent from calling this in a performance
+            critical path of the application.
+            </para>
+            <para>
+            <b>Note:</b> This method is <i>not</i> guaranteed to always return the same 
+            <see cref="T:SimpleInjector.InstanceProducer"/> instance for a given registration. It will however either 
+            always return a producer that is able to return the expected instance. Because of this, do not 
+            compare sets of instances returned by different calls to <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> 
+            by reference. The way of comparing lists is by the actual type. The type of each instance is 
+            guaranteed to be unique in the returned list.
+            </para>
+            </remarks>
+            <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
+        </member>
+        <member name="M:SimpleInjector.Container.GetRootRegistrations">
+            <summary>
+            Returns an array with the current registrations for root objects. Root objects are registrations
+            that are in the root of the object graph, meaning that no other registration is depending on it.
+            </summary>
+            <remarks>
+            <para>
+            This method has a performance characteristic of O(n). Prevent from calling this in a performance
+            critical path of the application.
+            </para>
+            <para>
+            This list contains the root objects of all explicitly registered types, and all implicitly 
+            registered instances. Implicit registrations are all concrete unregistered types that have been 
+            requested, all types that have been resolved using unregistered type resolution (using the 
+            <see cref="E:SimpleInjector.Container.ResolveUnregisteredType"/> event), and requested unregistered collections. Note that 
+            the result of this method may change over time, because of these implicit registrations.
+            </para>
+            <para>
+            <b>Note:</b> This method is <i>not</i> guaranteed to always return the same 
+            <see cref="T:SimpleInjector.InstanceProducer"/> instance for a given registration. It will however either 
+            always return a producer that is able to return the expected instance. Because of this, do not 
+            compare sets of instances returned by different calls to <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> 
+            by reference. The way of comparing lists is by the actual type. The type of each instance is 
+            guaranteed to be unique in the returned list.
+            </para>
+            </remarks>
+            <returns>An array of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before
+            <see cref="M:SimpleInjector.Container.Verify"/> has been successfully called.</exception>
+        </member>
+        <member name="M:SimpleInjector.Container.Equals(System.Object)">
+            <summary>Determines whether the specified System.Object is equal to the current System.Object.
+            </summary>
+            <param name="obj">The System.Object to compare with the current System.Object.</param>
+            <returns>
+            True if the specified System.Object is equal to the current System.Object; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:SimpleInjector.Container.GetHashCode">
+            <summary>Returns the hash code of the current instance.</summary>
+            <returns>The hash code of the current instance.</returns>
+        </member>
+        <member name="M:SimpleInjector.Container.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents the <see cref="T:SimpleInjector.Container"/>.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents the <see cref="T:SimpleInjector.Container"/>.
+            </returns>
+        </member>
+        <member name="M:SimpleInjector.Container.GetType">
+            <summary>Gets the <see cref="T:System.Type"/> of the current instance.</summary>
+            <returns>The <see cref="T:System.Type"/> instance that represents the exact runtime 
+            type of the current instance.</returns>
+        </member>
+        <member name="M:SimpleInjector.Container.LockContainer">
+            <summary>Prevents any new registrations to be made to the container.</summary>
         </member>
         <member name="E:SimpleInjector.Container.ResolveUnregisteredType">
              <summary>
@@ -1649,6 +1639,16 @@
             method often verify fragile and error prone.
             </para>
             </example>
+        </member>
+        <member name="P:SimpleInjector.Container.Options">
+            <summary>Gets the container options.</summary>
+            <value>The <see cref="T:SimpleInjector.ContainerOptions"/> instance for this container.</value>
+        </member>
+        <member name="P:SimpleInjector.Container.SelectionBasedLifestyle">
+            <summary>
+            Gets the intermediate lifestyle that forwards CreateRegistration calls to the lifestyle that is 
+            returned from the registered container.Options.LifestyleSelectionBehavior.
+            </summary>
         </member>
         <member name="T:SimpleInjector.Scope">
             <summary>Implements a cache for <see cref="T:SimpleInjector.ScopedLifestyle"/> implementations.</summary>
@@ -2540,6 +2540,17 @@
             Hooks into the building process and adds a decorator if needed.
             </summary>
         </member>
+        <member name="T:SimpleInjector.Advanced.IContainerControlledCollection">
+            <summary>This interface is not meant for public use.</summary>
+        </member>
+        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.GetRelationships">
+            <summary>Please do not use.</summary>
+            <returns>Do not use.</returns>
+        </member>
+        <member name="M:SimpleInjector.Advanced.IContainerControlledCollection.Append(SimpleInjector.Advanced.ContainerControlledItem)">
+            <summary>PLease do not use.</summary>
+            <param name="registration">Do not use.</param>
+        </member>
         <member name="T:SimpleInjector.Registration">
             <summary>
             A <b>Registration</b> implements lifestyle based caching for a single service and allows building an
@@ -2663,14 +2674,13 @@
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</summary>
             <value>The <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</value>
         </member>
+        <member name="P:SimpleInjector.Registration.WrapsInstanceCreationDelegate">
+            <summary>Gets or sets a value indicating whether this registration object contains a user 
+            supplied instanceCreator factory delegate.</summary>
+        </member>
         <member name="P:SimpleInjector.Registration.Container">
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Container"/> instance for this registration.</summary>
             <value>The <see cref="P:SimpleInjector.Registration.Container"/> instance for this registration.</value>
-        </member>
-        <member name="T:SimpleInjector.Extensions.ExtensionHelpers">
-            <summary>
-            Helper methods for the extensions.
-            </summary>
         </member>
         <member name="T:SimpleInjector.Extensions.GenericArgumentFinder">
             <summary>
@@ -2690,6 +2700,11 @@
         <member name="T:SimpleInjector.Extensions.GenericTypeBuilder.CandicateServiceType">
             <summary>
             A open generic type with the concrete arguments that can be used to create a closed generic type.
+            </summary>
+        </member>
+        <member name="T:SimpleInjector.Extensions.ExtensionHelpers">
+            <summary>
+            Helper methods for the extensions.
             </summary>
         </member>
         <member name="T:SimpleInjector.Extensions.BatchRegistrationCallback">
@@ -3824,127 +3839,6 @@
             Allows validating an ArgumentMapping.
             </summary>
         </member>
-        <member name="T:SimpleInjector.Helpers">
-            <summary>
-            Helper methods for the container.
-            </summary>
-        </member>
-        <member name="T:SimpleInjector.InstanceProducer">
-            <summary>
-            Produces instances for a given registration. Instances of this type are generally created by the
-            container when calling one of the <b>Register</b> overloads. Instances can be retrieved by calling
-            <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> or <see cref="M:SimpleInjector.Container.GetRegistration(System.Type,System.Boolean)"/>.
-            </summary>
-            <remarks>
-            The <b>Register</b> method overloads create <b>InstanceProducer</b> instances internally, but
-            <b>InstanceProducer</b>s can be created manually to implement special scenarios. An 
-            <b>InstanceProducer</b> wraps <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance. The <b>Registration</b> builds an
-            <see cref="T:System.Linq.Expressions.Expression"/> that describes the intend to create the instance according to a certain
-            lifestyle. The <b>InstanceProducer</b> on the other hand transforms this <b>Expression</b> to a
-            delegate and allows the actual instance to be created. A <b>Registration</b> itself can't create any
-            instance. The <b>InsanceProducer</b> allows intercepting created instances by hooking onto the
-            <see cref="E:SimpleInjector.Container.ExpressionBuilt">Container.ExpressionBuilt</see> event. The
-            <see cref="M:SimpleInjector.Extensions.DecoratorExtensions.RegisterDecorator(SimpleInjector.Container,System.Type,System.Type)">RegisterDecorator</see>
-            extension methods for instance work by hooking onto the <b>ExpressionBuilt</b> event and allow
-            wrapping the returned instance with a decorator.
-            </remarks>
-            <example>
-            The following example shows the creation of two different <b>InstanceProducer</b> instances that wrap
-            the same <b>Registration</b> instance. Since the <b>Registration</b> is created using the 
-            <see cref="F:SimpleInjector.Lifestyle.Singleton">Singleton</see> lifestyle, both producers will return 
-            the same instance. The <b>InstanceProducer</b> for the <code>Interface1</code> however, will wrap that
-            instance in a (transient) <code>Interface1Decorator</code>.
-            <code lang="cs"><![CDATA[
-            var container = new Container();
-            
-            // ServiceImpl implements both Interface1 and Interface2.
-            var registration = Lifestyle.Singleton.CreateRegistration<ServiceImpl, ServiceImpl>(container);
-            
-            var producer1 = new InstanceProducer(typeof(Interface1), registration);
-            var producer2 = new InstanceProducer(typeof(Interface2), registration);
-            
-            container.RegisterDecorator(typeof(Interface1), typeof(Interface1Decorator));
-            
-            var instance1 = (Interface1)producer1.GetInstance();
-            var instance2 = (Interface2)producer2.GetInstance();
-            
-            Assert.IsInstanceOfType(instance1, typeof(Interface1Decorator));
-            Assert.IsInstanceOfType(instance2, typeof(ServiceImpl));
-            
-            Assert.AreSame(((Interface1Decorator)instance1).DecoratedInstance, instance2);
-            ]]></code>
-            </example>
-        </member>
-        <member name="M:SimpleInjector.InstanceProducer.#ctor(System.Type,SimpleInjector.Registration)">
-            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.InstanceProducer"/> class.</summary>
-            <param name="serviceType">The service type for which this instance is created.</param>
-            <param name="registration">The <see cref="P:SimpleInjector.InstanceProducer.Registration"/>.</param>
-        </member>
-        <member name="M:SimpleInjector.InstanceProducer.GetInstance">
-            <summary>Produces an instance.</summary>
-            <returns>An instance. Will never return null.</returns>
-            <exception cref="T:SimpleInjector.ActivationException">When the instance could not be retrieved or is null.</exception>
-        </member>
-        <member name="M:SimpleInjector.InstanceProducer.BuildExpression">
-            <summary>
-            Builds an expression that expresses the intent to get an instance by the current producer. A call 
-            to this method locks the container. No new registrations can't be made after a call to this method.
-            </summary>
-            <returns>An Expression.</returns>
-        </member>
-        <member name="M:SimpleInjector.InstanceProducer.GetRelationships">
-            <summary>
-            Gets the collection of relationships for this instance that the container knows about.
-            This includes relationships between the registered type and its dependencies and relationships 
-            between applied decorators and their dependencies. Note that types that are not newed up by the 
-            container, property dependencies that are injected using the (legacy)
-            <see cref="M:SimpleInjector.Container.InjectProperties(System.Object)">InjectProperties</see> method, and
-            properties that are injected inside a custom delegate that is registered using the
-            <see cref="M:SimpleInjector.Container.RegisterInitializer``1(System.Action{``0})">RegisterInitializer</see> method are unknown
-            to the container and are not returned from this method.
-            Also note that this method will return an empty collection when called before the the
-            registered type is requested from the container (or before <see cref="M:SimpleInjector.Container.Verify">Verify</see>
-            is called). 
-            </summary>
-            <returns>An array of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances.</returns>
-        </member>
-        <member name="M:SimpleInjector.InstanceProducer.VisualizeObjectGraph">
-            <summary>
-            Builds a string representation of the object graph with the current instance as root of the
-            graph.
-            </summary>
-            <returns>A string representation of the object graph.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before 
-            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> have been called. These calls can be
-            done directly and explicitly by the user on this instance, indirectly by calling
-            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> on an instance that depends on this
-            instance, or by calling <see cref="M:SimpleInjector.Container.Verify">Verify</see> on the container.</exception>
-        </member>
-        <member name="P:SimpleInjector.InstanceProducer.Lifestyle">
-            <summary>
-            Gets the <see cref="P:SimpleInjector.InstanceProducer.Lifestyle"/> for this registration. The returned lifestyle can differ from the
-            lifestyle that is used during the registration. This can happen for instance when the registration
-            is changed by an <see cref="E:SimpleInjector.Container.ExpressionBuilt">ExpressionBuilt</see> registration or
-            gets <see cref="T:SimpleInjector.Extensions.DecoratorExtensions">decorated</see>.
-            </summary>
-            <value>The <see cref="P:SimpleInjector.InstanceProducer.Lifestyle"/> for this registration.</value>
-        </member>
-        <member name="P:SimpleInjector.InstanceProducer.ServiceType">
-            <summary>Gets the service type for which this producer produces instances.</summary>
-            <value>A <see cref="T:System.Type"/> instance.</value>
-        </member>
-        <member name="P:SimpleInjector.InstanceProducer.Registration">
-            <summary>Gets the <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance for this instance.</summary>
-            <value>The <see cref="P:SimpleInjector.InstanceProducer.Registration"/>.</value>
-        </member>
-        <member name="T:SimpleInjector.CreateLifestyleApplier">
-            <summary>
-            Factory for the creation of a delegate that applies caching to the supplied 
-            <paramref name="transientInstanceCreator"/>.
-            </summary>
-            <param name="transientInstanceCreator">A factory for creating new instances.</param>
-            <returns>A factory that returns cached instances.</returns>
-        </member>
         <member name="T:SimpleInjector.Lifestyle">
             <summary>
             Instances returned from the container can be cached. The <see cref="T:SimpleInjector.Container"/> contains several
@@ -4352,6 +4246,51 @@
             </summary>
             <value>The <see cref="T:System.Int32"/> representing the length of this lifestyle.</value>
         </member>
+        <member name="T:SimpleInjector.Advanced.KnownRelationship">
+            <summary>
+            A known relationship defines a relationship between two types. The Diagnostics Debug View uses this
+            information to spot possible misconfigurations. 
+            </summary>
+        </member>
+        <member name="M:SimpleInjector.Advanced.KnownRelationship.#ctor(System.Type,SimpleInjector.Lifestyle,SimpleInjector.InstanceProducer)">
+            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> class.</summary>
+            <param name="implementationType">The implementation type of the parent type.</param>
+            <param name="lifestyle">The lifestyle of the parent type.</param>
+            <param name="dependency">The type that the parent depends on (it is injected into the parent).</param>
+        </member>
+        <member name="M:SimpleInjector.Advanced.KnownRelationship.GetHashCode">
+            <summary>Serves as a hash function for a particular type.</summary>
+            <returns>A hash code for the current <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>.</returns>
+        </member>
+        <member name="M:SimpleInjector.Advanced.KnownRelationship.Equals(SimpleInjector.Advanced.KnownRelationship)">
+            <summary>
+            Determines whether the specified <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> is equal to the current 
+            <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>.
+            </summary>
+            <param name="other">The object to compare with the current object.</param>
+            <returns>True if the specified <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> is equal to the current 
+            <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>; otherwise, false.</returns>
+        </member>
+        <member name="P:SimpleInjector.Advanced.KnownRelationship.ImplementationType">
+            <summary>Gets the implementation type of the parent type of the relationship.</summary>
+            <value>The implementation type of the parent type of the relationship.</value>
+        </member>
+        <member name="P:SimpleInjector.Advanced.KnownRelationship.Lifestyle">
+            <summary>Gets the lifestyle of the parent type of the relationship.</summary>
+            <value>The lifestyle of the parent type of the relationship.</value>
+        </member>
+        <member name="P:SimpleInjector.Advanced.KnownRelationship.Dependency">
+            <summary>Gets the type that the parent depends on (it is injected into the parent).</summary>
+            <value>The type that the parent depends on.</value>
+        </member>
+        <member name="T:SimpleInjector.CreateLifestyleApplier">
+            <summary>
+            Factory for the creation of a delegate that applies caching to the supplied 
+            <paramref name="transientInstanceCreator"/>.
+            </summary>
+            <param name="transientInstanceCreator">A factory for creating new instances.</param>
+            <returns>A factory that returns cached instances.</returns>
+        </member>
         <member name="T:SimpleInjector.Lifestyles.LifestyleSelectionBehaviorProxyLifestyle">
             <summary>
             Forwards CreateRegistration calls to the lifestyle that is returned from the registered
@@ -4480,6 +4419,119 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="disposables"/> is a null
             reference.</exception>
         </member>
+        <member name="T:SimpleInjector.Helpers">
+            <summary>
+            Helper methods for the container.
+            </summary>
+        </member>
+        <member name="T:SimpleInjector.InstanceProducer">
+            <summary>
+            Produces instances for a given registration. Instances of this type are generally created by the
+            container when calling one of the <b>Register</b> overloads. Instances can be retrieved by calling
+            <see cref="M:SimpleInjector.Container.GetCurrentRegistrations"/> or <see cref="M:SimpleInjector.Container.GetRegistration(System.Type,System.Boolean)"/>.
+            </summary>
+            <remarks>
+            The <b>Register</b> method overloads create <b>InstanceProducer</b> instances internally, but
+            <b>InstanceProducer</b>s can be created manually to implement special scenarios. An 
+            <b>InstanceProducer</b> wraps <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance. The <b>Registration</b> builds an
+            <see cref="T:System.Linq.Expressions.Expression"/> that describes the intend to create the instance according to a certain
+            lifestyle. The <b>InstanceProducer</b> on the other hand transforms this <b>Expression</b> to a
+            delegate and allows the actual instance to be created. A <b>Registration</b> itself can't create any
+            instance. The <b>InsanceProducer</b> allows intercepting created instances by hooking onto the
+            <see cref="E:SimpleInjector.Container.ExpressionBuilt">Container.ExpressionBuilt</see> event. The
+            <see cref="M:SimpleInjector.Extensions.DecoratorExtensions.RegisterDecorator(SimpleInjector.Container,System.Type,System.Type)">RegisterDecorator</see>
+            extension methods for instance work by hooking onto the <b>ExpressionBuilt</b> event and allow
+            wrapping the returned instance with a decorator.
+            </remarks>
+            <example>
+            The following example shows the creation of two different <b>InstanceProducer</b> instances that wrap
+            the same <b>Registration</b> instance. Since the <b>Registration</b> is created using the 
+            <see cref="F:SimpleInjector.Lifestyle.Singleton">Singleton</see> lifestyle, both producers will return 
+            the same instance. The <b>InstanceProducer</b> for the <code>Interface1</code> however, will wrap that
+            instance in a (transient) <code>Interface1Decorator</code>.
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            // ServiceImpl implements both Interface1 and Interface2.
+            var registration = Lifestyle.Singleton.CreateRegistration<ServiceImpl, ServiceImpl>(container);
+            
+            var producer1 = new InstanceProducer(typeof(Interface1), registration);
+            var producer2 = new InstanceProducer(typeof(Interface2), registration);
+            
+            container.RegisterDecorator(typeof(Interface1), typeof(Interface1Decorator));
+            
+            var instance1 = (Interface1)producer1.GetInstance();
+            var instance2 = (Interface2)producer2.GetInstance();
+            
+            Assert.IsInstanceOfType(instance1, typeof(Interface1Decorator));
+            Assert.IsInstanceOfType(instance2, typeof(ServiceImpl));
+            
+            Assert.AreSame(((Interface1Decorator)instance1).DecoratedInstance, instance2);
+            ]]></code>
+            </example>
+        </member>
+        <member name="M:SimpleInjector.InstanceProducer.#ctor(System.Type,SimpleInjector.Registration)">
+            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.InstanceProducer"/> class.</summary>
+            <param name="serviceType">The service type for which this instance is created.</param>
+            <param name="registration">The <see cref="P:SimpleInjector.InstanceProducer.Registration"/>.</param>
+        </member>
+        <member name="M:SimpleInjector.InstanceProducer.GetInstance">
+            <summary>Produces an instance.</summary>
+            <returns>An instance. Will never return null.</returns>
+            <exception cref="T:SimpleInjector.ActivationException">When the instance could not be retrieved or is null.</exception>
+        </member>
+        <member name="M:SimpleInjector.InstanceProducer.BuildExpression">
+            <summary>
+            Builds an expression that expresses the intent to get an instance by the current producer. A call 
+            to this method locks the container. No new registrations can't be made after a call to this method.
+            </summary>
+            <returns>An Expression.</returns>
+        </member>
+        <member name="M:SimpleInjector.InstanceProducer.GetRelationships">
+            <summary>
+            Gets the collection of relationships for this instance that the container knows about.
+            This includes relationships between the registered type and its dependencies and relationships 
+            between applied decorators and their dependencies. Note that types that are not newed up by the 
+            container, property dependencies that are injected using the (legacy)
+            <see cref="M:SimpleInjector.Container.InjectProperties(System.Object)">InjectProperties</see> method, and
+            properties that are injected inside a custom delegate that is registered using the
+            <see cref="M:SimpleInjector.Container.RegisterInitializer``1(System.Action{``0})">RegisterInitializer</see> method are unknown
+            to the container and are not returned from this method.
+            Also note that this method will return an empty collection when called before the the
+            registered type is requested from the container (or before <see cref="M:SimpleInjector.Container.Verify">Verify</see>
+            is called). 
+            </summary>
+            <returns>An array of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances.</returns>
+        </member>
+        <member name="M:SimpleInjector.InstanceProducer.VisualizeObjectGraph">
+            <summary>
+            Builds a string representation of the object graph with the current instance as root of the
+            graph.
+            </summary>
+            <returns>A string representation of the object graph.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when this method is called before 
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> have been called. These calls can be
+            done directly and explicitly by the user on this instance, indirectly by calling
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/> or <see cref="M:SimpleInjector.InstanceProducer.BuildExpression"/> on an instance that depends on this
+            instance, or by calling <see cref="M:SimpleInjector.Container.Verify">Verify</see> on the container.</exception>
+        </member>
+        <member name="P:SimpleInjector.InstanceProducer.Lifestyle">
+            <summary>
+            Gets the <see cref="P:SimpleInjector.InstanceProducer.Lifestyle"/> for this registration. The returned lifestyle can differ from the
+            lifestyle that is used during the registration. This can happen for instance when the registration
+            is changed by an <see cref="E:SimpleInjector.Container.ExpressionBuilt">ExpressionBuilt</see> registration or
+            gets <see cref="T:SimpleInjector.Extensions.DecoratorExtensions">decorated</see>.
+            </summary>
+            <value>The <see cref="P:SimpleInjector.InstanceProducer.Lifestyle"/> for this registration.</value>
+        </member>
+        <member name="P:SimpleInjector.InstanceProducer.ServiceType">
+            <summary>Gets the service type for which this producer produces instances.</summary>
+            <value>A <see cref="T:System.Type"/> instance.</value>
+        </member>
+        <member name="P:SimpleInjector.InstanceProducer.Registration">
+            <summary>Gets the <see cref="P:SimpleInjector.InstanceProducer.Registration"/> instance for this instance.</summary>
+            <value>The <see cref="P:SimpleInjector.InstanceProducer.Registration"/>.</value>
+        </member>
         <member name="T:SimpleInjector.StringResources">
             <summary>Internal helper for string resources.</summary>
         </member>
@@ -4559,15 +4611,6 @@
             this instance.
             </summary>
             <value>The indication whether the event has been handled.</value>
-        </member>
-        <member name="T:SimpleInjector.Advanced.ThreadLocalValue">
-            <summary>
-            This class is for internal use only.
-            </summary>
-        </member>
-        <member name="P:SimpleInjector.Advanced.ThreadLocalValue.Value">
-            <summary>Gets or sets the value.</summary>
-            <value>The value.</value>
         </member>
     </members>
 </doc>

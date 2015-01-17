@@ -1,13 +1,18 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using Patterns.Logging;
 using System;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace MediaBrowser.Server.Implementations.Logging
 {
-    public class SocketSharpLogger : SocketHttpListener.Logging.ILogger
+    public class PatternsLogger : ILogger
     {
-        private readonly ILogger _logger;
+        private readonly Model.Logging.ILogger _logger;
 
-        public SocketSharpLogger(ILogger logger)
+        public PatternsLogger()
+            : this(new Model.Logging.NullLogger())
+        {
+        }
+
+        public PatternsLogger(Model.Logging.ILogger logger)
         {
             _logger = logger;
         }
@@ -45,6 +50,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Warn(string message, params object[] paramList)
         {
             _logger.Warn(message, paramList);
+        }
+
+        public void Log(LogSeverity severity, string message, params object[] paramList)
+        {
+        }
+
+        public void LogMultiline(string message, LogSeverity severity, System.Text.StringBuilder additionalContent)
+        {
         }
     }
 }
