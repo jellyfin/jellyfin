@@ -194,6 +194,7 @@
     "LabelVideoCodec": "Video: {0}",
     "LabelRemoteAccessUrl": "Remote access: {0}",
     "LabelRunningOnPort": "Running on port {0}.",
+    "LabelRunningOnHttpsPort": "Running on SSL port {0}.",
     "HeaderLatestFromChannel": "Latest from {0}",
     "ButtonDownload": "Download",
     "LabelUnknownLanaguage": "Unknown language",
