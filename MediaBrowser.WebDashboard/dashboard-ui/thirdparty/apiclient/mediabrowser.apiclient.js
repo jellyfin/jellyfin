@@ -49,7 +49,7 @@
 
         self.apiPrefix = function () {
 
-            return "/mediabrowser";
+            return "";
         };
 
         self.serverInfo = function (info) {
@@ -189,7 +189,7 @@
             $.ajax({
 
                 type: "GET",
-                url: url + "/mediabrowser/system/info/public",
+                url: url + "/system/info/public",
                 dataType: "json",
 
                 timeout: 15000

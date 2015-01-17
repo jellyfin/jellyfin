@@ -139,7 +139,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 240,
                 Height = 240,
-                Url = "/mediabrowser/dlna/icons/logo240.png"
+                Url = "/dlna/icons/logo240.png"
             });
 
             list.Add(new DeviceIcon
@@ -148,7 +148,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 240,
                 Height = 240,
-                Url = "/mediabrowser/dlna/icons/logo240.jpg"
+                Url = "/dlna/icons/logo240.jpg"
             });
 
             list.Add(new DeviceIcon
@@ -157,7 +157,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 120,
                 Height = 120,
-                Url = "/mediabrowser/dlna/icons/logo120.png"
+                Url = "/dlna/icons/logo120.png"
             });
 
             list.Add(new DeviceIcon
@@ -166,7 +166,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 120,
                 Height = 120,
-                Url = "/mediabrowser/dlna/icons/logo120.jpg"
+                Url = "/dlna/icons/logo120.jpg"
             });
 
             list.Add(new DeviceIcon
@@ -175,7 +175,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 48,
                 Height = 48,
-                Url = "/mediabrowser/dlna/icons/logo48.png"
+                Url = "/dlna/icons/logo48.png"
             });
 
             list.Add(new DeviceIcon
@@ -184,7 +184,7 @@ namespace MediaBrowser.Dlna.Server
                 Depth = "24",
                 Width = 48,
                 Height = 48,
-                Url = "/mediabrowser/dlna/icons/logo48.jpg"
+                Url = "/dlna/icons/logo48.jpg"
             });
 
             return list;
@@ -198,18 +198,18 @@ namespace MediaBrowser.Dlna.Server
             {
                 ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
                 ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
-                ScpdUrl = "/mediabrowser/dlna/contentdirectory/contentdirectory.xml",
-                ControlUrl = "/mediabrowser/dlna/contentdirectory/" + _serverUdn + "/control",
-                EventSubUrl = "/mediabrowser/dlna/contentdirectory/" + _serverUdn + "/events"
+                ScpdUrl = "/dlna/contentdirectory/contentdirectory.xml",
+                ControlUrl = "/dlna/contentdirectory/" + _serverUdn + "/control",
+                EventSubUrl = "/dlna/contentdirectory/" + _serverUdn + "/events"
             });
 
             list.Add(new DeviceService
             {
                 ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
                 ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
-                ScpdUrl = "/mediabrowser/dlna/connectionmanager/connectionmanager.xml",
-                ControlUrl = "/mediabrowser/dlna/connectionmanager/" + _serverUdn + "/control",
-                EventSubUrl = "/mediabrowser/dlna/connectionmanager/" + _serverUdn + "/events"
+                ScpdUrl = "/dlna/connectionmanager/connectionmanager.xml",
+                ControlUrl = "/dlna/connectionmanager/" + _serverUdn + "/control",
+                EventSubUrl = "/dlna/connectionmanager/" + _serverUdn + "/events"
             });
 
             return list;
