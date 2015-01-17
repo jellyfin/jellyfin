@@ -23,6 +23,11 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the type of the image.
         /// </summary>
         /// <value>The type of the image.</value>
-        public ImageType ImageType { get; set; }
+        public ImageType? ImageType { get; set; }
+        /// <summary>
+        /// Gets or sets the index.
+        /// </summary>
+        /// <value>The index.</value>
+        public int Index { get; set; }
     }
 }

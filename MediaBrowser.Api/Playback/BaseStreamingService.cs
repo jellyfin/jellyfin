@@ -119,7 +119,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetOutputFilePath(StreamState state)
         {
-            var folder = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower());
+            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
             
             var outputFileExtension = GetOutputFileExtension(state);
 

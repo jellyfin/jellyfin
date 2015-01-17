@@ -5,13 +5,13 @@ namespace MediaBrowser.Model.Sync
 {
     public static class SyncHelper
     {
-        public static List<SyncOptions> GetSyncOptions(List<BaseItemDto> items)
+        public static List<SyncJobOption> GetSyncOptions(List<BaseItemDto> items)
         {
-            List<SyncOptions> options = new List<SyncOptions>();
+            List<SyncJobOption> options = new List<SyncJobOption>();
 
             if (items.Count > 1)
             {
-                options.Add(SyncOptions.Name);
+                options.Add(SyncJobOption.Name);
             }
             
             foreach (BaseItemDto item in items)
@@ -20,23 +20,23 @@ namespace MediaBrowser.Model.Sync
                 {
                     if (item.IsVideo)
                     {
-                        options.Add(SyncOptions.Quality);
+                        options.Add(SyncJobOption.Quality);
                         if (items.Count > 1)
                         {
-                            options.Add(SyncOptions.UnwatchedOnly);
+                            options.Add(SyncJobOption.UnwatchedOnly);
                         }
                         break;
                     }
                     if (item.IsFolder && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
                     {
-                        options.Add(SyncOptions.Quality);
-                        options.Add(SyncOptions.UnwatchedOnly);
+                        options.Add(SyncJobOption.Quality);
+                        options.Add(SyncJobOption.UnwatchedOnly);
                         break;
                     }
                     if (item.IsGenre)
                     {
-                        options.Add(SyncOptions.SyncNewContent);
-                        options.Add(SyncOptions.ItemLimit);
+                        options.Add(SyncJobOption.SyncNewContent);
+                        options.Add(SyncJobOption.ItemLimit);
                         break;
                     }
                 }
@@ -48,8 +48,8 @@ namespace MediaBrowser.Model.Sync
                 {
                     if (item.IsFolder || item.IsGameGenre || item.IsMusicGenre || item.IsGenre || item.IsArtist || item.IsStudio || item.IsPerson)
                     {
-                        options.Add(SyncOptions.SyncNewContent);
-                        options.Add(SyncOptions.ItemLimit);
+                        options.Add(SyncJobOption.SyncNewContent);
+                        options.Add(SyncJobOption.ItemLimit);
                         break;
                     }
                 }
@@ -58,15 +58,15 @@ namespace MediaBrowser.Model.Sync
             return options;
         }
 
-        public static List<SyncOptions> GetSyncOptions(SyncCategory category)
+        public static List<SyncJobOption> GetSyncOptions(SyncCategory category)
         {
-            List<SyncOptions> options = new List<SyncOptions>();
+            List<SyncJobOption> options = new List<SyncJobOption>();
 
-            options.Add(SyncOptions.Name);
-            options.Add(SyncOptions.Quality);
-            options.Add(SyncOptions.UnwatchedOnly);
-            options.Add(SyncOptions.SyncNewContent);
-            options.Add(SyncOptions.ItemLimit);
+            options.Add(SyncJobOption.Name);
+            options.Add(SyncJobOption.Quality);
+            options.Add(SyncJobOption.UnwatchedOnly);
+            options.Add(SyncJobOption.SyncNewContent);
+            options.Add(SyncJobOption.ItemLimit);
 
             return options;
         }

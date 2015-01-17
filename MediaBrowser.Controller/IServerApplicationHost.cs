@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller
 {
