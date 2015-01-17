@@ -978,6 +978,7 @@ namespace MediaBrowser.Server.Startup.Common
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = HttpServerPort,
                 UseHttps = UseHttps,
+                HttpsPortNumber = HttpsServerPort,
                 CertificatePath = CertificatePath,
                 OperatingSystem = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
