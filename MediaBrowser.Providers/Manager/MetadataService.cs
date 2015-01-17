@@ -163,14 +163,13 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            updateType = updateType | BeforeSave(itemOfType);
-
-            var providersHadChanges = updateType > ItemUpdateType.None;
+            updateType = updateType | (await BeforeSave(itemOfType, item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata, updateType).ConfigureAwait(false));
 
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || providersHadChanges || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
+            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
             {
-                if (refreshOptions.ForceSave || providersHadChanges || refreshOptions.ReplaceAllMetadata)
+                // If any of these properties are set then make sure the updateType is not None, just to force everything to save
+                if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
                 {
                     updateType = updateType | ItemUpdateType.MetadataDownload;
                 }
@@ -179,7 +178,7 @@ namespace MediaBrowser.Providers.Manager
                 await SaveItem(itemOfType, updateType, cancellationToken);
             }
 
-            if (providersHadChanges || refreshResult.IsDirty)
+            if (updateType > ItemUpdateType.None || refreshResult.IsDirty)
             {
                 await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
@@ -194,14 +193,17 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
+        /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual ItemUpdateType BeforeSave(TItemType item)
+        protected virtual Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            return ItemUpdateType.None;
+            return _cachedResult;
         }
 
         /// <summary>
@@ -549,11 +551,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (refreshResult.Successes > 0)
-            {
-                AfterRemoteRefresh(temp);
-            }
-
             return refreshResult;
         }
 
@@ -568,11 +565,6 @@ namespace MediaBrowser.Providers.Manager
                     hasTrailers.RemoteTrailers.Clear();
                 }
             }
-        }
-
-        protected virtual void AfterRemoteRefresh(TItemType item)
-        {
-
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)

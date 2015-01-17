@@ -61,7 +61,6 @@
     <Compile Include="Providers\AlbumXmlProvider.cs" />
     <Compile Include="Providers\ArtistXmlProvider.cs" />
     <Compile Include="Providers\BoxSetXmlProvider.cs" />
-    <Compile Include="Providers\ChannelXmlProvider.cs" />
     <Compile Include="Providers\EpisodeXmlProvider.cs" />
     <Compile Include="Providers\FolderXmlProvider.cs" />
     <Compile Include="Providers\GameSystemXmlProvider.cs" />
@@ -74,7 +73,6 @@
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
-    <Compile Include="Savers\ChannelXmlSaver.cs" />
     <Compile Include="Savers\EpisodeXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\GameSystemXmlSaver.cs" />

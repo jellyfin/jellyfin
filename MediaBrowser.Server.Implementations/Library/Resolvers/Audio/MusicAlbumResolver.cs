@@ -6,11 +6,10 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
-using MediaBrowser.Naming.Common;
+using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {

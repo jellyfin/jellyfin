@@ -361,7 +361,7 @@ namespace MediaBrowser.Providers.TV
 
                     // Season does not have a number
                     // Remove if there are no episodes directly in series without a season number
-                    return i.Season.Series.RecursiveChildren.OfType<Episode>().All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
+                    return i.Season.Series.RecursiveChildren.OfType<Episode>().All(s => s.ParentIndexNumber.HasValue || !s.IsInSeasonFolder);
                 })
                 .ToList();
 
@@ -394,7 +394,7 @@ namespace MediaBrowser.Providers.TV
 
             if (season == null)
             {
-                var provider = new DummySeasonProvider(_config, _logger, _localization);
+                var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager);
                 season = await provider.AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
             }
 

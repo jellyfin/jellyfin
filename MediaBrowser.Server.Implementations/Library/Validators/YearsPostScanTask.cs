@@ -26,17 +26,15 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct()
                 .ToList();
 
-            progress.Report(10);
-
             var count = allYears.Count;
             var numComplete = 0;
 
             foreach (var yearNumber in allYears)
             {
-                var year = _libraryManager.GetYear(yearNumber);
-
                 try
                 {
+                    var year = _libraryManager.GetYear(yearNumber);
+
                     await year.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -46,15 +44,15 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing year {0}", ex, year);
+                    _logger.ErrorException("Error refreshing year {0}", ex, yearNumber);
                 }
 
                 numComplete++;
                 double percent = numComplete;
                 percent /= count;
-                percent *= 90;
+                percent *= 100;
 
-                progress.Report(percent + 10);
+                progress.Report(percent);
             }
         }
     }

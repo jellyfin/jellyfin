@@ -6,7 +6,9 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -29,14 +31,20 @@ namespace MediaBrowser.Providers.TV
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        protected override void AfterRemoteRefresh(Season item)
+        protected override async Task<ItemUpdateType> BeforeSave(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            base.AfterRemoteRefresh(item);
+            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
 
             if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
             {
-                item.Name = ServerConfigurationManager.Configuration.SeasonZeroDisplayName;
+                if (!string.Equals(item.Name, ServerConfigurationManager.Configuration.SeasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Name = ServerConfigurationManager.Configuration.SeasonZeroDisplayName;
+                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                }
             }
+
+            return updateType;
         }
     }
 }

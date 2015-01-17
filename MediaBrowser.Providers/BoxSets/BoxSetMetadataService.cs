@@ -12,6 +12,7 @@ using MediaBrowser.Providers.Manager;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -51,31 +52,34 @@ namespace MediaBrowser.Providers.BoxSets
             }
         }
 
-        protected override ItemUpdateType BeforeSave(BoxSet item)
+        protected override async Task<ItemUpdateType> BeforeSave(BoxSet item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            var updateType = base.BeforeSave(item);
+            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
 
-            if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                var currentOfficialRating = item.OfficialRating;
-
-                // Gather all possible ratings
-                var ratings = item.RecursiveChildren
-                    .Concat(item.GetLinkedChildren())
-                    .Where(i => i is Movie || i is Series)
-                    .Select(i => i.OfficialRating)
-                    .Where(i => !string.IsNullOrEmpty(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(i => new Tuple<string, int?>(i, _iLocalizationManager.GetRatingLevel(i)))
-                    .OrderBy(i => i.Item2 ?? 1000)
-                    .Select(i => i.Item1);
-
-                item.OfficialRating = ratings.FirstOrDefault() ?? item.OfficialRating;
-
-                if (!string.Equals(currentOfficialRating ?? string.Empty, item.OfficialRating ?? string.Empty,
-                    StringComparison.OrdinalIgnoreCase))
+                if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    var currentOfficialRating = item.OfficialRating;
+
+                    // Gather all possible ratings
+                    var ratings = item.RecursiveChildren
+                        .Concat(item.GetLinkedChildren())
+                        .Where(i => i is Movie || i is Series)
+                        .Select(i => i.OfficialRating)
+                        .Where(i => !string.IsNullOrEmpty(i))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Select(i => new Tuple<string, int?>(i, _iLocalizationManager.GetRatingLevel(i)))
+                        .OrderBy(i => i.Item2 ?? 1000)
+                        .Select(i => i.Item1);
+
+                    item.OfficialRating = ratings.FirstOrDefault() ?? item.OfficialRating;
+
+                    if (!string.Equals(currentOfficialRating ?? string.Empty, item.OfficialRating ?? string.Empty,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        updateType = updateType | ItemUpdateType.MetadataEdit;
+                    }
                 }
             }
 

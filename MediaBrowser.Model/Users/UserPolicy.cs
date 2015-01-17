@@ -62,6 +62,8 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvAccess = true;
             EnableSharedDeviceControl = true;
 
+            EnabledChannels = new string[] { };
+            
             BlockedMediaFolders = new string[] { };
             BlockedTags = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };

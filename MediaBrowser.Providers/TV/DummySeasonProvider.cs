@@ -1,10 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -17,18 +18,22 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public DummySeasonProvider(IServerConfigurationManager config, ILogger logger, ILocalizationManager localization)
+        public DummySeasonProvider(IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager)
         {
             _config = config;
             _logger = logger;
             _localization = localization;
+            _libraryManager = libraryManager;
         }
 
         public async Task Run(Series series, CancellationToken cancellationToken)
         {
+            await RemoveObsoleteSeasons(series).ConfigureAwait(false);
+            
             var hasNewSeasons = await AddDummySeasonFolders(series, cancellationToken).ConfigureAwait(false);
 
             if (hasNewSeasons)
@@ -116,6 +121,62 @@ namespace MediaBrowser.Providers.TV
             await season.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken).ConfigureAwait(false);
 
             return season;
+        }
+
+        private async Task<bool> RemoveObsoleteSeasons(Series series)
+        {
+            var existingSeasons = series.Children.OfType<Season>().ToList();
+
+            var physicalSeasons = existingSeasons
+                .Where(i => i.LocationType != LocationType.Virtual)
+                .ToList();
+
+            var virtualSeasons = existingSeasons
+                .Where(i => i.LocationType == LocationType.Virtual)
+                .ToList();
+
+            var episodes = series.RecursiveChildren.OfType<Episode>().ToList();
+
+            var seasonsToRemove = virtualSeasons
+                .Where(i =>
+                {
+                    if (i.IndexNumber.HasValue)
+                    {
+                        var seasonNumber = i.IndexNumber.Value;
+
+                        // If there's a physical season with the same number, delete it
+                        if (physicalSeasons.Any(p => p.IndexNumber.HasValue && (p.IndexNumber.Value == seasonNumber)))
+                        {
+                            return true;
+                        }
+
+                        // If there are no episodes with this season number, delete it
+                        if (episodes.All(e => !e.ParentIndexNumber.HasValue || e.ParentIndexNumber.Value != seasonNumber))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    // Season does not have a number
+                    // Remove if there are no episodes directly in series without a season number
+                    return episodes.All(s => s.ParentIndexNumber.HasValue || !s.IsInSeasonFolder);
+                })
+                .ToList();
+
+            var hasChanges = false;
+
+            foreach (var seasonToRemove in seasonsToRemove)
+            {
+                _logger.Info("Removing virtual season {0} {1}", seasonToRemove.Series.Name, seasonToRemove.IndexNumber);
+
+                await _libraryManager.DeleteItem(seasonToRemove).ConfigureAwait(false);
+
+                hasChanges = true;
+            }
+
+            return hasChanges;
         }
     }
 }
