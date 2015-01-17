@@ -857,7 +857,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (SupportsThrottleWithStream)
                     {
-                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
 
                         url += "&transcodingJobId=" + transcodingJobId;
 

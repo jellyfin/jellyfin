@@ -19,12 +19,6 @@ namespace MediaBrowser.Controller
         SystemInfo GetSystemInfo();
 
         /// <summary>
-        /// Gets the name of the web application.
-        /// </summary>
-        /// <value>The name of the web application.</value>
-        string WebApplicationName { get; }
-
-        /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].
         /// </summary>
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
@@ -35,28 +29,6 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The HTTP server port.</value>
         int HttpServerPort { get; }
-
-        /// <summary>
-        /// Gets the HTTPS server port.
-        /// </summary>
-        /// <value>The HTTPS server port.</value>
-        int HttpsServerPort { get; }
-
-        /// <summary>
-        /// Gets the value indiciating if an https port should be hosted.
-        /// </summary>
-        /// <value>
-        /// The value indiciating if an https port should be hosted.
-        /// </value>
-        bool UseHttps { get; }
-
-        /// <summary>
-        /// Gets the value pointing to the file system where the ssl certiifcate is located.
-        /// </summary>
-        /// <value>
-        /// The value pointing to the file system where the ssl certiifcate is located.
-        /// </value>
-        string CertificatePath { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has update available.

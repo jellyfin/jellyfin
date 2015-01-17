@@ -461,7 +461,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //    {
             //        if (SupportsThrottleWithStream)
             //        {
-            //            var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + job.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + job.Request.MediaSourceId;
+            //            var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + job.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + job.Request.MediaSourceId;
 
             //            url += "&transcodingJobId=" + transcodingJobId;
 

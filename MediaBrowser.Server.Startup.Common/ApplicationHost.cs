@@ -130,12 +130,12 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var list = new List<string>
                 {
-                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/" + WebApplicationName + "/"
+                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
                 };
 
                 if (ServerConfigurationManager.Configuration.UseHttps)
                 {
-                    list.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/" + WebApplicationName + "/");
+                    list.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
                 }
 
                 return list;
@@ -472,7 +472,7 @@ namespace MediaBrowser.Server.Startup.Common
                 _supportsNativeWebSocket = false;
             }
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", WebApplicationName, "dashboard/index.html", false);
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "web/index.html", false);
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -810,7 +810,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefixes, CertificatePath);
+                ServerManager.Start(HttpServerUrlPrefixes, ServerConfigurationManager.Configuration.CertificatePath);
             }
             catch (Exception ex)
             {
@@ -977,8 +977,6 @@ namespace MediaBrowser.Server.Startup.Common
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
                 HttpServerPortNumber = HttpServerPort,
-                UseHttps = UseHttps,
-                CertificatePath = CertificatePath,
                 OperatingSystem = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
@@ -1051,16 +1049,6 @@ namespace MediaBrowser.Server.Startup.Common
         public int HttpServerPort
         {
             get { return ServerConfigurationManager.Configuration.HttpServerPortNumber; }
-        }
-
-        public bool UseHttps
-        {
-            get { return this.ServerConfigurationManager.Configuration.UseHttps; }
-        }
-
-        public string CertificatePath
-        {
-            get { return this.ServerConfigurationManager.Configuration.CertificatePath; }
         }
 
         public int HttpsServerPort
