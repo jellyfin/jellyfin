@@ -508,6 +508,14 @@
     "LabelLocalHttpServerPortNumberHelp": "The tcp port number that Media Browser's http server should bind to.",
     "LabelPublicPort": "Public port number:",
     "LabelPublicPortHelp": "The public port number that should be mapped to the local port.",
+
+    "LabelUseHttps": "Enable SSL",
+    "LabelUseHttpsHelp": "Check to enable SSL hosting.",
+    "LabelHttpsPort":  "Local http port:",
+    "LabelHttpsPortHelp": "The tcp port number that Media Browser's https server should bind to.",
+    "LabelCertificatePath": "SSL Certificate path:",
+    "LabelCertificatePathHelp": "The path on the filesystem to the ssl certificate pfx file.",
+
     "LabelWebSocketPortNumber": "Web socket port number:",
     "LabelEnableAutomaticPortMap": "Enable automatic port mapping",
     "LabelEnableAutomaticPortMapHelp": "Attempt to automatically map the public port to the local port via UPnP. This may not work with some router models.",

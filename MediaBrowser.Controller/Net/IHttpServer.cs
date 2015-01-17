@@ -19,7 +19,9 @@ namespace MediaBrowser.Controller.Net
         /// Starts the specified server name.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
-        void StartServer(IEnumerable<string> urlPrefixes);
+        /// <param name="certificatePath">If an https prefix is specified, 
+        /// the ssl certificate localtion on the file system.</param>
+        void StartServer(IEnumerable<string> urlPrefixes, string certificatePath);
 
         /// <summary>
         /// Gets the local end points.

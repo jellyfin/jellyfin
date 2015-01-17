@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.Xml.Schema;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Configuration
@@ -32,6 +33,17 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The HTTPS server port number.</value>
         public int HttpsPortNumber { get; set; }
         
+        /// Gets or sets the value pointing to the file system where the ssl certiifcate is located.
+        /// </summary>
+        /// <value>The value pointing to the file system where the ssl certiifcate is located.</value>
+        public bool UseHttps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
+        /// </summary>
+        /// <value>The value pointing to the file system where the ssl certiifcate is located..</value>
+        public string CertificatePath { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
@@ -187,6 +199,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] InsecureApps8 { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
+
         public bool EnableWin8HttpListener { get; set; }
 
         public NameValuePair[] ContentTypes { get; set; }
@@ -204,6 +217,8 @@ namespace MediaBrowser.Model.Configuration
             PublicPort = 8096;
             HttpServerPortNumber = 8096;
             HttpsPortNumber = 8920;
+            UseHttps = false;
+            CertificatePath = null;
             EnableDashboardResponseCaching = true;
 
             EnableAutomaticRestart = true;

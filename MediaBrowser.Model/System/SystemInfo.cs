@@ -123,6 +123,24 @@ namespace MediaBrowser.Model.System
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
+        /// Gets or sets the value pointing to the file system where the ssl certiifcate is located.
+        /// </summary>
+        /// <value>The value pointing to the file system where the ssl certiifcate is located.</value>
+        public bool UseHttps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
+        /// </summary>
+        /// <value>The value pointing to the file system where the ssl certiifcate is located..</value>
+        public string CertificatePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTPS server port number.
+        /// </summary>
+        /// <value>The HTTPS server port number.</value>
+        public int HttpsPortNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>

@@ -37,6 +37,28 @@ namespace MediaBrowser.Controller
         int HttpServerPort { get; }
 
         /// <summary>
+        /// Gets the HTTPS server port.
+        /// </summary>
+        /// <value>The HTTPS server port.</value>
+        int HttpsServerPort { get; }
+
+        /// <summary>
+        /// Gets the value indiciating if an https port should be hosted.
+        /// </summary>
+        /// <value>
+        /// The value indiciating if an https port should be hosted.
+        /// </value>
+        bool UseHttps { get; }
+
+        /// <summary>
+        /// Gets the value pointing to the file system where the ssl certiifcate is located.
+        /// </summary>
+        /// <value>
+        /// The value pointing to the file system where the ssl certiifcate is located.
+        /// </value>
+        string CertificatePath { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
