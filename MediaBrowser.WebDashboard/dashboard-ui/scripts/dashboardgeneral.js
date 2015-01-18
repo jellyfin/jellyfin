@@ -4,6 +4,15 @@
 
     function loadPage(page, config, languageOptions) {
 
+        if (Dashboard.lastSystemInfo) {
+            Dashboard.setPageTitle(Dashboard.lastSystemInfo.ServerName);
+        }
+
+        ApiClient.getSystemInfo().done(function (systemInfo) {
+
+            Dashboard.setPageTitle(systemInfo.ServerName);
+        });
+
         $('#txtServerName', page).val(config.ServerName || '');
 
         $('#selectLocalizationLanguage', page).html(languageOptions.map(function (l) {

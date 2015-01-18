@@ -6,6 +6,10 @@
 
         var page = this;
 
+        if (Dashboard.lastSystemInfo) {
+            Dashboard.setPageTitle(Dashboard.lastSystemInfo.ServerName);
+        }
+
         DashboardPage.newsStartIndex = 0;
 
         Dashboard.showLoadingMsg();
@@ -73,6 +77,7 @@
 
         ApiClient.getSystemInfo().done(function (systemInfo) {
 
+            Dashboard.setPageTitle(systemInfo.ServerName);
             Dashboard.updateSystemInfo(systemInfo);
 
             $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));

@@ -460,19 +460,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            if (IsFirstRun)
-            {
-                ServerConfigurationManager.Configuration.EnableWin8HttpListener = false;
-                ServerConfigurationManager.SaveConfiguration();
-                _supportsNativeWebSocket = false;
-            }
-
-            if (!ServerConfigurationManager.Configuration.EnableWin8HttpListener)
-            {
-                _supportsNativeWebSocket = false;
-            }
-
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "web/index.html", false);
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "web/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 

@@ -183,14 +183,7 @@ namespace MediaBrowser.Providers.Movies
                 if (DateTime.TryParseExact(result.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
                 {
                     // Allow one year tolernace, preserve order from Tmdb
-                    var variance = Math.Abs(r.Year - year.Value);
-
-                    if (variance <= 1)
-                    {
-                        return 0;
-                    }
-
-                    return variance;
+                    return Math.Abs(r.Year - year.Value);
                 }
             }
 

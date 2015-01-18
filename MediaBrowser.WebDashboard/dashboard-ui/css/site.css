@@ -320,48 +320,92 @@ h1 .imageLink {
     border: 0;
     display: none;
     text-align: left;
-    width: 220px;
+    width: 240px;
     position: fixed;
     top: 51px;
     left: 0;
     bottom: 0;
     margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
+    /*-moz-box-shadow: -3px 0 10px 0 #555;
+    -webkit-box-shadow: -3px 0 10px 0 #555;
+    box-shadow: -3px 0 10px 0 #555;*/
 }
 
+.ui-page-theme-a {
+    background: #f2f2f2;
+}
+
+    .ui-page-theme-a .content-secondary {
+        background: #fff;
+    }
+
 .sidebarLinks {
-    margin-top: 2.75em;
-    margin-left: 1em;
+    margin-top: 1.5em;
+    padding-bottom: 50px;
 }
 
     .sidebarLinks a {
         display: block;
-        padding: .6em 20px .6em 20px;
+        padding: .6em 20px .6em 0;
         text-decoration: none;
         color: inherit !important;
         text-shadow: none !important;
         font-weight: 500 !important;
         font-size: 14px;
-        border-radius: 2px;
+        vertical-align: middle;
     }
 
         .sidebarLinks a:hover {
-            background: #52B54B;
-            color: #fff !important;
+            background: #f2f2f2;
         }
 
         .sidebarLinks a.selectedSidebarLink {
-            background: #38c !important;
-            color: #fff !important;
             margin-right: 0;
         }
+
+.ui-page-theme-a .sidebarLinks a.selectedSidebarLink {
+    background: #f2f2f2 !important;
+}
+
+.ui-page-theme-b .sidebarLinks a.selectedSidebarLink {
+    background: #38c !important;
+    color: #fff !important;
+}
+
+.sidebarLinks .sidebarLinkIcon {
+    font-size: 17px;
+    width: 66px;
+    text-align: center;
+}
+
+.ui-page-theme-a .sidebarLinkIcon {
+    color: #666;
+}
 
 .sidebarDivider {
     height: 0;
     border-width: 1px 0 0;
     border-style: solid;
-    margin: .25em 0;
+    margin: .7em 0;
     border-radius: 0;
 }
+
+.sidebarLinkText, .sidebarLinkIcon {
+}
+
+.sidebarHeader {
+    padding-left: 20px;
+    margin: 1em 0;
+    font-size: 90%;
+}
+
+.ui-page-theme-a .sidebarHeader {
+    color: #888;
+}
+
 
 .invalidEntry {
     background-color: lightpink !important;
@@ -439,7 +483,7 @@ h1 .imageLink {
     }
 }
 
-@media all and (min-width: 750px) {
+@media all and (min-width: 800px) {
 
     /*
     Forms
@@ -465,7 +509,7 @@ h1 .imageLink {
 
     .content-primary {
         padding: 80px 15px 3em 0;
-        margin: 0 0 0 260px;
+        margin: 0 0 0 280px;
     }
 
         .content-primary ul:first-child {
