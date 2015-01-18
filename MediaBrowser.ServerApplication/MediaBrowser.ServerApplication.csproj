@@ -109,6 +109,7 @@
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
     <Compile Include="Native\WindowsApp.cs" />
+    <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Networking\NativeMethods.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Networking\NetworkShares.cs" />
