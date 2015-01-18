@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -371,9 +372,14 @@ namespace MediaBrowser.Providers.Movies
             return _httpClient.Get(options);
         }
 
+        public TheMovieDbOptions GetTheMovieDbOptions()
+        {
+            return _configurationManager.GetConfiguration<TheMovieDbOptions>("themoviedb");
+        }
+
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_configurationManager.Configuration.EnableTmdbUpdates)
+            if (!GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -603,6 +609,21 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbResourcePool
             });
+        }
+    }
+
+    public class TmdbConfigStore : IConfigurationFactory
+    {
+        public IEnumerable<ConfigurationStore> GetConfigurations()
+        {
+            return new List<ConfigurationStore>
+            {
+                new ConfigurationStore
+                {
+                     Key = "themoviedb",
+                     ConfigurationType = typeof(TheMovieDbOptions)
+                }
+            };
         }
     }
 }

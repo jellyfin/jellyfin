@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -53,7 +55,9 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = FanartSeriesProvider.Current.GetFanartOptions();
+
+            if (!options.EnableAutomaticUpdates)
             {
                 progress.Report(100);
                 return;
@@ -81,7 +85,7 @@ namespace MediaBrowser.Providers.Music
             // If this is our first time, don't do any updates and just record the timestamp
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
-                var artistsToUpdate = await GetArtistIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
+                var artistsToUpdate = await GetArtistIdsToUpdate(existingDirectories, lastUpdateTime, options, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(5);
 
@@ -102,13 +106,13 @@ namespace MediaBrowser.Providers.Music
         /// <param name="lastUpdateTime">The last update time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{System.String}}.</returns>
-        private async Task<IEnumerable<string>> GetArtistIdsToUpdate(IEnumerable<string> existingArtistIds, string lastUpdateTime, CancellationToken cancellationToken)
+        private async Task<IEnumerable<string>> GetArtistIdsToUpdate(IEnumerable<string> existingArtistIds, string lastUpdateTime, FanartOptions options, CancellationToken cancellationToken)
         {
             var url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime);
 
-            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            if (!string.IsNullOrWhiteSpace(options.UserApiKey))
             {
-                url += "&client_key=" + _config.Configuration.FanartApiKey;
+                url += "&client_key=" + options.UserApiKey;
             }
             
             // First get last time

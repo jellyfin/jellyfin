@@ -548,7 +548,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 SubtitleProfile externalProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
 
-                if (options.Context == EncodingContext.Streaming && externalProfile != null)
+                if (externalProfile != null)
                 {
                     return externalProfile;
                 }

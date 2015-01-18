@@ -134,7 +134,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, false));
         }
 
         /// <summary>
@@ -249,8 +249,10 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private Task<Stream> GetResourceStream(string path, string localizationCulture)
         {
+            var minify = _serverConfigurationManager.Configuration.EnableDashboardResourceMinification;
+
             return GetPackageCreator()
-                .GetResource(path, localizationCulture, _appHost.ApplicationVersion.ToString());
+                .GetResource(path, localizationCulture, _appHost.ApplicationVersion.ToString(), minify);
         }
 
         private PackageCreator GetPackageCreator()
@@ -321,7 +323,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string culture, string appVersion)
         {
-            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, culture, appVersion).ConfigureAwait(false))
+            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, culture, appVersion, true).ConfigureAwait(false))
             {
                 using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {

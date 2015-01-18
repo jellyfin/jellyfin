@@ -97,8 +97,11 @@
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
     <Compile Include="Configuration\EncodingOptions.cs" />
+    <Compile Include="Configuration\FanartOptions.cs" />
     <Compile Include="Configuration\MetadataConfiguration.cs" />
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
+    <Compile Include="Configuration\TheMovieDbOptions.cs" />
+    <Compile Include="Configuration\TvdbOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />

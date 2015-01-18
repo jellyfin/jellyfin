@@ -223,7 +223,8 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = FanartSeriesProvider.Current.GetFanartOptions();
+            if (!options.EnableAutomaticUpdates)
             {
                 return false;
             }

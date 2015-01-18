@@ -159,6 +159,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\EncodingQuality.cs">
       <Link>Configuration\EncodingQuality.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\FanartOptions.cs">
+      <Link>Configuration\FanartOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\ImageOption.cs">
       <Link>Configuration\ImageOption.cs</Link>
     </Compile>
@@ -191,6 +194,12 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
       <Link>Configuration\SubtitlePlaybackMode.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\TheMovieDbOptions.cs">
+      <Link>Configuration\TheMovieDbOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\TvdbOptions.cs">
+      <Link>Configuration\TvdbOptions.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UnratedItem.cs">
       <Link>Configuration\UnratedItem.cs</Link>
