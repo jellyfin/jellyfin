@@ -51,7 +51,7 @@
                     html += '<br/>';
                 }
 
-                html += '<div class="ui-bar-a" style="padding: 0 1em;"><h3>' + category + '</h3></div>';
+                html += '<div class="detailSectionHeader">' + category + '</div>';
 
                 currentCategory = category;
             }

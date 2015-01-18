@@ -141,11 +141,7 @@
         var lastTargetName = '';
 
         var cardBoxCssClass = 'cardBox visualCardBox';
-        var barCssClass = 'ui-bar-a';
-
-        if ($(page).hasClass('libraryPage')) {
-            barCssClass = 'detailSectionHeader';
-        }
+        var barCssClass = 'detailSectionHeader';
 
         var syncJobPage = 'syncjob.html';
 

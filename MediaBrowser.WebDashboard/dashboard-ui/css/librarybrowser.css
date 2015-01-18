@@ -12,15 +12,19 @@
     margin-left: .5em;
 }
 
-.libraryPage[data-theme='b'] {
-    background-color: #202020;
+.backdropPage.ui-page-theme-a {
+    background-color: rgba(240, 240,240, .86) !important;
 }
 
-.backdropPage {
+    .backdropPage.ui-page-theme-a:not(.lightBackdropPage) {
+        background-color: rgba(240, 240,240, .94) !important;
+    }
+
+.backdropPage.ui-page-theme-b {
     background-color: rgba(20, 20,20, .86) !important;
 }
 
-    .backdropPage:not(.lightBackdropPage) {
+    .backdropPage.ui-page-theme-b:not(.lightBackdropPage) {
         background-color: rgba(20, 20,20, .94) !important;
     }
 
@@ -541,15 +545,31 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeader {
     background-clip: border-box;
-    background-color: #141414;
-    font-size: 16px;
-    font-weight: 400;
     padding: .75em 0 .75em 1em;
     border-radius: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     position: relative;
+}
+
+    .detailSectionHeader, .detailSectionHeader h3 {
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+.ui-page-theme-a .detailSectionHeader {
+    background-color: #e9e9e9;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+}
+
+    .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
+        font-weight: 500;
+    }
+
+.ui-page-theme-b .detailSectionHeader {
+    background-color: #141414;
 }
 
 .detailSectionHeaderButton {

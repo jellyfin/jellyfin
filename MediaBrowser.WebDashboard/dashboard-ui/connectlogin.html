@@ -4,35 +4,36 @@
     <title>${TitleSignIn}</title>
 </head>
 <body class="serverlessPage">
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage">
+    <div class="backdropContainer" style="background-image:url(css/images/splash.png);top:0;"></div>
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage lightBackdropPage backdropPage staticBackdropPage" data-theme="b" style="background-color: rgba(20, 20,20, .82)!important;">
 
         <div data-role="content">
 
             <form class="connectLoginForm" style="text-align: center; margin: 0 auto;">
 
-                <h2 style="text-align: left;">${HeaderSignInWithConnect}</h2>
-
+                <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
+                <br />
                 <div>
                     <label for="txtManualName" style="text-align: left;">${LabelEnterConnectUserName}</label>
                     <input type="text" id="txtManualName" required="required" />
                     <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
                 </div>
-                <br/>
+                <br /><br />
                 <div>
                     <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
-                    <input type="password" id="txtManualPassword" placeholder="password" required="required" />
+                    <input type="password" id="txtManualPassword" required="required" />
                 </div>
 
-                <button type="submit" data-icon="check">
+                <button type="submit" data-icon="check" data-mini="true">
                     ${ButtonSignIn}
                 </button>
                 <p>
                     <a href="http://mediabrowser.tv/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
                 </p>
 
-                <br /><br /><br />
+                <br />
                 <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                <a data-role="button" data-icon="action" href="http://mediabrowser.tv/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
+                <a data-role="button" data-icon="action" href="http://mediabrowser.tv/community/index.php?app=core&module=global&section=register" target="_blank" data-mini="true">${ButtonSignUp}</a>
             </form>
         </div>
 

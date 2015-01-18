@@ -198,7 +198,7 @@ pre, textarea.pre {
     Header
     */
 .header {
-    padding: 7px 0 0 15px;
+    padding: 20px 0 0 20px;
 }
 
 .imgLogoIcon {
@@ -449,7 +449,6 @@ h1 .imageLink {
     }
 
     .header {
-        padding-top: 15px;
         padding-bottom: 15px;
     }
 
@@ -1017,3 +1016,14 @@ progress {
 h1 + .accentButton {
     margin: 18px 0 0 20px;
 }
+
+.dashboardFooter {
+    margin-top: 70px;
+    text-align: center;
+}
+
+    .dashboardFooter a {
+        text-decoration: none;
+        font-weight: normal;
+        margin: 0 .7em;
+    }

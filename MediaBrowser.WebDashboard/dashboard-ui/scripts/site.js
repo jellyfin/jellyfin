@@ -1427,7 +1427,25 @@ $(function () {
 
 Dashboard.jQueryMobileInit();
 
-$(document).on('pagebeforeshow', ".page", function () {
+$(document).on('pagecreate', ".page", function () {
+
+    var page = $(this);
+
+    var newTheme;
+
+    if (page.hasClass('libraryPage')) {
+        newTheme = 'b';
+    } else {
+        newTheme = 'a';
+    }
+
+    var current = page.page("option", "theme");
+
+    if (current && current != newTheme) {
+        page.page("option", "theme", newTheme);
+    }
+
+}).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);
 

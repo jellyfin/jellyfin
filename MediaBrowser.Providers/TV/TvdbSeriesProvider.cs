@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -224,6 +225,11 @@ namespace MediaBrowser.Providers.TV
             await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
+        public TvdbOptions GetTvDbOptions()
+        {
+            return _config.GetConfiguration<TvdbOptions>("tvdb");
+        }
+
         private readonly Task _cachedTask = Task.FromResult(true);
         internal Task EnsureSeriesInfo(string seriesId, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
@@ -237,7 +243,7 @@ namespace MediaBrowser.Providers.TV
             var seriesXmlFilename = preferredMetadataLanguage + ".xml";
 
             var download = false;
-            var automaticUpdatesEnabled = _config.Configuration.EnableTvDbUpdates;
+            var automaticUpdatesEnabled = GetTvDbOptions().EnableAutomaticUpdates;
 
             const int cacheDays = 2;
 
@@ -1217,6 +1223,21 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvDbResourcePool
             });
+        }
+    }
+
+    public class TvdbConfigStore : IConfigurationFactory
+    {
+        public IEnumerable<ConfigurationStore> GetConfigurations()
+        {
+            return new List<ConfigurationStore>
+            {
+                new ConfigurationStore
+                {
+                     Key = "tvdb",
+                     ConfigurationType = typeof(TvdbOptions)
+                }
+            };
         }
     }
 }

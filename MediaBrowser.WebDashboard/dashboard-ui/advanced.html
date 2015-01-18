@@ -33,7 +33,7 @@
                     <div data-role="collapsible">
                         <h2>${HeaderAutomaticUpdates}</h2>
                         <div>
-                            <br />   
+                            <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
                                     <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
@@ -52,6 +52,32 @@
                                     <div class="fieldDescription">
                                         ${LabelAllowServerAutoRestartHelp}
                                     </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderDeveloperOptions}</h2>
+                        <div>
+                            <br />
+                            <div data-role="controlgroup">
+                                <input type="checkbox" id="chkEnableDashboardResponseCache" data-mini="true" />
+                                <label for="chkEnableDashboardResponseCache">${OptionEnableWebClientResponseCache}</label>
+                                <input type="checkbox" id="chkEnableMinification" data-mini="true" />
+                                <label for="chkEnableMinification">${OptionEnableWebClientResourceMinification}</label>
+                         </div>
+                            <div class="fieldDescription">
+                                ${OptionDisableForDevelopmentHelp}
+                            </div>
+                            <br /><br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtDashboardSourcePath">${LabelDashboardSourcePath}</label>
+                                    <div style="display: inline-block; width: 92%;">
+                                        <input type="text" id="txtDashboardSourcePath" />
+                                    </div>
+                                    <button id="btnSelectDashboardSourcePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                    <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
                                 </li>
                             </ul>
                         </div>

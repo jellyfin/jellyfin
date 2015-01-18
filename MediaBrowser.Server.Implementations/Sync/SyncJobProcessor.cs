@@ -702,8 +702,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             var mediaSources = hasMediaSources.GetMediaSources(false).ToList();
 
             var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
-            ? new string[] { }
-            : new[] { user.Configuration.AudioLanguagePreference };
+                ? new string[] { }
+                : new[] { user.Configuration.AudioLanguagePreference };
 
             var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
                 ? new List<string> { }

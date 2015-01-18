@@ -369,7 +369,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_configurationManager.Configuration.EnableTmdbUpdates)
+            if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }

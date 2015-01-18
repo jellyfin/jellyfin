@@ -154,19 +154,22 @@
 
         var page = this;
 
-        if ($(page).hasClass('backdropPage')) {
+        if (!$(page).hasClass('staticBackdropPage')) {
 
-            if (enabled()) {
-                var type = page.getAttribute('data-backdroptype');
+            if ($(page).hasClass('backdropPage')) {
 
-                showBackdrop(type);
+                if (enabled()) {
+                    var type = page.getAttribute('data-backdroptype');
 
+                    showBackdrop(type);
+
+                } else {
+                    $(page).removeClass('backdropPage');
+                    clearBackdrop();
+                }
             } else {
-                $(page).removeClass('backdropPage');
                 clearBackdrop();
             }
-        } else {
-            clearBackdrop();
         }
 
     });

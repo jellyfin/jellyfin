@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
@@ -54,7 +55,9 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = FanartSeriesProvider.Current.GetFanartOptions();
+
+            if (!options.EnableAutomaticUpdates)
             {
                 progress.Report(100);
                 return;
@@ -82,7 +85,7 @@ namespace MediaBrowser.Providers.TV
             // If this is our first time, don't do any updates and just record the timestamp
             if (!string.IsNullOrEmpty(lastUpdateTime))
             {
-                var seriesToUpdate = await GetSeriesIdsToUpdate(existingDirectories, lastUpdateTime, cancellationToken).ConfigureAwait(false);
+                var seriesToUpdate = await GetSeriesIdsToUpdate(existingDirectories, lastUpdateTime, options, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(5);
 
@@ -103,13 +106,13 @@ namespace MediaBrowser.Providers.TV
         /// <param name="lastUpdateTime">The last update time.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{System.String}}.</returns>
-        private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, CancellationToken cancellationToken)
+        private async Task<IEnumerable<string>> GetSeriesIdsToUpdate(IEnumerable<string> existingSeriesIds, string lastUpdateTime, FanartOptions options, CancellationToken cancellationToken)
         {
             var url = string.Format(UpdatesUrl, FanartArtistProvider.ApiKey, lastUpdateTime);
 
-            if (!string.IsNullOrWhiteSpace(_config.Configuration.FanartApiKey))
+            if (!string.IsNullOrWhiteSpace(options.UserApiKey))
             {
-                url += "&client_key=" + _config.Configuration.FanartApiKey;
+                url += "&client_key=" + options.UserApiKey;
             }
 
             // First get last time

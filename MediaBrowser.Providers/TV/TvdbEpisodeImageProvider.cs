@@ -193,7 +193,7 @@ namespace MediaBrowser.Providers.TV
             if (!episode.IsVirtualUnaired)
             {
                 // For non-unaired items, only enable if configured
-                if (!_config.Configuration.EnableTvDbUpdates)
+                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
                 {
                     return false;
                 }

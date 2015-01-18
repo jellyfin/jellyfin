@@ -6,9 +6,6 @@
 
         $('#chkFindTrailers', page).checked(config.FindInternetTrailers).checkboxradio("refresh");
 
-        $('#chkEnableTmdbPersonUpdates', page).checked(config.EnableTmdbUpdates).checkboxradio("refresh");
-        $('#chkEnableTvdbUpdates', page).checked(config.EnableTvDbUpdates).checkboxradio("refresh");
-        $('#chkEnableFanartUpdates', page).checked(config.EnableFanArtUpdates).checkboxradio("refresh");
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
 
         $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata).checkboxradio("refresh");
@@ -19,16 +16,29 @@
         $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata).checkboxradio("refresh");
         $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata).checkboxradio("refresh");
 
-        $('#txtFanartApiKey', page).val(config.FanartApiKey || '');
 
         Dashboard.hideLoadingMsg();
     }
 
     function loadMetadataConfig(page, config) {
 
-
         $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0')).selectmenu("refresh");
+    }
 
+    function loadTmdbConfig(page, config) {
+
+        $('#chkEnableTmdbUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+    }
+
+    function loadTvdbConfig(page, config) {
+
+        $('#chkEnableTvdbUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+    }
+
+    function loadFanartConfig(page, config) {
+
+        $('#chkEnableFanartUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+        $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
     function loadChapters(page, config, providers) {
@@ -182,6 +192,21 @@
 
         });
 
+        ApiClient.getNamedConfiguration("fanart").done(function (metadata) {
+
+            loadFanartConfig(page, metadata);
+        });
+
+        ApiClient.getNamedConfiguration("themoviedb").done(function (metadata) {
+
+            loadTmdbConfig(page, metadata);
+        });
+
+        ApiClient.getNamedConfiguration("tvdb").done(function (metadata) {
+
+            loadTvdbConfig(page, metadata);
+        });
+
         var promise1 = ApiClient.getNamedConfiguration("chapters");
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
@@ -191,6 +216,37 @@
         });
     });
 
+    function saveFanart(form) {
+
+        ApiClient.getNamedConfiguration("fanart").done(function (config) {
+
+            config.EnableAutomaticUpdates = $('#chkEnableFanartUpdates', form).checked();
+            config.UserApiKey = $('#txtFanartApiKey', form).val();
+
+            ApiClient.updateNamedConfiguration("fanart", config);
+        });
+    }
+
+    function saveTvdb(form) {
+
+        ApiClient.getNamedConfiguration("tvdb").done(function (config) {
+
+            config.EnableAutomaticUpdates = $('#chkEnableTvdbUpdates', form).checked();
+
+            ApiClient.updateNamedConfiguration("tvdb", config);
+        });
+    }
+
+    function saveTmdb(form) {
+
+        ApiClient.getNamedConfiguration("themoviedb").done(function (config) {
+
+            config.EnableAutomaticUpdates = $('#chkEnableTmdbUpdates', form).checked();
+
+            ApiClient.updateNamedConfiguration("themoviedb", config);
+        });
+    }
+
     function saveAdvancedConfig(form) {
 
         ApiClient.getServerConfiguration().done(function (config) {
@@ -199,7 +255,7 @@
 
             config.FindInternetTrailers = $('#chkFindTrailers', form).checked();
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
-            config.EnableTmdbUpdates = $('#chkEnableTmdbPersonUpdates', form).checked();
+            config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.MetadataPath = $('#txtMetadataPath', form).val();
             config.FanartApiKey = $('#txtFanartApiKey', form).val();
@@ -264,6 +320,9 @@
             saveAdvancedConfig(form);
             saveChapters(form);
             saveMetadata(form);
+            saveTmdb(form);
+            saveTvdb(form);
+            saveFanart(form);
 
             // Disable default form submission
             return false;
