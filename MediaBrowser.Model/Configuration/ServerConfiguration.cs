@@ -191,8 +191,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveMetadataHidden { get; set; }
 
-        public bool EnableWin8HttpListener { get; set; }
-
         public NameValuePair[] ContentTypes { get; set; }
 
         public bool EnableAudioArchiveFiles { get; set; }
@@ -214,7 +212,6 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResourceMinification = true;
 
             EnableAutomaticRestart = true;
-            EnableWin8HttpListener = true;
 
             EnableUPnP = true;
 

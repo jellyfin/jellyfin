@@ -41,8 +41,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
 
-        private readonly bool _supportsNativeWebSocket;
-
         private string _certificatePath;
 
         /// <summary>
@@ -67,12 +65,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             ILogManager logManager,
             string serviceName,
             string defaultRedirectPath,
-            bool supportsNativeWebSocket,
             params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
-            _supportsNativeWebSocket = supportsNativeWebSocket;
 
             _logger = logManager.GetLogger("HttpServer");
 
@@ -210,13 +206,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            if (_supportsNativeWebSocket && NativeWebSocket.IsSupported)
-            {
-                // Certificate location is ignored here. You need to use netsh 
-                // to assign the certificate to the proper port.
-                return new HttpListenerServer(_logger, OnRequestReceived);
-            }
-
             return new WebSocketSharpListener(_logger, OnRequestReceived, _certificatePath);
         }
 
