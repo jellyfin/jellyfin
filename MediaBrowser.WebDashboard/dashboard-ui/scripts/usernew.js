@@ -54,6 +54,8 @@
         } else {
             $('.channelAccessContainer', page).hide();
         }
+
+        $('#chkEnableAllChannels', page).checked(true).checkboxradio('refresh').trigger('change');
     }
 
     function loadUser(page) {
@@ -87,18 +89,14 @@
 
             }).get();
 
-            var allChannels = $('.chkChannel', page);
-            var enabledChannels = $('.chkChannel:checked', page).map(function () {
+            user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
+            user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
+                [] :
+                $('.chkChannel:checked', page).map(function () {
 
-                return this.getAttribute('data-id');
+                    return this.getAttribute('data-id');
 
-            }).get();
-
-            user.Policy.EnableAllChannels = enabledChannels.length == allChannels.length;
-
-            if (!user.Policy.EnableAllChannels) {
-                user.Policy.EnabledChannels = enabledChannels;
-            }
+                }).get();
 
             ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
@@ -130,7 +128,21 @@
 
     window.NewUserPage = new newUserPage();
 
-    $(document).on('pageshow', "#newUserPage", function () {
+    $(document).on('pageinit', "#newUserPage", function () {
+
+        var page = this;
+
+        $('#chkEnableAllChannels', page).on('change', function () {
+
+            if (this.checked) {
+                $('.channelAccessListContainer', page).hide();
+            } else {
+                $('.channelAccessListContainer', page).show();
+            }
+
+        });
+
+    }).on('pageshow', "#newUserPage", function () {
 
         var page = this;
 

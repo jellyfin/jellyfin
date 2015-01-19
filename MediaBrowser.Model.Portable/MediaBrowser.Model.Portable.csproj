@@ -821,9 +821,6 @@
     <Compile Include="..\MediaBrowser.Model\Net\WebSocketState.cs">
       <Link>Net\WebSocketState.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\News\NewsChannel.cs">
-      <Link>News\NewsChannel.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\News\NewsItem.cs">
       <Link>News\NewsItem.cs</Link>
     </Compile>

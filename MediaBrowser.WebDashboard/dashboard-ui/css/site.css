@@ -320,7 +320,7 @@ h1 .imageLink {
     border: 0;
     display: none;
     text-align: left;
-    width: 240px;
+    width: 250px;
     position: fixed;
     top: 51px;
     left: 0;
@@ -478,7 +478,7 @@ h1 .imageLink {
 
     .content-primary {
         padding: 80px 15px 3em 0;
-        margin: 0 0 0 280px;
+        margin: 0 0 0 290px;
     }
 
         .content-primary ul:first-child {

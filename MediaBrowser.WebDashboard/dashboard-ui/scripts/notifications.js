@@ -73,7 +73,7 @@
             self.isFlyout = true;
 
             var startIndex = 0;
-            var limit = 4;
+            var limit = 40;
             var elem = $('.notificationsFlyoutlist');
 
             refreshNotifications(startIndex, limit, elem, null, false).done(function() {
