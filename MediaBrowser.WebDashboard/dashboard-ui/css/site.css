@@ -347,35 +347,35 @@ h1 .imageLink {
     padding-bottom: 50px;
 }
 
-    .sidebarLinks a {
-        display: block;
-        padding: .6em 20px .6em 0;
-        text-decoration: none;
-        color: inherit !important;
-        text-shadow: none !important;
-        font-weight: 500 !important;
-        font-size: 14px;
-        vertical-align: middle;
+.sidebarLink {
+    display: block;
+    padding: .6em 20px .6em 0;
+    text-decoration: none;
+    color: inherit !important;
+    text-shadow: none !important;
+    font-weight: 500 !important;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+    .sidebarLink:hover {
+        background: #f2f2f2;
     }
 
-        .sidebarLinks a:hover {
-            background: #f2f2f2;
-        }
+    .sidebarLink.selectedSidebarLink {
+        margin-right: 0;
+    }
 
-        .sidebarLinks a.selectedSidebarLink {
-            margin-right: 0;
-        }
-
-.ui-page-theme-a .sidebarLinks a.selectedSidebarLink {
+.ui-page-theme-a .selectedSidebarLink {
     background: #f2f2f2 !important;
 }
 
-.ui-page-theme-b .sidebarLinks a.selectedSidebarLink {
+.ui-page-theme-b .selectedSidebarLink {
     background: #38c !important;
     color: #fff !important;
 }
 
-.sidebarLinks .sidebarLinkIcon {
+.sidebarLinkIcon {
     font-size: 17px;
     width: 66px;
     text-align: center;
@@ -391,9 +391,6 @@ h1 .imageLink {
     border-style: solid;
     margin: .7em 0;
     border-radius: 0;
-}
-
-.sidebarLinkText, .sidebarLinkIcon {
 }
 
 .sidebarHeader {
@@ -413,40 +410,12 @@ h1 .imageLink {
 
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
-    margin-bottom: 40px !important;
+    margin-bottom: 30px !important;
 }
-
-    .localnav + form {
-        margin-top: -10px;
-    }
 
 .page > .ui-content {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
-}
-
-.dashboardPanelDivider {
-    height: 1px;
-    background: #ddd;
-    margin: .25em 0;
-}
-
-.dashboardPanelLink {
-    padding: .7em .5em .7em 1.25em;
-    display: block;
-    text-decoration: none;
-    color: #000 !important;
-    font-weight: normal !important;
-}
-
-    .dashboardPanelLink:hover {
-        background: #52B54B;
-        color: #fff !important;
-    }
-
-.selectedDashboardPanelLink {
-    background: #38c;
-    color: #fff !important;
 }
 
 .dashboardPanel .ui-panel-inner {

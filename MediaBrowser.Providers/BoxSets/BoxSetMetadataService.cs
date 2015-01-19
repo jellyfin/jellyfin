@@ -60,23 +60,7 @@ namespace MediaBrowser.Providers.BoxSets
             {
                 if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
                 {
-                    var currentOfficialRating = item.OfficialRating;
-
-                    // Gather all possible ratings
-                    var ratings = item.RecursiveChildren
-                        .Concat(item.GetLinkedChildren())
-                        .Where(i => i is Movie || i is Series)
-                        .Select(i => i.OfficialRating)
-                        .Where(i => !string.IsNullOrEmpty(i))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Select(i => new Tuple<string, int?>(i, _iLocalizationManager.GetRatingLevel(i)))
-                        .OrderBy(i => i.Item2 ?? 1000)
-                        .Select(i => i.Item1);
-
-                    item.OfficialRating = ratings.FirstOrDefault() ?? item.OfficialRating;
-
-                    if (!string.Equals(currentOfficialRating ?? string.Empty, item.OfficialRating ?? string.Empty,
-                        StringComparison.OrdinalIgnoreCase))
+                    if (item.UpdateRatingToContent())
                     {
                         updateType = updateType | ItemUpdateType.MetadataEdit;
                     }

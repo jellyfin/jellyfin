@@ -111,38 +111,6 @@ namespace MediaBrowser.Server.Startup.Common
         }
 
         /// <summary>
-        /// Gets the name of the web application that can be used for url building.
-        /// All api urls will be of the form {protocol}://{host}:{port}/{appname}/...
-        /// </summary>
-        /// <value>The name of the web application.</value>
-        public string WebApplicationName
-        {
-            get { return "mediabrowser"; }
-        }
-
-        /// <summary>
-        /// Gets the HTTP server URL prefix.
-        /// </summary>
-        /// <value>The HTTP server URL prefix.</value>
-        private IEnumerable<string> HttpServerUrlPrefixes
-        {
-            get
-            {
-                var list = new List<string>
-                {
-                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
-                };
-
-                if (ServerConfigurationManager.Configuration.UseHttps)
-                {
-                    list.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
-                }
-
-                return list;
-            }
-        }
-
-        /// <summary>
         /// Gets the configuration manager.
         /// </summary>
         /// <returns>IConfigurationManager.</returns>
@@ -230,8 +198,6 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
 
-        private bool _supportsNativeWebSocket;
-
         internal INativeApp NativeApp { get; set; }
 
         /// <summary>
@@ -242,20 +208,17 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="options">The options.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="remotePackageName">Name of the remote package.</param>
-        /// <param name="supportsNativeWebSocket">if set to <c>true</c> [supports native web socket].</param>
         /// <param name="nativeApp">The native application.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
             string remotePackageName,
-            bool supportsNativeWebSocket,
             INativeApp nativeApp)
             : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
             _remotePackageName = remotePackageName;
-            _supportsNativeWebSocket = supportsNativeWebSocket;
             NativeApp = nativeApp;
 
             SetBaseExceptionMessage();
@@ -359,6 +322,9 @@ namespace MediaBrowser.Server.Startup.Common
 
         public override async Task Init(IProgress<double> progress)
         {
+            HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
+            HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
+
             PerformPreInitMigrations();
 
             await base.Init(progress).ConfigureAwait(false);
@@ -586,10 +552,10 @@ namespace MediaBrowser.Server.Startup.Common
 
             new FFmpegValidator(Logger, ApplicationPaths).Validate(info);
 
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"), 
-                JsonSerializer, 
-                info.EncoderPath, 
-                info.ProbePath, 
+            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
+                JsonSerializer,
+                info.EncoderPath,
+                info.ProbePath,
                 info.Version,
                 ServerConfigurationManager,
                 FileSystemManager,
@@ -791,6 +757,21 @@ namespace MediaBrowser.Server.Startup.Common
             SyncManager.AddParts(GetExports<ISyncProvider>());
         }
 
+        private IEnumerable<string> GetUrlPrefixes()
+        {
+            var prefixes = new List<string>
+                {
+                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
+                };
+
+            if (!string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
+            {
+                prefixes.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+            }
+
+            return prefixes;
+        }
+
         /// <summary>
         /// Starts the server.
         /// </summary>
@@ -798,7 +779,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                ServerManager.Start(HttpServerUrlPrefixes, ServerConfigurationManager.Configuration.CertificatePath);
+                ServerManager.Start(GetUrlPrefixes(), ServerConfigurationManager.Configuration.CertificatePath);
             }
             catch (Exception ex)
             {
@@ -817,11 +798,29 @@ namespace MediaBrowser.Server.Startup.Common
         {
             base.OnConfigurationUpdated(sender, e);
 
-            if (!HttpServer.UrlPrefixes.SequenceEqual(HttpServerUrlPrefixes, StringComparer.OrdinalIgnoreCase))
-            {
-                ServerConfigurationManager.Configuration.IsPortAuthorized = false;
-                ServerConfigurationManager.SaveConfiguration();
+            var requiresRestart = false;
 
+            // Don't do anything if these haven't been set yet
+            if (HttpPort != 0 && HttpsPort != 0)
+            {
+                // Need to restart if ports have changed
+                if (ServerConfigurationManager.Configuration.HttpServerPortNumber != HttpPort ||
+                    ServerConfigurationManager.Configuration.HttpsPortNumber != HttpsPort)
+                {
+                    ServerConfigurationManager.Configuration.IsPortAuthorized = false;
+                    ServerConfigurationManager.SaveConfiguration();
+
+                    requiresRestart = true;
+                }
+            }
+
+            if (!HttpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            {
+                requiresRestart = true;
+            }
+
+            if (requiresRestart)
+            {
                 NotifyPendingRestart();
             }
         }
@@ -953,7 +952,7 @@ namespace MediaBrowser.Server.Startup.Common
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
                 IsNetworkDeployed = CanSelfUpdate,
-                WebSocketPortNumber = HttpServerPort,
+                WebSocketPortNumber = HttpPort,
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),
                 CompletedInstallations = InstallationManager.CompletedInstallations.ToList(),
@@ -964,9 +963,9 @@ namespace MediaBrowser.Server.Startup.Common
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
                 MacAddress = GetMacAddress(),
-                HttpServerPortNumber = HttpServerPort,
-                UseHttps = this.ServerConfigurationManager.Configuration.UseHttps,
-                HttpsPortNumber = HttpsServerPort,
+                HttpServerPortNumber = HttpPort,
+                EnableHttps = EnableHttps,
+                HttpsPortNumber = HttpsPort,
                 OperatingSystem = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
@@ -979,6 +978,19 @@ namespace MediaBrowser.Server.Startup.Common
                 ServerName = FriendlyName,
                 LocalAddress = GetLocalIpAddress()
             };
+        }
+
+        public bool EnableHttps
+        {
+            get
+            {
+                return SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
+            }
+        }
+
+        public bool SupportsHttps
+        {
+            get { return !string.IsNullOrWhiteSpace(HttpServer.CertificatePath); }
         }
 
         /// <summary>
@@ -994,7 +1006,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 address = string.Format("http://{0}:{1}",
                     address,
-                    ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(CultureInfo.InvariantCulture));
+                    HttpPort.ToString(CultureInfo.InvariantCulture));
             }
 
             return address;
@@ -1036,15 +1048,9 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
-        public int HttpServerPort
-        {
-            get { return ServerConfigurationManager.Configuration.HttpServerPortNumber; }
-        }
+        public int HttpPort { get; private set; }
 
-        public int HttpsServerPort
-        {
-            get { return ServerConfigurationManager.Configuration.HttpsPortNumber; }
-        }
+        public int HttpsPort { get; private set; }
 
         /// <summary>
         /// Gets the mac address.

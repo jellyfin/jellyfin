@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Progress;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -91,6 +92,31 @@ namespace MediaBrowser.Controller.Entities.Movies
             var list = LocalTrailerIds.ToList();
             list.AddRange(RemoteTrailerIds);
             return list;
+        }
+
+        /// <summary>
+        /// Updates the official rating based on content and returns true or false indicating if it changed.
+        /// </summary>
+        /// <returns></returns>
+        public bool UpdateRatingToContent()
+        {
+            var currentOfficialRating = OfficialRating;
+
+            // Gather all possible ratings
+            var ratings = RecursiveChildren
+                .Concat(GetLinkedChildren())
+                .Where(i => i is Movie || i is Series)
+                .Select(i => i.OfficialRating)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => new Tuple<string, int?>(i, LocalizationManager.GetRatingLevel(i)))
+                .OrderBy(i => i.Item2 ?? 1000)
+                .Select(i => i.Item1);
+
+            OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
+
+            return !string.Equals(currentOfficialRating ?? string.Empty, OfficialRating ?? string.Empty,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)

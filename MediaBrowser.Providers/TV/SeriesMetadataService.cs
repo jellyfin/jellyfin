@@ -8,8 +8,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -60,17 +58,6 @@ namespace MediaBrowser.Providers.TV
             {
                 target.DisplaySpecialsWithSeasons = source.DisplaySpecialsWithSeasons;
             }
-        }
-
-        protected override async Task<ItemUpdateType> BeforeSave(Series item, bool isFullRefresh, ItemUpdateType currentUpdateType)
-        {
-            var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
-
-            //var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, _libraryManager);
-
-            //await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
-
-            return updateType;
         }
     }
 }

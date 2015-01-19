@@ -82,17 +82,11 @@
 
             $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
 
-            var httpPort = systemInfo.HttpServerPortNumber;
-
-            var portHtml = Globalize.translate('LabelRunningOnPort', '<b>' + httpPort + '</b>');
-
-            if (systemInfo.UseHttps) {
-                var httpsPort = systemInfo.HttpsPortNumber;
-                portHtml += '<br>';
-                portHtml += Globalize.translate('LabelRunningOnHttpsPort', '<b>' + httpsPort + '</b>');
+            if (systemInfo.EnableHttps) {
+                $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', '<b>' + systemInfo.HttpServerPortNumber + '</b>', '<b>' + systemInfo.HttpsPortNumber + '</b>'));
+            } else {
+                $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
             }
-
-            $('#ports', page).html(portHtml);
 
             if (systemInfo.CanSelfRestart) {
                 $('.btnRestartContainer', page).removeClass('hide');
@@ -773,11 +767,20 @@
 
     renderUrls: function (page, systemInfo) {
 
+        if (systemInfo.LocalAddress) {
+
+            var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
+
+            $('.localUrl', page).html(localAccessHtml).show().trigger('create');
+        } else {
+            $('.externalUrl', page).hide();
+        }
+
         if (systemInfo.WanAddress) {
 
-            var externalUrl = systemInfo.WanAddress + ApiClient.apiPrefix();
+            var externalUrl = systemInfo.WanAddress;
 
-            var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl').replace('{0}', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
+            var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
 
             $('.externalUrl', page).html(remoteAccessHtml).show().trigger('create');
         } else {

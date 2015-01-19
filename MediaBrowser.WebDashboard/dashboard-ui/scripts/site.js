@@ -668,6 +668,7 @@ var Dashboard = {
             var items = Dashboard.getToolsMenuLinks(page);
 
             var i, length, item;
+            var menuHtml = '';
 
             for (i = 0, length = items.length; i < length; i++) {
 
@@ -678,7 +679,7 @@ var Dashboard = {
                 }
 
                 if (item.divider) {
-                    html += "<div class='sidebarDivider ui-bar-inherit'></div>";
+                    menuHtml += "<div class='sidebarDivider ui-bar-inherit'></div>";
                 }
 
                 if (item.href) {
@@ -686,26 +687,27 @@ var Dashboard = {
                     var style = item.color ? ' style="color:' + item.color + '"' : '';
 
                     if (item.selected) {
-                        html += '<a class="selectedSidebarLink" href="' + item.href + '">';
+                        menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
                     } else {
-                        html += '<a href="' + item.href + '">';
+                        menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
                     }
 
-                    html += '<span class="fa ' + item.icon + ' sidebarLinkIcon"' + style + '></span>';
+                    menuHtml += '<span class="fa ' + item.icon + ' sidebarLinkIcon"' + style + '></span>';
 
-                    html += '<span class="sidebarLinkText">';
-                    html += item.name;
-                    html += '</span>';
-                    html += '</a>';
+                    menuHtml += '<span class="sidebarLinkText">';
+                    menuHtml += item.name;
+                    menuHtml += '</span>';
+                    menuHtml += '</a>';
                 } else {
-                    
-                    html += '<div class="sidebarHeader">';
-                    html += item.name;
-                    html += '</div>';
+
+                    menuHtml += '<div class="sidebarHeader">';
+                    menuHtml += item.name;
+                    menuHtml += '</div>';
                 }
             }
 
-            // collapsible
+            html += menuHtml;
+            // sidebarLinks
             html += '</div>';
 
             // content-secondary
@@ -715,29 +717,10 @@ var Dashboard = {
 
             html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></a></p>';
 
-            for (i = 0, length = items.length; i < length; i++) {
-
-                item = items[i];
-
-                if (!user.Policy.IsAdministrator) {
-                    break;
-                }
-
-                if (item.divider) {
-                    html += "<div class='dashboardPanelDivider'></div>";
-                }
-
-                if (item.href) {
-
-                    if (item.selected) {
-                        html += '<a class="selectedDashboardPanelLink dashboardPanelLink" href="' + item.href + '">' + item.name + '</a>';
-                    } else {
-                        html += '<a class="dashboardPanelLink" href="' + item.href + '">' + item.name + '</a>';
-                    }
-
-                }
-            }
-
+            html += '<div class="sidebarLinks">';
+            html += menuHtml;
+            // sidebarLinks
+            html += '</div>';
             html += '</div>';
 
             $('.content-primary', page).before(html);
@@ -1483,6 +1466,11 @@ $(document).on('pagecreate', ".page", function () {
 
     var page = $(this);
 
+    var current = page.data('theme');
+    if (current) {
+        return;
+    }
+
     var newTheme;
 
     if (page.hasClass('libraryPage')) {
@@ -1491,7 +1479,7 @@ $(document).on('pagecreate', ".page", function () {
         newTheme = 'a';
     }
 
-    var current = page.page("option", "theme");
+    current = page.page("option", "theme");
 
     if (current && current != newTheme) {
         page.page("option", "theme", newTheme);

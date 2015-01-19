@@ -5,6 +5,7 @@ using MediaBrowser.Model.Logging;
 using Mono.Nat;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -17,30 +18,44 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        private bool _isStarted;
-
         private Timer _timer;
+        private bool _isStarted;
 
         public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config)
         {
             _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
+        }
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+        private string _lastConfigIdentifier;
+        private string GetConfigIdentifier()
+        {
+            var values = new List<string>();
+            var config = _config.Configuration;
+
+            values.Add(config.EnableUPnP.ToString());
+            values.Add(config.PublicPort.ToString(CultureInfo.InvariantCulture));
+            values.Add(_appHost.HttpPort.ToString(CultureInfo.InvariantCulture));
+            values.Add(_appHost.HttpsPort.ToString(CultureInfo.InvariantCulture));
+            values.Add(config.EnableHttps.ToString());
+            values.Add(_appHost.EnableHttps.ToString());
+
+            return string.Join("|", values.ToArray());
         }
 
         void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
-            var enable = _config.Configuration.EnableUPnP;
+            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
+            
+            if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
+            {
+                if (_isStarted)
+                {
+                    DisposeNat();
+                }
 
-            if (enable && !_isStarted)
-            {
-                Reload();
-            }
-            else if (!enable && _isStarted)
-            {
-                DisposeNat();
+                Run();
             }
         }
 
@@ -48,31 +63,36 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             //NatUtility.Logger = new LogWriter(_logger);
 
-            Reload();
-        }
-
-        private void Reload()
-        {
             if (_config.Configuration.EnableUPnP)
             {
-                _logger.Debug("Starting NAT discovery");
-
-                NatUtility.DeviceFound += NatUtility_DeviceFound;
-
-                // Mono.Nat does never rise this event. The event is there however it is useless. 
-                // You could remove it with no risk. 
-                NatUtility.DeviceLost += NatUtility_DeviceLost;
-
-
-                // it is hard to say what one should do when an unhandled exception is raised
-                // because there isn't anything one can do about it. Probably save a log or ignored it.
-                NatUtility.UnhandledException += NatUtility_UnhandledException;
-                NatUtility.StartDiscovery();
-
-                _isStarted = true;
-
-                _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+                Start();
             }
+
+            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+        }
+
+        private void Start()
+        {
+            _logger.Debug("Starting NAT discovery");
+
+            NatUtility.DeviceFound += NatUtility_DeviceFound;
+
+            // Mono.Nat does never rise this event. The event is there however it is useless. 
+            // You could remove it with no risk. 
+            NatUtility.DeviceLost += NatUtility_DeviceLost;
+
+
+            // it is hard to say what one should do when an unhandled exception is raised
+            // because there isn't anything one can do about it. Probably save a log or ignored it.
+            NatUtility.UnhandledException += NatUtility_UnhandledException;
+            NatUtility.StartDiscovery();
+
+            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+
+            _lastConfigIdentifier = GetConfigIdentifier();
+
+            _isStarted = true;
         }
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -124,9 +144,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 _createdRules.Add(address);
 
-                var info = _appHost.GetSystemInfo();
-
-                CreatePortMap(device, info.HttpServerPortNumber, _config.Configuration.PublicPort);
+                CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
             }
         }
 
@@ -136,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
             {
-                Description = "Media Browser Server"
+                Description = _appHost.Name
             });
         }
 

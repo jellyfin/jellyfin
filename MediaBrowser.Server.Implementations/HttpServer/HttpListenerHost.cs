@@ -3,7 +3,6 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.HttpServer.NetListener;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
@@ -41,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
 
-        private string _certificatePath;
+        public string CertificatePath { get; private set; }
 
         /// <summary>
         /// Gets the local end points.
@@ -206,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            return new WebSocketSharpListener(_logger, OnRequestReceived, _certificatePath);
+            return new WebSocketSharpListener(_logger, OnRequestReceived, CertificatePath);
         }
 
         private void WebSocketHandler(WebSocketConnectEventArgs args)
@@ -434,7 +433,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public void StartServer(IEnumerable<string> urlPrefixes, string certificatePath)
         {
-            _certificatePath = certificatePath;
+            CertificatePath = certificatePath;
             UrlPrefixes = urlPrefixes.ToList();
             Start(UrlPrefixes.First());
         }

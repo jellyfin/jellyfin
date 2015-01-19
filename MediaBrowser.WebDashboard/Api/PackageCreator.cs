@@ -381,6 +381,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "channelsettings.js",
                                 "connectlogin.js",
                                 "dashboardgeneral.js",
+                                "dashboardhosting.js",
                                 "dashboardpage.js",
                                 "device.js",
                                 "devices.js",

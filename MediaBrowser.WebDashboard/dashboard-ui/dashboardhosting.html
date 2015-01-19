@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleAdvanced}</title>
+</head>
+<body>
+    <div id="dashboardHostingPage" data-role="page" class="page type-interior advancedConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabHosting}</a>
+                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
+                </div>
+
+                <form class="dashboardHostingForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtPortNumber">${LabelLocalHttpServerPortNumber}</label>
+                            <input type="number" id="txtPortNumber" name="txtPortNumber" pattern="[0-9]*" required="required" min="1" />
+                            <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtPublicPort">${LabelPublicPort}</label>
+                            <input type="number" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" />
+                            <div class="fieldDescription">${LabelPublicPortHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkEnableUpnp">${LabelEnableAutomaticPortMap}</label>
+                            <input type="checkbox" id="chkEnableUpnp" data-mini="true" />
+                            <div class="fieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtDdns">${LabelExternalDDNS}</label>
+                            <input id="txtDdns" />
+                            <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkEnableHttps" data-mini="true">${LabelEnableHttps}</label>
+                            <input type="checkbox" id="chkEnableHttps" data-mini="true" />
+                            <div class="fieldDescription">${LabelEnableHttpsHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtHttpsPort">${LabelHttpsPort}</label>
+                            <input type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" />
+                            <div class="fieldDescription">${LabelHttpsPortHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtCertificatePath">${LabelCertificatePath}</label>
+                            <input type="text" id="txtCertificatePath" />
+                            <div class="fieldDescription">${LabelCertificatePathHelp}</div>
+                        </li>
+                    </ul>
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+
+                    </ul>
+                </form>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.dashboardHostingForm').off('submit', DashboardHostingPage.onSubmit).on('submit', DashboardHostingPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

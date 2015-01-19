@@ -3,12 +3,12 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Logging;
 using ServiceStack;
 using ServiceStack.Web;
+using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SocketHttpListener.Net;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
