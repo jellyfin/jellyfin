@@ -122,6 +122,12 @@ namespace MediaBrowser.Model.System
         /// <value>The HTTP server port number.</value>
         public int HttpServerPortNumber { get; set; }
 
+         /// <summary>
+         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located.
+         /// </summary>
+         /// <value>The value pointing to the file system where the ssl certiifcate is located.</value>
+         public bool UseHttps { get; set; }
+
         /// <summary>
         /// Gets or sets the HTTPS server port number.
         /// </summary>
