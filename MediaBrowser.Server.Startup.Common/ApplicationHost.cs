@@ -779,6 +779,13 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
+                if (ServerConfigurationManager.Configuration.EnableHttps)
+                {
+                    NetworkManager.GenerateSelfSignedSslCertificate(
+                        ServerConfigurationManager.Configuration.CertificatePath,
+                        GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns));
+                }
+
                 ServerManager.Start(GetUrlPrefixes(), ServerConfigurationManager.Configuration.CertificatePath);
             }
             catch (Exception ex)
@@ -1181,6 +1188,30 @@ namespace MediaBrowser.Server.Startup.Common
             if (SupportsAutoRunAtStartup)
             {
                 NativeApp.ConfigureAutoRun(autorun);
+            }
+        }
+
+        /// <summary>
+        /// This returns localhost in the case of no external dns, and the hostname if the 
+        /// dns is prefixed with a valid Uri prefix.
+        /// </summary>
+        /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
+        /// <returns>The hostname in <paramref name="externalDns"/></returns>
+        private static string GetHostnameFromExternalDns(string externalDns)
+        {
+            if (string.IsNullOrWhiteSpace(externalDns))
+            {
+                return "localhost";
+            }
+
+            try
+            {
+                Uri uri = new Uri(externalDns);
+                return uri.Host;
+            }
+            catch (Exception e)
+            {
+                return externalDns;
             }
         }
     }
