@@ -81,7 +81,10 @@ namespace MediaBrowser.Server.Implementations.Connect
                         ip = (_appHost.EnableHttps ? "https://" : "http://") + ip;
                     }
 
-                    return ip + ":" + _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture);
+                    ip += ":";
+                    ip += _appHost.EnableHttps ? _config.Configuration.PublicHttpsPort.ToString(CultureInfo.InvariantCulture) : _config.Configuration.PublicPort.ToString(CultureInfo.InvariantCulture);
+
+                    return ip;
                 }
 
                 return null;

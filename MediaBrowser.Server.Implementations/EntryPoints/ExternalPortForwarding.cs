@@ -145,6 +145,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _createdRules.Add(address);
 
                 CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+                CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }
         }
 
