@@ -8,7 +8,6 @@
 
         $('#chkEnableHttps', page).checked(config.EnableHttps).checkboxradio('refresh');
         $('#txtHttpsPort', page).val(config.HttpsPortNumber);
-        $('#txtCertificatePath', page).val(config.CertificatePath);
 
         $('#txtDdns', page).val(config.WanDdns || '');
 
@@ -48,7 +47,6 @@
                 config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
                 config.EnableHttps = $('#chkEnableHttps', form).checked();
                 config.HttpsPortNumber = $('#txtHttpsPort', form).val();
-                config.CertificatePath = $('#txtCertificatePath', form).val();
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
                 config.WanDdns = $('#txtDdns', form).val();
 

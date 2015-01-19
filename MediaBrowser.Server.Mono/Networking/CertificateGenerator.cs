@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using Mono.Security.X509;
+using System;
+using System.Collections;
+using System.Security.Cryptography;
 
 namespace MediaBrowser.Server.Mono.Networking
 {
@@ -20,69 +15,54 @@ namespace MediaBrowser.Server.Mono.Networking
             string hostname,
             ILogger logger)
         {
-            try
+            if (string.IsNullOrWhiteSpace(fileName))
             {
-                if (string.IsNullOrWhiteSpace(fileName))
-                {
-                    logger.Info("No certificate filename specified.");
-                    return;
-                }
-
-                if (File.Exists(fileName))
-                {
-                    logger.Info("Certificate file already exists. To regenerate, delete {0}", fileName);
-                    return;
-                }
-
-                byte[] sn = Guid.NewGuid().ToByteArray();
-                string subject = string.Format("CN={0}", hostname);
-                string issuer = subject;
-                DateTime notBefore = DateTime.Now.AddDays(-2);
-                DateTime notAfter = DateTime.Now.AddYears(10);
-
-                RSA issuerKey = RSA.Create();
-                issuerKey.FromXmlString(MonoTestRootAgency);
-                RSA subjectKey = RSA.Create();
-
-                // serial number MUST be positive
-                if ((sn[0] & 0x80) == 0x80)
-                    sn[0] -= 0x80;
-
-                issuer = subject;
-                issuerKey = subjectKey;
-
-                X509CertificateBuilder cb = new X509CertificateBuilder(3);
-                cb.SerialNumber = sn;
-                cb.IssuerName = issuer;
-                cb.NotBefore = notBefore;
-                cb.NotAfter = notAfter;
-                cb.SubjectName = subject;
-                cb.SubjectPublicKey = subjectKey;
-
-                // signature
-                cb.Hash = "SHA256";
-                byte[] rawcert = cb.Sign(issuerKey);
-
-                PKCS12 p12 = new PKCS12();
-
-
-                ArrayList list = new ArrayList();
-                // we use a fixed array to avoid endianess issues 
-                // (in case some tools requires the ID to be 1).
-                list.Add(new byte[4] {1, 0, 0, 0});
-                Hashtable attributes = new Hashtable(1);
-                attributes.Add(PKCS9.localKeyId, list);
-
-                p12.AddCertificate(new X509Certificate(rawcert), attributes);
-
-                p12.AddPkcs8ShroudedKeyBag(subjectKey, attributes);
-                p12.SaveToFile(fileName);
-            }
-            catch (Exception e)
-            {
-                logger.ErrorException("Error generating self signed ssl certificate: {0}", e, fileName);
+                throw new ArgumentNullException("fileName");
             }
 
+            byte[] sn = Guid.NewGuid().ToByteArray();
+            string subject = string.Format("CN={0}", hostname);
+            string issuer = subject;
+            DateTime notBefore = DateTime.Now.AddDays(-2);
+            DateTime notAfter = DateTime.Now.AddYears(10);
+
+            RSA issuerKey = RSA.Create();
+            issuerKey.FromXmlString(MonoTestRootAgency);
+            RSA subjectKey = RSA.Create();
+
+            // serial number MUST be positive
+            if ((sn[0] & 0x80) == 0x80)
+                sn[0] -= 0x80;
+
+            issuer = subject;
+            issuerKey = subjectKey;
+
+            X509CertificateBuilder cb = new X509CertificateBuilder(3);
+            cb.SerialNumber = sn;
+            cb.IssuerName = issuer;
+            cb.NotBefore = notBefore;
+            cb.NotAfter = notAfter;
+            cb.SubjectName = subject;
+            cb.SubjectPublicKey = subjectKey;
+
+            // signature
+            cb.Hash = "SHA256";
+            byte[] rawcert = cb.Sign(issuerKey);
+
+            PKCS12 p12 = new PKCS12();
+
+
+            ArrayList list = new ArrayList();
+            // we use a fixed array to avoid endianess issues 
+            // (in case some tools requires the ID to be 1).
+            list.Add(new byte[4] { 1, 0, 0, 0 });
+            Hashtable attributes = new Hashtable(1);
+            attributes.Add(PKCS9.localKeyId, list);
+
+            p12.AddCertificate(new X509Certificate(rawcert), attributes);
+
+            p12.AddPkcs8ShroudedKeyBag(subjectKey, attributes);
+            p12.SaveToFile(fileName);
         }
     }
 }

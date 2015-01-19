@@ -2,6 +2,7 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.IO;
@@ -757,6 +758,8 @@ namespace MediaBrowser.Server.Startup.Common
             SyncManager.AddParts(GetExports<ISyncProvider>());
         }
 
+        private string CertificatePath { get; set; }
+
         private IEnumerable<string> GetUrlPrefixes()
         {
             var prefixes = new List<string>
@@ -764,7 +767,7 @@ namespace MediaBrowser.Server.Startup.Common
                     "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
                 };
 
-            if (!string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
+            if (!string.IsNullOrWhiteSpace(CertificatePath))
             {
                 prefixes.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
             }
@@ -777,16 +780,36 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         private void StartServer()
         {
+            if (string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
+            {
+                // Generate self-signed cert
+                var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
+                var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
+
+                if (!File.Exists(certPath))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(certPath));
+
+                    try
+                    {
+                        NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
+                        CertificatePath = certHost;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error creating ssl cert", ex);
+                    }
+                }
+            }
+            else
+            {
+                // Custom cert
+                CertificatePath = ServerConfigurationManager.Configuration.CertificatePath;
+            }
+
             try
             {
-                if (ServerConfigurationManager.Configuration.EnableHttps)
-                {
-                    NetworkManager.GenerateSelfSignedSslCertificate(
-                        ServerConfigurationManager.Configuration.CertificatePath,
-                        GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns));
-                }
-
-                ServerManager.Start(GetUrlPrefixes(), ServerConfigurationManager.Configuration.CertificatePath);
+                ServerManager.Start(GetUrlPrefixes(), CertificatePath);
             }
             catch (Exception ex)
             {
@@ -822,6 +845,11 @@ namespace MediaBrowser.Server.Startup.Common
             }
 
             if (!HttpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            {
+                requiresRestart = true;
+            }
+
+            if (!string.Equals(CertificatePath, ServerConfigurationManager.Configuration.CertificatePath, StringComparison.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
@@ -1206,8 +1234,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             try
             {
-                Uri uri = new Uri(externalDns);
-                return uri.Host;
+                return new Uri(externalDns).Host;
             }
             catch (Exception e)
             {
