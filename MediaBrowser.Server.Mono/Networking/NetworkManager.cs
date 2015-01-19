@@ -24,16 +24,16 @@ namespace MediaBrowser.Server.Mono.Networking
         /// <returns>IEnumerable{NetworkShare}.</returns>
         public IEnumerable<NetworkShare> GetNetworkShares(string path)
         {
-			return new List<NetworkShare> ();
+            return new List<NetworkShare>();
         }
 
         /// <summary>
         /// Gets available devices within the domain
         /// </summary>
         /// <returns>PC's in the Domain</returns>
-		public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
+        public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
-			return new List<FileSystemEntryInfo> ();
+            return new List<FileSystemEntryInfo>();
         }
 
         /// <summary>
