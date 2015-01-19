@@ -515,6 +515,8 @@
     "NewCollectionNameExample": "Example: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Search the internet for artwork and metadata",
     "ButtonCreate": "Create",
+    "LabelCustomCss": "Custom css:",
+    "LabelCustomCssHelp": "Apply your own custom css to the web interface.",
     "LabelLocalHttpServerPortNumber": "Local http port number:",
     "LabelLocalHttpServerPortNumberHelp": "The tcp port number that Media Browser's http server should bind to.",
     "LabelPublicHttpPort": "Public http port number:",

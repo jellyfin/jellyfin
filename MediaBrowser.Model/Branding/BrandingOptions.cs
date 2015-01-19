@@ -8,5 +8,10 @@ namespace MediaBrowser.Model.Branding
         /// </summary>
         /// <value>The login disclaimer.</value>
         public string LoginDisclaimer { get; set; }
+        /// <summary>
+        /// Gets or sets the custom CSS.
+        /// </summary>
+        /// <value>The custom CSS.</value>
+        public string CustomCss { get; set; }
     }
 }

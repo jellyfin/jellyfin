@@ -8,7 +8,12 @@ namespace MediaBrowser.Api
     public class GetBrandingOptions : IReturn<BrandingOptions>
     {
     }
-    
+
+    [Route("/Branding/Css", "GET", Summary = "Gets custom css")]
+    public class GetBrandingCss
+    {
+    }
+
     public class BrandingService : BaseApiService
     {
         private readonly IConfigurationManager _config;
@@ -23,6 +28,13 @@ namespace MediaBrowser.Api
             var result = _config.GetConfiguration<BrandingOptions>("branding");
 
             return ToOptimizedResult(result);
+        }
+
+        public object Get(GetBrandingCss request)
+        {
+            var result = _config.GetConfiguration<BrandingOptions>("branding");
+
+            return ResultFactory.GetResult(result.CustomCss, "text/css");
         }
     }
 }
