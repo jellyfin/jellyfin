@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediaBrowser.Model.Logging;
+using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.ServerApplication.Networking
 {
@@ -22,36 +17,22 @@ namespace MediaBrowser.ServerApplication.Networking
             string hostname,
             ILogger logger)
         {
-            try
+            if (string.IsNullOrWhiteSpace(fileName))
             {
-                if (string.IsNullOrWhiteSpace(fileName))
-                {
-                    logger.Info("No certificate filename specified.");
-                    return;
-                }
-
-                if (File.Exists(fileName))
-                {
-                    logger.Info("Certificate file already exists. To regenerate, delete {0}", fileName);
-                    return;
-                }
-
-                string x500 = string.Format("CN={0}", hostname);
-
-                DateTime startTime = DateTime.Now.AddDays(-2);
-                DateTime endTime = DateTime.Now.AddYears(10);
-
-                byte[] pfxData = CreateSelfSignCertificatePfx(
-                    x500,
-                    startTime,
-                    endTime);
-
-                File.WriteAllBytes(fileName, pfxData);
+                throw new ArgumentNullException("fileName");
             }
-            catch (Exception e)
-            {
-                logger.ErrorException("Error generating self signed ssl certificate: {0}", e, fileName);
-            }
+
+            string x500 = string.Format("CN={0}", hostname);
+
+            DateTime startTime = DateTime.Now.AddDays(-2);
+            DateTime endTime = DateTime.Now.AddYears(10);
+
+            byte[] pfxData = CreateSelfSignCertificatePfx(
+                x500,
+                startTime,
+                endTime);
+
+            File.WriteAllBytes(fileName, pfxData);
         }
 
         private static byte[] CreateSelfSignCertificatePfx(

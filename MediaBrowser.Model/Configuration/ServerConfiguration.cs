@@ -214,7 +214,6 @@ namespace MediaBrowser.Model.Configuration
             HttpServerPortNumber = 8096;
             HttpsPortNumber = 8920;
             EnableHttps = false;
-            CertificatePath = null;
             EnableDashboardResponseCaching = true;
             EnableDashboardResourceMinification = true;
 
