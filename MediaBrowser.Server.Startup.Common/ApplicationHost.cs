@@ -780,32 +780,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         private void StartServer()
         {
-            if (string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
-            {
-                // Generate self-signed cert
-                var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-                var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
-
-                if (!File.Exists(certPath))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(certPath));
-
-                    try
-                    {
-                        NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
-                        CertificatePath = certHost;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error creating ssl cert", ex);
-                    }
-                }
-            }
-            else
-            {
-                // Custom cert
-                CertificatePath = ServerConfigurationManager.Configuration.CertificatePath;
-            }
+            CertificatePath = GetCertificatePath(true);
 
             try
             {
@@ -817,6 +792,39 @@ namespace MediaBrowser.Server.Startup.Common
 
                 throw;
             }
+        }
+
+        private string GetCertificatePath(bool generateCertificate)
+        {
+            if (string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
+            {
+                // Generate self-signed cert
+                var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
+                var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
+
+                if (generateCertificate)
+                {
+                    if (!File.Exists(certPath))
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(certPath));
+
+                        try
+                        {
+                            NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Error creating ssl cert", ex);
+                            return null;
+                        }
+                    }
+                }
+
+                return certPath;
+            }
+
+            // Custom cert
+            return ServerConfigurationManager.Configuration.CertificatePath;
         }
 
         /// <summary>
@@ -849,7 +857,7 @@ namespace MediaBrowser.Server.Startup.Common
                 requiresRestart = true;
             }
 
-            if (!string.Equals(CertificatePath, ServerConfigurationManager.Configuration.CertificatePath, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(CertificatePath, GetCertificatePath(false), StringComparison.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
