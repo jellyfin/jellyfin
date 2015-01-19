@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Net;
 using System;
 using System.Collections.Generic;
 
@@ -14,6 +13,12 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value>The URL prefix.</value>
         IEnumerable<string> UrlPrefixes { get; }
+
+        /// <summary>
+        /// Gets the certificate path.
+        /// </summary>
+        /// <value>The certificate path.</value>
+        string CertificatePath { get; }
 
         /// <summary>
         /// Starts the specified server name.

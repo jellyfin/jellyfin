@@ -167,7 +167,7 @@ namespace MediaBrowser.Dlna.Main
 
                 var descriptorURI = "/dlna/" + guid.ToString("N") + "/description.xml";
 
-                var uri = new Uri(string.Format("http://{0}:{1}{2}", address, _config.Configuration.HttpServerPortNumber, descriptorURI));
+                var uri = new Uri(string.Format("http://{0}:{1}{2}", address, _appHost.HttpPort, descriptorURI));
 
                 var services = new List<string>
                 {

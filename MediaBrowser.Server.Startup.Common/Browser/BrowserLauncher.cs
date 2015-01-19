@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenDashboardPage(string page, IServerApplicationHost appHost, ILogger logger)
         {
-            var url = "http://localhost:" + appHost.HttpServerPort + "/web/" + page;
+            var url = "http://localhost:" + appHost.HttpPort + "/web/" + page;
 
             OpenUrl(url, logger);
         }
@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenSwagger(IServerApplicationHost appHost, ILogger logger)
         {
-            OpenUrl("http://localhost:" + appHost.HttpServerPort + "/swagger-ui/index.html", logger);
+            OpenUrl("http://localhost:" + appHost.HttpPort + "/swagger-ui/index.html", logger);
         }
 
         /// <summary>

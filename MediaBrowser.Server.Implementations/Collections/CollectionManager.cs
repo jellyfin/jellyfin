@@ -184,8 +184,9 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             collection.LinkedChildren.AddRange(list);
 
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            collection.UpdateRatingToContent();
 
+            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
 
             if (fireEvent)
@@ -274,8 +275,9 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
             }
 
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            collection.UpdateRatingToContent();
 
+            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
 
             EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs

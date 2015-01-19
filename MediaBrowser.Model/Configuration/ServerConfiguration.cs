@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether [use HTTPS].
         /// </summary>
         /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
-        public bool UseHttps { get; set; }
+        public bool EnableHttps { get; set; }
 
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
@@ -206,7 +206,7 @@ namespace MediaBrowser.Model.Configuration
             PublicPort = 8096;
             HttpServerPortNumber = 8096;
             HttpsPortNumber = 8920;
-            UseHttps = false;
+            EnableHttps = false;
             CertificatePath = null;
             EnableDashboardResponseCaching = true;
             EnableDashboardResourceMinification = true;

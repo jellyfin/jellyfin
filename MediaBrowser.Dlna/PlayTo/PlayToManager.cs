@@ -152,7 +152,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 "http",
                 localIp,
-                _appHost.HttpServerPort
+                _appHost.HttpPort
                 );
         }
 
