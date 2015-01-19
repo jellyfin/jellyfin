@@ -24,9 +24,9 @@
                             <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
                         </li>
                         <li>
-                            <label for="txtPublicPort">${LabelPublicPort}</label>
+                            <label for="txtPublicPort">${LabelPublicHttpPort}</label>
                             <input type="number" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" />
-                            <div class="fieldDescription">${LabelPublicPortHelp}</div>
+                            <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
                         </li>
                         <li>
                             <label for="chkEnableUpnp">${LabelEnableAutomaticPortMap}</label>
@@ -47,6 +47,11 @@
                             <label for="txtHttpsPort">${LabelHttpsPort}</label>
                             <input type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" />
                             <div class="fieldDescription">${LabelHttpsPortHelp}</div>
+                        </li>
+                        <li>
+                            <label for="txtPublicHttpsPort">${LabelPublicHttpsPort}</label>
+                            <input type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" />
+                            <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
                         </li>
                         <li>
                             <label for="txtCertificatePath">${LabelCertificatePath}</label>

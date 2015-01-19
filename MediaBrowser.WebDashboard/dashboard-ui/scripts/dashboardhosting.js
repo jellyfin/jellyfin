@@ -4,6 +4,7 @@
 
         $('#txtPortNumber', page).val(config.HttpServerPortNumber);
         $('#txtPublicPort', page).val(config.PublicPort);
+        $('#txtPublicHttpsPort', page).val(config.PublicHttpsPort);
 
         $('#chkEnableHttps', page).checked(config.EnableHttps).checkboxradio('refresh');
         $('#txtHttpsPort', page).val(config.HttpsPortNumber);
@@ -44,6 +45,7 @@
 
                 config.HttpServerPortNumber = $('#txtPortNumber', form).val();
                 config.PublicPort = $('#txtPublicPort', form).val();
+                config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
                 config.EnableHttps = $('#chkEnableHttps', form).checked();
                 config.HttpsPortNumber = $('#txtHttpsPort', form).val();
                 config.CertificatePath = $('#txtCertificatePath', form).val();
