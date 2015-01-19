@@ -265,7 +265,6 @@
     <Compile Include="MediaInfo\SubtitleFormat.cs" />
     <Compile Include="MediaInfo\TransportStreamTimestamp.cs" />
     <Compile Include="MediaInfo\VideoCodec.cs" />
-    <Compile Include="News\NewsChannel.cs" />
     <Compile Include="News\NewsItem.cs" />
     <Compile Include="News\NewsQuery.cs" />
     <Compile Include="Notifications\NotificationRequest.cs" />
