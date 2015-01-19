@@ -1,6 +1,7 @@
 ﻿(function ($, document, window) {
 
     var brandingConfigKey = "branding";
+    var currentBrandingOptions;
 
     function loadPage(page, config, languageOptions) {
 
@@ -49,7 +50,10 @@
 
         ApiClient.getNamedConfiguration(brandingConfigKey).done(function (config) {
 
+            currentBrandingOptions = config;
+
             $('#txtLoginDisclaimer', page).val(config.LoginDisclaimer || '');
+            $('#txtCustomCss', page).val(config.CustomCss || '');
         });
 
     }).on('pageinit', "#dashboardGeneralPage", function () {
@@ -99,8 +103,15 @@
                     ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
 
                         brandingConfig.LoginDisclaimer = $('#txtLoginDisclaimer', form).val();
+                        brandingConfig.CustomCss = $('#txtCustomCss', form).val();
+
+                        var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
 
                         ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
+
+                        if (cssChanged) {
+                            Dashboard.showDashboardRefreshNotification();
+                        }
                     });
 
                 });

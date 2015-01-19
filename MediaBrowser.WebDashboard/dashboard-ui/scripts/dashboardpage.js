@@ -798,6 +798,7 @@
             text = "Thank you for supporting Media Browser.";
 
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
+            $('.supporterIconContainer', page).hide();
         } else {
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";

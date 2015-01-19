@@ -194,6 +194,15 @@ var Dashboard = {
         }
     },
 
+    importCss: function (url) {
+        if (document.createStyleSheet) {
+            document.createStyleSheet(url);
+        }
+        else {
+            $('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head');
+        }
+    },
+
     showError: function (message) {
 
         $.mobile.loading('show', {
@@ -256,7 +265,7 @@ var Dashboard = {
 
             if (Dashboard.initialServerVersion != info.Version) {
 
-                Dashboard.showDashboardVersionWarning();
+                Dashboard.showDashboardRefreshNotification();
             }
         }
 
@@ -329,7 +338,7 @@ var Dashboard = {
         $('#serverRestartWarning').remove();
     },
 
-    showDashboardVersionWarning: function () {
+    showDashboardRefreshNotification: function () {
 
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
@@ -1331,6 +1340,7 @@ var Dashboard = {
                 ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
             } else {
                 Dashboard.logout();
+                return;
             }
         }
 
@@ -1344,6 +1354,8 @@ var Dashboard = {
 
         ConnectionManager.addApiClient(ApiClient);
     }
+
+    Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
 
 })();
 
