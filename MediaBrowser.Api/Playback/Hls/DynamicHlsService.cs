@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Extensions;
+﻿using MediaBrowser.Controller.Devices;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
@@ -62,38 +63,31 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        protected INetworkManager NetworkManager { get; private set; }
-
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, INetworkManager networkManager)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
         {
             NetworkManager = networkManager;
         }
 
-        public object Get(GetMasterHlsVideoStream request)
-        {
-            var result = GetAsync(request, "GET").Result;
+        protected INetworkManager NetworkManager { get; private set; }
 
-            return result;
+        public Task<object> Get(GetMasterHlsVideoStream request)
+        {
+            return GetAsync(request, "GET");
         }
 
-        public object Head(GetMasterHlsVideoStream request)
+        public Task<object> Head(GetMasterHlsVideoStream request)
         {
-            var result = GetAsync(request, "HEAD").Result;
-
-            return result;
+            return GetAsync(request, "HEAD");
         }
 
-        public object Get(GetMainHlsVideoStream request)
+        public Task<object> Get(GetMainHlsVideoStream request)
         {
-            var result = GetPlaylistAsync(request, "main").Result;
-
-            return result;
+            return GetPlaylistAsync(request, "main");
         }
 
-        public object Get(GetDynamicHlsVideoSegment request)
+        public Task<object> Get(GetDynamicHlsVideoSegment request)
         {
-            return GetDynamicSegment(request, request.SegmentId).Result;
+            return GetDynamicSegment(request, request.SegmentId);
         }
 
         private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId)

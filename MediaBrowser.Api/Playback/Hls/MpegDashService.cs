@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -50,13 +51,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class MpegDashService : BaseHlsService
     {
-        protected INetworkManager NetworkManager { get; private set; }
-
-        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, INetworkManager networkManager)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
         {
             NetworkManager = networkManager;
         }
+
+        protected INetworkManager NetworkManager { get; private set; }
 
         public object Get(GetMasterManifest request)
         {

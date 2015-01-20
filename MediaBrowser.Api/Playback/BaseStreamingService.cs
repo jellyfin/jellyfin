@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Extensions;
+﻿using MediaBrowser.Controller.Devices;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
@@ -66,14 +67,16 @@ namespace MediaBrowser.Api.Playback
 
         protected ILiveTvManager LiveTvManager { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
+        protected IDeviceManager DeviceManager { get; private set; }
         protected IChannelManager ChannelManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager)
         {
+            DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
             ChannelManager = channelManager;
             DlnaManager = dlnaManager;
@@ -2030,9 +2033,26 @@ namespace MediaBrowser.Api.Playback
                 headers[key] = Request.Headers[key];
             }
 
-            state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                DlnaManager.GetProfile(headers) :
-                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+            if (!string.IsNullOrWhiteSpace(state.Request.DeviceProfileId))
+            {
+                state.DeviceProfile = DlnaManager.GetProfile(state.Request.DeviceProfileId);
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
+                {
+                    var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
+
+                    if (caps != null)
+                    {
+                        state.DeviceProfile = caps.DeviceProfile;
+                    }
+                    else
+                    {
+                        state.DeviceProfile = DlnaManager.GetProfile(headers);
+                    }
+                }
+            }
 
             var profile = state.DeviceProfile;
 

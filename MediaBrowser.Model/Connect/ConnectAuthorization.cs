@@ -7,13 +7,13 @@ namespace MediaBrowser.Model.Connect
         public string UserName { get; set; }
         public string ImageUrl { get; set; }
         public string Id { get; set; }
-        public string[] ExcludedLibraries { get; set; }
+        public string[] EnabledLibraries { get; set; }
         public bool EnableLiveTv { get; set; }
         public string[] EnabledChannels { get; set; }
 
         public ConnectAuthorization()
         {
-            ExcludedLibraries = new string[] { };
+            EnabledLibraries = new string[] { };
             EnabledChannels = new string[] { };
         }
     }

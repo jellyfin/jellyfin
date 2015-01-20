@@ -1,20 +1,20 @@
-﻿using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -23,8 +23,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
         {
         }
 
