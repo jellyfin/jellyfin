@@ -492,10 +492,6 @@
                     return "itemlist.html?parentId=" + item.Id;
                 }
 
-                if (item.CollectionType == 'movies') {
-                    return 'movieslatest.html?topParentId=' + item.Id;
-                }
-
                 if (item.CollectionType == 'tvshows') {
                     return 'tvrecommended.html?topParentId=' + item.Id;
                 }

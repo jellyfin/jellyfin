@@ -1040,3 +1040,11 @@ h1 + .accentButton {
         font-weight: normal;
         margin: 0 .7em;
     }
+
+    .dashboardFooter .appLinks a {
+        margin: .25em;
+    }
+
+    .dashboardFooter .appLinks img {
+        height: 16px;
+    }

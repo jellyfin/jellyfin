@@ -14,16 +14,21 @@ namespace MediaBrowser.Model.Session
         public string MessageCallbackUrl { get; set; }
 
         public bool SupportsContentUploading { get; set; }
-        public bool SupportsUniqueIdentifier { get; set; }
+        public bool SupportsPersistentIdentifier { get; set; }
         public bool SupportsSync { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
 
+        /// <summary>
+        /// Usage should be migrated to SupportsPersistentIdentifier. Keeping this to preserve data.
+        /// </summary>
+        public bool? SupportsUniqueIdentifier { get; set; }
+        
         public ClientCapabilities()
         {
             PlayableMediaTypes = new List<string>();
             SupportedCommands = new List<string>();
-            SupportsUniqueIdentifier = true;
+            SupportsPersistentIdentifier = true;
         }
     }
 }

@@ -73,7 +73,7 @@
             self.isFlyout = true;
 
             var startIndex = 0;
-            var limit = 40;
+            var limit = 5;
             var elem = $('.notificationsFlyoutlist');
 
             refreshNotifications(startIndex, limit, elem, null, false).done(function() {
@@ -177,16 +177,18 @@
 
         html += '<div class="notificationContent">';
 
-        html += '<p style="margin: .4em 0 .25em;" class="notificationName">' + notification.Name + '</p>';
+        html += '<p style="font-size:16px;margin: .5em 0 .5em;" class="notificationName">';
+        if (notification.Url) {
+            html += '<a href="' + notification.Url + '" target="_blank" style="text-decoration:none;">' + notification.Name + '</a>';
+        } else {
+            html += notification.Name;
+        }
+        html += '</p>';
 
-        html += '<p class="notificationTime" style="margin: .25em 0;">' + humane_date(notification.Date) + '</p>';
+        html += '<p class="notificationTime" style="margin: .5em 0;">' + humane_date(notification.Date) + '</p>';
 
         if (notification.Description) {
-            html += '<p style="margin: .25em 0;">' + notification.Description + '</p>';
-        }
-
-        if (notification.Url) {
-            html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
+            html += '<p style="margin: .5em 0;max-height:100px;overflow:hidden;text-overflow:ellipsis;">' + notification.Description + '</p>';
         }
 
         html += '</div>';

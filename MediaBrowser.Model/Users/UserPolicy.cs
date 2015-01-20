@@ -54,6 +54,9 @@ namespace MediaBrowser.Model.Users
 
         public string[] EnabledChannels { get; set; }
         public bool EnableAllChannels { get; set; }
+
+        public string[] EnabledFolders { get; set; }
+        public bool EnableAllFolders { get; set; }
         
         public UserPolicy()
         {
@@ -62,15 +65,18 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvAccess = true;
             EnableSharedDeviceControl = true;
 
-            EnabledChannels = new string[] { };
-            
-            BlockedMediaFolders = new string[] { };
             BlockedTags = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             EnableUserPreferenceAccess = true;
 
             AccessSchedules = new AccessSchedule[] { };
+
+            EnableAllChannels = true;
+            EnabledChannels = new string[] { };
+
+            EnableAllFolders = true;
+            EnabledFolders = new string[] { };
 
             EnabledDevices = new string[] { };
             EnableAllDevices = true;

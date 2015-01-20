@@ -100,11 +100,16 @@ namespace MediaBrowser.Server.Implementations.Devices
                 devices = devices.Where(i => GetCapabilities(i.Id).SupportsSync == val);
             }
 
-            if (query.SupportsUniqueIdentifier.HasValue)
+            if (query.SupportsPersistentIdentifier.HasValue)
             {
-                var val = query.SupportsUniqueIdentifier.Value;
+                var val = query.SupportsPersistentIdentifier.Value;
 
-                devices = devices.Where(i => GetCapabilities(i.Id).SupportsUniqueIdentifier == val);
+                devices = devices.Where(i =>
+                {
+                    var caps = GetCapabilities(i.Id);
+                    var deviceVal = caps.SupportsUniqueIdentifier ?? caps.SupportsPersistentIdentifier;
+                    return deviceVal == val;
+                });
             }
 
             if (!string.IsNullOrWhiteSpace(query.UserId))
@@ -212,7 +217,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             {
                 var capabilities = GetCapabilities(deviceId);
 
-                if (capabilities.SupportsUniqueIdentifier)
+                if (capabilities != null && capabilities.SupportsPersistentIdentifier)
                 {
                     return false;
                 }

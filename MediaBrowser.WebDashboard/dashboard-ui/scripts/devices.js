@@ -79,7 +79,7 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Devices', {
             
-            SupportsUniqueIdentifier: true
+            SupportsPersistentIdentifier: true
 
         })).done(function (result) {
 

@@ -24,12 +24,6 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (pluginSecurityInfo.IsMBSupporter) {
-                $('#contribute', page).hide();
-            } else {
-                $('#contribute', page).show();
-            }
-
             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
 
@@ -795,17 +789,15 @@
         if (pluginSecurityInfo.IsMBSupporter) {
 
             imgUrl = "css/images/supporter/supporterbadge.png";
-            text = "Thank you for supporting Media Browser.";
+            text = Globalize.translate('MessageThankYouForSupporting');
 
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
-            $('.supporterIconContainer', page).hide();
         } else {
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
-            text = "Please support Media Browser.";
+            text = Globalize.translate('MessagePleaseSupportMediaBrowser');
 
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
-            $('.supporterIconContainer', page).hide();
         }
     },
 

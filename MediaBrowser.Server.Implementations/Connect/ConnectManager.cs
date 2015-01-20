@@ -572,7 +572,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     Id = response.Id,
                     ImageUrl = response.UserImageUrl,
                     UserName = response.UserName,
-                    ExcludedLibraries = request.ExcludedLibraries,
+                    EnabledLibraries = request.EnabledLibraries,
                     EnabledChannels = request.EnabledChannels,
                     EnableLiveTv = request.EnableLiveTv,
                     AccessToken = accessToken
@@ -833,10 +833,13 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                             if (currentPendingEntry != null)
                             {
-                                user.Policy.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
-                                user.Policy.BlockedMediaFolders = currentPendingEntry.ExcludedLibraries;
+                                user.Policy.EnabledFolders = currentPendingEntry.EnabledLibraries;
+                                user.Policy.EnableAllFolders = false;
+
                                 user.Policy.EnabledChannels = currentPendingEntry.EnabledChannels;
                                 user.Policy.EnableAllChannels = false;
+
+                                user.Policy.EnableLiveTvAccess = currentPendingEntry.EnableLiveTv;
                             }
 
                             await _userManager.UpdateConfiguration(user.Id.ToString("N"), user.Configuration);
@@ -964,7 +967,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 ConnectUserId = i.ConnectUserId,
                 EnableLiveTv = i.EnableLiveTv,
                 EnabledChannels = i.EnabledChannels,
-                ExcludedLibraries = i.ExcludedLibraries,
+                EnabledLibraries = i.EnabledLibraries,
                 Id = i.Id,
                 ImageUrl = i.ImageUrl,
                 UserName = i.UserName

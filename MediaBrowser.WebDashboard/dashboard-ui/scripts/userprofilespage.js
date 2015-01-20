@@ -341,7 +341,7 @@
 
         ApiClient.getJSON(ApiClient.getUrl("Channels", {})).done(function (channelsResult) {
 
-            var shareExcludes = $(".chkShareFolder:not(:checked)", page).get().map(function (i) {
+            var shareExcludes = $(".chkShareFolder:checked", page).get().map(function (i) {
 
                 return i.getAttribute('data-folderid');
             });
@@ -355,7 +355,7 @@
                 data: {
 
                     ConnectUsername: $('#txtConnectUsername', page).val(),
-                    ExcludedLibraries: shareExcludes.join(','),
+                    EnabledLibraries: shareExcludes.join(','),
                     SendingUserId: Dashboard.getCurrentUserId(),
                     EnableLiveTv: false
                 }

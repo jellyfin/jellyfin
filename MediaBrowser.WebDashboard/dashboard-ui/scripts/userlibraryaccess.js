@@ -6,7 +6,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>' + Globalize.translate('HeaderLibraryAccess') + '</legend>';
+        html += '<legend>' + Globalize.translate('HeaderLibraries') + '</legend>';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
@@ -14,15 +14,17 @@
 
             var id = 'mediaFolder' + i;
 
-            var checkedAttribute = user.Policy.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Policy.BlockedMediaFolders.indexOf(folder.Name) == -1 ? ' checked="checked"' : '';
+            var checkedAttribute = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
         html += '</fieldset>';
 
-        $('.mediaFolderAccess', page).html(html).trigger('create');
+        $('.folderAccess', page).html(html).trigger('create');
+
+        $('#chkEnableAllFolders', page).checked(user.Policy.EnableAllFolders).checkboxradio('refresh').trigger('change');
     }
 
     function loadChannels(page, user, channels) {
@@ -110,11 +112,14 @@
 
     function saveUser(user, page) {
 
-        user.Policy.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+        user.Policy.EnableAllFolders = $('#chkEnableAllFolders', page).checked();
+        user.Policy.EnabledFolders = user.Policy.EnableAllFolders ?
+            [] :
+            $('.chkFolder:checked', page).map(function () {
 
-            return this.getAttribute('data-foldername');
+                return this.getAttribute('data-id');
 
-        }).get();
+            }).get();
 
         user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
         user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
@@ -182,6 +187,16 @@
 
         });
 
+        $('#chkEnableAllFolders', page).on('change', function () {
+
+            if (this.checked) {
+                $('.folderAccessListContainer', page).hide();
+            } else {
+                $('.folderAccessListContainer', page).show();
+            }
+
+        });
+
     }).on('pageshow', "#userLibraryAccessPage", function () {
 
         var page = this;
@@ -210,7 +225,7 @@
         var promise4 = ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false }));
         var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
         var promise6 = ApiClient.getJSON(ApiClient.getUrl('Devices', {
-            SupportsUniqueIdentifier: true
+            SupportsPersistentIdentifier: true
         }));
 
         $.when(promise1, promise2, promise4, promise5, promise6).done(function (response1, response2, response4, response5, response6) {

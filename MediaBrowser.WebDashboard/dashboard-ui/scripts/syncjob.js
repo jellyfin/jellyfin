@@ -5,12 +5,12 @@
         var html = '';
 
         html += '<p>';
-        html += '<label>' + Globalize.translate('LabelName') + '</label>';
+        html += '<label for="txtJobName">' + Globalize.translate('LabelName') + '</label>';
         html += '<input id="txtJobName" type="text" required="required" />';
         html += '</p>';
 
         html += '<p>';
-        html += '<label>' + Globalize.translate('LabelSyncTo') + '</label>';
+        html += '<label for="txtTargetName">' + Globalize.translate('LabelSyncTo') + '</label>';
         html += '<input id="txtTargetName" type="text" readonly="readonly" />';
         html += '</p>';
 

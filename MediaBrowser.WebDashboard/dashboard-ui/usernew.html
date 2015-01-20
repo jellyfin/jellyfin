@@ -18,14 +18,17 @@
                         </li>
                     </ul>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderLibraryAccess}</h2>
+                    <div class="folderAccessContainer">
+                        <div class="ui-controlgroup-label">${HeaderLibraryAccess}</div>
                         <div>
-                            <br />
-                            <div class="mediaFolderAccess">
-                            </div>
+                            <label for="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</label>
+                            <input type="checkbox" id="chkEnableAllFolders" />
                             <div class="fieldDescription">${LibraryAccessHelp}</div>
+                        </div>
+                        <div class="folderAccessListContainer">
                             <br />
+                            <div class="folderAccess">
+                            </div>
                         </div>
                     </div>
                     <br />
@@ -44,6 +47,7 @@
                         </div>
                     </div>
 
+                    <br />
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>

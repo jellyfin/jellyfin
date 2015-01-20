@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Devices
         /// Gets or sets a value indicating whether [supports unique identifier].
         /// </summary>
         /// <value><c>null</c> if [supports unique identifier] contains no value, <c>true</c> if [supports unique identifier]; otherwise, <c>false</c>.</value>
-        public bool? SupportsUniqueIdentifier { get; set; }
+        public bool? SupportsPersistentIdentifier { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether [supports synchronize].
         /// </summary>

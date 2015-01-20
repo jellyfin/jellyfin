@@ -5,13 +5,13 @@ namespace MediaBrowser.Model.Connect
     {
         public string SendingUserId { get; set; }
         public string ConnectUserName { get; set; }
-        public string[] ExcludedLibraries { get; set; }
+        public string[] EnabledLibraries { get; set; }
         public bool EnableLiveTv { get; set; }
         public string[] EnabledChannels { get; set; }
 
         public ConnectAuthorizationRequest()
         {
-            ExcludedLibraries = new string[] { };
+            EnabledLibraries = new string[] { };
             EnabledChannels = new string[] { };
         }
     }
