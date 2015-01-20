@@ -47,7 +47,7 @@
     "LabelDashboardSourcePath": "Web client source path:",
     "LabelDashboardSourcePathHelp": "If running the server from source, specify the path to the dashboard-ui folder. All web client files will be served from this location.",
     "ButtonConvertMedia": "Convert media",
-    "ButtonOrganizeNow":  "Organize now",
+    "ButtonOrganize": "Organize",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonNew": "New",

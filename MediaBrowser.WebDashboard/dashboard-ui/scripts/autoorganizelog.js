@@ -333,10 +333,13 @@
         $('.btnOrganize', page).taskButton({
             mode: 'on',
             progressElem: $('.organizeProgress', page),
+            panel: $('.organizeTaskPanel', page),
             taskKey: 'AutoOrganize'
         });
 
     }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
+
+        var page = this;
 
         currentResult = null;
 
