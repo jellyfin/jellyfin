@@ -161,109 +161,29 @@
         });
     }
 
-    function pollTasks(page) {
-
-        ApiClient.getScheduledTasks().done(function (tasks) {
-
-            updateTasks(page, tasks);
-        });
-
-    }
-
-    function updateTasks(page, tasks) {
-
-        $('.refreshGuidePanel', page).removeClass('hide');
-
-        var task = tasks.filter(function (t) {
-
-            return t.Key == 'RefreshGuide';
-
-        })[0];
-
-        $('.btnRefreshGuide', page).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
-
-        var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-        var progressElem = $('.refreshGuideProgress', page).val(progress);
-
-        if (task.State == 'Running') {
-            progressElem.show();
-        } else {
-            progressElem.hide();
-        }
-
-        var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
-
-        if (lastResult == "Failed") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
-        }
-        else if (lastResult == "Cancelled") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
-        }
-        else if (lastResult == "Aborted") {
-            $('.lastRefreshGuideResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
-        } else {
-            $('.lastRefreshGuideResult', page).html(lastResult);
-        }
-    }
-
-    function onWebSocketMessage(e, msg) {
-
-        if (msg.MessageType == "ScheduledTasksInfo") {
-
-            var tasks = msg.Data;
-
-            var page = $.mobile.activePage;
-
-            updateTasks(page, tasks);
-        }
-    }
-
-    $(document).on('pageinit', "#liveTvStatusPage", function () {
+    $(document).on('pageshow', "#liveTvStatusPage", function () {
 
         var page = this;
-
-        $('.btnRefreshGuide', page).on('click', function () {
-
-            var button = this;
-            var id = button.getAttribute('data-taskid');
-
-            ApiClient.startScheduledTask(id).done(function () {
-
-                pollTasks(page);
-            });
-
-        });
-
-    }).on('pageshow', "#liveTvStatusPage", function () {
-
-        var page = this;
-
-        $('.refreshGuidePanel', page).addClass('hide');
 
         reload(page);
 
-        pollTasks(page);
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-        }
-
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
-
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-            }
+        // on here
+        $('.btnRefreshGuide', page).taskButton({
+            mode: 'on',
+            progressElem: $('.refreshGuideProgress', page),
+            lastResultElem: $('.lastRefreshGuideResult', page),
+            taskKey: 'RefreshGuide'
         });
 
     }).on('pagehide', "#liveTvStatusPage", function () {
 
         var page = this;
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
-        }
+        // off here
+        $('.btnRefreshGuide', page).taskButton({
+            mode: 'off'
+        });
 
-        $(ApiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

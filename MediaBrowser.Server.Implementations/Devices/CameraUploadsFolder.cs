@@ -10,7 +10,6 @@ namespace MediaBrowser.Server.Implementations.Devices
         public CameraUploadsFolder()
         {
             Name = "Camera Uploads";
-            DisplayMediaType = "CollectionFolder";
         }
 
         public override bool IsVisible(User user)

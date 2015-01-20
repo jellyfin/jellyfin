@@ -18,7 +18,13 @@
                     <div class="listTopPaging" style="float: left; position: relative; top: 15px;">
                     </div>
 
-                    <button style="display: none;" class="btnClearLog" type="button" data-inline="true" data-icon="forbidden" data-mini="true">Clear</button>
+                    <!--<button style="display: none;" class="btnClearLog" type="button" data-inline="true" data-icon="forbidden" data-mini="true">Clear</button>-->
+                    <div style="float: right; position: relative; top: 15px;margin-top: -5px;">
+                        <button type="button" class="btnOrganize" data-icon="action" data-mini="true" data-inline="true">${ButtonOrganizeNow}</button>
+                        <progress max="100" min="0" style="width:100px;display:none;" class="organizeProgress"></progress>
+                    </div>
+                    <br />
+
                     <div style="clear: both;"></div>
                 </div>
                 <table data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke">
@@ -33,12 +39,12 @@
                     <tbody class="resultBody"></tbody>
                 </table>
                 <br />
-                <div style="text-align: right;" class="legend">
-                    <div style="display: inline-block; height: 10px; width: 10px; background: green;"></div>
+                <div style="text-align: right;vertical-align:middle;" class="legend">
+                    <div style="display: inline-block; height: 10px; width: 10px; background: green;margin-right:1px;"></div>
                     <span>${LabelCompleted}</span>
-                    <div style="display: inline-block; height: 10px; width: 10px; background: red; margin-left: 1em;"></div>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: red; margin-left: 1em;margin-right:1px;"></div>
                     <span>${LabelFailed}</span>
-                    <div style="display: inline-block; height: 10px; width: 10px; background: blue; margin-left: 1em;"></div>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: blue; margin-left: 1em;margin-right:1px;"></div>
                     <span>${LabelSkipped}</span>
                 </div>
                 <div class="listBottomPaging">

@@ -1269,7 +1269,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .listItem a:first-child {
     margin-right: 0 !important;
     background-color: transparent !important;
+}
+
+.ui-page-theme-a .listItem a:first-child {
     border-color: #d8d8d8 !important;
+}
+
+.ui-page-theme-b .listItem a:first-child {
+    border-color: #383838 !important;
 }
 
 .listItem a + a {
@@ -1277,16 +1284,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     z-index: 1000;
 }
 
-.listItem:hover a {
+.ui-page-theme-a .listItem:hover a {
     background-color: #eee !important;
 }
 
-.page[data-theme='b'] .listItem:hover a {
+.ui-page-theme-b .listItem:hover a {
     background-color: #333 !important;
-}
-
-.page[data-theme='b'] .listItem a:first-child {
-    border-color: #282828 !important;
 }
 
 @media all and (max-width: 600px) {

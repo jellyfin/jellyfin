@@ -246,6 +246,25 @@
 
         reloadData(page);
 
+        // on here
+        $('.btnSync', page).taskButton({
+            mode: 'on',
+            progressElem: $('.syncProgress', page),
+            taskKey: 'SyncPrepare'
+        });
+
+
+    }).on('pagehide', ".syncActivityPage", function () {
+
+        var page = this;
+
+        reloadData(page);
+
+        // off here
+        $('.btnSync', page).taskButton({
+            mode: 'off'
+        });
+
     });
 
 })();

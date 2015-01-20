@@ -259,8 +259,6 @@
         if (elem) {
             elem.scrollIntoView();
         }
-
-        $(document).scrollTop(0);
     }
 
     function initializeTree(page, currentUser, openItems, selectedId) {

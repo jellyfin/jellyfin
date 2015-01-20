@@ -329,9 +329,21 @@
 
         reloadItems(page);
 
+        // on here
+        $('.btnOrganize', page).taskButton({
+            mode: 'on',
+            progressElem: $('.organizeProgress', page),
+            taskKey: 'AutoOrganize'
+        });
+
     }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
 
         currentResult = null;
+
+        // off here
+        $('.btnOrganize', page).taskButton({
+            mode: 'off'
+        });
     });
 
     window.OrganizerLogPage = {

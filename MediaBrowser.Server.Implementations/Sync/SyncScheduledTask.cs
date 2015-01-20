@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    public class SyncScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ISyncRepository _syncRepo;
@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public string Name
         {
-            get { return "Sync preparation"; }
+            get { return "Convert media"; }
         }
 
         public string Description
@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             get
             {
-                return "Library";
+                return "Sync";
             }
         }
 
@@ -81,6 +81,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         public bool IsEnabled
         {
             get { return true; }
+        }
+
+        public string Key
+        {
+            get { return "SyncPrepare"; }
         }
     }
 }

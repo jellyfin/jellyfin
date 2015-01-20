@@ -112,7 +112,6 @@ namespace MediaBrowser.Providers.TV
                 Name = seasonName,
                 IndexNumber = seasonNumber,
                 Parent = series,
-                DisplayMediaType = typeof(Season).Name,
                 Id = (series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName).GetMBId(typeof(Season))
             };
 
