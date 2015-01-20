@@ -532,9 +532,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             SetStaticProperties();
 
-            await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
-
             SetKernelProperties();
+
+            await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
         }
 
         protected override INetworkManager CreateNetworkManager(ILogger logger)

@@ -54,10 +54,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _config.GetAutoOrganizeOptions().TvOptions;
         }
 
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config, _providerManager)
-                .Organize(GetTvOptions(), cancellationToken, progress);
+            if (GetTvOptions().IsEnabled)
+            {
+                await new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config, _providerManager)
+                    .Organize(GetTvOptions(), cancellationToken, progress).ConfigureAwait(false);
+            }
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()

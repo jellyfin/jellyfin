@@ -366,6 +366,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediaplayer-video.js",
                                 "nowplayingbar.js",
                                 "nowplayingpage.js",
+                                "taskbutton.js",
 
                                 "ratingdialog.js",
                                 "aboutpage.js",
