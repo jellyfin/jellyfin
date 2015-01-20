@@ -1263,8 +1263,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var mediaSource = info.MediaSources.FirstOrDefault();
 
                 item.Path = mediaSource == null ? null : mediaSource.Path;
-
-                item.DisplayMediaType = channelMediaItem.ContentType.ToString();
             }
 
             if (isNew)

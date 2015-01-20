@@ -411,12 +411,19 @@ namespace MediaBrowser.Server.Implementations.Library
                     catch
                     {
                         user.Policy.EnabledFolders = new string[] { };
+                        user.Policy.EnableAllFolders = true;
                     }
                 }
                 else
                 {
                     user.Policy.EnableAllFolders = true;
                     user.Policy.EnabledFolders = new string[] { };
+                }
+
+                // Just to be safe
+                if (user.Policy.EnabledFolders.Length == 0)
+                {
+                    user.Policy.EnableAllFolders = true;
                 }
 
                 user.Policy.BlockedMediaFolders = null;

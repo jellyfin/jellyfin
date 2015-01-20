@@ -406,7 +406,6 @@ namespace MediaBrowser.Providers.TV
                 IndexNumber = episodeNumber,
                 ParentIndexNumber = seasonNumber,
                 Parent = season,
-                DisplayMediaType = typeof(Episode).Name,
                 Id = (series.Id + seasonNumber.ToString(_usCulture) + name).GetMBId(typeof(Episode))
             };
 

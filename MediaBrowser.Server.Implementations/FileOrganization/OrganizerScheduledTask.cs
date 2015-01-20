@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
-    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask, IScheduledTaskActivityLog
+    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask, IScheduledTaskActivityLog, IHasKey
     {
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
@@ -81,6 +81,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         public bool IsActivityLogged
         {
             get { return false; }
+        }
+
+        public string Key
+        {
+            get { return "AutoOrganize"; }
         }
     }
 }
