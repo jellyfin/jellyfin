@@ -128,5 +128,19 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="request">The request.</param>
         /// <returns>Task&lt;SyncDataResponse&gt;.</returns>
         Task<SyncDataResponse> SyncData(SyncDataRequest request);
+
+        /// <summary>
+        /// Marks the job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task MarkJobItemForRemoval(string id);
+
+        /// <summary>
+        /// Unmarks the job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task UnmarkJobItemForRemoval(string id);
     }
 }

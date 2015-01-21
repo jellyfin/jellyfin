@@ -684,5 +684,41 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
+
+        public async Task MarkJobItemForRemoval(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Synced)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.IsMarkedForRemoval = true;
+
+            await _repo.Update(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task UnmarkJobItemForRemoval(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Synced)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.IsMarkedForRemoval = false;
+
+            await _repo.Update(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
     }
 }
