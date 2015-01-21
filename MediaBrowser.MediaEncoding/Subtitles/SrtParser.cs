@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,7 +11,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public class SrtParser : ISubtitleParser
     {
+        private readonly ILogger _logger;
+
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        public SrtParser(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();
@@ -34,6 +43,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                     
                     var time = Regex.Split(line, @"[\t ]*-->[\t ]*");
+
+                    if (time.Length < 2)
+                    {
+                        // This occurs when subtitle text has an empty line as part of the text.
+                        // Need to adjust the break statement below to resolve this.
+                        _logger.Warn("Unrecognized line in srt: {0}", line);
+                        continue;
+                    }
                     subEvent.StartPositionTicks = GetTicks(time[0]);
                     var endTime = time[1];
                     var idx = endTime.IndexOf(" ", StringComparison.Ordinal);
