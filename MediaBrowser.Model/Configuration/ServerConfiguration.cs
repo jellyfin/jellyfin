@@ -169,6 +169,7 @@ namespace MediaBrowser.Model.Configuration
         public string DashboardSourcePath { get; set; }
 
         public bool StoreArtistsInMetadata { get; set; }
+        public bool EnableStandaloneMetadata { get; set; }
 
         /// <summary>
         /// Gets or sets the image saving convention.

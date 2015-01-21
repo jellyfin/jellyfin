@@ -3,7 +3,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Drawing;
@@ -13,7 +12,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
@@ -72,12 +70,10 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IImageProcessor> _imageProcessorFactory;
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly Func<IConnectManager> _connectFactory;
-        private readonly Func<IChannelManager> _channelManager;
-        private readonly Func<ILibraryManager> _libraryManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, Func<IChannelManager> channelManager, Func<ILibraryManager> libraryManager)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -89,8 +85,6 @@ namespace MediaBrowser.Server.Implementations.Library
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
-            _channelManager = channelManager;
-            _libraryManager = libraryManager;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -174,8 +168,6 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var user in users)
             {
                 await DoPolicyMigration(user).ConfigureAwait(false);
-                await DoChannelMigration(user).ConfigureAwait(false);
-                await DoLibraryMigration(user).ConfigureAwait(false);
             }
 
             // If there are no local users with admin rights, make them all admins
@@ -351,84 +343,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 user.Configuration.HasMigratedToPolicy = true;
                 await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
-            }
-        }
-
-        private async Task DoChannelMigration(User user)
-        {
-            if (user.Policy.BlockedChannels != null)
-            {
-                if (user.Policy.BlockedChannels.Length > 0)
-                {
-                    user.Policy.EnableAllChannels = false;
-
-                    try
-                    {
-                        var channelResult = await _channelManager().GetChannelsInternal(new ChannelQuery
-                        {
-                            UserId = user.Id.ToString("N")
-
-                        }, CancellationToken.None).ConfigureAwait(false);
-
-                        user.Policy.EnabledChannels = channelResult.Items
-                            .Select(i => i.Id.ToString("N"))
-                            .Except(user.Policy.BlockedChannels)
-                            .ToArray();
-                    }
-                    catch
-                    {
-                        user.Policy.EnabledChannels = new string[] { };
-                    }
-                }
-                else
-                {
-                    user.Policy.EnableAllChannels = true;
-                    user.Policy.EnabledChannels = new string[] { };
-                }
-
-                user.Policy.BlockedChannels = null;
-
-                await UpdateUserPolicy(user, user.Policy, false);
-            }
-        }
-
-        private async Task DoLibraryMigration(User user)
-        {
-            if (user.Policy.BlockedMediaFolders != null)
-            {
-                if (user.Policy.BlockedMediaFolders.Length > 0)
-                {
-                    user.Policy.EnableAllFolders = false;
-
-                    try
-                    {
-                        user.Policy.EnabledFolders = _libraryManager().RootFolder
-                            .Children
-                            .Where(i => !user.Policy.BlockedMediaFolders.Contains(i.Name, StringComparer.OrdinalIgnoreCase) && !user.Policy.BlockedMediaFolders.Contains(i.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
-                            .Select(i => i.Id.ToString("N"))
-                            .ToArray();
-                    }
-                    catch
-                    {
-                        user.Policy.EnabledFolders = new string[] { };
-                        user.Policy.EnableAllFolders = true;
-                    }
-                }
-                else
-                {
-                    user.Policy.EnableAllFolders = true;
-                    user.Policy.EnabledFolders = new string[] { };
-                }
-
-                // Just to be safe
-                if (user.Policy.EnabledFolders.Length == 0)
-                {
-                    user.Policy.EnableAllFolders = true;
-                }
-
-                user.Policy.BlockedMediaFolders = null;
-
-                await UpdateUserPolicy(user, user.Policy, false);
             }
         }
 
