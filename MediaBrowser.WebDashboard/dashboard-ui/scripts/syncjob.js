@@ -64,9 +64,9 @@
 
         var cssClass = 'ui-li-has-thumb listItem';
 
-        html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '">';
+        html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '>';
 
-        var hasActions = ['Queued', 'Cancelled', 'Failed', 'Transferring', 'Converting'].indexOf(jobItem.Status) != -1;
+        var hasActions = ['Queued', 'Cancelled', 'Failed', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
 
         html += '<a href="#">';
 
@@ -95,9 +95,16 @@
         html += jobItem.ItemName;
         html += '</h3>';
 
-        html += '<p>';
-        var stasusLabel = Globalize.translate('SyncJobItemStatus' + jobItem.Status);
-        html += stasusLabel;
+        if (jobItem.Status == 'Failed') {
+            html += '<p style="color:red;">';
+        } else {
+            html += '<p>';
+        }
+        html += Globalize.translate('SyncJobItemStatus' + jobItem.Status);
+        if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
+            html += '<br/>';
+            html += Globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
+        }
         html += '</p>';
 
         html += '</a>';
@@ -147,6 +154,7 @@
         var listItem = $(elem).parents('li');
         var id = listItem.attr('data-itemid');
         var status = listItem.attr('data-status');
+        var remove = listItem.attr('data-remove');
 
         $('.jobMenu', page).popup("close").remove();
 
@@ -163,6 +171,12 @@
         }
         else if (status == 'Queued' || status == 'Transferring' || status == 'Converting') {
             html += '<li data-icon="delete"><a href="#" class="btnCancelJobItem" data-id="' + id + '">' + Globalize.translate('ButtonCancelItem') + '</a></li>';
+        }
+        else if (status == 'Synced' && remove) {
+            html += '<li data-icon="check"><a href="#" class="btnUnmarkForRemoval" data-id="' + id + '">' + Globalize.translate('ButtonUnmarkForRemoval') + '</a></li>';
+        }
+        else if (status == 'Synced') {
+            html += '<li data-icon="check"><a href="#" class="btnMarkForRemoval" data-id="' + id + '">' + Globalize.translate('ButtonMarkForRemoval') + '</a></li>';
         }
 
         html += '</ul>';
@@ -184,6 +198,14 @@
         $('.btnRetryJobItem', flyout).on('click', function () {
             retryJobItem(page, this.getAttribute('data-id'));
         });
+
+        $('.btnUnmarkForRemoval', flyout).on('click', function () {
+            unMarkForRemoval(page, this.getAttribute('data-id'));
+        });
+
+        $('.btnMarkForRemoval', flyout).on('click', function () {
+            markForRemoval(page, this.getAttribute('data-id'));
+        });
     }
 
     function cancelJobItem(page, jobItemId) {
@@ -204,6 +226,36 @@
             loadJob(page);
         });
 
+    }
+
+    function markForRemoval(page, jobItemId) {
+
+        $('.jobMenu', page).popup('close');
+
+        ApiClient.ajax({
+
+            type: "POST",
+            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/MarkForRemoval')
+
+        }).done(function () {
+
+            loadJob(page);
+        });
+    }
+
+    function unMarkForRemoval(page, jobItemId) {
+
+        $('.jobMenu', page).popup('close');
+
+        ApiClient.ajax({
+
+            type: "POST",
+            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/UnmarkForRemoval')
+
+        }).done(function () {
+
+            loadJob(page);
+        });
     }
 
     function retryJobItem(page, jobItemId) {

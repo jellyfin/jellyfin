@@ -1449,12 +1449,41 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="request">The request.</param>
         /// <returns>Task&lt;SyncDataResponse&gt;.</returns>
         Task<SyncDataResponse> SyncData(SyncDataRequest request);
-
         /// <summary>
         /// Gets the synchronize job item file URL.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>System.String.</returns>
         string GetSyncJobItemFileUrl(string id);
+        /// <summary>
+        /// Marks the synchronize job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task MarkSyncJobItemForRemoval(string id);
+        /// <summary>
+        /// Unmarks the synchronize job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task UnmarkSyncJobItemForRemoval(string id);
+        /// <summary>
+        /// Queues the failed synchronize job item for retry.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task QueueFailedSyncJobItemForRetry(string id);
+        /// <summary>
+        /// Cancels the synchronize job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelSyncJobItem(string id);
+        /// <summary>
+        /// Enables the cancelled synchronize job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task EnableCancelledSyncJobItem(string id);
     }
 }
