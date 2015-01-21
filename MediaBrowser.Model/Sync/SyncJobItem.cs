@@ -88,6 +88,8 @@ namespace MediaBrowser.Model.Sync
         public string TemporaryPath { get; set; }
         public List<ItemFileInfo> AdditionalFiles { get; set; }
 
+        public bool IsMarkedForRemoval { get; set; }
+
         public SyncJobItem()
         {
             AdditionalFiles = new List<ItemFileInfo>();

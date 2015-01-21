@@ -141,7 +141,7 @@ namespace MediaBrowser.Api.ScheduledTasks
 
                 result = result.Where(i =>
                 {
-                    var isEnabled = false;
+                    var isEnabled = true;
 
                     var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
 

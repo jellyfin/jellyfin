@@ -3,7 +3,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,6 @@ namespace MediaBrowser.Api.Library
     /// Class GetDefaultVirtualFolders
     /// </summary>
     [Route("/Library/VirtualFolders", "GET")]
-    [Route("/Users/{UserId}/VirtualFolders", "GET")]
     public class GetVirtualFolders : IReturn<List<VirtualFolderInfo>>
     {
         /// <summary>
@@ -144,11 +142,6 @@ namespace MediaBrowser.Api.Library
         private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
-        /// The _user manager
-        /// </summary>
-        private readonly IUserManager _userManager;
-
-        /// <summary>
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
@@ -156,27 +149,21 @@ namespace MediaBrowser.Api.Library
         private readonly ILibraryMonitor _libraryMonitor;
 
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryStructureService"/> class.
+        /// Initializes a new instance of the <see cref="LibraryStructureService" /> class.
         /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public LibraryStructureService(IServerApplicationPaths appPaths, IUserManager userManager, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
+        public LibraryStructureService(IServerApplicationPaths appPaths, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
         {
             if (appPaths == null)
             {
                 throw new ArgumentNullException("appPaths");
             }
 
-            _userManager = userManager;
             _appPaths = appPaths;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
-            _logger = logger;
         }
 
         /// <summary>
@@ -186,20 +173,9 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetVirtualFolders request)
         {
-            if (string.IsNullOrEmpty(request.UserId))
-            {
-                var result = _libraryManager.GetDefaultVirtualFolders().OrderBy(i => i.Name).ToList();
+            var result = _libraryManager.GetVirtualFolders().OrderBy(i => i.Name).ToList();
 
-                return ToOptimizedSerializedResultUsingCache(result);
-            }
-            else
-            {
-                var user = _userManager.GetUserById(request.UserId);
-
-                var result = _libraryManager.GetVirtualFolders(user).OrderBy(i => i.Name).ToList();
-
-                return ToOptimizedSerializedResultUsingCache(result);
-            }
+            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         /// <summary>

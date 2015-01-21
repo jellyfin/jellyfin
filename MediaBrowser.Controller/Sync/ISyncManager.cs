@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,6 +12,9 @@ namespace MediaBrowser.Controller.Sync
 {
     public interface ISyncManager
     {
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobCreated;
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+          
         /// <summary>
         /// Creates the job.
         /// </summary>
@@ -44,6 +49,20 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>Task.</returns>
         Task UpdateJob(SyncJob job);
 
+        /// <summary>
+        /// Res the enable job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReEnableJobItem(string id);
+
+        /// <summary>
+        /// Cnacels the job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelJobItem(string id);
+        
         /// <summary>
         /// Cancels the job.
         /// </summary>

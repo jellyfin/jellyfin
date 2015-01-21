@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
@@ -361,11 +360,20 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var innerProgress = new ActionableProgress<double>();
                 innerProgress.RegisterAction(p => progress.Report(startingPercent + (percentPerItem * p)));
 
-                var job = _syncRepo.GetJob(item.JobId);
-                await ProcessJobItem(job, item, enableConversion, innerProgress, cancellationToken).ConfigureAwait(false);
+                // Pull it fresh from the db just to make sure it wasn't deleted or cancelled while another item was converting
+                var jobItem = enableConversion ? _syncRepo.GetJobItem(item.Id) : item;
 
-                job = _syncRepo.GetJob(item.JobId);
-                await UpdateJobStatus(job).ConfigureAwait(false);
+                if (jobItem != null)
+                {
+                    var job = _syncRepo.GetJob(jobItem.JobId);
+                    if (jobItem.Status != SyncJobItemStatus.Cancelled)
+                    {
+                        await ProcessJobItem(job, jobItem, enableConversion, innerProgress, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    job = _syncRepo.GetJob(jobItem.JobId);
+                    await UpdateJobStatus(job).ConfigureAwait(false);
+                }
 
                 numComplete++;
                 double percent = numComplete;

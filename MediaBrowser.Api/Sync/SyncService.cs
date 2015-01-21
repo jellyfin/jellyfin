@@ -37,6 +37,20 @@ namespace MediaBrowser.Api.Sync
     {
     }
 
+    [Route("/Sync/JobItems/{Id}/Enable", "POST", Summary = "Enables a cancelled or queued sync job item")]
+    public class EnableSyncJobItem : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}", "DELETE", Summary = "Cancels a sync job item")]
+    public class CancelSyncJobItem : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
     [Route("/Sync/Jobs", "GET", Summary = "Gets sync jobs.")]
     public class GetSyncJobs : SyncJobQuery, IReturn<QueryResult<SyncJob>>
     {
@@ -270,6 +284,20 @@ namespace MediaBrowser.Api.Sync
             }
 
             return ToStaticFileResult(file.Path);
+        }
+
+        public void Post(EnableSyncJobItem request)
+        {
+            var task = _syncManager.ReEnableJobItem(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Delete(CancelSyncJobItem request)
+        {
+            var task = _syncManager.CancelJobItem(request.Id);
+
+            Task.WaitAll(task);
         }
     }
 }

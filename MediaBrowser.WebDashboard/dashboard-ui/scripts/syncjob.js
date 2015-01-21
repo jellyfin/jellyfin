@@ -66,8 +66,7 @@
 
         html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '">';
 
-        var hasActions = jobItem.Status != 'RemovedFromDevice';
-        hasActions = false;
+        var hasActions = ['Queued', 'Cancelled', 'Failed', 'Transferring', 'Converting'].indexOf(jobItem.Status) != -1;
 
         html += '<a href="#">';
 
@@ -156,8 +155,14 @@
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-        if (status != 'Cancelled' && status != 'RemovedFromDevice' && status != 'Failed') {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+        if (status == 'Failed') {
+            html += '<li data-icon="check"><a href="#" class="btnRetryJobItem" data-id="' + id + '">' + Globalize.translate('ButtonQueueForRetry') + '</a></li>';
+        }
+        else if (status == 'Cancelled') {
+            html += '<li data-icon="check"><a href="#" class="btnRetryJobItem" data-id="' + id + '">' + Globalize.translate('ButtonReenable') + '</a></li>';
+        }
+        else if (status == 'Queued' || status == 'Transferring' || status == 'Converting') {
+            html += '<li data-icon="delete"><a href="#" class="btnCancelJobItem" data-id="' + id + '">' + Globalize.translate('ButtonCancelItem') + '</a></li>';
         }
 
         html += '</ul>';
@@ -172,8 +177,47 @@
 
         });
 
-        $('.btnCancelJob', flyout).on('click', function () {
-            //cancelJob(page, this.getAttribute('data-id'));
+        $('.btnCancelJobItem', flyout).on('click', function () {
+            cancelJobItem(page, this.getAttribute('data-id'));
+        });
+
+        $('.btnRetryJobItem', flyout).on('click', function () {
+            retryJobItem(page, this.getAttribute('data-id'));
+        });
+    }
+
+    function cancelJobItem(page, jobItemId) {
+
+        $('.jobMenu', page).popup('close');
+
+        // Need a timeout because jquery mobile will not show a popup while another is in the act of closing
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+
+            type: "DELETE",
+            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId)
+
+        }).done(function () {
+
+            loadJob(page);
+        });
+
+    }
+
+    function retryJobItem(page, jobItemId) {
+
+        $('.jobMenu', page).popup('close');
+
+        ApiClient.ajax({
+
+            type: "POST",
+            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/Enable')
+
+        }).done(function () {
+
+            loadJob(page);
         });
     }
 

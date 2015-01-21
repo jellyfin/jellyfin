@@ -120,6 +120,7 @@
                 return this.getAttribute('data-id');
 
             }).get();
+        user.Policy.BlockedMediaFolders = null;
 
         user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
         user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
@@ -129,6 +130,7 @@
                 return this.getAttribute('data-id');
 
             }).get();
+        user.Policy.BlockedChannels = null;
 
         user.Policy.EnableAllDevices = $('#chkEnableAllDevices', page).checked();
         user.Policy.EnabledDevices = user.Policy.EnableAllDevices ?

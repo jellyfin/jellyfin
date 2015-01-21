@@ -303,9 +303,22 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder)
             {
-                if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                if (user.Policy.BlockedMediaFolders != null)
                 {
-                    return false;
+                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
+
+                        // Backwards compatibility
+                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -675,12 +688,12 @@ namespace MediaBrowser.Controller.Entities
                 path = System.IO.Path.GetDirectoryName(path);
             }
 
-            if (ContainsPath(LibraryManager.GetDefaultVirtualFolders(), originalPath))
+            if (ContainsPath(LibraryManager.GetVirtualFolders(), originalPath))
             {
                 return true;
             }
 
-            return UserManager.Users.Any(user => ContainsPath(LibraryManager.GetVirtualFolders(user), originalPath));
+            return ContainsPath(LibraryManager.GetVirtualFolders(), originalPath);
         }
 
         /// <summary>

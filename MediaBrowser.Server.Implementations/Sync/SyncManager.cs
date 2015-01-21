@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
@@ -16,6 +17,7 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
@@ -46,6 +48,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IConfigurationManager _config;
 
         private ISyncProvider[] _providers = { };
+
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCreated;
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
 
         public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config)
         {
@@ -143,6 +148,15 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await processor.SyncJobItems(jobItemsResult.Items, false, new Progress<double>(), CancellationToken.None)
                     .ConfigureAwait(false);
+
+            if (SyncJobCreated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobCreated, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
 
             return new SyncJobCreationResult
             {
@@ -275,9 +289,25 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public Task CancelJob(string id)
+        public async Task CancelJob(string id)
         {
-            return _repo.DeleteJob(id);
+            var job = GetJob(id);
+
+            if (job == null)
+            {
+                throw new ArgumentException("Job not found.");
+            }
+
+            await _repo.DeleteJob(id).ConfigureAwait(false);
+
+            if (SyncJobCancelled != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobCancelled, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
         }
 
         public SyncJob GetJob(string id)
@@ -496,7 +526,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                .FirstOrDefault(i => string.Equals(i.Id, jobItem.MediaSourceId));
 
             syncedItem.Item.MediaSources = new List<MediaSourceInfo>();
-            
+
             // This will be null for items that are not audio/video
             if (mediaSource == null)
             {
@@ -545,7 +575,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                     var job = _repo.GetJob(jobItem.JobId);
                     var user = _userManager.GetUserById(job.UserId);
 
-                    if (user == null)
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        // Tell the device to remove it since it has been marked for removal
+                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                    }
+                    else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         response.ItemIdsToRemove.Add(jobItem.ItemId);
@@ -608,6 +643,46 @@ namespace MediaBrowser.Server.Implementations.Sync
             // TODO: Make sure it hasn't been deleted
 
             return true;
+        }
+
+        public async Task ReEnableJobItem(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Failed && jobItem.Status != SyncJobItemStatus.Cancelled)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.Status = SyncJobItemStatus.Queued;
+            jobItem.Progress = 0;
+            jobItem.IsMarkedForRemoval = false;
+
+            await _repo.Update(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task CancelJobItem(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Queued && jobItem.Status != SyncJobItemStatus.Transferring && jobItem.Status != SyncJobItemStatus.Converting)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.Status = SyncJobItemStatus.Cancelled;
+            jobItem.Progress = 0;
+            jobItem.IsMarkedForRemoval = true;
+
+            await _repo.Update(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
     }
 }

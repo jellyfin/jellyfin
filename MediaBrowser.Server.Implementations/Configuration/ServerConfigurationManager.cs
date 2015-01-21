@@ -99,8 +99,18 @@ namespace MediaBrowser.Server.Implementations.Configuration
         private void UpdateMetadataPath()
         {
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrEmpty(Configuration.MetadataPath) ?
-                null :
+                GetInternalMetadataPath() :
                 Configuration.MetadataPath;
+        }
+
+        private string GetInternalMetadataPath()
+        {
+            if (Configuration.EnableStandaloneMetadata)
+            {
+                return Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -1124,19 +1124,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetDefaultVirtualFolders()
+        public IEnumerable<VirtualFolderInfo> GetVirtualFolders()
         {
             return GetView(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath);
-        }
-
-        /// <summary>
-        /// Gets the view.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetVirtualFolders(User user)
-        {
-            return GetDefaultVirtualFolders();
         }
 
         /// <summary>

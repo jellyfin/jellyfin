@@ -1491,9 +1491,9 @@
         /**
          * Gets the virtual folder list
          */
-        self.getVirtualFolders = function (userId) {
+        self.getVirtualFolders = function () {
 
-            var url = userId ? "Users/" + userId + "/VirtualFolders" : "Library/VirtualFolders";
+            var url = "Library/VirtualFolders";
 
             url = self.getUrl(url);
 
