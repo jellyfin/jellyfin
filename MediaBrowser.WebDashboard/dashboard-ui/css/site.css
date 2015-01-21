@@ -283,13 +283,7 @@ h1 .imageLink {
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;
-    background: #fadb4e;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#ffefaa),to(#ffe155));
-    background-image: -webkit-linear-gradient(#ffefaa,#ffe155);
-    background-image: -moz-linear-gradient(#ffefaa,#ffe155);
-    background-image: -ms-linear-gradient(#ffefaa,#ffe155);
-    background-image: -o-linear-gradient(#ffefaa,#ffe155);
-    background-image: linear-gradient(#ffefaa,#ffe155);
+    background: #ffefaa;
     border-radius: 5px;
 }
 

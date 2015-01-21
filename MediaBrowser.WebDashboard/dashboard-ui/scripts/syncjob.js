@@ -64,7 +64,7 @@
 
         var cssClass = 'ui-li-has-thumb listItem';
 
-        html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '>';
+        html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
 
         var hasActions = ['Queued', 'Cancelled', 'Failed', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
 

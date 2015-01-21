@@ -38,7 +38,7 @@
             if (currentTimeout != searchHintTimeout) {
                 return;
             }
-            
+
             renderSearchHintResult(page, result.SearchHints);
         });
     }
@@ -175,7 +175,7 @@
         else if (hint.ProductionYear && hint.MediaType != "Audio" && hint.Type != "Episode") {
             html += '<div class="searchHintSecondaryText">' + hint.ProductionYear + '</div>';
         }
-        
+
         else if (hint.RunTimeTicks) {
             html += '<div class="searchHintSecondaryText">' + Dashboard.getDisplayTime(hint.RunTimeTicks) + '</div>';
         }
@@ -198,9 +198,9 @@
 
         $('#searchHints', page).html(html);
     }
-    
+
     function getSearchPanel(page) {
-        
+
         var panel = $('#searchPanel', page);
 
         if (!panel.length) {
@@ -246,7 +246,7 @@
                 }
 
             });
-            
+
             $('#searchHints', page).on("keydown", '.searchHint', function (e) {
 
                 // Down
@@ -294,11 +294,56 @@
 
     window.Search = new search();
 
+    function getSearchResultsPanel() {
+
+        var elem = $('.searchResultsOverlay');
+
+        if (!elem.length) {
+            elem = $('<div class="searchResultsOverlay"></div>').appendTo(document.body).hide();
+        }
+
+        return elem;
+    }
+
+    function onHeaderSearchChange(val) {
+
+        var panel = getSearchResultsPanel();
+
+        if (val) {
+
+            panel.fadeIn('fast');
+
+        } else {
+
+            panel.fadeOut('fast');
+
+        }
+    }
+
     $(document).on('pagehide', ".libraryPage", function () {
 
         $('#txtSearch', this).val('');
         $('#searchHints', this).empty();
     });
 
+    $(document).on('headercreated', function () {
+
+        $('.headerSearchInput').on("keyup", function (e) {
+
+            if (e.keyCode != 40) {
+
+                onHeaderSearchChange(this.value);
+            }
+
+        }).on("search", function (e) {
+
+            if (!this.value) {
+
+                onHeaderSearchChange('');
+            }
+
+        });
+
+    });
 
 })(jQuery, document, window, clearTimeout, setTimeout);

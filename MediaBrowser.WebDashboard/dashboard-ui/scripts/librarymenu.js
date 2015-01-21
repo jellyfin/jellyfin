@@ -16,6 +16,11 @@
 
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
 
+        //html += '<div class="viewMenuSearch">';
+        //html += '<input type="search" data-role="none" class="headerSearchInput" />';
+        //html += '<div class="searchInputIcon fa fa-search"></div>';
+        //html += '</div>';
+
         html += '<div class="viewMenuSecondary">';
 
         if (user.localUser) {

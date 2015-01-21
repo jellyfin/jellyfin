@@ -3,9 +3,10 @@
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center center;
-    width: 22px;
+    width: 26px;
     height: 100%;
     display: inline-block;
+    vertical-align: middle;
 }
 
 .btnDefaultCast .btnCastImage {
