@@ -21,18 +21,24 @@
     background-image: url(images/chromecast/ic_media_route_disabled_holo_dark.png);
 }
 
+.btnCast {
+    white-space: nowrap;
+}
+
 .headerSelectedPlayer {
     display: inline-block;
     vertical-align: middle;
     color: #ddd;
     font-size: 11px;
     margin-right: .5em;
-    height: 100%;
     position: relative;
-    top: -20px;
+    top: 1px;
+    max-width: 100px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-width: 1000px) {
     .headerSelectedPlayer {
         display: none;
     }

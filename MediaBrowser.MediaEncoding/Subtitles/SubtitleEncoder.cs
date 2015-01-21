@@ -270,7 +270,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
-                return new SrtParser();
+                return new SrtParser(_logger);
             }
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {

@@ -168,7 +168,7 @@
     display: none;
 }
 
-@media all and (min-width: 1200px) {
+@media all and (min-width: 800px) {
 
     .viewMenuSearch {
         display: block;
@@ -181,10 +181,15 @@
 
 .searchResultsOverlay {
     position: fixed;
-    background: #000;
+    background: #222 !important;
     top: 50px;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 1001;
+    border: 0 !important;
+}
+
+.searchResultsContainer {
+    padding: 2em;
 }
