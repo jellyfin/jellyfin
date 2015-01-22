@@ -1302,3 +1302,19 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .tapHoldMenu li a, .playFlyout li a {
     font-size: 14px;
 }
+
+.userProfileSettingsForm {
+    max-width: 700px;
+}
+
+    .userProfileSettingsForm .detailSectionContent {
+        padding: 0 1em;
+    }
+
+@media all and (max-width: 700px) {
+
+    .userProfileSettingsForm .detailSection {
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+}

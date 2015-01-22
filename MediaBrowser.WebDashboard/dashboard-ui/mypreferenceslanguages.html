@@ -14,53 +14,62 @@
         </div>
 
         <br />
-        <form style="margin: 0 auto;" class="languagePreferencesForm">
-            <div class="detailSectionHeader" style="margin: 0 .5em;">
-                ${HeaderLanguagePreferences}
-            </div>
+        <form style="margin: 0 auto;" class="languagePreferencesForm userProfileSettingsForm">
 
-            <br />
-            <ul data-role="listview" class="ulForm">
-                <li>
-                    <label for="selectAudioLanguage">${LabelAudioLanguagePreference}</label>
-                    <select id="selectAudioLanguage" data-mini="true"></select>
-                </li>
-                <li>
-                    <input type="checkbox" id="chkPlayDefaultAudioTrack" data-mini="true" />
-                    <label for="chkPlayDefaultAudioTrack">${LabelPlayDefaultAudioTrack}</label>
-                </li>
-                <li>
-                    <label for="selectSubtitleLanguage">${LabelSubtitleLanguagePreference}</label>
-                    <select id="selectSubtitleLanguage" data-mini="true"></select>
-                </li>
-                <li>
-                    <label for="selectSubtitlePlaybackMode">${LabelSubtitlePlaybackMode}</label>
-                    <select id="selectSubtitlePlaybackMode" data-mini="true">
-                        <option value="Default">${OptionDefaultSubtitles}</option>
-                        <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
-                        <option value="Always">${OptionAlwaysPlaySubtitles}</option>
-                        <option value="None">${OptionNoSubtitles}</option>
-                    </select>
-                    <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
-                </li>
-            </ul>
-            <div class="cinemaModeOptions" style="display:none;">
-                <br />
-                <div class="detailSectionHeader" style="margin: 0 .5em;">
+
+            <div class="detailSection">
+                <div class="detailSectionHeader">
+                    ${HeaderLanguagePreferences}
+                </div>
+                <div class="detailSectionContent">
+                    <br />
+                    <div>
+                        <label for="selectAudioLanguage">${LabelAudioLanguagePreference}</label>
+                        <select id="selectAudioLanguage" data-mini="true"></select>
+                    </div>
+                    <br />
+                    <div data-role="controlgroup">
+                        <input type="checkbox" id="chkPlayDefaultAudioTrack" />
+                        <label for="chkPlayDefaultAudioTrack">${LabelPlayDefaultAudioTrack}</label>
+                    </div>
+                    <br />
+                    <div>
+                        <label for="selectSubtitleLanguage">${LabelSubtitleLanguagePreference}</label>
+                        <select id="selectSubtitleLanguage" data-mini="true"></select>
+                    </div>
+                    <br />
+                    <div>
+                        <label for="selectSubtitlePlaybackMode">${LabelSubtitlePlaybackMode}</label>
+                        <select id="selectSubtitlePlaybackMode" data-mini="true">
+                            <option value="Default">${OptionDefaultSubtitles}</option>
+                            <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
+                            <option value="Always">${OptionAlwaysPlaySubtitles}</option>
+                            <option value="None">${OptionNoSubtitles}</option>
+                        </select>
+                        <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="detailSection cinemaModeOptions" style="display:none;">
+                <div class="detailSectionHeader">
                     ${HeaderCinemaMode}
                 </div>
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <input type="checkbox" id="chkEnableCinemaMode" data-mini="true" />
+                <div class="detailSectionContent">
+                    <br />
+                    <div data-role="controlgroup">
+                        <input type="checkbox" id="chkEnableCinemaMode" />
                         <label for="chkEnableCinemaMode">${LabelEnableCinemaMode}</label>
+                    </div>
 
-                        <div class="fieldDescription">${CinemaModeConfigurationHelp}</div>
-                    </li>
-                </ul>
+                    <div class="fieldDescription">${CinemaModeConfigurationHelp}</div>
+                </div>
+
             </div>
+
             <ul data-role="listview" class="ulForm">
                 <li>
                     <button type="submit" data-theme="a" data-icon="check" data-mini="true">
