@@ -402,8 +402,6 @@
     <EmbeddedResource Include="Localization\Server\vi.json" />
     <EmbeddedResource Include="Localization\JavaScript\pl.json" />
     <EmbeddedResource Include="Localization\Server\pl.json" />
-    <EmbeddedResource Include="Localization\JavaScript\es_ES.json" />
-    <EmbeddedResource Include="Localization\Server\es_ES.json" />
     <EmbeddedResource Include="Localization\Server\ko.json" />
     <EmbeddedResource Include="Localization\JavaScript\en_GB.json" />
     <EmbeddedResource Include="Localization\JavaScript\tr.json" />
@@ -415,6 +413,10 @@
     <EmbeddedResource Include="Localization\JavaScript\fi.json" />
     <EmbeddedResource Include="Localization\Server\fi.json" />
     <None Include="app.config" />
+    <EmbeddedResource Include="Localization\JavaScript\bg_BG.json" />
+    <EmbeddedResource Include="Localization\JavaScript\uk.json" />
+    <EmbeddedResource Include="Localization\Server\bg_BG.json" />
+    <EmbeddedResource Include="Localization\Server\uk.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

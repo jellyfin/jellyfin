@@ -359,8 +359,7 @@ namespace MediaBrowser.Server.Implementations.Localization
             return new List<LocalizatonOption>
             {
                 new LocalizatonOption{ Name="Arabic", Value="ar"},
-                new LocalizatonOption{ Name="English (United Kingdom)", Value="en-GB"},
-                new LocalizatonOption{ Name="English (United States)", Value="en-us"},
+                new LocalizatonOption{ Name="Bulgarian (Bulgaria)", Value="bg-BG"},
                 new LocalizatonOption{ Name="Catalan", Value="ca"},
                 new LocalizatonOption{ Name="Chinese Simplified", Value="zh-CN"},
                 new LocalizatonOption{ Name="Chinese Traditional", Value="zh-TW"},
@@ -368,6 +367,8 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Czech", Value="cs"},
                 new LocalizatonOption{ Name="Danish", Value="da"},
                 new LocalizatonOption{ Name="Dutch", Value="nl"},
+                new LocalizatonOption{ Name="English (United Kingdom)", Value="en-GB"},
+                new LocalizatonOption{ Name="English (United States)", Value="en-us"},
                 new LocalizatonOption{ Name="Finnish", Value="fi"},
                 new LocalizatonOption{ Name="French", Value="fr"},
                 new LocalizatonOption{ Name="German", Value="de"},
@@ -384,6 +385,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Spanish (Mexico)", Value="es-MX"},
                 new LocalizatonOption{ Name="Swedish", Value="sv"},
                 new LocalizatonOption{ Name="Turkish", Value="tr"},
+                new LocalizatonOption{ Name="Ukrainian", Value="uk"},
                 new LocalizatonOption{ Name="Vietnamese", Value="vi"}
 
             }.OrderBy(i => i.Name);
