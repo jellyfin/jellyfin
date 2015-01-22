@@ -301,7 +301,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsVisible(User user)
         {
-            if (this is ICollectionFolder)
+            if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
                 if (user.Policy.BlockedMediaFolders != null)
                 {

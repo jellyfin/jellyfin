@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
@@ -10,10 +8,5 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface ISupportsBoxSetGrouping
     {
-        /// <summary>
-        /// Gets or sets the box set identifier list.
-        /// </summary>
-        /// <value>The box set identifier list.</value>
-        List<Guid> BoxSetIdList { get; set; }
     }
 }

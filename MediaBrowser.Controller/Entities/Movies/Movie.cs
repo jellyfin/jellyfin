@@ -25,12 +25,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public List<Guid> ThemeVideoIds { get; set; }
         public List<string> ProductionLocations { get; set; }
 
-        /// <summary>
-        /// This is just a cache to enable quick access by Id
-        /// </summary>
-        [IgnoreDataMember]
-        public List<Guid> BoxSetIdList { get; set; }
-
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
@@ -40,7 +34,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            BoxSetIdList = new List<Guid>();
             Taglines = new List<string>();
             Keywords = new List<string>();
             ProductionLocations = new List<string>();

@@ -135,7 +135,6 @@
     <Compile Include="Dto\NameValuePair.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
-    <Compile Include="Dto\VideoStreamOptions.cs" />
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
     <Compile Include="Entities\SupporterInfo.cs" />
