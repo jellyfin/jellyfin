@@ -258,8 +258,6 @@
 
         var page = this;
 
-        reloadData(page);
-
         // off here
         $('.btnSync', page).taskButton({
             mode: 'off'

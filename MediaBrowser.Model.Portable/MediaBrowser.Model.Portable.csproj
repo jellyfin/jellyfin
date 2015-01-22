@@ -497,9 +497,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\UserItemDataDto.cs">
       <Link>Dto\UserItemDataDto.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\VideoStreamOptions.cs">
-      <Link>Dto\VideoStreamOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\BaseItemInfo.cs">
       <Link>Entities\BaseItemInfo.cs</Link>
     </Compile>

@@ -380,7 +380,7 @@
             // Down key
             if (e.keyCode == 40) {
 
-                //var first = $('.searchHint', panel)[0];
+                //var first = $('.card', panel)[0];
 
                 //if (first) {
                 //    first.focus();

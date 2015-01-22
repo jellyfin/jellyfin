@@ -1633,7 +1633,7 @@
             }
 
             // If really close to 16:9 (episode image), just return 16:9
-            if (Math.abs(1.777777778 - result) <= .15) {
+            if (Math.abs(1.777777778 - result) <= .2) {
                 return 1.777777778;
             }
 

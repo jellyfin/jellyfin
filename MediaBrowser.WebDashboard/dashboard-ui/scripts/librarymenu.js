@@ -84,6 +84,7 @@
         html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
 
+        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-dashboard"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
         html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu iconViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
         html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';

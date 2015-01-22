@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
@@ -143,7 +144,7 @@ namespace MediaBrowser.Api
         {
             if (!string.IsNullOrEmpty(parentId))
             {
-                var folder = (Folder) libraryManager.GetItemById(new Guid(parentId));
+                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
 
                 if (userId.HasValue)
                 {
@@ -287,6 +288,20 @@ namespace MediaBrowser.Api
                 }) ?? name;
         }
 
+        protected string GetPathValue(int index)
+        {
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var first = pathInfo.GetArgumentValue<string>(0);
+
+            // backwards compatibility
+            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase))
+            {
+                index++;
+            }
+
+            return pathInfo.GetArgumentValue<string>(index);
+        }
+
         /// <summary>
         /// Gets the name of the item by.
         /// </summary>
@@ -294,7 +309,6 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
         protected BaseItem GetItemByName(string name, string type, ILibraryManager libraryManager)
         {
             BaseItem item;

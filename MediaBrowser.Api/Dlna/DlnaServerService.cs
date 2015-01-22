@@ -120,8 +120,7 @@ namespace MediaBrowser.Api.Dlna
 
         private async Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = pathInfo.GetArgumentValue<string>(2);
+            var id = GetPathValue(2);
 
             using (var reader = new StreamReader(requestStream))
             {

@@ -224,8 +224,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = pathInfo.GetArgumentValue<string>(1);
+            var id = GetPathValue(1);
 
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, id));
 

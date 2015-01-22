@@ -65,6 +65,39 @@ $.fn.taskButton = function (options) {
         }
     }
 
+    function onScheduledTaskMessageConfirmed(instance, id) {
+        ApiClient.startScheduledTask(id).done(function () {
+
+            pollTasks(instance);
+        });
+    }
+
+    function onButtonClick(instance, id) {
+
+        var key = 'scheduledTaskButton' + options.taskKey;
+        var expectedValue = '4';
+
+        if (store.getItem(key) == expectedValue) {
+            onScheduledTaskMessageConfirmed(instance, id);
+        } else {
+
+            var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
+            msg += '<br/>';
+            msg += '<br/>';
+            msg += '<a href="scheduledtasks.html">' + Globalize.translate('ButtonScheduledTasks') + '</a>';
+
+            Dashboard.confirm(msg, Globalize.translate('HeaderConfirmation'), function (result) {
+
+                if (result) {
+
+                    store.setItem(key, expectedValue);
+                    onScheduledTaskMessageConfirmed(instance, id);
+                }
+            });
+
+        }
+    }
+
     var self = this;
 
     if (options.panel) {
@@ -73,24 +106,21 @@ $.fn.taskButton = function (options) {
 
     if (options.mode == 'off') {
 
+        this.off(".taskbutton");
+        $(ApiClient).off(".taskbutton");
+
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
 
-        $(ApiClient).off(".taskbutton");
-
     } else {
 
-        this.on('click', function () {
+        this.on('click.taskbutton', function () {
 
             var button = this;
             var id = button.getAttribute('data-taskid');
 
-            ApiClient.startScheduledTask(id).done(function () {
-
-                pollTasks(self);
-            });
-
+            onButtonClick(self, id);
         });
 
         pollTasks(self);

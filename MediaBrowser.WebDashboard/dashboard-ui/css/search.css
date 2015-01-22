@@ -163,9 +163,10 @@
 .viewMenuSearch {
     position: absolute;
     top: 0;
-    left: 35%;
-    right: 35%;
+    left: 40%;
+    right: 40%;
     display: none;
+    padding-right: 55px;
 }
 
 @media all and (min-width: 800px) {
@@ -176,6 +177,14 @@
 
     .headerSearchButton {
         display: none;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .viewMenuSearch {
+        left: 42%;
+        right: 42%;
     }
 }
 

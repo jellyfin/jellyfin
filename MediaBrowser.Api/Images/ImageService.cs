@@ -396,8 +396,7 @@ namespace MediaBrowser.Api.Images
 
         public object Get(GetItemByNameImage request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var type = pathInfo.GetArgumentValue<string>(0);
+            var type = GetPathValue(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
@@ -406,8 +405,7 @@ namespace MediaBrowser.Api.Images
 
         public object Head(GetItemByNameImage request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var type = pathInfo.GetArgumentValue<string>(0);
+            var type = GetPathValue(0);
 
             var item = GetItemByName(request.Name, type, _libraryManager);
 
@@ -420,10 +418,9 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostUserImage request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = new Guid(pathInfo.GetArgumentValue<string>(1));
+            var id = new Guid(GetPathValue(1));
 
-            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
             var item = _userManager.GetUserById(id);
 
@@ -438,10 +435,9 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostItemImage request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = new Guid(pathInfo.GetArgumentValue<string>(1));
+            var id = new Guid(GetPathValue(1));
 
-            request.Type = (ImageType)Enum.Parse(typeof(ImageType), pathInfo.GetArgumentValue<string>(3), true);
+            request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
             var item = _libraryManager.GetItemById(id);
 
