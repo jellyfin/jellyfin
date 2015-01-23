@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "sync13.db");
+            var dbFile = Path.Combine(_appPaths.DataPath, "sync14.db");
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
-                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT)",
+                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT)",
                                 "create index if not exists idx_SyncJobItems on SyncJobs(Id)",
 
                                 //pragmas
@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobCommand.Parameters.Add(_saveJobCommand, "@ItemCount");
 
             _saveJobItemCommand = _connection.CreateCommand();
-            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval)";
+            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval, @JobItemIndex)";
 
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Id");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@ItemId");
@@ -111,10 +111,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@AdditionalFiles");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@MediaSource");
             _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@IsMarkedForRemoval");
+            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@JobItemIndex");
         }
 
         private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
-        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval from SyncJobItems";
+        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex from SyncJobItems";
 
         public SyncJob GetJob(string id)
         {
@@ -496,7 +497,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var startIndex = query.StartIndex ?? 0;
                 if (startIndex > 0)
                 {
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobItems ORDER BY DateCreated LIMIT {0})",
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobItems ORDER BY JobItemIndex, DateCreated LIMIT {0})",
                         startIndex.ToString(_usCulture)));
                 }
 
@@ -505,7 +506,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
                 }
 
-                cmd.CommandText += " ORDER BY DateCreated";
+                cmd.CommandText += " ORDER BY JobItemIndex, DateCreated";
 
                 if (query.Limit.HasValue)
                 {
@@ -574,6 +575,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 _saveJobItemCommand.GetParameter(index++).Value = _json.SerializeToString(jobItem.AdditionalFiles);
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.MediaSource == null ? null : _json.SerializeToString(jobItem.MediaSource);
                 _saveJobItemCommand.GetParameter(index++).Value = jobItem.IsMarkedForRemoval;
+                _saveJobItemCommand.GetParameter(index++).Value = jobItem.JobItemIndex;
 
                 _saveJobItemCommand.Transaction = transaction;
 
@@ -648,7 +650,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             info.TargetId = reader.GetString(8);
 
-            info.DateCreated = reader.GetDateTime(9);
+            info.DateCreated = reader.GetDateTime(9).ToUniversalTime();
 
             if (!reader.IsDBNull(10))
             {
@@ -676,7 +678,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             info.IsMarkedForRemoval = reader.GetBoolean(13);
-            
+            info.JobItemIndex = reader.GetInt32(14);
+          
             return info;
         }
 

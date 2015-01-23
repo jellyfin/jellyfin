@@ -15,7 +15,7 @@ using TagLib.IFD.Tags;
 
 namespace MediaBrowser.Providers.Photos
 {
-    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor
+    public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
     {
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;

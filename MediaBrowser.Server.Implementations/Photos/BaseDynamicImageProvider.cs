@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor
+    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider
         where T : IHasImages
     {
         protected IFileSystem FileSystem { get; private set; }

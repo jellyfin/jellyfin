@@ -796,35 +796,35 @@ namespace MediaBrowser.Server.Startup.Common
 
         private string GetCertificatePath(bool generateCertificate)
         {
-            if (string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
+            if (!string.IsNullOrWhiteSpace(ServerConfigurationManager.Configuration.CertificatePath))
             {
-                // Generate self-signed cert
-                var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-                var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
-
-                if (generateCertificate)
-                {
-                    if (!File.Exists(certPath))
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(certPath));
-
-                        try
-                        {
-                            NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Error creating ssl cert", ex);
-                            return null;
-                        }
-                    }
-                }
-
-                return certPath;
+                // Custom cert
+                return ServerConfigurationManager.Configuration.CertificatePath;
             }
 
-            // Custom cert
-            return ServerConfigurationManager.Configuration.CertificatePath;
+            // Generate self-signed cert
+            var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
+            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
+
+            if (generateCertificate)
+            {
+                if (!File.Exists(certPath))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(certPath));
+
+                    try
+                    {
+                        NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error creating ssl cert", ex);
+                        return null;
+                    }
+                }
+            }
+
+            return certPath;
         }
 
         /// <summary>
