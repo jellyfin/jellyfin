@@ -272,7 +272,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             return new PlaybackStartInfo
             {
-                ItemId = info.Item.Id.ToString(),
+                ItemId = info.ItemId,
                 SessionId = _session.Id,
                 PositionTicks = ticks,
                 IsMuted = _device.IsMuted,
