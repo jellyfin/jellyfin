@@ -27,11 +27,9 @@
             // Scroll back up so they can see the results from the beginning
             $(document).scrollTop(0);
 
-            var html = '';
-
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
+            var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "backdrop",
                 context: 'games',
@@ -41,31 +39,7 @@
 
             });
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount
-            });
-
-            html += pagingHtml;
-
-            $('#items', page).html(html).trigger('create').createCardMenus();
-
-            $('.btnNextPage', page).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(page);
-            });
-
-            $('.btnPreviousPage', page).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
-                reloadItems(page);
-            });
+            $('#items', page).html(html).lazyChildren();
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 

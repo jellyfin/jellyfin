@@ -57,18 +57,17 @@
                 $('.noNextUpItems', page).show();
             }
 
-            var html = LibraryBrowser.getPosterViewHtml({
+            $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "homePageBackdrop",
+                shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                overlayText: false,
                 context: context,
-                lazy: true
+                lazy: true,
+                preferThumb: true
 
-            });
-
-            $('#nextUpItems', page).html(html).trigger('create').createCardMenus();
+            })).lazyChildren();
 
         });
     }
@@ -103,14 +102,14 @@
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "homePageBackdrop",
+                shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
                 lazy: true,
                 context: 'tv'
 
-            })).trigger('create').createCardMenus();
+            })).lazyChildren();
 
         });
     }

@@ -90,6 +90,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                     continue;
                 }
 
+                var index = jobItems.Count == 0 ? 
+                    0 :
+                    (jobItems.Select(i => i.JobItemIndex).Max() + 1);
+
                 jobItem = new SyncJobItem
                 {
                     Id = Guid.NewGuid().ToString("N"),
@@ -97,7 +101,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     ItemName = GetSyncJobItemName(item),
                     JobId = job.Id,
                     TargetId = job.TargetId,
-                    DateCreated = DateTime.UtcNow
+                    DateCreated = DateTime.UtcNow,
+                    JobItemIndex = index
                 };
 
                 await _syncRepo.Create(jobItem).ConfigureAwait(false);

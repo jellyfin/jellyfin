@@ -30,7 +30,7 @@
                 preferThumb: true
             });
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $('#items', page).html(html).lazyChildren();
 
             LibraryBrowser.saveQueryValues('channels', query);
 

@@ -489,7 +489,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $('#items', page).html(html).lazyChildren();
 
             $('.btnNextPage', page).on('click', function () {
 

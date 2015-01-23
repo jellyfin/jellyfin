@@ -23,7 +23,7 @@
 
             $('#latestEpisodes', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
-                shape: "homePageBackdrop",
+                shape: "backdrop",
                 preferThumb: true,
                 inheritThumb: false,
                 showParentTitle: false,
@@ -32,7 +32,7 @@
                 overlayText: true,
                 lazy: true
 
-            })).trigger('create').createCardMenus();
+            })).lazyChildren();
 
         });
     });

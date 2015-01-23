@@ -41,18 +41,17 @@
                 ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
                 '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
                 additionalButtonsHtml: addiontalButtonsHtml
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (result.TotalRecordCount) {
 
@@ -63,19 +62,19 @@
                         context: 'movies',
                         sortBy: query.SortBy
                     });
+                    trigger = true;
                 }
                 else if (view == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'movies',
-                        showTitle: false,
+                        showTitle: true,
                         centerText: true,
                         lazy: true
                     });
                 }
 
-                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
 
             } else {
@@ -83,7 +82,11 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).lazyChildren();
+
+            if (trigger) {
+                $('.itemsContainer', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -314,13 +317,10 @@
 
         var page = this;
 
-        $('.itemsContainer', page).on('itemsrendered', function () {
+        // The button is created dynamically
+        $(page).on('click', '.btnNewCollection', function () {
 
-            $('.btnNewCollection', page).off('click.newcollectionpanel').on('click.newcollectionpanel', function () {
-
-                showNewCollectionPanel(page, []);
-            });
-
+            showNewCollectionPanel(page, []);
         });
 
         $('#selectCollectionToAddTo', page).on('change', function () {

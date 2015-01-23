@@ -30,7 +30,7 @@
         html += LibraryBrowser.getPosterViewHtml({
             items: recommendation.Items,
             lazy: true,
-            shape: 'homePagePortrait',
+            shape: 'portrait',
             overlayText: true
         });
         html += '</div>';
@@ -38,7 +38,13 @@
         return html;
     }
 
-    $(document).on('pagebeforeshow', "#moviesRecommendedPage", function () {
+    $(document).on('pageinit', "#moviesRecommendedPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+    }).on('pagebeforeshow', "#moviesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
 
@@ -72,12 +78,12 @@
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 preferBackdrop: true,
-                shape: 'homePageBackdrop',
+                shape: 'backdrop',
                 overlayText: true,
                 showTitle: true,
                 lazy: true
 
-            })).trigger('create').createCardMenus();
+            })).lazyChildren().trigger('create');
 
         });
 
@@ -103,7 +109,7 @@
             var html = recommendations.map(getRecommendationHtml).join('');
 
             $('.noItemsMessage', page).hide();
-            $('.recommendations', page).html(html).trigger('create').createCardMenus();
+            $('.recommendations', page).html(html).lazyChildren();
         });
 
     });

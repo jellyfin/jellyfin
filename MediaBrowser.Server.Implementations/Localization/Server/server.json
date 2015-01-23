@@ -55,6 +55,8 @@
     "HeaderAudio": "Audio",
     "HeaderVideo": "Video",
     "HeaderPaths": "Paths",
+    "LabelCustomCertificatePath": "Custom certificate path:",
+    "LabelCustomCertificatePathHelp": "Supply your own ssl certificate. If omitted, the server will create a self-signed certificate.",
     "TitleNotifications": "Notifications",
     "ButtonDonateWithPayPal": "Donate with PayPal",
     "OptionDetectArchiveFilesAsMedia": "Detect archive files as media",

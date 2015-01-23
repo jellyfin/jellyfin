@@ -96,6 +96,11 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value><c>true</c> if this instance is marked for removal; otherwise, <c>false</c>.</value>
         public bool IsMarkedForRemoval { get; set; }
+        /// <summary>
+        /// Gets or sets the index of the job item.
+        /// </summary>
+        /// <value>The index of the job item.</value>
+        public int JobItemIndex { get; set; }
 
         public SyncJobItem()
         {

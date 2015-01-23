@@ -27,15 +27,13 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
 
@@ -46,8 +44,6 @@
                 showTitle: true,
                 centerText: true
             });
-
-            html += pagingHtml;
 
             $('#items', page).html(html).trigger('create');
 

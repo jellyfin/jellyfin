@@ -10,6 +10,7 @@
         $('#txtHttpsPort', page).val(config.HttpsPortNumber);
 
         $('#txtDdns', page).val(config.WanDdns || '');
+        $('#txtCertificatePath', page).val(config.CertificatePath || '');
 
         $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
 
@@ -31,6 +32,27 @@
     }).on('pageinit', "#dashboardHostingPage", function () {
 
         var page = this;
+
+        $('#btnSelectCertPath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                includeFiles: true,
+                includeDirectories: true,
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtCertificatePath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: Globalize.translate('HeaderSelectCertificatePath')
+            });
+        });
     });
 
     window.DashboardHostingPage = {
@@ -49,6 +71,7 @@
                 config.HttpsPortNumber = $('#txtHttpsPort', form).val();
                 config.EnableUPnP = $('#chkEnableUpnp', form).checked();
                 config.WanDdns = $('#txtDdns', form).val();
+                config.CertificatePath = $('#txtCertificatePath', form).val();
 
                 ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
             });

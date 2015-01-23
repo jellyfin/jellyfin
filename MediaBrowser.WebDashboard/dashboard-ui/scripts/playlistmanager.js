@@ -156,31 +156,6 @@
         });
     }
 
-    //$(document).on('pageinit', ".playlistEditorPage", function () {
-
-    //    var page = this;
-
-    //    $('.itemsContainer', page).on('itemsrendered', function () {
-
-    //        $('.btnNewPlaylist', page).off('click.newplaylistpanel').on('click.newplaylistpanel', function () {
-
-    //            showNewPlaylistPanel(page, []);
-    //        });
-
-    //    });
-
-    //    $('#selectPlaylistToAddTo', page).on('change', function () {
-
-    //        if (this.value) {
-    //            $('.newPlaylistInfo', page).hide();
-    //            $('#txtNewPlaylistName', page).removeAttr('required');
-    //        } else {
-    //            $('.newPlaylistInfo', page).show();
-    //            $('#txtNewPlaylistName', page).attr('required', 'required');
-    //        }
-    //    });
-    //});
-
     function createPlaylist(panel) {
 
         var url = ApiClient.getUrl("Playlists", {

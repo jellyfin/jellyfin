@@ -37,7 +37,7 @@
 
         if (user.imageUrl) {
 
-            var userButtonHeight = 24;
+            var userButtonHeight = 26;
 
             var url = user.imageUrl;
 

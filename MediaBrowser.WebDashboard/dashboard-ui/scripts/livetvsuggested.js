@@ -19,11 +19,12 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
-                coverImage: true
+                coverImage: true,
+                lazy: true
 
             });
 
-            $('.activeProgramItems', page).html(html).createCardMenus();
+            $('.activeProgramItems', page).html(html).lazyChildren();
         });
 
         ApiClient.getLiveTvRecommendedPrograms({
@@ -42,11 +43,12 @@
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
-                coverImage: true
+                coverImage: true,
+                lazy: true
 
             });
 
-            $('.upcomingProgramItems', page).html(html).createCardMenus();
+            $('.upcomingProgramItems', page).html(html).lazyChildren();
         });
     }
 

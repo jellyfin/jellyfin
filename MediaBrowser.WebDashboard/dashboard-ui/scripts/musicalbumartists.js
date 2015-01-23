@@ -32,7 +32,7 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
@@ -40,11 +40,10 @@
                 showLimit: false,
                 addSelectionButton: true,
                 pageSizeKey: pageSizeKey
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (view == "List") {
 
@@ -53,6 +52,7 @@
                     context: 'music',
                     sortBy: query.SortBy
                 });
+                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -77,12 +77,13 @@
                     cardLayout: true,
                     showSongCount: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
 
-            html += pagingHtml;
+            $('#items', page).html(html).lazyChildren();
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                $('#items', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

@@ -33,18 +33,17 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
                 addSelectionButton: true
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls();
+            var trigger = false;
 
             if (view == "List") {
 
@@ -53,6 +52,7 @@
                     context: 'tv',
                     sortBy: query.SortBy
                 });
+                trigger = true;
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterViewHtml({
@@ -77,9 +77,11 @@
                 });
             }
 
-            html += pagingHtml;
+            $('.itemsContainer', page).html(html).lazyChildren();
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                $('.itemsContainer', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

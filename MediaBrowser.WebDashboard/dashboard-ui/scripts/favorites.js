@@ -3,9 +3,9 @@
     function getSections() {
 
         return [
-            { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'homePageBackdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'homePageBackdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'homePageBackdrop', preferThumb: false, showTitle: true, showParentTitle: true },
+            { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
             { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
             { name: Globalize.translate('HeaderFavoriteAlbums'), types: "MusicAlbum", id: "favoriteAlbums", shape: 'square', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true }
         ];
@@ -52,7 +52,7 @@
                 });
 
                 if (result.TotalRecordCount > result.Items.length) {
-                    html += '<div style="padding: 0 0 0 .5em;">';
+                    html += '<div class="itemsContainer">';
 
                     var href = "favorites.html?sectionid=" + section.id;
 
@@ -62,7 +62,8 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            elem = $(elem).html(html).lazyChildren();
+            elem.createCardMenus();
         });
     }
 

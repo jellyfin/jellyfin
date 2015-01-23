@@ -138,7 +138,7 @@
             overlayText: true,
             coverImage: true
 
-        })).createCardMenus();
+        }));
     }
 
     function renderSchedule(page, result) {

@@ -31,18 +31,17 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
                 addSelectionButton: true
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -53,7 +52,6 @@
                     showParentTitle: true,
                     lazy: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "PosterCard") {
 
@@ -67,7 +65,6 @@
                     lazy: true,
                     cardLayout: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "List") {
 
@@ -76,7 +73,7 @@
                     context: 'music',
                     sortBy: query.SortBy
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+                trigger = true;
             }
             else if (view == "Timeline") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -88,12 +85,13 @@
                     timeline: true,
                     lazy: true
                 });
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
-            html += pagingHtml;
+            $('#items', page).html(html).lazyChildren();
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                $('#items', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -270,6 +268,24 @@
     }).on('pageshow', "#musicAlbumsPage", function () {
 
         updateFilterControls(this);
+
+        var updateScheduled = false;
+        function onscreen() {
+            var viewportBottom = $(window).scrollTop() + $(window).height();
+            return ($(document).height() - viewportBottom) < 100;
+        }
+        $(window).on('scroll', function () {
+            console.log('load');
+            if (!updateScheduled) {
+                setTimeout(function () {
+                    if (onscreen()) {
+                        console.log('load');
+                    }
+                    updateScheduled = false;
+                }, 500);
+                updateScheduled = true;
+            }
+        });
     });
 
 })(jQuery, document);

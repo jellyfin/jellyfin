@@ -172,6 +172,8 @@
 
         var elem = $('.syncActivity', page).html(html).trigger('create');
 
+        $(".lazy", elem).unveil(200);
+
         $('.btnJobMenu', elem).on('click', function () {
             showJobMenu(this);
         });

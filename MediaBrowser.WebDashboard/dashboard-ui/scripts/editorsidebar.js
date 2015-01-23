@@ -257,7 +257,8 @@
         var elem = $('#' + id, page)[0];
 
         if (elem) {
-            elem.scrollIntoView();
+            // commenting out for now because it's causing the whole window to scroll in chrome
+            //elem.scrollIntoView();
         }
     }
 

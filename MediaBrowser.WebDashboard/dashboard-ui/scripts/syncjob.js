@@ -10,6 +10,10 @@
         html += '</p>';
 
         html += '<p>';
+        html += Globalize.translate('ValueDateCreated', parseISO8601Date(job.DateCreated, { toLocal: true }).toLocaleString());
+        html += '</p>';
+
+        html += '<p>';
         html += '<label for="txtTargetName">' + Globalize.translate('LabelSyncTo') + '</label>';
         html += '<input id="txtTargetName" type="text" readonly="readonly" />';
         html += '</p>';
@@ -141,6 +145,8 @@
         html += '</ul>';
 
         var elem = $('.jobItems', page).html(html).trigger('create');
+
+        $(".lazy", elem).unveil(200);
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);

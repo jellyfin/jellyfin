@@ -163,7 +163,10 @@ namespace MediaBrowser.Server.Implementations.TV
                 return new Tuple<Episode, DateTime>(nextUp, lastWatchedDate);
             }
 
-            return new Tuple<Episode, DateTime>(null, lastWatchedDate);
+            var firstEpisode = allEpisodes.LastOrDefault(i => i.LocationType != LocationType.Virtual && !i.IsPlayed(user));
+
+            // Return the first episode
+            return new Tuple<Episode, DateTime>(firstEpisode, DateTime.MinValue);
         }
 
         private IEnumerable<Series> FilterSeries(NextUpQuery request, IEnumerable<Series> items)

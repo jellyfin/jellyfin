@@ -2,12 +2,6 @@
 
     var pageSizeKey = 'pagesize_v4';
 
-    $(function () {
-        $("body").on("create", function () {
-            $(".lazy").unveil(200);
-        });
-    });
-
     var defaultBackground = "#333";
 
     return {
@@ -764,15 +758,15 @@
                 }
 
                 if (imgUrl) {
-
+                    var minLazyIndex = 16;
                     if (options.smallIcon) {
-                        if (index < 10) {
+                        if (index < minLazyIndex) {
                             html += '<div class="listviewIcon ui-li-icon" style="background-image:url(\'' + imgUrl + '\');"></div>';
                         } else {
                             html += '<div class="listviewIcon ui-li-icon lazy" data-src="' + imgUrl + '"></div>';
                         }
                     } else {
-                        if (index < 10) {
+                        if (index < minLazyIndex) {
                             html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
                         } else {
                             html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
@@ -836,7 +830,8 @@
                 }
                 html += '</a>';
 
-                html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton">';
+                // Render out the jqm classes so that we don't have to call trigger create
+                html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline">';
                 html += '</a>';
 
                 html += '</li>';
@@ -946,7 +941,7 @@
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
 
                 if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
-                    options.shape = options.shape == 'auto' ? 'backdrop' : 'homePageBackdrop';
+                    options.shape = options.shape == 'auto' ? 'backdrop' : 'backdrop';
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
                     options.coverImage = true;
                     options.shape = 'square';
@@ -957,9 +952,9 @@
                     options.shape = 'banner';
                     options.coverImage = true;
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
-                    options.shape = options.shape == 'auto' ? 'portrait' : 'homePagePortrait';
+                    options.shape = options.shape == 'auto' ? 'portrait' : 'portrait';
                 } else {
-                    options.shape = options.defaultShape || (options.shape == 'auto' ? 'portrait' : 'homePagePortrait');
+                    options.shape = options.defaultShape || (options.shape == 'auto' ? 'portrait' : 'portrait');
                 }
             }
 
@@ -1328,7 +1323,8 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardText" style="text-align:right; float:right;">';
-                html += '<button class="listviewMenuButton" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
+                // Render out the jqm classes so that we don't have to call trigger create
+                html += '<button class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline ui-shadow ui-corner-all" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
                 html += "</div>";
             }
 

@@ -53,6 +53,14 @@
                             <input type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" />
                             <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
                         </li>
+                        <li>
+                            <label for="txtCertificatePath">${LabelCustomCertificatePath}</label>
+                            <div style="display: inline-block; width: 92%;">
+                                <input type="text" id="txtCertificatePath" required="required" />
+                            </div>
+                            <button id="btnSelectCertPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
+                        </li>
                     </ul>
 
                     <ul data-role="listview" class="ulForm">

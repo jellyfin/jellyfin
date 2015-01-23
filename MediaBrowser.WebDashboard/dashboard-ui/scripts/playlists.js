@@ -44,17 +44,16 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (result.TotalRecordCount) {
 
@@ -65,6 +64,7 @@
                         context: 'playlists',
                         sortBy: query.SortBy
                     });
+                    trigger = true;
                 }
                 else if (view == "PosterCard") {
                     html = LibraryBrowser.getPosterViewHtml({
@@ -79,7 +79,6 @@
                     });
                 }
 
-                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
 
             } else {
@@ -87,7 +86,11 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).lazyChildren();
+
+            if (trigger) {
+                $('.itemsContainer', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

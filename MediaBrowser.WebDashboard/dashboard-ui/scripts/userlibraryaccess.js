@@ -14,7 +14,13 @@
 
             var id = 'mediaFolder' + i;
 
-            var checkedAttribute = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1 ? ' checked="checked"' : '';
+            var isChecked;
+            if (user.Policy.BlockedMediaFolders != null) {
+                isChecked = user.Policy.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Policy.BlockedMediaFolders.indexOf(folder.Name) == -1;
+            } else {
+                isChecked = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1;
+            }
+            var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
             html += '<input class="chkFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
@@ -41,7 +47,13 @@
 
             var id = 'channels' + i;
 
-            var checkedAttribute = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1 ? ' checked="checked"' : '';
+            var isChecked;
+            if (user.Policy.BlockedChannels != null) {
+                isChecked = user.Policy.BlockedChannels.indexOf(folder.Id) == -1;
+            } else {
+                isChecked = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1;
+            }
+            var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
             html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';

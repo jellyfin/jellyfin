@@ -113,23 +113,15 @@
 
 @media all and (min-width: 600px) {
 
-    .itemsContainer:not(.fullWidthItemsContainer):not(.smallItemsContainer) {
+    .paddedItemsContainer {
         padding: 0 .8em;
-        margin-right: 10px;
     }
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 90%;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .ehsContent {
-        width: 92%;
+        width: 94%;
     }
 }
 
@@ -923,12 +915,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .itemsContainer {
-    text-align: center;
     margin: 0 auto;
-}
-
-.timelineItemsContainer {
-    text-align: left;
 }
 
 .alphabetPicker {
@@ -999,7 +986,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 20px;
+        margin-right: 25px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .itemsContainerWithAlphaPicker {
+        margin-right: 10px;
     }
 }
 

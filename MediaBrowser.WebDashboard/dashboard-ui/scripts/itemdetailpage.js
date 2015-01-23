@@ -642,7 +642,7 @@
                 overlayText: item.Type != "MusicAlbum"
             });
 
-            $('#similarContent', page).html(html).createCardMenus();
+            $('#similarContent', page).html(html).lazyChildren();
         });
     }
 
@@ -761,6 +761,7 @@
         promise.done(function (result) {
 
             var html = '';
+            var trigger = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -773,6 +774,7 @@
                     playFromHere: true,
                     defaultAction: 'playallfromhere'
                 });
+                trigger = true;
 
             }
             else if (item.Type == "Series") {
@@ -805,7 +807,11 @@
                 });
             }
 
-            $('.childrenItemsContainer', page).html(html).trigger('create').createCardMenus();
+            var elem = $('.childrenItemsContainer', page).html(html).lazyChildren();
+
+            if (trigger) {
+                elem.trigger('create');
+            }
 
             if (item.Type == "BoxSet") {
 

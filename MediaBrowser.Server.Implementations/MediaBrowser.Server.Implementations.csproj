@@ -117,6 +117,7 @@
     <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\ManualCollectionsFolder.cs" />
+    <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Connect\ConnectData.cs" />
     <Compile Include="Connect\ConnectManager.cs" />

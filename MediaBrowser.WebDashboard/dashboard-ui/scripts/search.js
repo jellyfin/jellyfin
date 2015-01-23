@@ -311,11 +311,11 @@
         var html = LibraryBrowser.getPosterViewHtml({
             items: hints,
             shape: "square",
-            lazy: false,
+            lazy: true,
             overlayText: false,
             showTitle: true
         });
-        $('.itemsContainer', elem).html(html).trigger('create').createCardMenus();
+        $('.itemsContainer', elem).html(html).lazyChildren();
     }
 
     function requestSearchHintsForOverlay(elem, searchTerm) {
@@ -355,7 +355,20 @@
         var elem = $('.searchResultsOverlay');
 
         if (createIfNeeded && !elem.length) {
-            elem = $('<div class="searchResultsOverlay ui-page-theme-b"><div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>').appendTo(document.body).hide();
+
+            var html = '<div class="searchResultsOverlay ui-page-theme-b"><div style="text-align:right;padding: 1em 2em 0 0;"><button class="btnCloseSearch" data-icon="delete" data-mini="true" data-inline="true" style="margin:0;">Close</button></div>';
+
+            html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
+
+            elem = $(html).appendTo(document.body).hide().trigger('create');
+
+            elem.createCardMenus();
+
+            $('.btnCloseSearch', elem).on('click', function () {
+                $('.headerSearchInput').val('');
+                onHeaderSearchChange('');
+
+            });
         }
 
         return elem;
