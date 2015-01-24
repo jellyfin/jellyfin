@@ -169,7 +169,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var parent = FindParent<MusicAlbum>();
 
@@ -186,7 +186,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 }
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

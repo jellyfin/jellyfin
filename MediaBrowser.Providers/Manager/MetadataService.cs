@@ -437,8 +437,7 @@ namespace MediaBrowser.Providers.Manager
                 localProviders.Count == 0 &&
                 refreshResult.UpdateType > ItemUpdateType.None)
             {
-                // TODO: If the new metadata from above has some blank data, this
-                // can cause old data to get filled into those empty fields
+                // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
                 MergeData(item, temp, new List<MetadataFields>(), false, true);
             }
 

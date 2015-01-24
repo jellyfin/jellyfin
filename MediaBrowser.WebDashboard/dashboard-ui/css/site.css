@@ -1047,7 +1047,7 @@ h1 + .accentButton {
     margin: 1em 0;
 }
 
-@media all and (min-width: 1200px) {
+@media all and (min-width: 800px) {
 
     .supporterPromotion {
         position: absolute;

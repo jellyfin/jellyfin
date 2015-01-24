@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return ExternalId;
         }

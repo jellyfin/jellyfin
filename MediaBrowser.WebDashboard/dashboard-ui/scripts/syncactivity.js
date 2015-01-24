@@ -246,6 +246,15 @@
 
         var page = this;
 
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('.syncPromotion', page).hide();
+            } else {
+                $('.syncPromotion', page).show();
+            }
+        });
+
         reloadData(page);
 
         // on here

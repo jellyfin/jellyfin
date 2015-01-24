@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
 
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
                 return key;
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return "Studio-" + Name;
         }

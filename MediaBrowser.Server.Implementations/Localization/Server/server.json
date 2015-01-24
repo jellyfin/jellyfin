@@ -55,6 +55,8 @@
     "HeaderAudio": "Audio",
     "HeaderVideo": "Video",
     "HeaderPaths": "Paths",
+    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
+    "HeaderEnjoyDayTrial": "Enjoy a 14 Day Free Trial",
     "LabelSyncTempPath": "Temporary file path:",
     "LabelSyncTempPathHelp": "Specify a custom sync working folder. Converted media created during the sync process will be stored here.",
     "LabelCustomCertificatePath": "Custom certificate path:",

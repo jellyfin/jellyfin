@@ -232,12 +232,14 @@
         if (context == 'movies') {
             $('.collectionTabs', page).hide();
             $('.movieTabs', page).show();
+
+            // TODO: Improve in the future to limit scope
+            query.ParentId = null;
         } else {
             $('.collectionTabs', page).show();
             $('.movieTabs', page).hide();
+            query.ParentId = LibraryMenu.getTopParentId();
         }
-
-        //query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
 

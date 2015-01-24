@@ -29,13 +29,7 @@
         $('.channelDownloadingList', page).html(html).trigger('create');
     }
     
-    function loadPage(page, config, allChannelFeatures, supporterInfo) {
-
-        if (supporterInfo.IsMBSupporter) {
-            $('#txtDownloadSizeLimit', page).attr('max', '100');
-        } else {
-            $('#txtDownloadSizeLimit', page).attr('max', '.5');
-        }
+    function loadPage(page, config, allChannelFeatures) {
 
         if (allChannelFeatures.length) {
             $('.noChannelsHeader', page).hide();
@@ -92,15 +86,13 @@
 
         var promise1 = ApiClient.getNamedConfiguration("channels");
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
-        var promise3 = Dashboard.getPluginSecurityInfo();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2).done(function (response1, response2) {
 
             var config = response1[0];
             var allFeatures = response2[0];
-            var supporterInfo = response3;
 
-            loadPage(page, config, allFeatures, supporterInfo);
+            loadPage(page, config, allFeatures);
 
         });
 

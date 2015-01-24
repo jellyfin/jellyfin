@@ -807,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items, InternalItemsQuery query)
         {
-            return UserViewBuilder.SortAndFilter(items, this, null, query, LibraryManager, UserDataManager);
+            return UserViewBuilder.FilterAndSort(items, this, null, query, LibraryManager, UserDataManager);
         }
 
         /// <summary>

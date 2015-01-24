@@ -54,9 +54,6 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private static string GetComparableName(string name)
         {
-            // TODO: Improve this - should ignore spaces, periods, underscores, most likely all symbols and 
-            // possibly remove sorting words like "the", "and", etc.
-
             name = RemoveDiacritics(name);
 
             name = " " + name + " ";
