@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public List<string> MultiPartGameFiles { get; set; }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var id = this.GetProviderId(MetadataProviders.Gamesdb);
 
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return "Game-Gamesdb-" + id;
             }
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         public override IEnumerable<string> GetDeletePaths()

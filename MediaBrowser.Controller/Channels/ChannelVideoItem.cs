@@ -28,8 +28,8 @@ namespace MediaBrowser.Controller.Channels
         public string OriginalImageUrl { get; set; }
 
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
-        
-        public override string GetUserDataKey()
+
+        protected override string CreateUserDataKey()
         {
             if (ContentType == ChannelMediaContentType.MovieExtra)
             {

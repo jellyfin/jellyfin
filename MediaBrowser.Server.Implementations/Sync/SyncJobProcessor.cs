@@ -90,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     continue;
                 }
 
-                var index = jobItems.Count == 0 ? 
+                var index = jobItems.Count == 0 ?
                     0 :
                     (jobItems.Select(i => i.JobItemIndex).Max() + 1);
 
@@ -348,10 +348,20 @@ namespace MediaBrowser.Server.Implementations.Sync
         private void CleanDeadSyncFiles()
         {
             // TODO
+            // Clean files in sync temp folder that are not linked to any sync jobs
         }
 
         public async Task SyncJobItems(SyncJobItem[] items, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (items.Length > 0)
+            {
+                if (!SyncRegistrationInfo.Instance.IsRegistered)
+                {
+                    _logger.Debug("Cancelling sync job processing. Please obtain a supporter membership.");
+                    return;
+                }
+            }
+
             var numComplete = 0;
 
             foreach (var item in items)

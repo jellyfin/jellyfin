@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             if (Series != null)
             {
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return Series.GetUserDataKey() + seasonNo.ToString("000");
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         /// <summary>

@@ -359,7 +359,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(ForcedSortName))
+                if (!string.IsNullOrWhiteSpace(ForcedSortName))
                 {
                     return ForcedSortName;
                 }
@@ -887,11 +887,22 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        private string _userDataKey;
         /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public virtual string GetUserDataKey()
+        public string GetUserDataKey()
+        {
+            if (!string.IsNullOrWhiteSpace(_userDataKey))
+            {
+                return _userDataKey;
+            }
+
+            return _userDataKey ?? (_userDataKey = CreateUserDataKey());
+        }
+
+        protected virtual string CreateUserDataKey()
         {
             return Id.ToString();
         }
@@ -1701,6 +1712,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
+            _userDataKey = null;
+            _sortName = null;
+
             var hasChanges = false;
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))

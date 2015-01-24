@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return "MusicGenre-" + Name;
         }

@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -412,7 +413,19 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.Recursive)
             {
-                return GetResult(GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }).Where(i => i is Movie || i is BoxSet), parent, query);
+                var recursiveItems = GetRecursiveChildren(parent, user,
+                    new[] {CollectionType.Movies, CollectionType.BoxSets, string.Empty})
+                    .Where(i => i is Movie || i is BoxSet);
+
+                //var collections = _collectionManager.CollapseItemsWithinBoxSets(recursiveItems, user).ToList();
+
+                //if (collections.Count > 0)
+                //{
+                //    recursiveItems.AddRange(_collectionManager.CollapseItemsWithinBoxSets(recursiveItems, user));
+                //    recursiveItems = recursiveItems.DistinctBy(i => i.Id).ToList();
+                //}
+
+                return GetResult(recursiveItems, parent, query);
             }
 
             var list = new List<BaseItem>();
@@ -744,10 +757,10 @@ namespace MediaBrowser.Controller.Entities
             InternalItemsQuery query)
             where T : BaseItem
         {
-            return SortAndFilter(items, queryParent, totalRecordLimit, query, _libraryManager, _userDataManager);
+            return FilterAndSort(items, queryParent, totalRecordLimit, query, _libraryManager, _userDataManager);
         }
 
-        public static QueryResult<BaseItem> SortAndFilter(IEnumerable<BaseItem> items,
+        public static QueryResult<BaseItem> FilterAndSort(IEnumerable<BaseItem> items,
             BaseItem queryParent,
             int? totalRecordLimit,
             InternalItemsQuery query,

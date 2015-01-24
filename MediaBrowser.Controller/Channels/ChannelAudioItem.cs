@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Channels
             return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
         }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return ExternalId;
         }

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Collections
@@ -14,7 +15,8 @@ namespace MediaBrowser.Server.Implementations.Collections
         public override bool IsVisible(User user)
         {
             return base.IsVisible(user) && GetChildren(user, false)
-                .Any();
+                .OfType<BoxSet>()
+                .Any(i => i.IsVisible(user));
         }
 
         public override bool IsHidden

@@ -88,24 +88,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(CollectionType.Games, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (user.Configuration.DisplayCollectionsView)
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase)))
             {
-                bool showCollectionView;
-                if (_config.Configuration.EnableLegacyCollections)
-                {
-                    showCollectionView = folders
-                        .Except(standaloneFolders)
-                        .SelectMany(i => i.GetRecursiveChildren(user, false)).OfType<BoxSet>().Any();
-                }
-                else
-                {
-                    showCollectionView = _collectionManager.GetCollections(user).Any();
-                }
-
-                if (showCollectionView)
-                {
-                    list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
-                }
+                //list.Add(_collectionManager.GetCollectionsFolder(user.Id.ToString("N")));
+                list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase)))
