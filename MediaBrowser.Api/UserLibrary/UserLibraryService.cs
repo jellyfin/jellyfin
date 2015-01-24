@@ -371,7 +371,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            var options = request.GetDtoOptions();
+            var options = GetDtoOptions(request);
 
             var dtos = list.Select(i =>
             {
@@ -420,7 +420,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
@@ -447,7 +447,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the child tree
             if (series != null)
             {
-                var dtoOptions = new DtoOptions();
+                var dtoOptions = GetDtoOptions(request);
 
                 // Avoid implicitly captured closure
                 var currentUser = user;
@@ -479,7 +479,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the db
             if (movie != null)
             {
-                var dtoOptions = new DtoOptions();
+                var dtoOptions = GetDtoOptions(request);
 
                 var dtos = movie.SpecialFeatureIds
                     .Select(_libraryManager.GetItemById)
@@ -518,7 +518,7 @@ namespace MediaBrowser.Api.UserLibrary
                 trailerIds = hasTrailers.GetTrailerIds();
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = trailerIds
                 .Select(_libraryManager.GetItemById)
@@ -539,7 +539,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
@@ -557,7 +557,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = user.RootFolder;
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
@@ -577,7 +577,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();

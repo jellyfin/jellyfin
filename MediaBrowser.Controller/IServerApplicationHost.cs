@@ -55,9 +55,15 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets the HTTP server ip addresses.
+        /// Gets the local ip address.
         /// </summary>
-        /// <value>The HTTP server ip addresses.</value>
-        IEnumerable<string> HttpServerIpAddresses { get; }
+        /// <value>The local ip address.</value>
+        string LocalIpAddress { get; }
+
+        /// <summary>
+        /// Gets the local API URL.
+        /// </summary>
+        /// <value>The local API URL.</value>
+        string LocalApiUrl { get; }
     }
 }

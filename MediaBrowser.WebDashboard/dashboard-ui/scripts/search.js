@@ -313,7 +313,8 @@
             shape: "square",
             lazy: true,
             overlayText: false,
-            showTitle: true
+            showTitle: true,
+            centerText: true
         });
         $('.itemsContainer', elem).html(html).lazyChildren();
     }
@@ -410,10 +411,12 @@
 
         });
 
-        $('.btnCloseSearch').on('click', function () {
-            $('.headerSearchInput').val('');
-            onHeaderSearchChange('');
-        });
+        $('.btnCloseSearch').on('click', closeSearchOverlay);
+    }
+
+    function closeSearchOverlay() {
+        $('.headerSearchInput').val('');
+        onHeaderSearchChange('');
     }
 
     $(document).on('pagehide', ".libraryPage", function () {
@@ -421,11 +424,7 @@
         $('#txtSearch', this).val('');
         $('#searchHints', this).empty();
 
-    }).on('pagecontainerbeforehide', function () {
-
-        $('.headerSearchInput').val('');
-        getSearchOverlay(false).hide();
-    });
+    }).on('pagecontainerbeforehide', closeSearchOverlay);
 
     $(document).on('headercreated', function () {
 

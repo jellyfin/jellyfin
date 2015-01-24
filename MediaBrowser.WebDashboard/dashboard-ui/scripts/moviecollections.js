@@ -477,8 +477,9 @@
 
         supportsAddingToCollection: function (item) {
 
+            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder'];
 
-            return item.LocationType == 'FileSystem';
+            return item.LocationType == 'FileSystem' && !item.CollectionType && invalidTypes.indexOf(item.Type) == -1;
         }
     };
 

@@ -68,5 +68,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;SyncJobItem&gt;.</returns>
         QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
+
+        /// <summary>
+        /// Gets the library item ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;System.String&gt;.</returns>
+        QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query);
     }
 }

@@ -50,7 +50,9 @@ namespace MediaBrowser.Api.Music
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarAlbums request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,

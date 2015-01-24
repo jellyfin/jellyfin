@@ -59,6 +59,14 @@
 }
 
 .btn-floating {
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    text-transform: uppercase;
+    border: none;
+    outline: 0;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 15px;
+
     display: inline-block;
     position: relative;
     z-index: 1;
@@ -88,12 +96,12 @@
         line-height: 37px;
     }
 
-    .btn-floating.btn-large {
+    .btn-floating.btn-floating-large {
         width: 55.5px;
         height: 55.5px;
     }
 
-        .btn-floating.btn-large i {
+        .btn-floating.btn-floating-large i {
             line-height: 55.5px;
         }
 
@@ -117,6 +125,10 @@
 }
 
     .btn-large i {
+        font-size: 1.6rem;
+    }
+
+    .btn-floating-large i {
         font-size: 1.6rem;
     }
 
@@ -167,7 +179,7 @@ button.btn:not(.btn-inline),button.btn-large:not(.btn-inline) {
     width: 100%;
 }
 
-.btn i, .btn-large i, .btn span, .btn-large span {
+.btn i, .btn-large i, .btn-floating-large i, .btn span, .btn-large span {
     vertical-align: middle;
 }
 

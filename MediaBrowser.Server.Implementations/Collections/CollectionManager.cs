@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,6 +38,14 @@ namespace MediaBrowser.Server.Implementations.Collections
         {
             return _libraryManager.RootFolder.Children.OfType<ManualCollectionsFolder>()
                 .FirstOrDefault();
+        }
+
+        public IEnumerable<BoxSet> GetCollections(User user)
+        {
+            var folder = GetCollectionsFolder(user.Id.ToString("N"));
+            return folder == null ?
+                new List<BoxSet>() :
+                folder.GetChildren(user, true).OfType<BoxSet>();
         }
 
         public async Task<BoxSet> CreateCollection(CollectionCreationOptions options)
@@ -269,7 +276,8 @@ namespace MediaBrowser.Server.Implementations.Collections
         public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
         {
             var results = new Dictionary<Guid, BaseItem>();
-            var allBoxsets = new List<BoxSet>();
+
+            var allBoxsets = GetCollections(user).ToList();
 
             foreach (var item in items)
             {

@@ -2,7 +2,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
 using System.Net;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Net
 {

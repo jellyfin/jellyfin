@@ -720,5 +720,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
+
+        public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
+        {
+            return _repo.GetLibraryItemIds(query);
+        }
     }
 }

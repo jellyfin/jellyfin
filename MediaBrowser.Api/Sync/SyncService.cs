@@ -235,10 +235,11 @@ namespace MediaBrowser.Api.Sync
                     }
                 };
 
-                var dtos = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                var items = request.ItemIds.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)
-                    .Where(i => i != null)
-                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions))
+                    .Where(i => i != null);
+
+                var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions)
                     .ToList();
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);

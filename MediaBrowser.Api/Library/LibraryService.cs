@@ -272,7 +272,7 @@ namespace MediaBrowser.Api.Library
                 items = items.Where(i => i.IsHidden == val).ToList();
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
             
             var result = new ItemsResult
             {
@@ -344,7 +344,7 @@ namespace MediaBrowser.Api.Library
 
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             BaseItem parent = item.Parent;
             
@@ -544,7 +544,7 @@ namespace MediaBrowser.Api.Library
                 ThemeSongsResult = themeSongs,
                 ThemeVideosResult = themeVideos,
 
-                SoundtrackSongsResult = GetSoundtrackSongs(request.Id, request.UserId, request.InheritFromParent)
+                SoundtrackSongsResult = GetSoundtrackSongs(request, request.Id, request.UserId, request.InheritFromParent)
             });
         }
 
@@ -597,7 +597,7 @@ namespace MediaBrowser.Api.Library
                 }
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = themeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
@@ -667,7 +667,7 @@ namespace MediaBrowser.Api.Library
                 }
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = themeVideoIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
@@ -732,17 +732,17 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedSerializedResultUsingCache(lookup);
         }
 
-        public ThemeMediaResult GetSoundtrackSongs(string id, Guid? userId, bool inheritFromParent)
+        public ThemeMediaResult GetSoundtrackSongs(GetThemeMedia request, string id, Guid? userId, bool inheritFromParent)
         {
             var user = userId.HasValue ? _userManager.GetUserById(userId.Value) : null;
 
             var item = string.IsNullOrEmpty(id)
                            ? (userId.HasValue
                                   ? user.RootFolder
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(id);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)

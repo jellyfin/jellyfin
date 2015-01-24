@@ -1,6 +1,6 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -23,24 +23,24 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IUserManager _userManager;
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IServerApplicationPaths _appPaths;
         private readonly IPlaylistManager _playlists;
+        private readonly ICollectionManager _collectionManager;
+        private readonly IServerConfigurationManager _config;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IFileSystem fileSystem, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerApplicationPaths appPaths, IPlaylistManager playlists)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IPlaylistManager playlists, ICollectionManager collectionManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
-            _fileSystem = fileSystem;
             _userManager = userManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
-            _appPaths = appPaths;
             _playlists = playlists;
+            _collectionManager = collectionManager;
+            _config = config;
         }
 
         public async Task<IEnumerable<Folder>> GetUserViews(UserViewQuery query, CancellationToken cancellationToken)
@@ -88,12 +88,24 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(CollectionType.Games, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (user.Configuration.DisplayCollectionsView &&
-                folders
-                .Except(standaloneFolders)
-                .SelectMany(i => i.GetRecursiveChildren(user, false)).OfType<BoxSet>().Any())
+            if (user.Configuration.DisplayCollectionsView)
             {
-                list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
+                bool showCollectionView;
+                if (_config.Configuration.EnableLegacyCollections)
+                {
+                    showCollectionView = folders
+                        .Except(standaloneFolders)
+                        .SelectMany(i => i.GetRecursiveChildren(user, false)).OfType<BoxSet>().Any();
+                }
+                else
+                {
+                    showCollectionView = _collectionManager.GetCollections(user).Any();
+                }
+
+                if (showCollectionView)
+                {
+                    list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
+                }
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase)))

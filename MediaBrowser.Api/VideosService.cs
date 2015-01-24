@@ -80,7 +80,7 @@ namespace MediaBrowser.Api
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var video = (Video)item;
 

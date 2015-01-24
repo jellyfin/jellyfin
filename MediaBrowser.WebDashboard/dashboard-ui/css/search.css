@@ -150,7 +150,7 @@
     font-family: Roboto;
     outline: none;
     vertical-align: middle;
-    width: 200px;
+    width: 180px;
 }
 
 .searchInputIcon {
@@ -194,6 +194,6 @@
 }
 
 .btnCloseSearch {
-    margin-left: 5px;
+    padding: 0 5px;
     outline: 0;
 }

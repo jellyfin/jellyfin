@@ -1575,7 +1575,7 @@ namespace MediaBrowser.Server.Implementations.Library
             CancellationToken cancellationToken)
         {
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
-                "views");
+                            "views");
 
             path = Path.Combine(path, _fileSystem.GetValidFilename(type));
 

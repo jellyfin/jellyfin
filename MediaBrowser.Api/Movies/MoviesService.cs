@@ -157,7 +157,7 @@ namespace MediaBrowser.Api.Movies
                 .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             dtoOptions.Fields = request.GetItemFields().ToList();
             
@@ -173,8 +173,6 @@ namespace MediaBrowser.Api.Movies
             var item = string.IsNullOrEmpty(request.Id) ?
                 (request.UserId.HasValue ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
-
-            var fields = request.GetItemFields().ToList();
 
             var inputItems = user == null
                                  ? _libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
@@ -225,10 +223,12 @@ namespace MediaBrowser.Api.Movies
             {
                 returnItems = returnItems.Take(request.Limit.Value);
             }
+
+            var dtoOptions = GetDtoOptions(request);
           
             var result = new ItemsResult
             {
-                Items = returnItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
+                Items = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),
 
                 TotalRecordCount = items.Count
             };
@@ -351,7 +351,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = director,
                         CategoryId = director.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
+                        Items = _dtoService.GetBaseItemDtos(items, dtoOptions, user).ToArray()
                     };
                 }
             }
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = name,
                         CategoryId = name.GetMD5().ToString("N"),
                         RecommendationType = type,
-                        Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
+                        Items = _dtoService.GetBaseItemDtos(items, dtoOptions, user).ToArray()
                     };
                 }
             }
@@ -399,7 +399,7 @@ namespace MediaBrowser.Api.Movies
                         BaselineItemName = item.Name,
                         CategoryId = item.Id.ToString("N"),
                         RecommendationType = type,
-                        Items = similar.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
+                        Items = _dtoService.GetBaseItemDtos(similar, dtoOptions, user).ToArray()
                     };
                 }
             }

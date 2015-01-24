@@ -223,7 +223,7 @@
             }
 
 
-            $(elem).html(html).lazyChildren();
+            $(elem).html(html).lazyChildren().createCardMenus();
 
             handleLibraryLinkNavigations(elem);
         });

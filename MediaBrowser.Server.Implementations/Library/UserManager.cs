@@ -696,8 +696,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var text = new StringBuilder();
 
-            var info = _appHost.GetSystemInfo();
-            var localAddress = info.LocalAddress ?? string.Empty;
+            var localAddress = _appHost.LocalApiUrl ?? string.Empty;
 
             text.AppendLine("Use your web browser to visit:");
             text.AppendLine(string.Empty);

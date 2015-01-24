@@ -172,7 +172,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarGames request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,

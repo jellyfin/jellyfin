@@ -83,9 +83,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private async void RespondToV1Message(string endpoint)
         {
-            var info = _appHost.GetSystemInfo();
-
-            var localAddress = info.LocalAddress;
+            var localAddress = _appHost.LocalApiUrl;
 
             if (!string.IsNullOrEmpty(localAddress))
             {
@@ -110,15 +108,15 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private async void RespondToV2Message(string endpoint)
         {
-            var info = _appHost.GetSystemInfo();
+            var localUrl = _appHost.LocalApiUrl;
 
-            if (!string.IsNullOrEmpty(info.LocalAddress))
+            if (!string.IsNullOrEmpty(localUrl))
             {
                 var response = new ServerDiscoveryInfo
                 {
-                    Address = info.LocalAddress,
-                    Id = info.Id,
-                    Name = info.ServerName
+                    Address = localUrl,
+                    Id = _appHost.SystemId,
+                    Name = _appHost.FriendlyName
                 };
 
                 await SendAsync(Encoding.UTF8.GetBytes(_json.SerializeToString(response)), endpoint);

@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = GetPerson(request.Name, LibraryManager);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             if (request.UserId.HasValue)
             {

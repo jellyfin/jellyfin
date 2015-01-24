@@ -2,6 +2,7 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -19,6 +20,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Sync;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -42,8 +44,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly Func<IChannelManager> _channelManagerFactory;
         private readonly ISyncManager _syncManager;
         private readonly IApplicationHost _appHost;
+        private readonly Func<IDeviceManager> _deviceManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -56,6 +59,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _channelManagerFactory = channelManagerFactory;
             _syncManager = syncManager;
             _appHost = appHost;
+            _deviceManager = deviceManager;
         }
 
         /// <summary>
@@ -73,8 +77,37 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 Fields = fields
             };
-            
+
             return GetBaseItemDto(item, options, user, owner);
+        }
+
+        public IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
+        {
+            var itemIdsWithSyncJobs = GetItemIdsWithSyncJobs(options).ToList();
+
+            var list = new List<BaseItemDto>();
+
+            foreach (var item in items)
+            {
+                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+
+                var byName = item as IItemByName;
+
+                if (byName != null && !(item is LiveTvChannel))
+                {
+                    var libraryItems = user != null ?
+                       user.RootFolder.GetRecursiveChildren(user) :
+                       _libraryManager.RootFolder.RecursiveChildren;
+
+                    SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
+                }
+
+                FillSyncInfo(dto, item, itemIdsWithSyncJobs, options);
+
+                list.Add(dto);
+            }
+
+            return list;
         }
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
@@ -94,7 +127,62 @@ namespace MediaBrowser.Server.Implementations.Dto
                 return dto;
             }
 
+            FillSyncInfo(dto, item, options);
+
             return dto;
+        }
+
+        private IEnumerable<string> GetItemIdsWithSyncJobs(DtoOptions options)
+        {
+            if (!options.Fields.Contains(ItemFields.SyncInfo))
+            {
+                return new List<string>();
+            }
+
+            var deviceId = options.DeviceId;
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                return new List<string>();
+            }
+
+            var caps = _deviceManager().GetCapabilities(deviceId);
+            if (caps == null || !caps.SupportsSync)
+            {
+                return new List<string>();
+            }
+
+            var result = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
+            {
+                TargetId = deviceId
+            });
+
+            return result.Items;
+        }
+
+        private void FillSyncInfo(BaseItemDto dto, BaseItem item, DtoOptions options)
+        {
+            if (options.Fields.Contains(ItemFields.SyncInfo))
+            {
+                dto.SupportsSync = _syncManager.SupportsSync(item);
+            }
+
+            if (dto.SupportsSync ?? false)
+            {
+                dto.HasSyncJob = GetItemIdsWithSyncJobs(options).Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        private void FillSyncInfo(BaseItemDto dto, BaseItem item, IEnumerable<string> itemIdsWithSyncJobs, DtoOptions options)
+        {
+            if (options.Fields.Contains(ItemFields.SyncInfo))
+            {
+                dto.SupportsSync = _syncManager.SupportsSync(item);
+            }
+
+            if (dto.SupportsSync ?? false)
+            {
+                dto.HasSyncJob = itemIdsWithSyncJobs.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
@@ -166,11 +254,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, options);
-
-            if (fields.Contains(ItemFields.SyncInfo))
-            {
-                dto.SupportsSync = _syncManager.SupportsSync(item);
-            }
 
             if (fields.Contains(ItemFields.SoundtrackIds))
             {
@@ -1029,7 +1112,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 //if (fields.Contains(ItemFields.MediaSourceCount))
                 //{
-                    // Songs always have one
+                // Songs always have one
                 //}
             }
 

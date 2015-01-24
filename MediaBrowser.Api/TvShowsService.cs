@@ -238,7 +238,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarShows request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataManager,
@@ -270,9 +272,9 @@ namespace MediaBrowser.Api
 
             var pagedItems = ApplyPaging(previousEpisodes, request.StartIndex, request.Limit);
 
-            var options = request.GetDtoOptions();
+            var options = GetDtoOptions(request);
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, options, user).ToArray();
 
             var result = new ItemsResult
             {
@@ -301,9 +303,9 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var options = request.GetDtoOptions();
+            var options = GetDtoOptions(request);
 
-            var returnItems = result.Items.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user).ToArray();
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
@@ -365,9 +367,9 @@ namespace MediaBrowser.Api
                     .Cast<Season>();
             }
 
-            var fields = request.GetItemFields().ToList();
+            var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
@@ -455,11 +457,11 @@ namespace MediaBrowser.Api
                     .Cast<Episode>();
             }
 
-            var fields = request.GetItemFields().ToList();
-
             episodes = _libraryManager.ReplaceVideosWithPrimaryVersions(episodes).Cast<Episode>();
 
-            var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtoOptions = GetDtoOptions(request);
+
+            var returnItems = _dtoService.GetBaseItemDtos(episodes, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
