@@ -565,7 +565,8 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userimage.css",
                                       "livetv.css",
                                       "nowplaying.css",
-                                      "icons.css"
+                                      "icons.css",
+                                      "materialize.css"
                                   };
 
             var builder = new StringBuilder();

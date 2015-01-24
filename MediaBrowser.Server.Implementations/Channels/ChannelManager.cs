@@ -393,7 +393,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
+            var id = GetInternalChannelId(channelInfo.Name);
+
+            var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -413,8 +415,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 isNew = true;
             }
-
-            var id = GetInternalChannelId(channelInfo.Name);
 
             var item = _libraryManager.GetItemById(id) as Channel;
 

@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -44,17 +43,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             return null;
-        }
-
-        private bool IsInvalid(string collectionType)
-        {
-            var validCollectionTypes = new[]
-            {
-                CollectionType.Movies,
-                CollectionType.BoxSets
-            };
-
-            return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

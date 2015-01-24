@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Themes
         {
             get
             {
-                return Path.Combine(_appPaths.ItemsByNamePath, "appthemes");
+                return Path.Combine(_appPaths.ProgramDataPath, "appthemes");
             }
         }
 

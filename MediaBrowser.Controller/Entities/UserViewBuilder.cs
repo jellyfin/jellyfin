@@ -117,7 +117,7 @@ namespace MediaBrowser.Controller.Entities
                     return await GetGameView(user, queryParent, query).ConfigureAwait(false);
 
                 case CollectionType.BoxSets:
-                    return GetResult(GetMediaFolders(user).SelectMany(i => i.GetRecursiveChildren(user)).OfType<BoxSet>(), queryParent, query);
+                    return await GetBoxsetView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.TvShows:
                     return await GetTvView(queryParent, user, query).ConfigureAwait(false);
@@ -524,6 +524,22 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase));
 
             return GetResult(items, queryParent, query);
+        }
+
+        private async Task<QueryResult<BaseItem>> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
+        {
+            return GetResult(GetMediaFolders(user).SelectMany(i =>
+            {
+                var hasCollectionType = i as ICollectionFolder;
+
+                if (hasCollectionType != null && string.Equals(hasCollectionType.CollectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i.GetChildren(user, true);
+                }
+
+                return i.GetRecursiveChildren(user);
+
+            }).OfType<BoxSet>(), parent, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, InternalItemsQuery query)

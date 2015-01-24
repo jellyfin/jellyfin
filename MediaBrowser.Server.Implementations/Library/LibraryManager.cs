@@ -1646,7 +1646,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var id = GetNewItemId("7_namedview_" + name + user.Id.ToString("N") + parentId, typeof(UserView));
 
-            var path = BaseItem.GetInternalMetadataPathForId(id);
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", "specialviews", id.ToString("N"));
 
             var item = GetItemById(id) as UserView;
 

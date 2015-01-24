@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -58,6 +59,7 @@ namespace MediaBrowser.Providers.Manager
         private IMetadataProvider[] _metadataProviders = { };
         private IEnumerable<IMetadataSaver> _savers;
         private IImageSaver[] _imageSavers;
+        private readonly IServerApplicationPaths _appPaths;
 
         private IExternalId[] _externalIds;
 
@@ -69,13 +71,14 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
             ConfigurationManager = configurationManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
+            _appPaths = appPaths;
         }
 
         /// <summary>
@@ -467,7 +470,7 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new T()
             {
-                Path = BaseItem.GetInternalMetadataPathForId(Guid.NewGuid()),
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
 
                 // Dummy this up to fool the local trailer check
                 Parent = new Folder()
@@ -709,7 +712,7 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
-                Path = BaseItem.GetInternalMetadataPathForId(Guid.NewGuid()),
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
 
                 // Dummy this up to fool the local trailer check
                 Parent = new Folder()
