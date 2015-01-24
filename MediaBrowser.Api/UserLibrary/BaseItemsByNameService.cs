@@ -129,7 +129,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
 
-            var dtoOptions = request.GetDtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = tuples.Select(i => GetDto(i.Item1, user, dtoOptions, i.Item2));
 

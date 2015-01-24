@@ -57,6 +57,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets the similar items.
         /// </summary>
+        /// <param name="dtoOptions">The dto options.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="libraryManager">The library manager.</param>
@@ -67,7 +68,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
@@ -93,7 +94,7 @@ namespace MediaBrowser.Api
 
             var result = new ItemsResult
             {
-                Items = returnItems.Select(i => dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
+                Items = dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),
 
                 TotalRecordCount = items.Count
             };

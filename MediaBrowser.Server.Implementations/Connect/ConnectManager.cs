@@ -153,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                var localAddress = _appHost.GetSystemInfo().LocalAddress;
+                var localAddress = _appHost.LocalApiUrl;
 
                 var hasExistingRecord = !string.IsNullOrWhiteSpace(ConnectServerId) &&
                                   !string.IsNullOrWhiteSpace(ConnectAccessKey);
@@ -195,7 +195,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private string _lastReportedIdentifier;
         private string GetConnectReportingIdentifier()
         {
-            return GetConnectReportingIdentifier(_appHost.GetSystemInfo().LocalAddress, WanApiAddress);
+            return GetConnectReportingIdentifier(_appHost.LocalApiUrl, WanApiAddress);
         }
         private string GetConnectReportingIdentifier(string localAddress, string remoteAddress)
         {

@@ -459,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             return null;
         }
 
-        public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
+        private QueryResult<T> GetJobItemReader<T>(SyncJobItemQuery query, string baseSelectText, Func<IDataReader, T> itemFactory)
         {
             if (query == null)
             {
@@ -468,7 +468,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = BaseJobItemSelectText;
+                cmd.CommandText = baseSelectText;
 
                 var whereClauses = new List<string>();
 
@@ -515,14 +515,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 cmd.CommandText += "; select count (Id) from SyncJobItems" + whereTextWithoutPaging;
 
-                var list = new List<SyncJobItem>();
+                var list = new List<T>();
                 var count = 0;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
                     while (reader.Read())
                     {
-                        list.Add(GetJobItem(reader));
+                        list.Add(itemFactory(reader));
                     }
 
                     if (reader.NextResult() && reader.Read())
@@ -531,12 +531,22 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
-                return new QueryResult<SyncJobItem>()
+                return new QueryResult<T>()
                 {
                     Items = list.ToArray(),
                     TotalRecordCount = count
                 };
             }
+        }
+
+        public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
+        {
+            return GetJobItemReader(query, "select ItemId from SyncJobItems", GetItemId);
+        }
+
+        public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
+        {
+            return GetJobItemReader(query, BaseJobItemSelectText, GetJobItem);
         }
 
         public Task Create(SyncJobItem jobItem)
@@ -679,8 +689,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             info.IsMarkedForRemoval = reader.GetBoolean(13);
             info.JobItemIndex = reader.GetInt32(14);
-          
+
             return info;
+        }
+
+        private string GetItemId(IDataReader reader)
+        {
+            return reader.GetString(0);
         }
 
         /// <summary>

@@ -32,6 +32,12 @@ namespace MediaBrowser.Model.Tasks
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>The key.</value>
+        public string Key { get; set; }
+        
+        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>

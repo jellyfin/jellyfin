@@ -446,7 +446,7 @@ namespace MediaBrowser.Server.Startup.Common
             SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager);
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this);
+            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();
@@ -490,7 +490,7 @@ namespace MediaBrowser.Server.Startup.Common
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, FileSystemManager, UserManager, ChannelManager, LiveTvManager, ApplicationPaths, playlistManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, playlistManager, CollectionManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
             var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager);
@@ -1019,7 +1019,7 @@ namespace MediaBrowser.Server.Startup.Common
                 IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
-                LocalAddress = GetLocalIpAddress()
+                LocalAddress = LocalApiUrl
             };
         }
 
@@ -1036,26 +1036,33 @@ namespace MediaBrowser.Server.Startup.Common
             get { return !string.IsNullOrWhiteSpace(HttpServer.CertificatePath); }
         }
 
-        /// <summary>
-        /// Gets the local ip address.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private string GetLocalIpAddress()
+        public string LocalApiUrl
         {
-            // Return the first matched address, if found, or the first known local address
-            var address = HttpServerIpAddresses.FirstOrDefault();
-
-            if (!string.IsNullOrWhiteSpace(address))
+            get
             {
-                address = string.Format("http://{0}:{1}",
-                    address,
-                    HttpPort.ToString(CultureInfo.InvariantCulture));
-            }
+                // Return the first matched address, if found, or the first known local address
+                var address = LocalIpAddress;
 
-            return address;
+                if (!string.IsNullOrWhiteSpace(address))
+                {
+                    address = string.Format("http://{0}:{1}",
+                        address,
+                        HttpPort.ToString(CultureInfo.InvariantCulture));
+                }
+
+                return address;
+            }
         }
 
-        public IEnumerable<string> HttpServerIpAddresses
+        public string LocalIpAddress
+        {
+            get
+            {
+                return HttpServerIpAddresses.FirstOrDefault();
+            }
+        }
+
+        private IEnumerable<string> HttpServerIpAddresses
         {
             get
             {

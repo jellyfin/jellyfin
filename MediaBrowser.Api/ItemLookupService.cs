@@ -205,7 +205,8 @@ namespace MediaBrowser.Api
                 Logger = Logger,
                 Request = Request,
                 ResultFactory = ResultFactory,
-                SessionContext = SessionContext
+                SessionContext = SessionContext,
+                AuthorizationContext = AuthorizationContext
             };
 
             service.Post(new RefreshItem

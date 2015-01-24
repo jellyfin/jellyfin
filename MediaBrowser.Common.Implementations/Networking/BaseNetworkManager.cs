@@ -18,11 +18,64 @@ namespace MediaBrowser.Common.Implementations.Networking
             Logger = logger;
         }
 
+        private volatile List<string> _localIpAddresses;
+        private readonly object _localIpAddressSyncLock = new object();
+
         /// <summary>
         /// Gets the machine's local ip address
         /// </summary>
         /// <returns>IPAddress.</returns>
         public IEnumerable<string> GetLocalIpAddresses()
+        {
+            if (_localIpAddresses == null)
+            {
+                lock (_localIpAddressSyncLock)
+                {
+                    if (_localIpAddresses == null)
+                    {
+                        var addresses = GetLocalIpAddressesInternal().ToList();
+
+                        _localIpAddresses = addresses;
+                        BindEvents();
+
+                        return addresses;
+                    }
+                }
+            }
+
+            return _localIpAddresses;
+        }
+
+        private void BindEvents()
+        {
+            NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAvailabilityChanged;
+            
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+        }
+
+        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            Logger.Debug("NetworkAvailabilityChanged fired. Resetting cached network info.");
+
+            lock (_localIpAddressSyncLock)
+            {
+                _localIpAddresses = null;
+            }
+        }
+
+        void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            Logger.Debug("NetworkAddressChanged fired. Resetting cached network info.");
+
+            lock (_localIpAddressSyncLock)
+            {
+                _localIpAddresses = null;
+            }
+        }
+
+        private IEnumerable<string> GetLocalIpAddressesInternal()
         {
             var list = GetIPsDefault()
                 .Where(i => !IPAddress.IsLoopback(i))

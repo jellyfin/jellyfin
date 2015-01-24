@@ -146,8 +146,6 @@ namespace MediaBrowser.Api.Music
 
         private object GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request)
         {
-            var fields = request.GetItemFields().ToList();
-
             var list = items.ToList();
 
             var result = new ItemsResult
@@ -155,10 +153,9 @@ namespace MediaBrowser.Api.Music
                 TotalRecordCount = list.Count
             };
 
-            var dtos = list.Take(request.Limit ?? list.Count)
-                .Select(i => _dtoService.GetBaseItemDto(i, fields, user));
+            var dtoOptions = GetDtoOptions(request);
 
-            result.Items = dtos.ToArray();
+            result.Items = _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user).ToArray();
 
             return ToOptimizedResult(result);
         }

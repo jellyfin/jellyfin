@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
@@ -36,6 +38,7 @@ namespace MediaBrowser.Api
         public IRequest Request { get; set; }
 
         public ISessionContext SessionContext { get; set; }
+        public IAuthorizationContext AuthorizationContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -109,6 +112,37 @@ namespace MediaBrowser.Api
 
         private readonly char[] _dashReplaceChars = { '?', '/', '&' };
         private const char SlugChar = '-';
+
+        protected DtoOptions GetDtoOptions(object request)
+        {
+            var options = new DtoOptions();
+
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+            var hasFields = request as IHasItemFields;
+            if (hasFields != null)
+            {
+                options.Fields = hasFields.GetItemFields().ToList();
+            }
+
+            var hasDtoOptions = request as IHasDtoOptions;
+            if (hasDtoOptions != null)
+            {
+                options.EnableImages = hasDtoOptions.EnableImages ?? true;
+
+                if (hasDtoOptions.ImageTypeLimit.HasValue)
+                {
+                    options.ImageTypeLimit = hasDtoOptions.ImageTypeLimit.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
+                {
+                    options.ImageTypes = (hasDtoOptions.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
+                }
+            }
+
+            return options;
+        }
 
         protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)
         {

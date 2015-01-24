@@ -321,14 +321,14 @@ namespace MediaBrowser.Api.UserLibrary
             var result = await GetItemsToSerialize(request, user, parentItem).ConfigureAwait(false);
 
             var isFiltered = result.Item2;
-            var dtoOptions = request.GetDtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             if (isFiltered)
             {
                 return new ItemsResult
                 {
                     TotalRecordCount = result.Item1.TotalRecordCount,
-                    Items = result.Item1.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
+                    Items = _dtoService.GetBaseItemDtos(result.Item1.Items, dtoOptions, user).ToArray()
                 };
             }
 
@@ -362,7 +362,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ToArray();
 
             return new ItemsResult
             {

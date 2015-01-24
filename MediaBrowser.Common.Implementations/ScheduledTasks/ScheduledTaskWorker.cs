@@ -544,6 +544,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 Id = Id
             };
 
+            var hasKey = ScheduledTask as IHasKey;
+            if (hasKey != null)
+            {
+                result.Key = hasKey.Key;
+            }
+
             if (ex != null)
             {
                 result.ErrorMessage = ex.Message;
