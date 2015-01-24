@@ -60,7 +60,12 @@ namespace MediaBrowser.Controller.Channels
 
         protected override string GetInternalMetadataPath(string basePath)
         {
-            return System.IO.Path.Combine(basePath, "channels", Id.ToString("N"), "metadata");
+            return GetInternalMetadataPath(basePath, Id);
+        }
+
+        public static string GetInternalMetadataPath(string basePath, Guid id)
+        {
+            return System.IO.Path.Combine(basePath, "channels", id.ToString("N"), "metadata");
         }
     }
 }

@@ -356,19 +356,13 @@
 
         if (createIfNeeded && !elem.length) {
 
-            var html = '<div class="searchResultsOverlay ui-page-theme-b"><div style="text-align:right;padding: 1em 2em 0 0;"><button class="btnCloseSearch" data-icon="delete" data-mini="true" data-inline="true" style="margin:0;">Close</button></div>';
+            var html = '<div class="searchResultsOverlay ui-page-theme-b">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
             elem = $(html).appendTo(document.body).hide().trigger('create');
 
             elem.createCardMenus();
-
-            $('.btnCloseSearch', elem).on('click', function () {
-                $('.headerSearchInput').val('');
-                onHeaderSearchChange('');
-
-            });
         }
 
         return elem;
@@ -377,11 +371,12 @@
     function onHeaderSearchChange(val) {
 
         if (val) {
-
+            $('.btnCloseSearch').show();
             updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
 
         } else {
 
+            $('.btnCloseSearch').hide();
             updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
         }
     }
@@ -413,6 +408,11 @@
                 onHeaderSearchChange('');
             }
 
+        });
+
+        $('.btnCloseSearch').on('click', function () {
+            $('.headerSearchInput').val('');
+            onHeaderSearchChange('');
         });
     }
 

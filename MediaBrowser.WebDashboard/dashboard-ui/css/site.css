@@ -1042,3 +1042,17 @@ h1 + .accentButton {
     .dashboardFooter .appLinks img {
         height: 16px;
     }
+
+.supporterPromotion {
+    margin: 1em 0;
+}
+
+@media all and (min-width: 1200px) {
+
+    .supporterPromotion {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        margin: 0;
+    }
+}

@@ -140,39 +140,37 @@
 }
 
 .headerSearchInput {
-    width: 100%;
-    margin-top: 12px;
+    margin: 0;
     background: #222;
     border: 0;
     color: #ddd;
     border-radius: 3px;
-    padding: 5px 7px 4px 50px;
+    padding: 4px 7px 3px 50px;
     font-size: 14px;
     font-family: Roboto;
     outline: none;
+    vertical-align: middle;
+    width: 200px;
 }
 
 .searchInputIcon {
     position: absolute;
     left: 20px;
-    top: 19px;
+    top: 6px;
     font-size: 14px !important;
     color: #ddd !important;
 }
 
 .viewMenuSearch {
-    position: absolute;
-    top: 0;
-    left: 40%;
-    right: 40%;
+    position: relative;
     display: none;
-    padding-right: 55px;
+    margin-left: 2em;
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 900px) {
 
     .viewMenuSearch {
-        display: block;
+        display: inline-block;
     }
 
     .headerSearchButton {
@@ -180,17 +178,9 @@
     }
 }
 
-@media all and (min-width: 1200px) {
-
-    .viewMenuSearch {
-        left: 42%;
-        right: 42%;
-    }
-}
-
 .searchResultsOverlay {
     position: fixed;
-    background: #222 !important;
+    background: rgba(34, 34, 34, 1);
     top: 50px;
     left: 0;
     right: 0;
@@ -201,4 +191,9 @@
 
 .searchResultsContainer {
     padding: 2em;
+}
+
+.btnCloseSearch {
+    margin-left: 5px;
+    outline: 0;
 }

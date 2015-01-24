@@ -381,11 +381,6 @@ namespace MediaBrowser.Controller.Entities
         {
             var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
 
-            if (ConfigurationManager.Configuration.EnableLibraryMetadataSubFolder)
-            {
-                basePath = System.IO.Path.Combine(basePath, "library");
-            }
-
             return GetInternalMetadataPath(basePath);
         }
 
@@ -393,14 +388,10 @@ namespace MediaBrowser.Controller.Entities
         {
             var idString = Id.ToString("N");
 
-            return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
-        }
-
-        public static string GetInternalMetadataPathForId(Guid id)
-        {
-            var idString = id.ToString("N");
-
-            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+            if (ConfigurationManager.Configuration.EnableLibraryMetadataSubFolder)
+            {
+                basePath = System.IO.Path.Combine(basePath, "library");
+            }
 
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }

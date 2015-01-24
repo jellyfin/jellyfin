@@ -15,11 +15,13 @@
         html += '</button>';
 
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
-
         html += '<div class="viewMenuSearch">';
         html += '<input type="text" data-role="none" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
         html += '<div class="searchInputIcon fa fa-search"></div>';
+        html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch" style="display:none;"><i class="fa fa-close"></i></button>';
         html += '</div>';
+
+
 
         html += '<div class="viewMenuSecondary">';
 
@@ -84,11 +86,11 @@
         html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
 
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-dashboard"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder editorViewMenu iconViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart"></span>' + Globalize.translate('ButtonReports') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-dashboard sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
-        html += '<a class="viewMenuLink viewMenuTextLink lnkMediaFolder iconViewMenu syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-cloud"></span>' + Globalize.translate('ButtonSync') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-cloud sidebarLinkIcon"></span>' + Globalize.translate('ButtonSync') + '</a>';
 
         return html;
     }
@@ -181,13 +183,13 @@
                     iconCssClass += ' fa-folder-open-o';
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder viewMenuLink viewMenuTextLink iconViewMenu" href="' + getItemHref(i, i.CollectionType) + '"><span class="' + iconCssClass + '"></span><span class="sectionName">' + i.Name + '</span></a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" href="' + getItemHref(i, i.CollectionType) + '"><span class="' + iconCssClass + ' sidebarLinkIcon"></span><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
             var elem = $('.libraryMenuOptions').html(html);
 
-            $('.viewMenuTextLink', elem).on('click', function () {
+            $('.sidebarLink', elem).on('click', function () {
 
                 var section = $('.sectionName', this)[0];
                 var text = section ? section.innerHTML : this.innerHTML;
@@ -225,11 +227,11 @@
 
             html += '<div data-role="panel" id="libraryPanel" class="libraryPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
-            html += '<div style="margin: 0 -1em;">';
+            html += '<div class="sidebarLinks librarySidebarLinks" style="margin-top: 0;margin-left: -1em;margin-right: -1em;">';
 
             var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
 
-            html += '<a class="lnkMediaFolder viewMenuLink viewMenuTextLink homeViewMenu" href="' + homeHref + '">' + Globalize.translate('ButtonHome') + '</a>';
+            html += '<a class="lnkMediaFolder sidebarLink homeViewMenu" href="' + homeHref + '">' + Globalize.translate('ButtonHome') + '</a>';
 
             html += '<div class="libraryMenuDivider"></div>';
 

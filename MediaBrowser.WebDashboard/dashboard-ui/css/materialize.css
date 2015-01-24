@@ -1,0 +1,183 @@
+﻿.z-depth-1, nav, .card-panel, .toast, .btn, .btn-large, .btn-floating, .dropdown-content, .collapsible, ul.side-nav.full, ul.side-nav.fixed {
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+    .z-depth-1-half, .btn:hover, .btn-large:hover, .btn-floating:hover, .modal {
+        -webkit-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+        -moz-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+        box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .toast .btn, .toast .btn-large, .toast .btn-flat {
+        margin: 0;
+        margin-left: 3rem;
+    }
+
+.btn, .btn-large, .btn-flat {
+    display: block;
+    padding: 0 2rem;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    background-clip: padding-box;
+    text-transform: uppercase;
+    border: none;
+    outline: 0;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 15px;
+}
+
+    .btn.disabled, .disabled.btn-large, .btn-floating.disabled, .btn-large.disabled, .btn:disabled, .btn-large:disabled, .btn-large:disabled, .btn-floating:disabled {
+        background-color: #DFDFDF;
+        box-shadow: none;
+        color: #9F9F9F;
+    }
+
+        .btn.disabled:hover, .disabled.btn-large:hover, .btn-floating.disabled:hover, .btn-large.disabled:hover, .btn:disabled:hover, .btn-large:disabled:hover, .btn-large:disabled:hover, .btn-floating:disabled:hover {
+            background-color: #DFDFDF;
+            color: #9F9F9F;
+        }
+
+    .btn i, .btn-large i, .btn-floating i, .btn-large i, .btn-flat i {
+        font-size: 1.3rem;
+    }
+
+.btn, .btn-large {
+    text-decoration: none;
+    color: #FFF;
+    background-color: #2196F3;
+    text-align: center;
+    letter-spacing: 0.5px;
+    -webkit-transition: 0.2s ease-out;
+    -moz-transition: 0.2s ease-out;
+    -o-transition: 0.2s ease-out;
+    -ms-transition: 0.2s ease-out;
+    transition: 0.2s ease-out;
+    cursor: pointer;
+}
+
+.btn-floating {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    width: 37px;
+    height: 37px;
+    line-height: 37px;
+    padding: 0;
+    background-color: #2196F3;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    background-clip: padding-box;
+    -webkit-transition: 0.3s;
+    -moz-transition: 0.3s;
+    -o-transition: 0.3s;
+    -ms-transition: 0.3s;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+    .btn-floating i {
+        width: inherit;
+        display: inline-block;
+        text-align: center;
+        color: #FFF;
+        font-size: 1.6rem;
+        line-height: 37px;
+    }
+
+    .btn-floating.btn-large {
+        width: 55.5px;
+        height: 55.5px;
+    }
+
+        .btn-floating.btn-large i {
+            line-height: 55.5px;
+        }
+
+.btn-flat {
+    box-shadow: none;
+    background-color: transparent;
+    color: #343434;
+    cursor: pointer;
+}
+
+    .btn-flat.disabled {
+        color: #b3b3b3;
+    }
+
+.btn {
+    padding: .6em 2em;
+}
+
+.btn-large {
+    padding: 1em 2em;
+}
+
+    .btn-large i {
+        font-size: 1.6rem;
+    }
+
+
+.btn, .btn-large {
+    background-color: #38c;
+}
+
+.btnAction {
+    background-color: #ee6e73;
+}
+
+.btnAltAction {
+    background-color: #ff8f00;
+}
+
+.btnActionAccent {
+    background-color: #52B54B;
+}
+
+.btn, .btn-large {
+    color: #fff !important;
+    font-weight: 500 !important;
+    font-size: 15px;
+    font-family: Roboto !important;
+}
+
+.btnCancel {
+    background-color: #444;
+}
+
+.ui-page-theme-a .btnCancel {
+    background-color: #e8e8e8;
+    color: #333!important;
+}
+
+.ui-page-theme-a .btnCancel i {
+    color: #666!important;
+}
+
+.btn-inline {
+    display: inline-block;
+    width: auto;
+    margin-bottom: 0;
+}
+
+button.btn:not(.btn-inline),button.btn-large:not(.btn-inline) {
+    width: 100%;
+}
+
+.btn i, .btn-large i, .btn span, .btn-large span {
+    vertical-align: middle;
+}
+
+.btn i {
+    position: absolute;
+    left: 24px;
+}
+
+.btn-large i {
+    position: absolute;
+    left: 24px;
+    top: 22px;
+}

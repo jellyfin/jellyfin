@@ -908,13 +908,17 @@
                 }
             }
 
+            if (BoxSetEditor.supportsAddingToCollection(item)) {
+                itemCommands.push('addtocollection');
+            }
+
             if (options.playFromHere) {
                 itemCommands.push('playfromhere');
                 itemCommands.push('queuefromhere');
             }
 
             // There's no detail page with a dedicated delete function
-            if (item.Type == 'Playlist') {
+            if (item.Type == 'Playlist' || item.Type == 'BoxSet') {
                 itemCommands.push('delete');
             }
 

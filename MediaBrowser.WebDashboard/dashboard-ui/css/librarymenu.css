@@ -160,12 +160,6 @@
     vertical-align: middle;
 }
 
-.viewMenuTextLink:hover {
-    background-color: #38c;
-    color: #fff !important;
-    opacity: 1;
-}
-
 .headerButtonRight:hover {
     opacity: .5;
 }
@@ -183,35 +177,26 @@
     vertical-align: top;
 }
 
-.viewMenuTextLink {
-    display: block;
-    padding: .7em .5em .6em 38px !important;
-    font-size: 14px;
+.librarySidebarLinks a {
     font-weight: 300 !important;
-    font-family: Roboto;
-    background-repeat: no-repeat;
-    background-size: 13px 13px;
-    background-position: 12px center;
 }
+
+    .librarySidebarLinks a:hover {
+        background-color: #38c !important;
+        color: #fff !important;
+    }
 
 .musicViewMenu {
     background-image: url(images/items/folders/music.png);
 }
 
 .homeViewMenu {
-    background-image: url(images/mblogoicon.png);
-    background-size: 39px 26px;
-    background-position: 10px center;
-    padding-left: 60px !important;
+    background-image: url(images/mblogoicon.png) !important;
+    background-size: 39px 26px !important;
+    background-position: 13px center !important;
+    padding-left: 66px !important;
+    background-repeat: no-repeat !important;
 }
-
-.iconViewMenu {
-    padding-left: 13px !important;
-}
-
-    .iconViewMenu span {
-        margin-right: 11px !important;
-    }
 
 .viewMenuSecondary {
     position: absolute;

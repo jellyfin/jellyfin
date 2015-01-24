@@ -185,6 +185,17 @@
         return false;
     }
 
+    function onAddToCollectionButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        closeContextMenu();
+
+        BoxSetEditor.showPanel([id]);
+
+        return false;
+    }
+
     function onAddToPlaylistButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -377,6 +388,10 @@
 
             var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
 
+            if (commands.indexOf('addtocollection') != -1) {
+                html += '<li data-icon="plus"><a href="#" class="btnAddToCollection" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+            }
+
             if (commands.indexOf('playlist') != -1) {
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
@@ -464,6 +479,7 @@
             $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
             $('.btnDelete', elem).on('click', onDeleteButtonClick);
             $('.btnSync', elem).on('click', onSyncButtonClick);
+            $('.btnAddToCollection', elem).on('click', onAddToCollectionButtonClick);
         });
     }
 
@@ -826,7 +842,7 @@
             return;
         }
 
-        BoxSetEditor.showPanel(page, selection);
+        BoxSetEditor.showPanel(selection);
     }
 
     function addToPlaylist(page) {

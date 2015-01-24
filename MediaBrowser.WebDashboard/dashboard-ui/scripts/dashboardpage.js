@@ -24,6 +24,12 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('.supporterPromotion', page).hide();
+            } else {
+                $('.supporterPromotion', page).show();
+            }
+
             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
 

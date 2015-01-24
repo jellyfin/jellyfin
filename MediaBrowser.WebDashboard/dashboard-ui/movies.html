@@ -227,42 +227,6 @@
                 </div>
             </form>
         </div>
-
-        <div data-role="panel" class="newCollectionPanel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="a">
-            <form class="newCollectionForm">
-
-                <h3>${HeaderAddToCollection}</h3>
-
-                <br />
-                <div>
-                    <label for="selectCollectionToAddTo">${LabelSelectCollection}</label>
-                    <select id="selectCollectionToAddTo" data-mini="true"></select>
-                </div>
-                <br />
-                <div class="newCollectionInfo">
-                    <div>
-                        <label for="txtNewCollectionName">${LabelName}</label>
-                        <input type="text" id="txtNewCollectionName" required="required" />
-                        <div class="fieldDescription">${NewCollectionNameExample}</div>
-                    </div>
-
-                    <br />
-                    <div>
-                        <label for="chkEnableInternetMetadata">${OptionSearchForInternetMetadata}</label>
-                        <input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />
-                    </div>
-                    <br />
-                </div>
-                <p>
-                    <input class="fldSelectedItemIds" type="hidden" />
-                    <button type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonSubmit}</button>
-                </p>
-            </form>
-        </div>
-
-        <script type="text/javascript">
-            $('.newCollectionForm').off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
-        </script>
     </div>
 </body>
 </html>
