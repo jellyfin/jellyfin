@@ -37,10 +37,10 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     switch (environment.SystemArchitecture)
                     {
                         case Architecture.X86_X64:
-                            info.Version = "20140716";
+                            info.Version = "20150124";
                             break;
                         case Architecture.X86:
-                            info.Version = "20140923";
+                            info.Version = "20150124";
                             break;
                     }
                     break;
@@ -128,14 +128,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/64bit/ffmpeg.static.64bit.latest.tar.gz",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.64bit.2014-07-16.tar.gz"
+                                "http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz",
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg-release-64bit-static.tar.xz"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "http://ffmpeg.gusari.org/static/32bit/ffmpeg.static.32bit.latest.tar.gz",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg.static.32bit.2014-07-16.tar.gz"
+                                "http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-32bit-static.tar.xz",
+                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg-release-32bit-static.tar.xz"
                             };
                     }
                     break;

@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder.RecursiveChildren
+            var items = _libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();

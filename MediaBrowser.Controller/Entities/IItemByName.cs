@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -13,6 +14,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="inputItems">The input items.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems);
+
+        Func<BaseItem, bool> ItemFilter { get; }
     }
 
     public interface IHasDualAccess : IItemByName

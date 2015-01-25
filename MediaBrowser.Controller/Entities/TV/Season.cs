@@ -244,7 +244,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private IEnumerable<Episode> GetEpisodes()
         {
-            var episodes = RecursiveChildren.OfType<Episode>();
+            var episodes = GetRecursiveChildren().OfType<Episode>();
             var series = Series;
 
             if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
@@ -254,12 +254,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (seasonNumber.HasValue)
                 {
-                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
                         .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
                 }
                 else
                 {
-                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
                         .Where(i => !i.ParentIndexNumber.HasValue));
                 }
 

@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<bool> AddDummySeasonFolders(Series series, CancellationToken cancellationToken)
         {
-            var episodesInSeriesFolder = series.RecursiveChildren
+            var episodesInSeriesFolder = series.GetRecursiveChildren()
                 .OfType<Episode>()
                 .Where(i => !i.IsInSeasonFolder)
                 .ToList();
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.LocationType == LocationType.Virtual)
                 .ToList();
 
-            var episodes = series.RecursiveChildren.OfType<Episode>().ToList();
+            var episodes = series.GetRecursiveChildren().OfType<Episode>().ToList();
 
             var seasonsToRemove = virtualSeasons
                 .Where(i =>

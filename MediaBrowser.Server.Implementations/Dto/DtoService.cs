@@ -96,10 +96,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 if (byName != null && !(item is LiveTvChannel))
                 {
                     var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user) :
-                       _libraryManager.RootFolder.RecursiveChildren;
+                       user.RootFolder.GetRecursiveChildren(user, byName.ItemFilter) :
+                       _libraryManager.RootFolder.GetRecursiveChildren(byName.ItemFilter);
 
-                    SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
+                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                 }
 
                 FillSyncInfo(dto, item, itemIdsWithSyncJobs, options);
@@ -119,10 +119,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (byName != null && !(item is LiveTvChannel))
             {
                 var libraryItems = user != null ?
-                   user.RootFolder.GetRecursiveChildren(user) :
-                   _libraryManager.RootFolder.RecursiveChildren;
+                   user.RootFolder.GetRecursiveChildren(user, byName.ItemFilter) :
+                   _libraryManager.RootFolder.GetRecursiveChildren(byName.ItemFilter);
 
-                SetItemByNameInfo(item, dto, byName.GetTaggedItems(libraryItems).ToList(), user);
+                SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
 
                 return dto;
             }
@@ -153,7 +153,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var result = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
             {
-                TargetId = deviceId
+                TargetId = deviceId,
+                Statuses = new List<SyncJobItemStatus>
+                {
+                    SyncJobItemStatus.Converting,
+                    SyncJobItemStatus.Queued,
+                    SyncJobItemStatus.Transferring,
+                    SyncJobItemStatus.Synced
+                }
             });
 
             return result.Items;
@@ -451,9 +458,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (!string.IsNullOrEmpty(item.Album))
             {
                 var parentAlbum = _libraryManager.RootFolder
-                    .GetRecursiveChildren()
-                    .Where(i => i is MusicAlbum)
-                    .FirstOrDefault(i => string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase));
+                    .GetRecursiveChildren(i => i is MusicAlbum && string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
 
                 if (parentAlbum != null)
                 {
@@ -1385,7 +1391,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 linkedChildren = user == null
                     ? folder.GetRecursiveChildren().ToList()
-                    : folder.GetRecursiveChildren(user, true).ToList();
+                    : folder.GetRecursiveChildren(user).ToList();
 
                 var parentWithBackdrop = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Backdrop).Any());
 
@@ -1402,7 +1408,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     linkedChildren = user == null
                         ? folder.GetRecursiveChildren().ToList()
-                        : folder.GetRecursiveChildren(user, true).ToList();
+                        : folder.GetRecursiveChildren(user).ToList();
                 }
                 var parentWithImage = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Primary).Any());
 
@@ -1479,12 +1485,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (season != null)
             {
-                children = season.GetEpisodes(user).Where(i => i.LocationType != LocationType.Virtual);
+                children = season
+                    .GetEpisodes(user)
+                    .Where(i => i.LocationType != LocationType.Virtual);
             }
             else
             {
-                children = folder.GetRecursiveChildren(user)
-                    .Where(i => !i.IsFolder && i.LocationType != LocationType.Virtual);
+                children = folder
+                    .GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
             }
 
             // Loop through each recursive child

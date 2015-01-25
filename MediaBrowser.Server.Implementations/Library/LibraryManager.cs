@@ -337,8 +337,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
         {
-            var seasons = RootFolder.RecursiveChildren
-                .OfType<Season>()
+            var seasons = RootFolder.GetRecursiveChildren(i => i is Season)
+                .Cast<Season>()
                 .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.Ordinal))
                 .ToList();
 
@@ -393,7 +393,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var locationType = item.LocationType;
 
             var children = item.IsFolder
-                ? ((Folder)item).RecursiveChildren.ToList()
+                ? ((Folder)item).GetRecursiveChildren().ToList()
                 : new List<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
@@ -919,9 +919,10 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var validFilename = _fileSystem.GetValidFilename(name).Trim();
 
-                var existing = RootFolder.RecursiveChildren
-                    .OfType<T>()
-                    .FirstOrDefault(i => string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase));
+                var existing = RootFolder
+                    .GetRecursiveChildren(i => i is T && string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase))
+                    .Cast<T>()
+                    .FirstOrDefault();
 
                 if (existing != null)
                 {

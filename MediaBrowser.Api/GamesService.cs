@@ -102,8 +102,8 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetGameSystemSummaries request)
         {
-            var gameSystems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
-                .OfType<GameSystem>()
+            var gameSystems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i is GameSystem)
+                .Cast<GameSystem>()
                 .ToList();
 
             var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId.Value);
@@ -119,9 +119,8 @@ namespace MediaBrowser.Api
 
         public object Get(GetPlayerIndex request)
         {
-            var games = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
-                .OfType<Game>()
-                .ToList();
+            var games = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i is Game)
+                .Cast<Game>();
 
             var lookup = games
                 .ToLookup(i => i.PlayersSupported ?? -1)
@@ -150,9 +149,11 @@ namespace MediaBrowser.Api
                 DisplayName = system.Name
             };
 
-            var items = user == null ? system.RecursiveChildren : system.GetRecursiveChildren(user);
+            var items = user == null ? 
+                system.GetRecursiveChildren(i => i is Game) :
+                system.GetRecursiveChildren(user, i => i is Game);
 
-            var games = items.OfType<Game>().ToList();
+            var games = items.Cast<Game>().ToList();
 
             summary.ClientInstalledGameCount = games.Count(i => i.IsPlaceHolder);
 

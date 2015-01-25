@@ -226,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private List<string> GetOtherDuplicatePaths(string targetPath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber)
         {
-            var episodePaths = series.RecursiveChildren
+            var episodePaths = series.GetRecursiveChildren()
                 .OfType<Episode>()
                 .Where(i =>
                 {
@@ -335,8 +335,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             result.ExtractedName = nameWithoutYear;
             result.ExtractedYear = yearInName;
 
-            return _libraryManager.RootFolder.RecursiveChildren
-                .OfType<Series>()
+            return _libraryManager.RootFolder.GetRecursiveChildren(i => i is Series)
+                .Cast<Series>()
                 .Select(i => NameUtils.GetMatchScore(nameWithoutYear, yearInName, i))
                 .Where(i => i.Item2 > 0)
                 .OrderByDescending(i => i.Item2)
@@ -400,9 +400,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             // If there's already a season folder, use that
             var season = series
-                .RecursiveChildren
-                .OfType<Season>()
-                .FirstOrDefault(i => i.LocationType == LocationType.FileSystem && i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
+                .GetRecursiveChildren(i => i is Season && i.LocationType == LocationType.FileSystem && i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber)
+                .FirstOrDefault();
 
             if (season != null)
             {

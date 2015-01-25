@@ -44,9 +44,10 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allItems = _libraryManager.RootFolder.GetRecursiveChildren();
-
-            var allSongs = allItems.Where(i => !i.IsFolder).OfType<IHasArtist>().ToList();
+            var allSongs = _libraryManager.RootFolder
+                .GetRecursiveChildren(i => !i.IsFolder && (i is IHasArtist))
+                .Cast<IHasArtist>()
+                .ToList();
 
             var allArtists = allSongs.SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)

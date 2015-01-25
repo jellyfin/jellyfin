@@ -51,7 +51,7 @@ namespace MediaBrowser.Api
             var cancellationToken = CancellationToken.None;
 
             var albums = _libraryManager.RootFolder
-                                        .RecursiveChildren
+                                        .GetRecursiveChildren()
                                         .OfType<MusicAlbum>()
                                         .Where(i => i.HasArtist(item.Name))
                                         .ToList();

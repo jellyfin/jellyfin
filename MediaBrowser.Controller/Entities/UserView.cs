@@ -40,12 +40,13 @@ namespace MediaBrowser.Controller.Entities
             return result.Items;
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
         {
             var result = GetItems(new InternalItemsQuery
             {
                 User = user,
-                Recursive = true
+                Recursive = true,
+                Filter = filter
 
             }).Result;
 

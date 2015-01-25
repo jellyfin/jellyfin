@@ -45,7 +45,9 @@ namespace MediaBrowser.Providers.Music
             {
                 if (!item.IsLocked)
                 {
-                    var songs = item.RecursiveChildren.OfType<Audio>().ToList();
+                    var songs = item.GetRecursiveChildren(i => i is Audio)
+                        .Cast<Audio>()
+                        .ToList();
 
                     if (!item.LockedFields.Contains(MetadataFields.Genres))
                     {

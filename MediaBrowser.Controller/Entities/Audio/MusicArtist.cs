@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public bool IsAccessedByName { get; set; }
         public List<string> ProductionLocations { get; set; }
-        
+
         public override bool IsFolder
         {
             get
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = RecursiveChildren.ToList();
+            var items = GetRecursiveChildren().ToList();
 
             var songs = items.OfType<Audio>().ToList();
 
@@ -169,7 +169,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-            
+
             // Refresh all non-songs
             foreach (var item in others)
             {
@@ -204,7 +204,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var info = GetItemLookupInfo<ArtistInfo>();
 
-            info.SongInfos = RecursiveChildren.OfType<Audio>()
+            info.SongInfos = GetRecursiveChildren(i => i is Audio)
+                .Cast<Audio>()
                 .Select(i => i.GetLookupInfo())
                 .ToList();
 
@@ -213,9 +214,19 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.OfType<IHasArtist>()
-                .Where(i => i.HasArtist(Name))
-                .Cast<BaseItem>();
+            return inputItems.Where(ItemFilter);
+        }
+
+        public Func<BaseItem, bool> ItemFilter
+        {
+            get
+            {
+                return i =>
+                {
+                    var hasArtist = i as IHasArtist;
+                    return hasArtist != null && hasArtist.HasArtist(Name);
+                };
+            }
         }
     }
 }

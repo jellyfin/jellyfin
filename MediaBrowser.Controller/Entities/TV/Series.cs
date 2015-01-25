@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -22,12 +22,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public int SeasonCount { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         public Series()
         {
@@ -93,7 +87,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return RecursiveChildren.OfType<Episode>()
+                return GetRecursiveChildren(i => i is Episode)
                         .Select(i => i.DateCreated)
                         .OrderByDescending(i => i)
                         .FirstOrDefault();
@@ -206,8 +200,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
         internal IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> additionalEpisodes)
         {
-            var episodes = GetRecursiveChildren(user)
-                .OfType<Episode>();
+            var episodes = GetRecursiveChildren(user, i => i is Episode)
+                .Cast<Episode>();
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
 
@@ -261,8 +255,6 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }
-
-        public string PreferredMetadataLanguage { get; set; }
 
         public SeriesInfo GetLookupInfo()
         {

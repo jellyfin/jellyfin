@@ -392,52 +392,43 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
-
-            var filteredItems = request.UserId.HasValue ? FilterItems(items, request, request.UserId.Value).ToList() : items;
-
-            var albums = filteredItems.OfType<MusicAlbum>().ToList();
-            var episodes = filteredItems.OfType<Episode>().ToList();
-            var games = filteredItems.OfType<Game>().ToList();
-            var movies = filteredItems.OfType<Movie>().ToList();
-            var musicVideos = filteredItems.OfType<MusicVideo>().ToList();
-            var boxsets = filteredItems.OfType<BoxSet>().ToList();
-            var books = filteredItems.OfType<Book>().ToList();
-            var songs = filteredItems.OfType<Audio>().ToList();
-            var series = filteredItems.OfType<Series>().ToList();
+            var filteredItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i.LocationType != LocationType.Virtual && FilterItem(i, request, request.UserId));
 
             var counts = new ItemCounts
             {
-                AlbumCount = albums.Count,
-                EpisodeCount = episodes.Count,
-                GameCount = games.Count,
-                GameSystemCount = filteredItems.OfType<GameSystem>().Count(),
-                MovieCount = movies.Count,
-                SeriesCount = series.Count,
-                SongCount = songs.Count,
-                MusicVideoCount = musicVideos.Count,
-                BoxSetCount = boxsets.Count,
-                BookCount = books.Count,
+                AlbumCount = filteredItems.Count(i => i is MusicAlbum),
+                EpisodeCount = filteredItems.Count(i => i is Episode),
+                GameCount = filteredItems.Count(i => i is Game),
+                GameSystemCount = filteredItems.Count(i => i is GameSystem),
+                MovieCount = filteredItems.Count(i => i is Movie),
+                SeriesCount = filteredItems.Count(i => i is Series),
+                SongCount = filteredItems.Count(i => i is Audio),
+                MusicVideoCount = filteredItems.Count(i => i is MusicVideo),
+                BoxSetCount = filteredItems.Count(i => i is BoxSet),
+                BookCount = filteredItems.Count(i => i is Book),
 
-                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
+                UniqueTypes = filteredItems.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
             return ToOptimizedSerializedResultUsingCache(counts);
         }
 
-        private IEnumerable<T> FilterItems<T>(IEnumerable<T> items, GetItemCounts request, Guid userId)
-            where T : BaseItem
+        private bool FilterItem(BaseItem item, GetItemCounts request, Guid? userId)
         {
-            if (request.IsFavorite.HasValue)
+            if (userId.HasValue)
             {
-                var val = request.IsFavorite.Value;
+                if (request.IsFavorite.HasValue)
+                {
+                    var val = request.IsFavorite.Value;
 
-                items = items.Where(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite == val);
+                    if (_userDataManager.GetUserData(userId.Value, item.GetUserDataKey()).IsFavorite != val)
+                    {
+                        return false;
+                    }
+                }
             }
 
-            return items;
+            return true;
         }
 
         /// <summary>
@@ -711,13 +702,24 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetYearIndex request)
         {
-            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
+            var includeTypes = string.IsNullOrWhiteSpace(request.IncludeItemTypes)
+             ? new string[] { }
+             : request.IncludeItemTypes.Split(',');
 
-            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            Func<BaseItem, bool> filter = i =>
             {
-                var vals = request.IncludeItemTypes.Split(',');
-                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
+                if (includeTypes.Length > 0)
+                {
+                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+
+            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, filter);
 
             var lookup = items
                 .ToLookup(i => i.ProductionYear ?? -1)
@@ -747,8 +749,7 @@ namespace MediaBrowser.Api.Library
             var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)
                 .OfType<MusicAlbum>()
-                .SelectMany(i => i.RecursiveChildren)
-                .OfType<Audio>()
+                .SelectMany(i => i.GetRecursiveChildren(a => a is Audio))
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 

@@ -398,7 +398,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 if (user == null)
                 {
-                    items = ((Folder)item).RecursiveChildren;
+                    items = ((Folder)item).GetRecursiveChildren();
 
                     items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
                 }
@@ -464,7 +464,7 @@ namespace MediaBrowser.Api.UserLibrary
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
 
-                Filter = (i, u) => ApplyAdditionalFilters(request, i, u, true, _libraryManager),
+                Filter = i => ApplyAdditionalFilters(request, i, user, true, _libraryManager),
 
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
