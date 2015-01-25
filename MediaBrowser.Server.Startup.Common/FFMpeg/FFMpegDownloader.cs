@@ -228,9 +228,9 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                             string.Equals(filename, downloadinfo.FFMpegFilename, StringComparison.OrdinalIgnoreCase);
                     }))
                 {
-                    File.Copy(file, Path.Combine(targetFolder, Path.GetFileName(file)), true);
-
-                    SetFilePermissions(targetFolder, file);
+                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
+                    File.Copy(file, targetFile, true);
+                    SetFilePermissions(targetFile);
                 }
             }
             finally
@@ -239,12 +239,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
         }
 
-        private void SetFilePermissions(string targetFolder, string file)
+        private void SetFilePermissions(string path)
         {
             // Linux: File permission to 666, and user's execute bit
             if (_environment.OperatingSystem == OperatingSystem.Bsd || _environment.OperatingSystem == OperatingSystem.Linux || _environment.OperatingSystem == OperatingSystem.Osx)
             {
-                Syscall.chmod(Path.Combine(targetFolder, Path.GetFileName(file)), FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
+                Syscall.chmod(path, FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
             }
         }
 
