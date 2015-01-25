@@ -101,6 +101,10 @@
 
             return [Globalize.translate('LabelSeries')];
         }
+        else if (hint.Type == "BoxSet") {
+
+            return [Globalize.translate('LabelCollection')];
+        }
 
         return [hint.Type];
     }

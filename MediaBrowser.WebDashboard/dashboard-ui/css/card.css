@@ -132,7 +132,7 @@
         opacity: .5;
     }
 
-/*.preview-overlay-container {
+    /*.preview-overlay-container {
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
@@ -152,19 +152,19 @@
     width: 100%;
 }*/
 
-.cardContent .cardFooter {
-    position: absolute;
-    bottom: 0;
-    background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
-    left: 0;
-    right: 0;
-    color: #fff;
-}
+    .cardContent .cardFooter {
+        position: absolute;
+        bottom: 0;
+        background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
+        left: 0;
+        right: 0;
+        color: #fff;
+    }
 
 .cardText {
     text-overflow: ellipsis;
@@ -389,19 +389,14 @@
     }
 }
 
-
-@media all and (min-width: 1920px) {
-
-    .bannerCard {
-        width: 25%;
-    }
-}
-
-
 @media all and (min-width: 2200px) {
 
     .backdropCard {
         width: 16.666666666666666666666666666667%;
+    }
+
+    .bannerCard {
+        width: 25%;
     }
 }
 

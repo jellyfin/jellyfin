@@ -45,6 +45,7 @@
     "LabelFailed": "(failed)",
     "ButtonHelp": "Help",
     "ButtonSave": "Save",
+    "LabelCollection": "Collection",
     "HeaderAddToCollection": "Add to Collection",
     "NewCollectionNameExample": "Example: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Search the internet for artwork and metadata",
