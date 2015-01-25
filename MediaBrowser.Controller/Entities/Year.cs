@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -55,6 +56,12 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return inputItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
+        }
+
+
+        public Func<BaseItem, bool> ItemFilter
+        {
+            get { throw new System.NotImplementedException(); }
         }
     }
 }

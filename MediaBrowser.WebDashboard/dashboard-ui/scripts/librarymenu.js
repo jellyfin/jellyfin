@@ -15,13 +15,15 @@
         html += '</button>';
 
         html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
-        html += '<div class="viewMenuSearch">';
-        html += '<input type="text" data-role="none" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-        html += '<div class="searchInputIcon fa fa-search"></div>';
-        html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch" style="display:none;"><i class="fa fa-close"></i></button>';
-        html += '</div>';
 
+        if (user.localUser) {
 
+            html += '<div class="viewMenuSearch"><form class="viewMenuSearchForm">';
+            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
+            html += '<div class="searchInputIcon fa fa-search"></div>';
+            html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch" style="display:none;"><i class="fa fa-close"></i></button>';
+            html += '</form></div>';
+        }
 
         html += '<div class="viewMenuSecondary">';
 

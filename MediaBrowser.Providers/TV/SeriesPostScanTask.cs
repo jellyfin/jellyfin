@@ -44,8 +44,8 @@ namespace MediaBrowser.Providers.TV
         private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var seriesList = _libraryManager.RootFolder
-                .RecursiveChildren
-                .OfType<Series>()
+                .GetRecursiveChildren(i => i is Series)
+                .Cast<Series>()
                 .ToList();
 
             var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager);
@@ -65,8 +65,8 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var episodes = series.RecursiveChildren
-                    .OfType<Episode>()
+                var episodes = series.GetRecursiveChildren(i => i is Episode)
+                    .Cast<Episode>()
                     .ToList();
 
                 var physicalEpisodes = episodes.Where(i => i.LocationType != LocationType.Virtual)

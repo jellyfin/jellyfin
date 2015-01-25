@@ -56,6 +56,7 @@
     -ms-transition: 0.2s ease-out;
     transition: 0.2s ease-out;
     cursor: pointer;
+    position: relative;
 }
 
 .btn-floating {
@@ -185,7 +186,7 @@ button.btn:not(.btn-inline),button.btn-large:not(.btn-inline) {
 
 .btn i {
     position: absolute;
-    left: 24px;
+    left: 10px;
 }
 
 .btn-large i {

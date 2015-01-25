@@ -139,7 +139,7 @@ namespace MediaBrowser.Providers.TV
         /// <returns></returns>
         private bool HasInvalidContent(IEnumerable<Series> group)
         {
-            var allItems = group.ToList().SelectMany(i => i.RecursiveChildren).ToList();
+            var allItems = group.ToList().SelectMany(i => i.GetRecursiveChildren()).ToList();
 
             return allItems.OfType<Season>().Any(i => !i.IndexNumber.HasValue) ||
                    allItems.OfType<Episode>().Any(i =>
@@ -163,22 +163,23 @@ namespace MediaBrowser.Providers.TV
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task<bool> AddMissingEpisodes(List<Series> series, 
+        private async Task<bool> AddMissingEpisodes(List<Series> series,
             bool seriesHasBadData,
-            string seriesDataPath, 
-            IEnumerable<Tuple<int, int>> episodeLookup, 
+            string seriesDataPath,
+            IEnumerable<Tuple<int, int>> episodeLookup,
             CancellationToken cancellationToken)
         {
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
-                                    from c in s.RecursiveChildren.OfType<Episode>()
+                                    from c in s.GetRecursiveChildren().OfType<Episode>()
                                     select new Tuple<int, Episode>((c.ParentIndexNumber ?? 0) + seasonOffset, c))
                                    .ToList();
 
             var lookup = episodeLookup as IList<Tuple<int, int>> ?? episodeLookup.ToList();
 
             var seasonCounts = (from e in lookup
-                                group e by e.Item1 into g select g)
+                                group e by e.Item1 into g
+                                select g)
                                .ToDictionary(g => g.Key, g => g.Count());
 
             var hasChanges = false;
@@ -244,23 +245,23 @@ namespace MediaBrowser.Providers.TV
         {
             var seriesAndOffsets = series.Select(s => new { Series = s, SeasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1) }).ToList();
 
-            var bestMatch = seriesAndOffsets.FirstOrDefault(s => s.Series.RecursiveChildren.OfType<Season>().Any(season => (season.IndexNumber + s.SeasonOffset) == seasonNumber)) ??
-                            seriesAndOffsets.FirstOrDefault(s => s.Series.RecursiveChildren.OfType<Season>().Any(season => (season.IndexNumber + s.SeasonOffset) == 1)) ??
-                            seriesAndOffsets.OrderBy(s => s.Series.RecursiveChildren.OfType<Season>().Select(season => season.IndexNumber + s.SeasonOffset).Min()).First();
+            var bestMatch = seriesAndOffsets.FirstOrDefault(s => s.Series.GetRecursiveChildren().OfType<Season>().Any(season => (season.IndexNumber + s.SeasonOffset) == seasonNumber)) ??
+                            seriesAndOffsets.FirstOrDefault(s => s.Series.GetRecursiveChildren().OfType<Season>().Any(season => (season.IndexNumber + s.SeasonOffset) == 1)) ??
+                            seriesAndOffsets.OrderBy(s => s.Series.GetRecursiveChildren().OfType<Season>().Select(season => season.IndexNumber + s.SeasonOffset).Min()).First();
 
             return bestMatch.Series;
         }
-        
+
         /// <summary>
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
-        private async Task<bool> RemoveObsoleteOrMissingEpisodes(IEnumerable<Series> series, 
+        private async Task<bool> RemoveObsoleteOrMissingEpisodes(IEnumerable<Series> series,
             IEnumerable<Tuple<int, int>> episodeLookup)
         {
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
-                                   from c in s.RecursiveChildren.OfType<Episode>()
-                                   select new { SeasonOffset = seasonOffset, Episode = c })
+                                    from c in s.GetRecursiveChildren().OfType<Episode>()
+                                    select new { SeasonOffset = seasonOffset, Episode = c })
                                    .ToList();
 
             var physicalEpisodes = existingEpisodes
@@ -320,7 +321,7 @@ namespace MediaBrowser.Providers.TV
         /// <param name="series">The series.</param>
         /// <param name="episodeLookup">The episode lookup.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private async Task<bool> RemoveObsoleteOrMissingSeasons(IEnumerable<Series> series, 
+        private async Task<bool> RemoveObsoleteOrMissingSeasons(IEnumerable<Series> series,
             IEnumerable<Tuple<int, int>> episodeLookup)
         {
             var existingSeasons = (from s in series
@@ -361,7 +362,7 @@ namespace MediaBrowser.Providers.TV
 
                     // Season does not have a number
                     // Remove if there are no episodes directly in series without a season number
-                    return i.Season.Series.RecursiveChildren.OfType<Episode>().All(s => s.ParentIndexNumber.HasValue || !s.IsInSeasonFolder);
+                    return i.Season.Series.GetRecursiveChildren().OfType<Episode>().All(s => s.ParentIndexNumber.HasValue || !s.IsInSeasonFolder);
                 })
                 .ToList();
 

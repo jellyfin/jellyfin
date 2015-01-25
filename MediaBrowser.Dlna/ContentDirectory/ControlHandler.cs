@@ -479,9 +479,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
         {
-            var items = user.RootFolder.GetRecursiveChildren(user)
-                .Where(i => i is Movie || i is Series)
-                .Where(i => i.ContainsPerson(person.Name))
+            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Series && i.ContainsPerson(person.Name))
                 .ToList();
 
             var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
@@ -595,7 +593,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             });
         }
 
-        private bool FilterUnsupportedContent(BaseItem i, User user)
+        private bool FilterUnsupportedContent(BaseItem i)
         {
             // Unplayable
             if (i.LocationType == LocationType.Virtual && !i.IsFolder)

@@ -36,8 +36,8 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
-            var items = GetAllLibraryItems(user, parentIds)
-                .OfType<Series>();
+            var items = GetAllLibraryItems(user, parentIds, i => i is Series)
+                .Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -54,8 +54,9 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var items = parentsFolders.SelectMany(i => i.GetRecursiveChildren(user))
-                .OfType<Series>();
+            var items = parentsFolders
+                .SelectMany(i => i.GetRecursiveChildren(user, s => s is Series))
+                .Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -63,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds)
+        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds, Func<BaseItem,bool> filter)
         {
             if (parentIds.Length > 0)
             {
@@ -71,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 {
                     var folder = (Folder)_libraryManager.GetItemById(new Guid(i));
 
-                    return folder.GetRecursiveChildren(user);
+                    return folder.GetRecursiveChildren(user, filter);
 
                 });
             }
@@ -81,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            return user.RootFolder.GetRecursiveChildren(user);
+            return user.RootFolder.GetRecursiveChildren(user, filter);
         }
 
         public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<Series> series)
@@ -126,6 +127,7 @@ namespace MediaBrowser.Server.Implementations.TV
         {
             // Get them in display order, then reverse
             var allEpisodes = series.GetSeasons(user, true, true)
+                .Where(i => !i.IndexNumber.HasValue || i.IndexNumber.Value != 0)
                 .SelectMany(i => i.GetEpisodes(user, true, true))
                 .Reverse()
                 .ToList();

@@ -145,8 +145,8 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var videos = _libraryManager.RootFolder.RecursiveChildren
-                .OfType<Video>()
+            var videos = _libraryManager.RootFolder.GetRecursiveChildren(i => i is Video)
+                .Cast<Video>()
                 .ToList();
 
             var numComplete = 0;

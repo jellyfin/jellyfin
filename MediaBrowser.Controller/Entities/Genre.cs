@@ -46,7 +46,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase));
+            return inputItems.Where(ItemFilter);
+        }
+
+        public Func<BaseItem, bool> ItemFilter
+        {
+            get { return i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase); }
         }
     }
 }

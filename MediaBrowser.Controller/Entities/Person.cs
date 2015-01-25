@@ -57,7 +57,13 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(i => i.People.Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase)));
+            return inputItems.Where(ItemFilter);
+        }
+
+
+        public Func<BaseItem, bool> ItemFilter
+        {
+            get { return i => i.People.Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase)); }
         }
     }
 

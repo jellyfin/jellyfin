@@ -1322,6 +1322,7 @@ var Dashboard = {
     };
 
     window.ConnectionManager = new MediaBrowser.ConnectionManager(jQuery, Logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);
+
     if (Dashboard.isConnectMode()) {
 
         $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
@@ -1355,7 +1356,9 @@ var Dashboard = {
         ConnectionManager.addApiClient(ApiClient);
     }
 
-    Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+    if (window.ApiClient) {
+        Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+    }
 
 })();
 

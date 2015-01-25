@@ -1361,6 +1361,13 @@
                 lines.push(itemCountHtml);
             }
 
+            if (options.textLines) {
+                var additionalLines = options.textLines(item);
+                for (var i = 0, length = additionalLines.length; i < length; i++) {
+                    lines.push(additionalLines[i]);
+                }
+            }
+
             if (options.showSongCount) {
 
                 var songLine = '';

@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return RecursiveChildren.OfType<Audio>();
+                return GetRecursiveChildren(i => i is Audio).Cast<Audio>();
             }
         }
 
@@ -173,7 +173,8 @@ namespace MediaBrowser.Controller.Entities.Audio
                 id.ArtistProviderIds = artist.ProviderIds;
             }
 
-            id.SongInfos = RecursiveChildren.OfType<Audio>()
+            id.SongInfos = GetRecursiveChildren(i => i is Audio)
+                .Cast<Audio>()
                 .Select(i => i.GetLookupInfo())
                 .ToList();
 

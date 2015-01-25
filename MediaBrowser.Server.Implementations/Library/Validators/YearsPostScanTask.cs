@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allYears = _libraryManager.RootFolder.RecursiveChildren
+            var allYears = _libraryManager.RootFolder.GetRecursiveChildren(i => i.ProductionYear.HasValue)
                 .Select(i => i.ProductionYear ?? -1)
                 .Where(i => i > 0)
                 .Distinct()

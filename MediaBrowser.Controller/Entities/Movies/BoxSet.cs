@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class BoxSet
     /// </summary>
-    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer, IHasShares
+    public class BoxSet : Folder, IHasTrailers, IHasKeywords, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>, IMetadataContainer, IHasShares
     {
         public List<Share> Shares { get; set; }
 
@@ -54,14 +54,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Keywords { get; set; }
-
-        public string PreferredMetadataLanguage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         /// <summary>
         /// Gets or sets the display order.
@@ -103,7 +95,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             var currentOfficialRating = OfficialRating;
 
             // Gather all possible ratings
-            var ratings = RecursiveChildren
+            var ratings = GetRecursiveChildren()
                 .Concat(GetLinkedChildren())
                 .Where(i => i is Movie || i is Series)
                 .Select(i => i.OfficialRating)
@@ -148,7 +140,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             // Refresh bottom up, children first, then the boxset
             // By then hopefully the  movies within will have Tmdb collection values
-            var items = RecursiveChildren.ToList();
+            var items = GetRecursiveChildren().ToList();
 
             var totalItems = items.Count;
             var percentages = new Dictionary<Guid, double>(totalItems);

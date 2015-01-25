@@ -215,7 +215,7 @@ namespace MediaBrowser.Api
             {
                 var folder = (Folder)item;
 
-                foreach (var child in folder.RecursiveChildren.ToList())
+                foreach (var child in folder.GetRecursiveChildren())
                 {
                     child.IsLocked = newLockData;
                     await child.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);

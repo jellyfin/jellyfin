@@ -256,10 +256,10 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OfType<Episode>();
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Episode);
 
-            var itemsList = _libraryManager.Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
+            var itemsList = _libraryManager
+                .Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
                 .Cast<Episode>()
                 .ToList();
 
@@ -450,24 +450,25 @@ namespace MediaBrowser.Api
                 episodes = episodes.Where(i => i.IsVirtualUnaired == val);
             }
 
+            IEnumerable<BaseItem> returnItems = episodes;
+
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                episodes = UserViewBuilder.FilterForAdjacency(episodes, request.AdjacentTo)
-                    .Cast<Episode>();
+                returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            episodes = _libraryManager.ReplaceVideosWithPrimaryVersions(episodes).Cast<Episode>();
+            returnItems = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems);
 
             var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(episodes, dtoOptions, user)
+            var dtos = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
             {
-                TotalRecordCount = returnItems.Length,
-                Items = returnItems
+                TotalRecordCount = dtos.Length,
+                Items = dtos
             };
         }
     }

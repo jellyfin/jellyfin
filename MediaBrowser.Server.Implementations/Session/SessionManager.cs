@@ -899,10 +899,9 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var items = user == null ? folder.RecursiveChildren :
-                    folder.GetRecursiveChildren(user);
-
-                items = items.Where(i => !i.IsFolder);
+                var items = user == null ? 
+                    folder.GetRecursiveChildren(i => !i.IsFolder) :
+                    folder.GetRecursiveChildren(user, i => !i.IsFolder);
 
                 items = items.OrderBy(i => i.SortName);
 

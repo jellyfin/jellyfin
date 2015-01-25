@@ -110,10 +110,10 @@ namespace MediaBrowser.Providers.TV
                 .Select(Path.GetFileName)
                 .ToList();
 
-            var seriesIdsInLibrary = _libraryManager.RootFolder.RecursiveChildren
-               .OfType<Series>()
+            var seriesIdsInLibrary = _libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
+               .Cast<Series>()
                .Select(i => i.GetProviderId(MetadataProviders.Tvdb))
-               .Where(i => !string.IsNullOrEmpty(i))
                .ToList();
 
             var missingSeries = seriesIdsInLibrary.Except(existingDirectories, StringComparer.OrdinalIgnoreCase)
@@ -301,9 +301,9 @@ namespace MediaBrowser.Providers.TV
             var numComplete = 0;
 
             // Gather all series into a lookup by tvdb id
-            var allSeries = _libraryManager.RootFolder.RecursiveChildren
-                .OfType<Series>()
-                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
+            var allSeries = _libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
+                .Cast<Series>()
                 .ToLookup(i => i.GetProviderId(MetadataProviders.Tvdb));
 
             foreach (var seriesId in list)

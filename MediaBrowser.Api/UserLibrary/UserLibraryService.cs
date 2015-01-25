@@ -259,7 +259,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string EnableImageTypes { get; set; }
-        
+
         public GetLatestMedia()
         {
             Limit = 20;
@@ -304,36 +304,45 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            // Avoid implicitly captured closure
-            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
-                GetItemsConfiguredForLatest(user) :
-                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId);
-
-            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated)
-                .Where(i => i.LocationType != LocationType.Virtual);
-
-
-            //if (request.IsFolder.HasValue)
-            //{
-            //var val = request.IsFolder.Value;
-            libraryItems = libraryItems.Where(f => f.IsFolder == false);
-            //}
-
-            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
-            {
-                var vals = request.IncludeItemTypes.Split(',');
-                libraryItems = libraryItems.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
+            var includeTypes = string.IsNullOrWhiteSpace(request.IncludeItemTypes)
+                ? new string[] { }
+                : request.IncludeItemTypes.Split(',');
 
             var currentUser = user;
+
+            Func<BaseItem, bool> filter = i =>
+            {
+                if (includeTypes.Length > 0)
+                {
+                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsPlayed.HasValue)
+                {
+                    var val = request.IsPlayed.Value;
+                    if (i.IsPlayed(currentUser) != val)
+                    {
+                        return false;
+                    }
+                }
+
+                return i.LocationType != LocationType.Virtual && !i.IsFolder;
+            };
+
+            // Avoid implicitly captured closure
+            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
+                GetItemsConfiguredForLatest(user, filter) :
+                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, filter);
+
+            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated);
 
             if (request.IsPlayed.HasValue)
             {
                 var takeLimit = request.Limit * 20;
-
-                var val = request.IsPlayed.Value;
-                libraryItems = libraryItems.Where(f => f.IsPlayed(currentUser) == val)
-                    .Take(takeLimit);
+                libraryItems = libraryItems.Take(takeLimit);
             }
 
             // Avoid implicitly captured closure
@@ -394,12 +403,15 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(dtos.ToList());
         }
 
-        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user)
+        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user, Func<BaseItem,bool> filter)
         {
+            // Avoid implicitly captured closure
+            var currentUser = user;
+
             return user.RootFolder.GetChildren(user, true)
                 .OfType<Folder>()
                 .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
-                .SelectMany(i => i.GetRecursiveChildren(user))
+                .SelectMany(i => i.GetRecursiveChildren(currentUser, filter))
                 .DistinctBy(i => i.Id);
         }
 
@@ -453,8 +465,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var currentUser = user;
 
                 var dtos = series
-                    .GetRecursiveChildren()
-                    .Where(i => i is Episode && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
+                    .GetRecursiveChildren(i => i is Episode && i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .OrderBy(i =>
                     {
                         if (i.PremiereDate.HasValue)

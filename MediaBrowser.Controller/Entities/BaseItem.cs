@@ -1155,7 +1155,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
             {
-                return LibraryManager.RootFolder.RecursiveChildren.FirstOrDefault(i =>
+                return LibraryManager.RootFolder.GetRecursiveChildren(i =>
                 {
                     if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1173,7 +1173,8 @@ namespace MediaBrowser.Controller.Entities
                     }
 
                     return false;
-                });
+
+                }).FirstOrDefault();
             }
 
             return null;

@@ -66,6 +66,45 @@
         return data.replace(regexp, "<b>$1</b>");
     }
 
+    function getAdditionalTextLines(hint) {
+
+        if (hint.Type == "Audio") {
+
+            return [[hint.AlbumArtist, hint.Album].join(" - ")];
+
+        }
+        else if (hint.Type == "MusicAlbum") {
+
+            return [hint.AlbumArtist];
+
+        }
+        else if (hint.Type == "MusicArtist") {
+
+            return [Globalize.translate('LabelArtist')];
+
+        }
+        else if (hint.Type == "Movie") {
+
+            return [Globalize.translate('LabelMovie')];
+
+        }
+        else if (hint.Type == "MusicVideo") {
+
+            return [Globalize.translate('LabelMusicVideo')];
+        }
+        else if (hint.Type == "Episode") {
+
+            return [Globalize.translate('LabelEpisode')];
+
+        }
+        else if (hint.Type == "Series") {
+
+            return [Globalize.translate('LabelSeries')];
+        }
+
+        return [hint.Type];
+    }
+
     function getSearchHintHtml(hint) {
 
         var html = '';
@@ -314,7 +353,8 @@
             lazy: true,
             overlayText: false,
             showTitle: true,
-            centerText: true
+            coverImage: true,
+            textLines: getAdditionalTextLines
         });
         $('.itemsContainer', elem).html(html).lazyChildren();
     }

@@ -288,18 +288,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             var itemByName = item as IItemByName;
             if (itemByName != null)
             {
-                var items = user.RootFolder
-                    .GetRecursiveChildren(user);
-
-                return itemByName.GetTaggedItems(items);
+                return user.RootFolder
+                    .GetRecursiveChildren(user, itemByName.ItemFilter);
             }
 
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
-                var items = folder.GetRecursiveChildren(user);
-
-                items = items.Where(i => !i.IsFolder);
+                var items = folder.GetRecursiveChildren(user, i => !i.IsFolder);
 
                 if (!folder.IsPreSorted)
                 {

@@ -56,45 +56,51 @@ namespace MediaBrowser.Api.UserLibrary
         protected ItemsResult GetResult(GetItemsByName request)
         {
             User user = null;
-            BaseItem item;
+            BaseItem parentItem;
             List<BaseItem> libraryItems;
 
             if (request.UserId.HasValue)
             {
                 user = UserManager.GetUserById(request.UserId.Value);
-                item = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
-
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
                 libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
             }
             else
             {
-                item = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
-
-                libraryItems = LibraryManager.RootFolder.RecursiveChildren.ToList();
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
+                libraryItems = LibraryManager.RootFolder.GetRecursiveChildren().ToList();
             }
 
             IEnumerable<BaseItem> items;
 
-            if (item.IsFolder)
+            var excludeItemTypes = request.GetExcludeItemTypes();
+            var includeItemTypes = request.GetIncludeItemTypes();
+            var mediaTypes = request.GetMediaTypes();
+
+            Func<BaseItem, bool> filter = i => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
+
+            if (parentItem.IsFolder)
             {
-                var folder = (Folder)item;
+                var folder = (Folder)parentItem;
 
                 if (request.UserId.HasValue)
                 {
-                    items = request.Recursive ? folder.GetRecursiveChildren(user) : folder.GetChildren(user, true);
+                    items = request.Recursive ?
+                        folder.GetRecursiveChildren(user, filter) :
+                        folder.GetChildren(user, true).Where(filter);
                 }
                 else
                 {
-                    items = request.Recursive ? folder.GetRecursiveChildren() : folder.Children;
+                    items = request.Recursive ?
+                        folder.GetRecursiveChildren(filter) :
+                        folder.Children.Where(filter);
                 }
             }
             else
             {
-                items = new[] { item };
+                items = new[] { parentItem }.Where(filter);
             }
-
-            items = FilterItems(request, items);
 
             var extractedItems = GetAllItems(request, items);
 
@@ -290,33 +296,41 @@ namespace MediaBrowser.Api.UserLibrary
         /// Filters the items.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <param name="items">The items.</param>
+        /// <param name="f">The f.</param>
+        /// <param name="excludeItemTypes">The exclude item types.</param>
+        /// <param name="includeItemTypes">The include item types.</param>
+        /// <param name="mediaTypes">The media types.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected virtual IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected bool FilterItem(GetItemsByName request, BaseItem f, string[] excludeItemTypes, string[] includeItemTypes, string[] mediaTypes)
         {
             // Exclude item types
-            if (!string.IsNullOrEmpty(request.ExcludeItemTypes))
+            if (excludeItemTypes.Length > 0)
             {
-                var vals = request.ExcludeItemTypes.Split(',');
-                items = items.Where(f => !vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+                if (excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             // Include item types
-            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            if (includeItemTypes.Length > 0)
             {
-                var vals = request.IncludeItemTypes.Split(',');
-                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
+                if (!includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             // Include MediaTypes
-            if (!string.IsNullOrEmpty(request.MediaTypes))
+            if (mediaTypes.Length > 0)
             {
-                var vals = request.MediaTypes.Split(',');
-
-                items = items.Where(f => vals.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+                if (!mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
-            return items;
+            return true;
         }
 
         /// <summary>

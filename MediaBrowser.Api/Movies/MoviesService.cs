@@ -121,8 +121,7 @@ namespace MediaBrowser.Api.Movies
         {
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .Where(i => i is Movie);
+            IEnumerable<BaseItem> movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Movie);
 
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
@@ -174,11 +173,11 @@ namespace MediaBrowser.Api.Movies
                 (request.UserId.HasValue ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
+            Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
+            
             var inputItems = user == null
-                                 ? _libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
-                                 : user.RootFolder.GetRecursiveChildren(user).Where(i => i.Id != item.Id);
-
-            inputItems = inputItems.Where(includeInSearch);
+                                 ? _libraryManager.RootFolder.GetRecursiveChildren(filter)
+                                 : user.RootFolder.GetRecursiveChildren(user, filter);
 
             var list = inputItems.ToList();
 

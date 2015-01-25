@@ -76,13 +76,13 @@ namespace MediaBrowser.Api
                 (request.UserId.HasValue ? user.RootFolder :
                 libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
-            var fields = request.GetItemFields().ToList();
+            Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
 
             var inputItems = user == null
-                                 ? libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
-                                 : user.RootFolder.GetRecursiveChildren(user).Where(i => i.Id != item.Id);
+                                 ? libraryManager.RootFolder.GetRecursiveChildren(filter)
+                                 : user.RootFolder.GetRecursiveChildren(user, filter);
 
-            var items = GetSimilaritems(item, inputItems.Where(includeInSearch), getSimilarityScore)
+            var items = GetSimilaritems(item, inputItems, getSimilarityScore)
                 .ToList();
 
             IEnumerable<BaseItem> returnItems = items;
@@ -165,7 +165,7 @@ namespace MediaBrowser.Api
 
             // Find common keywords
             points += GetKeywords(item1).Where(i => GetKeywords(item2).Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
-            
+
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
 
