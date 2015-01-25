@@ -899,7 +899,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var items = user == null ? 
+                var items = user == null ?
                     folder.GetRecursiveChildren(i => !i.IsFolder) :
                     folder.GetRecursiveChildren(user, i => !i.IsFolder);
 
@@ -1355,7 +1355,14 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+                try
+                {
+                    await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving device capabilities", ex);
+                }
             }
         }
 

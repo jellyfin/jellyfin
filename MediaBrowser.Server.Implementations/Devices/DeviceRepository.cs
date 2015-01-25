@@ -60,6 +60,12 @@ namespace MediaBrowser.Server.Implementations.Devices
         public Task SaveCapabilities(string reportedId, ClientCapabilities capabilities)
         {
             var device = GetDevice(reportedId);
+
+            if (device == null)
+            {
+                throw new ArgumentException("No device has been registed with id " + reportedId);
+            }
+
             device.Capabilities = capabilities;
             SaveDevice(device);
 
@@ -75,6 +81,11 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public DeviceInfo GetDevice(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             return GetDevices()
                 .FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
