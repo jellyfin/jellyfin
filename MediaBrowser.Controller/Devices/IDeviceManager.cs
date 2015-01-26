@@ -3,7 +3,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -15,6 +14,10 @@ namespace MediaBrowser.Controller.Devices
         /// Occurs when [device options updated].
         /// </summary>
         event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
+        /// <summary>
+        /// Occurs when [camera image uploaded].
+        /// </summary>
+        event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
 
         /// <summary>
         /// Registers the device.

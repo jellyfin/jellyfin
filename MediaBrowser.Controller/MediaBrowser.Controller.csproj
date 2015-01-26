@@ -101,6 +101,7 @@
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Connect\UserLinkResult.cs" />
+    <Compile Include="Devices\CameraImageUploadInfo.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Devices\IDeviceRepository.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
@@ -117,7 +118,6 @@
     <Compile Include="Drawing\ImageStream.cs" />
     <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
-    <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
     <Compile Include="Entities\Audio\IHasMusicGenres.cs" />
     <Compile Include="Entities\Book.cs" />

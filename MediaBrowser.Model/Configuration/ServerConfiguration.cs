@@ -168,7 +168,7 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
 
-        public bool StoreArtistsInMetadata { get; set; }
+        public bool MergeMetadataAndImagesByName { get; set; }
         public bool EnableStandaloneMetadata { get; set; }
 
         /// <summary>

@@ -108,13 +108,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         private TaskResult _lastExecutionResult;
         /// <summary>
-        /// The _last execution resultinitialized
-        /// </summary>
-        private bool _lastExecutionResultinitialized;
-        /// <summary>
         /// The _last execution result sync lock
         /// </summary>
-        private object _lastExecutionResultSyncLock = new object();
+        private readonly object _lastExecutionResultSyncLock = new object();
         /// <summary>
         /// Gets the last execution result.
         /// </summary>
@@ -123,38 +119,39 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _lastExecutionResult, ref _lastExecutionResultinitialized, ref _lastExecutionResultSyncLock, () =>
+                if (_lastExecutionResult == null)
                 {
-                    var path = GetHistoryFilePath();
+                    lock (_lastExecutionResultSyncLock)
+                    {
+                        if (_lastExecutionResult == null)
+                        {
+                            var path = GetHistoryFilePath();
 
-                    try
-                    {
-                        return JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            try
+                            {
+                                return JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            }
+                            catch (DirectoryNotFoundException)
+                            {
+                                // File doesn't exist. No biggie
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                // File doesn't exist. No biggie
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.ErrorException("Error deserializing {0}", ex, path);
+                            }
+                        }
                     }
-                    catch (DirectoryNotFoundException)
-                    {
-                        // File doesn't exist. No biggie
-                        return null;
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // File doesn't exist. No biggie
-                        return null;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error deserializing {0}", ex, path);
-                        return null;
-                    }
-                });
+                }
 
                 return _lastExecutionResult;
             }
             private set
             {
                 _lastExecutionResult = value;
-
-                _lastExecutionResultinitialized = value != null;
             }
         }
 
@@ -227,13 +224,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         private IEnumerable<ITaskTrigger> _triggers;
         /// <summary>
-        /// The _triggers initialized
-        /// </summary>
-        private bool _triggersInitialized;
-        /// <summary>
         /// The _triggers sync lock
         /// </summary>
-        private object _triggersSyncLock = new object();
+        private readonly object _triggersSyncLock = new object();
         /// <summary>
         /// Gets the triggers that define when the task will run
         /// </summary>
@@ -243,7 +236,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, LoadTriggers);
+                if (_triggers == null)
+                {
+                    lock (_triggersSyncLock)
+                    {
+                        if (_triggers == null)
+                        {
+                            _triggers = LoadTriggers();
+                        }
+                    }
+                }
 
                 return _triggers;
             }
@@ -261,8 +263,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 }
 
                 _triggers = value.ToList();
-
-                _triggersInitialized = true;
 
                 ReloadTriggerEvents(false);
 

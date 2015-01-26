@@ -409,12 +409,21 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, InternalItemsQuery query)
         {
-            query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
+            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
+            {
+                UserId = user.Id.ToString("N"),
+                Limit = GetSpecialItemsLimit(),
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
+                ParentId = (parent == null ? null : parent.Id.ToString("N")),
+                GroupItems = true
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is MusicVideo || i is Audio.Audio && FilterItem(i, query));
+            }).Select(i => i.Item1);
 
-            return PostFilterAndSort(items, parent, GetSpecialItemsLimit(), query);
+            query.SortBy = new string[] { };
+
+            //var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is MusicVideo || i is Audio.Audio && FilterItem(i, query));
+
+            return PostFilterAndSort(items, parent, null, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetMovieFolders(Folder parent, User user, InternalItemsQuery query)
@@ -741,7 +750,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> GetGameGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(queryParent, user, new[] {CollectionType.Games},
+            var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Games },
                 i => i is Game && i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase));
 
             return GetResult(items, queryParent, query);
@@ -1686,7 +1695,7 @@ namespace MediaBrowser.Controller.Entities
             return parent.GetRecursiveChildren(user);
         }
 
-        private IEnumerable<BaseItem> GetRecursiveChildren(Folder parent, User user, IEnumerable<string> viewTypes, Func<BaseItem,bool> filter)
+        private IEnumerable<BaseItem> GetRecursiveChildren(Folder parent, User user, IEnumerable<string> viewTypes, Func<BaseItem, bool> filter)
         {
             if (parent == null || parent is UserView)
             {

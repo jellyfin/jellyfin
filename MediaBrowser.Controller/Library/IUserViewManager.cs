@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Querying;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,5 +18,7 @@ namespace MediaBrowser.Controller.Library
         Task<UserView> GetUserView(string type, string sortName, CancellationToken cancellationToken);
 
         Task<UserView> GetUserView(string category, string type, User user, string sortName, CancellationToken cancellationToken);
+
+        List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request);
     }
 }

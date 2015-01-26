@@ -870,14 +870,14 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id.ToString()));
+                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id));
                 }
             }
             else
             {
                 if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id.ToString()));
+                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
                 }
             }
 
@@ -895,6 +895,19 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(new Guid(id));
 
+            var byName = item as IItemByName;
+
+            if (byName != null)
+            {
+                var items = user == null ?
+                    _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && byName.ItemFilter(i)) :
+                    user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && byName.ItemFilter(i));
+
+                items = items.OrderBy(i => i.SortName);
+
+                return items;
+            }
+            
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
@@ -913,37 +926,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
         {
-            var item = _libraryManager.GetItemById(new Guid(id));
+            var item = _libraryManager.GetItemById(id);
 
-            var audio = item as Audio;
-
-            if (audio != null)
-            {
-                return _musicManager.GetInstantMixFromSong(audio, user);
-            }
-
-            var artist = item as MusicArtist;
-
-            if (artist != null)
-            {
-                return _musicManager.GetInstantMixFromArtist(artist.Name, user);
-            }
-
-            var album = item as MusicAlbum;
-
-            if (album != null)
-            {
-                return _musicManager.GetInstantMixFromAlbum(album, user);
-            }
-
-            var genre = item as MusicGenre;
-
-            if (genre != null)
-            {
-                return _musicManager.GetInstantMixFromGenres(new[] { genre.Name }, user);
-            }
-
-            return new BaseItem[] { };
+            return _musicManager.GetInstantMixFromItem(item, user);
         }
 
         public Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken)

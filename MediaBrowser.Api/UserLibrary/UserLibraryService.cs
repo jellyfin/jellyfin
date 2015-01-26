@@ -228,7 +228,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "Limit", Description = "Limit", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int Limit { get; set; }
@@ -304,81 +304,15 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var includeTypes = string.IsNullOrWhiteSpace(request.IncludeItemTypes)
-                ? new string[] { }
-                : request.IncludeItemTypes.Split(',');
-
-            var currentUser = user;
-
-            Func<BaseItem, bool> filter = i =>
+            var list = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
-                if (includeTypes.Length > 0)
-                {
-                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsPlayed.HasValue)
-                {
-                    var val = request.IsPlayed.Value;
-                    if (i.IsPlayed(currentUser) != val)
-                    {
-                        return false;
-                    }
-                }
-
-                return i.LocationType != LocationType.Virtual && !i.IsFolder;
-            };
-
-            // Avoid implicitly captured closure
-            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
-                GetItemsConfiguredForLatest(user, filter) :
-                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, filter);
-
-            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated);
-
-            if (request.IsPlayed.HasValue)
-            {
-                var takeLimit = request.Limit * 20;
-                libraryItems = libraryItems.Take(takeLimit);
-            }
-
-            // Avoid implicitly captured closure
-            var items = libraryItems
-                .ToList();
-
-            var list = new List<Tuple<BaseItem, List<BaseItem>>>();
-
-            foreach (var item in items)
-            {
-                // Only grab the index container for media
-                var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
-
-                if (container == null)
-                {
-                    list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
-                }
-                else
-                {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id == container.Id);
-
-                    if (current != null)
-                    {
-                        current.Item2.Add(item);
-                    }
-                    else
-                    {
-                        list.Add(new Tuple<BaseItem, List<BaseItem>>(container, new List<BaseItem> { item }));
-                    }
-                }
-
-                if (list.Count >= request.Limit)
-                {
-                    break;
-                }
-            }
+                GroupItems = request.GroupItems,
+                IncludeItemTypes = (request.IncludeItemTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray(),
+                IsPlayed = request.IsPlayed,
+                Limit = request.Limit,
+                ParentId = request.ParentId,
+                UserId = request.UserId
+            });
 
             var options = GetDtoOptions(request);
 
@@ -401,18 +335,6 @@ namespace MediaBrowser.Api.UserLibrary
             });
 
             return ToOptimizedResult(dtos.ToList());
-        }
-
-        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user, Func<BaseItem,bool> filter)
-        {
-            // Avoid implicitly captured closure
-            var currentUser = user;
-
-            return user.RootFolder.GetChildren(user, true)
-                .OfType<Folder>()
-                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
-                .SelectMany(i => i.GetRecursiveChildren(currentUser, filter))
-                .DistinctBy(i => i.Id);
         }
 
         public async Task<object> Get(GetUserViews request)

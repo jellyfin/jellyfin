@@ -27,6 +27,8 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly IConfigurationManager _config;
         private readonly ILogger _logger;
 
+        public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
+
         /// <summary>
         /// Occurs when [device options updated].
         /// </summary>
@@ -116,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             {
                 devices = devices.Where(i => CanAccessDevice(query.UserId, i.Id));
             }
-            
+
             var array = devices.ToArray();
             return new QueryResult<DeviceInfo>
             {
@@ -137,7 +139,8 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public async Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file)
         {
-            var path = GetUploadPath(deviceId);
+            var device = GetDevice(deviceId);
+            var path = GetUploadPath(device);
 
             if (!string.IsNullOrWhiteSpace(file.Album))
             {
@@ -163,11 +166,27 @@ namespace MediaBrowser.Server.Implementations.Devices
             {
                 _libraryMonitor.ReportFileSystemChangeComplete(path, true);
             }
+
+            if (CameraImageUploaded != null)
+            {
+                EventHelper.FireEventIfNotNull(CameraImageUploaded, this, new GenericEventArgs<CameraImageUploadInfo>
+                {
+                    Argument = new CameraImageUploadInfo
+                    {
+                        Device = device,
+                        FileInfo = file
+                    }
+                }, _logger);
+            }
         }
 
         private string GetUploadPath(string deviceId)
         {
-            var device = GetDevice(deviceId);
+            return GetUploadPath(GetDevice(deviceId));
+        }
+
+        private string GetUploadPath(DeviceInfo device)
+        {
             if (!string.IsNullOrWhiteSpace(device.CameraUploadPath))
             {
                 return device.CameraUploadPath;

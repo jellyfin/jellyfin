@@ -113,38 +113,17 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
-            // Grab these explicitly to avoid the sorting that will happen below
-            var collection = item as BoxSet;
-            if (collection != null)
-            {
-                var items = user == null
-                    ? collection.Children
-                    : collection.GetChildren(user, true);
-
-                return items
-                   .Where(m => !m.IsFolder);
-            }
-
-            // Grab these explicitly to avoid the sorting that will happen below
-            var season = item as Season;
-            if (season != null)
-            {
-                var items = user == null
-                    ? season.Children
-                    : season.GetChildren(user, true);
-
-                return items
-                   .Where(m => !m.IsFolder);
-            }
-
             var folder = item as Folder;
-
             if (folder != null)
             {
                 var items = user == null
                     ? folder.GetRecursiveChildren(m => !m.IsFolder)
                     : folder.GetRecursiveChildren(user, m => !m.IsFolder);
 
+                if (folder.IsPreSorted)
+                {
+                    return items;
+                }
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
             }
 

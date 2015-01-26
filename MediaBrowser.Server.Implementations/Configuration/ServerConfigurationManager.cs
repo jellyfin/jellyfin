@@ -88,9 +88,12 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// </summary>
         private void UpdateItemsByNamePath()
         {
-            ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ?
-                null :
-                Configuration.ItemsByNamePath;
+            if (!Configuration.MergeMetadataAndImagesByName)
+            {
+                ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ?
+                    null :
+                    Configuration.ItemsByNamePath;
+            }
         }
 
         /// <summary>
@@ -101,6 +104,11 @@ namespace MediaBrowser.Server.Implementations.Configuration
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrEmpty(Configuration.MetadataPath) ?
                 GetInternalMetadataPath() :
                 Configuration.MetadataPath;
+
+            if (Configuration.MergeMetadataAndImagesByName)
+            {
+                ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath;
+            }
         }
 
         private string GetInternalMetadataPath()

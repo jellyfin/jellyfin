@@ -73,44 +73,44 @@ namespace MediaBrowser.Api.Music
 
         public object Get(GetInstantMixFromArtistId request)
         {
-            var item = (MusicArtist)_libraryManager.GetItemById(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var items = _musicManager.GetInstantMixFromArtist(item.Name, user);
+            var items = _musicManager.GetInstantMixFromItem(item, user);
 
             return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromMusicGenreId request)
         {
-            var item = (MusicGenre)_libraryManager.GetItemById(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var items = _musicManager.GetInstantMixFromGenres(new[] { item.Name }, user);
+            var items = _musicManager.GetInstantMixFromItem(item, user);
 
             return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromSong request)
         {
-            var item = (Audio)_libraryManager.GetItemById(request.Id);
+            var item = _libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var items = _musicManager.GetInstantMixFromSong(item, user);
+            var items = _musicManager.GetInstantMixFromItem(item, user);
 
             return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromAlbum request)
         {
-            var album = (MusicAlbum)_libraryManager.GetItemById(request.Id);
+            var album = _libraryManager.GetItemById(request.Id);
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var items = _musicManager.GetInstantMixFromAlbum(album, user);
+            var items = _musicManager.GetInstantMixFromItem(album, user);
 
             return GetResult(items, user, request);
         }
@@ -121,7 +121,7 @@ namespace MediaBrowser.Api.Music
 
             var user = _userManager.GetUserById(request.UserId.Value);
 
-            var items = _musicManager.GetInstantMixFromPlaylist(playlist, user);
+            var items = _musicManager.GetInstantMixFromItem(playlist, user);
 
             return GetResult(items, user, request);
         }

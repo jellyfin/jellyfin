@@ -143,42 +143,23 @@ namespace MediaBrowser.Controller.Entities.Movies
             var items = GetRecursiveChildren().ToList();
 
             var totalItems = items.Count;
-            var percentages = new Dictionary<Guid, double>(totalItems);
+            var numComplete = 0;
 
             // Refresh songs
             foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var innerProgress = new ActionableProgress<double>();
 
-                // Avoid implicitly captured closure
-                var currentChild = item;
-                innerProgress.RegisterAction(p =>
-                {
-                    lock (percentages)
-                    {
-                        percentages[currentChild.Id] = p / 100;
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
-                        var percent = percentages.Values.Sum();
-                        percent /= totalItems;
-                        percent *= 100;
-                        progress.Report(percent);
-                    }
-                });
-
-                // Avoid implicitly captured closure
-                await RefreshItem(item, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false);
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
             }
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
-        }
-
-        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }

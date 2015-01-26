@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Notifications;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Notifications;
 using System;
 using System.Collections.Generic;
@@ -137,6 +136,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
                      Type = NotificationType.VideoPlaybackStopped.ToString(),
                      DefaultTitle = "{UserName} has finished playing {ItemName} on {DeviceName}.",
                      Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}
+                },
+
+                new NotificationTypeInfo
+                {
+                     Type = NotificationType.CameraImageUploaded.ToString(),
+                     DefaultTitle = "A new camera image has been uploaded from {DeviceName}.",
+                     Variables = new List<string>{"DeviceName"}
                 }
             };
 
@@ -171,9 +177,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
             {
                 note.Category = _localization.GetLocalizedString("CategoryUser");
             }
-            else   if (note.Type.IndexOf("Plugin", StringComparison.OrdinalIgnoreCase) != -1)
+            else if (note.Type.IndexOf("Plugin", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 note.Category = _localization.GetLocalizedString("CategoryPlugin");
+            }
+            else if (note.Type.IndexOf("CameraImageUploaded", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                note.Category = _localization.GetLocalizedString("CategorySync");
             }
             else
             {

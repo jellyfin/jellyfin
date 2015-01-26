@@ -129,43 +129,20 @@ namespace MediaBrowser.Controller.Entities.Audio
             var others = items.Except(songs).ToList();
 
             var totalItems = songs.Count + others.Count;
-            var percentages = new Dictionary<Guid, double>(totalItems);
-
-            var tasks = new List<Task>();
+            var numComplete = 0;
 
             // Refresh songs
             foreach (var item in songs)
             {
-                if (tasks.Count >= 2)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
-                var innerProgress = new ActionableProgress<double>();
 
-                // Avoid implicitly captured closure
-                var currentChild = item;
-                innerProgress.RegisterAction(p =>
-                {
-                    lock (percentages)
-                    {
-                        percentages[currentChild.Id] = p / 100;
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
-                        var percent = percentages.Values.Sum();
-                        percent /= totalItems;
-                        percent *= 100;
-                        progress.Report(percent);
-                    }
-                });
-
-                var taskChild = item;
-                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            tasks.Clear();
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -175,27 +152,13 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Avoid implicitly captured closure
-                var currentChild = item;
-
                 await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                lock (percentages)
-                {
-                    percentages[currentChild.Id] = 1;
 
-                    var percent = percentages.Values.Sum();
-                    percent /= totalItems;
-                    percent *= 100;
-                    progress.Report(percent);
-                }
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
             }
-
-            progress.Report(100);
-        }
-
-        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }
