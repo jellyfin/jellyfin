@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -24,6 +25,7 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -36,6 +38,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -48,8 +51,8 @@ namespace MediaBrowser.Controller.Entities
         {
             int year;
 
-            var usCulture = new CultureInfo("en-US"); 
-            
+            var usCulture = new CultureInfo("en-US");
+
             if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out year))
             {
                 return inputItems;
@@ -58,10 +61,22 @@ namespace MediaBrowser.Controller.Entities
             return inputItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
         }
 
-
-        public Func<BaseItem, bool> ItemFilter
+        public int? GetYearValue()
         {
-            get { throw new System.NotImplementedException(); }
+            int i;
+
+            if (int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out i))
+            {
+                return i;
+            }
+
+            return null;
+        }
+
+        public Func<BaseItem, bool> GetItemFilter()
+        {
+            var val = GetYearValue();
+            return i => i.ProductionYear.HasValue && val.HasValue && i.ProductionYear.Value == val.Value;
         }
     }
 }

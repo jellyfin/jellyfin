@@ -712,14 +712,10 @@ namespace MediaBrowser.Dlna.PlayTo
             if (avService == null)
                 return;
 
-            var url = avService.ScpdUrl;
-            if (!url.Contains("/"))
-                url = "/dmr/" + url;
-            if (!url.StartsWith("/"))
-                url = "/" + url;
+            string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(Properties.BaseUrl + url);
+            var document = await httpClient.GetDataAsync(url);
 
             AvCommands = TransportCommands.Create(document);
         }
@@ -730,16 +726,28 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (avService == null)
                 return;
-            string url = avService.ScpdUrl;
+            string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
+
+            var httpClient = new SsdpHttpClient(_httpClient, _config);
+            var document = await httpClient.GetDataAsync(url);
+
+            RendererCommands = TransportCommands.Create(document);
+        }
+
+        private string NormalizeUrl(string baseUrl, string url)
+        {
+            // If it's already a complete url, don't stick anything onto the front of it
+            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return url;
+            }
+
             if (!url.Contains("/"))
                 url = "/dmr/" + url;
             if (!url.StartsWith("/"))
                 url = "/" + url;
 
-            var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(Properties.BaseUrl + url);
-
-            RendererCommands = TransportCommands.Create(document);
+            return baseUrl + url;
         }
 
         private TransportCommands AvCommands

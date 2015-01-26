@@ -95,9 +95,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (byName != null && !(item is LiveTvChannel))
                 {
+                    var itemFilter = byName.GetItemFilter();
+
                     var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user, byName.ItemFilter) :
-                       _libraryManager.RootFolder.GetRecursiveChildren(byName.ItemFilter);
+                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
                     SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                 }
@@ -118,9 +120,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
+                var itemFilter = byName.GetItemFilter();
+
                 var libraryItems = user != null ?
-                   user.RootFolder.GetRecursiveChildren(user, byName.ItemFilter) :
-                   _libraryManager.RootFolder.GetRecursiveChildren(byName.ItemFilter);
+                   user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                   _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
                 SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
 

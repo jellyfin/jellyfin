@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems);
 
-        Func<BaseItem, bool> ItemFilter { get; }
+        Func<BaseItem, bool> GetItemFilter();
     }
 
     public interface IHasDualAccess : IItemByName

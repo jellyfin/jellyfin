@@ -50,7 +50,7 @@ namespace MediaBrowser.XbmcMetadata
                         return;
                     }
 
-                    var items = _libraryManager.RootFolder.GetRecursiveChildren(person.ItemFilter);
+                    var items = _libraryManager.RootFolder.GetRecursiveChildren(person.GetItemFilter());
 
                     foreach (var item in items)
                     {

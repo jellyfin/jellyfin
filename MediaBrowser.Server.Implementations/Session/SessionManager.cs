@@ -899,9 +899,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (byName != null)
             {
+                var itemFilter = byName.GetItemFilter();
+
                 var items = user == null ?
-                    _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && byName.ItemFilter(i)) :
-                    user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && byName.ItemFilter(i));
+                    _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)) :
+                    user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && itemFilter(i));
 
                 items = items.OrderBy(i => i.SortName);
 

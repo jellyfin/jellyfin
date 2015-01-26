@@ -43,8 +43,10 @@ namespace MediaBrowser.Providers.Music
             {
                 if (!item.IsLocked)
                 {
+                    var itemFilter = item.GetItemFilter();
+
                     var taggedItems = item.IsAccessedByName ?
-                        _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && item.ItemFilter(i)).ToList() :
+                        _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)).ToList() :
                         item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder).ToList();
 
                     if (!item.LockedFields.Contains(MetadataFields.Genres))
