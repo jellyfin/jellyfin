@@ -289,7 +289,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             if (itemByName != null)
             {
                 return user.RootFolder
-                    .GetRecursiveChildren(user, itemByName.ItemFilter);
+                    .GetRecursiveChildren(user, itemByName.GetItemFilter());
             }
 
             if (item.IsFolder)

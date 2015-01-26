@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public string ServiceName { get; set; }
 
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
@@ -36,6 +38,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        [IgnoreDataMember]
         public override LocationType LocationType
         {
             get
@@ -53,6 +56,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get

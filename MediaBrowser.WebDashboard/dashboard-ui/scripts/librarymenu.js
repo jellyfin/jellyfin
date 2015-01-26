@@ -57,7 +57,7 @@
         html += '</a>';
 
         if (user.canManageServer) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight"><div class="fa fa-cog"></div></a>';
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton"><div class="fa fa-cog"></div></a>';
         }
 
         html += '</div>';
@@ -88,7 +88,7 @@
         html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-dashboard sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';

@@ -270,6 +270,11 @@
     .editorViewMenu {
         display: none;
     }
+
+    /* They can use the left menu */
+    .dashboardEntryHeaderButton {
+        display: none;
+    }
 }
 
 .libraryDocument .dashboardMenuButton {
