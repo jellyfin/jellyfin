@@ -2,6 +2,12 @@
 
     function loadPage(page, config) {
 
+        if (config.MergeMetadataAndImagesByName) {
+            $('.fldImagesByName', page).hide();
+        } else {
+            $('.fldImagesByName', page).show();
+        }
+
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
         $('#chkEnableRealtimeMonitor', page).checked(config.EnableRealtimeMonitor).checkboxradio("refresh");

@@ -93,7 +93,8 @@ namespace MediaBrowser.Server.Implementations.TV
             return FilterSeries(request, series)
                 .AsParallel()
                 .Select(i => GetNextUp(i, currentUser))
-                .Where(i => i.Item1 != null)
+                // Include if an episode was found, and either the series is not unwatched or the specific series was requested
+                .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
                 .OrderByDescending(i =>
                 {
                     var episode = i.Item1;
@@ -123,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.TV
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
+        private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
             // Get them in display order, then reverse
             var allEpisodes = series.GetSeasons(user, true, true)
@@ -162,13 +163,13 @@ namespace MediaBrowser.Server.Implementations.TV
 
             if (lastWatched != null)
             {
-                return new Tuple<Episode, DateTime>(nextUp, lastWatchedDate);
+                return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
             }
 
             var firstEpisode = allEpisodes.LastOrDefault(i => i.LocationType != LocationType.Virtual && !i.IsPlayed(user));
 
             // Return the first episode
-            return new Tuple<Episode, DateTime>(firstEpisode, DateTime.MinValue);
+            return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);
         }
 
         private IEnumerable<Series> FilterSeries(NextUpQuery request, IEnumerable<Series> items)

@@ -19,7 +19,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#metadataKodiPage", function () {
+    $(document).on('pageshow', "#metadataNfoPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -34,7 +34,7 @@
         });
     });
 
-    window.KodiMetadataPage = {
+    window.NfoMetadataPage = {
 
         onSubmit: function () {
 

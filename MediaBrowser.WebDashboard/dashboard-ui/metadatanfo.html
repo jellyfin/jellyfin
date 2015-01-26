@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataKodiPage" data-role="page" class="page type-interior metadataConfigurationPage">
+    <div id="metadataNfoPage" data-role="page" class="page type-interior metadataConfigurationPage">
 
         <div data-role="content">
 
@@ -13,11 +13,11 @@
                     <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html" data-role="button">${TabServices}</a>
                     <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
-                    <a href="#" class="ui-btn-active" data-role="button">${TabKodiMetadata}</a>
+                    <a href="#" class="ui-btn-active" data-role="button">${TabNfo}</a>
                     <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
-                <form class="metadataKodiForm">
+                <form class="metadataNfoForm">
 
                     <p>${HeaderKodiMetadataHelp}</p>
                     <br />
@@ -25,8 +25,7 @@
 
                         <li>
                             <label for="selectUser">${LabelKodiMetadataUser}</label>
-                            <select name="selectUser" id="selectUser" data-mini="true">
-                            </select>
+                            <select name="selectUser" id="selectUser" data-mini="true"></select>
                             <div class="fieldDescription">${LabelKodiMetadataUserHelp}</div>
                         </li>
 
@@ -73,7 +72,7 @@
         </div>
 
         <script type="text/javascript">
-            $('.metadataKodiForm').off('submit', KodiMetadataPage.onSubmit).on('submit', KodiMetadataPage.onSubmit);
+            $('.metadataNfoForm').off('submit', NfoMetadataPage.onSubmit).on('submit', NfoMetadataPage.onSubmit);
         </script>
     </div>
 </body>

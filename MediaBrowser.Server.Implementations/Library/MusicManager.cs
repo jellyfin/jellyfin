@@ -83,5 +83,40 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Take(100)
                 .OrderBy(i => Guid.NewGuid());
         }
+
+        public IEnumerable<Audio> GetInstantMixFromItem(BaseItem item, User user)
+        {
+            var genre = item as MusicGenre;
+            if (genre != null)
+            {
+                return GetInstantMixFromGenres(new[] { item.Name }, user);
+            }
+
+            var playlist = item as Playlist;
+            if (playlist != null)
+            {
+                return GetInstantMixFromPlaylist(playlist, user);
+            }
+
+            var album = item as MusicAlbum;
+            if (album != null)
+            {
+                return GetInstantMixFromAlbum(album, user);
+            }
+
+            var artist = item as MusicArtist;
+            if (artist != null)
+            {
+                return GetInstantMixFromArtist(artist.Name, user);
+            }
+
+            var song = item as Audio;
+            if (song != null)
+            {
+                return GetInstantMixFromSong(song, user);
+            }
+            
+            return new Audio[] { };
+        }
     }
 }

@@ -480,7 +480,7 @@
     <Content Include="dashboard-ui\librarypathmapping.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\metadatakodi.html">
+    <Content Include="dashboard-ui\metadatanfo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\mypreferencesdisplay.html">
@@ -795,7 +795,7 @@
     <Content Include="dashboard-ui\scripts\librarypathmapping.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\metadatakodi.js">
+    <Content Include="dashboard-ui\scripts\metadatanfo.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\mypreferencesdisplay.js">

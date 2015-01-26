@@ -64,8 +64,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 CollectionType.Books,
                 CollectionType.HomeVideos,
-                CollectionType.Photos,
-                string.Empty
+                CollectionType.Photos
             };
 
             var collectionFolder = folder as ICollectionFolder;

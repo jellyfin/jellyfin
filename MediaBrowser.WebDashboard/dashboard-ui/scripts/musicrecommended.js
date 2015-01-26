@@ -2,7 +2,6 @@
 
     $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
 
-        var screenWidth = $(window).width();
         var userId = Dashboard.getCurrentUserId();
 
         var page = this;

@@ -441,7 +441,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
-                                "metadatakodi.js",
+                                "metadatanfo.js",
                                 "moviegenres.js",
                                 "moviecollections.js",
                                 "movies.js",

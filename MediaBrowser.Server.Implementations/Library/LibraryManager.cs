@@ -219,11 +219,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _root folder sync lock
         /// </summary>
-        private object _rootFolderSyncLock = new object();
-        /// <summary>
-        /// The _root folder initialized
-        /// </summary>
-        private bool _rootFolderInitialized;
+        private readonly object _rootFolderSyncLock = new object();
         /// <summary>
         /// Gets the root folder.
         /// </summary>
@@ -232,17 +228,17 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _rootFolderInitialized, ref _rootFolderSyncLock, CreateRootFolder);
-                return _rootFolder;
-            }
-            private set
-            {
-                _rootFolder = value;
-
-                if (value == null)
+                if (_rootFolder == null)
                 {
-                    _rootFolderInitialized = false;
+                    lock (_rootFolderSyncLock)
+                    {
+                        if (_rootFolder == null)
+                        {
+                            _rootFolder = CreateRootFolder();
+                        }
+                    }
                 }
+                return _rootFolder;
             }
         }
 
@@ -849,11 +845,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             get
             {
-                if (ConfigurationManager.Configuration.StoreArtistsInMetadata)
-                {
-                    return Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "artists");
-                }
-
                 return Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath, "artists");
             }
         }

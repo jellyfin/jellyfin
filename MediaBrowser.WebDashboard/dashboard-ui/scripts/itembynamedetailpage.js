@@ -433,7 +433,6 @@
                     playFromHere: true,
                     defaultAction: 'playallfromhere'
                 });
-
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
 
@@ -489,7 +488,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).lazyChildren();
+            $('#items', page).html(html).trigger('create').lazyChildren();
 
             $('.btnNextPage', page).on('click', function () {
 

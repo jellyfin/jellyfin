@@ -283,7 +283,17 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return _children ?? (_children = LoadChildrenInternal());
+                if (_children == null)
+                {
+                    lock (_childrenSyncLock)
+                    {
+                        if (_children == null)
+                        {
+                            _children = LoadChildrenInternal();
+                        }
+                    }
+                }
+                return _children;
             }
         }
 
@@ -747,28 +757,6 @@ namespace MediaBrowser.Controller.Entities
             //}
 
             return childrenItems;
-        }
-
-        /// <summary>
-        /// Retrieves the child.
-        /// </summary>
-        /// <param name="child">The child.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem RetrieveChild(Guid child)
-        {
-            var item = LibraryManager.GetItemById(child);
-
-            if (item != null)
-            {
-                if (item is IByReferenceItem)
-                {
-                    return LibraryManager.GetOrAddByReferenceItem(item);
-                }
-
-                item.Parent = this;
-            }
-
-            return item;
         }
 
         private BaseItem RetrieveChild(BaseItem child)

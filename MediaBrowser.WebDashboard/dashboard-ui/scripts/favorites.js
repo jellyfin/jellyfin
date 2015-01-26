@@ -62,7 +62,7 @@
                 html += '</div>';
             }
 
-            elem = $(elem).html(html).lazyChildren();
+            elem = $(elem).html(html).trigger('create').lazyChildren();
             elem.createCardMenus();
         });
     }

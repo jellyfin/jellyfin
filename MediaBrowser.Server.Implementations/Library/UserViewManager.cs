@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -56,7 +57,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
 
-            var standaloneFolders = folders.Where(i => UserView.IsExcludedFromGrouping(i) || excludeFolderIds.Contains(i.Id)).ToList();
+            var standaloneFolders = folders
+                .Where(i => UserView.IsExcludedFromGrouping(i) || excludeFolderIds.Contains(i.Id))
+                .ToList();
 
             var foldersWithViewTypes = folders
                 .Except(standaloneFolders)
@@ -163,6 +166,142 @@ namespace MediaBrowser.Server.Implementations.Library
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
             return _libraryManager.GetNamedView(name, type, sortName, cancellationToken);
+        }
+
+        public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request)
+        {
+            var user = _userManager.GetUserById(request.UserId);
+
+            var includeTypes = request.IncludeItemTypes;
+
+            var currentUser = user;
+
+            Func<BaseItem, bool> filter = i =>
+            {
+                if (includeTypes.Length > 0)
+                {
+                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                if (request.IsPlayed.HasValue)
+                {
+                    var val = request.IsPlayed.Value;
+                    if (i.IsPlayed(currentUser) != val)
+                    {
+                        return false;
+                    }
+                }
+
+                return i.LocationType != LocationType.Virtual && !i.IsFolder;
+            };
+
+            // Avoid implicitly captured closure
+            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
+                GetItemsConfiguredForLatest(user, filter) :
+                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, filter);
+
+            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated);
+
+            if (request.IsPlayed.HasValue)
+            {
+                var takeLimit = (request.Limit ?? 20) * 20;
+                libraryItems = libraryItems.Take(takeLimit);
+            }
+
+            // Avoid implicitly captured closure
+            var items = libraryItems
+                .ToList();
+
+            var list = new List<Tuple<BaseItem, List<BaseItem>>>();
+
+            foreach (var item in items)
+            {
+                // Only grab the index container for media
+                var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
+
+                if (container == null)
+                {
+                    list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
+                }
+                else
+                {
+                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id == container.Id);
+
+                    if (current != null)
+                    {
+                        current.Item2.Add(item);
+                    }
+                    else
+                    {
+                        list.Add(new Tuple<BaseItem, List<BaseItem>>(container, new List<BaseItem> { item }));
+                    }
+                }
+
+                if (list.Count >= request.Limit)
+                {
+                    break;
+                }
+            }
+
+            return list;
+        }
+
+        protected IList<BaseItem> GetAllLibraryItems(string userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem, bool> filter)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    var user = userManager.GetUserById(userId);
+
+                    if (user == null)
+                    {
+                        throw new ArgumentException("User not found");
+                    }
+
+                    return folder
+                        .GetRecursiveChildren(user, filter)
+                        .ToList();
+                }
+
+                return folder
+                    .GetRecursiveChildren(filter);
+            }
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var user = userManager.GetUserById(userId);
+
+                if (user == null)
+                {
+                    throw new ArgumentException("User not found");
+                }
+
+                return user
+                    .RootFolder
+                    .GetRecursiveChildren(user, filter)
+                    .ToList();
+            }
+
+            return libraryManager
+                .RootFolder
+                .GetRecursiveChildren(filter);
+        }
+        
+        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user, Func<BaseItem, bool> filter)
+        {
+            // Avoid implicitly captured closure
+            var currentUser = user;
+
+            return user.RootFolder.GetChildren(user, true)
+                .OfType<Folder>()
+                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                .SelectMany(i => i.GetRecursiveChildren(currentUser, filter))
+                .DistinctBy(i => i.Id);
         }
     }
 }
