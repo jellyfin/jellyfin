@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -9,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Manager
 {

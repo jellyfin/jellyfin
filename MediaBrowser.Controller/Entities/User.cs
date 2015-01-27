@@ -168,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If only the casing is changing, leave the file system alone
-            if (!UsesIdForConfigurationPath && !newName.Equals(Name, StringComparison.OrdinalIgnoreCase))
+            if (!UsesIdForConfigurationPath && !string.Equals(newName, Name, StringComparison.OrdinalIgnoreCase))
             {
                 UsesIdForConfigurationPath = true;
 

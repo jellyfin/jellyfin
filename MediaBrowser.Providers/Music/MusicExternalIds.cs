@@ -118,4 +118,27 @@ namespace MediaBrowser.Providers.Music
             return item is Audio || item is MusicAlbum;
         }
     }
+
+    public class MusicBrainzTrackId : IExternalId
+    {
+        public string Name
+        {
+            get { return "MusicBrainz Track"; }
+        }
+
+        public string Key
+        {
+            get { return MetadataProviders.MusicBrainzTrack.ToString(); }
+        }
+
+        public string UrlFormatString
+        {
+            get { return "http://musicbrainz.org/track/{0}"; }
+        }
+
+        public bool Supports(IHasProviderIds item)
+        {
+            return item is Audio;
+        }
+    }
 }

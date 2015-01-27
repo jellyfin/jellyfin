@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
@@ -579,7 +578,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 Parent = parent,
                 Path = fullPath,
@@ -753,12 +752,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
                         Directory.CreateDirectory(userRootPath);
 
-                        _userRootFolder = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
+                        var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
-                        if (_userRootFolder == null)
+                        if (tmpItem == null)
                         {
-                            _userRootFolder = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
+                            tmpItem = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
                         }
+
+                        _userRootFolder = tmpItem;
                     }
                 }
             }

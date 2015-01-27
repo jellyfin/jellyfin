@@ -208,17 +208,10 @@ namespace MediaBrowser.Api
 
             if (album != null)
             {
-                var songs = album.GetRecursiveChildren(i => i is Audio)
-                    .Cast<Audio>()
-                    .ToList();
+                result.SongCount = album.Tracks.Count();
 
-                result.SongCount = songs.Count;
-
-                result.Artists = songs.SelectMany(i => i.AllArtists)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                result.AlbumArtist = songs.SelectMany(i => i.AlbumArtists).FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                result.Artists = album.Artists.ToArray();
+                result.AlbumArtist = album.AlbumArtists.FirstOrDefault();
             }
 
             var song = item as Audio;

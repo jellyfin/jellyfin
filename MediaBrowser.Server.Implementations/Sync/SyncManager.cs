@@ -158,9 +158,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }, _logger);
             }
 
+            jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                JobId = jobId
+            });
+
             return new SyncJobCreationResult
             {
-                Job = GetJob(jobId)
+                Job = GetJob(jobId),
+                JobItems = jobItemsResult.Items.ToList()
             };
         }
 
