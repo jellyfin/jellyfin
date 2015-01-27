@@ -229,16 +229,16 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         private string GetConfigurationDirectoryPath(string username)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException("username");
-            }
-
             var parentPath = ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
 
             // Legacy
             if (!UsesIdForConfigurationPath)
             {
+                if (string.IsNullOrEmpty(username))
+                {
+                    throw new ArgumentNullException("username");
+                }
+
                 var safeFolderName = FileSystem.GetValidFilename(username);
 
                 return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);

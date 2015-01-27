@@ -894,12 +894,14 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public string GetUserDataKey()
         {
-            if (!string.IsNullOrWhiteSpace(_userDataKey))
+            if (string.IsNullOrWhiteSpace(_userDataKey))
             {
-                return _userDataKey;
+                var key = CreateUserDataKey();
+                _userDataKey = key;
+                return key;
             }
 
-            return _userDataKey ?? (_userDataKey = CreateUserDataKey());
+            return _userDataKey;
         }
 
         protected virtual string CreateUserDataKey()
@@ -912,6 +914,12 @@ namespace MediaBrowser.Controller.Entities
             var current = this;
 
             return current.IsInMixedFolder == newItem.IsInMixedFolder;
+        }
+
+        public void AfterMetadataRefresh()
+        {
+            _sortName = null;
+            _userDataKey = null;
         }
 
         /// <summary>

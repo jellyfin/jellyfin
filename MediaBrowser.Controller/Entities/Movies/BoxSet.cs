@@ -138,6 +138,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            var b = this;
             // Refresh bottom up, children first, then the boxset
             // By then hopefully the  movies within will have Tmdb collection values
             var items = GetRecursiveChildren().ToList();

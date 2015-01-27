@@ -14,6 +14,8 @@ using MediaBrowser.Providers.Movies;
 using MediaBrowser.Providers.TV;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,19 +37,75 @@ namespace MediaBrowser.Providers.Omdb
             _libraryManager = libraryManager;
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return GetSearchResults(searchInfo, "series", cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            var list = new List<RemoteSearchResult>();
+
+            var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                return list;
+            }
+
+            var url = "http://www.omdbapi.com/?plot=short&r=json";
+
+            var name = searchInfo.Name;
+            var year = searchInfo.Year;
+
+            if (year.HasValue)
+            {
+                url += "&y=" + year.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            url += "&t=" + WebUtility.UrlEncode(name);
+            url += "&type=" + type;
+
+            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = OmdbProvider.ResourcePool,
+                CancellationToken = cancellationToken,
+                CacheMode = CacheMode.Unconditional,
+                CacheLength = TimeSpan.FromDays(7)
+
+            }).ConfigureAwait(false))
+            {
+                var result = _jsonSerializer.DeserializeFromStream<SearchResult>(stream);
+
+                if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    var item = new RemoteSearchResult();
+
+                    item.SearchProviderName = Name;
+                    item.Name = result.Title;
+                    item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
+
+                    int parsedYear;
+                    if (int.TryParse(result.Year, NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
+                    {
+                        item.ProductionYear = parsedYear;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.ImageUrl = result.Poster;
+                    }
+
+                    list.Add(item);
+                }
+            }
+
+            return list;
         }
 
         public Task<MetadataResult<ChannelVideoItem>> GetMetadata(ChannelItemLookupInfo info, CancellationToken cancellationToken)
@@ -60,9 +118,14 @@ namespace MediaBrowser.Providers.Omdb
             return GetMovieResult<ChannelVideoItem>(info, cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            return new List<RemoteSearchResult>();
+            if (searchInfo.ContentType != ChannelMediaContentType.MovieExtra || searchInfo.ExtraType != ExtraType.Trailer)
+            {
+                return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
+            }
+
+            return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 
         public string Name
@@ -185,7 +248,36 @@ namespace MediaBrowser.Providers.Omdb
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = OmdbProvider.ResourcePool
+            });
+        }
+
+        class SearchResult
+        {
+            public string Title { get; set; }
+            public string Year { get; set; }
+            public string Rated { get; set; }
+            public string Released { get; set; }
+            public string Runtime { get; set; }
+            public string Genre { get; set; }
+            public string Director { get; set; }
+            public string Writer { get; set; }
+            public string Actors { get; set; }
+            public string Plot { get; set; }
+            public string Language { get; set; }
+            public string Country { get; set; }
+            public string Awards { get; set; }
+            public string Poster { get; set; }
+            public string Metascore { get; set; }
+            public string imdbRating { get; set; }
+            public string imdbVotes { get; set; }
+            public string imdbID { get; set; }
+            public string Type { get; set; }
+            public string Response { get; set; }
         }
     }
 }

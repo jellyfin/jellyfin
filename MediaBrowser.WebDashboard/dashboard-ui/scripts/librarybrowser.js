@@ -1234,6 +1234,9 @@
                 if (options.coverImage) {
                     imageCssClass += " coveredCardImage";
                 }
+                if (options.centerImage) {
+                    imageCssClass += " centeredCardImage";
+                }
 
                 var dataSrc = "";
 

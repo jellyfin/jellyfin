@@ -358,6 +358,7 @@
             overlayText: false,
             showTitle: true,
             coverImage: true,
+            centerImage: true,
             textLines: getAdditionalTextLines
         });
         $('.itemsContainer', elem).html(html).lazyChildren();
@@ -418,11 +419,13 @@
         if (val) {
             $('.btnCloseSearch').show();
             updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
+            $(document.body).addClass('bodyWithPopupOpen');
 
         } else {
 
             $('.btnCloseSearch').hide();
             updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
+            $(document.body).removeClass('bodyWithPopupOpen');
         }
     }
 

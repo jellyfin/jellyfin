@@ -304,8 +304,6 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, CancellationToken cancellationToken)
         {
-            // TODO: Support returning more data, including image url's for the identify function
-
             var url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
             var doc = new XmlDocument();
 
@@ -330,6 +328,11 @@ namespace MediaBrowser.Providers.TV
                 {
                     foreach (XmlNode node in nodes)
                     {
+                        var searchResult = new RemoteSearchResult
+                        {
+                            SearchProviderName = Name
+                        };
+
                         var titles = new List<string>();
 
                         var nameNode = node.SelectSingleNode("./SeriesName");
@@ -345,19 +348,35 @@ namespace MediaBrowser.Providers.TV
                             titles.AddRange(alias);
                         }
 
+                        var imdbIdNode = node.SelectSingleNode("./IMDB_ID");
+                        if (imdbIdNode != null)
+                        {
+                            var val = imdbIdNode.InnerText;
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                searchResult.SetProviderId(MetadataProviders.Imdb, val);
+                            }
+                        }
+
+                        var bannerNode = node.SelectSingleNode("./banner");
+                        if (bannerNode != null)
+                        {
+                            var val = bannerNode.InnerText;
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                searchResult.ImageUrl = TVUtils.BannerUrl + val;
+                            }
+                        }
+
                         if (titles.Any(t => string.Equals(t, comparableName, StringComparison.OrdinalIgnoreCase)))
                         {
-                            var id = node.SelectSingleNode("./seriesid");
+                            var id = node.SelectSingleNode("./seriesid") ??
+                                node.SelectSingleNode("./id");
+
                             if (id != null)
                             {
-                                var searchResult = new RemoteSearchResult
-                                {
-                                    Name = titles.FirstOrDefault(),
-                                    SearchProviderName = Name
-                                };
-
+                                searchResult.Name = titles.FirstOrDefault();
                                 searchResult.SetProviderId(MetadataProviders.Tvdb, id.InnerText);
-
                                 searchResults.Add(searchResult);
                             }
                         }

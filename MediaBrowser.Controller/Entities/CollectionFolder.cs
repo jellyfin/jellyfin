@@ -121,12 +121,6 @@ namespace MediaBrowser.Controller.Entities
             return args;
         }
 
-        // Cache this since it will be used a lot
-        /// <summary>
-        /// The null task result
-        /// </summary>
-        private static readonly Task NullTaskResult = Task.FromResult<object>(null);
-
         /// <summary>
         /// Compare our current children (presumably just read from the repo) with the current state of the file system and adjust for any changes
         /// ***Currently does not contain logic to maintain items that are unavailable in the file system***
@@ -138,7 +132,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>Task.</returns>
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             var list = PhysicalLocationsList.ToList();
 
@@ -146,8 +140,10 @@ namespace MediaBrowser.Controller.Entities
 
             if (!list.SequenceEqual(PhysicalLocationsList))
             {
-                await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                return UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
             }
+
+            return Task.FromResult(true);
         }
 
         /// <summary>

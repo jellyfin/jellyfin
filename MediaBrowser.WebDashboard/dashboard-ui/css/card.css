@@ -221,6 +221,10 @@
     background-size: cover;
 }
 
+.centeredCardImage {
+    background-position: center center;
+}
+
 .bannerCard {
     width: 100%;
 }
