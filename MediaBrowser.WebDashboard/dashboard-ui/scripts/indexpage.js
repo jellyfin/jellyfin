@@ -123,7 +123,9 @@
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsPlayed: false
+            IsPlayed: false,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -233,7 +235,8 @@
 
         ApiClient.getItems(userId, {
 
-            SortBy: "SortName"
+            SortBy: "SortName",
+            ImageTypeLimit: 1
 
         }).done(function (result) {
 
@@ -279,7 +282,9 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(userId, options).done(function (result) {

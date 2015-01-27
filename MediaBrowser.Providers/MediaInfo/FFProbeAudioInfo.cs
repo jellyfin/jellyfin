@@ -187,18 +187,27 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
 
-            var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
+            var artists = FFProbeHelpers.GetDictionaryValue(tags, "artists");
 
-            if (string.IsNullOrWhiteSpace(artist))
+            if (!string.IsNullOrWhiteSpace(artists))
             {
-                audio.Artists.Clear();
+                audio.Artists = artists.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
             }
             else
             {
-                audio.Artists = SplitArtists(artist)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
+                var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
+                if (string.IsNullOrWhiteSpace(artist))
+                {
+                    audio.Artists.Clear();
+                }
+                else
+                {
+                    audio.Artists = SplitArtists(artist)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                }
             }
 
             var albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "albumartist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album artist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
@@ -250,10 +259,23 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchStudios(audio, tags, "publisher");
             }
 
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
+            // These support mulitple values, but for now we only store the first.
+            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id")));
+            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id")));
+
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
             audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
+            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
+        }
+
+        private string GetMultipleMusicBrainzId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         }
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };

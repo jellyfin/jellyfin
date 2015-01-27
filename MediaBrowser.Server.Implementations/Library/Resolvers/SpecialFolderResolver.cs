@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -11,10 +12,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
     class SpecialFolderResolver : FolderResolver<Folder>
     {
         private readonly IFileSystem _fileSystem;
+        private readonly IServerApplicationPaths _appPaths;
 
-        public SpecialFolderResolver(IFileSystem fileSystem)
+        public SpecialFolderResolver(IFileSystem fileSystem, IServerApplicationPaths appPaths)
         {
             _fileSystem = fileSystem;
+            _appPaths = appPaths;
         }
 
         /// <summary>
@@ -39,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 {
                     return new AggregateFolder();
                 }
-                if (args.IsRoot)
+                if (string.Equals(args.Path, _appPaths.DefaultUserViewsPath, StringComparison.OrdinalIgnoreCase))
                 {
                     return new UserRootFolder();  //if we got here and still a root - must be user root
                 }

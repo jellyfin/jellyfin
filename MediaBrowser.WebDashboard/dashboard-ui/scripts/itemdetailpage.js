@@ -339,11 +339,11 @@
             renderCast(page, item, context, 6);
         }
 
-        if (!item.PartCount || item.PartCount < 2) {
-            $('#additionalPartsCollapsible', page).addClass('hide');
-        } else {
+        if (item.PartCount && item.PartCount > 1) {
             $('#additionalPartsCollapsible', page).removeClass('hide');
             renderAdditionalParts(page, item, user);
+        } else {
+            $('#additionalPartsCollapsible', page).addClass('hide');
         }
 
         $('#themeSongsCollapsible', page).hide();

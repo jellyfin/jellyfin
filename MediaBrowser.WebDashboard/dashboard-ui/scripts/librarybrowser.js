@@ -601,7 +601,7 @@
                 if (item.Type == 'Episode') return '';
 
                 // SortName
-                name = (item.SortName || item.Name)[0].toUpperCase();
+                name = (item.SortName || item.Name || '?')[0].toUpperCase();
 
                 code = name.charCodeAt(0);
                 if (code < 65 || code > 90) {
