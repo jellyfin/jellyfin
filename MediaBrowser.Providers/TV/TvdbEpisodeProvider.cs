@@ -28,11 +28,13 @@ namespace MediaBrowser.Providers.TV
         internal static TvdbEpisodeProvider Current;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
 
-        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config)
+        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config, IHttpClient httpClient)
         {
             _fileSystem = fileSystem;
             _config = config;
+            _httpClient = httpClient;
             Current = this;
         }
 
@@ -731,7 +733,12 @@ namespace MediaBrowser.Providers.TV
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _httpClient.GetResponse(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = url,
+                ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
+            });
         }
 
         public Task<EpisodeIdentity> FindIdentity(EpisodeInfo info)
@@ -743,7 +750,7 @@ namespace MediaBrowser.Providers.TV
             {
                 return Task.FromResult<EpisodeIdentity>(null);
             }
-
+            
             var id = new EpisodeIdentity
             {
                 Type = MetadataProviders.Tvdb.ToString(),

@@ -162,8 +162,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     SyncJobItemStatus.Converting,
                     SyncJobItemStatus.Queued,
-                    SyncJobItemStatus.Transferring,
-                    SyncJobItemStatus.Synced
+                    SyncJobItemStatus.Transferring
                 }
             });
 

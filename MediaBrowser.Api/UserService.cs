@@ -455,7 +455,7 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
-            var task = user.Name.Equals(dtoUser.Name, StringComparison.Ordinal) ?
+            var task = string.Equals(user.Name, dtoUser.Name, StringComparison.Ordinal) ?
                 _userManager.UpdateUser(user) :
                 _userManager.RenameUser(user, dtoUser.Name);
 

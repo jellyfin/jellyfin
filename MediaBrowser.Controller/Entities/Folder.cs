@@ -373,12 +373,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true)
         {
-            return ValidateChildrenWithCancellationSupport(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
-        }
-
-        private Task ValidateChildrenWithCancellationSupport(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
-        {
-            return ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
+            return ValidateChildrenInternal(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -676,7 +671,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 });
 
-                await child.ValidateChildrenWithCancellationSupport(innerProgress, cancellationToken, true, false, null, directoryService)
+                await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
                         .ConfigureAwait(false);
             }
         }

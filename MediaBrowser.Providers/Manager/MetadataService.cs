@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name);
+                Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name ?? "Unknown name");
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
@@ -182,6 +182,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
+
+            itemOfType.AfterMetadataRefresh();
         }
 
         private void MergeIdentities(TItemType item, TIdType id)
