@@ -244,7 +244,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             // Linux: File permission to 666, and user's execute bit
             if (_environment.OperatingSystem == OperatingSystem.Bsd || _environment.OperatingSystem == OperatingSystem.Linux || _environment.OperatingSystem == OperatingSystem.Osx)
             {
-                Syscall.chmod(path, FilePermissions.DEFFILEMODE | FilePermissions.S_IXUSR);
+                Syscall.chmod(path, FilePermissions.DEFFILEMODE | FilePermissions.S_IRWXU | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH);
             }
         }
 
