@@ -183,7 +183,14 @@ namespace MediaBrowser.Providers.Manager
                 await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
 
-            itemOfType.AfterMetadataRefresh();
+            await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+        }
+
+        private readonly Task _cachedTask = Task.FromResult(true);
+        protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            item.AfterMetadataRefresh();
+            return _cachedTask;
         }
 
         private void MergeIdentities(TItemType item, TIdType id)
@@ -323,11 +330,11 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, 
-            TIdType id, 
-            MetadataRefreshOptions options, 
-            List<IMetadataProvider> providers, 
-            ItemImageProvider imageService, 
+        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item,
+            TIdType id,
+            MetadataRefreshOptions options,
+            List<IMetadataProvider> providers,
+            ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
@@ -603,10 +610,10 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(TItemType source, 
-            TItemType target, 
-            List<MetadataFields> lockedFields, 
-            bool replaceData, 
+        protected abstract void MergeData(TItemType source,
+            TItemType target,
+            List<MetadataFields> lockedFields,
+            bool replaceData,
             bool mergeMetadataSettings);
 
         public virtual int Order

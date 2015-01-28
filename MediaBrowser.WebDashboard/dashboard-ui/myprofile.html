@@ -57,56 +57,58 @@
 
         <form class="updatePasswordForm passwordSection userProfileSettingsForm" style="display:none;margin: 0 auto 2em;">
 
-            <div data-role="collapsible" data-collapsed="false">
-                <h2>${HeaderPassword}</h2>
-                <div>
+            <div class="detailSection">
+                <div class="detailSectionHeader">
+                    ${HeaderPassword}
+                </div>
+                <div class="detailSectionContent">
                     <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li id="fldCurrentPassword" style="display: none;">
-                            <label for="txtCurrentPassword">${LabelCurrentPassword}</label>
-                            <input type="password" id="txtCurrentPassword" name="txtCurrentPassword" />
-                        </li>
-                        <li>
-                            <label for="txtNewPassword">${LabelNewPassword}</label>
-                            <input type="password" id="txtNewPassword" name="txtNewPassword" />
-                        </li>
-                        <li>
-                            <label for="txtNewPasswordConfirm">${LabelNewPasswordConfirm}</label>
-                            <input type="password" id="txtNewPasswordConfirm" name="txtNewPasswordConfirm" />
-                        </li>
-                        <li>
-                            <button type="submit" data-theme="b" data-icon="check">
-                                ${ButtonSave}
+                    <div id="fldCurrentPassword" style="display: none;">
+                        <label for="txtCurrentPassword">${LabelCurrentPassword}</label>
+                        <input type="password" id="txtCurrentPassword" name="txtCurrentPassword" />
+                    </div>
+                    <br />
+                    <div>
+                        <label for="txtNewPassword">${LabelNewPassword}</label>
+                        <input type="password" id="txtNewPassword" name="txtNewPassword" />
+                    </div>
+                    <br />
+                    <div>
+                        <label for="txtNewPasswordConfirm">${LabelNewPasswordConfirm}</label>
+                        <input type="password" id="txtNewPasswordConfirm" name="txtNewPasswordConfirm" />
+                    </div>
+                    <br />
+                    <div>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonSave}
+                        </button>
+                        <div id="btnResetPassword" style="display: none;">
+                            <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();" data-mini="true">
+                                ${ButtonResetPassword}
                             </button>
-                            <div id="btnResetPassword" style="display: none;">
-                                <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();">
-                                    ${ButtonResetPassword}
-                                </button>
-                            </div>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
         <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;">
-            <div data-role="collapsible">
-                <h2>${HeaderLocalAccess}</h2>
-                <div>
+            <div class="detailSection">
+                <div class="detailSectionHeader">
+                    ${HeaderLocalAccess}
+                </div>
+                <div class="detailSectionContent">
                     <br />
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="chkEnableLocalAccessWithoutPassword">${LabelAllowLocalAccessWithoutPassword}</label>
-                            <input type="checkbox" id="chkEnableLocalAccessWithoutPassword" />
-                            <div class="fieldDescription">${LabelAllowLocalAccessWithoutPasswordHelp}</div>
-                        </li>
-                        <li>
-                            <button type="submit" data-theme="b" data-icon="check">
-                                ${ButtonSave}
-                            </button>
-                        </li>
-                    </ul>
-
+                    <div>
+                        <label for="chkEnableLocalAccessWithoutPassword">${LabelAllowLocalAccessWithoutPassword}</label>
+                        <input type="checkbox" id="chkEnableLocalAccessWithoutPassword" />
+                        <div class="fieldDescription">${LabelAllowLocalAccessWithoutPasswordHelp}</div>
+                    </div>
+                    <br />
+                    <div>
+                        <button type="submit" data-theme="b" data-icon="check">
+                            ${ButtonSave}
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>

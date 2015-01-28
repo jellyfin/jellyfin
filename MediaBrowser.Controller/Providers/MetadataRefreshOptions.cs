@@ -11,6 +11,8 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         public bool ReplaceAllMetadata { get; set; }
 
+        public bool IsPostRecursiveRefresh { get; set; }
+        
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
         public bool ForceSave { get; set; }

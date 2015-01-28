@@ -4,11 +4,11 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -77,6 +77,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return LatestItemsIndexContainer ?? new MusicAlbum { Name = "Unknown Album" };
+            }
+        }
+
+        [IgnoreDataMember]
+        protected override bool SupportsOwnedItems
+        {
+            get
+            {
+                return false;
             }
         }
 

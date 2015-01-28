@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MoreLinq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -106,6 +105,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual List<LinkedChild> LinkedChildren { get; set; }
 
+        [IgnoreDataMember]
         protected virtual bool SupportsShortcutChildren
         {
             get { return true; }
@@ -1031,6 +1031,15 @@ namespace MediaBrowser.Controller.Entities
             return LinkedChildren
                 .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
                 .Where(i => i.Item2 != null);
+        }
+
+        [IgnoreDataMember]
+        protected override bool SupportsOwnedItems
+        {
+            get
+            {
+                return base.SupportsOwnedItems || SupportsShortcutChildren;
+            }
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
