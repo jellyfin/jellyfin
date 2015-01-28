@@ -62,20 +62,14 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
-                string mx = null;
-                args.Headers.TryGetValue("mx", out mx);
-                int delaySeconds;
-                if (!string.IsNullOrWhiteSpace(mx) &&
-                    int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
-                    && delaySeconds > 0)
+                TimeSpan delay = GetSearchDelay(args.Headers);
+                
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
-                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
-                    {
-                        _logger.Debug("Delaying search response by {0} seconds", delaySeconds);
-                    }
-
-                    await Task.Delay(delaySeconds * 1000).ConfigureAwait(false);
+                    _logger.Debug("Delaying search response by {0} seconds", delay.TotalSeconds);
                 }
+                
+                await Task.Delay(delay).ConfigureAwait(false);                
 
                 RespondToSearch(args.EndPoint, args.Headers["st"]);
             }
@@ -146,6 +140,29 @@ namespace MediaBrowser.Dlna.Ssdp
 
             _messageQueue.Enqueue(dgram);
             StartQueueTimer();
+        }
+
+        /// <summary>
+        /// According to the spec: http://www.upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0-20080424.pdf
+        /// Device responses should be delayed a random duration between 0 and this many seconds to balance 
+        /// load for the control point when it processes responses.  In my testing kodi times out after mx      
+        /// so we will generate from mx - 1
+        /// </summary>
+        /// <param name="headers">The mx headers</param>
+        /// <returns>A timepsan for the amount to delay before returning search result.</returns>
+        private TimeSpan GetSearchDelay(Dictionary<string, string> headers)
+        {
+            string mx;
+            headers.TryGetValue("mx", out mx);
+            int delaySeconds = 0;
+            if (!string.IsNullOrWhiteSpace(mx)
+                && int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
+                && delaySeconds > 1)
+            {
+                delaySeconds = new Random().Next(delaySeconds - 1);
+            }
+
+            return TimeSpan.FromSeconds(delaySeconds);
         }
 
         private void RespondToSearch(EndPoint endpoint, string deviceType)
