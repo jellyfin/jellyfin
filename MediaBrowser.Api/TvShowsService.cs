@@ -413,7 +413,18 @@ namespace MediaBrowser.Api
 
             IEnumerable<Episode> episodes;
 
-            if (string.IsNullOrEmpty(request.SeasonId))
+            if (!string.IsNullOrWhiteSpace(request.SeasonId))
+            {
+                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
+
+                if (season == null)
+                {
+                    throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
+                }
+
+                episodes = season.GetEpisodes(user);
+            } 
+            else if (request.Season.HasValue)
             {
                 var series = _libraryManager.GetItemById(request.Id) as Series;
 
@@ -426,14 +437,14 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
+                var series = _libraryManager.GetItemById(request.Id) as Series;
 
-                if (season == null)
+                if (series == null)
                 {
-                    throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
+                    throw new ResourceNotFoundException("No series exists with Id " + request.Id);
                 }
 
-                episodes = season.GetEpisodes(user);
+                episodes = series.GetEpisodes(user);
             }
 
             // Filter after the fact in case the ui doesn't want them
