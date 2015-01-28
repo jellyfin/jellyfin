@@ -185,6 +185,31 @@ namespace MediaBrowser.Controller.Entities.TV
                 .Cast<Season>();
         }
 
+        public IEnumerable<Episode> GetEpisodes(User user)
+        {
+            var config = user.Configuration;
+            
+            var allEpisodes = GetSeasons(user, true, true)
+                .SelectMany(i => i.GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes))
+                .Reverse()
+                .ToList();
+
+            // Specials could appear twice based on above - once in season 0, once in the aired season
+            // This depends on settings for that series
+            // When this happens, remove the duplicate from season 0
+            var returnList = new List<Episode>();
+
+            foreach (var episode in allEpisodes)
+            {
+                if (!returnList.Contains(episode))
+                {
+                    returnList.Insert(0, episode);
+                }
+            }
+
+            return returnList;
+        }
+
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)
         {
             var config = user.Configuration;
