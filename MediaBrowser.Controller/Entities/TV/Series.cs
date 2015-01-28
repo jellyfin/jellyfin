@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Localization;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -14,7 +16,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -208,6 +210,55 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return returnList;
+        }
+
+        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            // Refresh bottom up, children first, then the boxset
+            // By then hopefully the  movies within will have Tmdb collection values
+            var items = GetRecursiveChildren().ToList();
+
+            var seasons = items.OfType<Season>().ToList();
+            var otherItems = items.Except(seasons).ToList();
+
+            var totalItems = seasons.Count + otherItems.Count;
+            var numComplete = 0;
+
+            refreshOptions = new MetadataRefreshOptions(refreshOptions);
+            refreshOptions.IsPostRecursiveRefresh = true;
+
+            // Refresh songs
+            foreach (var item in seasons)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            // Refresh current item
+            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            // Refresh all non-songs
+            foreach (var item in otherItems)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            await ProviderManager.RefreshMetadata(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(100);
         }
 
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)

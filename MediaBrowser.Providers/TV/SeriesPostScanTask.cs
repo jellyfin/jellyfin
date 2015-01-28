@@ -48,13 +48,6 @@ namespace MediaBrowser.Providers.TV
                 .Cast<Series>()
                 .ToList();
 
-            var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager);
-            
-            foreach (var series in seriesList)
-            {
-                await provider.Run(series, cancellationToken).ConfigureAwait(false);
-            }
-
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
             await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization).Run(seriesGroups, cancellationToken).ConfigureAwait(false);

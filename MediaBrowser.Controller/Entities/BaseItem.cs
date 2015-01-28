@@ -690,7 +690,7 @@ namespace MediaBrowser.Controller.Entities
 
             var requiresSave = false;
 
-            if (IsFolder || Parent != null)
+            if (SupportsOwnedItems)
             {
                 try
                 {
@@ -720,6 +720,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        [IgnoreDataMember]
+        protected virtual bool SupportsOwnedItems
+        {
+            get { return IsFolder || Parent != null; }
         }
 
         /// <summary>

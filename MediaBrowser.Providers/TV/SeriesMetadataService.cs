@@ -8,6 +8,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -16,7 +18,8 @@ namespace MediaBrowser.Providers.TV
         private readonly ILocalizationManager _localization;
         private readonly ILibraryManager _libraryManager;
 
-        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILocalizationManager localization, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILocalizationManager localization, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
             _localization = localization;
             _libraryManager = libraryManager;
@@ -52,11 +55,23 @@ namespace MediaBrowser.Providers.TV
             if (replaceData || target.AirDays.Count == 0)
             {
                 target.AirDays = source.AirDays;
-            } 
-            
+            }
+
             if (mergeMetadataSettings)
             {
                 target.DisplaySpecialsWithSeasons = source.DisplaySpecialsWithSeasons;
+            }
+        }
+
+        protected override async Task AfterMetadataRefresh(Series item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            if (refreshOptions.IsPostRecursiveRefresh)
+            {
+                var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, _libraryManager);
+
+                await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

@@ -56,6 +56,15 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        protected override bool SupportsOwnedItems
+        {
+            get
+            {
+                return IsStacked || MediaSourceCount > 1;
+            }
+        }
+
+        [IgnoreDataMember]
         public int? AiredSeasonNumber
         {
             get
