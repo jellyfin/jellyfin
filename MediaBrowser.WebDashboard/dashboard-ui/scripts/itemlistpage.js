@@ -37,14 +37,15 @@
             $(document).scrollTop(0);
 
             var html = '';
-
-            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -79,7 +80,9 @@
                 });
             }
 
-            $('#items', page).html(html).lazyChildren();
+            var elem = $('#items', page).html(html).lazyChildren();
+
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

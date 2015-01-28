@@ -32,7 +32,7 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
+            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
@@ -40,7 +40,9 @@
                 showLimit: false,
                 addSelectionButton: true,
                 pageSizeKey: pageSizeKey
-            })).trigger('create');
+            });
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
 
@@ -77,7 +79,13 @@
                 });
             }
 
-            $('#items', page).html(html).lazyChildren();
+            var elem = $('#items', page).html(html).lazyChildren();
+
+            if (trigger) {
+                elem.trigger('create');
+            }
+
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
