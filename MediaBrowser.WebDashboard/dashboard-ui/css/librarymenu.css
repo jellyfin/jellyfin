@@ -270,6 +270,9 @@
     .editorViewMenu {
         display: none;
     }
+}
+
+@media all and (max-width: 1000px) {
 
     /* They can use the left menu */
     .dashboardEntryHeaderButton {
