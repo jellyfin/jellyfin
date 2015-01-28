@@ -7,7 +7,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Sync;
 using System;
 using System.Threading;
 
@@ -44,8 +46,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ITaskManager _taskManager;
 
         private readonly ISessionManager _sessionManager;
+        private readonly ISyncManager _syncManager;
 
-        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager)
+        public ServerEventNotifier(IServerManager serverManager, IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager, ISyncManager syncManager)
         {
             _serverManager = serverManager;
             _userManager = userManager;
@@ -53,6 +56,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _appHost = appHost;
             _taskManager = taskManager;
             _sessionManager = sessionManager;
+            _syncManager = syncManager;
         }
 
         public void Run()
@@ -70,6 +74,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+            _syncManager.SyncJobCreated += _syncManager_SyncJobCreated;
+        }
+
+        void _syncManager_SyncJobCreated(object sender, GenericEventArgs<SyncJobCreationResult> e)
+        {
+            _sessionManager.SendMessageToUserDeviceSessions(e.Argument.Job.TargetId, "SyncJobCreated", e.Argument, CancellationToken.None);
         }
 
         void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
@@ -178,6 +188,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
 
                 _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
+                _syncManager.SyncJobCreated -= _syncManager_SyncJobCreated;
             }
         }
     }

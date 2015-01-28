@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Sync
 {
     public interface ISyncManager
     {
-        event EventHandler<GenericEventArgs<SyncJob>> SyncJobCreated;
+        event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
         event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
           
         /// <summary>
