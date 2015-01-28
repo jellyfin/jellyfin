@@ -52,6 +52,12 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
+        public string AlbumArtist
+        {
+            get { return AlbumArtists.FirstOrDefault(); }
+        }
+
         public List<string> AlbumArtists { get; set; }
 
         /// <summary>

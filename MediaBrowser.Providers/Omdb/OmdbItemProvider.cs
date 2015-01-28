@@ -62,6 +62,11 @@ namespace MediaBrowser.Providers.Omdb
             var name = searchInfo.Name;
             var year = searchInfo.Year;
 
+            var parsedName = _libraryManager.ParseName(name);
+            var yearInName = parsedName.Year;
+            name = parsedName.Name;
+            year = year ?? yearInName;
+            
             if (year.HasValue)
             {
                 url += "&y=" + year.Value.ToString(CultureInfo.InvariantCulture);

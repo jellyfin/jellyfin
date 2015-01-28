@@ -61,7 +61,6 @@ namespace MediaBrowser.Providers.Movies
             var parsedName = _libraryManager.ParseName(name);
             var yearInName = parsedName.Year;
             name = parsedName.Name;
-
             year = year ?? yearInName;
 
             _logger.Info("MovieDbProvider: Finding id for item: " + name);
