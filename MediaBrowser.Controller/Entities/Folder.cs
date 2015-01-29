@@ -563,50 +563,49 @@ namespace MediaBrowser.Controller.Entities
             var children = ActualChildren.ToList();
 
             var percentages = new Dictionary<Guid, double>(children.Count);
-
-            var tasks = new List<Task>();
+            var numComplete = 0;
+            var count = children.Count;
 
             foreach (var child in children)
             {
-                if (tasks.Count >= 2)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
-                var innerProgress = new ActionableProgress<double>();
-
-                // Avoid implicitly captured closure
-                var currentChild = child;
-                innerProgress.RegisterAction(p =>
-                {
-                    lock (percentages)
-                    {
-                        percentages[currentChild.Id] = p / 100;
-
-                        var percent = percentages.Values.Sum();
-                        percent /= children.Count;
-                        percent *= 100;
-                        progress.Report(percent);
-                    }
-                });
 
                 if (child.IsFolder)
                 {
+                    var innerProgress = new ActionableProgress<double>();
+
+                    // Avoid implicitly captured closure
+                    var currentChild = child;
+                    innerProgress.RegisterAction(p =>
+                    {
+                        lock (percentages)
+                        {
+                            percentages[currentChild.Id] = p / 100;
+
+                            var innerPercent = percentages.Values.Sum();
+                            innerPercent /= count;
+                            innerPercent *= 100;
+                            progress.Report(innerPercent);
+                        }
+                    });
+
                     await RefreshChildMetadata(child, refreshOptions, recursive, innerProgress, cancellationToken)
                       .ConfigureAwait(false);
                 }
                 else
                 {
-                    // Avoid implicitly captured closure
-                    var taskChild = child;
-
-                    tasks.Add(Task.Run(async () => await RefreshChildMetadata(taskChild, refreshOptions, false, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                    await RefreshChildMetadata(child, refreshOptions, false, new Progress<double>(), cancellationToken)
+                      .ConfigureAwait(false);
                 }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= count;
+                percent *= 100;
+
+                progress.Report(percent);
             }
 
-            await Task.WhenAll(tasks).ConfigureAwait(false);
             progress.Report(100);
         }
 
