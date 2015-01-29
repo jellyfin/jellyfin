@@ -141,12 +141,13 @@
         var lastTargetName = '';
 
         var cardBoxCssClass = 'cardBox visualCardBox';
-        var barCssClass = 'detailSectionHeader';
 
         var syncJobPage = 'syncjob.html';
+        var showHelpButtons = false;
 
         if ($(page).hasClass('mySyncPage')) {
             syncJobPage = 'mysyncjob.html';
+            showHelpButtons = true;
         }
 
         for (var i = 0, length = jobs.length; i < length; i++) {
@@ -164,7 +165,18 @@
 
                 lastTargetName = targetName;
 
-                html += '<div class="' + barCssClass + '" style="padding: 0 1em;"><p>' + targetName + '</p></div>';
+                html += '<div class="detailSectionHeader" style="padding: .85em 0 .85em 1em;">';
+
+                html += '<div style="display:inline-block;vertical-align:middle;">' + targetName + '</div>';
+
+                if (showHelpButtons) {
+                    html += '<a class="accentButton accentButton-g" style="display:inline-block;vertical-align:middle;margin-top:0;margin-left: 20px;" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">';
+                    html += '<i class="fa fa-info-circle"></i>';
+                    html += Globalize.translate('ButtonHelp');
+                    html += '</a>';
+                }
+
+                html += '</div>';
             }
 
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);

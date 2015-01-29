@@ -1024,6 +1024,10 @@ h1 + .accentButton {
     margin: 18px 0 0 20px;
 }
 
+.detailSectionHeader .accentButton {
+    font-size: 13px;
+}
+
 .dashboardFooter {
     margin-top: 50px;
     text-align: center;
