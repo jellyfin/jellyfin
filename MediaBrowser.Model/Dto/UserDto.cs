@@ -66,6 +66,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
         public bool HasConfiguredPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has configured easy password.
+        /// </summary>
+        /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
+        public bool HasConfiguredEasyPassword { get; set; }
         
         /// <summary>
         /// Gets or sets the last login date.

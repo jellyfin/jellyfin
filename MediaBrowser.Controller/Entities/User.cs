@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The password.</value>
         public string Password { get; set; }
-        public string LocalPassword { get; set; }
+        public string EasyPassword { get; set; }
 
         public string ConnectUserName { get; set; }
         public string ConnectUserId { get; set; }

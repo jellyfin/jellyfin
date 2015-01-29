@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Implementations.Networking
         {
             NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAvailabilityChanged;
-            
+
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
         }
@@ -106,6 +106,11 @@ namespace MediaBrowser.Common.Implementations.Networking
             // Private address space:
             // http://en.wikipedia.org/wiki/Private_network
 
+            if (endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase))
+            {
+                return Is172AddressPrivate(endpoint);
+            }
+
             return
 
                 // If url was requested with computer name, we may see this
@@ -114,9 +119,21 @@ namespace MediaBrowser.Common.Implementations.Networking
                 endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("10.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("192.", StringComparison.OrdinalIgnoreCase) ||
-                endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool Is172AddressPrivate(string endpoint)
+        {
+            for (var i = 16; i <= 31; i++)
+            {
+                if (endpoint.StartsWith("172." + i.ToString(CultureInfo.InvariantCulture) + ".", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool IsInLocalNetwork(string endpoint)
@@ -175,7 +192,7 @@ namespace MediaBrowser.Common.Implementations.Networking
 
             return false;
         }
-        
+
         public IEnumerable<IPAddress> GetIpAddresses(string hostName)
         {
             return Dns.GetHostAddresses(hostName);
