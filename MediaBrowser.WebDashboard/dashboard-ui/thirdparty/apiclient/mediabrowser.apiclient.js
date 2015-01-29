@@ -2499,6 +2499,28 @@
         };
 
         /**
+         * Updates a user's easy password
+         * @param {String} userId
+         * @param {String} newPassword
+         */
+        self.updateEasyPassword = function (userId, newPassword) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/EasyPassword");
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: {
+                    newPassword: CryptoJS.SHA1(newPassword).toString()
+                }
+            });
+        };
+
+        /**
         * Resets a user's password
         * @param {String} userId
         */
@@ -2509,6 +2531,27 @@
             }
 
             var url = self.getUrl("Users/" + userId + "/Password");
+
+            var postData = {
+
+            };
+
+            postData.resetPassword = true;
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: postData
+            });
+        };
+
+        self.resetEasyPassword = function (userId) {
+
+            if (!userId) {
+                throw new Error("null userId");
+            }
+
+            var url = self.getUrl("Users/" + userId + "/EasyPassword");
 
             var postData = {
 

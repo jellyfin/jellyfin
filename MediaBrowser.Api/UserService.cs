@@ -11,7 +11,6 @@ using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,6 +133,32 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The password.</value>
         public string CurrentPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new password.
+        /// </summary>
+        /// <value>The new password.</value>
+        public string NewPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [reset password].
+        /// </summary>
+        /// <value><c>true</c> if [reset password]; otherwise, <c>false</c>.</value>
+        public bool ResetPassword { get; set; }
+    }
+
+    /// <summary>
+    /// Class UpdateUserEasyPassword
+    /// </summary>
+    [Route("/Users/{Id}/EasyPassword", "POST", Summary = "Updates a user's easy password")]
+    [Authenticated]
+    public class UpdateUserEasyPassword : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the new password.
@@ -410,6 +435,8 @@ namespace MediaBrowser.Api
 
         public async Task PostAsync(UpdateUserPassword request)
         {
+            AssertCanUpdateUser(request.Id);
+
             var user = _userManager.GetUserById(request.Id);
 
             if (user == null)
@@ -434,6 +461,33 @@ namespace MediaBrowser.Api
             }
         }
 
+        public void Post(UpdateUserEasyPassword request)
+        {
+            var task = PostAsync(request);
+            Task.WaitAll(task);
+        }
+        
+        public async Task PostAsync(UpdateUserEasyPassword request)
+        {
+            AssertCanUpdateUser(request.Id);
+            
+            var user = _userManager.GetUserById(request.Id);
+
+            if (user == null)
+            {
+                throw new ResourceNotFoundException("User not found");
+            }
+
+            if (request.ResetPassword)
+            {
+                await _userManager.ResetEasyPassword(user).ConfigureAwait(false);
+            }
+            else
+            {
+                await _userManager.ChangeEasyPassword(user, request.NewPassword).ConfigureAwait(false);
+            }
+        }
+
         /// <summary>
         /// Posts the specified request.
         /// </summary>
@@ -449,7 +503,9 @@ namespace MediaBrowser.Api
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var id = new Guid(GetPathValue(1));
+            var id = GetPathValue(1);
+
+            AssertCanUpdateUser(id);
 
             var dtoUser = request;
 
@@ -499,9 +555,27 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateUserConfiguration request)
         {
+            AssertCanUpdateUser(request.Id);
+
             var task = _userManager.UpdateConfiguration(request.Id, request);
 
             Task.WaitAll(task);
+        }
+
+        private void AssertCanUpdateUser(string userId)
+        {
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+
+            // If they're going to update the record of another user, they must be an administrator
+            if (!string.Equals(userId, auth.UserId, StringComparison.OrdinalIgnoreCase))
+            {
+                var authenticatedUser = _userManager.GetUserById(auth.UserId);
+
+                if (!authenticatedUser.Policy.IsAdministrator)
+                {
+                    throw new SecurityException("Unauthorized access.");
+                }
+            }
         }
 
         public void Post(UpdateUserPolicy request)

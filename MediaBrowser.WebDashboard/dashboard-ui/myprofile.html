@@ -94,19 +94,29 @@
         <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;">
             <div class="detailSection">
                 <div class="detailSectionHeader">
-                    ${HeaderLocalAccess}
+                    ${HeaderEasyPinCode}
                 </div>
                 <div class="detailSectionContent">
                     <br />
+                    <div>${EasyPasswordHelp}</div>
+                    <br />
                     <div>
-                        <label for="chkEnableLocalAccessWithoutPassword">${LabelAllowLocalAccessWithoutPassword}</label>
-                        <input type="checkbox" id="chkEnableLocalAccessWithoutPassword" />
-                        <div class="fieldDescription">${LabelAllowLocalAccessWithoutPasswordHelp}</div>
+                        <label for="txtEasyPassword">${LabelEasyPinCode}</label>
+                        <input type="password" id="txtEasyPassword" />
                     </div>
                     <br />
                     <div>
-                        <button type="submit" data-theme="b" data-icon="check">
+                        <label for="chkEnableLocalEasyPassword">${LabelInNetworkSignInWithEasyPassword}</label>
+                        <input type="checkbox" id="chkEnableLocalEasyPassword" />
+                        <div class="fieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
+                    </div>
+                    <br />
+                    <div>
+                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
                             ${ButtonSave}
+                        </button>
+                        <button id="btnResetEasyPassword" style="display:none;" type="button" data-icon="lock" onclick="UpdatePasswordPage.resetEasyPassword();" data-mini="true">
+                            ${ButtonResetEasyPassword}
                         </button>
                     </div>
                 </div>

@@ -275,9 +275,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetLocalPasswordHash(User user)
         {
-            return string.IsNullOrEmpty(user.LocalPassword)
+            return string.IsNullOrEmpty(user.EasyPassword)
                 ? GetSha1String(string.Empty)
-                : user.LocalPassword;
+                : user.EasyPassword;
         }
 
         private bool IsPasswordEmpty(string passwordHash)
@@ -355,18 +355,20 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var passwordHash = GetPasswordHash(user);
 
-            var hasConfiguredDefaultPassword = !IsPasswordEmpty(passwordHash);
+            var hasConfiguredPassword = !IsPasswordEmpty(passwordHash);
+            var hasConfiguredEasyPassword = !IsPasswordEmpty(GetLocalPasswordHash(user));
 
             var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
-                !IsPasswordEmpty(GetLocalPasswordHash(user)) :
-                hasConfiguredDefaultPassword;
+                hasConfiguredEasyPassword :
+                hasConfiguredPassword;
 
             var dto = new UserDto
             {
                 Id = user.Id.ToString("N"),
                 Name = user.Name,
                 HasPassword = hasPassword,
-                HasConfiguredPassword = hasConfiguredDefaultPassword,
+                HasConfiguredPassword = hasConfiguredPassword,
+                HasConfiguredEasyPassword = hasConfiguredEasyPassword,
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate,
                 Configuration = user.Configuration,
@@ -613,18 +615,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return ChangePassword(user, GetSha1String(string.Empty));
         }
 
-        /// <summary>
-        /// Changes the password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="newPasswordSha1">The new password sha1.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// user
-        /// or
-        /// newPassword
-        /// </exception>
-        /// <exception cref="System.ArgumentException">Passwords for guests cannot be changed.</exception>
+        public Task ResetEasyPassword(User user)
+        {
+            return ChangeEasyPassword(user, GetSha1String(string.Empty));
+        }
+
         public async Task ChangePassword(User user, string newPasswordSha1)
         {
             if (user == null)
@@ -642,6 +637,29 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             user.Password = newPasswordSha1;
+
+            await UpdateUser(user).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+        }
+
+        public async Task ChangeEasyPassword(User user, string newPasswordSha1)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+            {
+                throw new ArgumentNullException("newPasswordSha1");
+            }
+
+            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
+            {
+                throw new ArgumentException("Passwords for guests cannot be changed.");
+            }
+
+            user.EasyPassword = newPasswordSha1;
 
             await UpdateUser(user).ConfigureAwait(false);
 
