@@ -136,14 +136,14 @@ namespace MediaBrowser.Api.Dlna
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
+            var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
+            var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }
