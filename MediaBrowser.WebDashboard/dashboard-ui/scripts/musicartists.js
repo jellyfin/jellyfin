@@ -45,6 +45,7 @@
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (view == "List") {
 
@@ -53,6 +54,7 @@
                     context: 'music',
                     sortBy: query.SortBy
                 });
+                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -79,7 +81,7 @@
                 });
             }
 
-            var elem = $('#items', page).html(html).lazyChildren();
+            var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
             if (trigger) {
                 elem.trigger('create');
@@ -192,7 +194,7 @@
     }).on('pagebeforeshow', "#musicArtistsPage", function () {
 
         var page = this;
-        
+
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize(pageSizeKey, 100);

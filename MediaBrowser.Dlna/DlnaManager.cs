@@ -475,12 +475,12 @@ namespace MediaBrowser.Dlna
             internal string Path { get; set; }
         }
 
-        public string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId)
+        public string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId, string serverAddress)
         {
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();
 
-            return new DescriptionXmlBuilder(profile, serverUuId, "").GetXml();
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress).GetXml();
         }
 
         public ImageStream GetIcon(string filename)
