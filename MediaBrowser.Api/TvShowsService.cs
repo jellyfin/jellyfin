@@ -156,6 +156,20 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
+
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
@@ -471,9 +485,11 @@ namespace MediaBrowser.Api
 
             returnItems = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems);
 
+            var pagedItems = ApplyPaging(returnItems, request.StartIndex, request.Limit);
+            
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user)
+            var dtos = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
