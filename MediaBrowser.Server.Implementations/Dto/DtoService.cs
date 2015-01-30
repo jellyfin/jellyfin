@@ -1600,7 +1600,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.OriginalPrimaryImageAspectRatio))
             {
-                dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
+                if (size.Width > 0 && size.Height > 0)
+                {
+                    dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
+                }
             }
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
@@ -1617,7 +1620,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            dto.PrimaryImageAspectRatio = size.Width / size.Height;
+            if (size.Width > 0 && size.Height > 0)
+            {
+                dto.PrimaryImageAspectRatio = size.Width / size.Height;
+            }
         }
     }
 }
