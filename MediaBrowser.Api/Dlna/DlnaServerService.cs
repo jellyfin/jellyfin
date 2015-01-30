@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Dlna;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -31,6 +30,12 @@ namespace MediaBrowser.Api.Dlna
     {
     }
 
+    [Route("/Dlna/mediareceiverregistrar/mediareceiverregistrar.xml", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
+    [Route("/Dlna/mediareceiverregistrar/mediareceiverregistrar", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
+    public class GetMediaReceiverRegistrar
+    {
+    }
+
     [Route("/Dlna/contentdirectory/{UuId}/control", "POST", Summary = "Processes a control request")]
     public class ProcessContentDirectoryControlRequest : IRequiresRequestStream
     {
@@ -47,6 +52,22 @@ namespace MediaBrowser.Api.Dlna
         public string UuId { get; set; }
 
         public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/mediareceiverregistrar/{UuId}/control", "POST", Summary = "Processes a control request")]
+    public class ProcessMediaReceiverRegistrarControlRequest : IRequiresRequestStream
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/mediareceiverregistrar/{UuId}/events", Summary = "Processes an event subscription request")]
+    public class ProcessMediaReceiverRegistrarEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
     }
 
     [Route("/Dlna/contentdirectory/{UuId}/events", Summary = "Processes an event subscription request")]
@@ -75,12 +96,14 @@ namespace MediaBrowser.Api.Dlna
         private readonly IDlnaManager _dlnaManager;
         private readonly IContentDirectory _contentDirectory;
         private readonly IConnectionManager _connectionManager;
+        private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
             _connectionManager = connectionManager;
+            _mediaReceiverRegistrar = mediaReceiverRegistrar;
         }
 
         public object Get(GetDescriptionXml request)
@@ -97,6 +120,13 @@ namespace MediaBrowser.Api.Dlna
             return ResultFactory.GetResult(xml, "text/xml");
         }
 
+        public object Get(GetMediaReceiverRegistrar request)
+        {
+            var xml = _mediaReceiverRegistrar.GetServiceXml(GetRequestHeaders());
+
+            return ResultFactory.GetResult(xml, "text/xml");
+        }
+
         public object Get(GetConnnectionManager request)
         {
             var xml = _connectionManager.GetServiceXml(GetRequestHeaders());
@@ -104,9 +134,16 @@ namespace MediaBrowser.Api.Dlna
             return ResultFactory.GetResult(xml, "text/xml");
         }
 
-        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
+        public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
             var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
+
+            return ResultFactory.GetResult(response.Xml, "text/xml");
+        }
+
+        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
+        {
+            var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
 
             return ResultFactory.GetResult(response.Xml, "text/xml");
         }
@@ -169,6 +206,11 @@ namespace MediaBrowser.Api.Dlna
         public object Any(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(_connectionManager);
+        }
+
+        public object Any(ProcessMediaReceiverRegistrarEventRequest request)
+        {
+            return ProcessEventRequest(_mediaReceiverRegistrar);
         }
 
         private object ProcessEventRequest(IEventManager eventManager)
