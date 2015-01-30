@@ -11,11 +11,11 @@ namespace MediaBrowser.Dlna.MediaReceiverRegistrar
             {
                 GetIsValidated(),
                 GetIsAuthorized(),
-                //GetRegisterDevice(),
-                //GetGetAuthorizationDeniedUpdateID(),
-                //GetGetAuthorizationGrantedUpdateID(),
-                //GetGetValidationRevokedUpdateID(),
-                //GetGetValidationSucceededUpdateID()
+                GetRegisterDevice(),
+                GetGetAuthorizationDeniedUpdateID(),
+                GetGetAuthorizationGrantedUpdateID(),
+                GetGetValidationRevokedUpdateID(),
+                GetGetValidationSucceededUpdateID()
             };
 
             return list;
