@@ -136,5 +136,14 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Authenticates an offline user with their password
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="rememberCredentials">if set to <c>true</c> [remember credentials].</param>
+        /// <returns>Task.</returns>
+        Task AuthenticateOffline(UserDto user, string password, bool rememberCredentials);
     }
 }

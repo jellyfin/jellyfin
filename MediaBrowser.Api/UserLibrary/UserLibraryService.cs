@@ -455,7 +455,6 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtos = trailerIds
                 .Select(_libraryManager.GetItemById)
-                .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             return dtos.ToList();

@@ -558,6 +558,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<UserDto> GetUserAsync(string id);
 
         /// <summary>
+        /// Gets the offline user asynchronous.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task&lt;UserDto&gt;.</returns>
+        Task<UserDto> GetOfflineUserAsync(string id);
+        
+        /// <summary>
         /// Gets the parental ratings async.
         /// </summary>
         /// <returns>Task{List{ParentalRating}}.</returns>

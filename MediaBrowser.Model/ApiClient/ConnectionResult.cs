@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.ApiClient
@@ -9,6 +10,7 @@ namespace MediaBrowser.Model.ApiClient
         public List<ServerInfo> Servers { get; set; }
         public IApiClient ApiClient { get; set; }
         public ConnectUser ConnectUser { get; set; }
+        public UserDto OfflineUser { get; set; }
 
         public ConnectionResult()
         {

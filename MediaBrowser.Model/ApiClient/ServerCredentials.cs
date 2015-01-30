@@ -70,6 +70,10 @@ namespace MediaBrowser.Model.ApiClient
                 {
                     existing.LastConnectionMode = server.LastConnectionMode;
                 }
+                foreach (ServerUserInfo user in server.Users)
+                {
+                    existing.AddOrUpdate(user);
+                }
             }
             else
             {
