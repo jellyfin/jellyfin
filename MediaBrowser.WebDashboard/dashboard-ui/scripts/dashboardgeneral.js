@@ -3,6 +3,8 @@
     var brandingConfigKey = "branding";
     var currentBrandingOptions;
 
+    var currentLanguage;
+
     function loadPage(page, config, languageOptions) {
 
         if (Dashboard.lastSystemInfo) {
@@ -18,6 +20,8 @@
             return '<option value="' + l.Value + '">' + l.Name + '</option>';
 
         })).val(config.UICulture).selectmenu('refresh');
+
+        currentLanguage = config.UICulture;
 
         $('#txtCachePath', page).val(config.CachePath || '');
 
@@ -95,6 +99,10 @@
                 config.UICulture = $('#selectLocalizationLanguage', form).val();
 
                 config.CachePath = $('#txtCachePath', form).val();
+
+                if (config.UICulture != currentLanguage) {
+                    Dashboard.showDashboardRefreshNotification();
+                }
 
                 ApiClient.updateServerConfiguration(config).done(function () {
 
