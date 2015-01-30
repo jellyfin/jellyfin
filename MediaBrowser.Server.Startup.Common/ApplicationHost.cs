@@ -44,6 +44,7 @@ using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
+using MediaBrowser.Dlna.MediaReceiverRegistrar;
 using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -495,6 +496,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
+
+            var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager);
+            RegisterSingleInstance<IMediaReceiverRegistrar>(mediaRegistrar);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);

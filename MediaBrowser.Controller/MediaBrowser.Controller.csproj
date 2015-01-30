@@ -111,6 +111,7 @@
     <Compile Include="Dlna\IContentDirectory.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
+    <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />

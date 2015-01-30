@@ -212,6 +212,15 @@ namespace MediaBrowser.Dlna.Server
                 EventSubUrl = "/dlna/connectionmanager/" + _serverUdn + "/events"
             });
 
+            list.Add(new DeviceService
+            {
+                ServiceType = "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
+                ServiceId = "urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar",
+                ScpdUrl = "/dlna/mediareceiverregistrar/mediareceiverregistrar.xml",
+                ControlUrl = "/dlna/mediareceiverregistrar/" + _serverUdn + "/control",
+                EventSubUrl = "/dlna/mediareceiverregistrar/" + _serverUdn + "/events"
+            });
+
             return list;
         }
 
