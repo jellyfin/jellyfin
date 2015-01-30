@@ -48,7 +48,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
-
+        
+        /// <summary>
+        /// Gets or sets the offline password.
+        /// </summary>
+        /// <value>The offline password.</value>
+        public string OfflinePassword { get; set; }
+        
         /// <summary>
         /// Gets or sets the primary image tag.
         /// </summary>
@@ -108,7 +114,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>

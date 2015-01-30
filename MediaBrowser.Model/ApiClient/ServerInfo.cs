@@ -1,12 +1,16 @@
 ﻿using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Model.ApiClient
 {
     public class ServerInfo
     {
+        public List<ServerUserInfo> Users { get; set; }
+        
         public String Name { get; set; }
         public String Id { get; set; }
         public String LocalAddress { get; set; }
@@ -23,6 +27,7 @@ namespace MediaBrowser.Model.ApiClient
         public ServerInfo()
         {
             WakeOnLanInfos = new List<WakeOnLanInfo>();
+            Users = new List<ServerUserInfo>();
         }
 
         public void ImportInfo(PublicSystemInfo systemInfo)
@@ -69,6 +74,49 @@ namespace MediaBrowser.Model.ApiClient
                 default:
                     throw new ArgumentException("Unexpected ConnectionMode");
             }
+        }
+
+        public void AddOrUpdate(ServerUserInfo user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            var list = Users.ToList();
+
+            var index = FindIndex(list, user.Id);
+
+            if (index != -1)
+            {
+                var existing = list[index];
+
+                // Merge the data
+                existing.IsOffline = user.IsOffline;
+            }
+            else
+            {
+                list.Add(user);
+            }
+
+            Users = list;
+        }
+
+        private int FindIndex(List<ServerUserInfo> users, string id)
+        {
+            var index = 0;
+
+            foreach (var user in users)
+            {
+                if (StringHelper.Equals(id, user.Id))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
         }
     }
 }

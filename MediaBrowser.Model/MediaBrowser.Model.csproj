@@ -76,6 +76,7 @@
     <Compile Include="ApiClient\ServerCredentials.cs" />
     <Compile Include="ApiClient\ServerDiscoveryInfo.cs" />
     <Compile Include="ApiClient\ServerInfo.cs" />
+    <Compile Include="ApiClient\ServerUserInfo.cs" />
     <Compile Include="ApiClient\SessionUpdatesEventArgs.cs" />
     <Compile Include="ApiClient\WakeOnLanInfo.cs" />
     <Compile Include="Branding\BrandingOptions.cs" />

@@ -56,6 +56,21 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
+    /// Class GetUser
+    /// </summary>
+    [Route("/Users/{Id}/Offline", "GET", Summary = "Gets an offline user record by Id")]
+    [Authenticated]
+    public class GetOfflineUser : IReturn<UserDto>
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
     /// Class DeleteUser
     /// </summary>
     [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
@@ -319,7 +334,7 @@ namespace MediaBrowser.Api
                 .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
                 .ToList();
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
@@ -338,7 +353,21 @@ namespace MediaBrowser.Api
 
             var result = _userManager.GetUserDto(user, Request.RemoteIp);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
+        }
+
+        public object Get(GetOfflineUser request)
+        {
+            var user = _userManager.GetUserById(request.Id);
+
+            if (user == null)
+            {
+                throw new ResourceNotFoundException("User not found");
+            }
+
+            var result = _userManager.GetOfflineUserDto(user, Request.RemoteIp);
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>

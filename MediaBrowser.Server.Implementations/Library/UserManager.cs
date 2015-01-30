@@ -402,6 +402,19 @@ namespace MediaBrowser.Server.Implementations.Library
             return dto;
         }
 
+        public UserDto GetOfflineUserDto(User user, string deviceId)
+        {
+            var dto = GetUserDto(user);
+
+            var offlinePasswordHash = GetLocalPasswordHash(user);
+            dto.HasPassword = !IsPasswordEmpty(offlinePasswordHash);
+
+            // Hash the pin with the device Id to create a unique result for this device
+            dto.OfflinePassword = GetSha1String(offlinePasswordHash + deviceId);
+
+            return dto;
+        }
+
         private string GetImageCacheTag(BaseItem item, ItemImageInfo image)
         {
             try

@@ -118,6 +118,14 @@ namespace MediaBrowser.Controller.Library
         Task ResetPassword(User user);
 
         /// <summary>
+        /// Gets the offline user dto.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <returns>UserDto.</returns>
+        UserDto GetOfflineUserDto(User user, string deviceId);
+
+        /// <summary>
         /// Resets the easy password.
         /// </summary>
         /// <param name="user">The user.</param>
