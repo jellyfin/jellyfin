@@ -1006,6 +1006,10 @@ progress {
     font-weight: normal !important;
     text-decoration: none;
     vertical-align: middle;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    cursor: hand;
 }
 
 .accentButton-g {

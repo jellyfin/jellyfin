@@ -717,10 +717,42 @@
         }
     }
 
-    var _childrenItemsQuery = null;
+    function getEpisodesFunction(seriesId, query) {
+
+        query = $.extend({}, query);
+
+        return function (index, limit, fields) {
+
+            query.StartIndex = index;
+            query.Limit = limit;
+            query.Fields = fields;
+
+            return ApiClient.getEpisodes(seriesId, query);
+
+        };
+
+    }
+
+    function getAlbumSongsFunction(query) {
+
+        query = $.extend({}, query);
+
+        return function (index, limit, fields) {
+
+            query.StartIndex = index;
+            query.Limit = limit;
+            query.Fields = fields;
+
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+
+        };
+
+    }
+
+    var _childrenItemsFunction = null;
     function renderChildren(page, item, user, context) {
 
-        _childrenItemsQuery = null;
+        _childrenItemsFunction = null;
 
         var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio,SyncInfo";
 
@@ -753,9 +785,18 @@
                 userId: user.Id,
                 Fields: fields
             });
+
+            _childrenItemsFunction = getEpisodesFunction(item.SeriesId, {
+
+                seasonId: item.Id,
+                userId: user.Id
+            });
+        }
+        else if (item.Type == "MusicAlbum") {
+
+            _childrenItemsFunction = getAlbumSongsFunction(query);
         }
 
-        _childrenItemsQuery = query;
         promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
         promise.done(function (result) {
@@ -794,6 +835,7 @@
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                     context: context,
+                    playFromHere: true,
                     overlayText: true
                 });
             }
@@ -1566,11 +1608,11 @@
 
         $('.childrenItemsContainer', page).on('playallfromhere', function (e, index) {
 
-            LibraryBrowser.playAllFromHere(_childrenItemsQuery, index);
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
         }).on('queueallfromhere', function (e, index) {
 
-            LibraryBrowser.queueAllFromHere(_childrenItemsQuery, index);
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 

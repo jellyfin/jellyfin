@@ -90,14 +90,9 @@
             return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
         },
 
-        playAllFromHere: function (query, index) {
+        playAllFromHere: function (fn, index) {
 
-            query = $.extend({}, query);
-            query.StartIndex = index;
-            query.Limit = 100;
-            query.Fields = "MediaSources,Chapters";
-
-            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").done(function (result) {
 
                 MediaController.play({
                     items: result.Items
@@ -106,12 +101,8 @@
         },
 
         queueAllFromHere: function (query, index) {
-            query = $.extend({}, query);
-            query.StartIndex = index;
-            query.Limit = 100;
-            query.Fields = "MediaSources,Chapters";
 
-            ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").done(function (result) {
 
                 MediaController.queue({
                     items: result.Items
@@ -695,7 +686,7 @@
                     }
                 }
 
-                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
+                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options, index);
 
                 var cssClass = options.smallIcon ? 'ui-li-has-icon listItem' : 'ui-li-has-thumb listItem';
 
@@ -705,7 +696,7 @@
 
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-index="' + index + '" data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '">';
 
                 var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '" class="itemWithAction"') : '';
                 html += '<a' + defaultActionAttribute + ' href="' + href + '">';
@@ -846,7 +837,7 @@
             return outerHtml;
         },
 
-        getItemDataAttributes: function (item, options) {
+        getItemDataAttributes: function (item, options, index) {
 
             var atts = [];
 
@@ -861,6 +852,7 @@
 
             atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
+            atts.push('data-index="' + index + '"');
 
             if (item.IsPlaceHolder) {
                 atts.push('data-placeholder="true"');
@@ -1214,7 +1206,7 @@
                     cssClass += ' bottomPaddedCard';
                 }
 
-                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options);
+                var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options, i);
 
                 var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '"') : '';
 
