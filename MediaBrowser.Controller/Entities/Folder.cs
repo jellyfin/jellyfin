@@ -916,7 +916,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IList{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren()
         {
-            return GetRecursiveChildren(null);
+            return GetRecursiveChildren(i => true);
         }
 
         public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
