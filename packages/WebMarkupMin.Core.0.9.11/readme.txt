@@ -1,11 +1,11 @@
 
 
    ----------------------------------------------------------------------
-              README file for Web Markup Minifier: Core 0.9.9
+              README file for Web Markup Minifier: Core 0.9.11
 
    ----------------------------------------------------------------------
 
-          Copyright 2014 Andrey Taritsyn - http://www.taritsyn.ru
+      Copyright (c) 2013-2015 Andrey Taritsyn - http://www.taritsyn.ru
 		  
 		  
    ===========
@@ -42,6 +42,12 @@
    
    Also supports minification of views of popular JavaScript template
    engines: KnockoutJS, Kendo UI MVVM and AngularJS.
+   
+   =============
+   RELEASE NOTES
+   =============
+   WebMarkupMin.Configuration.xsd file moved to the
+   WebMarkupMin.ConfigurationIntelliSense package.
 
    =============
    DOCUMENTATION
