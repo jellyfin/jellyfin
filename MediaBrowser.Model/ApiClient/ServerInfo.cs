@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.ApiClient
                 var existing = list[index];
 
                 // Merge the data
-                existing.IsOffline = user.IsOffline;
+                existing.IsSignedInOffline = user.IsSignedInOffline;
             }
             else
             {

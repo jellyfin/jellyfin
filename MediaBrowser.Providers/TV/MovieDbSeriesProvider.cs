@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.TV
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await EnsureSeriesInfo(tmdbId, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-                
+
                 var dataFilePath = GetDataFilePath(tmdbId, searchInfo.MetadataLanguage);
 
                 var obj = _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     remoteResult.SetProviderId(MetadataProviders.Tvdb, obj.external_ids.tvdb_id.ToString(_usCulture));
                 }
-                
+
                 return new[] { remoteResult };
             }
 
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             series.HomePageUrl = seriesInfo.homepage;
-            
+
             series.RunTimeTicks = seriesInfo.episode_run_time.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
             if (string.Equals(seriesInfo.status, "Ended", StringComparison.OrdinalIgnoreCase))
@@ -302,11 +302,13 @@ namespace MediaBrowser.Providers.TV
                 url += string.Format("&language={0}", language);
             }
 
-            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(_localization, language);
+            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(language);
             // Get images in english and with no language
             url += "&include_image_language=" + includeImageLanguageParam;
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            RootObject mainResult;
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -316,8 +318,36 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                return _jsonSerializer.DeserializeFromStream<RootObject>(json);
+                mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // If the language preference isn't english, then have the overview fallback to english if it's blank
+            if (mainResult != null &&
+                string.IsNullOrEmpty(mainResult.overview) &&
+                !string.IsNullOrEmpty(language) &&
+                !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.Info("MovieDbSeriesProvider couldn't find meta for language " + language + ". Trying English...");
+
+                url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
+
+                using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = MovieDbProvider.AcceptHeader
+
+                }).ConfigureAwait(false))
+                {
+                    var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+
+                    mainResult.overview = englishResult.overview;
+                }
+            }
+
+            return mainResult;
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
