@@ -129,17 +129,27 @@ namespace MediaBrowser.Dlna.Ssdp
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
+            var queued = false;
 
-            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount, ignoreBindFailure);
-
-            if (_messageQueue.Count == 0)
+            for (var i = 0; i < sendCount; i++)
             {
-                dgram.Send();
-                return;
+                var dgram = new Datagram(endpoint, localAddress, _logger, msg, ignoreBindFailure);
+
+                if (_messageQueue.Count == 0)
+                {
+                    dgram.Send();
+                }
+                else
+                {
+                    _messageQueue.Enqueue(dgram);
+                    queued = true;
+                }
             }
 
-            _messageQueue.Enqueue(dgram);
-            StartQueueTimer();
+            if (queued)
+            {
+                StartQueueTimer();
+            }
         }
 
         /// <summary>
@@ -189,8 +199,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null, true);
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true);
+                    SendDatagram(header, values, endpoint, null, true, 1);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true, 1);
                     //SendDatagram(header, values, endpoint, null, true);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
@@ -208,36 +218,21 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (_queueTimer == null)
                 {
-                    _queueTimer = new Timer(QueueTimerCallback, null, 1000, Timeout.Infinite);
+                    _queueTimer = new Timer(QueueTimerCallback, null, 500, Timeout.Infinite);
                 }
                 else
                 {
-                    _queueTimer.Change(1000, Timeout.Infinite);
+                    _queueTimer.Change(500, Timeout.Infinite);
                 }
             }
         }
 
         private void QueueTimerCallback(object state)
         {
-            while (_messageQueue.Count != 0)
+            Datagram msg;
+            while (_messageQueue.TryDequeue(out msg))
             {
-                Datagram msg;
-                if (!_messageQueue.TryPeek(out msg))
-                {
-                    continue;
-                }
-
-                if (msg != null && (!_isDisposed || msg.TotalSendCount > 1))
-                {
-                    msg.Send();
-                    if (msg.SendCount > msg.TotalSendCount)
-                    {
-                        _messageQueue.TryDequeue(out msg);
-                    }
-                    break;
-                }
-
-                _messageQueue.TryDequeue(out msg);
+                msg.Send();
             }
 
             _datagramPosted.Set();
