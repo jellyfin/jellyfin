@@ -61,7 +61,7 @@
 
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "smallBackdrop",
+                    shape: "backdrop",
                     showTitle: true,
                     centerText: true,
                     preferBackdrop: true,

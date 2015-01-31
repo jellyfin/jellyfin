@@ -479,7 +479,7 @@
 
         supportsAddingToCollection: function (item) {
 
-            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder'];
+            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode'];
 
             return item.LocationType == 'FileSystem' && !item.CollectionType && invalidTypes.indexOf(item.Type) == -1;
         }

@@ -167,7 +167,7 @@
     margin-left: 2em;
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 1200px) {
 
     .viewMenuSearch {
         display: inline-block;

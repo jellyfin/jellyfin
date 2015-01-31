@@ -374,7 +374,7 @@
     }
 
     .portraitCard {
-        width: 10%;
+        width: 12.5%;
     }
 
     .smallBackdropCard {
@@ -386,6 +386,10 @@
 @media all and (min-width: 1800px) {
 
     .squareCard {
+        width: 10%;
+    }
+
+    .portraitCard {
         width: 10%;
     }
 
