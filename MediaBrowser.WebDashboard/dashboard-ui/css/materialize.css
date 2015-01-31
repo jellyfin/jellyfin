@@ -18,11 +18,10 @@
 .btn, .btn-large, .btn-flat {
     display: block;
     padding: 0 2rem;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
     background-clip: padding-box;
-    text-transform: uppercase;
     border: none;
     outline: 0;
     -webkit-tap-highlight-color: transparent;
@@ -67,7 +66,6 @@
     outline: 0;
     -webkit-tap-highlight-color: transparent;
     margin-bottom: 15px;
-
     display: inline-block;
     position: relative;
     z-index: 1;
@@ -129,9 +127,9 @@
         font-size: 1.6rem;
     }
 
-    .btn-floating-large i {
-        font-size: 1.6rem;
-    }
+.btn-floating-large i {
+    font-size: 1.6rem;
+}
 
 
 .btn, .btn-large {
@@ -163,12 +161,12 @@
 
 .ui-page-theme-a .btnCancel {
     background-color: #e8e8e8;
-    color: #333!important;
+    color: #333 !important;
 }
 
-.ui-page-theme-a .btnCancel i {
-    color: #666!important;
-}
+    .ui-page-theme-a .btnCancel i {
+        color: #666 !important;
+    }
 
 .btn-inline {
     display: inline-block;
@@ -176,7 +174,7 @@
     margin-bottom: 0;
 }
 
-button.btn:not(.btn-inline),button.btn-large:not(.btn-inline) {
+button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
     width: 100%;
 }
 

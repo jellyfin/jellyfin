@@ -669,6 +669,8 @@ progress {
     width: auto !important;
     display: inline-block !important;
     background: none !important;
+    border: 0 !important;
+    outline: 0 !important;
 }
 
     .btnUserItemRating div {
