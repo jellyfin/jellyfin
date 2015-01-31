@@ -155,7 +155,7 @@ namespace MediaBrowser.Api.Playback
         private byte[] GetBytes(int value)
         {
             byte[] bytes = BitConverter.GetBytes(value);
-            if (BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
                 Array.Reverse(bytes);
             return bytes;
         }
