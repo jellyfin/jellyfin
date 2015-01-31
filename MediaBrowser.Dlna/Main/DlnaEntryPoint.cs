@@ -174,6 +174,8 @@ namespace MediaBrowser.Dlna.Main
                     "upnp:rootdevice", 
                     "urn:schemas-upnp-org:device:MediaServer:1", 
                     "urn:schemas-upnp-org:service:ContentDirectory:1", 
+                    "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
                     "uuid:" + guid.ToString("N")
                 };
                 

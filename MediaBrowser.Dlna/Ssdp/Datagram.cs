@@ -11,26 +11,15 @@ namespace MediaBrowser.Dlna.Ssdp
         public EndPoint ToEndPoint { get; private set; }
         public EndPoint FromEndPoint { get; private set; }
         public string Message { get; private set; }
-
-        /// <summary>
-        /// The number of times to send the message
-        /// </summary>
-        public int TotalSendCount { get; private set; }
         public bool IgnoreBindFailure { get; private set; }
-
-        /// <summary>
-        /// The number of times the message has been sent
-        /// </summary>
-        public int SendCount { get; private set; }
 
         private readonly ILogger _logger;
 
-        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, int totalSendCount, bool ignoreBindFailure)
+        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, bool ignoreBindFailure)
         {
             Message = message;
             _logger = logger;
             IgnoreBindFailure = ignoreBindFailure;
-            TotalSendCount = totalSendCount;
             FromEndPoint = fromEndPoint;
             ToEndPoint = toEndPoint;
         }
@@ -83,7 +72,6 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
             }
-            ++SendCount;
         }
 
         private Socket CreateSocket()

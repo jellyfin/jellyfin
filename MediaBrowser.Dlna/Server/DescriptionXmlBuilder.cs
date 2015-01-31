@@ -33,9 +33,9 @@ namespace MediaBrowser.Dlna.Server
             _serverAddress = serverAddress;
         }
 
-        private bool AbsoluteUrls
+        private bool EnableAbsoluteUrls
         {
-            get { return true; }
+            get { return false; }
         }
 
         public string GetXml()
@@ -91,7 +91,9 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<modelURL>" + SecurityElement.Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
             builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber ?? string.Empty) + "</serialNumber>");
 
-            if (!AbsoluteUrls)
+            builder.Append("<presentationURL>" + SecurityElement.Escape(_serverAddress) + "</presentationURL>");
+
+            if (!EnableAbsoluteUrls)
             {
                 builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
             }
@@ -153,7 +155,7 @@ namespace MediaBrowser.Dlna.Server
 
             url = "/dlna/" + _serverUdn + "/" + url;
 
-            if (AbsoluteUrls)
+            if (EnableAbsoluteUrls)
             {
                 url = _serverAddress.TrimEnd('/') + url;
             }
