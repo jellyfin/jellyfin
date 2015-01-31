@@ -26,7 +26,14 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The server identifier.</value>
         public string ServerId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the name of the server.
+        /// This is not used by the server and is for client-side usage only.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        public string ServerName { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the connect user.
         /// </summary>

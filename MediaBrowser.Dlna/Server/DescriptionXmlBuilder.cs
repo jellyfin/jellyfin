@@ -33,6 +33,11 @@ namespace MediaBrowser.Dlna.Server
             _serverAddress = serverAddress;
         }
 
+        private bool AbsoluteUrls
+        {
+            get { return true; }
+        }
+
         public string GetXml()
         {
             var builder = new StringBuilder();
@@ -86,7 +91,10 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<modelURL>" + SecurityElement.Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
             builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber ?? string.Empty) + "</serialNumber>");
 
-            builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
+            if (!AbsoluteUrls)
+            {
+                builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
+            }
 
             if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
             {
@@ -144,7 +152,11 @@ namespace MediaBrowser.Dlna.Server
             url = url.TrimStart('/');
 
             url = "/dlna/" + _serverUdn + "/" + url;
-            //url = _serverAddress.TrimEnd('/') + url;
+
+            if (AbsoluteUrls)
+            {
+                url = _serverAddress.TrimEnd('/') + url;
+            }
 
             return SecurityElement.Escape(url);
         }
