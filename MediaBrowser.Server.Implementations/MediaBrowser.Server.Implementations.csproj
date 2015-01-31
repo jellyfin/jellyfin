@@ -49,9 +49,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\libwebp\Imazen.WebP.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.30\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.31\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
