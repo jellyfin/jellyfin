@@ -14,7 +14,7 @@
     "FileReadError": "Er is een fout opgetreden bij het lezen van het bestand.",
     "DeleteUser": "Verwijder gebruiker",
     "DeleteUserConfirmation": "Weet u zeker dat u deze gebruiker wilt verwijderen?",
-    "PasswordResetHeader": "Wachtwoord opnieuw instellen",
+    "PasswordResetHeader": "Reset Password",
     "PasswordResetComplete": "Het wachtwoord is opnieuw ingesteld.",
     "PinCodeResetComplete": "The pin code has been reset.",
     "PasswordResetConfirmation": "Weet u zeker dat u het wachtwoord opnieuw in wilt stellen?",
