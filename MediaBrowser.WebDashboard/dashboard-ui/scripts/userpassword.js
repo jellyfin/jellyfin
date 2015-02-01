@@ -4,7 +4,13 @@
 
         Dashboard.setPageTitle(user.Name);
 
-        $('.lnkEditUserPreferences', page).attr('href', 'myprofile.html?userId=' + user.Id);
+        if (user.ConnectLinkType == 'Guest') {
+
+            $('.connectMessage', page).show();
+        }
+        else {
+            $('.connectMessage', page).hide();
+        }
 
         Dashboard.hideLoadingMsg();
     }

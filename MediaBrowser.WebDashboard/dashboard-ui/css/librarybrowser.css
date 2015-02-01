@@ -551,7 +551,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .ui-page-theme-a .detailSectionHeader {
-    background-color: #fff;
+    background-color: #ddd;
     border: 1px solid #ddd;
     border-radius: 2px;
 }

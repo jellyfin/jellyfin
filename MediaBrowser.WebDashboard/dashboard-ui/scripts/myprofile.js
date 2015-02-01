@@ -181,20 +181,7 @@
 
     window.MyProfilePage = new myProfilePage();
 
-    $(document).on('pagebeforeshow', "#userImagePage", function () {
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (loggedInUser) {
-
-            if (loggedInUser.Policy.IsAdministrator) {
-                $('#lnkParentalControl', page).show();
-            } else {
-                $('#lnkParentalControl', page).hide();
-            }
-        });
-
-    }).on('pageinit', "#userImagePage", function () {
+    $(document).on('pageinit', "#userImagePage", function () {
 
         var page = this;
 
@@ -416,20 +403,7 @@
 
     window.UpdatePasswordPage = new updatePasswordPage();
 
-    $(document).on('pagebeforeshow', "#userImagePage", function () {
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (loggedInUser) {
-
-            if (loggedInUser.Policy.IsAdministrator) {
-                $('#lnkParentalControl', page).show();
-            } else {
-                $('#lnkParentalControl', page).hide();
-            }
-        });
-
-    }).on('pageshow', "#userImagePage", function () {
+    $(document).on('pageshow', ".userPasswordPage", function () {
 
         var page = this;
 
