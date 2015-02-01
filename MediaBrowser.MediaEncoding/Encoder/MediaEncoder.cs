@@ -503,7 +503,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             process.Start();
 
-            var ranToCompletion = process.WaitForExit(120000);
+            // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
+            // but we still need to detect if the process hangs.
+            // Making the assumption that as long as new jpegs are showing up, everything is good.
+
+            bool isResponsive = true;
+            int lastCount = 0;
+
+            while (isResponsive && !process.WaitForExit(120000))
+            {
+                int jpegCount = Directory.GetFiles(targetDirectory, "*.jpg").Count();
+                isResponsive = (jpegCount > lastCount);
+                lastCount = jpegCount;
+            }
+
+            bool ranToCompletion = process.HasExited;
 
             if (!ranToCompletion)
             {
