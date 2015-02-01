@@ -331,8 +331,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // -f image2 -f webp
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
-                string.Format("-i {0} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
+            var args = useIFrame ? string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
+                string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
@@ -363,7 +363,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             };
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-            
+
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             process.Start();
@@ -479,7 +479,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format("-i {0} -threads 1 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
             var probeSize = GetProbeSizeArgument(new[] { inputArgument }, protocol);
 
@@ -506,41 +506,52 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            process.Start();
+            bool ranToCompletion;
 
-            // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
-            // but we still need to detect if the process hangs.
-            // Making the assumption that as long as new jpegs are showing up, everything is good.
-
-            bool isResponsive = true;
-            int lastCount = 0;
-
-            while (isResponsive && !process.WaitForExit(120000))
+            try
             {
-                int jpegCount = Directory.GetFiles(targetDirectory, "*.jpg").Count();
-                isResponsive = (jpegCount > lastCount);
-                lastCount = jpegCount;
+                process.Start();
+
+                // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
+                // but we still need to detect if the process hangs.
+                // Making the assumption that as long as new jpegs are showing up, everything is good.
+
+                bool isResponsive = true;
+                int lastCount = 0;
+
+                while (isResponsive && !process.WaitForExit(30000))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    int jpegCount = Directory.GetFiles(targetDirectory)
+                        .Count(i => string.Equals(Path.GetExtension(i), ".jpg", StringComparison.OrdinalIgnoreCase));
+
+                    isResponsive = (jpegCount > lastCount);
+                    lastCount = jpegCount;
+                }
+
+                ranToCompletion = process.HasExited;
+
+                if (!ranToCompletion)
+                {
+                    try
+                    {
+                        _logger.Info("Killing ffmpeg process");
+
+                        process.StandardInput.WriteLine("q");
+
+                        process.WaitForExit(1000);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error killing process", ex);
+                    }
+                }
             }
-
-            bool ranToCompletion = process.HasExited;
-
-            if (!ranToCompletion)
+            finally
             {
-                try
-                {
-                    _logger.Info("Killing ffmpeg process");
-
-                    process.StandardInput.WriteLine("q");
-
-                    process.WaitForExit(1000);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
+                resourcePool.Release();
             }
-
-            resourcePool.Release();
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 

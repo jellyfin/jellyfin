@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
@@ -8,12 +7,12 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
