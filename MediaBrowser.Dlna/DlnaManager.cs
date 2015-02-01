@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Plugins;
@@ -27,18 +28,20 @@ namespace MediaBrowser.Dlna
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IServerApplicationHost _appHost;
 
         public DlnaManager(IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
             ILogger logger,
-            IJsonSerializer jsonSerializer)
+            IJsonSerializer jsonSerializer, IServerApplicationHost appHost)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
+            _appHost = appHost;
         }
 
         public IEnumerable<DeviceProfile> GetProfiles()
@@ -480,7 +483,7 @@ namespace MediaBrowser.Dlna
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();
 
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress).GetXml();
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

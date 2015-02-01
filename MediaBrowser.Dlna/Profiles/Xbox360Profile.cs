@@ -4,6 +4,9 @@ using MediaBrowser.Model.Dlna.Profiles;
 
 namespace MediaBrowser.Dlna.Profiles
 {
+    /// <summary>
+    /// Good info on xbox 360 requirements: https://code.google.com/p/jems/wiki/XBox360Notes
+    /// </summary>
     [XmlRoot("Profile")]
     public class Xbox360Profile : DefaultProfile
     {
@@ -11,8 +14,13 @@ namespace MediaBrowser.Dlna.Profiles
         {
             Name = "Xbox 360";
 
-            ModelName = "Windows Media Player Sharing";
+            // Required according to above
+            ModelName = "Windows Media Connect";
+
             ModelNumber = "12.0";
+
+            FriendlyName = "Media Browser on ${ServerName} : 1 : Windows Media Connect";
+
             ModelUrl = "http://www.microsoft.com/";
             Manufacturer = "Microsoft Corporation";
             ManufacturerUrl = "http://www.microsoft.com/";
