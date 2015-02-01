@@ -56,6 +56,7 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
+using MediaBrowser.RokuMetadata;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.Activity;
 using MediaBrowser.Server.Implementations.Channels;
@@ -960,6 +961,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             // Xbmc 
             list.Add(typeof(ArtistNfoProvider).Assembly);
+
+            // Roku 
+            list.Add(typeof(RokuBifScheduledTask).Assembly);
 
             list.AddRange(NativeApp.GetAssembliesWithParts());
 

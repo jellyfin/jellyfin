@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mono", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Startup.Common", "MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj", "{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.RokuMetadata", "MediaBrowser.RokuMetadata\MediaBrowser.RokuMetadata.csproj", "{65EA8AC3-7C44-43FF-9726-847A17DAFF63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -516,6 +518,27 @@ Global
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|Win32.ActiveCfg = Release|Any CPU
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|x64.ActiveCfg = Release|Any CPU
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Release|x86.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|Mixed Platforms.Build.0 = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|Win32.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|x64.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release Mono|x86.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|Win32.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|x64.ActiveCfg = Release|Any CPU
+		{65EA8AC3-7C44-43FF-9726-847A17DAFF63}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

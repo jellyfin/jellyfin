@@ -72,21 +72,21 @@ namespace MediaBrowser.Api.Dlna
     [Route("/Dlna/{UuId}/mediareceiverregistrar/events", Summary = "Processes an event subscription request")]
     public class ProcessMediaReceiverRegistrarEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
         public string UuId { get; set; }
     }
 
     [Route("/Dlna/{UuId}/contentdirectory/events", Summary = "Processes an event subscription request")]
     public class ProcessContentDirectoryEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
         public string UuId { get; set; }
     }
 
     [Route("/Dlna/{UuId}/connectionmanager/events", Summary = "Processes an event subscription request")]
     public class ProcessConnectionManagerEventRequest
     {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,POST")]
         public string UuId { get; set; }
     }
 

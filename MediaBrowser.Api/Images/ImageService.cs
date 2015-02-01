@@ -10,7 +10,6 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
