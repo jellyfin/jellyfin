@@ -370,6 +370,23 @@ namespace MediaBrowser.Api.Playback
 
             }
 
+            // h264 (libnvenc)
+            else if (string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                switch (qualitySetting)
+                {
+                    case EncodingQuality.HighSpeed:
+                        param = "-preset high-performance";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param = "";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param = "-preset high-quality";
+                        break;
+                }
+            }
+
             // webm
             else if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
             {
@@ -447,7 +464,47 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                param += " -level " + state.VideoRequest.Level;
+                // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                if (String.Equals(H264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(H264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    switch (state.VideoRequest.Level)
+                    {
+                        case "30":
+                            param += " -level 3";
+                            break;
+                        case "31":
+                            param += " -level 3.1";
+                            break;
+                        case "32":
+                            param += " -level 3.2";
+                            break;
+                        case "40":
+                            param += " -level 4";
+                            break;
+                        case "41":
+                            param += " -level 4.1";
+                            break;
+                        case "42":
+                            param += " -level 4.2";
+                            break;
+                        case "50":
+                            param += " -level 5";
+                            break;
+                        case "51":
+                            param += " -level 5.1";
+                            break;
+                        case "52":
+                            param += " -level 5.2";
+                            break;
+                        default:
+                            param += " -level " + state.VideoRequest.Level;
+                            break;
+                    }
+                }
+                else
+                {
+                    param += " -level " + state.VideoRequest.Level;
+                }
             }
 
             return param;
@@ -1210,7 +1267,7 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // h264_qsv
-                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     if (hasFixedResolution)
                     {
