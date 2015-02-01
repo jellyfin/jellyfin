@@ -83,10 +83,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.RokuMetadata\MediaBrowser.RokuMetadata.csproj">
-      <Project>{65ea8ac3-7c44-43ff-9726-847a17daff63}</Project>
-      <Name>MediaBrowser.RokuMetadata</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
       <Project>{b90ab8f2-1bff-4568-a3fd-2a338a435a75}</Project>
       <Name>MediaBrowser.Server.Startup.Common</Name>

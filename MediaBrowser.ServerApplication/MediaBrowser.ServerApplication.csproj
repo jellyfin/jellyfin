@@ -215,10 +215,6 @@
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.RokuMetadata\MediaBrowser.RokuMetadata.csproj">
-      <Project>{65ea8ac3-7c44-43ff-9726-847a17daff63}</Project>
-      <Name>MediaBrowser.RokuMetadata</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
       <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
