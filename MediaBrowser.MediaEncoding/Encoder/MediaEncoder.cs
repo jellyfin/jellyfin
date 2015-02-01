@@ -37,6 +37,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
+        /// The _thumbnail resource pool
+        /// </summary>
+        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(1, 1);
+
+        /// <summary>
         /// The video image resource pool
         /// </summary>
         private readonly SemaphoreSlim _videoImageResourcePool = new SemaphoreSlim(1, 1);
@@ -458,7 +463,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int? maxWidth,
             CancellationToken cancellationToken)
         {
-            var resourcePool = _videoImageResourcePool;
+            var resourcePool = _thumbnailResourcePool;
 
             var inputArgument = GetInputArgument(inputFiles, protocol);
 

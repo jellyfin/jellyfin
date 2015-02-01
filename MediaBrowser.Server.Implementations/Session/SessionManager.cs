@@ -516,7 +516,8 @@ namespace MediaBrowser.Server.Implementations.Session
                             Item = session.NowPlayingItem,
                             ItemId = (session.NowPlayingItem == null ? null : session.NowPlayingItem.Id),
                             SessionId = session.Id,
-                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId)
+                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId),
+                            PositionTicks = session.PlayState == null ? null : session.PlayState.PositionTicks
                         });
                     }
                     catch (Exception ex)
