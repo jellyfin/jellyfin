@@ -531,7 +531,7 @@
             $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
         });
 
-        LibraryBrowser.renderGenres($('.itemGenres', popup), item, 'livetv');
+        LibraryBrowser.renderGenres($('.itemGenres', popup), item, 'livetv', 3);
         LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', popup), item);
 
         popup.parents().prev('.ui-popup-screen').remove();

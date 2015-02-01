@@ -2382,13 +2382,17 @@
             }
         },
 
-        renderGenres: function (elem, item, context) {
+        renderGenres: function (elem, item, context, limit) {
 
             var html = '';
 
             var genres = item.Genres || [];
 
             for (var i = 0, length = genres.length; i < length; i++) {
+
+                if (limit && i >= limit) {
+                    break;
+                }
 
                 if (i > 0) {
                     html += '<span>&nbsp;&nbsp;/&nbsp;&nbsp;</span>';

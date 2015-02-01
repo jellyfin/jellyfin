@@ -129,7 +129,7 @@
     right: 0;
 }
 
-    .cardContent:hover .cardImage {
+    .cardContent:not(.noHoverEffect):hover .cardImage {
         opacity: .5;
     }
 

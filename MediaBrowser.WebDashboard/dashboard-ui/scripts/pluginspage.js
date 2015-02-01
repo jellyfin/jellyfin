@@ -37,8 +37,11 @@
 
         var html = '';
 
-        var href = configPage && !Dashboard.isConnectMode() ?
-            Dashboard.getConfigurationPageUrl(configPage.Name) :
+        var isConnectMode = Dashboard.isConnectMode();
+        var configPageUrl = configPage ? Dashboard.getConfigurationPageUrl(configPage.Name) : null;
+
+        var href = configPage && !isConnectMode ?
+            configPageUrl :
             null;
 
         html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard alternateHover bottomPaddedCard'>";
@@ -50,7 +53,14 @@
 
         if (href) {
             html += '<a class="cardContent" href="' + href + '">';
-        } else {
+        }
+        else if (!configPageUrl) {
+            html += '<div class="cardContent noConfigPluginCard noHoverEffect">';
+        }
+        else if (isConnectMode) {
+            html += '<div class="cardContent connectModePluginCard">';
+        }
+        else {
             html += '<div class="cardContent">';
         }
 
@@ -125,11 +135,11 @@
 
             var elem = $('.installedPlugins', page).html(html).trigger('create');
 
-            $('.btnNoConfig', elem).on('click', function () {
+            $('.noConfigPluginCard', elem).on('click', function () {
                 showNoConfigurationMessage();
             });
 
-            $('.btnConnectPlugin', elem).on('click', function () {
+            $('.connectModePluginCard', elem).on('click', function () {
                 showConnectMessage();
             });
 
