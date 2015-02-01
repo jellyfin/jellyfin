@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Dlna.Common;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Security;
 using System.Text;
 
@@ -15,8 +17,9 @@ namespace MediaBrowser.Dlna.Server
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _serverUdn;
         private readonly string _serverAddress;
+        private readonly string _serverName;
 
-        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress)
+        public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName)
         {
             if (string.IsNullOrWhiteSpace(serverUdn))
             {
@@ -31,6 +34,7 @@ namespace MediaBrowser.Dlna.Server
             _profile = profile;
             _serverUdn = serverUdn;
             _serverAddress = serverAddress;
+            _serverName = serverName;
         }
 
         private bool EnableAbsoluteUrls
@@ -81,7 +85,7 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
             builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
 
-            builder.Append("<friendlyName>" + SecurityElement.Escape(_profile.FriendlyName ?? string.Empty) + "</friendlyName>");
+            builder.Append("<friendlyName>" + SecurityElement.Escape(GetFriendlyName()) + "</friendlyName>");
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
             builder.Append("<manufacturer>" + SecurityElement.Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");
             builder.Append("<manufacturerURL>" + SecurityElement.Escape(_profile.ManufacturerUrl ?? string.Empty) + "</manufacturerURL>");
@@ -95,13 +99,26 @@ namespace MediaBrowser.Dlna.Server
 
             if (!EnableAbsoluteUrls)
             {
-                builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
+                //builder.Append("<URLBase>" + SecurityElement.Escape(_serverAddress) + "</URLBase>");
             }
 
             if (!string.IsNullOrWhiteSpace(_profile.SonyAggregationFlags))
             {
                 builder.Append("<av:aggregationFlags xmlns:av=\"urn:schemas-sony-com:av\">" + SecurityElement.Escape(_profile.SonyAggregationFlags) + "</av:aggregationFlags>");
             }
+        }
+
+        private string GetFriendlyName()
+        {
+            var name = _profile.FriendlyName ?? string.Empty;
+
+            var characters = _serverName.Where(c => (char.IsLetterOrDigit(c) || c == '-')).ToArray();
+
+            var serverName = new string(characters);
+
+            name = name.Replace("${ServerName}", serverName, StringComparison.OrdinalIgnoreCase);
+
+            return name;
         }
 
         private void AppendIconList(StringBuilder builder)
