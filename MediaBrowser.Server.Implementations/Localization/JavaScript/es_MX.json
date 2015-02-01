@@ -14,7 +14,7 @@
     "FileReadError": "Ha ocurrido un error al leer el archivo.",
     "DeleteUser": "Eliminar Usuario",
     "DeleteUserConfirmation": "\u00bfEst\u00e1 seguro de querer eliminar este usuario?",
-    "PasswordResetHeader": "Restablecer Contrase\u00f1a",
+    "PasswordResetHeader": "Reset Password",
     "PasswordResetComplete": "La contrase\u00f1a ha sido restablecida.",
     "PinCodeResetComplete": "The pin code has been reset.",
     "PasswordResetConfirmation": "\u00bfEst\u00e1 seguro de querer restablecer la contrase\u00f1a?",

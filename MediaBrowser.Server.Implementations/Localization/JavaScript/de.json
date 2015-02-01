@@ -14,7 +14,7 @@
     "FileReadError": "Beim Lesen der Datei ist ein Fehler aufgetreten.",
     "DeleteUser": "Benutzer l\u00f6schen",
     "DeleteUserConfirmation": "M\u00f6chtest du {0} wirklich l\u00f6schen?",
-    "PasswordResetHeader": "Passwort zur\u00fccksetzen",
+    "PasswordResetHeader": "Reset Password",
     "PasswordResetComplete": "Das Passwort wurde zur\u00fcckgesetzt.",
     "PinCodeResetComplete": "The pin code has been reset.",
     "PasswordResetConfirmation": "M\u00f6chtest du das Passwort wirklich zur\u00fccksetzen?",
