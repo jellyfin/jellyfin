@@ -367,7 +367,7 @@
 
             var canPlayDirect = self.canPlayVideoDirect(mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
 
-            var audioBitrate = bitrate >= 700000 ? 128000 : 64000;
+            var audioBitrate = bitrate >= 700000 ? 192000 : 64000;
 
             var videoBitrate = bitrate - audioBitrate;
 

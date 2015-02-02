@@ -10,8 +10,6 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StreamBuilder
     {
-        private readonly string[] _serverTextSubtitleOutputs = { "srt", "vtt", "ttml" };
-
         public StreamInfo BuildAudioItem(AudioOptions options)
         {
             ValidateAudioInput(options);
@@ -544,16 +542,18 @@ namespace MediaBrowser.Model.Dlna
 
         private SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, VideoOptions options)
         {
+            // Look for an external profile that matches the stream type (text/graphical)
+            foreach (SubtitleProfile profile in options.Profile.SubtitleProfiles)
+            {
+                if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                {
+                    return profile;
+                }
+            }
+
             if (subtitleStream.IsTextSubtitleStream)
             {
-                SubtitleProfile externalProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
-
-                if (externalProfile != null)
-                {
-                    return externalProfile;
-                }
-
-                SubtitleProfile embedProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed, _serverTextSubtitleOutputs);
+                SubtitleProfile embedProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed);
 
                 if (embedProfile != null)
                 {
@@ -573,6 +573,19 @@ namespace MediaBrowser.Model.Dlna
             foreach (SubtitleProfile profile in profiles)
             {
                 if (method == profile.Method && ListHelper.ContainsIgnoreCase(formats, profile.Format))
+                {
+                    return profile;
+                }
+            }
+
+            return null;
+        }
+
+        private SubtitleProfile GetSubtitleProfile(SubtitleProfile[] profiles, SubtitleDeliveryMethod method)
+        {
+            foreach (SubtitleProfile profile in profiles)
+            {
+                if (method == profile.Method)
                 {
                     return profile;
                 }
