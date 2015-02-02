@@ -308,6 +308,7 @@
             }
 
             $(elem).html(html).lazyChildren();
+            $(elem).createCardMenus();
         });
     }
 

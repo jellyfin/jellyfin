@@ -672,7 +672,7 @@
     "MessageForgotPasswordFileCreated": "Het volgende bestand met instructies hoe nu verder te gaan is gemaakt:",
     "MessageForgotPasswordFileExpiration": "De hertsel pincode verloopt {0}.",
     "MessageInvalidForgotPasswordPin": "Er is een ongeldige of verlopen pincode ingegeven. Probeer opnieuw.",
-    "MessagePasswordResetForUsers": "Wachtwoorden zijn gereset voor de volgende gebruikers:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users:",
     "HeaderInviteGuest": "Nodig gast uit",
     "ButtonLinkMyMediaBrowserAccount": "Koppel mijn account nu",
     "MessageConnectAccountRequiredToInviteGuest": "Om gasten uit te kunnen nodigen moet uw Media Browser account aan deze server gekoppeld worden.",
