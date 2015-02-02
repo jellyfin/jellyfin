@@ -110,13 +110,11 @@ namespace MediaBrowser.Dlna.Server
 
         private string GetFriendlyName()
         {
-            var name = _profile.FriendlyName ?? string.Empty;
-
             var characters = _serverName.Where(c => (char.IsLetterOrDigit(c) || c == '-')).ToArray();
 
             var serverName = new string(characters);
 
-            name = name.Replace("${ServerName}", serverName, StringComparison.OrdinalIgnoreCase);
+            var name = (_profile.FriendlyName ?? string.Empty).Replace("${HostName}", serverName, StringComparison.OrdinalIgnoreCase);
 
             return name;
         }

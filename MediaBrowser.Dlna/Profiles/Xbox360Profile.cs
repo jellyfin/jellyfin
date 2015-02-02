@@ -19,7 +19,7 @@ namespace MediaBrowser.Dlna.Profiles
 
             ModelNumber = "12.0";
 
-            FriendlyName = "Media Browser on ${ServerName} : 1 : Windows Media Connect";
+            FriendlyName = "${HostName} : 1 : Windows Media Connect";
 
             ModelUrl = "http://www.microsoft.com/";
             Manufacturer = "Microsoft Corporation";

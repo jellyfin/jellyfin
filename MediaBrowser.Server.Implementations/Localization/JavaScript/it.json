@@ -672,7 +672,7 @@
     "MessageForgotPasswordFileCreated": "Il seguente file \u00e8 stato creato sul server e contiene le istruzioni su come procedere:",
     "MessageForgotPasswordFileExpiration": "Il pin scadr\u00e0 {0}.",
     "MessageInvalidForgotPasswordPin": "Un pin Invalido o scaduto \u00e8 stato inserito. Riprova.",
-    "MessagePasswordResetForUsers": "Le password sono state rimesse per i seguenti utenti:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users:",
     "HeaderInviteGuest": "Invita Ospite",
     "ButtonLinkMyMediaBrowserAccount": "Collega il mio account",
     "MessageConnectAccountRequiredToInviteGuest": "Per invitare gli ospiti \u00e8 necessario collegare prima il tuo account browser media a questo server.",
