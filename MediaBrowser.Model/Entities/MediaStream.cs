@@ -141,16 +141,20 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type != MediaStreamType.Subtitle) return false;
 
-                string codec = Codec ?? string.Empty;
-
-                // sub = external .sub file
-
-                return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
-                       StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
-                       !StringHelper.EqualsIgnoreCase(codec, "sub");
+                return IsTextFormat(Codec);
             }
         }
 
+        public static bool IsTextFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            // sub = external .sub file
+
+            return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
+                   StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
+                   !StringHelper.EqualsIgnoreCase(codec, "sub");
+        }
 
         /// <summary>
         /// Gets or sets the filename.
