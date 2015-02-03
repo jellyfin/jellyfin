@@ -700,7 +700,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                         }
                     }
 
-                    response.ItemUserAccess[itemId] = users.Select(i => i.Id.ToString("N")).ToList();
+                    response.ItemUserAccess[itemId] = users
+                        .Select(i => i.Id.ToString("N"))
+                        .OrderBy(i => i)
+                        .ToList();
                 }
             }
         }
