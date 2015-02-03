@@ -103,14 +103,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var target = GetSyncTargets(request.UserId)
                 .FirstOrDefault(i => string.Equals(request.TargetId, i.Id));
-            
+
             if (target == null)
             {
                 throw new ArgumentException("Sync target not found.");
             }
 
             var jobId = Guid.NewGuid().ToString("N");
-         
+
             var job = new SyncJob
             {
                 Id = jobId,
@@ -747,6 +747,40 @@ namespace MediaBrowser.Server.Implementations.Sync
         public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
         {
             return _repo.GetLibraryItemIds(query);
+        }
+
+        public AudioOptions GetAudioOptions(SyncJobItem jobItem)
+        {
+            var profile = GetDeviceProfile(jobItem.TargetId);
+
+            return new AudioOptions
+            {
+                Profile = profile
+            };
+        }
+
+        public VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
+        {
+            var profile = GetDeviceProfile(jobItem.TargetId);
+            var maxBitrate = profile.MaxStaticBitrate;
+
+            if (maxBitrate.HasValue)
+            {
+                if (job.Quality == SyncQuality.Medium)
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
+                }
+                else if (job.Quality == SyncQuality.Low)
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
+                }
+            }
+
+            return new VideoOptions
+            {
+                Profile = profile,
+                MaxBitrate = maxBitrate
+            };
         }
     }
 }

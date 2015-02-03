@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
@@ -149,5 +150,20 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;System.String&gt;.</returns>
         QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query);
+
+        /// <summary>
+        /// Gets the audio options.
+        /// </summary>
+        /// <param name="jobItem">The job item.</param>
+        /// <returns>AudioOptions.</returns>
+        AudioOptions GetAudioOptions(SyncJobItem jobItem);
+
+        /// <summary>
+        /// Gets the video options.
+        /// </summary>
+        /// <param name="jobItem">The job item.</param>
+        /// <param name="job">The job.</param>
+        /// <returns>VideoOptions.</returns>
+        VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job);
     }
 }

@@ -160,7 +160,7 @@
         var listItem = $(elem).parents('li');
         var id = listItem.attr('data-itemid');
         var status = listItem.attr('data-status');
-        var remove = listItem.attr('data-remove');
+        var remove = listItem.attr('data-remove').toLowerCase() == 'true';
 
         $('.jobMenu', page).popup("close").remove();
 

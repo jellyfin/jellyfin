@@ -486,11 +486,64 @@
     }
 }
 
+@media all and (min-width: 800px) {
+
+    .myLibraryPosterItem {
+        width: 32%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 160px;
+    }
+}
+
 @media all and (min-width: 1000px) {
 
     .myLibraryPosterItem {
         width: 23.5%;
         /* Specify a min width just in case the container doesn't have a width */
         min-width: 220px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .myLibraryPosterItem {
+        width: 24.0%;
+    }
+}
+
+@media all and (min-width: 1440px) {
+
+    .myLibraryPosterItem {
+        width: 19.0%;
+        /* Specify a min width just in case the container doesn't have a width */
+        min-width: 220px;
+    }
+}
+
+@media all and (min-width: 1600px) {
+
+    .myLibraryPosterItem {
+        width: 15.5%;
+    }
+}
+
+@media all and (min-width: 1700px) {
+
+    .myLibraryPosterItem {
+        width: 16%;
+    }
+}
+
+@media all and (min-width: 2000px) {
+
+    .myLibraryPosterItem {
+        width: 13.5%;
+    }
+}
+
+@media all and (min-width: 2300px) {
+
+    .myLibraryPosterItem {
+        width: 13.8%;
     }
 }

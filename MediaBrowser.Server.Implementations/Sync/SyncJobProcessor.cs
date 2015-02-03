@@ -421,7 +421,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, video, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, video, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
@@ -436,24 +436,27 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             else
             {
-                await SyncGeneric(jobItem, item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await SyncGeneric(jobItem, item, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, Video item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = new VideoOptions
-            {
-                Context = EncodingContext.Static,
-                ItemId = item.Id.ToString("N"),
-                DeviceId = jobItem.TargetId,
-                Profile = profile,
-                MediaSources = item.GetMediaSources(false, user).ToList()
-            };
+            var options = _syncManager.GetVideoOptions(jobItem, job);
+
+            options.DeviceId = jobItem.TargetId;
+            options.Context = EncodingContext.Static;
+            options.Profile = profile;
+            options.ItemId = item.Id.ToString("N");
+            options.MediaSources = item.GetMediaSources(false, user).ToList();
 
             var streamInfo = new StreamBuilder().BuildVideoItem(options);
             var mediaSource = streamInfo.MediaSource;
-            var externalSubs = streamInfo.GetExternalSubtitles("dummy", false);
+
+            // No sense creating external subs if we're already burning one into the video
+            var externalSubs = streamInfo.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode ?
+                new List<SubtitleStreamInfo>() :
+                streamInfo.GetExternalSubtitles("dummy", false);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
             var requiresConversion = streamInfo.PlayMethod == PlayMethod.Transcode || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
@@ -610,14 +613,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = new AudioOptions
-            {
-                Context = EncodingContext.Static,
-                ItemId = item.Id.ToString("N"),
-                DeviceId = jobItem.TargetId,
-                Profile = profile,
-                MediaSources = item.GetMediaSources(false, user).ToList()
-            };
+            var options = _syncManager.GetAudioOptions(jobItem);
+
+            options.DeviceId = jobItem.TargetId;
+            options.Context = EncodingContext.Static;
+            options.Profile = profile;
+            options.ItemId = item.Id.ToString("N");
+            options.MediaSources = item.GetMediaSources(false, user).ToList();
 
             var streamInfo = new StreamBuilder().BuildAudioItem(options);
             var mediaSource = streamInfo.MediaSource;
@@ -693,7 +695,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await _syncRepo.Update(jobItem).ConfigureAwait(false);
         }
 
-        private async Task SyncGeneric(SyncJobItem jobItem, BaseItem item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task SyncGeneric(SyncJobItem jobItem, BaseItem item, CancellationToken cancellationToken)
         {
             jobItem.OutputPath = item.Path;
 

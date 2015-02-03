@@ -82,7 +82,7 @@
 
             html += "<div class='posterItemDefaultText posterItemText'>";
             html += '<i class="fa ' + icon + '"></i>';
-            html += item.Name;
+            html += '<span>' + item.Name + '</span>';
             html += "</div>";
 
             html += "</a>";
@@ -315,7 +315,12 @@
 
         $('a.posterItem', elem).on('click', function () {
 
-            var text = $('.posterItemText', this).html();
+            var textElem = $('.posterItemText span', this);
+
+            if (!textElem.length) {
+                textElem = $('.posterItemText', this);
+            }
+            var text = textElem.html();
 
             LibraryMenu.setText(text);
         });

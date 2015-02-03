@@ -383,7 +383,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .noBackdrop {
-    height: 260px;
+    height: 220px;
 }
 
     .noBackdrop .itemBackdropContent {
@@ -513,7 +513,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .portraitDetailImageContainer img {
-        max-width: 220px;
+        max-width: 185px;
     }
 
     .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
@@ -535,6 +535,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .detailContentEffectedByPortraitImage {
         margin-left: 0 !important;
         padding: 0 1em;
+    }
+
+    .portraitDetailImageContainer img {
+        max-height: 120px;
     }
 
     .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
