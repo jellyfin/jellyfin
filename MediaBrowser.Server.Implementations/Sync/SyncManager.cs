@@ -499,10 +499,17 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var job = _repo.GetJob(jobItem.JobId);
 
+            if (job == null)
+            {
+                _logger.Error("GetJobItemInfo job id {0} no longer exists", jobItem.JobId);
+                return null;
+            }
+
             var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
 
             if (libraryItem == null)
             {
+                _logger.Error("GetJobItemInfo library item with id {0} no longer exists", jobItem.ItemId);
                 return null;
             }
 

@@ -135,7 +135,7 @@
 }
 
 .detailButtonsContainer {
-    padding: 0 0 .5em;
+    padding: 0 0 1em;
     text-align: center;
 }
 
@@ -370,7 +370,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 500px;
+    height: 550px;
     position: relative;
 }
 
@@ -421,10 +421,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageContainer {
     position: absolute;
+    top: -66px;
 }
 
-.detailImageContainer {
-    top: -66px;
+.portraitDetailImageContainer {
+    top: -26px;
+}
+
+.thumbDetailImageContainer {
+    top: -26px;
 }
 
 .itemDetailImage {
@@ -434,19 +439,19 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border: solid 1px #222;
 }
 
-.thumbDetailImage {
+.thumbDetailImageContainer img {
     max-width: 360px;
     max-height: 360px;
 }
 
-.squareDetailImage {
+.squareDetailImageContainer img {
     max-width: 240px;
     max-height: 240px;
 }
 
-.portraitDetailImage {
+.portraitDetailImageContainer img {
     max-width: 240px;
-    max-height: 360px;
+    max-height: 300px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -464,7 +469,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailContentEffectedByPortraitImage {
-    margin-left: 260px;
+    margin-left: 220px;
 }
 
 .detailContentEffectedByImage a {
@@ -479,7 +484,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-    min-height: 140px;
+    min-height: 115px;
 }
 
 .parentName {
@@ -499,20 +504,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-left: 20px;
     }
 
-    .thumbDetailImage {
+    .thumbDetailImageContainer img {
         max-width: 340px;
     }
 
-    .squareDetailImage {
+    .squareDetailImageContainer img {
         max-width: 220px;
     }
 
-    .portraitDetailImage {
+    .portraitDetailImageContainer img {
         max-width: 220px;
     }
 
     .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-        min-height: 110px;
+        min-height: 85px;
     }
 }
 
@@ -532,6 +537,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding: 0 1em;
     }
 
+    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+        min-height: initial;
+    }
 
 
     .parentName {

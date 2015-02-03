@@ -2334,24 +2334,14 @@
 
             if (detectRatio && item.PrimaryImageAspectRatio) {
 
-                if (Math.abs(item.PrimaryImageAspectRatio - 1.777777778) < .3) {
+                if (item.PrimaryImageAspectRatio >= 1.48) {
                     shape = 'thumb';
-                } else if (Math.abs(item.PrimaryImageAspectRatio - 1) < .2) {
+                } else if (item.PrimaryImageAspectRatio >= .85 && item.PrimaryImageAspectRatio <= 1.34) {
                     shape = 'square';
                 }
             }
 
-            var imgCssClass = 'itemDetailImage';
-            if (shape == 'thumb') {
-                imgCssClass += ' thumbDetailImage';
-            }
-            else if (shape == 'square') {
-                imgCssClass += ' squareDetailImage';
-            } else {
-                imgCssClass += ' portraitDetailImage';
-            }
-
-            html += "<img class='" + imgCssClass + "' src='" + url + "' />";
+            html += "<img class='itemDetailImage' src='" + url + "' />";
 
             if (linkToGallery) {
                 html += "</a>";
@@ -2378,20 +2368,26 @@
                 detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
                 detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
 
-                detailContentEffectedByImage.addClass('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+                elem.addClass('thumbDetailImageContainer');
+                elem.removeClass('portraitDetailImageContainer');
+                elem.removeClass('squareDetailImageContainer');
             }
             else if (shape == 'square') {
                 detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
                 detailContentEffectedByImage.addClass('detailContentEffectedBySquareImage');
                 detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
 
+                elem.removeClass('thumbDetailImageContainer');
+                elem.removeClass('portraitDetailImageContainer');
+                elem.addClass('squareDetailImageContainer');
             } else {
                 detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
                 detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
                 detailContentEffectedByImage.addClass('detailContentEffectedByPortraitImage');
 
+                elem.removeClass('thumbDetailImageContainer');
+                elem.addClass('portraitDetailImageContainer');
+                elem.removeClass('squareDetailImageContainer');
             }
         },
 
