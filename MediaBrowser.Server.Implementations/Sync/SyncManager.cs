@@ -315,6 +315,10 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 _fileSystem.DeleteDirectory(path, true);
             }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error deleting directory {0}", ex, path);
@@ -664,7 +668,46 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             response.ItemIdsToRemove = response.ItemIdsToRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
+            var itemsOnDevice = request.LocalItemIds
+                .Except(response.ItemIdsToRemove)
+                .ToList();
+
+            SetUserAccess(request, response, itemsOnDevice);
+
             return response;
+        }
+
+        private void SetUserAccess(SyncDataRequest request, SyncDataResponse response, List<string> itemIds)
+        {
+            var users = request.OfflineUserIds
+                .Select(_userManager.GetUserById)
+                .Where(i => i != null)
+                .ToList();
+
+            foreach (var itemId in itemIds)
+            {
+                var item = _libraryManager.GetItemById(itemId);
+
+                if (item != null)
+                {
+                    var usersWithAccess = new List<User>();
+
+                    foreach (var user in users)
+                    {
+                        if (IsUserVisible(item, user))
+                        {
+                            usersWithAccess.Add(user);
+                        }
+                    }
+
+                    response.ItemUserAccess[itemId] = users.Select(i => i.Id.ToString("N")).ToList();
+                }
+            }
+        }
+
+        private bool IsUserVisible(BaseItem item, User user)
+        {
+            return item.IsVisibleStandalone(user);
         }
 
         private bool IsLibraryItemAvailable(BaseItem item)
@@ -723,6 +766,10 @@ namespace MediaBrowser.Server.Implementations.Sync
             try
             {
                 _fileSystem.DeleteDirectory(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+
             }
             catch (Exception ex)
             {

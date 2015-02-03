@@ -1083,6 +1083,23 @@ namespace MediaBrowser.Controller.Entities
             return IsParentalAllowed(user);
         }
 
+        public virtual bool IsVisibleStandalone(User user)
+        {
+            if (!IsVisible(user))
+            {
+                return false;
+            }
+
+            if (Parents.Any(i => !i.IsVisible(user)))
+            {
+                return false;
+            }
+
+            // TODO: Need some work here, e.g. is in user library, for channels, can user access channel, etc.
+
+            return true;
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
