@@ -27,7 +27,7 @@
             userId: userId,
             TargetId: target,
 
-            Quality: $('#selectQuality', form).val(),
+            Quality: $('#selectQuality', form).val() || null,
 
             Name: $('#txtSyncJobName', form).val(),
 
@@ -108,14 +108,16 @@
 
             html += '<br/>';
 
-            html += '<div>';
-            html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
-            html += '<select id="selectQuality" data-mini="true">';
-            html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
-            html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
-            html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
-            html += '</select>';
-            html += '</div>';
+            if (result.Options.indexOf('Quality') != -1) {
+                html += '<div>';
+                html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
+                html += '<select id="selectQuality" data-mini="true">';
+                html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
+                html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
+                html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
+                html += '</select>';
+                html += '</div>';
+            }
 
             //html += '<div data-role="collapsible" style="margin:1.5em 0">';
             //html += '<h2>' + Globalize.translate('HeaderSettings') + '</h2>';

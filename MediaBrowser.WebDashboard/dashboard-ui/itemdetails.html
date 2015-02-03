@@ -109,56 +109,36 @@
 
         <div id="itemBackdrop" class="itemBackdrop noBackdrop">
             <div class="itemBackdropContent">
-                <table class="detailPageContent primaryDetailPageContent">
-                    <tr>
-                        <td style="vertical-align: top; padding: 0 .8em 0 0;">
-                            <div class="itemImageContainer">
-                                <div id="itemImage">
-                                </div>
-                            </div>
-                        </td>
-                        <td style="vertical-align: top; padding: 0; position: relative;">
-                            <p><span class="parentName"></span><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
-                            <p>
-                                <span class="itemCommunityRating"></span>
-                                <span class="userDataIcons"></span>
-                            </p>
-                            <p id="artist"></p>
-                            <p class="itemGenres desktopGenres"></p>
-                            <p class="itemOverview desktopOverview"></p>
-                            <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
-                                <span class="missingIndicator" style="margin: 0 .5em; display: none;">
-                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
-                                </span>
-                                <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
-                                    <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
-                                </span>
-                                <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                                <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
-                                <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
-                                <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                                <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-                                <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonOptions}</button>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-                <div class="detailButtonsContainer mobileDetailButtons">
-                    <span class="missingIndicator" style="margin: 0 .5em; display: none;">
-                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
-                    </span>
-                    <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
-                        <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
-                    </span>
-                    <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                    <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
-                    <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
-                    <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                    <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-                    <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonOptions}</button>
+
+                <div class="detailPageContent primaryDetailPageContent backdropDetailPageContent">
+
+                    <div class="detailImageContainer">
+                    </div>
+
+                    <div class="detailContentEffectedByImage">
+                        <p><span class="parentName"></span><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                        <p style="margin:1.1em 0">
+                            <span class="itemCommunityRating"></span>
+                            <span class="userDataIcons"></span>
+                        </p>
+
+                        <div class="detailButtonsContainer desktopDetailButtons" style="text-align:left;">
+                            <span class="missingIndicator" style="margin: 0 .5em; display: none;">
+                                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
+                            </span>
+                            <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
+                                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
+                            </span>
+                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                            <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
+                            <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
+                            <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
+                            <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+                            <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonMore}</button>
+                        </div>
+                    </div>
                 </div>
-                <p class="itemGenres mobileGenres"></p>
-                <p class="itemOverview mobileOverview"></p>
+
             </div>
             <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="${ButtonPrevious}" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonPrevious}</a>
             <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="${ButtonNext}" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonNext}</a>
@@ -166,7 +146,29 @@
         <div data-role="content">
             <div class="detailPageContent">
 
-                <br />
+                <div class="detailSection" style="margin-bottom:1.5em;">
+                    <div class="detailSectionContent detailContentEffectedByImage lastDetailContentEffectedByImage">
+
+                        <div class="detailButtonsContainer mobileDetailButtons">
+                            <span class="missingIndicator" style="margin: 0 .5em; display: none;">
+                                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelMissing}</span>
+                            </span>
+                            <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
+                                <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
+                            </span>
+                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                            <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
+                            <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
+                            <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
+                            <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+                            <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonMore}</button>
+                        </div>
+                        <p id="artist"></p>
+                        <p class="itemGenres"></p>
+                        <p class="itemOverview"></p>
+                        <p id="seriesAirTime"></p>
+                    </div>
+                </div>
                 <div class="collectionItems"></div>
                 <div id="childrenCollapsible" class="hide detailSection">
                     <div class="detailSectionHeader">
@@ -188,21 +190,19 @@
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
                 </div>
-                <div class="detailSection detailCollapsibleSection detailsSection">
-                    <div data-role="collapsible" class="detailPageCollabsible" data-content-theme="false">
-                        <h2>${HeaderDetails}</h2>
-                        <div>
-                            <div class="tabDetails">
-                                <p id="players"></p>
-                                <p id="seriesAirTime"></p>
-                                <p id="itemBudget"></p>
-                                <p id="itemRevenue"></p>
-                                <p class="itemExternalLinks"></p>
-
-                                <p class="itemStudios"></p>
-                                <p class="itemKeywords"></p>
-                                <p class="itemTags"></p>
-                            </div>
+                <div class="detailSection detailsSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderDetails}
+                    </div>
+                    <div class="detailSectionContent" style="padding:0 1em;">
+                        <div class="tabDetails">
+                            <p id="players"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemExternalLinks"></p>
+                            <p class="itemStudios"></p>
+                            <p class="itemKeywords"></p>
+                            <p class="itemTags"></p>
                         </div>
                     </div>
                 </div>

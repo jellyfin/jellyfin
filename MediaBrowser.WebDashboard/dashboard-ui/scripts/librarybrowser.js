@@ -299,6 +299,10 @@
 
             var commands = [];
 
+            if (BoxSetEditor.supportsAddingToCollection(item)) {
+                commands.push('addtocollection');
+            }
+
             if (PlaylistManager.supportsPlaylists(item)) {
                 commands.push('playlist');
             }
@@ -376,6 +380,10 @@
 
             html += '<ul data-role="listview" style="min-width: 180px;">';
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+
+            if (commands.indexOf('addtocollection') != -1) {
+                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+            }
 
             if (commands.indexOf('playlist') != -1) {
                 html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
@@ -2118,13 +2126,13 @@
 
             var url;
 
-            var imageHeight = 280;
+            var imageHeight = 360;
 
             if (preferThumb && imageTags.Thumb) {
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.ImageTags.Thumb
                 });
             }
@@ -2132,7 +2140,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.ImageTags.Primary
                 });
             }
@@ -2140,7 +2148,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Backdrop",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.BackdropImageTags[0]
                 });
             }
@@ -2148,7 +2156,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.ImageTags.Thumb
                 });
             }
@@ -2156,7 +2164,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Disc",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.ImageTags.Disc
                 });
             }
@@ -2164,7 +2172,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.AlbumId, {
                     type: "Primary",
-                    maxHeight: imageHeight,
+                    height: imageHeight,
                     tag: item.AlbumPrimaryImageTag
                 });
 
@@ -2216,6 +2224,175 @@
             html += "</div>";
 
             return html;
+        },
+
+        renderDetailImage: function (elem, item, href, preferThumb) {
+
+            var imageTags = item.ImageTags || {};
+
+            if (item.PrimaryImageTag) {
+                imageTags.Primary = item.PrimaryImageTag;
+            }
+
+            var html = '';
+
+            var url;
+            var shape = 'portrait';
+
+            var imageHeight = 360;
+            var detectRatio = false;
+
+            if (preferThumb && imageTags.Thumb) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Thumb",
+                    height: imageHeight,
+                    tag: item.ImageTags.Thumb
+                });
+                shape = 'thumb';
+            }
+            else if (imageTags.Primary) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Primary",
+                    height: imageHeight,
+                    tag: item.ImageTags.Primary
+                });
+                detectRatio = true;
+            }
+            else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    height: imageHeight,
+                    tag: item.BackdropImageTags[0]
+                });
+                shape = 'thumb';
+            }
+            else if (imageTags.Thumb) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Thumb",
+                    height: imageHeight,
+                    tag: item.ImageTags.Thumb
+                });
+                shape = 'thumb';
+            }
+            else if (imageTags.Disc) {
+
+                url = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Disc",
+                    height: imageHeight,
+                    tag: item.ImageTags.Disc
+                });
+                shape = 'square';
+            }
+            else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                url = ApiClient.getScaledImageUrl(item.AlbumId, {
+                    type: "Primary",
+                    height: imageHeight,
+                    tag: item.AlbumPrimaryImageTag
+                });
+                shape = 'square';
+            }
+            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
+                url = "css/images/items/detail/audio.png";
+                shape = 'square';
+            }
+            else if (item.MediaType == "Game" || item.Type == "GameGenre") {
+                url = "css/images/items/detail/game.png";
+                shape = 'square';
+            }
+            else if (item.Type == "Person") {
+                url = "css/images/items/detail/person.png";
+                shape = 'square';
+            }
+            else if (item.Type == "Genre" || item.Type == "Studio") {
+                url = "css/images/items/detail/video.png";
+                shape = 'square';
+            }
+            else if (item.Type == "TvChannel") {
+                url = "css/images/items/detail/tv.png";
+                shape = 'square';
+            }
+            else {
+                url = "css/images/items/detail/video.png";
+                shape = 'square';
+            }
+
+            if (!href) {
+                href = "itemgallery.html?id=" + item.Id;
+            }
+
+            var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
+
+            html += '<div style="position:relative;">';
+            if (linkToGallery) {
+                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
+            }
+
+            if (detectRatio && item.PrimaryImageAspectRatio) {
+
+                if (Math.abs(item.PrimaryImageAspectRatio - 1.777777778) < .3) {
+                    shape = 'thumb';
+                } else if (Math.abs(item.PrimaryImageAspectRatio - 1) < .2) {
+                    shape = 'square';
+                }
+            }
+
+            var imgCssClass = 'itemDetailImage';
+            if (shape == 'thumb') {
+                imgCssClass += ' thumbDetailImage';
+            }
+            else if (shape == 'square') {
+                imgCssClass += ' squareDetailImage';
+            } else {
+                imgCssClass += ' portraitDetailImage';
+            }
+
+            html += "<img class='" + imgCssClass + "' src='" + url + "' />";
+
+            if (linkToGallery) {
+                html += "</a>";
+            }
+
+            var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+
+            if (progressHtml) {
+                html += '<div class="detailImageProgressContainer">';
+                html += progressHtml;
+                html += "</div>";
+            }
+
+            html += "</div>";
+
+            elem.html(html);
+
+            var page = $(elem).parents('.page');
+
+            var detailContentEffectedByImage = $('.detailContentEffectedByImage', page);
+
+            if (shape == 'thumb') {
+                detailContentEffectedByImage.addClass('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+
+                detailContentEffectedByImage.addClass('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+            }
+            else if (shape == 'square') {
+                detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.addClass('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+
+            } else {
+                detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.addClass('detailContentEffectedByPortraitImage');
+
+            }
         },
 
         getMiscInfoHtml: function (item) {

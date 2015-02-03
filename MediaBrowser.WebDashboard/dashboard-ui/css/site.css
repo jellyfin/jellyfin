@@ -1001,11 +1001,12 @@ progress {
 
 .accentButton {
     display: inline-block;
-    background: rgba(51, 136, 204, .8);
+    background: rgba(51, 136, 204, .9);
     border-radius: 1000px;
     padding: 4px 10px;
     color: #fff !important;
-    font-weight: normal !important;
+    font-size: 13px;
+    font-weight: 400 !important;
     text-decoration: none;
     vertical-align: middle;
     border: 0;

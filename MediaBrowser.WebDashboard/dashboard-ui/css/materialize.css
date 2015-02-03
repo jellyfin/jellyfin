@@ -123,9 +123,13 @@
     padding: 1em 2em;
 }
 
-    .btn-large i {
-        font-size: 1.6rem;
-    }
+.btn.btn-inline {
+    padding: .6em 1.25em .6em 34px;
+}
+
+.btn-large i {
+    font-size: 1.6rem;
+}
 
 .btn-floating-large i {
     font-size: 1.6rem;
@@ -155,6 +159,10 @@
     font-family: Roboto !important;
 }
 
+.btnSmall {
+    font-size: 13px;
+}
+
 .btnCancel {
     background-color: #444;
 }
@@ -172,6 +180,7 @@
     display: inline-block;
     width: auto;
     margin-bottom: 0;
+    padding: .6em .5em .6em .5em!important;
 }
 
 button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
@@ -182,7 +191,7 @@ button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
     vertical-align: middle;
 }
 
-.btn i {
+.btn:not(.btn-inline):not(.btnNoText) i {
     position: absolute;
     left: 10px;
 }
@@ -191,4 +200,12 @@ button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
     position: absolute;
     left: 24px;
     top: 22px;
+}
+
+.btnNoText {
+    padding: .6em .5em!important;
+}
+
+.btnNoText {
+    border-radius: 5px;
 }

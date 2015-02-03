@@ -415,14 +415,6 @@
     position: relative;
 }
 
-.posterItemDefaultText {
-    position: absolute;
-    top: 30%;
-    left: 0;
-    right: 0;
-    text-align: center;
-}
-
 .myLibraryPosterItem {
     width: 42%;
     min-width: 50px;
@@ -436,12 +428,17 @@
         background-color: rgba(82, 181, 75, 0.7);
     }
 
-    .myLibraryPosterItem .posterItemDefaultText {
+    .myLibraryPosterItem .posterItemText {
         top: 0;
         left: 0;
         line-height: 34px;
         text-align: left;
-        padding: 0 0 0 34px;
+        padding: 0 0 0 12px;
+        position: absolute;
+    }
+
+    .myLibraryPosterItem i {
+        margin-right: 10px;
     }
 
 .moviesPosterItem .posterItemImage, .trailersPosterItem .posterItemImage {
@@ -479,6 +476,7 @@
 .musicvideosPosterItem .posterItemImage {
     background-color: rgba(143, 54, 168, 0.7);
 }
+
 @media all and (min-width: 600px) {
 
     .myLibraryPosterItem {
@@ -487,6 +485,7 @@
         min-width: 160px;
     }
 }
+
 @media all and (min-width: 1000px) {
 
     .myLibraryPosterItem {

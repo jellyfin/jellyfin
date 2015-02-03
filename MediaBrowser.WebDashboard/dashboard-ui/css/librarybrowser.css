@@ -50,13 +50,8 @@
 @media all and (max-width: 1200px) {
 
     .libraryPage > .ui-content {
-        padding-left: .4em !important;
-        padding-right: .4em !important;
-    }
-
-    .detailSection {
-        margin-left: .25em;
-        margin-right: .25em;
+        padding-left: .5em !important;
+        padding-right: .5em !important;
     }
 }
 
@@ -140,9 +135,13 @@
 }
 
 .detailButtonsContainer {
-    padding: .35em 0 .35em;
+    padding: 0 0 .5em;
     text-align: center;
 }
+
+    .detailButtonsContainer a, .detailButtonsContainer button {
+        margin-top: 0;
+    }
 
 .viewSettings {
     margin: 0 0 .25em;
@@ -260,7 +259,7 @@
     display: inline-block;
     font-size: 12px;
     text-align: center;
-    padding: 2px 4px;
+    padding: 1px 6px 0;
     border-radius: 2px;
 }
 
@@ -371,7 +370,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 600px;
+    height: 500px;
     position: relative;
 }
 
@@ -384,14 +383,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .noBackdrop {
-    height: auto;
-    border: 0;
+    height: 260px;
 }
 
     .noBackdrop .itemBackdropContent {
         background-color: transparent;
-        position: static;
-        margin-top: 1em;
     }
 
 .lnkSibling {
@@ -410,12 +406,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-decoration: underline;
     }
 
-@media all and (max-width: 1000px) {
-
-    .lnkSibling {
-        display: none !important;
+    .lnkSibling:not(.hide) {
+        display: block;
     }
-}
+
 
 .lnkPreviousItem {
     left: 10px;
@@ -425,19 +419,34 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 0;
 }
 
+.detailImageContainer {
+    position: absolute;
+}
+
+.detailImageContainer {
+    top: -66px;
+}
+
 .itemDetailImage {
-    max-height: 280px;
-    max-width: 320px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
-    margin-top: -20px;
-    margin-bottom: 10px;
 }
 
-.noBackdrop .itemDetailImage {
-    margin-top: 0;
+.thumbDetailImage {
+    max-width: 360px;
+    max-height: 360px;
+}
+
+.squareDetailImage {
+    max-width: 240px;
+    max-height: 240px;
+}
+
+.portraitDetailImage {
+    max-width: 240px;
+    max-height: 360px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -446,15 +455,88 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     box-shadow: 0 0 20px 3px #38c;
 }
 
-.itemByNameImageContainer .itemDetailImage {
-    margin: 0 !important;
-    max-height: 220px;
+.detailContentEffectedByThumbImage:not(.lastDetailContentEffectedByImage) {
+    margin-left: 380px;
+}
+
+.detailContentEffectedBySquareImage:not(.lastDetailContentEffectedByImage) {
+    margin-left: 260px;
+}
+
+.detailContentEffectedByPortraitImage {
+    margin-left: 260px;
+}
+
+.detailContentEffectedByImage a {
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedByThumbImage {
+    padding: 0 .5em;
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
+    padding: 0 .5em;
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+    min-height: 140px;
 }
 
 .parentName {
     font-size: 14px;
     display: block;
     margin-bottom: .5em;
+}
+
+@media all and (min-width: 800px) {
+    .lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
+        margin-top: 2em;
+    }
+}
+
+@media all and (max-width: 1000px) {
+    .detailImageContainer {
+        margin-left: 20px;
+    }
+
+    .thumbDetailImage {
+        max-width: 340px;
+    }
+
+    .squareDetailImage {
+        max-width: 220px;
+    }
+
+    .portraitDetailImage {
+        max-width: 220px;
+    }
+
+    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+        min-height: 110px;
+    }
+}
+
+@media all and (max-width: 800px) {
+    .detailContentEffectedByThumbImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+    .detailContentEffectedBySquareImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+    .detailContentEffectedByPortraitImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+
+
+    .parentName {
+        margin-bottom: 1em;
+    }
 }
 
 .inlineItemName {
@@ -609,7 +691,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 10px;
+    bottom: 3px;
     right: 0;
     left: 0;
     text-align: center;
@@ -642,19 +724,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: none;
     }
 
-    .itemBackdrop {
-        height: auto;
-    }
-
-    .itemBackdropContent {
-        position: static;
-        padding: 1em 1em .5em;
+    .itemBackdrop:not(.noBackdrop) {
+        height: 280px;
     }
 
     .itemDetailImage {
         max-height: 240px;
         max-width: 100px;
-        margin-top: 0;
     }
 
     .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
@@ -669,34 +745,28 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         font-size: 18px;
     }
 
-        .inlineItemName + .itemMiscInfo {
-            margin-left: 0 !important;
-            margin-top: 1em;
-            display: block !important;
-        }
-
-    .primaryDetailPageContent .userDataIcons {
-        margin-left: 0 !important;
-        margin-top: 1em;
-        display: block;
-    }
-}
-
-
-@media all and (min-width: 750px) {
-
-    .lnkSibling:not(.hide) {
-        display: block;
+    .primaryDetailPageContent p {
+        margin: 1em 0 !important;
     }
 
-    .itemBackdrop:not(.noBackdrop) {
-        border-bottom: 1px solid #111;
+    .backdropDetailPageContent {
+        text-align: center;
+    }
+
+    .detailImageContainer {
+        display: none;
+    }
+
+    .noBackdrop .detailImageContainer {
+        display: block;
+        position: static;
+        text-align: center;
     }
 }
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 900px;
+        max-width: 1000px;
         width: auto;
     }
 }
@@ -1310,5 +1380,29 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .userProfileSettingsForm .detailSection {
         margin-left: 1em;
         margin-right: 1em;
+    }
+}
+
+.smallDetailImageContainer img {
+    -moz-box-shadow: 0px 0 20px #000;
+    -webkit-box-shadow: 0px 0 20px #000;
+    box-shadow: 0px 0 20px #000;
+    border: solid 1px #222;
+    max-width: 240px;
+    max-height: 240px;
+}
+
+@media all and (max-width: 800px) {
+
+    .smallDetailImageContainer img {
+        max-width: 120px;
+        max-height: 120px;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .smallDetailImageContainer {
+        padding-left: 1em;
     }
 }

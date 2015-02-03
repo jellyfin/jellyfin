@@ -146,7 +146,7 @@
 
         var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
-        $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
+        LibraryBrowser.renderDetailImage($('.detailImageContainer', page), item, imageHref);
     }
 
     function onWebSocketMessage(e, data) {

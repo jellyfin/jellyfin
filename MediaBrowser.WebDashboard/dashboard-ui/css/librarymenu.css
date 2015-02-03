@@ -186,10 +186,6 @@
         color: #fff !important;
     }
 
-.musicViewMenu {
-    background-image: url(images/items/folders/music.png);
-}
-
 .homeViewMenu {
     background-image: url(images/mblogoicon.png) !important;
     background-size: 39px 26px !important;

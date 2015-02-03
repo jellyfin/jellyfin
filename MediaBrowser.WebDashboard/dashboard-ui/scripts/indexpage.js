@@ -25,42 +25,42 @@
 
             var item = items[i];
 
-            var imgUrl;
+            var icon;
 
             switch (item.CollectionType) {
                 case "movies":
-                    imgUrl = "css/images/items/folders/movies.png";
+                    icon = "fa-film";
                     break;
                 case "music":
-                    imgUrl = "css/images/items/folders/music.png";
+                    icon = "fa-music";
                     break;
                 case "photos":
-                    imgUrl = "css/images/items/folders/photos.png";
+                    icon = "fa-photo";
                     break;
                 case "livetv":
                 case "tvshows":
-                    imgUrl = "css/images/items/folders/tv.png";
+                    icon = "fa-video-camera";
                     break;
                 case "games":
-                    imgUrl = "css/images/items/folders/games.png";
+                    icon = "fa-gamepad";
                     break;
                 case "trailers":
-                    imgUrl = "css/images/items/folders/movies.png";
+                    icon = "fa-film";
                     break;
                 case "homevideos":
-                    imgUrl = "css/images/items/folders/homevideos.png";
+                    icon = "fa-video-camera";
                     break;
                 case "musicvideos":
-                    imgUrl = "css/images/items/folders/musicvideos.png";
+                    icon = "fa-video-camera";
                     break;
                 case "books":
-                    imgUrl = "css/images/items/folders/books.png";
+                    icon = "fa-book";
                     break;
                 case "channels":
-                    imgUrl = "css/images/items/folders/channels.png";
+                    icon = "fa-video-camera";
                     break;
                 default:
-                    imgUrl = "css/images/items/folders/folder.png";
+                    icon = "fa-folder-o";
                     break;
             }
 
@@ -75,14 +75,13 @@
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
 
-            var style = 'background-image:url(\'' + imgUrl + '\');';
-
             var imageCssClass = '';
 
-            html += '<div class="posterItemImage ' + imageCssClass + '" style="' + style + '">';
+            html += '<div class="posterItemImage ' + imageCssClass + '">';
             html += '</div>';
 
             html += "<div class='posterItemDefaultText posterItemText'>";
+            html += '<i class="fa ' + icon + '"></i>';
             html += item.Name;
             html += "</div>";
 
