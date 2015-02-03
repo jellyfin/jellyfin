@@ -481,15 +481,30 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 try
                 {
+                    var lastJobUpdate = DateTime.MinValue;
+                    var innerProgress = new ActionableProgress<double>();
+                    innerProgress.RegisterAction(async pct =>
+                    {
+                        progress.Report(pct);
+
+                        if ((DateTime.UtcNow - lastJobUpdate).TotalSeconds >= DatabaseProgressUpdateIntervalSeconds)
+                        {
+                            jobItem.Progress = pct / 2;
+                            await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                            await UpdateJobStatus(job).ConfigureAwait(false);
+                        }
+                    });
+
                     jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
-                    }, progress, cancellationToken);
+                    }, innerProgress, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
                     jobItem.Status = SyncJobItemStatus.Queued;
+                    jobItem.Progress = 0;
                 }
                 catch (Exception ex)
                 {
@@ -611,6 +626,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
+        private const int DatabaseProgressUpdateIntervalSeconds = 2;
+
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = _syncManager.GetAudioOptions(jobItem);
@@ -640,15 +657,30 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 try
                 {
+                    var lastJobUpdate = DateTime.MinValue;
+                    var innerProgress = new ActionableProgress<double>();
+                    innerProgress.RegisterAction(async pct =>
+                    {
+                        progress.Report(pct);
+
+                        if ((DateTime.UtcNow - lastJobUpdate).TotalSeconds >= DatabaseProgressUpdateIntervalSeconds)
+                        {
+                            jobItem.Progress = pct / 2;
+                            await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                            await UpdateJobStatus(job).ConfigureAwait(false);
+                        }
+                    });
+
                     jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
-                    }, progress, cancellationToken);
+                    }, innerProgress, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
                     jobItem.Status = SyncJobItemStatus.Queued;
+                    jobItem.Progress = 0;
                 }
                 catch (Exception ex)
                 {
