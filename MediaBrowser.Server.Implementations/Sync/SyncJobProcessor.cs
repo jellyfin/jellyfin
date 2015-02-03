@@ -183,7 +183,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     job.Status = SyncJobStatus.Completed;
                 }
             }
-            else if (pct.Equals(0))
+            else if (pct.Equals(0) && jobItems.All(i => i.Status == SyncJobItemStatus.Queued))
             {
                 job.Status = SyncJobStatus.Queued;
             }
@@ -414,7 +414,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             jobItem.Progress = 0;
-            jobItem.Status = SyncJobItemStatus.Converting;
 
             var user = _userManager.GetUserById(job.UserId);
 
@@ -426,7 +425,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             else if (item is Audio)
             {
-                await Sync(jobItem, (Audio)item, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, (Audio)item, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
@@ -478,6 +477,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 // Save the job item now since conversion could take a while
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                await UpdateJobStatus(job).ConfigureAwait(false);
 
                 try
                 {
@@ -611,7 +611,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        private async Task Sync(SyncJobItem jobItem, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = _syncManager.GetAudioOptions(jobItem);
 
@@ -636,6 +636,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 jobItem.Status = SyncJobItemStatus.Converting;
                 await _syncRepo.Update(jobItem).ConfigureAwait(false);
+                await UpdateJobStatus(job).ConfigureAwait(false);
 
                 try
                 {
@@ -710,7 +711,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return mediaSource.Path;
         }
 
-        private string GetTemporaryPath(SyncJobItem jobItem)
+        public string GetTemporaryPath(SyncJob job)
+        {
+            return GetTemporaryPath(job.Id);
+        }
+
+        public string GetTemporaryPath(string jobId)
         {
             var basePath = _config.GetSyncOptions().TemporaryPath;
 
@@ -719,7 +725,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                 basePath = Path.Combine(_config.CommonApplicationPaths.ProgramDataPath, "sync");
             }
 
-            return Path.Combine(basePath, jobItem.JobId, jobItem.Id);
+            return Path.Combine(basePath, jobId);
+        }
+
+        public string GetTemporaryPath(SyncJobItem jobItem)
+        {
+            return Path.Combine(GetTemporaryPath(jobItem.JobId), jobItem.Id);
         }
 
         private async Task<MediaSourceInfo> GetEncodedMediaSource(string path, User user, bool isVideo)
