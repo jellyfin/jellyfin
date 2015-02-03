@@ -147,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var currentUser = user;
 
                 channels = channels
-                    .Where(i => i.IsParentalAllowed(currentUser))
+                    .Where(i => i.IsVisible(currentUser))
                     .OrderBy(i =>
                     {
                         double number = 0;
@@ -679,7 +679,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 // Avoid implicitly captured closure
                 var currentUser = user;
-                programs = programs.Where(i => i.IsParentalAllowed(currentUser));
+                programs = programs.Where(i => i.IsVisible(currentUser));
             }
 
             var programList = programs.ToList();
@@ -714,7 +714,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             // Avoid implicitly captured closure
             var currentUser = user;
-            programs = programs.Where(i => i.IsParentalAllowed(currentUser));
+            programs = programs.Where(i => i.IsVisible(currentUser));
 
             if (query.IsAiring.HasValue)
             {

@@ -97,7 +97,7 @@
             background = 'rgba(72, 0, 255, ' + opacity + ')';
         }
 
-        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; font-size: 14px; text-transform:uppercase;">';
+        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; text-transform:uppercase;">';
         html += text;
         html += '</div>';
 

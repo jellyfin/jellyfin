@@ -57,7 +57,10 @@
                     icon = "fa-book";
                     break;
                 case "channels":
-                    icon = "fa-video-camera";
+                    icon = "fa-globe";
+                    break;
+                case "playlists":
+                    icon = "fa-list";
                     break;
                 default:
                     icon = "fa-folder-o";
