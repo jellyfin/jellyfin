@@ -501,6 +501,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
 
+            if (libraryItem == null)
+            {
+                return null;
+            }
+
             var syncedItem = new SyncedItem
             {
                 SyncJobId = jobItem.JobId,
@@ -563,7 +568,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Transferring }
             });
 
-            return jobItemResult.Items.Select(GetJobItemInfo)
+            return jobItemResult.Items
+                .Select(GetJobItemInfo)
+                .Where(i => i != null)
                 .ToList();
         }
 
