@@ -93,6 +93,7 @@ namespace MediaBrowser.Model.Sync
         public SyncJob()
         {
             RequestedItemIds = new List<string>();
+            Quality = SyncQuality.High;
         }
     }
 }
