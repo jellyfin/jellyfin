@@ -309,6 +309,17 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await _repo.DeleteJob(id).ConfigureAwait(false);
 
+            var path = GetSyncJobProcessor().GetTemporaryPath(id);
+
+            try
+            {
+                _fileSystem.DeleteDirectory(path, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting directory {0}", ex, path);
+            }
+
             if (SyncJobCancelled != null)
             {
                 EventHelper.FireEventIfNotNull(SyncJobCancelled, this, new GenericEventArgs<SyncJob>
@@ -706,6 +717,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             var processor = GetSyncJobProcessor();
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+
+            var path = processor.GetTemporaryPath(jobItem);
+
+            try
+            {
+                _fileSystem.DeleteDirectory(path, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting directory {0}", ex, path);
+            }
         }
 
         public async Task MarkJobItemForRemoval(string id)

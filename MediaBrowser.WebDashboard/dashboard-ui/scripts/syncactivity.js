@@ -80,12 +80,26 @@
 
         html += "</div>";
 
+        var opacity = '.85';
+        var background = 'rgba(204,51,51,' + opacity + ')';
+        var text = Globalize.translate('SyncJobStatus' + job.Status);
+
         if (job.Status == 'Completed') {
-            html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+            background = 'rgba(82, 181, 75, ' + opacity + ')';
         }
         else if (job.Status == 'CompletedWithError') {
-            html += '<div class="playedIndicator" style="background-color:#cc0000;"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+
         }
+        else if (job.Status == 'Queued') {
+            background = 'rgba(51, 136, 204, ' + opacity + ')';
+        }
+        else if (job.Status == 'InProgress') {
+            background = 'rgba(72, 0, 255, ' + opacity + ')';
+        }
+
+        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; font-size: 14px; text-transform:uppercase;">';
+        html += text;
+        html += '</div>';
 
         // cardContent
         html += "</a>";
