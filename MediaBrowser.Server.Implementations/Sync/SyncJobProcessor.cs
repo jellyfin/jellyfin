@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var item in jobItems)
             {
-                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Synced || item.Status == SyncJobItemStatus.RemovedFromDevice)
+                if (item.Status == SyncJobItemStatus.Failed || item.Status == SyncJobItemStatus.Synced || item.Status == SyncJobItemStatus.RemovedFromDevice || item.Status == SyncJobItemStatus.Cancelled)
                 {
                     pct += 100;
                 }
