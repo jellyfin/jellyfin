@@ -308,11 +308,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new[] { item };
         }
 
-        public async Task EnsureSyncJobs(CancellationToken cancellationToken)
+        public async Task EnsureSyncJobItems(CancellationToken cancellationToken)
         {
             var jobResult = _syncRepo.GetJobs(new SyncJobQuery
             {
-                IsCompleted = false
+                SyncNewContent = true
             });
 
             foreach (var job in jobResult.Items)
@@ -328,7 +328,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            await EnsureSyncJobs(cancellationToken).ConfigureAwait(false);
+            await EnsureSyncJobItems(cancellationToken).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery

@@ -35,6 +35,7 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
   <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:pv" value="http://www.pv.com/pvns/" />
   </XmlRootAttributes>

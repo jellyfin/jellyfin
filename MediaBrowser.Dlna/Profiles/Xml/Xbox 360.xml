@@ -35,6 +35,7 @@
   <RequiresPlainFolders>true</RequiresPlainFolders>
   <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
   <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>true</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />

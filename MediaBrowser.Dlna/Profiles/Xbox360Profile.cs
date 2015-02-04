@@ -29,6 +29,7 @@ namespace MediaBrowser.Dlna.Profiles
             TimelineOffsetSeconds = 40;
             RequiresPlainFolders = true;
             RequiresPlainVideoItems = true;
+            EnableMSMediaReceiverRegistrar = true;
 
             Identification = new DeviceIdentification
             {
