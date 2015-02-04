@@ -42,7 +42,7 @@
 
         var html = '';
 
-        html += "<div class='card squareCard' data-id='" + job.Id + "'>";
+        html += "<div class='card squareCard' data-id='" + job.Id + "' data-status='" + job.Status + "'>";
 
         html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable">';
@@ -121,9 +121,9 @@
         textLines.push(job.Name);
 
         if (job.ItemCount == 1) {
-            textLines.push(job.ItemCount + ' item');
+            textLines.push(Globalize.translate('ValueItemCount', job.ItemCount));
         } else {
-            textLines.push(job.ItemCount + ' items');
+            textLines.push(Globalize.translate('ValueItemCountPlural', job.ItemCount));
         }
 
         if (!job.ParentName) {
@@ -218,6 +218,7 @@
         var card = $(elem).parents('.card');
         var page = $(elem).parents('.page');
         var id = card.attr('data-id');
+        var status = card.attr('data-status');
 
         $('.jobMenu', page).popup("close").remove();
 
@@ -226,7 +227,11 @@
         html += '<ul data-role="listview" style="min-width: 180px;">';
         html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
-        html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+        if (status == 'Cancelled') {
+            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+        } else {
+            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+        }
 
         html += '</ul>';
 

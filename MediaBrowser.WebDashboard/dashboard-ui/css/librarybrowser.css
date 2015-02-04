@@ -441,7 +441,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .thumbDetailImageContainer img {
     max-width: 360px;
-    max-height: 360px;
+    max-height: 203px;
 }
 
 .squareDetailImageContainer img {
