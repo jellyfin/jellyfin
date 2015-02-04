@@ -116,6 +116,7 @@
                 html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
                 html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
                 html += '</select>';
+                html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncQualityHelp') + '</div>';
                 html += '</div>';
             }
 

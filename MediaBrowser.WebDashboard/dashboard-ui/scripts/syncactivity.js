@@ -93,7 +93,10 @@
         else if (job.Status == 'Queued') {
             background = 'rgba(51, 136, 204, ' + opacity + ')';
         }
-        else if (job.Status == 'InProgress') {
+        else if (job.Status == 'Transferring') {
+            background = 'rgba(72, 0, 255, ' + opacity + ')';
+        }
+        else if (job.Status == 'Converting') {
             background = 'rgba(72, 0, 255, ' + opacity + ')';
         }
 
@@ -268,6 +271,18 @@
         });
     }
 
+    function onWebSocketMessage(e, msg) {
+        
+        var page = $.mobile.activePage;
+
+        if (msg.MessageType == "SyncJobCreated") {
+            reloadData(page);
+        }
+        else if (msg.MessageType == "SyncJobCancelled") {
+            reloadData(page);
+        }
+    }
+
     $(document).on('pageshow', ".syncActivityPage", function () {
 
         var page = this;
@@ -290,6 +305,7 @@
             taskKey: 'SyncPrepare'
         });
 
+        $(ApiClient).on("websocketmessage.syncactivity", onWebSocketMessage);
 
     }).on('pagehide', ".syncActivityPage", function () {
 
@@ -300,6 +316,7 @@
             mode: 'off'
         });
 
+        $(ApiClient).off(".syncactivity");
     });
 
 })();

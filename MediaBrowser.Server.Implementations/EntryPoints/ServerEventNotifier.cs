@@ -75,6 +75,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             _taskManager.TaskCompleted += _taskManager_TaskCompleted;
             _syncManager.SyncJobCreated += _syncManager_SyncJobCreated;
+            _syncManager.SyncJobCancelled += _syncManager_SyncJobCancelled;
+        }
+
+        void _syncManager_SyncJobCancelled(object sender, GenericEventArgs<SyncJob> e)
+        {
+            _sessionManager.SendMessageToUserDeviceSessions(e.Argument.TargetId, "SyncJobCancelled", e.Argument, CancellationToken.None);
         }
 
         void _syncManager_SyncJobCreated(object sender, GenericEventArgs<SyncJobCreationResult> e)
@@ -189,6 +195,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
                 _syncManager.SyncJobCreated -= _syncManager_SyncJobCreated;
+                _syncManager.SyncJobCancelled -= _syncManager_SyncJobCancelled;
             }
         }
     }
