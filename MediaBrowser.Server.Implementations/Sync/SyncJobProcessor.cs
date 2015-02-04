@@ -172,7 +172,23 @@ namespace MediaBrowser.Server.Implementations.Sync
                 job.Progress = null;
             }
 
-            if (pct >= 100)
+            if (jobItems.All(i => i.Status == SyncJobItemStatus.Queued))
+            {
+                job.Status = SyncJobStatus.Queued;
+            }
+            else if (jobItems.All(i => i.Status == SyncJobItemStatus.Failed))
+            {
+                job.Status = SyncJobStatus.Failed;
+            }
+            else if (jobItems.All(i => i.Status == SyncJobItemStatus.Cancelled))
+            {
+                job.Status = SyncJobStatus.Cancelled;
+            }
+            else if (jobItems.Any(i => i.Status == SyncJobItemStatus.Converting))
+            {
+                job.Status = SyncJobStatus.Converting;
+            }
+            else if (pct >= 100)
             {
                 if (jobItems.Any(i => i.Status == SyncJobItemStatus.Failed))
                 {
@@ -183,13 +199,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                     job.Status = SyncJobStatus.Completed;
                 }
             }
-            else if (pct.Equals(0) && jobItems.All(i => i.Status == SyncJobItemStatus.Queued))
-            {
-                job.Status = SyncJobStatus.Queued;
-            }
             else
             {
-                job.Status = SyncJobStatus.InProgress;
+                job.Status = SyncJobStatus.Transferring;
             }
 
             return _syncRepo.Update(job);

@@ -1023,7 +1023,8 @@ namespace MediaBrowser.Server.Startup.Common
                 IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
-                LocalAddress = LocalApiUrl
+                LocalAddress = LocalApiUrl,
+                SupportsSync = true
             };
         }
 

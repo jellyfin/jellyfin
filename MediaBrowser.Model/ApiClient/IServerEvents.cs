@@ -135,5 +135,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [synchronize job created].
         /// </summary>
         event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
+        /// <summary>
+        /// Occurs when [synchronize job cancelled].
+        /// </summary>
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
     }
 }

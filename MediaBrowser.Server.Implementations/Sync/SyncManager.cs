@@ -51,6 +51,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
         public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobUpdated;
 
         public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config)
         {

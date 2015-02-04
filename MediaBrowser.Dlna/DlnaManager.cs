@@ -515,7 +515,7 @@ namespace MediaBrowser.Dlna
 
         public void Run()
         {
-            DumpProfiles();
+            //DumpProfiles();
         }
 
         private void DumpProfiles()

@@ -39,6 +39,12 @@ namespace MediaBrowser.Model.System
         public bool HasPendingRestart { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports synchronize].
+        /// </summary>
+        /// <value><c>true</c> if [supports synchronize]; otherwise, <c>false</c>.</value>
+        public bool SupportsSync { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is network deployed.
         /// </summary>
         /// <value><c>true</c> if this instance is network deployed; otherwise, <c>false</c>.</value>

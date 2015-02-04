@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
@@ -15,6 +14,7 @@ namespace MediaBrowser.Controller.Sync
     {
         event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
         event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobUpdated;
           
         /// <summary>
         /// Creates the job.
