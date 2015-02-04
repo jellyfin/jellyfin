@@ -32,7 +32,7 @@
     "LabelEnableVideoImageExtraction": "Aktiver udtr\u00e6kning af video billede",
     "VideoImageExtractionHelp": "For videoer der ikke allerede har billeder, og som vi ikke kan finde internet billeder til. Dette vil g\u00f8re den indledende biblioteks skanning l\u00e6ngere, men vil resulterer i en p\u00e6nere pr\u00e6sentation.",
     "LabelEnableChapterImageExtractionForMovies": "Aktiver udtr\u00e6kning af kapitel billeder for Film",
-    "LabelChapterImageExtractionForMoviesHelp": "Klarg\u00f8ring af kapitel billeder vil tillade klienter at vise grafiske scene valgs menuer. Denne process kan v\u00e6re langsom, CPU kr\u00e6vende og kan bruge adskillelige gigabytes. Dette k\u00f8rer p\u00e5 en daglig basis klokken 4 om morgenen. Det kan redigeres under planlagte opgaver. Det er ikke anbefalet at k\u00f8re denne process i dagtimerne da det kan have en negativ effekt p\u00e5 afspilning.",
+    "LabelChapterImageExtractionForMoviesHelp": "Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
     "LabelEnableAutomaticPortMapping": "Aktiver automatisk port kortl\u00e6gning",
     "LabelEnableAutomaticPortMappingHelp": "UPnP tillader automatisk router konfiguration for nem fjern adgang. Dette virker muligvis ikke med alle routere.",
     "HeaderTermsOfService": "Media Browser Terms of Service",
