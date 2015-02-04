@@ -28,16 +28,6 @@
         }).popup('close');
     }
 
-    function getSyncTargetName(targets, id) {
-
-        var target = targets.filter(function (t) {
-
-            return t.Id == id;
-        })[0];
-
-        return target ? target.Name : 'Unknown Device';
-    }
-
     function getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage) {
 
         var html = '';
@@ -152,7 +142,7 @@
         return html;
     }
 
-    function loadData(page, jobs, targets) {
+    function loadData(page, jobs) {
 
         var html = '';
         var lastTargetName = '';
@@ -170,7 +160,7 @@
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
-            var targetName = getSyncTargetName(targets, job.TargetId);
+            var targetName = job.TargetName;
 
             if (targetName != lastTargetName) {
 
@@ -262,13 +252,9 @@
                 options.UserId = Dashboard.getCurrentUserId();
             }
 
-            var promise1 = ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options));
+            ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).done(function (response) {
 
-            var promise2 = ApiClient.getJSON(ApiClient.getUrl('Sync/Targets', options));
-
-            $.when(promise1, promise2).done(function (response1, response2) {
-
-                loadData(page, response1[0].Items, response2[0]);
+                loadData(page, response.Items);
 
                 Dashboard.hideLoadingMsg();
 
@@ -277,15 +263,34 @@
     }
 
     function onWebSocketMessage(e, msg) {
-        
+
         var page = $.mobile.activePage;
 
-        if (msg.MessageType == "SyncJobCreated") {
-            reloadData(page);
+        if (msg.MessageType == "SyncJobs") {
+            loadData(page, msg.Data);
         }
-        else if (msg.MessageType == "SyncJobCancelled") {
-            reloadData(page);
+    }
+
+    function startListening(page) {
+
+        var startParams = "0,1500";
+
+        if ($(page).hasClass('mySyncPage')) {
+            startParams += "," + Dashboard.getCurrentUserId();
         }
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("SyncJobsStart", startParams);
+        }
+
+    }
+
+    function stopListening() {
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("SyncJobsStart", "0,1500");
+        }
+
     }
 
     $(document).on('pageshow', ".syncActivityPage", function () {
@@ -310,6 +315,7 @@
             taskKey: 'SyncPrepare'
         });
 
+        startListening(page);
         $(ApiClient).on("websocketmessage.syncactivity", onWebSocketMessage);
 
     }).on('pagehide', ".syncActivityPage", function () {
@@ -321,6 +327,7 @@
             mode: 'off'
         });
 
+        stopListening();
         $(ApiClient).off(".syncactivity");
     });
 

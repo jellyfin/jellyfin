@@ -894,6 +894,22 @@ namespace MediaBrowser.Model.ApiClient
         void ChangeServerLocation(string address, bool keepExistingAuth = false);
 
         /// <summary>
+        /// Starts the receiving synchronize jobs updates.
+        /// </summary>
+        /// <param name="intervalMs">The interval ms.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="targetId">The target identifier.</param>
+        /// <returns>Task.</returns>
+        Task StartReceivingSyncJobsUpdates(int intervalMs, string userId, string targetId);
+
+        /// <summary>
+        /// Stops the receiving synchronize jobs updates.
+        /// </summary>
+        /// <param name="intervalMs">The interval ms.</param>
+        /// <returns>Task.</returns>
+        Task StopReceivingSyncJobsUpdates(int intervalMs);
+        
+        /// <summary>
         /// Starts the receiving session updates.
         /// </summary>
         /// <param name="intervalMs">The interval ms.</param>
