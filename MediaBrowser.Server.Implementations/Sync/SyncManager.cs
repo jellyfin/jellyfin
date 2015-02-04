@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             return returnResult;
         }
 
-        public Task UpdateJob(SyncJob job)
+        public async Task UpdateJob(SyncJob job)
         {
             // Get fresh from the db and only update the fields that are supported to be changed.
             var instance = _repo.GetJob(job.Id);
@@ -185,7 +185,21 @@ namespace MediaBrowser.Server.Implementations.Sync
             instance.SyncNewContent = job.SyncNewContent;
             instance.ItemLimit = job.ItemLimit;
 
-            return _repo.Update(instance);
+            await _repo.Update(instance).ConfigureAwait(false);
+
+            OnSyncJobUpdated(instance);
+        }
+
+        internal void OnSyncJobUpdated(SyncJob job)
+        {
+            if (SyncJobUpdated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobUpdated, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
         }
 
         public async Task<QueryResult<SyncJob>> GetJobs(SyncJobQuery query)
@@ -202,6 +216,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task FillMetadata(SyncJob job)
         {
+            var target = GetSyncTargets(job.UserId)
+                .FirstOrDefault(i => string.Equals(i.Id, job.TargetId, StringComparison.OrdinalIgnoreCase));
+
+            if (target != null)
+            {
+                job.TargetName = target.Name;
+            }
+
             var item = job.RequestedItemIds
                 .Select(_libraryManager.GetItemById)
                 .FirstOrDefault(i => i != null);

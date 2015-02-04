@@ -7,6 +7,7 @@ using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.ApiClient
 {
@@ -139,5 +140,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [synchronize job cancelled].
         /// </summary>
         event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+        /// <summary>
+        /// Occurs when [synchronize jobs updated].
+        /// </summary>
+        event EventHandler<GenericEventArgs<List<SyncJob>>> SyncJobsUpdated;
     }
 }

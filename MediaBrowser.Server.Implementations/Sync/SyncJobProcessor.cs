@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             return UpdateJobStatus(job, result.Items.ToList());
         }
 
-        private Task UpdateJobStatus(SyncJob job, List<SyncJobItem> jobItems)
+        private async Task UpdateJobStatus(SyncJob job, List<SyncJobItem> jobItems)
         {
             job.ItemCount = jobItems.Count;
 
@@ -204,7 +204,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 job.Status = SyncJobStatus.Transferring;
             }
 
-            return _syncRepo.Update(job);
+            await _syncRepo.Update(job).ConfigureAwait(false);
+
+            ((SyncManager)_syncManager).OnSyncJobUpdated(job);
         }
 
         public async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory? category, string parentId, IEnumerable<string> itemIds, User user, bool unwatchedOnly)
