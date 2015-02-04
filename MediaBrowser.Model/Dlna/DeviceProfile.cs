@@ -78,6 +78,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool SupportsDirectRemoteContent { get; set; }
         public bool SupportsCustomHttpHeaders { get; set; }
+        public bool EnableMSMediaReceiverRegistrar { get; set; }
 
         public XmlAttribute[] XmlRootAttributes { get; set; }
 

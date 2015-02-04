@@ -34,6 +34,7 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
   <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:sec" value="http://www.sec.co.kr/" />
   </XmlRootAttributes>

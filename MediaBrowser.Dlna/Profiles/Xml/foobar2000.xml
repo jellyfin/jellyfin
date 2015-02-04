@@ -34,6 +34,7 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
   <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />

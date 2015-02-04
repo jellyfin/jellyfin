@@ -129,7 +129,7 @@ namespace MediaBrowser.Server.Implementations.TV
             // Get them in display order, then reverse
             var allEpisodes = series.GetSeasons(user, true, true)
                 .Where(i => !i.IndexNumber.HasValue || i.IndexNumber.Value != 0)
-                .SelectMany(i => i.GetEpisodes(user, true, true))
+                .SelectMany(i => i.GetEpisodes(user))
                 .Reverse()
                 .ToList();
 

@@ -30,7 +30,8 @@ namespace MediaBrowser.Server.Implementations.Sync
         private IDbCommand _deleteJobCommand;
 
         private IDbCommand _deleteJobItemsCommand;
-        private IDbCommand _saveJobItemCommand;
+        private IDbCommand _insertJobItemCommand;
+        private IDbCommand _updateJobItemCommand;
 
         private readonly IJsonSerializer _json;
 
@@ -120,25 +121,45 @@ namespace MediaBrowser.Server.Implementations.Sync
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@DateLastModified");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@ItemCount");
 
-            // _saveJobItemCommand
-            _saveJobItemCommand = _connection.CreateCommand();
-            _saveJobItemCommand.CommandText = "replace into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval, @JobItemIndex)";
+            // _insertJobItemCommand
+            _insertJobItemCommand = _connection.CreateCommand();
+            _insertJobItemCommand.CommandText = "insert into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval, @JobItemIndex)";
 
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Id");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@ItemId");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@ItemName");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@MediaSourceId");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@JobId");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@TemporaryPath");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@OutputPath");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Status");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@TargetId");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@DateCreated");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@Progress");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@AdditionalFiles");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@MediaSource");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@IsMarkedForRemoval");
-            _saveJobItemCommand.Parameters.Add(_saveJobItemCommand, "@JobItemIndex");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@Id");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@ItemId");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@ItemName");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@MediaSourceId");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@JobId");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@TemporaryPath");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@OutputPath");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@Status");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@TargetId");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@DateCreated");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@Progress");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@AdditionalFiles");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@MediaSource");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@IsMarkedForRemoval");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@JobItemIndex");
+
+            // _updateJobItemCommand
+            _updateJobItemCommand = _connection.CreateCommand();
+            _updateJobItemCommand.CommandText = "update SyncJobItems set ItemId=@ItemId,ItemName=@ItemName,MediaSourceId=@MediaSourceId,JobId=@JobId,TemporaryPath=@TemporaryPath,OutputPath=@OutputPath,Status=@Status,TargetId=@TargetId,DateCreated=@DateCreated,Progress=@Progress,AdditionalFiles=@AdditionalFiles,MediaSource=@MediaSource,IsMarkedForRemoval=@IsMarkedForRemoval,JobItemIndex=@JobItemIndex where Id=@Id";
+
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@Id");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@ItemId");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@ItemName");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@MediaSourceId");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@JobId");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@TemporaryPath");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@OutputPath");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@Status");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@TargetId");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@DateCreated");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@Progress");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@AdditionalFiles");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@MediaSource");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@IsMarkedForRemoval");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@JobItemIndex");
         }
 
         private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
@@ -392,17 +413,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var whereClauses = new List<string>();
 
-                if (query.IsCompleted.HasValue)
+                if (query.Statuses.Count > 0)
                 {
-                    if (query.IsCompleted.Value)
-                    {
-                        whereClauses.Add("Status=@Status");
-                    }
-                    else
-                    {
-                        whereClauses.Add("Status<>@Status");
-                    }
-                    cmd.Parameters.Add(cmd, "@Status", DbType.String).Value = SyncJobStatus.Completed.ToString();
+                    var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+
+                    whereClauses.Add(string.Format("Status in ({0})", statuses));
                 }
                 if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
@@ -412,6 +427,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     whereClauses.Add("UserId=@UserId");
                     cmd.Parameters.Add(cmd, "@UserId", DbType.String).Value = query.UserId;
+                }
+                if (query.SyncNewContent.HasValue)
+                {
+                    whereClauses.Add("SyncNewContent=@SyncNewContent");
+                    cmd.Parameters.Add(cmd, "@SyncNewContent", DbType.Boolean).Value = query.SyncNewContent.Value;
                 }
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
@@ -583,10 +603,15 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Create(SyncJobItem jobItem)
         {
-            return Update(jobItem);
+            return InsertOrUpdate(jobItem, _insertJobItemCommand);
         }
 
-        public async Task Update(SyncJobItem jobItem)
+        public Task Update(SyncJobItem jobItem)
+        {
+            return InsertOrUpdate(jobItem, _updateJobItemCommand);
+        }
+
+        private async Task InsertOrUpdate(SyncJobItem jobItem, IDbCommand cmd)
         {
             if (jobItem == null)
             {
@@ -603,25 +628,25 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var index = 0;
 
-                _saveJobItemCommand.GetParameter(index++).Value = new Guid(jobItem.Id);
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.ItemId;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.ItemName;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.MediaSourceId;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.JobId;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.TemporaryPath;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.OutputPath;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.Status.ToString();
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.TargetId;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.DateCreated;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.Progress;
-                _saveJobItemCommand.GetParameter(index++).Value = _json.SerializeToString(jobItem.AdditionalFiles);
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.MediaSource == null ? null : _json.SerializeToString(jobItem.MediaSource);
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.IsMarkedForRemoval;
-                _saveJobItemCommand.GetParameter(index++).Value = jobItem.JobItemIndex;
+                cmd.GetParameter(index++).Value = new Guid(jobItem.Id);
+                cmd.GetParameter(index++).Value = jobItem.ItemId;
+                cmd.GetParameter(index++).Value = jobItem.ItemName;
+                cmd.GetParameter(index++).Value = jobItem.MediaSourceId;
+                cmd.GetParameter(index++).Value = jobItem.JobId;
+                cmd.GetParameter(index++).Value = jobItem.TemporaryPath;
+                cmd.GetParameter(index++).Value = jobItem.OutputPath;
+                cmd.GetParameter(index++).Value = jobItem.Status.ToString();
+                cmd.GetParameter(index++).Value = jobItem.TargetId;
+                cmd.GetParameter(index++).Value = jobItem.DateCreated;
+                cmd.GetParameter(index++).Value = jobItem.Progress;
+                cmd.GetParameter(index++).Value = _json.SerializeToString(jobItem.AdditionalFiles);
+                cmd.GetParameter(index++).Value = jobItem.MediaSource == null ? null : _json.SerializeToString(jobItem.MediaSource);
+                cmd.GetParameter(index++).Value = jobItem.IsMarkedForRemoval;
+                cmd.GetParameter(index++).Value = jobItem.JobItemIndex;
 
-                _saveJobItemCommand.Transaction = transaction;
+                cmd.Transaction = transaction;
 
-                _saveJobItemCommand.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
 
                 transaction.Commit();
             }

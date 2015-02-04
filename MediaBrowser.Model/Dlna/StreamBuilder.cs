@@ -524,11 +524,6 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                if (!subtitleStream.IsTextSubtitleStream)
-                {
-                    return false;
-                }
-
                 SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
@@ -566,19 +561,6 @@ namespace MediaBrowser.Model.Dlna
                 Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
             };
-        }
-
-        private SubtitleProfile GetSubtitleProfile(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
-        {
-            foreach (SubtitleProfile profile in profiles)
-            {
-                if (method == profile.Method && ListHelper.ContainsIgnoreCase(formats, profile.Format))
-                {
-                    return profile;
-                }
-            }
-
-            return null;
         }
 
         private SubtitleProfile GetSubtitleProfile(SubtitleProfile[] profiles, SubtitleDeliveryMethod method)
