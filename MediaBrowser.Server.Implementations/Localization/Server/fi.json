@@ -32,7 +32,7 @@
     "LabelEnableVideoImageExtraction": "Ota video kuvan purku k\u00e4ytt\u00f6\u00f6n",
     "VideoImageExtractionHelp": "Videot jotka eiv\u00e4t sisll\u00e4 valmiiksi kuvaa ja emme voi lis\u00e4t\u00e4 kuvaa automaattisesti internetist\u00e4. T\u00e4m\u00e4 lis\u00e4\u00e4 v\u00e4h\u00e4n lataus aikaa kirjaston tarkastuksessa.",
     "LabelEnableChapterImageExtractionForMovies": "Valitse luvun kuva Elokuville",
-    "LabelChapterImageExtractionForMoviesHelp": "Kansien talteen otetut kuvat tulee n\u00e4kym\u00e4\u00e4n graafisesti asiakkaan moniruutu valikossa. Prosessi voi olla hidas, cpu-intensiivinen ja voi vaatio muutaman gigabitin tilaa levylt\u00e4. T\u00e4m\u00e4 prosesi tapahtuu ajastetusti kello 4.00, joten t\u00e4t\u00e4 aikaa voi muuttaa ajastettujen toimintojen kohdasta. Huomaa ett\u00e4 ei ole suositeltavaa suorittaa t\u00e4t\u00e4 toiminpidett\u00e4 yht\u00e4aikaa, kun konetta kuormitetaan muutenkin paljon.",
+    "LabelChapterImageExtractionForMoviesHelp": "Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs as a nightly scheduled task, although this is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
     "LabelEnableAutomaticPortMapping": "Ota automaattinen porttien mapping k\u00e4ytt\u00f6\u00f6n",
     "LabelEnableAutomaticPortMappingHelp": "UPnP sallii automaattisen reitittimen asetusten muuttamisen. T\u00e4m\u00e4 ei mahdollisesti toimi joidenkin retititin mallien kanssa.",
     "HeaderTermsOfService": "Media Browser Terms of Service",
