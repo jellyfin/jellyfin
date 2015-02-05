@@ -144,5 +144,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [synchronize jobs updated].
         /// </summary>
         event EventHandler<GenericEventArgs<List<SyncJob>>> SyncJobsUpdated;
+        /// <summary>
+        /// Occurs when [synchronize job updated].
+        /// </summary>
+        event EventHandler<GenericEventArgs<CompleteSyncJobInfo>> SyncJobUpdated;
     }
 }

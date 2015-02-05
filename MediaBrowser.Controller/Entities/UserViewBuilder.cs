@@ -846,6 +846,11 @@ namespace MediaBrowser.Controller.Entities
             BaseItem queryParent,
             User user)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
             if (CollapseBoxSetItems(query, queryParent, user))
             {
                 items = BaseItem.CollectionManager.CollapseItemsWithinBoxSets(items, user);

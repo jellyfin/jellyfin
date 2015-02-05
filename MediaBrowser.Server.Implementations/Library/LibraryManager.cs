@@ -517,6 +517,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
             var dict = new Dictionary<Guid, BaseItem>();
 
             foreach (var item in items)

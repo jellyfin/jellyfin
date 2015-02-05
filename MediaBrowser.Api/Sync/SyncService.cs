@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.Sync
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
 
-            if (jobItem.Status != SyncJobItemStatus.Transferring)
+            if (jobItem.Status < SyncJobItemStatus.ReadyToTransfer)
             {
                 throw new ArgumentException("The job item is not yet ready for transfer.");
             }
@@ -286,7 +286,7 @@ namespace MediaBrowser.Api.Sync
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
 
-            if (jobItem.Status != SyncJobItemStatus.Transferring)
+            if (jobItem.Status < SyncJobItemStatus.ReadyToTransfer)
             {
                 throw new ArgumentException("The job item is not yet ready for transfer.");
             }
