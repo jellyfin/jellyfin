@@ -108,7 +108,8 @@ namespace MediaBrowser.Model.Dlna
                 MediaType = DlnaProfileType.Audio,
                 MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context
+                Context = options.Context,
+                DeviceProfile = options.Profile
             };
 
             int? maxBitrateSetting = options.GetMaxBitrate();
@@ -240,7 +241,8 @@ namespace MediaBrowser.Model.Dlna
                 MediaType = DlnaProfileType.Video,
                 MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context
+                Context = options.Context,
+                DeviceProfile = options.Profile
             };
 
             int? audioStreamIndex = options.AudioStreamIndex ?? item.DefaultAudioStreamIndex;
@@ -265,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -290,7 +292,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -524,7 +526,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -535,10 +537,10 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        private SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, VideoOptions options)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile)
         {
             // Look for an external profile that matches the stream type (text/graphical)
-            foreach (SubtitleProfile profile in options.Profile.SubtitleProfiles)
+            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
                 if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
@@ -546,13 +548,11 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (subtitleStream.IsTextSubtitleStream)
+            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                SubtitleProfile embedProfile = GetSubtitleProfile(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed);
-
-                if (embedProfile != null)
+                if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    return embedProfile;
+                    return profile;
                 }
             }
 
@@ -561,19 +561,6 @@ namespace MediaBrowser.Model.Dlna
                 Method = SubtitleDeliveryMethod.Encode,
                 Format = subtitleStream.Codec
             };
-        }
-
-        private SubtitleProfile GetSubtitleProfile(SubtitleProfile[] profiles, SubtitleDeliveryMethod method)
-        {
-            foreach (SubtitleProfile profile in profiles)
-            {
-                if (method == profile.Method)
-                {
-                    return profile;
-                }
-            }
-
-            return null;
         }
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)

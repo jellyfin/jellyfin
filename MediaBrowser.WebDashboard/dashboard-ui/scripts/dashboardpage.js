@@ -809,8 +809,6 @@
 
     renderHasPendingRestart: function (page, hasPendingRestart) {
 
-        $('#updateFail', page).hide();
-
         if (!hasPendingRestart) {
 
             // Only check once every 30 mins
@@ -834,10 +832,6 @@
 
                     $('#newVersionNumber', page).html(Globalize.translate('VersionXIsAvailableForDownload').replace('{0}', version.versionStr));
                 }
-
-            }).fail(function () {
-
-                $('#updateFail', page).show();
 
             });
 
@@ -907,10 +901,6 @@
             }
 
             elem.html(html).trigger('create');
-
-        }).fail(function () {
-
-            $('#updateFail', page).show();
 
         });
     },

@@ -81,10 +81,10 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override IEnumerable<string> GetIndexByOptions()
         {
             return new List<string> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
-                {LocalizedStrings.Instance.GetString("YearDispPref")},
+                {"None"}, 
+                {"Performer"},
+                {"Director"},
+                {"Year"},
             };
         }
 

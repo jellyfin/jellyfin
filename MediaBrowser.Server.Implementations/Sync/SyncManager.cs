@@ -870,6 +870,32 @@ namespace MediaBrowser.Server.Implementations.Sync
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
 
+        public async Task ReportSyncJobItemTransferBeginning(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            jobItem.Status = SyncJobItemStatus.Transferring;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task ReportSyncJobItemTransferFailed(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
         public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
         {
             return _repo.GetLibraryItemIds(query);

@@ -313,9 +313,6 @@
     <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
     <Compile Include="Library\Profiler.cs" />
-    <Compile Include="Localization\BaseStrings.cs" />
-    <Compile Include="Localization\LocalizedStringData.cs" />
-    <Compile Include="Localization\LocalizedStrings.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\IItemRepository.cs" />
     <Compile Include="Persistence\IRepository.cs" />
@@ -344,6 +341,7 @@
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
     <Compile Include="Sync\ICloudSyncProvider.cs" />
+    <Compile Include="Sync\IServerSyncProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Sync\ISyncRepository.cs" />

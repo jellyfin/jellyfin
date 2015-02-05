@@ -18,6 +18,24 @@
         return 'playlists' + (query.ParentId || '');
     }
 
+    function getItemsFunction(itemsQuery) {
+
+        itemsQuery = $.extend({}, itemsQuery);
+
+        return function (index, limit, fields) {
+
+            itemsQuery.StartIndex = index;
+            itemsQuery.Limit = limit;
+            itemsQuery.Fields = fields;
+
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), itemsQuery);
+
+        };
+
+    }
+
+    var _childrenItemsFunction = null;
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -33,6 +51,8 @@
             var result = response1[0];
             var user = response2[0];
             var item = response3[0];
+
+            _childrenItemsFunction = getItemsFunction(query);
 
             currentItem = item;
 
@@ -184,21 +204,11 @@
 
         }).on('playallfromhere', function (e, index) {
 
-            LibraryBrowser.playAllFromHere({
-                
-                Recursive: true,
-                ParentId: query.ParentId
-
-            }, index);
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
         }).on('queueallfromhere', function (e, index) {
 
-            LibraryBrowser.queueAllFromHere({
-
-                Recursive: true,
-                ParentId: query.ParentId
-
-            }, index);
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 
