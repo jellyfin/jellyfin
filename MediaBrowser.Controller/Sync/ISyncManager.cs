@@ -15,7 +15,9 @@ namespace MediaBrowser.Controller.Sync
         event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
         event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
         event EventHandler<GenericEventArgs<SyncJob>> SyncJobUpdated;
-          
+        event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
+        event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
+
         /// <summary>
         /// Creates the job.
         /// </summary>
@@ -35,7 +37,7 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;SyncJobItem&gt;.</returns>
         QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
-        
+
         /// <summary>
         /// Gets the job.
         /// </summary>
@@ -63,7 +65,7 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelJobItem(string id);
-        
+
         /// <summary>
         /// Cancels the job.
         /// </summary>

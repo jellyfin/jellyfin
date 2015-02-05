@@ -5,10 +5,11 @@ namespace MediaBrowser.Model.Sync
     {
         Queued = 0,
         Converting = 1,
-        Transferring = 2,
-        Synced = 3,
-        RemovedFromDevice = 4,
-        Failed = 5,
-        Cancelled = 6
+        ReadyToTransfer = 2,
+        Transferring = 3,
+        Synced = 4,
+        RemovedFromDevice = 5,
+        Failed = 6,
+        Cancelled = 7
     }
 }

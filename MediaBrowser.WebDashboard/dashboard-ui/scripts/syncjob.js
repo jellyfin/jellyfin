@@ -76,7 +76,7 @@
 
         html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
 
-        var hasActions = ['Queued', 'Cancelled', 'Failed', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
+        var hasActions = ['Queued', 'Cancelled', 'Failed', 'ReadyToTransfer', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
 
         html += '<a href="#">';
 
@@ -181,7 +181,7 @@
         else if (status == 'Cancelled') {
             html += '<li data-icon="check"><a href="#" class="btnRetryJobItem" data-id="' + id + '">' + Globalize.translate('ButtonReenable') + '</a></li>';
         }
-        else if (status == 'Queued' || status == 'Transferring' || status == 'Converting') {
+        else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
             html += '<li data-icon="delete"><a href="#" class="btnCancelJobItem" data-id="' + id + '">' + Globalize.translate('ButtonCancelItem') + '</a></li>';
         }
         else if (status == 'Synced' && remove) {
@@ -301,6 +301,7 @@
         $('#txtTargetName', page).val(targetName);
     }
 
+    var _jobOptions;
     function loadJob(page) {
 
         Dashboard.showLoadingMsg();
@@ -318,6 +319,7 @@
 
             })).done(function (options) {
 
+                _jobOptions = options;
                 renderJob(page, job, options);
                 Dashboard.hideLoadingMsg();
             });
@@ -333,6 +335,13 @@
             renderJobItems(page, result.Items);
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function loadJobInfo(page, job, jobItems) {
+
+        renderJob(page, job, _jobOptions);
+        renderJobItems(page, jobItems);
+        Dashboard.hideLoadingMsg();
     }
 
     function saveJob(page) {
@@ -364,16 +373,49 @@
 
     }
 
+    function onWebSocketMessage(e, msg) {
+
+        var page = $.mobile.activePage;
+
+        if (msg.MessageType == "SyncJob") {
+            loadJobInfo(page, msg.Data.Job, msg.Data.JobItems);
+        }
+    }
+
+    function startListening(page) {
+
+        var startParams = "0,1500";
+
+        startParams += "," + getParameterByName('id');
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("SyncJobStart", startParams);
+        }
+
+    }
+
+    function stopListening() {
+
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("SyncJobStop", "");
+        }
+
+    }
+
     $(document).on('pageshow', ".syncJobPage", function () {
 
         var page = this;
         loadJob(page);
 
-    }).on('pageinit', ".syncJobPage", function () {
+        startListening(page);
+        $(ApiClient).on("websocketmessage.syncJobPage", onWebSocketMessage);
+
+    }).on('pagehide', ".syncJobPage", function () {
 
         var page = this;
 
-
+        stopListening();
+        $(ApiClient).off(".syncJobPage");
     });
 
     window.SyncJobPage = {

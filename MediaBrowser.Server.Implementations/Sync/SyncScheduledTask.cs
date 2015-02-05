@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new SyncJobProcessor(_libraryManager, _syncRepo, _syncManager, _logger, _userManager, _tvSeriesManager, _mediaEncoder, _subtitleEncoder, _config, _fileSystem)
+            return new SyncJobProcessor(_libraryManager, _syncRepo, (SyncManager)_syncManager, _logger, _userManager, _tvSeriesManager, _mediaEncoder, _subtitleEncoder, _config, _fileSystem)
                 .Sync(progress, cancellationToken);
         }
 

@@ -778,7 +778,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 1000px;
+        max-width: 950px;
         width: auto;
     }
 }

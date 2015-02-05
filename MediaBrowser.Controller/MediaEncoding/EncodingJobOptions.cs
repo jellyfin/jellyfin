@@ -81,12 +81,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             VideoCodec = info.VideoCodec;
             VideoBitRate = info.VideoBitrate;
             AudioStreamIndex = info.AudioStreamIndex;
-            SubtitleStreamIndex = info.SubtitleStreamIndex;
             MaxRefFrames = info.MaxRefFrames;
             MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
             Cabac = info.Cabac;
             Context = info.Context;
+
+            if (info.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode ||
+                info.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed)
+            {
+                SubtitleStreamIndex = info.SubtitleStreamIndex;
+            }
         }
     }
 }

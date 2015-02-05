@@ -83,14 +83,17 @@
         else if (job.Status == 'Queued') {
             background = 'rgba(51, 136, 204, ' + opacity + ')';
         }
+        else if (job.Status == 'ReadyToTransfer') {
+            background = 'rgba(51, 136, 204, ' + opacity + ')';
+        }
         else if (job.Status == 'Transferring') {
             background = 'rgba(72, 0, 255, ' + opacity + ')';
         }
         else if (job.Status == 'Converting') {
-            background = 'rgba(72, 0, 255, ' + opacity + ')';
+            background = 'rgba(255, 106, 0, ' + opacity + ')';
         }
 
-        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; text-transform:uppercase;">';
+        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; text-transform:uppercase; border-bottom-left-radius: 3px;">';
         html += text;
         html += '</div>';
 
@@ -288,7 +291,7 @@
     function stopListening() {
 
         if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SyncJobsStart", "0,1500");
+            ApiClient.sendWebSocketMessage("SyncJobsStop", "");
         }
 
     }
