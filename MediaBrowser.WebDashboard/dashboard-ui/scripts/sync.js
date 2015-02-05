@@ -81,7 +81,14 @@
             var html = '<div data-role="panel" data-position="right" data-display="overlay" class="syncPanel" data-position-fixed="true" data-theme="a">';
 
             html += '<div>';
-            html += '<h1 style="margin-top:.5em;">' + Globalize.translate('SyncMedia') + '</h1>';
+
+            html += '<div style="margin:1em 0 1.5em;">';
+            html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
+            html += '<a class="accentButton accentButton-g" style="display:inline-block;vertical-align:middle;margin-top:0;margin-left: 20px;" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">';
+            html += '<i class="fa fa-info-circle"></i>';
+            html += Globalize.translate('ButtonHelp');
+            html += '</a>';
+            html += '</div>';
 
             html += '<form class="formSubmitSyncRequest">';
 
