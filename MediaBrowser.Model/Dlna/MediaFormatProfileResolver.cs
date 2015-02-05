@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.Dlna
                     return new List<MediaFormatProfile> { MediaFormatProfile.AVC_TS_HD_DTS_T };
                 }
 
-                if (StringHelper.EqualsIgnoreCase(audioCodec, "mp3"))
+                if (StringHelper.EqualsIgnoreCase(audioCodec, "mp2"))
                 {
                     if (timestampType == TransportStreamTimestamp.None)
                     {
