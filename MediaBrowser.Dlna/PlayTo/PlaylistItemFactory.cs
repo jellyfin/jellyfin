@@ -20,6 +20,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     ItemId = item.Id.ToString("N"),
                     MediaType = DlnaProfileType.Photo,
+                    DeviceProfile = profile
                 },
 
                 Profile = profile

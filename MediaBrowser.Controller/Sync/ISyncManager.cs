@@ -167,5 +167,19 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="job">The job.</param>
         /// <returns>VideoOptions.</returns>
         VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job);
+
+        /// <summary>
+        /// Reports the synchronize job item transfer beginning.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferBeginning(string id);
+
+        /// <summary>
+        /// Reports the synchronize job item transfer failed.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferFailed(string id);
     }
 }

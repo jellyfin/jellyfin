@@ -2,12 +2,15 @@
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class CloudSyncProvider : ISyncProvider
+    public class CloudSyncProvider : IServerSyncProvider
     {
         private ICloudSyncProvider[] _providers = {};
 
@@ -34,6 +37,26 @@ namespace MediaBrowser.Server.Implementations.Sync
         public string Name
         {
             get { return "Cloud Sync"; }
+        }
+
+        public Task<List<string>> GetServerItemIds(string serverId, SyncTarget target, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteItem(string serverId, string itemId, SyncTarget target, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task TransferItemFile(string serverId, string itemId, string path, SyncTarget target, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task TransferRelatedFile(string serverId, string itemId, string path, ItemFileType type, SyncTarget target, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

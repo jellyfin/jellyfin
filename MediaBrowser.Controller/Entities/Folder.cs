@@ -245,14 +245,13 @@ namespace MediaBrowser.Controller.Entities
         protected virtual IEnumerable<string> GetIndexByOptions()
         {
             return new List<string> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
-                {LocalizedStrings.Instance.GetString("GenreDispPref")},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
-                {LocalizedStrings.Instance.GetString("YearDispPref")},
-                {LocalizedStrings.Instance.GetString("StudioDispPref")}
+                {"None"}, 
+                {"Performer"},
+                {"Genre"},
+                {"Director"},
+                {"Year"},
+                {"Studio"}
             };
-
         }
 
         /// <summary>

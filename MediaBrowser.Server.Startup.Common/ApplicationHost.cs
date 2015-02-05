@@ -536,8 +536,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             SetStaticProperties();
 
-            SetKernelProperties();
-
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
         }
 
@@ -571,14 +569,6 @@ namespace MediaBrowser.Server.Startup.Common
                 SessionManager,
                 () => SubtitleEncoder);
             RegisterSingleInstance(MediaEncoder);
-        }
-
-        /// <summary>
-        /// Sets the kernel properties.
-        /// </summary>
-        private void SetKernelProperties()
-        {
-            LocalizedStrings.StringFiles = GetExports<LocalizedStringData>();
         }
 
         /// <summary>
@@ -698,7 +688,6 @@ namespace MediaBrowser.Server.Startup.Common
             BaseItem.ItemRepository = ItemRepository;
             User.XmlSerializer = XmlSerializer;
             User.UserManager = UserManager;
-            LocalizedStrings.ApplicationPaths = ApplicationPaths;
             Folder.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
