@@ -450,7 +450,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .portraitDetailImageContainer img {
-    max-width: 240px;
+    max-width: 210px;
     max-height: 300px;
 }
 

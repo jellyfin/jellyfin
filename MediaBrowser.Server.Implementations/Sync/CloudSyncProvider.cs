@@ -12,7 +12,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class CloudSyncProvider : IServerSyncProvider
     {
-        private ICloudSyncProvider[] _providers = {};
+        private readonly ICloudSyncProvider[] _providers = {};
 
         public CloudSyncProvider(IApplicationHost appHost)
         {
@@ -21,17 +21,28 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public IEnumerable<SyncTarget> GetSyncTargets()
         {
-            return new List<SyncTarget>();
+            return _providers
+                .SelectMany(i => i.GetSyncAccounts().Select(a => GetSyncTarget(i, a)));
         }
 
         public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
-            return new List<SyncTarget>();
+            return _providers
+                .SelectMany(i => i.GetSyncAccounts().Where(a => a.UserIds.Contains(userId, StringComparer.OrdinalIgnoreCase)).Select(a => GetSyncTarget(i, a)));
         }
 
         public DeviceProfile GetDeviceProfile(SyncTarget target)
         {
             return new DeviceProfile();
+        }
+
+        private SyncTarget GetSyncTarget(ICloudSyncProvider provider, SyncAccount account)
+        {
+            return new SyncTarget
+            {
+                Name = account.Name,
+                Id = account.Name
+            };
         }
 
         public string Name
@@ -49,12 +60,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             throw new NotImplementedException();
         }
 
-        public Task TransferItemFile(string serverId, string itemId, string path, SyncTarget target, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task TransferRelatedFile(string serverId, string itemId, string path, ItemFileType type, SyncTarget target, CancellationToken cancellationToken)
+        public Task TransferItemFile(string serverId, string itemId, string[] pathParts, string name, ItemFileType fileType, SyncTarget target, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

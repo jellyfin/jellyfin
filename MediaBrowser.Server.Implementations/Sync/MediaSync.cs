@@ -135,8 +135,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
-                await provider.TransferItemFile(serverId, libraryItem.Id, internalSyncJobItem.OutputPath, target, cancellationToken)
-                        .ConfigureAwait(false);
+                //await provider.TransferItemFile(serverId, libraryItem.Id, internalSyncJobItem.OutputPath, target, cancellationToken)
+                //        .ConfigureAwait(false);
 
                 progress.Report(92);
 

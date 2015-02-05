@@ -31,22 +31,12 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <param name="serverId">The server identifier.</param>
         /// <param name="itemId">The item identifier.</param>
-        /// <param name="path">The path.</param>
+        /// <param name="pathParts">The path parts.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="fileType">Type of the file.</param>
         /// <param name="target">The target.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task TransferItemFile(string serverId, string itemId, string path, SyncTarget target, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Transfers the related file.
-        /// </summary>
-        /// <param name="serverId">The server identifier.</param>
-        /// <param name="itemId">The item identifier.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task TransferRelatedFile(string serverId, string itemId, string path, ItemFileType type, SyncTarget target, CancellationToken cancellationToken);
+        Task TransferItemFile(string serverId, string itemId, string[] pathParts, string name, ItemFileType fileType, SyncTarget target, CancellationToken cancellationToken);
     }
 }

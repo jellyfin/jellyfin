@@ -405,7 +405,7 @@
             }
 
             html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
-            html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
+            //html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
             if (options.showPlayOptions !== false) {
 

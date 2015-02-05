@@ -30,7 +30,11 @@
 
         $('.folderAccess', page).html(html).trigger('create');
 
-        $('#chkEnableAllFolders', page).checked(user.Policy.EnableAllFolders).checkboxradio('refresh').trigger('change');
+        if (user.Policy.BlockedMediaFolders != null) {
+            $('#chkEnableAllFolders', page).checked(user.Policy.BlockedMediaFolders.length == 0).checkboxradio('refresh').trigger('change');
+        } else {
+            $('#chkEnableAllFolders', page).checked(user.Policy.EnableAllFolders).checkboxradio('refresh').trigger('change');
+        }
     }
 
     function loadChannels(page, user, channels) {
@@ -69,7 +73,11 @@
             $('.channelAccessContainer', page).hide();
         }
 
-        $('#chkEnableAllChannels', page).checked(user.Policy.EnableAllChannels).checkboxradio('refresh').trigger('change');
+        if (user.Policy.BlockedChannels != null) {
+            $('#chkEnableAllChannels', page).checked(user.Policy.BlockedChannels.length == 0).checkboxradio('refresh').trigger('change');
+        } else {
+            $('#chkEnableAllChannels', page).checked(user.Policy.EnableAllChannels).checkboxradio('refresh').trigger('change');
+        }
     }
 
     function loadDevices(page, user, devices) {

@@ -904,9 +904,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Stops the receiving synchronize job updates.
         /// </summary>
-        /// <param name="intervalMs">The interval ms.</param>
         /// <returns>Task.</returns>
-        Task StopReceivingSyncJobUpdates(int intervalMs);
+        Task StopReceivingSyncJobUpdates();
 
         /// <summary>
         /// Starts the receiving synchronize jobs updates.
@@ -920,9 +919,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Stops the receiving synchronize jobs updates.
         /// </summary>
-        /// <param name="intervalMs">The interval ms.</param>
         /// <returns>Task.</returns>
-        Task StopReceivingSyncJobsUpdates(int intervalMs);
+        Task StopReceivingSyncJobsUpdates();
         
         /// <summary>
         /// Starts the receiving session updates.
