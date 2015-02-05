@@ -417,7 +417,7 @@ namespace MediaBrowser.Controller.Entities
                 ParentId = (parent == null ? null : parent.Id.ToString("N")),
                 GroupItems = true
 
-            }).Select(i => i.Item1);
+            }).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
 
             query.SortBy = new string[] { };
 
