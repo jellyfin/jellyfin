@@ -108,7 +108,7 @@ namespace MediaBrowser.Model.ApiClient
 
             foreach (var user in users)
             {
-                if (StringHelper.Equals(id, user.Id))
+                if (StringHelper.EqualsIgnoreCase(id, user.Id))
                 {
                     return index;
                 }
