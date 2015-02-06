@@ -2203,12 +2203,16 @@
                 url = "css/images/items/detail/video.png";
             }
 
-            if (!href) {
-                href = "#";
+            html += '<div style="position:relative;">';
+
+            if (href) {
+                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
             }
 
-            html += '<div style="position:relative;">';
             html += "<img class='itemDetailImage' src='" + url + "' />";
+            if (href) {
+                html += "</a>";
+            }
 
             var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
@@ -2318,11 +2322,11 @@
                 shape = 'square';
             }
 
-            if (!href) {
-                href = "#";
-            }
-
             html += '<div style="position:relative;">';
+
+            if (href) {
+                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
+            }
 
             if (detectRatio && item.PrimaryImageAspectRatio) {
 
@@ -2334,6 +2338,10 @@
             }
 
             html += "<img class='itemDetailImage' src='" + url + "' />";
+
+            if (href) {
+                html += "</a>";
+            }
 
             var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
