@@ -311,8 +311,10 @@ namespace MediaBrowser.Server.Implementations.Sync
             var itemByName = item as IItemByName;
             if (itemByName != null)
             {
+                var itemByNameFilter = itemByName.GetItemFilter();
+
                 return user.RootFolder
-                    .GetRecursiveChildren(user, itemByName.GetItemFilter());
+                    .GetRecursiveChildren(user, i => !i.IsFolder && itemByNameFilter(i));
             }
 
             if (item.IsFolder)

@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.Playback
         private string GetOutputFilePath(StreamState state)
         {
             var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
-            
+
             var outputFileExtension = GetOutputFileExtension(state);
 
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
@@ -323,13 +323,13 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        param += " -crf 23";
+                        param += " -subq 0 -crf 23";
                         break;
                     case EncodingQuality.HighQuality:
-                        param += " -crf 20";
+                        param += " -subq 3 -crf 20";
                         break;
                     case EncodingQuality.MaxQuality:
-                        param += " -crf 18";
+                        param += " -subq 6 -crf 18";
                         break;
                 }
             }
@@ -507,7 +507,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return param;
+            return "-pix_fmt yuv420p " + param;
         }
 
         protected string GetAudioFilterParam(StreamState state, bool isHls)
@@ -918,7 +918,7 @@ namespace MediaBrowser.Api.Playback
                     if (SupportsThrottleWithStream)
                     {
                         var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
-                        
+
                         url += "&transcodingJobId=" + transcodingJobId;
 
                         return string.Format("\"{0}\"", url);

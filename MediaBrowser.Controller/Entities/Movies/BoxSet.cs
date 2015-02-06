@@ -74,6 +74,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
+        public override bool IsAuthorizedToDelete(User user)
+        {
+            return true;
+        }
+
         /// <summary>
         /// Gets the trailer ids.
         /// </summary>

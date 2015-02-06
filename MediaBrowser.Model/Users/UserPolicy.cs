@@ -42,7 +42,8 @@ namespace MediaBrowser.Model.Users
 
         public bool EnableMediaPlayback { get; set; }
         public bool EnableContentDeletion { get; set; }
-        
+        public bool EnableContentDownloading { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable synchronize].
         /// </summary>
@@ -80,6 +81,8 @@ namespace MediaBrowser.Model.Users
 
             EnabledDevices = new string[] { };
             EnableAllDevices = true;
+
+            EnableContentDownloading = true;
         }
     }
 }

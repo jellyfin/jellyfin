@@ -226,6 +226,18 @@ namespace MediaBrowser.Api.Library
         public string TvdbId { get; set; }
     }
 
+    [Route("/Items/{Id}/Download", "GET", Summary = "Downloads item media")]
+    [Authenticated(Roles = "download")]
+    public class GetDownload
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -273,7 +285,7 @@ namespace MediaBrowser.Api.Library
             }
 
             var dtoOptions = GetDtoOptions(request);
-            
+
             var result = new ItemsResult
             {
                 TotalRecordCount = items.Count,
@@ -287,6 +299,28 @@ namespace MediaBrowser.Api.Library
         public void Post(PostUpdatedSeries request)
         {
             Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+        }
+
+        public object Get(GetDownload request)
+        {
+            var item = _libraryManager.GetItemById(request.Id);
+
+            if (!item.CanDelete())
+            {
+                throw new ArgumentException("Item does not support downloading");
+            }
+
+            var headers = new Dictionary<string, string>();
+
+            // Quotes are valid in linux. They'll possibly cause issues here
+            var filename = Path.GetFileName(item.Path).Replace("\"", string.Empty);
+            headers["Content-Disposition"] = string.Format("inline; filename=\"{0}\"", filename);
+
+            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                Path = item.Path,
+                ResponseHeaders = headers
+            });
         }
 
         public object Get(GetFile request)
@@ -347,7 +381,7 @@ namespace MediaBrowser.Api.Library
             var dtoOptions = GetDtoOptions(request);
 
             BaseItem parent = item.Parent;
-            
+
             while (parent != null)
             {
                 if (user != null)
@@ -458,23 +492,9 @@ namespace MediaBrowser.Api.Library
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = _userManager.GetUserById(auth.UserId);
 
-            if (item is Playlist || item is BoxSet)
+            if (!item.CanDelete(user))
             {
-                // For now this is allowed if user can see the playlist
-            }
-            else if (item is ILiveTvRecording)
-            {
-                if (!user.Policy.EnableLiveTvManagement)
-                {
-                    throw new UnauthorizedAccessException();
-                }
-            }
-            else
-            {
-                if (!user.Policy.EnableContentDeletion)
-                {
-                    throw new UnauthorizedAccessException();
-                }
+                throw new UnauthorizedAccessException();
             }
 
             var task = _libraryManager.DeleteItem(item);

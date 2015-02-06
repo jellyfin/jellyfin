@@ -32,6 +32,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         /// <summary>
         /// The _virtual children
         /// </summary>

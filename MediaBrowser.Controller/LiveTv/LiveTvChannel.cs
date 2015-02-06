@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -8,6 +7,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -134,6 +134,11 @@ namespace MediaBrowser.Controller.LiveTv
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"), "metadata");
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

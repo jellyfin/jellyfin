@@ -113,6 +113,13 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override bool CanDownload()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
+
         /// <summary>
         /// Gets or sets the artist.
         /// </summary>

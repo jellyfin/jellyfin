@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -37,6 +37,13 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
+
+        public override bool CanDownload()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
 
         /// <summary>
         /// Gets or sets the tags.

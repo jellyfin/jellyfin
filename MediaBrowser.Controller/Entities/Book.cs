@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
@@ -35,6 +36,13 @@ namespace MediaBrowser.Controller.Entities
         public Book()
         {
             Tags = new List<string>();
+        }
+
+        public override bool CanDownload()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

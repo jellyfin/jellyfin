@@ -239,6 +239,38 @@ namespace MediaBrowser.Controller.Entities
             get { return this.GetImagePath(ImageType.Primary); }
         }
 
+        public virtual bool CanDelete()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
+
+        public virtual bool IsAuthorizedToDelete(User user)
+        {
+            return user.Policy.EnableContentDeletion;
+        }
+
+        public bool CanDelete(User user)
+        {
+            return CanDelete() && IsAuthorizedToDelete(user);
+        }
+
+        public virtual bool CanDownload()
+        {
+            return false;
+        }
+
+        public virtual bool IsAuthorizedToDownload(User user)
+        {
+            return user.Policy.EnableContentDownloading;
+        }
+
+        public bool CanDownload(User user)
+        {
+            return CanDownload() && IsAuthorizedToDownload(user);
+        }
+
         /// <summary>
         /// Gets or sets the date created.
         /// </summary>

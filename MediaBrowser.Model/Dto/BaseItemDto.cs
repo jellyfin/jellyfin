@@ -56,6 +56,8 @@ namespace MediaBrowser.Model.Dto
         public int? AirsBeforeEpisodeNumber { get; set; }
         public int? AbsoluteEpisodeNumber { get; set; }
         public bool? DisplaySpecialsWithSeasons { get; set; }
+        public bool? CanDelete { get; set; }
+        public bool? CanDownload { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }

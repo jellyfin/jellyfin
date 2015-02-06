@@ -64,6 +64,19 @@ namespace MediaBrowser.Controller.Entities
             LinkedAlternateVersions = new List<LinkedChild>();
         }
 
+        public override bool CanDownload()
+        {
+            if (VideoType == VideoType.HdDvd || VideoType == VideoType.Dvd ||
+                VideoType == VideoType.BluRay)
+            {
+                return false;
+            }
+
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
+
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {

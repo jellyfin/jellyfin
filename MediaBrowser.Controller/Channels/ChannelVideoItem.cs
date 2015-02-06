@@ -4,11 +4,11 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -118,6 +118,11 @@ namespace MediaBrowser.Controller.Channels
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

@@ -25,5 +25,9 @@ namespace MediaBrowser.Controller.LiveTv
         Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         PlayAccess GetPlayAccess(User user);
+
+        bool CanDelete();
+
+        bool CanDelete(User user);
     }
 }
