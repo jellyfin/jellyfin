@@ -63,21 +63,17 @@
 
         $('.recordingStatus', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
 
-        Dashboard.getCurrentUser().done(function (user) {
+        if (MediaController.canPlay(item)) {
+            $('#playButtonContainer', page).show();
+        } else {
+            $('#playButtonContainer', page).hide();
+        }
 
-            if (MediaController.canPlay(item)) {
-                $('#playButtonContainer', page).show();
-            } else {
-                $('#playButtonContainer', page).hide();
-            }
-
-            if (user.Policy.IsAdministrator && item.LocationType !== "Offline") {
-                $('#deleteButtonContainer', page).show();
-            } else {
-                $('#deleteButtonContainer', page).hide();
-            }
-
-        });
+        if (item.CanDelete) {
+            $('#deleteButtonContainer', page).show();
+        } else {
+            $('#deleteButtonContainer', page).hide();
+        }
 
         LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
 

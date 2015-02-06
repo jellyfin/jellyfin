@@ -74,7 +74,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 ValidateUserAccess(user, request, authAttribtues, auth);
             }
 
-            if (!IsExemptFromRoles(auth, authAttribtues))
+            var info = (AuthenticationInfo)request.Items["OriginalAuthenticationInfo"];
+
+            if (!IsExemptFromRoles(auth, authAttribtues, info))
             {
                 var roles = authAttribtues.GetRoles().ToList();
 
@@ -142,10 +144,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
+        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, AuthenticationInfo tokenInfo)
         {
             if (!_config.Configuration.IsStartupWizardCompleted &&
                 authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(auth.Token))
+            {
+                return true;
+            }
+
+            if (tokenInfo != null && string.IsNullOrWhiteSpace(tokenInfo.UserId))
             {
                 return true;
             }
@@ -170,6 +182,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 if (user == null || !user.Policy.EnableContentDeletion)
                 {
                     throw new SecurityException("User does not have delete access.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                    };
+                }
+            }
+            if (roles.Contains("download", StringComparer.OrdinalIgnoreCase))
+            {
+                if (user == null || !user.Policy.EnableContentDownloading)
+                {
+                    throw new SecurityException("User does not have download access.")
                     {
                         SecurityExceptionType = SecurityExceptionType.Unauthenticated
                     };

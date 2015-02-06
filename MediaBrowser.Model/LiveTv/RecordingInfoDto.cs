@@ -100,6 +100,12 @@ namespace MediaBrowser.Model.LiveTv
         public string Path { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can delete.
+        /// </summary>
+        /// <value><c>null</c> if [can delete] contains no value, <c>true</c> if [can delete]; otherwise, <c>false</c>.</value>
+        public bool? CanDelete { get; set; }
+
+        /// <summary>
         /// Overview of the recording.
         /// </summary>
         public string Overview { get; set; }

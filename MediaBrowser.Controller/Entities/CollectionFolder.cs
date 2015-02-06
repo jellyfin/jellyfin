@@ -35,6 +35,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         public string CollectionType { get; set; }
 
         /// <summary>

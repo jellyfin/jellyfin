@@ -3,10 +3,10 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -88,6 +88,11 @@ namespace MediaBrowser.Controller.Channels
             list.InsertRange(0, sources);
 
             return list;
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

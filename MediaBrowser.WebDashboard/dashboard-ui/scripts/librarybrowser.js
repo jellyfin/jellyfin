@@ -310,15 +310,7 @@
             if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
                 commands.push('delete');
             }
-            else if (user.Policy.EnableContentDeletion &&
-                item.Type != "TvChannel" &&
-                item.Type != "Genre" &&
-                item.Type != "Studio" &&
-                item.Type != "MusicGenre" &&
-                item.Type != "GameGenre" &&
-                item.Type != "Person" &&
-                item.Type != "MusicArtist" &&
-                item.Type != "CollectionFolder") {
+            else if (item.CanDelete) {
                 commands.push('delete');
             }
 
@@ -332,6 +324,10 @@
 
             if (SyncManager.isAvailable(item)) {
                 commands.push('sync');
+            }
+
+            if (item.CanDownload) {
+                commands.push('download');
             }
 
             return commands;
@@ -382,23 +378,31 @@
             html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
 
             if (commands.indexOf('addtocollection') != -1) {
-                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+                html += '<li data-icon="plus"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
             }
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
-            }
-
-            if (commands.indexOf('edit') != -1) {
-                html += '<li><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
-            }
-
-            if (commands.indexOf('refresh') != -1) {
-                html += '<li><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+                html += '<li data-icon="plus"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
-                html += '<li><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
+                html += '<li data-icon="delete"><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            }
+
+            if (commands.indexOf('download') != -1) {
+                var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                    api_key: ApiClient.accessToken()
+                });
+
+                html += '<li data-icon="arrow-d"><a class="btnMoreMenuDownload" data-ajax="false" href="' + downloadHref + '" onclick="$(\'.playFlyout\').popup(\'close\');">' + Globalize.translate('ButtonDownload') + '</a></li>';
+            }
+
+            if (commands.indexOf('edit') != -1) {
+                html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+            }
+
+            if (commands.indexOf('refresh') != -1) {
+                html += '<li data-icon="refresh"><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
             }
 
             html += '</ul>';
@@ -919,7 +923,10 @@
 
             // There's no detail page with a dedicated delete function
             if (item.Type == 'Playlist' || item.Type == 'BoxSet') {
-                itemCommands.push('delete');
+
+                if (item.CanDelete) {
+                    itemCommands.push('delete');
+                }
             }
 
             if (SyncManager.isAvailable(item)) {
@@ -2197,21 +2204,11 @@
             }
 
             if (!href) {
-                href = "itemgallery.html?id=" + item.Id;
+                href = "#";
             }
-
-            var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
             html += '<div style="position:relative;">';
-            if (linkToGallery) {
-                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
-            }
-
             html += "<img class='itemDetailImage' src='" + url + "' />";
-
-            if (linkToGallery) {
-                html += "</a>";
-            }
 
             var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
@@ -2322,15 +2319,10 @@
             }
 
             if (!href) {
-                href = "itemgallery.html?id=" + item.Id;
+                href = "#";
             }
-
-            var linkToGallery = LibraryBrowser.shouldDisplayGallery(item);
 
             html += '<div style="position:relative;">';
-            if (linkToGallery) {
-                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
-            }
 
             if (detectRatio && item.PrimaryImageAspectRatio) {
 
@@ -2342,10 +2334,6 @@
             }
 
             html += "<img class='itemDetailImage' src='" + url + "' />";
-
-            if (linkToGallery) {
-                html += "</a>";
-            }
 
             var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
@@ -2663,161 +2651,7 @@
 
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
             }
-        },
-
-        shouldDisplayGallery: function (item) {
-
-            var imageTags = item.ImageTags || {};
-
-            if (imageTags.Primary) {
-
-                return true;
-            }
-
-            if (imageTags.Banner) {
-
-                return true;
-            }
-
-            if (imageTags.Logo) {
-
-                return true;
-            }
-            if (imageTags.Thumb) {
-
-                return true;
-            }
-            if (imageTags.Art) {
-
-                return true;
-
-            }
-            if (imageTags.Menu) {
-
-                return true;
-
-            }
-            if (imageTags.Disc) {
-
-                return true;
-            }
-            if (imageTags.Box) {
-
-                return true;
-            }
-            if (imageTags.BoxRear) {
-
-                return true;
-            }
-
-            if (item.BackdropImageTags && item.BackdropImageTags.length) {
-                return true;
-
-            }
-
-            if (item.ScreenshotImageTags && item.ScreenshotImageTags.length) {
-                return true;
-            }
-
-            return false;
-        },
-
-        getGalleryHtml: function (item) {
-
-            var html = '';
-            var i, length;
-
-            var imageTags = item.ImageTags || {};
-
-            if (imageTags.Primary) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Primary", imageTags.Primary);
-            }
-
-            if (imageTags.Banner) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Banner", imageTags.Banner);
-            }
-
-            if (imageTags.Logo) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Logo", imageTags.Logo);
-            }
-            if (imageTags.Thumb) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Thumb", imageTags.Thumb);
-            }
-            if (imageTags.Art) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Art", imageTags.Art);
-
-            }
-            if (imageTags.Menu) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Menu", imageTags.Menu);
-
-            }
-            if (imageTags.Box) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Box", imageTags.Box);
-            }
-            if (imageTags.BoxRear) {
-
-                html += LibraryBrowser.createGalleryImage(item, "BoxRear", imageTags.BoxRear);
-            }
-
-            if (item.BackdropImageTags) {
-
-                for (i = 0, length = item.BackdropImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item, "Backdrop", item.BackdropImageTags[i], i);
-                }
-
-            }
-
-            if (item.ScreenshotImageTags) {
-
-                for (i = 0, length = item.ScreenshotImageTags.length; i < length; i++) {
-                    html += LibraryBrowser.createGalleryImage(item, "Screenshot", item.ScreenshotImageTags[i], i);
-                }
-            }
-            if (imageTags.Disc) {
-
-                html += LibraryBrowser.createGalleryImage(item, "Disc", imageTags.Disc);
-            }
-
-            return html;
-        },
-
-        createGalleryImage: function (item, type, tag, index) {
-
-            var screenWidth = Math.max(screen.height, screen.width);
-
-            var html = '';
-
-            if (typeof (index) == "undefined") index = 0;
-
-            html += '<div class="galleryImageContainer">';
-            html += '<a href="#pop_' + index + '_' + tag + '" data-rel="popup" data-position-to="window">';
-
-            html += '<img class="galleryImage" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-                maxWidth: screenWidth,
-                tag: tag
-            }) + '" />';
-            html += '</div>';
-
-            html += '<div class="galleryPopup" id="pop_' + index + '_' + tag + '" data-role="popup">';
-            html += '<a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">' + Globalize.translate('ButtonClose') + '</a>';
-            html += '<img class="" src="' + LibraryBrowser.getImageUrl(item, type, index, {
-
-                maxWidth: screenWidth,
-                tag: tag
-
-            }) + '" />';
-            html += '</div>';
-
-            return html;
         }
-
     };
 
 })(window, document, jQuery, screen, window.store);

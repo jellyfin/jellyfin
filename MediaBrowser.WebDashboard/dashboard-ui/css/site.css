@@ -66,6 +66,12 @@ body {
     overflow-y: hidden !important;
 }
 
+.jqmButtonNoText {
+    padding: 3px 4px!important;
+    border-radius: 4px!important;
+    vertical-align: top;
+}
+
 .textlink {
     text-decoration: none;
 }

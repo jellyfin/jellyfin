@@ -34,6 +34,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>

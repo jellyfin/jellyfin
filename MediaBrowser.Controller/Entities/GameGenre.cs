@@ -43,6 +43,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
             return inputItems.Where(GetItemFilter());

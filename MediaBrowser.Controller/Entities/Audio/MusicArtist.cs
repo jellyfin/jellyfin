@@ -1,14 +1,13 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -33,6 +32,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool SupportsAddingToPlaylist
         {
             get { return true; }
+        }
+
+        public override bool CanDelete()
+        {
+            return !IsAccessedByName;
         }
 
         protected override IEnumerable<BaseItem> ActualChildren

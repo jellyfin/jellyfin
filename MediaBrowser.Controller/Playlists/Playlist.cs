@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
@@ -38,6 +36,11 @@ namespace MediaBrowser.Controller.Playlists
             {
                 return true;
             }
+        }
+
+        public override bool IsAuthorizedToDelete(User user)
+        {
+            return true;
         }
 
         public override bool IsSaveLocalMetadataEnabled()

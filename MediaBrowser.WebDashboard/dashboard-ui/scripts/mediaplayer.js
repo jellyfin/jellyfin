@@ -106,9 +106,14 @@
             // Chrome, Firefox or IE with plugin installed
             // For some reason in chrome pausing mp4 is causing the video to fail. 
             // So for now it will have to prioritize webm
-            if (self.canPlayWebm() && ($.browser.chrome || $.browser.msie)) {
+            if (self.canPlayWebm()) {
 
-                return '.webm';
+                if ($.browser.msie) {
+                    return '.webm';
+                }
+                if ($.browser.chrome) {
+                    return '.webm';
+                }
             }
 
             return '.mp4';
@@ -551,8 +556,8 @@
                 ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
                     userId: Dashboard.getCurrentUserId()
 
-                })).done(function(result) {
-                    
+                })).done(function (result) {
+
                     self.currentItem = item;
                     self.currentMediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
 

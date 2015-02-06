@@ -1059,6 +1059,7 @@
                 VideoCodec: mp4Quality.videoCodec,
                 AudioCodec: mp4Quality.audioCodec,
                 profile: 'high',
+                //EnableAutoStreamCopy: false,
                 level: '41'
             }));
 

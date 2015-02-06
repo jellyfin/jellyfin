@@ -284,6 +284,20 @@ namespace MediaBrowser.Server.Implementations.Dto
                 AttachLinkedChildImages(dto, playlist, user, options);
             }
 
+            if (fields.Contains(ItemFields.CanDelete))
+            {
+                dto.CanDelete = user == null
+                    ? item.CanDelete()
+                    : item.CanDelete(user);
+            }
+
+            if (fields.Contains(ItemFields.CanDownload))
+            {
+                dto.CanDownload = user == null
+                    ? item.CanDownload()
+                    : item.CanDownload(user);
+            }
+
             return dto;
         }
 

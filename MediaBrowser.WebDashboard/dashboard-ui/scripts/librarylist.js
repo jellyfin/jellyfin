@@ -396,6 +396,10 @@
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
+            if (commands.indexOf('delete') != -1) {
+                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            }
+
             if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
                 html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
@@ -448,10 +452,6 @@
 
             if (commands.indexOf('sync') != -1) {
                 html += '<li data-icon="cloud"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
-            }
-
-            if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
 
             html += '</ul>';

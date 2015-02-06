@@ -67,5 +67,10 @@ namespace MediaBrowser.Controller.Channels
         {
             return System.IO.Path.Combine(basePath, "channels", id.ToString("N"), "metadata");
         }
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
     }
 }

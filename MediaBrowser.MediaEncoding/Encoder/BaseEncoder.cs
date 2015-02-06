@@ -631,13 +631,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        param += " -crf 23";
+                        param += " -subq 0 -crf 23";
                         break;
                     case EncodingQuality.HighQuality:
-                        param += " -crf 20";
+                        param += " -subq 3 -crf 20";
                         break;
                     case EncodingQuality.MaxQuality:
-                        param += " -crf 18";
+                        param += " -subq 6 -crf 18";
                         break;
                 }
             }
@@ -740,7 +740,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 param += " -level " + state.Options.Level.Value.ToString(UsCulture);
             }
 
-            return param;
+            return "-pix_fmt yuv420p " + param;
         }
 
         protected string GetVideoBitrateParam(EncodingJob state, string videoCodec, bool isHls)

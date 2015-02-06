@@ -27,7 +27,9 @@
         $('#chkIsHidden', page).checked(user.Policy.IsHidden).checkboxradio("refresh");
         $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl).checkboxradio("refresh");
         $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
+
         $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
+        $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading).checkboxradio("refresh");
 
         $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement).checkboxradio("refresh");
         $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess).checkboxradio("refresh");
@@ -68,11 +70,13 @@
         user.Policy.IsDisabled = $('#chkDisabled', page).checked();
         user.Policy.EnableRemoteControlOfOtherUsers = $('#chkEnableRemoteControlOtherUsers', page).checked();
         user.Policy.EnableLiveTvManagement = $('#chkManageLiveTv', page).checked();
-        user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
         user.Policy.EnableLiveTvAccess = $('#chkEnableLiveTvAccess', page).checked();
         user.Policy.EnableContentDeletion = $('#chkEnableContentDeletion', page).checked();
         user.Policy.EnableUserPreferenceAccess = !$('#chkDisableUserPreferences', page).checked();
         user.Policy.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
+
+        user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
+        user.Policy.EnableContentDownloading = $('#chkEnableDownloading', page).checked();
 
         user.Policy.EnableSync = $('#chkEnableSync', page).checked();
 
