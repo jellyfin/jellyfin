@@ -191,8 +191,13 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var config = user.Configuration;
             
+            return GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, bool includeMissing, bool includeVirtualUnaired)
+        {
             var allEpisodes = GetSeasons(user, true, true)
-                .SelectMany(i => i.GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes))
+                .SelectMany(i => i.GetEpisodes(user, includeMissing, includeVirtualUnaired))
                 .Reverse()
                 .ToList();
 

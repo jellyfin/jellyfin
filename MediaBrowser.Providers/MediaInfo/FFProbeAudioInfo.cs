@@ -263,9 +263,9 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id")));
             audio.SetProviderId(MetadataProviders.MusicBrainzArtist, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id")));
 
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
+            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id")));
+            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id")));
+            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id")));
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -275,7 +275,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 return null;
             }
 
-            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(i => i.Trim())
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .FirstOrDefault();
         }
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
