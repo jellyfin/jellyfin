@@ -19,30 +19,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             _providers = appHost.GetExports<ICloudSyncProvider>().ToArray();
         }
 
-        public IEnumerable<SyncTarget> GetSyncTargets()
-        {
-            return _providers
-                .SelectMany(i => i.GetSyncAccounts().Select(a => GetSyncTarget(i, a)));
-        }
-
         public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
-            return _providers
-                .SelectMany(i => i.GetSyncAccounts().Where(a => a.UserIds.Contains(userId, StringComparer.OrdinalIgnoreCase)).Select(a => GetSyncTarget(i, a)));
+            return _providers.SelectMany(i => i.GetSyncTargets(userId));
         }
 
         public DeviceProfile GetDeviceProfile(SyncTarget target)
         {
             return new DeviceProfile();
-        }
-
-        private SyncTarget GetSyncTarget(ICloudSyncProvider provider, SyncAccount account)
-        {
-            return new SyncTarget
-            {
-                Name = account.Name,
-                Id = account.Name
-            };
         }
 
         public string Name

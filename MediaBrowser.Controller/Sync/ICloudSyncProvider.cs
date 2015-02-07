@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MediaBrowser.Model.Sync;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Sync
 {
@@ -13,7 +14,8 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Gets the synchronize targets.
         /// </summary>
+        /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncAccount> GetSyncAccounts();
+        IEnumerable<SyncTarget> GetSyncTargets(string userId);
     }
 }

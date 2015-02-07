@@ -17,19 +17,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             _deviceManager = deviceManager;
         }
 
-        public IEnumerable<SyncTarget> GetSyncTargets()
-        {
-            return _deviceManager.GetDevices(new DeviceQuery
-            {
-                SupportsSync = true
-
-            }).Items.Select(i => new SyncTarget
-            {
-                Id = i.Id,
-                Name = i.Name
-            });
-        }
-
         public IEnumerable<SyncTarget> GetSyncTargets(string userId)
         {
             return _deviceManager.GetDevices(new DeviceQuery
