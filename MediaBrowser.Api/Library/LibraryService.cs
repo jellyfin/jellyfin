@@ -5,10 +5,8 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -314,7 +312,7 @@ namespace MediaBrowser.Api.Library
 
             // Quotes are valid in linux. They'll possibly cause issues here
             var filename = Path.GetFileName(item.Path).Replace("\"", string.Empty);
-            headers["Content-Disposition"] = string.Format("inline; filename=\"{0}\"", filename);
+            headers["Content-Disposition"] = string.Format("attachment; filename=\"{0}\"", filename);
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {

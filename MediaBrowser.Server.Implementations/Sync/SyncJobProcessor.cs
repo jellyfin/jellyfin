@@ -223,8 +223,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var items = category.HasValue ?
                 await GetItemsForSync(category.Value, parentId, user).ConfigureAwait(false) :
-                itemIds.SelectMany(i => GetItemsForSync(i, user))
-                .Where(_syncManager.SupportsSync);
+                itemIds.SelectMany(i => GetItemsForSync(i, user));
+
+            items = items.Where(_syncManager.SupportsSync);
 
             if (unwatchedOnly)
             {
