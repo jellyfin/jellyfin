@@ -1511,6 +1511,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="category">The category.</param>
         /// <returns>Task&lt;SyncOptions&gt;.</returns>
-        Task<SyncOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null);
+        Task<SyncDialogOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null);
     }
 }
