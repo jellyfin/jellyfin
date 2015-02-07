@@ -3,6 +3,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
@@ -303,11 +304,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return new List<BaseItem>();
             }
 
-            return GetItemsForSync(item, user);
-        }
-
-        private IEnumerable<BaseItem> GetItemsForSync(BaseItem item, User user)
-        {
             var itemByName = item as IItemByName;
             if (itemByName != null)
             {
@@ -315,6 +311,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 return user.RootFolder
                     .GetRecursiveChildren(user, i => !i.IsFolder && itemByNameFilter(i));
+            }
+
+            var series = item as Series;
+            if (series != null)
+            {
+                return series.GetEpisodes(user, false, false);
             }
 
             if (item.IsFolder)
