@@ -196,6 +196,7 @@ namespace MediaBrowser.Server.Startup.Common
         private ISyncRepository SyncRepository { get; set; }
         private ITVSeriesManager TVSeriesManager { get; set; }
         private ICollectionManager CollectionManager { get; set; }
+        private IMediaSourceManager MediaSourceManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
@@ -459,7 +460,10 @@ namespace MediaBrowser.Server.Startup.Common
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger, FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
 
-            SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, ItemRepository, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager);
+            MediaSourceManager = new MediaSourceManager(ItemRepository);
+            RegisterSingleInstance(MediaSourceManager);
+
+            SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             RegisterSingleInstance(SessionManager);
 
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -503,7 +507,7 @@ namespace MediaBrowser.Server.Startup.Common
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
             RegisterSingleInstance(NotificationManager);
 
-            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, ItemRepository);
+            SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
             RegisterSingleInstance(SubtitleManager);
 
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
@@ -696,6 +700,7 @@ namespace MediaBrowser.Server.Startup.Common
             Folder.UserViewManager = UserViewManager;
             UserView.TVSeriesManager = TVSeriesManager;
             BaseItem.CollectionManager = CollectionManager;
+            BaseItem.MediaSourceManager = MediaSourceManager;
         }
 
         /// <summary>

@@ -185,6 +185,7 @@
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\LocalTrailerPostScanTask.cs" />
+    <Compile Include="Library\MediaSourceManager.cs" />
     <Compile Include="Library\MusicManager.cs" />
     <Compile Include="Library\PathExtensions.cs" />
     <Compile Include="Library\Resolvers\SpecialFolderResolver.cs" />

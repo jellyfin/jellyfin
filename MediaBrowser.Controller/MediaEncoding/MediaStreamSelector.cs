@@ -90,10 +90,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return index == -1 ? 100 : index;
             })
-                 .ThenBy(i => i.IsDefault)
-                 .ThenBy(i => i.IsTextSubtitleStream)
-                 .ThenBy(i => i.IsExternal)
+                 .ThenBy(i => GetBooleanOrderBy(i.IsDefault))
+                 .ThenBy(i => GetBooleanOrderBy(i.SupportsExternalStream))
+                 .ThenBy(i => GetBooleanOrderBy(i.IsTextSubtitleStream))
+                 .ThenBy(i => GetBooleanOrderBy(i.IsExternal))
                  .ThenBy(i => i.Index);
+        }
+
+        private static int GetBooleanOrderBy(bool value)
+        {
+            return value ? 0 : 1;
         }
     }
 }

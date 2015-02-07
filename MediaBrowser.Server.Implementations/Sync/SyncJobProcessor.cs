@@ -616,7 +616,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     IsForced = subtitle.IsForced,
                     IsExternal = true,
                     Language = subtitle.Language,
-                    Path = fileInfo.Path
+                    Path = fileInfo.Path,
+                    SupportsExternalStream = true
                 });
 
                 startingIndex++;

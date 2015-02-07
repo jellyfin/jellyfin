@@ -300,6 +300,7 @@ namespace MediaBrowser.Controller.Entities
         public static IChannelManager ChannelManager { get; set; }
         public static ICollectionManager CollectionManager { get; set; }
         public static IImageProcessor ImageProcessor { get; set; }
+        public static IMediaSourceManager MediaSourceManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
