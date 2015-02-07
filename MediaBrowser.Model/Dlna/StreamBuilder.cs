@@ -543,9 +543,12 @@ namespace MediaBrowser.Model.Dlna
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                if (subtitleStream.SupportsExternalStream)
                 {
-                    return profile;
+                    if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    {
+                        return profile;
+                    }
                 }
             }
 

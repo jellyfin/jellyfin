@@ -383,13 +383,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .noBackdrop {
-    height: 220px;
-    padding: 3em 0 0;
+    height: auto;
+    margin: 2.5em 0 0;
 }
 
     .noBackdrop .itemBackdropContent {
         background-color: transparent;
     }
+
+    .noBackdrop .itemBackdropContent {
+        position: static;
+    }
+
 
 .lnkSibling {
     position: fixed;
@@ -433,6 +438,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     top: -26px;
 }
 
+.noBackdrop .squareDetailImageContainer {
+    top: 0;
+}
+
+.noBackdrop .detailImageContainer {
+    position: static;
+    display: inline-block;
+    vertical-align: top;
+}
+
 .itemDetailImage {
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
@@ -473,9 +488,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 220px;
 }
 
-.detailContentEffectedByImage a {
-}
-
 .lastDetailContentEffectedByImage.detailContentEffectedByThumbImage {
     padding: 0 .5em;
 }
@@ -486,6 +498,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
     min-height: 115px;
+}
+
+.noBackdrop .detailContentEffectedByImage {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.noBackdrop + .ui-content .lastDetailContentEffectedByImage {
+    margin-top: 0;
+    margin-left: 0;
+    min-height: initial;
 }
 
 .parentName {
@@ -610,7 +633,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSection {
     vertical-align: top;
-    margin-bottom: 2.5em;
+    margin-bottom: 2em;
 }
 
 .detailCollapsibleSection:not(.hide) + .detailCollapsibleSection {
@@ -770,18 +793,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: none;
     }
 
-    .noBackdrop {
-        height: auto;
-    }
-
-        .noBackdrop .detailImageContainer {
-            display: block;
-            position: static;
-            text-align: center;
-        }
-
-    .noBackdrop .itemBackdropContent {
+    .noBackdrop .detailImageContainer {
+        display: block;
         position: static;
+        text-align: center;
     }
 }
 

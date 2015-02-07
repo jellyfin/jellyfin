@@ -27,18 +27,18 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly ILibraryManager _libraryManager;
-        private readonly IItemRepository _itemRepo;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         public event EventHandler<SubtitleDownloadEventArgs> SubtitlesDownloaded;
         public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
-        public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, ILibraryManager libraryManager, IItemRepository itemRepo)
+        public SubtitleManager(ILogger logger, IFileSystem fileSystem, ILibraryMonitor monitor, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
@@ -232,7 +232,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         public Task DeleteSubtitles(string itemId, int index)
         {
-            var stream = _itemRepo.GetMediaStreams(new MediaStreamQuery
+            var stream = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
                 Index = index,
                 ItemId = new Guid(itemId),

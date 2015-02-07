@@ -56,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IMusicManager _musicManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
-        private readonly IItemRepository _itemRepo;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
 
-        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
+        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager)
         {
             _userDataRepository = userDataRepository;
             _logger = logger;
@@ -107,12 +107,12 @@ namespace MediaBrowser.Server.Implementations.Session
             _musicManager = musicManager;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _itemRepo = itemRepo;
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _httpClient = httpClient;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
+            _mediaSourceManager = mediaSourceManager;
 
             _deviceManager.DeviceOptionsUpdated += _deviceManager_DeviceOptionsUpdated;
         }
@@ -1560,7 +1560,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(mediaSourceId))
             {
-                info.MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                info.MediaStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
                 {
                     ItemId = new Guid(mediaSourceId)
 

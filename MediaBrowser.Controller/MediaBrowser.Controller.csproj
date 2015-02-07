@@ -170,6 +170,7 @@
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
+    <Compile Include="Library\IMediaSourceManager.cs" />
     <Compile Include="Library\IMetadataFileSaver.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\IMusicManager.cs" />
