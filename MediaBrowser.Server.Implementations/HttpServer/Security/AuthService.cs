@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 ValidateUserAccess(user, request, authAttribtues, auth);
             }
 
-            var info = (AuthenticationInfo)request.Items["OriginalAuthenticationInfo"];
+            var info = GetTokenInfo(request);
 
             if (!IsExemptFromRoles(auth, authAttribtues, info))
             {
@@ -199,6 +199,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             }
         }
 
+        private AuthenticationInfo GetTokenInfo(IServiceRequest request)
+        {
+            object info;
+            request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
+            return info as AuthenticationInfo;
+        }
+
         private bool IsValidConnectKey(string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -216,7 +223,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 throw new SecurityException("Access token is invalid or expired.");
             }
 
-            var info = (AuthenticationInfo)request.Items["OriginalAuthenticationInfo"];
+            var info = GetTokenInfo(request);
 
             if (info == null)
             {

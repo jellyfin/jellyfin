@@ -787,9 +787,20 @@ namespace MediaBrowser.Controller.Entities
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            var items = query.Recursive
-                ? GetRecursiveChildren(user, filter)
-                : GetChildren(user, true).Where(filter);
+            IEnumerable<BaseItem> items;
+
+            if (query.User == null)
+            {
+                items = query.Recursive
+                   ? GetRecursiveChildren(filter)
+                   : Children.Where(filter);
+            }
+            else
+            {
+                items = query.Recursive
+                   ? GetRecursiveChildren(user, filter)
+                   : GetChildren(user, true).Where(filter);
+            }
 
             var result = PostFilterAndSort(items, query);
 
