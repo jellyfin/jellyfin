@@ -32,8 +32,6 @@
   <TimelineOffsetSeconds>10</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
-  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
-  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes />
   <DirectPlayProfiles>

@@ -384,6 +384,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .noBackdrop {
     height: 220px;
+    padding: 3em 0 0;
 }
 
     .noBackdrop .itemBackdropContent {
@@ -769,10 +770,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: none;
     }
 
-    .noBackdrop .detailImageContainer {
-        display: block;
+    .noBackdrop {
+        height: auto;
+    }
+
+        .noBackdrop .detailImageContainer {
+            display: block;
+            position: static;
+            text-align: center;
+        }
+
+    .noBackdrop .itemBackdropContent {
         position: static;
-        text-align: center;
     }
 }
 
@@ -797,6 +806,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     overflow: hidden;
 }
 
+.mediaInfoContent {
+    line-height: 1.5em;
+}
+
 .mediaInfoStream {
     margin: 1em 3em 1em 0;
     display: inline-block;
@@ -807,6 +820,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .mediaInfoStreamType {
     display: block;
     color: #fff;
+    margin-bottom: 1em;
+    font-size: 16px;
 }
 
 .mediaInfoAttribute {

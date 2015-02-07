@@ -38,6 +38,8 @@
         DashboardPage.sessionUpdateTimer = setInterval(DashboardPage.refreshSessionsLocally, 60000);
 
         $('.activityItems', page).activityLogList();
+
+        $('.swaggerLink', page).attr('href', ApiClient.getUrl('swagger-ui/index.html'));
     },
 
     onPageHide: function () {

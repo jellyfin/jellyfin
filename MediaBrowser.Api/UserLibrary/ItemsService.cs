@@ -169,8 +169,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ExcludeLocationTypes { get; set; }
 
-        public bool IncludeIndexContainers { get; set; }
-
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
 
@@ -396,52 +394,29 @@ namespace MediaBrowser.Api.UserLibrary
 
             else if (request.Recursive)
             {
-                if (user == null)
-                {
-                    items = ((Folder)item).GetRecursiveChildren();
+                var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                    items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
-                }
-                else
-                {
-                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, user));
-
-                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
-                }
+                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
             }
             else
             {
                 if (user == null)
                 {
-                    items = ((Folder)item).Children;
+                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
 
-                    items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
+                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
                 }
-                else
+
+                var userRoot = item as UserRootFolder;
+
+                if (userRoot == null)
                 {
-                    var userRoot = item as UserRootFolder;
+                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                    if (userRoot == null)
-                    {
-                        var result = await ((Folder)item).GetItems(GetItemsQuery(request, user));
-
-                        return new Tuple<QueryResult<BaseItem>, bool>(result, true);
-                    }
-
-                    items = ((Folder)item).GetChildren(user, true);
+                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
                 }
-            }
 
-            if (request.IncludeIndexContainers)
-            {
-                var list = items.ToList();
-
-                var containers = list.Select(i => i.IndexContainer)
-                    .Where(i => i != null);
-
-                list.AddRange(containers);
-
-                items = list.Distinct();
+                items = ((Folder)item).GetChildren(user, true);
             }
 
             return new Tuple<QueryResult<BaseItem>, bool>(new QueryResult<BaseItem>

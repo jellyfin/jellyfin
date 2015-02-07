@@ -309,7 +309,7 @@
 
             if (videoStream.IsCabac != null && !videoStream.IsCabac) {
                 console.log('Video not CABAC');
-                return false;
+                //return false;
             }
 
             if (!videoStream.Width) {

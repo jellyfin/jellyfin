@@ -258,7 +258,7 @@ namespace MediaBrowser.Model.Dlna
             if (IsEligibleForDirectPlay(item, maxBitrateSetting, subtitleStream, options))
             {
                 // See if it can be direct played
-                var directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream);
+                var directPlay = GetVideoDirectPlayProfile(options, options.Profile, item, videoStream, audioStream);
 
                 if (directPlay != null)
                 {
@@ -380,7 +380,8 @@ namespace MediaBrowser.Model.Dlna
             return 128000;
         }
 
-        private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
+        private PlayMethod? GetVideoDirectPlayProfile(VideoOptions options,
+            DeviceProfile profile,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream)
@@ -504,12 +505,12 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaSource.Protocol == MediaProtocol.Http)
             {
-                if (!profile.SupportsDirectRemoteContent)
+                if (!options.SupportsDirectRemoteContent)
                 {
                     return null;
                 }
 
-                if (mediaSource.RequiredHttpHeaders.Count > 0 && !profile.SupportsCustomHttpHeaders)
+                if (mediaSource.RequiredHttpHeaders.Count > 0 && !options.SupportsCustomHttpHeaders)
                 {
                     return null;
                 }

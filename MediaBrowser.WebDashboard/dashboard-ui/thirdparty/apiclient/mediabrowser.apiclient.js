@@ -2799,17 +2799,13 @@
          */
         self.getItems = function (userId, options) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
-
             var url;
 
             if ((typeof userId).toString().toLowerCase() == 'string') {
                 url = self.getUrl("Users/" + userId + "/Items", options);
             } else {
-                options = userId;
-                url = self.getUrl("Items", options || {});
+
+                url = self.getUrl("Items", options);
             }
 
             return self.ajax({

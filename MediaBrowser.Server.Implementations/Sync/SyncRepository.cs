@@ -172,6 +172,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
+            CheckDisposed();
+            
             var guid = new Guid(id);
 
             if (guid == Guid.Empty)
@@ -277,6 +279,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("job");
             }
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -348,6 +352,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -407,6 +413,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("query");
             }
 
+            CheckDisposed();
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = BaseJobSelectText;
@@ -491,6 +499,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
+            CheckDisposed();
+            
             var guid = new Guid(id);
 
             using (var cmd = _connection.CreateCommand())
@@ -618,6 +628,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("jobItem");
             }
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -764,6 +776,15 @@ namespace MediaBrowser.Server.Implementations.Sync
             GC.SuppressFinalize(this);
         }
 
+        private bool _disposed;
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
+            }
+        }
+
         private readonly object _disposeLock = new object();
 
         /// <summary>
@@ -774,6 +795,8 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             if (dispose)
             {
+                _disposed = true;
+
                 try
                 {
                     lock (_disposeLock)
