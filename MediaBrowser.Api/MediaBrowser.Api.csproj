@@ -82,6 +82,10 @@
     <Compile Include="Playback\Hls\MpegDashService.cs" />
     <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="PlaylistService.cs" />
+    <Compile Include="Reports\ReportFieldType.cs" />
+    <Compile Include="Reports\ReportResult.cs" />
+    <Compile Include="Reports\ReportsService.cs" />
+    <Compile Include="Reports\ReportRequests.cs" />
     <Compile Include="StartupWizardService.cs" />
     <Compile Include="Subtitles\SubtitleService.cs" />
     <Compile Include="Movies\CollectionService.cs" />
