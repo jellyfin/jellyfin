@@ -1403,6 +1403,13 @@ namespace MediaBrowser.Model.ApiClient
         Task<SyncJob> CreateSyncJob(SyncJobRequest request);
 
         /// <summary>
+        /// Updates the synchronize job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        /// <returns>Task.</returns>
+        Task UpdateSyncJob(SyncJob job);
+        
+        /// <summary>
         /// Gets the synchronize jobs.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -1491,6 +1498,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task QueueFailedSyncJobItemForRetry(string id);
+        /// <summary>
+        /// Cancels the synchronize job.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelSyncJob(string id);
         /// <summary>
         /// Cancels the synchronize job item.
         /// </summary>
