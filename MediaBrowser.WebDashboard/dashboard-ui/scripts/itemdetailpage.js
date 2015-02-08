@@ -493,7 +493,7 @@
     function renderTabButtons(page, item) {
 
         var elem = $('.tabDetails', page)[0];
-        var text = elem.textContent || elem.innerText;
+        var text = elem.textContent || elem.innerText || '';
 
         if (text.trim()) {
 

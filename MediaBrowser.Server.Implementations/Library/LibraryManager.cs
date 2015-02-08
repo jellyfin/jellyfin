@@ -1098,7 +1098,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await task.Run(innerProgress, cancellationToken);
+                    await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
