@@ -25,6 +25,7 @@
             html += '<div>';
             html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
             html += '<select id="selectQuality" data-mini="true">';
+            html += '<option value="Original">' + Globalize.translate('OptionOriginal') + '</option>';
             html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
             html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
             html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';

@@ -457,7 +457,27 @@ namespace MediaBrowser.Server.Implementations.Sync
                         return false;
                     }
 
+                    if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
+                    {
+                        return false;
+                    }
+                    
+                    if (video.IsPlaceHolder)
+                    {
+                        return false;
+                    }
+
+                    if (video.IsArchive)
+                    {
+                        return false;
+                    }
+
                     if (video.IsStacked)
+                    {
+                        return false;
+                    }
+
+                    if (video.IsShortcut)
                     {
                         return false;
                     }

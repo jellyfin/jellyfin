@@ -486,7 +486,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 streamInfo.GetExternalSubtitles("dummy", false);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
-            var requiresConversion = streamInfo.PlayMethod == PlayMethod.Transcode || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
+            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original;
+            var requiresConversion = requiresVideoTranscoding || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
 
             if (requiresConversion && !enableConversion)
             {
@@ -501,7 +502,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.Status = SyncJobItemStatus.Converting;
             }
 
-            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            if (requiresVideoTranscoding)
             {
                 // Save the job item now since conversion could take a while
                 await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
@@ -673,7 +674,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
             jobItem.TemporaryPath = GetTemporaryPath(jobItem);
 
-            if (streamInfo.PlayMethod == PlayMethod.Transcode)
+            if (streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original)
             {
                 if (!enableConversion)
                 {
@@ -760,7 +761,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private async Task SyncGeneric(SyncJobItem jobItem, BaseItem item, CancellationToken cancellationToken)
         {
             jobItem.OutputPath = item.Path;
-            
+
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
             await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
