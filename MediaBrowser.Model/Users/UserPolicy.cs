@@ -29,6 +29,7 @@ namespace MediaBrowser.Model.Users
         public int? MaxParentalRating { get; set; }
 
         public string[] BlockedTags { get; set; }
+        public string[] AllowedTags { get; set; }
         public bool EnableUserPreferenceAccess { get; set; }
         public AccessSchedule[] AccessSchedules { get; set; }
         public UnratedItem[] BlockUnratedItems { get; set; }
@@ -59,8 +60,6 @@ namespace MediaBrowser.Model.Users
         public string[] EnabledFolders { get; set; }
         public bool EnableAllFolders { get; set; }
 
-        public TagFilter[] TagFilters { get; set; }
-        
         public UserPolicy()
         {
             EnableLiveTvManagement = true;
@@ -68,6 +67,8 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvAccess = true;
             EnableSharedDeviceControl = true;
 
+            BlockedTags = new string[] { };
+            AllowedTags = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             EnableUserPreferenceAccess = true;
@@ -84,8 +85,6 @@ namespace MediaBrowser.Model.Users
             EnableAllDevices = true;
 
             EnableContentDownloading = true;
-
-            TagFilters = new TagFilter[] { };
         }
     }
 }

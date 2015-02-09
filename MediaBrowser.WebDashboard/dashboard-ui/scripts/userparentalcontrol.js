@@ -81,7 +81,8 @@
         Dashboard.setPageTitle(user.Name);
 
         loadUnratedItems(page, user);
-        loadTags(page, user.Policy.TagFilters);
+        loadBlockedTags(page, user.Policy.BlockedTags);
+        loadAllowedTags(page, user.Policy.AllowedTags);
 
         populateRatings(allParentalRatings, page);
 
@@ -112,7 +113,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function loadTags(page, tags) {
+    function loadBlockedTags(page, tags) {
 
         var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
 
@@ -120,17 +121,11 @@
 
             li += '<a href="#">';
 
-            li += '<h3>' + h.Tag + '</h3>';
-
-            if (h.Mode == 'Allow') {
-                li += '<p style="color:green;">' + Globalize.translate('MessageAllowContentWithThisTag') + '</p>';
-            } else if (h.Mode == 'Block') {
-                li += '<p style="color:red;">' + Globalize.translate('MessageBlockContentWithThisTag') + '</p>';
-            }
+            li += '<div style="font-weight:normal;">' + h + '</div>';
 
             li += '</a>';
 
-            li += '<a class="tagFilter btnDeleteTag" href="#" data-tag="' + h.Tag + '" data-mode="' + h.Mode + '"></a>';
+            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '"></a>';
 
             li += '</li>';
 
@@ -138,18 +133,51 @@
 
         }).join('') + '</ul>';
 
-        var elem = $('.tagFilters', page).html(html).trigger('create');
+        var elem = $('.blockedTags', page).html(html).trigger('create');
 
         $('.btnDeleteTag', elem).on('click', function () {
 
             var tag = this.getAttribute('data-tag');
-            var mode = this.getAttribute('data-mode');
 
             var newTags = tags.filter(function (t) {
-                return t.Tag != tag || t.Mode != mode;
+                return t != tag;
             });
 
-            loadTags(page, newTags);
+            loadBlockedTags(page, newTags);
+        });
+    }
+
+    function loadAllowedTags(page, tags) {
+
+        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
+
+            var li = '<li>';
+
+            li += '<a href="#">';
+
+            li += '<div style="font-weight:normal;">' + h + '</div>';
+
+            li += '</a>';
+
+            li += '<a class="allowedTag btnDeleteTag" href="#" data-tag="' + h + '"></a>';
+
+            li += '</li>';
+
+            return li;
+
+        }).join('') + '</ul>';
+
+        var elem = $('.allowedTags', page).html(html).trigger('create');
+
+        $('.btnDeleteTag', elem).on('click', function () {
+
+            var tag = this.getAttribute('data-tag');
+
+            var newTags = tags.filter(function (t) {
+                return t != tag;
+            });
+
+            loadAllowedTags(page, newTags);
         });
     }
 
@@ -216,7 +244,8 @@
 
         user.Policy.AccessSchedules = getSchedulesFromPage(page);
 
-        user.Policy.TagFilters = getTagsFromPage(page);
+        user.Policy.BlockedTags = getBlockedTagsFromPage(page);
+        user.Policy.AllowedTags = getAllowedTagsFromPage(page);
 
         ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
@@ -251,11 +280,21 @@
             return false;
         },
 
-        onTagFormSubmit: function () {
+        onBlockedTagFormSubmit: function () {
 
             var page = $(this).parents('.page');
 
-            saveTag(page);
+            saveBlockedTag(page);
+
+            // Disable default form submission
+            return false;
+        },
+
+        onAllowedTagFormSubmit: function () {
+
+            var page = $(this).parents('.page');
+
+            saveAllowedTag(page);
 
             // Disable default form submission
             return false;
@@ -333,20 +372,30 @@
         $('#popupSchedule', page).popup('close');
     }
 
-    function saveTag(page) {
+    function saveBlockedTag(page) {
 
-        var tag = $('#txtTag', page).val();
-        var mode = $('#selectTagMode', page).val();
-        var tags = getTagsFromPage(page);
+        var tag = $('#txtBlockedTag', page).val();
+        var tags = getBlockedTagsFromPage(page);
 
-        tags.push({
-            Tag: tag,
-            Mode: mode
-        });
+        if (tags.indexOf(tag) == -1) {
+            tags.push(tag);
+            loadBlockedTags(page, tags);
+        }
 
-        loadTags(page, tags);
+        $('#popupBlockedTag', page).popup('close');
+    }
 
-        $('#popupTag', page).popup('close');
+    function saveAllowedTag(page) {
+
+        var tag = $('#txtAllowedTag', page).val();
+        var tags = getAllowedTagsFromPage(page);
+
+        if (tags.indexOf(tag) == -1) {
+            tags.push(tag);
+            loadAllowedTags(page, tags);
+        }
+
+        $('#popupAllowedTag', page).popup('close');
     }
 
     function getSchedulesFromPage(page) {
@@ -362,23 +411,34 @@
         }).get();
     }
 
-    function getTagsFromPage(page) {
+    function getBlockedTagsFromPage(page) {
 
-        return $('.tagFilter', page).map(function () {
+        return $('.blockedTag', page).map(function () {
 
-            return {
-                Tag: this.getAttribute('data-tag'),
-                Mode: this.getAttribute('data-mode')
-            };
+            return this.getAttribute('data-tag');
 
         }).get();
     }
 
-    function showTagPopup(page) {
+    function getAllowedTagsFromPage(page) {
 
-        $('#popupTag', page).popup('open');
-        $('#txtTag', page).val('').focus();
-        $('#selectTagMode', page).val('Block').selectmenu('refresh').trigger('change');
+        return $('.allowedTag', page).map(function () {
+
+            return this.getAttribute('data-tag');
+
+        }).get();
+    }
+
+    function showBlockedTagPopup(page) {
+
+        $('#popupBlockedTag', page).popup('open');
+        $('#txtBlockedTag', page).val('').focus();
+    }
+
+    function showAllowedTagPopup(page) {
+
+        $('#popupAllowedTag', page).popup('open');
+        $('#txtAllowedTag', page).val('').focus();
     }
 
     $(document).on('pageinit', "#userParentalControlPage", function () {
@@ -391,19 +451,15 @@
             showSchedulePopup(page, {}, -1);
         });
 
+        $('.btnAddBlockedTag', page).on('click', function () {
 
-        $('.btnAddTag', page).on('click', function () {
-
-            showTagPopup(page);
+            showBlockedTagPopup(page);
         });
 
-        $('#selectTagMode', page).on('change', function () {
 
-            if (this.value == 'Allow') {
-                $('.allowModeHelp', page).show();
-            } else {
-                $('.allowModeHelp', page).hide();
-            }
+        $('.btnAddAllowedTag', page).on('click', function () {
+
+            showAllowedTagPopup(page);
         });
 
         populateHours(page);

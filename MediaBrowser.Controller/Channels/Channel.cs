@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        protected override bool IsTagFilterEnforced(TagFilterMode mode)
+        protected override bool IsAllowTagFilterEnforced()
         {
             return false;
         }
