@@ -728,5 +728,6 @@
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
-    "MessageJobItemHasNoActions": "d"
+    "MessageBlockContentWithThisTag": "Block all content with this tag",
+    "MessageAllowContentWithThisTag":  "Allow only content with this tag"
 }

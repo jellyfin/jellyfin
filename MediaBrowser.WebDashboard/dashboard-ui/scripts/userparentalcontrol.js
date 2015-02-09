@@ -123,9 +123,9 @@
             li += '<h3>' + h.Tag + '</h3>';
 
             if (h.Mode == 'Allow') {
-                li += '<p style="color:green;">Allow</p>';
+                li += '<p style="color:green;">' + Globalize.translate('MessageAllowContentWithThisTag') + '</p>';
             } else if (h.Mode == 'Block') {
-                li += '<p style="color:red;">Block</p>';
+                li += '<p style="color:red;">' + Globalize.translate('MessageBlockContentWithThisTag') + '</p>';
             }
 
             li += '</a>';
