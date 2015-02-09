@@ -1080,12 +1080,42 @@ namespace MediaBrowser.Controller.Entities
 
             if (hasTags != null)
             {
-                if (user.Policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+                if (user.Policy.TagFilters.Any(i => !IsTagFilterAccepted(hasTags, i)))
                 {
                     return false;
                 }
             }
 
+            return true;
+        }
+
+        private bool IsTagFilterAccepted(IHasTags hasTags, TagFilter filter)
+        {
+            if (IsTagFilterEnforced(filter.Mode))
+            {
+                if (filter.Mode == TagFilterMode.Block)
+                {
+                    // If content has the tag, it's not allowed
+                    if (hasTags.Tags.Contains(filter.Tag, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else if (filter.Mode == TagFilterMode.Allow)
+                {
+                    // If content doesn't have the tag, it's not allowed
+                    if (!hasTags.Tags.Contains(filter.Tag, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        protected virtual bool IsTagFilterEnforced(TagFilterMode mode)
+        {
             return true;
         }
 

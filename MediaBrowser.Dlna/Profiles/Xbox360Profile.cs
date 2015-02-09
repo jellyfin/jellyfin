@@ -15,11 +15,11 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Xbox 360";
 
             // Required according to above
-            ModelName = "Windows Media Connect";
+            ModelName = "Windows Media Player Sharing";
 
             ModelNumber = "12.0";
 
-            FriendlyName = "${HostName} : 1 : Windows Media Connect";
+            FriendlyName = "${HostName} : 1";
 
             ModelUrl = "http://www.microsoft.com/";
             Manufacturer = "Microsoft Corporation";

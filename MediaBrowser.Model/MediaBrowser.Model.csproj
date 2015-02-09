@@ -433,6 +433,8 @@
     <Compile Include="Users\ForgotPasswordAction.cs" />
     <Compile Include="Users\ForgotPasswordResult.cs" />
     <Compile Include="Users\PinRedeemResult.cs" />
+    <Compile Include="Users\TagFilter.cs" />
+    <Compile Include="Users\TagFilterMode.cs" />
     <Compile Include="Users\UserAction.cs" />
     <Compile Include="Users\UserActionType.cs" />
     <Compile Include="Users\UserPolicy.cs" />

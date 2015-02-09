@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -69,6 +70,11 @@ namespace MediaBrowser.Controller.Channels
         }
 
         public override bool CanDelete()
+        {
+            return false;
+        }
+
+        protected override bool IsTagFilterEnforced(TagFilterMode mode)
         {
             return false;
         }

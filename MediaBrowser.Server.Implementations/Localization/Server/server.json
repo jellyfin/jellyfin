@@ -1356,8 +1356,10 @@
     "HeaderVideoTypes": "Video Types",
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
-    "LabelBlockItemsWithTags": "Block items with tags:",
+    "LabelBlockOrAllowItemsWithTags": "Block or allow content with tags:",
     "LabelTag": "Tag:",
+    "OptionBlockItemWithTag": "Block all content with this tag",
+    "OptionAllowItemWithTag": "Allow only content with this tag",
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
@@ -1368,5 +1370,7 @@
     "NameSeasonNumber": "Season {0}",
     "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
     "TabJobs": "Jobs",
-    "TabSyncJobs": "Sync Jobs"
+    "TabSyncJobs": "Sync Jobs",
+    "LabelTagFilterMode": "Mode:",
+    "LabelTagFilterAllowModeHelp": "If used as part of a deeply nested folder structure, content that is tagged with this mechanism will require parent folders to be tagged as well."
 }

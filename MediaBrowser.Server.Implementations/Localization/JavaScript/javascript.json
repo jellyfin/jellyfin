@@ -276,7 +276,7 @@
     "ButtonStart": "Start",
     "HeaderChannels": "Channels",
     "HeaderMediaFolders": "Media Folders",
-    "HeaderBlockItemsWithNoRating": "Block items with no rating information:",
+    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
     "OptionBlockOthers": "Others",
     "OptionBlockTvShows": "TV Shows",
     "OptionBlockTrailers": "Trailers",
