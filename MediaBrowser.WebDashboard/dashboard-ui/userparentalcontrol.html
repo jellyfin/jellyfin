@@ -41,17 +41,6 @@
                     </div>
                     <br />
 
-                    <div>
-                        <div>
-                            <div class="ui-controlgroup-label" style="display:inline-block;">${LabelAllowContentWithTags}</div>
-                            <button type="button" class="btnAddAllowedTag" data-inline="true" data-mini="true" data-iconpos="notext" data-icon="plus" style="vertical-align:middle;margin: -5px 0 0 1em;">${ButtonAdd}</button>
-                        </div>
-                        <div class="allowedTags" style="margin-top:.5em;">
-
-                        </div>
-                    </div>
-                    <br />
-
                     <div class="accessScheduleSection" style="display:none;">
                         <div data-role="collapsible">
                             <h2>${HeaderAccessSchedule}</h2>
@@ -91,33 +80,6 @@
                                 <li>
                                     <label for="txtBlockedTag">${LabelTag}</label>
                                     <input id="txtBlockedTag" type="text" required="required" />
-                                </li>
-                                <li>
-                                    <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
-                                    <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
-                                </li>
-                            </ul>
-                        </form>
-
-                    </div>
-
-                </div>
-
-                <div data-role="popup" id="popupAllowedTag" class="popup" data-theme="a">
-
-                    <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
-                        <h3 style="margin: .5em;">${HeaderAddTag}</h3>
-                    </div>
-
-                    <div style="padding:10px 5px 0;">
-
-                        <form class="allowedTagForm" style="min-width:210px;">
-
-                            <ul data-role="listview" class="ulForm" style="margin-bottom:10px!important;">
-                                <li>
-                                    <label for="txtAllowedTag">${LabelTag}</label>
-                                    <input id="txtAllowedTag" type="text" required="required" />
-                                    <div class="fieldDescription allowModeHelp">${LabelTagFilterAllowModeHelp}</div>
                                 </li>
                                 <li>
                                     <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
@@ -179,7 +141,6 @@
         </div>
         <script type="text/javascript">
             $('.blockedTagForm').off('submit', UserParentalControlPage.onBlockedTagFormSubmit).on('submit', UserParentalControlPage.onBlockedTagFormSubmit);
-            $('.allowedTagForm').off('submit', UserParentalControlPage.onAllowedTagFormSubmit).on('submit', UserParentalControlPage.onAllowedTagFormSubmit);
             $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
             $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
         </script>

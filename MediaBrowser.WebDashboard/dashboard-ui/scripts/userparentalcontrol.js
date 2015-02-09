@@ -82,7 +82,6 @@
 
         loadUnratedItems(page, user);
         loadBlockedTags(page, user.Policy.BlockedTags);
-        loadAllowedTags(page, user.Policy.AllowedTags);
 
         populateRatings(allParentalRatings, page);
 
@@ -144,40 +143,6 @@
             });
 
             loadBlockedTags(page, newTags);
-        });
-    }
-
-    function loadAllowedTags(page, tags) {
-
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
-
-            var li = '<li>';
-
-            li += '<a href="#">';
-
-            li += '<div style="font-weight:normal;">' + h + '</div>';
-
-            li += '</a>';
-
-            li += '<a class="allowedTag btnDeleteTag" href="#" data-tag="' + h + '"></a>';
-
-            li += '</li>';
-
-            return li;
-
-        }).join('') + '</ul>';
-
-        var elem = $('.allowedTags', page).html(html).trigger('create');
-
-        $('.btnDeleteTag', elem).on('click', function () {
-
-            var tag = this.getAttribute('data-tag');
-
-            var newTags = tags.filter(function (t) {
-                return t != tag;
-            });
-
-            loadAllowedTags(page, newTags);
         });
     }
 
@@ -245,7 +210,6 @@
         user.Policy.AccessSchedules = getSchedulesFromPage(page);
 
         user.Policy.BlockedTags = getBlockedTagsFromPage(page);
-        user.Policy.AllowedTags = getAllowedTagsFromPage(page);
 
         ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
@@ -285,16 +249,6 @@
             var page = $(this).parents('.page');
 
             saveBlockedTag(page);
-
-            // Disable default form submission
-            return false;
-        },
-
-        onAllowedTagFormSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            saveAllowedTag(page);
 
             // Disable default form submission
             return false;
@@ -385,19 +339,6 @@
         $('#popupBlockedTag', page).popup('close');
     }
 
-    function saveAllowedTag(page) {
-
-        var tag = $('#txtAllowedTag', page).val();
-        var tags = getAllowedTagsFromPage(page);
-
-        if (tags.indexOf(tag) == -1) {
-            tags.push(tag);
-            loadAllowedTags(page, tags);
-        }
-
-        $('#popupAllowedTag', page).popup('close');
-    }
-
     function getSchedulesFromPage(page) {
 
         return $('.liSchedule', page).map(function () {
@@ -420,25 +361,10 @@
         }).get();
     }
 
-    function getAllowedTagsFromPage(page) {
-
-        return $('.allowedTag', page).map(function () {
-
-            return this.getAttribute('data-tag');
-
-        }).get();
-    }
-
     function showBlockedTagPopup(page) {
 
         $('#popupBlockedTag', page).popup('open');
         $('#txtBlockedTag', page).val('').focus();
-    }
-
-    function showAllowedTagPopup(page) {
-
-        $('#popupAllowedTag', page).popup('open');
-        $('#txtAllowedTag', page).val('').focus();
     }
 
     $(document).on('pageinit', "#userParentalControlPage", function () {
@@ -454,12 +380,6 @@
         $('.btnAddBlockedTag', page).on('click', function () {
 
             showBlockedTagPopup(page);
-        });
-
-
-        $('.btnAddAllowedTag', page).on('click', function () {
-
-            showAllowedTagPopup(page);
         });
 
         populateHours(page);

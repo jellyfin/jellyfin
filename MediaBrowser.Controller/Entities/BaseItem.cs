@@ -1085,13 +1085,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
-                if (policy.AllowedTags.Length > 0 && IsAllowTagFilterEnforced())
-                {
-                    if (policy.AllowedTags.Any(i => !hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
             }
 
             return true;
