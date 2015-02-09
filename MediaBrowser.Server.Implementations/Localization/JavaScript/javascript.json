@@ -727,7 +727,5 @@
     "SyncJobItemStatusSynced": "Synced",
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
-    "SyncJobItemStatusCancelled": "Cancelled",
-    "MessageBlockContentWithThisTag": "Block all content with this tag",
-    "MessageAllowContentWithThisTag":  "Allow only content with this tag"
+    "SyncJobItemStatusCancelled": "Cancelled"
 }

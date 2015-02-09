@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override bool IsTagFilterEnforced(TagFilterMode mode)
+        protected override bool IsAllowTagFilterEnforced()
         {
             if (this is ICollectionFolder)
             {

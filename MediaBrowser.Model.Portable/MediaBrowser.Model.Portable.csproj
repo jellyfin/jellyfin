@@ -1181,12 +1181,6 @@
     <Compile Include="..\MediaBrowser.Model\Users\PinRedeemResult.cs">
       <Link>Users\PinRedeemResult.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Users\TagFilter.cs">
-      <Link>Users\TagFilter.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Users\TagFilterMode.cs">
-      <Link>Users\TagFilterMode.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Users\UserAction.cs">
       <Link>Users\UserAction.cs</Link>
     </Compile>

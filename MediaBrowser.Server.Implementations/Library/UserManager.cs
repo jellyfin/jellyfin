@@ -168,7 +168,6 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var user in users)
             {
                 await DoPolicyMigration(user).ConfigureAwait(false);
-                await DoBlockedTagMigration(user).ConfigureAwait(false);
             }
 
             // If there are no local users with admin rights, make them all admins
@@ -344,25 +343,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 user.Configuration.HasMigratedToPolicy = true;
                 await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
-            }
-        }
-
-        private async Task DoBlockedTagMigration(User user)
-        {
-            if (user.Policy.BlockedTags != null)
-            {
-                user.Policy.TagFilters = user.Policy
-                    .BlockedTags
-                    .Select(i => new TagFilter
-                    {
-                        Tag = i,
-                        Mode = TagFilterMode.Block
-                    })
-                    .ToArray();
-
-                user.Policy.BlockedTags = null;
-
-                await UpdateUserPolicy(user, user.Policy, false);
             }
         }
 

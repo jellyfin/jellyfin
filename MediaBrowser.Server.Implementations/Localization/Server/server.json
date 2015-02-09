@@ -1356,10 +1356,9 @@
     "HeaderVideoTypes": "Video Types",
     "HeaderYears": "Years",
     "HeaderAddTag": "Add Tag",
-    "LabelBlockOrAllowItemsWithTags": "Block or allow content with tags:",
+    "LabelBlockContentWithTags": "Block content with tags:",
+    "LabelAllowContentWithTags": "Allow only content with tags:",
     "LabelTag": "Tag:",
-    "OptionBlockItemWithTag": "Block all content with this tag",
-    "OptionAllowItemWithTag": "Allow only content with this tag",
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",
     "LabelEnableSingleImageInDidlLimitHelp": "Some devices will not render properly if multiple images are embedded within Didl.",
     "TabActivity": "Activity",
@@ -1372,5 +1371,5 @@
     "TabJobs": "Jobs",
     "TabSyncJobs": "Sync Jobs",
     "LabelTagFilterMode": "Mode:",
-    "LabelTagFilterAllowModeHelp": "If used as part of a deeply nested folder structure, content that is tagged with this mechanism will require parent folders to be tagged as well."
+    "LabelTagFilterAllowModeHelp": "If allowed tags are used as part of a deeply nested folder structure, content that is tagged will require parent folders to be tagged as well."
 }
