@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MediaBrowser.Tests.MediaEncoding.Subtitles
@@ -92,7 +93,7 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles
                                                                                      }
                 };
 
-            var sut = new SrtParser();
+            var sut = new SrtParser(new NullLogger());
 
             var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\unit.srt");
 

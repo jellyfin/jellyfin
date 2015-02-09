@@ -4,7 +4,7 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage">
+    <div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,6 +14,24 @@
                     <a href="syncsettings.html" data-role="button">${TabSettings}</a>
                 </div>
 
+                <div style="text-align:right;margin-top:-30px;">
+                    <button type="button" class="btnSync" data-icon="cloud" data-mini="true" data-inline="true">${ButtonConvertMedia}</button>
+                    <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
+                </div>
+                <br />
+                <div class="supporterPromotion syncPromotion" style="display:none;">
+                    <a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;">
+                        <div>
+                            ${HeaderSyncRequiresSupporterMembership}
+                        </div>
+                        <div>
+                            ${HeaderEnjoyDayTrial}
+                        </div>
+                        <div style="font-weight:normal;font-size:90%;margin-top:5px;">
+                            ${ButtonLearnMore}
+                        </div>
+                    </a>
+                </div>
                 <div class="syncActivity">
 
                 </div>

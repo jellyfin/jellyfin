@@ -127,7 +127,6 @@
             $(document).scrollTop(0);
 
             var html = '';
-
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -151,9 +150,9 @@
                 coverImage: true
             });
 
-            html += pagingHtml;
+            var elem = $('#items', page).html(html).lazyChildren();
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

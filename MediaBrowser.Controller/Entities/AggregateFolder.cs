@@ -32,6 +32,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         /// <summary>
         /// The _virtual children
         /// </summary>
@@ -66,7 +71,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var path = ContainingFolderPath;
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager, directoryService)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths , directoryService)
             {
                 FileInfo = new DirectoryInfo(path),
                 Path = path,

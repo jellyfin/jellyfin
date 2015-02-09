@@ -162,6 +162,7 @@
     <Compile Include="Subtitles\ConfigurationExtension.cs" />
     <Compile Include="Subtitles\OpenSubtitleDownloader.cs" />
     <Compile Include="Subtitles\SubtitleManager.cs" />
+    <Compile Include="TV\DummySeasonProvider.cs" />
     <Compile Include="TV\EpisodeMetadataService.cs" />
     <Compile Include="TV\FanArtTvUpdatesPostScanTask.cs" />
     <Compile Include="TV\FanArtSeasonProvider.cs" />

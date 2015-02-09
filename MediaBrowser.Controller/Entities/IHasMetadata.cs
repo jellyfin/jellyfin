@@ -54,5 +54,10 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the item identities.
         /// </summary>
         List<IItemIdentity> Identities { get; set; }
+
+        /// <summary>
+        /// Afters the metadata refresh.
+        /// </summary>
+        void AfterMetadataRefresh();
     }
 }

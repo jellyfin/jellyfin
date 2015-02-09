@@ -371,111 +371,27 @@ var WizardLibraryPage = {
 
 (function ($, document, window) {
 
-    function pollTasks(page) {
-
-        ApiClient.getScheduledTasks().done(function (tasks) {
-
-            updateTasks(page, tasks);
-        });
-
-    }
-
-    function updateTasks(page, tasks) {
-
-        $('.refreshLibraryPanel', page).removeClass('hide');
-
-        var task = tasks.filter(function (t) {
-
-            return t.Key == 'RefreshLibrary';
-
-        })[0];
-
-        $('.btnRefresh', page).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
-
-        var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-        var progressElem = $('.refreshProgress', page).val(progress);
-
-        if (task.State == 'Running') {
-            progressElem.show();
-        } else {
-            progressElem.hide();
-        }
-
-        var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
-
-        if (lastResult == "Failed") {
-            $('.lastRefreshResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
-        }
-        else if (lastResult == "Cancelled") {
-            $('.lastRefreshResult', page).html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
-        }
-        else if (lastResult == "Aborted") {
-            $('.lastRefreshResult', page).html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
-        } else {
-            $('.lastRefreshResult', page).html(lastResult);
-        }
-    }
-
-    function onWebSocketMessage(e, msg) {
-
-        if (msg.MessageType == "ScheduledTasksInfo") {
-
-            var tasks = msg.Data;
-
-            var page = $.mobile.activePage;
-
-            updateTasks(page, tasks);
-        }
-    }
-
-    $(document).on('pageinit', "#mediaLibraryPage", function () {
+    $(document).on('pageshow', "#mediaLibraryPage", function () {
 
         var page = this;
 
-        $('.btnRefresh', page).on('click', function () {
-
-            var button = this;
-            var id = button.getAttribute('data-taskid');
-
-            ApiClient.startScheduledTask(id).done(function () {
-
-                pollTasks(page);
-            });
-
-        });
-
-    }).on('pageshow', "#mediaLibraryPage", function () {
-
-        var page = this;
-
-        $('.refreshLibraryPanel', page).addClass('hide');
-
-        pollTasks(page);
-
-        var apiClient = ApiClient;
-
-        if (apiClient.isWebSocketOpen()) {
-            apiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-        }
-
-        $(apiClient).on("websocketmessage", onWebSocketMessage).on('websocketopen', function () {
-
-            if (apiClient.isWebSocketOpen()) {
-                apiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-            }
+        // on here
+        $('.btnRefresh', page).taskButton({
+            mode: 'on',
+            progressElem: $('.refreshProgress', page),
+            lastResultElem: $('.lastRefreshResult', page),
+            taskKey: 'RefreshLibrary'
         });
 
     }).on('pagehide', "#mediaLibraryPage", function () {
 
         var page = this;
 
-        var apiClient = ApiClient;
+        // off here
+        $('.btnRefresh', page).taskButton({
+            mode: 'off'
+        });
 
-        if (apiClient.isWebSocketOpen()) {
-            apiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
-        }
-
-        $(apiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

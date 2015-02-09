@@ -48,7 +48,6 @@
             $(document).scrollTop(0);
 
             var html = '';
-
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -56,6 +55,7 @@
                 viewButton: true,
                 showLimit: false
             });
+
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
@@ -67,9 +67,9 @@
                 defaultAction: 'play'
             });
 
-            html += pagingHtml;
+            var elem = $('#items', page).html(html).trigger('create').lazyChildren();
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

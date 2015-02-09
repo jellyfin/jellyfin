@@ -203,7 +203,7 @@ namespace MediaBrowser.ServerApplication
         {
             var fileSystem = new NativeFileSystem(logManager.GetLogger("FileSystem"), false);
 
-            var nativeApp = new WindowsApp
+            var nativeApp = new WindowsApp(fileSystem)
             {
                 IsRunningAsService = runService
             };
@@ -213,7 +213,6 @@ namespace MediaBrowser.ServerApplication
                 options,
                 fileSystem,
                 "MBServer",
-                true,
                 nativeApp);
             
             var initProgress = new Progress<double>();

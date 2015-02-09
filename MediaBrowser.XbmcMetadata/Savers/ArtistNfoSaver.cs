@@ -51,8 +51,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             
             var albums = artist
-                .RecursiveChildren
-                .OfType<MusicAlbum>()
+                .GetRecursiveChildren(i => i is MusicAlbum)
+                .Cast<MusicAlbum>()
                 .ToList();
 
             AddAlbums(albums, writer);

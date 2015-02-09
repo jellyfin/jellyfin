@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Sync;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,11 @@ namespace MediaBrowser.Model.ApiClient
         public static Task<ItemsResult> GetItemsAsync(this IApiClient apiClient, ItemQuery query)
         {
             return apiClient.GetItemsAsync(query, CancellationToken.None);
+        }
+
+        public static Task<SyncDialogOptions> GetSyncOptions(this IApiClient apiClient, SyncJob job)
+        {
+            return apiClient.GetSyncOptions(job.RequestedItemIds, job.UserId, job.ParentId, job.Category);
         }
     }
 }

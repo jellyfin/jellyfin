@@ -23,10 +23,10 @@
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
                 lazy: true,
-                shape: 'homePagePortrait',
+                shape: 'portrait',
                 overlayText: false
 
-            })).trigger('create').createCardMenus();
+            })).lazyChildren().trigger('create');
         });
 
     });

@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Localization;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -14,7 +16,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasPreferredMetadataLanguage, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
@@ -22,12 +24,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public int SeasonCount { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         public Series()
         {
@@ -93,7 +89,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return RecursiveChildren.OfType<Episode>()
+                return GetRecursiveChildren(i => i is Episode)
                         .Select(i => i.DateCreated)
                         .OrderByDescending(i => i)
                         .FirstOrDefault();
@@ -117,9 +113,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom) ?? base.GetUserDataKey();
+            return this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom) ?? base.CreateUserDataKey();
         }
 
         /// <summary>
@@ -137,10 +133,10 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override IEnumerable<string> GetIndexByOptions()
         {
             return new List<string> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
-                {LocalizedStrings.Instance.GetString("YearDispPref")},
+                {"None"}, 
+                {"Performer"},
+                {"Director"},
+                {"Year"},
             };
         }
 
@@ -191,6 +187,85 @@ namespace MediaBrowser.Controller.Entities.TV
                 .Cast<Season>();
         }
 
+        public IEnumerable<Episode> GetEpisodes(User user)
+        {
+            var config = user.Configuration;
+            
+            return GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, bool includeMissing, bool includeVirtualUnaired)
+        {
+            var allEpisodes = GetSeasons(user, true, true)
+                .SelectMany(i => i.GetEpisodes(user, includeMissing, includeVirtualUnaired))
+                .Reverse()
+                .ToList();
+
+            // Specials could appear twice based on above - once in season 0, once in the aired season
+            // This depends on settings for that series
+            // When this happens, remove the duplicate from season 0
+            var returnList = new List<Episode>();
+
+            foreach (var episode in allEpisodes)
+            {
+                if (!returnList.Contains(episode))
+                {
+                    returnList.Insert(0, episode);
+                }
+            }
+
+            return returnList;
+        }
+
+        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            // Refresh bottom up, children first, then the boxset
+            // By then hopefully the  movies within will have Tmdb collection values
+            var items = GetRecursiveChildren().ToList();
+
+            var seasons = items.OfType<Season>().ToList();
+            var otherItems = items.Except(seasons).ToList();
+
+            var totalItems = seasons.Count + otherItems.Count;
+            var numComplete = 0;
+
+            refreshOptions = new MetadataRefreshOptions(refreshOptions);
+            refreshOptions.IsPostRecursiveRefresh = true;
+
+            // Refresh songs
+            foreach (var item in seasons)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            // Refresh current item
+            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            // Refresh all non-songs
+            foreach (var item in otherItems)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            await ProviderManager.RefreshMetadata(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            progress.Report(100);
+        }
+
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)
         {
             var config = user.Configuration;
@@ -206,8 +281,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
         internal IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> additionalEpisodes)
         {
-            var episodes = GetRecursiveChildren(user)
-                .OfType<Episode>();
+            var episodes = GetRecursiveChildren(user, i => i is Episode)
+                .Cast<Episode>();
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
 
@@ -261,8 +336,6 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }
-
-        public string PreferredMetadataLanguage { get; set; }
 
         public SeriesInfo GetLookupInfo()
         {

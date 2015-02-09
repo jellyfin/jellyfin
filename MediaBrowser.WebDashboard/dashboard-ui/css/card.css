@@ -45,7 +45,7 @@
 }
 
 .cardBox {
-    margin: 3px;
+    margin: 2px;
 }
 
 .grayscale {
@@ -80,7 +80,12 @@
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: #fff;
+    margin: 1px;
 }
+
+/*.visualCardBox .cardFooter {
+    padding: 0 2px;
+}*/
 
 .ui-page-theme-b .visualCardBox {
     background: rgb(51, 51, 51);
@@ -124,11 +129,11 @@
     right: 0;
 }
 
-    .cardContent:hover .cardImage {
+    .cardContent:not(.noHoverEffect):hover .cardImage {
         opacity: .5;
     }
 
-/*.preview-overlay-container {
+    /*.preview-overlay-container {
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
@@ -148,19 +153,19 @@
     width: 100%;
 }*/
 
-.cardContent .cardFooter {
-    position: absolute;
-    bottom: 0;
-    background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
-    left: 0;
-    right: 0;
-    color: #fff;
-}
+    .cardContent .cardFooter {
+        position: absolute;
+        bottom: 0;
+        background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* IE10+ */
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%); /* W3C */
+        left: 0;
+        right: 0;
+        color: #fff;
+    }
 
 .cardText {
     text-overflow: ellipsis;
@@ -186,10 +191,6 @@
     left: 0;
     right: 0;
     text-align: center;
-}
-
-.libraryPage .cardDefaultText, .libraryPage .cardText {
-    color: #fff;
 }
 
 .cardContent .cardText {
@@ -218,6 +219,10 @@
 
 .coveredCardImage {
     background-size: cover;
+}
+
+.centeredCardImage {
+    background-position: center center;
 }
 
 .bannerCard {
@@ -368,12 +373,8 @@
         width: 12.5%;
     }
 
-    .backdropCard {
-        width: 16.666666666666666666666666666667%;
-    }
-
     .portraitCard {
-        width: 10%;
+        width: 12.5%;
     }
 
     .smallBackdropCard {
@@ -388,20 +389,23 @@
         width: 10%;
     }
 
+    .portraitCard {
+        width: 10%;
+    }
+
     .smallBackdropCard {
         width: 10%;
     }
 }
 
+@media all and (min-width: 2200px) {
 
-@media all and (min-width: 1920px) {
+    .backdropCard {
+        width: 16.666666666666666666666666666667%;
+    }
 
     .bannerCard {
         width: 25%;
-    }
-
-    .portraitCard {
-        width: 9.0909090909090909090909090909091%;
     }
 }
 
@@ -480,105 +484,6 @@
 
     .detailPageSquareCard {
         width: 20%;
-    }
-}
-
-
-/** homePageBackdropCard */
-.homePageBackdropCard .cardPadder {
-    padding-bottom: 56.25%;
-}
-
-
-.homePageBackdropCard {
-    width: 50%;
-}
-
-@media all and (min-width: 640px) {
-
-    .homePageBackdropCard {
-        width: 33.3%;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .homePageBackdropCard {
-        width: 25%;
-    }
-}
-
-@media all and (min-width: 1920px) {
-
-    .homePageBackdropCard {
-        width: 16.666666666666666666666666666667%;
-    }
-}
-
-@media all and (min-width: 2200px) {
-
-    .homePageBackdropCard {
-        width: 16.666666666666666666666666666667%;
-    }
-}
-
-
-/** homePagePortraitCard */
-.homePagePortraitCard .cardPadder {
-    padding-bottom: 150%;
-}
-
-
-.homePagePortraitCard {
-    width: 33.3%;
-}
-
-@media all and (min-width: 540px) {
-
-    .homePagePortraitCard {
-        width: 25%;
-    }
-}
-
-@media all and (min-width: 800px) {
-
-    .homePagePortraitCard {
-        width: 20%;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .homePagePortraitCard {
-        width: 16.666666666666666666666666666667%;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .homePagePortraitCard {
-        width: 14.285714285714285714285714285714%;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .homePagePortraitCard {
-        width: 12.5%;
-    }
-}
-
-@media all and (min-width: 1920px) {
-
-    .homePagePortraitCard {
-        width: 10%;
-    }
-}
-
-@media all and (min-width: 2200px) {
-
-    .homePagePortraitCard {
-        width: 9.09090909091%;
     }
 }
 

@@ -18,6 +18,24 @@
         return 'playlists' + (query.ParentId || '');
     }
 
+    function getItemsFunction(itemsQuery) {
+
+        itemsQuery = $.extend({}, itemsQuery);
+
+        return function (index, limit, fields) {
+
+            itemsQuery.StartIndex = index;
+            itemsQuery.Limit = limit;
+            itemsQuery.Fields = fields;
+
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), itemsQuery);
+
+        };
+
+    }
+
+    var _childrenItemsFunction = null;
+
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -33,6 +51,8 @@
             var result = response1[0];
             var user = response2[0];
             var item = response3[0];
+
+            _childrenItemsFunction = getItemsFunction(query);
 
             currentItem = item;
 
@@ -54,15 +74,13 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
 
@@ -83,7 +101,6 @@
                     });
                 }
 
-                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
 
             } else {
@@ -91,7 +108,7 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -187,21 +204,11 @@
 
         }).on('playallfromhere', function (e, index) {
 
-            LibraryBrowser.playAllFromHere({
-                
-                Recursive: true,
-                ParentId: query.ParentId
-
-            }, index);
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
         }).on('queueallfromhere', function (e, index) {
 
-            LibraryBrowser.queueAllFromHere({
-
-                Recursive: true,
-                ParentId: query.ParentId
-
-            }, index);
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 

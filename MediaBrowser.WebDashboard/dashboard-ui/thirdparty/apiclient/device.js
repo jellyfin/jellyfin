@@ -1,4 +1,4 @@
-﻿(function (globalScope, store) {
+﻿(function (globalScope) {
 
     if (!globalScope.MediaBrowser) {
         globalScope.MediaBrowser = {};
@@ -27,4 +27,4 @@
         return CryptoJS.SHA1(keys.join('|')).toString();
     };
 
-})(window, store);
+})(window);

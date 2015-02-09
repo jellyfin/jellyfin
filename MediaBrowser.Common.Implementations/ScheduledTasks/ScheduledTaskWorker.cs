@@ -108,13 +108,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         private TaskResult _lastExecutionResult;
         /// <summary>
-        /// The _last execution resultinitialized
-        /// </summary>
-        private bool _lastExecutionResultinitialized;
-        /// <summary>
         /// The _last execution result sync lock
         /// </summary>
-        private object _lastExecutionResultSyncLock = new object();
+        private readonly object _lastExecutionResultSyncLock = new object();
         /// <summary>
         /// Gets the last execution result.
         /// </summary>
@@ -123,38 +119,39 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _lastExecutionResult, ref _lastExecutionResultinitialized, ref _lastExecutionResultSyncLock, () =>
+                if (_lastExecutionResult == null)
                 {
-                    var path = GetHistoryFilePath();
+                    lock (_lastExecutionResultSyncLock)
+                    {
+                        if (_lastExecutionResult == null)
+                        {
+                            var path = GetHistoryFilePath();
 
-                    try
-                    {
-                        return JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            try
+                            {
+                                return JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                            }
+                            catch (DirectoryNotFoundException)
+                            {
+                                // File doesn't exist. No biggie
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                // File doesn't exist. No biggie
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.ErrorException("Error deserializing {0}", ex, path);
+                            }
+                        }
                     }
-                    catch (DirectoryNotFoundException)
-                    {
-                        // File doesn't exist. No biggie
-                        return null;
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        // File doesn't exist. No biggie
-                        return null;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error deserializing {0}", ex, path);
-                        return null;
-                    }
-                });
+                }
 
                 return _lastExecutionResult;
             }
             private set
             {
                 _lastExecutionResult = value;
-
-                _lastExecutionResultinitialized = value != null;
             }
         }
 
@@ -227,13 +224,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         private IEnumerable<ITaskTrigger> _triggers;
         /// <summary>
-        /// The _triggers initialized
-        /// </summary>
-        private bool _triggersInitialized;
-        /// <summary>
         /// The _triggers sync lock
         /// </summary>
-        private object _triggersSyncLock = new object();
+        private readonly object _triggersSyncLock = new object();
         /// <summary>
         /// Gets the triggers that define when the task will run
         /// </summary>
@@ -243,7 +236,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _triggers, ref _triggersInitialized, ref _triggersSyncLock, LoadTriggers);
+                if (_triggers == null)
+                {
+                    lock (_triggersSyncLock)
+                    {
+                        if (_triggers == null)
+                        {
+                            _triggers = LoadTriggers();
+                        }
+                    }
+                }
 
                 return _triggers;
             }
@@ -261,8 +263,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 }
 
                 _triggers = value.ToList();
-
-                _triggersInitialized = true;
 
                 ReloadTriggerEvents(false);
 
@@ -335,12 +335,30 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             trigger.Start(false);
         }
 
+        private Task _currentTask;
+
         /// <summary>
         /// Executes the task
         /// </summary>
         /// <returns>Task.</returns>
         /// <exception cref="System.InvalidOperationException">Cannot execute a Task that is already running</exception>
         public async Task Execute()
+        {
+            var task = ExecuteInternal();
+
+            _currentTask = task;
+
+            try
+            {
+                await task.ConfigureAwait(false);
+            }
+            finally
+            {
+                _currentTask = null;
+            }
+        }
+
+        private async Task ExecuteInternal()
         {
             // Cancel the current execution, if any
             if (CurrentCancellationTokenSource != null)
@@ -544,6 +562,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 Id = Id
             };
 
+            var hasKey = ScheduledTask as IHasKey;
+            if (hasKey != null)
+            {
+                result.Key = hasKey.Key;
+            }
+
             if (ex != null)
             {
                 result.ErrorMessage = ex.Message;
@@ -579,14 +603,60 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 DisposeTriggers();
 
-                if (State == TaskState.Running)
+                var wassRunning = State == TaskState.Running;
+                var startTime = CurrentExecutionStartTime;
+
+                var token = CurrentCancellationTokenSource;
+                if (token != null)
                 {
-                    OnTaskCompleted(CurrentExecutionStartTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
+                    try
+                    {
+                        Logger.Debug(Name + ": Cancelling");
+                        token.Cancel();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error calling CancellationToken.Cancel();", ex);
+                    }
+                }
+                var task = _currentTask;
+                if (task != null)
+                {
+                    try
+                    {
+                        Logger.Debug(Name + ": Waiting on Task");
+                        var exited = Task.WaitAll(new[] { task }, 2000);
+
+                        if (exited)
+                        {
+                            Logger.Debug(Name + ": Task exited");
+                        }
+                        else
+                        {
+                            Logger.Debug(Name + ": Timed out waiting for task to stop");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error calling Task.WaitAll();", ex);
+                    }
                 }
 
-                if (CurrentCancellationTokenSource != null)
+                if (token != null)
                 {
-                    CurrentCancellationTokenSource.Dispose();
+                    try
+                    {
+                        Logger.Debug(Name + ": Disposing CancellationToken");
+                        token.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error calling CancellationToken.Dispose();", ex);
+                    }
+                }
+                if (wassRunning)
+                {
+                    OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
                 }
             }
         }

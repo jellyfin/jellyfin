@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -37,6 +37,13 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
+
+        public override bool CanDownload()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
 
         /// <summary>
         /// Gets or sets the tags.
@@ -88,7 +95,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public List<string> MultiPartGameFiles { get; set; }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var id = this.GetProviderId(MetadataProviders.Gamesdb);
 
@@ -96,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return "Game-Gamesdb-" + id;
             }
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         public override IEnumerable<string> GetDeletePaths()

@@ -62,20 +62,14 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
             {
-                string mx = null;
-                args.Headers.TryGetValue("mx", out mx);
-                int delaySeconds;
-                if (!string.IsNullOrWhiteSpace(mx) &&
-                    int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
-                    && delaySeconds > 0)
+                TimeSpan delay = GetSearchDelay(args.Headers);
+                
+                if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
-                    if (_config.GetDlnaConfiguration().EnableDebugLogging)
-                    {
-                        _logger.Debug("Delaying search response by {0} seconds", delaySeconds);
-                    }
-
-                    await Task.Delay(delaySeconds * 1000).ConfigureAwait(false);
+                    _logger.Debug("Delaying search response by {0} seconds", delay.TotalSeconds);
                 }
+                
+                await Task.Delay(delay).ConfigureAwait(false);                
 
                 RespondToSearch(args.EndPoint, args.Headers["st"]);
             }
@@ -135,17 +129,50 @@ namespace MediaBrowser.Dlna.Ssdp
             int sendCount = 1)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
+            var queued = false;
 
-            var dgram = new Datagram(endpoint, localAddress, _logger, msg, sendCount, ignoreBindFailure);
-
-            if (_messageQueue.Count == 0)
+            for (var i = 0; i < sendCount; i++)
             {
-                dgram.Send();
-                return;
+                var dgram = new Datagram(endpoint, localAddress, _logger, msg, ignoreBindFailure);
+
+                if (_messageQueue.Count == 0)
+                {
+                    dgram.Send();
+                }
+                else
+                {
+                    _messageQueue.Enqueue(dgram);
+                    queued = true;
+                }
             }
 
-            _messageQueue.Enqueue(dgram);
-            StartQueueTimer();
+            if (queued)
+            {
+                StartQueueTimer();
+            }
+        }
+
+        /// <summary>
+        /// According to the spec: http://www.upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.0-20080424.pdf
+        /// Device responses should be delayed a random duration between 0 and this many seconds to balance 
+        /// load for the control point when it processes responses.  In my testing kodi times out after mx      
+        /// so we will generate from mx - 1
+        /// </summary>
+        /// <param name="headers">The mx headers</param>
+        /// <returns>A timepsan for the amount to delay before returning search result.</returns>
+        private TimeSpan GetSearchDelay(Dictionary<string, string> headers)
+        {
+            string mx;
+            headers.TryGetValue("mx", out mx);
+            int delaySeconds = 0;
+            if (!string.IsNullOrWhiteSpace(mx)
+                && int.TryParse(mx, NumberStyles.Any, CultureInfo.InvariantCulture, out delaySeconds)
+                && delaySeconds > 1)
+            {
+                delaySeconds = new Random().Next(delaySeconds - 1);
+            }
+
+            return TimeSpan.FromSeconds(delaySeconds);
         }
 
         private void RespondToSearch(EndPoint endpoint, string deviceType)
@@ -172,8 +199,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null, true);
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true);
+                    SendDatagram(header, values, endpoint, null, true, 1);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true, 1);
                     //SendDatagram(header, values, endpoint, null, true);
 
                     if (_config.GetDlnaConfiguration().EnableDebugLogging)
@@ -191,36 +218,21 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (_queueTimer == null)
                 {
-                    _queueTimer = new Timer(QueueTimerCallback, null, 1000, Timeout.Infinite);
+                    _queueTimer = new Timer(QueueTimerCallback, null, 500, Timeout.Infinite);
                 }
                 else
                 {
-                    _queueTimer.Change(1000, Timeout.Infinite);
+                    _queueTimer.Change(500, Timeout.Infinite);
                 }
             }
         }
 
         private void QueueTimerCallback(object state)
         {
-            while (_messageQueue.Count != 0)
+            Datagram msg;
+            while (_messageQueue.TryDequeue(out msg))
             {
-                Datagram msg;
-                if (!_messageQueue.TryPeek(out msg))
-                {
-                    continue;
-                }
-
-                if (msg != null && (!_isDisposed || msg.TotalSendCount > 1))
-                {
-                    msg.Send();
-                    if (msg.SendCount > msg.TotalSendCount)
-                    {
-                        _messageQueue.TryDequeue(out msg);
-                    }
-                    break;
-                }
-
-                _messageQueue.TryDequeue(out msg);
+                msg.Send();
             }
 
             _datagramPosted.Set();

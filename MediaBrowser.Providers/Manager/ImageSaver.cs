@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -9,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -183,7 +182,7 @@ namespace MediaBrowser.Providers.Manager
                             currentFile.Attributes &= ~FileAttributes.Hidden;
                         }
 
-                        currentFile.Delete();
+                        _fileSystem.DeleteFile(currentFile.FullName);
                     }
                 }
                 finally
@@ -233,7 +232,8 @@ namespace MediaBrowser.Providers.Manager
 
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
-                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken)
+                            .ConfigureAwait(false);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)
@@ -243,6 +243,11 @@ namespace MediaBrowser.Providers.Manager
                     // Add back the attribute
                     file.Attributes |= FileAttributes.Hidden;
                 }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.Error("Error saving image to {0}", ex, path);
+                throw new Exception(string.Format("Error saving image to {0}", path), ex);
             }
             finally
             {

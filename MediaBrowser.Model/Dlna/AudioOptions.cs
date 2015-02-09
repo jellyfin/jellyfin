@@ -48,6 +48,17 @@ namespace MediaBrowser.Model.Dlna
         public int? AudioTranscodingBitrate { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports direct remote content].
+        /// </summary>
+        /// <value><c>true</c> if [supports direct remote content]; otherwise, <c>false</c>.</value>
+        public bool SupportsDirectRemoteContent { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports custom HTTP headers].
+        /// </summary>
+        /// <value><c>true</c> if [supports custom HTTP headers]; otherwise, <c>false</c>.</value>
+        public bool SupportsCustomHttpHeaders { get; set; }
+        
+        /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>

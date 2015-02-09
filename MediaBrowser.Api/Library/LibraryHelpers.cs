@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.Library
 
             if (!string.IsNullOrEmpty(shortcut))
             {
-                File.Delete(shortcut);
+                fileSystem.DeleteFile(shortcut);
             }
         }
 

@@ -50,7 +50,9 @@ namespace MediaBrowser.Api.Music
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarAlbums request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
@@ -75,14 +77,14 @@ namespace MediaBrowser.Api.Music
             var album1 = (MusicAlbum)item1;
             var album2 = (MusicAlbum)item2;
 
-            var artists1 = album1.GetRecursiveChildren()
-                .OfType<Audio>()
+            var artists1 = album1.GetRecursiveChildren(i => i is IHasArtist)
+                .Cast<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var artists2 = album2.GetRecursiveChildren()
-                .OfType<Audio>()
+            var artists2 = album2.GetRecursiveChildren(i => i is IHasArtist)
+                .Cast<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);

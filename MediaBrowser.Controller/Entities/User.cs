@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The password.</value>
         public string Password { get; set; }
-        public string LocalPassword { get; set; }
+        public string EasyPassword { get; set; }
 
         public string ConnectUserName { get; set; }
         public string ConnectUserId { get; set; }
@@ -62,6 +62,7 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -74,6 +75,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -166,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If only the casing is changing, leave the file system alone
-            if (!UsesIdForConfigurationPath && !newName.Equals(Name, StringComparison.OrdinalIgnoreCase))
+            if (!UsesIdForConfigurationPath && !string.Equals(newName, Name, StringComparison.OrdinalIgnoreCase))
             {
                 UsesIdForConfigurationPath = true;
 
@@ -177,7 +179,7 @@ namespace MediaBrowser.Controller.Entities
                 // Exceptions will be thrown if these paths already exist
                 if (Directory.Exists(newConfigDirectory))
                 {
-                    Directory.Delete(newConfigDirectory, true);
+                    FileSystem.DeleteDirectory(newConfigDirectory, true);
                 }
 
                 if (Directory.Exists(oldConfigurationDirectory))
@@ -227,16 +229,16 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         private string GetConfigurationDirectoryPath(string username)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException("username");
-            }
-
             var parentPath = ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath;
 
             // Legacy
             if (!UsesIdForConfigurationPath)
             {
+                if (string.IsNullOrEmpty(username))
+                {
+                    throw new ArgumentNullException("username");
+                }
+
                 var safeFolderName = FileSystem.GetValidFilename(username);
 
                 return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, safeFolderName);

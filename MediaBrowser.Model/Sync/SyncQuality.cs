@@ -16,6 +16,10 @@ namespace MediaBrowser.Model.Sync
         /// <summary>
         /// The best
         /// </summary>
-        High = 2
+        High = 2,
+        /// <summary>
+        /// The original
+        /// </summary>
+        Original = 3
     }
 }

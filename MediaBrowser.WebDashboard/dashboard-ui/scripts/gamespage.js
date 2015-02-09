@@ -32,17 +32,16 @@
 
             var html = '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (view == "List") {
 
@@ -51,7 +50,7 @@
                     context: 'games',
                     sortBy: query.SortBy
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -74,10 +73,11 @@
                 });
             }
 
+            $('#items', page).html(html).lazyChildren();
 
-            html += pagingHtml;
-
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                $('#items', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

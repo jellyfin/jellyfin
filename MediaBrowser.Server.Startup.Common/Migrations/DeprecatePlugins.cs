@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using System.IO;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
@@ -6,10 +7,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
     public class DeprecatePlugins : IVersionMigration
     {
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public DeprecatePlugins(IServerApplicationPaths appPaths)
+        public DeprecatePlugins(IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public void Run()
@@ -21,7 +24,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
         {
             try
             {
-                File.Delete(Path.Combine(_appPaths.PluginsPath, filename));
+                _fileSystem.DeleteFile(Path.Combine(_appPaths.PluginsPath, filename));
             }
             catch
             {

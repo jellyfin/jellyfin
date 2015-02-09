@@ -41,7 +41,7 @@
             $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
                 showLocationTypeIndicator: false,
-                shape: "homePageBackdrop",
+                shape: "backdrop",
                 showTitle: true,
                 showPremiereDate: true,
                 showPremiereDateIndex: true,
@@ -49,7 +49,7 @@
                 context: context || 'home-upcoming',
                 lazy: true,
 
-            })).trigger('create').createCardMenus();
+            })).lazyChildren();
         });
     });
 

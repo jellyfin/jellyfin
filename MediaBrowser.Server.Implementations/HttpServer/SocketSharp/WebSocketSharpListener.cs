@@ -1,13 +1,14 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Implementations.Logging;
 using ServiceStack;
 using ServiceStack.Web;
+using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SocketHttpListener.Net;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -17,11 +18,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
+        private readonly string  _certificatePath ;
 
-        public WebSocketSharpListener(ILogger logger, Action<string> endpointListener)
+        public WebSocketSharpListener(ILogger logger, Action<string> endpointListener, 
+            string certificatePath)
         {
             _logger = logger;
             _endpointListener = endpointListener;
+            _certificatePath = certificatePath;
         }
 
         public Action<Exception, IRequest> ErrorHandler { get; set; }
@@ -33,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(new SocketSharpLogger(_logger));
+                _listener = new HttpListener(new PatternsLogger(_logger), _certificatePath);
 
             foreach (var prefix in urlPrefixes)
             {

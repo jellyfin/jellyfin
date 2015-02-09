@@ -90,7 +90,7 @@
                 fileOptions.includeFiles = options.includeFiles;
             }
 
-            options.header = options.header || Globalize.translate('HeaderSelectMediaPath');
+            options.header = options.header || Globalize.translate('HeaderSelectPath');
             options.instruction = options.instruction || "";
 
             var html = '<div data-role="popup" id="popupDirectoryPicker" class="popup" style="min-width:65%;">';

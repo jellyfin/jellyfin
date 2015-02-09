@@ -1,14 +1,13 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -19,7 +18,8 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public bool IsAccessedByName { get; set; }
         public List<string> ProductionLocations { get; set; }
-        
+
+        [IgnoreDataMember]
         public override bool IsFolder
         {
             get
@@ -32,6 +32,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool SupportsAddingToPlaylist
         {
             get { return true; }
+        }
+
+        public override bool CanDelete()
+        {
+            return !IsAccessedByName;
         }
 
         protected override IEnumerable<BaseItem> ActualChildren
@@ -68,7 +73,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return GetUserDataKey(this);
         }
@@ -78,6 +83,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -90,6 +96,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -122,80 +129,43 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = RecursiveChildren.ToList();
+            var items = GetRecursiveChildren().ToList();
 
             var songs = items.OfType<Audio>().ToList();
 
             var others = items.Except(songs).ToList();
 
             var totalItems = songs.Count + others.Count;
-            var percentages = new Dictionary<Guid, double>(totalItems);
-
-            var tasks = new List<Task>();
+            var numComplete = 0;
 
             // Refresh songs
             foreach (var item in songs)
             {
-                if (tasks.Count >= 2)
-                {
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-                    tasks.Clear();
-                }
-
                 cancellationToken.ThrowIfCancellationRequested();
-                var innerProgress = new ActionableProgress<double>();
 
-                // Avoid implicitly captured closure
-                var currentChild = item;
-                innerProgress.RegisterAction(p =>
-                {
-                    lock (percentages)
-                    {
-                        percentages[currentChild.Id] = p / 100;
+                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
-                        var percent = percentages.Values.Sum();
-                        percent /= totalItems;
-                        percent *= 100;
-                        progress.Report(percent);
-                    }
-                });
-
-                var taskChild = item;
-                tasks.Add(Task.Run(async () => await RefreshItem(taskChild, refreshOptions, innerProgress, cancellationToken).ConfigureAwait(false), cancellationToken));
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            tasks.Clear();
 
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-            
+
             // Refresh all non-songs
             foreach (var item in others)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // Avoid implicitly captured closure
-                var currentChild = item;
-
                 await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                lock (percentages)
-                {
-                    percentages[currentChild.Id] = 1;
 
-                    var percent = percentages.Values.Sum();
-                    percent /= totalItems;
-                    percent *= 100;
-                    progress.Report(percent);
-                }
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
             }
-
-            progress.Report(100);
-        }
-
-        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }
@@ -204,7 +174,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var info = GetItemLookupInfo<ArtistInfo>();
 
-            info.SongInfos = RecursiveChildren.OfType<Audio>()
+            info.SongInfos = GetRecursiveChildren(i => i is Audio)
+                .Cast<Audio>()
                 .Select(i => i.GetLookupInfo())
                 .ToList();
 
@@ -213,9 +184,16 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.OfType<IHasArtist>()
-                .Where(i => i.HasArtist(Name))
-                .Cast<BaseItem>();
+            return inputItems.Where(GetItemFilter());
+        }
+
+        public Func<BaseItem, bool> GetItemFilter()
+        {
+            return i =>
+            {
+                var hasArtist = i as IHasArtist;
+                return hasArtist != null && hasArtist.HasArtist(Name);
+            };
         }
     }
 }

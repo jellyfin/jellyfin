@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
@@ -40,6 +38,11 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
+        public override bool IsAuthorizedToDelete(User user)
+        {
+            return true;
+        }
+
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
@@ -50,9 +53,16 @@ namespace MediaBrowser.Controller.Playlists
             return GetPlayableItems(user);
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
         {
-            return GetPlayableItems(user);
+            var items = GetPlayableItems(user);
+
+            if (filter != null)
+            {
+                items = items.Where(filter);
+            }
+
+            return items;
         }
 
         public IEnumerable<Tuple<LinkedChild, BaseItem>> GetManageableItems()
@@ -76,75 +86,51 @@ namespace MediaBrowser.Controller.Playlists
                 .Where(m => string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem i, User user)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user)
         {
-            var musicGenre = i as MusicGenre;
+            var musicGenre = item as MusicGenre;
             if (musicGenre != null)
             {
+                Func<BaseItem, bool> filter = i => i is Audio && i.Genres.Contains(musicGenre.Name, StringComparer.OrdinalIgnoreCase);
+
                 var items = user == null
-                    ? LibraryManager.RootFolder.GetRecursiveChildren()
-                    : user.RootFolder.GetRecursiveChildren(user, true);
+                    ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
+                    : user.RootFolder.GetRecursiveChildren(user, filter);
 
-                var songs = items
-                    .OfType<Audio>()
-                    .Where(a => a.Genres.Contains(musicGenre.Name, StringComparer.OrdinalIgnoreCase));
-
-                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
-            var musicArtist = i as MusicArtist;
+            var musicArtist = item as MusicArtist;
             if (musicArtist != null)
             {
+                Func<BaseItem, bool> filter = i =>
+                {
+                    var audio = i as Audio;
+                    return audio != null && audio.HasArtist(musicArtist.Name);
+                };
+
                 var items = user == null
-                    ? LibraryManager.RootFolder.GetRecursiveChildren()
-                    : user.RootFolder.GetRecursiveChildren(user, true);
+                    ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
+                    : user.RootFolder.GetRecursiveChildren(user, filter);
 
-                var songs = items
-                    .OfType<Audio>()
-                    .Where(a => a.HasArtist(musicArtist.Name));
-
-                return LibraryManager.Sort(songs, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
+                return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
-            // Grab these explicitly to avoid the sorting that will happen below
-            var collection = i as BoxSet;
-            if (collection != null)
-            {
-                var items = user == null
-                    ? collection.Children
-                    : collection.GetChildren(user, true);
-
-                return items
-                   .Where(m => !m.IsFolder);
-            }
-
-            // Grab these explicitly to avoid the sorting that will happen below
-            var season = i as Season;
-            if (season != null)
-            {
-                var items = user == null
-                    ? season.Children
-                    : season.GetChildren(user, true);
-
-                return items
-                   .Where(m => !m.IsFolder);
-            }
-
-            var folder = i as Folder;
-
+            var folder = item as Folder;
             if (folder != null)
             {
                 var items = user == null
-                    ? folder.GetRecursiveChildren()
-                    : folder.GetRecursiveChildren(user, true);
+                    ? folder.GetRecursiveChildren(m => !m.IsFolder)
+                    : folder.GetRecursiveChildren(user, m => !m.IsFolder);
 
-                items = items
-                   .Where(m => !m.IsFolder);
-
+                if (folder.IsPreSorted)
+                {
+                    return items;
+                }
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
             }
 
-            return new[] { i };
+            return new[] { item };
         }
 
         [IgnoreDataMember]

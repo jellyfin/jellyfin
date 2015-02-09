@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
@@ -179,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -392,7 +393,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
-            var path = Path.Combine(_config.ApplicationPaths.ItemsByNamePath, "channels", _fileSystem.GetValidFilename(channelInfo.Name));
+            var id = GetInternalChannelId(channelInfo.Name);
+
+            var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
             var fileInfo = new DirectoryInfo(path);
 
@@ -412,8 +415,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 isNew = true;
             }
-
-            var id = GetInternalChannelId(channelInfo.Name);
 
             var item = _libraryManager.GetItemById(id) as Channel;
 
@@ -555,7 +556,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
+            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user)
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -822,7 +823,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -971,7 +972,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = internalResult.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
+            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1262,8 +1263,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var mediaSource = info.MediaSources.FirstOrDefault();
 
                 item.Path = mediaSource == null ? null : mediaSource.Path;
-
-                item.DisplayMediaType = channelMediaItem.ContentType.ToString();
             }
 
             if (isNew)
@@ -1492,7 +1491,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
-                File.Delete(response.TempFilePath);
+                _fileSystem.DeleteFile(response.TempFilePath);
 
                 throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
             }
@@ -1501,7 +1500,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             try
             {
-                File.Delete(response.TempFilePath);
+                _fileSystem.DeleteFile(response.TempFilePath);
             }
             catch
             {

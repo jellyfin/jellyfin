@@ -18,27 +18,36 @@
                         </li>
                     </ul>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderLibraryAccess}</h2>
+                    <div class="folderAccessContainer">
+                        <div class="ui-controlgroup-label">${HeaderLibraryAccess}</div>
                         <div>
-                            <br />
-                            <div class="mediaFolderAccess">
-                            </div>
+                            <label for="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</label>
+                            <input type="checkbox" id="chkEnableAllFolders" />
                             <div class="fieldDescription">${LibraryAccessHelp}</div>
+                        </div>
+                        <div class="folderAccessListContainer">
                             <br />
+                            <div class="folderAccess">
+                            </div>
                         </div>
                     </div>
-                    <div data-role="collapsible" class="channelAccessContainer" style="display:none;">
-                        <h2>${HeaderChannelAccess}</h2>
+                    <br />
+                    <br />
+                    <div class="channelAccessContainer" style="display:none;">
+                        <div class="ui-controlgroup-label">${HeaderChannelAccess}</div>
                         <div>
+                            <label for="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</label>
+                            <input type="checkbox" id="chkEnableAllChannels" />
+                            <div class="fieldDescription">${ChannelAccessHelp}</div>
+                        </div>
+                        <div class="channelAccessListContainer">
                             <br />
                             <div class="channelAccess">
                             </div>
-                            <div class="fieldDescription">${ChannelAccessHelp}</div>
-                            <br />
                         </div>
                     </div>
 
+                    <br />
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>

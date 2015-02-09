@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -70,8 +71,9 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IDtoService> _dtoServiceFactory;
         private readonly Func<IConnectManager> _connectFactory;
         private readonly IServerApplicationHost _appHost;
+        private readonly IFileSystem _fileSystem;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -82,6 +84,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _connectFactory = connectFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
+            _fileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -204,7 +207,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return username;
             }
-            
+
             // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
             var builder = new StringBuilder();
 
@@ -272,9 +275,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetLocalPasswordHash(User user)
         {
-            return string.IsNullOrEmpty(user.LocalPassword)
+            return string.IsNullOrEmpty(user.EasyPassword)
                 ? GetSha1String(string.Empty)
-                : user.LocalPassword;
+                : user.EasyPassword;
         }
 
         private bool IsPasswordEmpty(string passwordHash)
@@ -329,22 +332,12 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (!user.Configuration.HasMigratedToPolicy)
             {
-                user.Policy.AccessSchedules = user.Configuration.AccessSchedules;
-                user.Policy.BlockedChannels = user.Configuration.BlockedChannels;
-                user.Policy.BlockedMediaFolders = user.Configuration.BlockedMediaFolders;
-                user.Policy.BlockedTags = user.Configuration.BlockedTags;
                 user.Policy.BlockUnratedItems = user.Configuration.BlockUnratedItems;
                 user.Policy.EnableContentDeletion = user.Configuration.EnableContentDeletion;
                 user.Policy.EnableLiveTvAccess = user.Configuration.EnableLiveTvAccess;
                 user.Policy.EnableLiveTvManagement = user.Configuration.EnableLiveTvManagement;
                 user.Policy.EnableMediaPlayback = user.Configuration.EnableMediaPlayback;
-                user.Policy.EnableRemoteControlOfOtherUsers = user.Configuration.EnableRemoteControlOfOtherUsers;
-                user.Policy.EnableSharedDeviceControl = user.Configuration.EnableSharedDeviceControl;
-                user.Policy.EnableUserPreferenceAccess = user.Configuration.EnableUserPreferenceAccess;
                 user.Policy.IsAdministrator = user.Configuration.IsAdministrator;
-                user.Policy.IsDisabled = user.Configuration.IsDisabled;
-                user.Policy.IsHidden = user.Configuration.IsHidden;
-                user.Policy.MaxParentalRating = user.Configuration.MaxParentalRating;
 
                 await UpdateUserPolicy(user, user.Policy, false);
 
@@ -362,18 +355,20 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var passwordHash = GetPasswordHash(user);
 
-            var hasConfiguredDefaultPassword = !IsPasswordEmpty(passwordHash);
+            var hasConfiguredPassword = !IsPasswordEmpty(passwordHash);
+            var hasConfiguredEasyPassword = !IsPasswordEmpty(GetLocalPasswordHash(user));
 
             var hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
-                !IsPasswordEmpty(GetLocalPasswordHash(user)) :
-                hasConfiguredDefaultPassword;
+                hasConfiguredEasyPassword :
+                hasConfiguredPassword;
 
             var dto = new UserDto
             {
                 Id = user.Id.ToString("N"),
                 Name = user.Name,
                 HasPassword = hasPassword,
-                HasConfiguredPassword = hasConfiguredDefaultPassword,
+                HasConfiguredPassword = hasConfiguredPassword,
+                HasConfiguredEasyPassword = hasConfiguredEasyPassword,
                 LastActivityDate = user.LastActivityDate,
                 LastLoginDate = user.LastLoginDate,
                 Configuration = user.Configuration,
@@ -403,6 +398,21 @@ namespace MediaBrowser.Server.Implementations.Library
                     _logger.ErrorException("Error generating PrimaryImageAspectRatio for {0}", ex, user.Name);
                 }
             }
+
+            return dto;
+        }
+
+        public UserDto GetOfflineUserDto(User user, string deviceId)
+        {
+            var dto = GetUserDto(user);
+
+            var offlinePasswordHash = GetLocalPasswordHash(user);
+            dto.HasPassword = !IsPasswordEmpty(offlinePasswordHash);
+
+            // Hash the pin with the device Id to create a unique result for this device
+            dto.OfflinePassword = GetSha1String(offlinePasswordHash + deviceId);
+
+            dto.ServerName = _appHost.FriendlyName;
 
             return dto;
         }
@@ -591,7 +601,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    File.Delete(configPath);
+                    _fileSystem.DeleteFile(configPath);
                 }
                 catch (IOException ex)
                 {
@@ -620,18 +630,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return ChangePassword(user, GetSha1String(string.Empty));
         }
 
-        /// <summary>
-        /// Changes the password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="newPasswordSha1">The new password sha1.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// user
-        /// or
-        /// newPassword
-        /// </exception>
-        /// <exception cref="System.ArgumentException">Passwords for guests cannot be changed.</exception>
+        public Task ResetEasyPassword(User user)
+        {
+            return ChangeEasyPassword(user, GetSha1String(string.Empty));
+        }
+
         public async Task ChangePassword(User user, string newPasswordSha1)
         {
             if (user == null)
@@ -649,6 +652,29 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             user.Password = newPasswordSha1;
+
+            await UpdateUser(user).ConfigureAwait(false);
+
+            EventHelper.FireEventIfNotNull(UserPasswordChanged, this, new GenericEventArgs<User>(user), _logger);
+        }
+
+        public async Task ChangeEasyPassword(User user, string newPasswordSha1)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+            {
+                throw new ArgumentNullException("newPasswordSha1");
+            }
+
+            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
+            {
+                throw new ArgumentException("Passwords for guests cannot be changed.");
+            }
+
+            user.EasyPassword = newPasswordSha1;
 
             await UpdateUser(user).ConfigureAwait(false);
 
@@ -703,12 +729,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var text = new StringBuilder();
 
-            var info = _appHost.GetSystemInfo();
-            var localAddress = info.LocalAddress ?? string.Empty;
+            var localAddress = _appHost.LocalApiUrl ?? string.Empty;
 
             text.AppendLine("Use your web browser to visit:");
             text.AppendLine(string.Empty);
-            text.AppendLine(localAddress + "/mediabrowser/web/forgotpasswordpin.html");
+            text.AppendLine(localAddress + "/web/forgotpasswordpin.html");
             text.AppendLine(string.Empty);
             text.AppendLine("Enter the following pin code:");
             text.AppendLine(string.Empty);
@@ -817,7 +842,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             try
             {
-                File.Delete(PasswordResetFile);
+                _fileSystem.DeleteFile(PasswordResetFile);
             }
             catch
             {
@@ -881,7 +906,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var json = _jsonSerializer.SerializeToString(userPolicy);
                 userPolicy = _jsonSerializer.DeserializeFromString<UserPolicy>(json);
             }
-            
+
             var path = GetPolifyFilePath(user);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -909,7 +934,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 lock (_policySyncLock)
                 {
-                    File.Delete(path);
+                    _fileSystem.DeleteFile(path);
                 }
             }
             catch (IOException)
@@ -971,14 +996,14 @@ namespace MediaBrowser.Server.Implementations.Library
             var path = GetConfigurationFilePath(user);
 
             // The xml serializer will output differently if the type is not exact
-            if (config.GetType() != typeof (UserConfiguration))
+            if (config.GetType() != typeof(UserConfiguration))
             {
                 var json = _jsonSerializer.SerializeToString(config);
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            
+
             lock (_configSyncLock)
             {
                 _xmlSerializer.SerializeToFile(config, path);

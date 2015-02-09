@@ -30,7 +30,7 @@
             $(document).scrollTop(0);
 
             var html = '';
-
+            var trigger = false;
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -53,7 +53,6 @@
                     lazy: true
                 });
 
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "ThumbCard") {
 
@@ -67,7 +66,6 @@
                     showTitle: true,
                     showSeriesYear: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Banner") {
 
@@ -78,7 +76,6 @@
                     context: 'tv',
                     lazy: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "List") {
 
@@ -87,7 +84,7 @@
                     context: 'tv',
                     sortBy: query.SortBy
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+                trigger = true;
             }
             else if (view == "PosterCard") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -99,7 +96,6 @@
                     lazy: true,
                     cardLayout: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else {
 
@@ -112,12 +108,15 @@
                     centerText: true,
                     lazy: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
 
-            html += pagingHtml;
+            var elem = $('#items', page).html(html).lazyChildren();
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                elem.trigger('create');
+            }
+
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

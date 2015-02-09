@@ -81,7 +81,7 @@
         Dashboard.setPageTitle(user.Name);
 
         loadUnratedItems(page, user);
-        loadTags(page, user.Policy.BlockedTags);
+        loadBlockedTags(page, user.Policy.BlockedTags);
 
         populateRatings(allParentalRatings, page);
 
@@ -112,7 +112,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function loadTags(page, tags) {
+    function loadBlockedTags(page, tags) {
 
         var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
 
@@ -142,7 +142,7 @@
                 return t != tag;
             });
 
-            loadTags(page, newTags);
+            loadBlockedTags(page, newTags);
         });
     }
 
@@ -209,7 +209,7 @@
 
         user.Policy.AccessSchedules = getSchedulesFromPage(page);
 
-        user.Policy.BlockedTags = getTagsFromPage(page);
+        user.Policy.BlockedTags = getBlockedTagsFromPage(page);
 
         ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
@@ -244,11 +244,11 @@
             return false;
         },
 
-        onTagFormSubmit: function() {
-            
+        onBlockedTagFormSubmit: function () {
+
             var page = $(this).parents('.page');
 
-            saveTag(page);
+            saveBlockedTag(page);
 
             // Disable default form submission
             return false;
@@ -326,17 +326,17 @@
         $('#popupSchedule', page).popup('close');
     }
 
-    function saveTag(page) {
+    function saveBlockedTag(page) {
 
-        var tag = $('#txtTag', page).val();
-        var tags = getTagsFromPage(page);
+        var tag = $('#txtBlockedTag', page).val();
+        var tags = getBlockedTagsFromPage(page);
 
         if (tags.indexOf(tag) == -1) {
             tags.push(tag);
-            loadTags(page, tags);
+            loadBlockedTags(page, tags);
         }
 
-        $('#popupTag', page).popup('close');
+        $('#popupBlockedTag', page).popup('close');
     }
 
     function getSchedulesFromPage(page) {
@@ -352,7 +352,7 @@
         }).get();
     }
 
-    function getTagsFromPage(page) {
+    function getBlockedTagsFromPage(page) {
 
         return $('.blockedTag', page).map(function () {
 
@@ -361,10 +361,10 @@
         }).get();
     }
 
-    function showTagPopup(page) {
+    function showBlockedTagPopup(page) {
 
-        $('#popupTag', page).popup('open');
-        $('#txtTag', page).val('').focus();
+        $('#popupBlockedTag', page).popup('open');
+        $('#txtBlockedTag', page).val('').focus();
     }
 
     $(document).on('pageinit', "#userParentalControlPage", function () {
@@ -377,10 +377,9 @@
             showSchedulePopup(page, {}, -1);
         });
 
+        $('.btnAddBlockedTag', page).on('click', function () {
 
-        $('.btnAddTag', page).on('click', function () {
-
-            showTagPopup(page);
+            showBlockedTagPopup(page);
         });
 
         populateHours(page);

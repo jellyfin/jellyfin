@@ -8,7 +8,7 @@
       <HttpHeaderInfo name="User-Agent" value="Xenon" match="Substring" />
     </Headers>
   </Identification>
-  <FriendlyName>Media Browser</FriendlyName>
+  <FriendlyName>${HostName} : 1</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>
@@ -33,8 +33,7 @@
   <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
-  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
-  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>true</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />

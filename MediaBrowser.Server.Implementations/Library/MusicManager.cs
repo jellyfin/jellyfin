@@ -32,8 +32,8 @@ namespace MediaBrowser.Server.Implementations.Library
             var artist = _libraryManager.GetArtist(name);
 
             var genres = user.RootFolder
-                .GetRecursiveChildren(user)
-                .OfType<Audio>()
+                .GetRecursiveChildren(user, i => i is Audio)
+                .Cast<Audio>()
                 .Where(i => i.HasArtist(name))
                 .SelectMany(i => i.Genres)
                 .Concat(artist.Genres)
@@ -45,8 +45,8 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user)
         {
             var genres = item
-                .GetRecursiveChildren(user, true)
-               .OfType<Audio>()
+                .GetRecursiveChildren(user, i => i is Audio)
+               .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
                .Distinct(StringComparer.OrdinalIgnoreCase);
@@ -57,8 +57,8 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user)
         {
             var genres = item
-                .GetRecursiveChildren(user, true)
-               .OfType<Audio>()
+               .GetRecursiveChildren(user, i => i is Audio)
+               .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
                .Distinct(StringComparer.OrdinalIgnoreCase);
@@ -68,12 +68,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<Audio> GetInstantMixFromGenres(IEnumerable<string> genres, User user)
         {
-            var inputItems = user.RootFolder.GetRecursiveChildren(user);
+            var inputItems = user.RootFolder
+                .GetRecursiveChildren(user, i => i is Audio);
 
             var genresDictionary = genres.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             return inputItems
-                .OfType<Audio>()
+                .Cast<Audio>()
                 .Select(i => new Tuple<Audio, int>(i, i.Genres.Count(genresDictionary.ContainsKey)))
                 .Where(i => i.Item2 > 0)
                 .OrderByDescending(i => i.Item2)
@@ -81,6 +82,41 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Select(i => i.Item1)
                 .Take(100)
                 .OrderBy(i => Guid.NewGuid());
+        }
+
+        public IEnumerable<Audio> GetInstantMixFromItem(BaseItem item, User user)
+        {
+            var genre = item as MusicGenre;
+            if (genre != null)
+            {
+                return GetInstantMixFromGenres(new[] { item.Name }, user);
+            }
+
+            var playlist = item as Playlist;
+            if (playlist != null)
+            {
+                return GetInstantMixFromPlaylist(playlist, user);
+            }
+
+            var album = item as MusicAlbum;
+            if (album != null)
+            {
+                return GetInstantMixFromAlbum(album, user);
+            }
+
+            var artist = item as MusicArtist;
+            if (artist != null)
+            {
+                return GetInstantMixFromArtist(artist.Name, user);
+            }
+
+            var song = item as Audio;
+            if (song != null)
+            {
+                return GetInstantMixFromSong(song, user);
+            }
+            
+            return new Audio[] { };
         }
     }
 }

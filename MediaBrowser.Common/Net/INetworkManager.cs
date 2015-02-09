@@ -51,5 +51,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="endpoint">The endpoint.</param>
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
+
+        /// <summary>
+        /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
+        /// </summary>
+        /// <param name="certificatePath">The path to generate the certificate.</param>
+        /// <param name="hostname">The common name for the certificate.</param>
+        void GenerateSelfSignedSslCertificate(string certificatePath, string hostname);
     }
 }

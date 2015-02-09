@@ -66,6 +66,12 @@ body {
     overflow-y: hidden !important;
 }
 
+.jqmButtonNoText {
+    padding: 3px 4px!important;
+    border-radius: 4px!important;
+    vertical-align: top;
+}
+
 .textlink {
     text-decoration: none;
 }
@@ -198,7 +204,7 @@ pre, textarea.pre {
     Header
     */
 .header {
-    padding: 7px 0 0 15px;
+    padding: 20px 0 0 20px;
 }
 
 .imgLogoIcon {
@@ -283,13 +289,7 @@ h1 .imageLink {
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;
-    background: #fadb4e;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#ffefaa),to(#ffe155));
-    background-image: -webkit-linear-gradient(#ffefaa,#ffe155);
-    background-image: -moz-linear-gradient(#ffefaa,#ffe155);
-    background-image: -ms-linear-gradient(#ffefaa,#ffe155);
-    background-image: -o-linear-gradient(#ffefaa,#ffe155);
-    background-image: linear-gradient(#ffefaa,#ffe155);
+    background: #ffefaa;
     border-radius: 5px;
 }
 
@@ -320,46 +320,89 @@ h1 .imageLink {
     border: 0;
     display: none;
     text-align: left;
-    width: 220px;
+    width: 250px;
     position: fixed;
     top: 51px;
     left: 0;
     bottom: 0;
     margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #e0e0e0;
+    /*-moz-box-shadow: -3px 0 10px 0 #555;
+    -webkit-box-shadow: -3px 0 10px 0 #555;
+    box-shadow: -3px 0 10px 0 #555;*/
 }
 
-.sidebarLinks {
-    margin-top: 2.75em;
-    margin-left: 1em;
+.ui-page-theme-a {
+    background: #f2f2f2;
 }
 
-    .sidebarLinks a {
-        display: block;
-        padding: .6em 20px .6em 20px;
-        text-decoration: none;
-        color: #333 !important;
-        text-shadow: none !important;
-        font-weight: 500 !important;
-        font-size: 14px;
-        border-radius: 2px;
+    .ui-page-theme-a .content-secondary {
+        background: #fff;
     }
 
-        .sidebarLinks a:hover {
-            background: #52B54B;
-            color: #fff !important;
-        }
+.sidebarLinks {
+    margin-top: 1.5em;
+    padding-bottom: 50px;
+}
 
-        .sidebarLinks a.selectedSidebarLink {
-            background: #38c !important;
-            color: #fff !important;
-            margin-right: 0;
-        }
+.sidebarLink {
+    display: block;
+    padding: .6em 20px .6em 0;
+    text-decoration: none;
+    color: inherit !important;
+    text-shadow: none !important;
+    font-weight: 500 !important;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+    .sidebarLink:hover {
+        background: #f2f2f2;
+    }
+
+    .sidebarLink.selectedSidebarLink {
+        margin-right: 0;
+    }
+
+.ui-page-theme-a .selectedSidebarLink {
+    background: #f2f2f2 !important;
+}
+
+.ui-page-theme-b .selectedSidebarLink {
+    background: #38c !important;
+    color: #fff !important;
+}
+
+.sidebarLinkIcon {
+    font-size: 17px;
+    width: 66px;
+    text-align: center;
+}
+
+.ui-page-theme-a .sidebarLinkIcon {
+    color: #666;
+}
 
 .sidebarDivider {
-    height: 1px;
-    background: #ddd;
-    margin: .25em 0;
+    height: 0;
+    border-width: 1px 0 0;
+    border-style: solid;
+    margin: .7em 0;
+    border-radius: 0;
 }
+
+.sidebarHeader {
+    padding-left: 20px;
+    margin: 1em 0;
+    font-size: 90%;
+}
+
+.ui-page-theme-a .sidebarHeader {
+    color: #888;
+}
+
 
 .invalidEntry {
     background-color: lightpink !important;
@@ -367,40 +410,12 @@ h1 .imageLink {
 
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
-    margin-bottom: 40px !important;
+    margin-bottom: 30px !important;
 }
-
-    .localnav + form {
-        margin-top: -10px;
-    }
 
 .page > .ui-content {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
-}
-
-.dashboardPanelDivider {
-    height: 1px;
-    background: #ddd;
-    margin: .25em 0;
-}
-
-.dashboardPanelLink {
-    padding: .7em .5em .7em 1.25em;
-    display: block;
-    text-decoration: none;
-    color: #000 !important;
-    font-weight: normal !important;
-}
-
-    .dashboardPanelLink:hover {
-        background: #52B54B;
-        color: #fff !important;
-    }
-
-.selectedDashboardPanelLink {
-    background: #38c;
-    color: #fff !important;
 }
 
 .dashboardPanel .ui-panel-inner {
@@ -437,7 +452,7 @@ h1 .imageLink {
     }
 }
 
-@media all and (min-width: 750px) {
+@media all and (min-width: 800px) {
 
     /*
     Forms
@@ -447,7 +462,6 @@ h1 .imageLink {
     }
 
     .header {
-        padding-top: 15px;
         padding-bottom: 15px;
     }
 
@@ -464,7 +478,7 @@ h1 .imageLink {
 
     .content-primary {
         padding: 80px 15px 3em 0;
-        margin: 0 0 0 260px;
+        margin: 0 0 0 290px;
     }
 
         .content-primary ul:first-child {
@@ -527,39 +541,6 @@ h1 .imageLink {
     border-radius: 5px;
 }
 
-/*
-    List Vew Items
-    */
-
-.posterViewItem {
-    display: inline-block;
-    margin: 5px;
-    text-align: center;
-    padding: 0;
-    position: relative;
-    padding-bottom: 28px;
-}
-
-.posterViewItemWithDualText {
-    padding-bottom: 56px;
-}
-
-.posterViewItemWithNoText {
-    padding-bottom: 0 !important;
-}
-
-.posterViewItem a {
-    color: white !important;
-    font-weight: normal !important;
-    text-decoration: none;
-}
-
-.posterViewItem img {
-    max-width: 155px;
-    max-height: 110px;
-    vertical-align: bottom;
-}
-
 .premiumBanner img {
     position: absolute;
     text-align: right;
@@ -567,84 +548,6 @@ h1 .imageLink {
     right: 0;
     width: 60px;
     height: 60px;
-}
-
-.posterViewItemText {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-wrap: none;
-    white-space: nowrap;
-    margin: 0;
-    padding: 4px 5px 0;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 24px;
-    background: #181818;
-    text-shadow: none;
-}
-
-.posterViewItemWithDualText .posterViewItemText {
-    text-align: left;
-    color: #fff;
-    padding-top: 5px;
-    height: 23px;
-}
-
-.posterViewItemPrimaryText {
-    bottom: 28px;
-}
-
-.posterViewItem:hover, .userItem:hover, .tileItem:hover {
-    -moz-box-shadow: 0 0 0 5px #38c;
-    -webkit-box-shadow: 0 0 0 5px #38c;
-    box-shadow: 0 0 0 5px #38c;
-}
-
-@media all and (min-width: 750px) {
-
-    .posterViewItem img {
-        max-width: 190px;
-        max-height: 130px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .posterViewItem {
-        font-size: 15px;
-    }
-
-        .posterViewItem img {
-            max-width: 270px;
-            max-height: 160px;
-        }
-}
-
-@media all and (min-width: 1920px) {
-
-    .posterViewItemText {
-        height: 25px !important;
-    }
-
-    .posterViewItem {
-        font-size: 17px;
-        padding-bottom: 29px;
-    }
-
-    .posterViewItemWithDualText {
-        padding-bottom: 60px;
-    }
-
-    .posterViewItemPrimaryText {
-        bottom: 30px;
-    }
-
-    .posterViewItem img {
-        max-width: 310px;
-        max-height: 210px;
-    }
 }
 
 .wizardContent {
@@ -772,6 +675,8 @@ progress {
     width: auto !important;
     display: inline-block !important;
     background: none !important;
+    border: 0 !important;
+    outline: 0 !important;
 }
 
     .btnUserItemRating div {
@@ -1102,13 +1007,18 @@ progress {
 
 .accentButton {
     display: inline-block;
-    background: rgba(51, 136, 204, .8);
+    background: rgba(51, 136, 204, .9);
     border-radius: 1000px;
-    padding: 4px 12px;
+    padding: 4px 10px;
     color: #fff !important;
-    font-weight: normal !important;
+    font-size: 13px;
+    font-weight: 400 !important;
     text-decoration: none;
     vertical-align: middle;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    cursor: hand;
 }
 
 .accentButton-g {
@@ -1125,4 +1035,41 @@ progress {
 
 h1 + .accentButton {
     margin: 18px 0 0 20px;
+}
+
+.detailSectionHeader .accentButton {
+    font-size: 13px;
+}
+
+.dashboardFooter {
+    margin-top: 50px;
+    text-align: center;
+}
+
+    .dashboardFooter a {
+        text-decoration: none;
+        font-weight: normal;
+        margin: 0 .7em;
+    }
+
+    .dashboardFooter .appLinks a {
+        margin: .25em;
+    }
+
+    .dashboardFooter .appLinks img {
+        height: 16px;
+    }
+
+.supporterPromotion {
+    margin: 1em 0;
+}
+
+@media all and (min-width: 800px) {
+
+    .supporterPromotion {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        margin: 0;
+    }
 }

@@ -239,6 +239,38 @@ namespace MediaBrowser.Controller.Entities
             get { return this.GetImagePath(ImageType.Primary); }
         }
 
+        public virtual bool CanDelete()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
+
+        public virtual bool IsAuthorizedToDelete(User user)
+        {
+            return user.Policy.EnableContentDeletion;
+        }
+
+        public bool CanDelete(User user)
+        {
+            return CanDelete() && IsAuthorizedToDelete(user);
+        }
+
+        public virtual bool CanDownload()
+        {
+            return false;
+        }
+
+        public virtual bool IsAuthorizedToDownload(User user)
+        {
+            return user.Policy.EnableContentDownloading;
+        }
+
+        public bool CanDownload(User user)
+        {
+            return CanDownload() && IsAuthorizedToDownload(user);
+        }
+
         /// <summary>
         /// Gets or sets the date created.
         /// </summary>
@@ -268,6 +300,7 @@ namespace MediaBrowser.Controller.Entities
         public static IChannelManager ChannelManager { get; set; }
         public static ICollectionManager CollectionManager { get; set; }
         public static IImageProcessor ImageProcessor { get; set; }
+        public static IMediaSourceManager MediaSourceManager { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -359,7 +392,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(ForcedSortName))
+                if (!string.IsNullOrWhiteSpace(ForcedSortName))
                 {
                     return ForcedSortName;
                 }
@@ -379,21 +412,19 @@ namespace MediaBrowser.Controller.Entities
 
         public string GetInternalMetadataPath()
         {
-            return GetInternalMetadataPath(ConfigurationManager.ApplicationPaths.InternalMetadataPath);
+            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+
+            return GetInternalMetadataPath(basePath);
         }
 
         protected virtual string GetInternalMetadataPath(string basePath)
         {
             var idString = Id.ToString("N");
 
-            return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
-        }
-
-        public static string GetInternalMetadataPathForId(Guid id)
-        {
-            var idString = id.ToString("N");
-
-            var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
+            if (ConfigurationManager.Configuration.EnableLibraryMetadataSubFolder)
+            {
+                basePath = System.IO.Path.Combine(basePath, "library");
+            }
 
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }
@@ -692,7 +723,7 @@ namespace MediaBrowser.Controller.Entities
 
             var requiresSave = false;
 
-            if (IsFolder || Parent != null)
+            if (SupportsOwnedItems)
             {
                 try
                 {
@@ -722,6 +753,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        [IgnoreDataMember]
+        protected virtual bool SupportsOwnedItems
+        {
+            get { return IsFolder || Parent != null; }
         }
 
         /// <summary>
@@ -889,11 +926,24 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        private string _userDataKey;
         /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public virtual string GetUserDataKey()
+        public string GetUserDataKey()
+        {
+            if (string.IsNullOrWhiteSpace(_userDataKey))
+            {
+                var key = CreateUserDataKey();
+                _userDataKey = key;
+                return key;
+            }
+
+            return _userDataKey;
+        }
+
+        protected virtual string CreateUserDataKey()
         {
             return Id.ToString();
         }
@@ -903,6 +953,12 @@ namespace MediaBrowser.Controller.Entities
             var current = this;
 
             return current.IsInMixedFolder == newItem.IsInMixedFolder;
+        }
+
+        public void AfterMetadataRefresh()
+        {
+            _sortName = null;
+            _userDataKey = null;
         }
 
         /// <summary>
@@ -1024,12 +1080,18 @@ namespace MediaBrowser.Controller.Entities
 
             if (hasTags != null)
             {
-                if (user.Policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+                var policy = user.Policy;
+                if (policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
             }
 
+            return true;
+        }
+
+        protected virtual bool IsAllowTagFilterEnforced()
+        {
             return true;
         }
 
@@ -1058,6 +1120,23 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return IsParentalAllowed(user);
+        }
+
+        public virtual bool IsVisibleStandalone(User user)
+        {
+            if (!IsVisible(user))
+            {
+                return false;
+            }
+
+            if (Parents.Any(i => !i.IsVisible(user)))
+            {
+                return false;
+            }
+
+            // TODO: Need some work here, e.g. is in user library, for channels, can user access channel, etc.
+
+            return true;
         }
 
         /// <summary>
@@ -1146,7 +1225,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
             {
-                return LibraryManager.RootFolder.RecursiveChildren.FirstOrDefault(i =>
+                return LibraryManager.RootFolder.GetRecursiveChildren(i =>
                 {
                     if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1164,7 +1243,8 @@ namespace MediaBrowser.Controller.Entities
                     }
 
                     return false;
-                });
+
+                }).FirstOrDefault();
             }
 
             return null;
@@ -1458,7 +1538,7 @@ namespace MediaBrowser.Controller.Entities
                     currentFile.Attributes &= ~FileAttributes.Hidden;
                 }
 
-                currentFile.Delete();
+                FileSystem.DeleteFile(currentFile.FullName);
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
@@ -1703,6 +1783,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
+            _userDataKey = null;
+            _sortName = null;
+
             var hasChanges = false;
 
             if (string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Path))

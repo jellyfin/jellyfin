@@ -40,7 +40,10 @@ namespace MediaBrowser.Api.Playback
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            _response.Content.CopyTo(responseStream, 819200);
+            using (_response)
+            {
+                _response.Content.CopyTo(responseStream, 819200);
+            }
         }
     }
 }

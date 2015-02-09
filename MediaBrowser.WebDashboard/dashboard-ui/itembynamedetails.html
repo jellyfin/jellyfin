@@ -5,7 +5,7 @@
 </head>
 <body>
 
-    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b">
+    <div id="itemByNameDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage">
         <div id="movieGenreTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="movieslatest.html">${TabLatest}</a>
@@ -123,7 +123,7 @@
             <table class="detailPageContent primaryDetailPageContent">
                 <tr>
                     <td style="vertical-align: top; padding: 0 1em 0 0;">
-                        <div id="itemImage" class="itemImageContainer itemByNameImageContainer"></div>
+                        <div id="itemImage" class="itemImageContainer smallDetailImageContainer"></div>
                     </td>
                     <td style="vertical-align: top; padding: 0;">
                         <p style="margin-top:0;"><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
@@ -140,8 +140,8 @@
                         <p id="itemLinks"></p>
                         <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
                             <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                            <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonOptions}</button>
                             <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+                            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
                         </div>
                     </td>
                 </tr>
@@ -149,8 +149,8 @@
         </div>
         <div class="detailButtonsContainer mobileDetailButtons">
             <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-            <button class="btnMoreCommands hide" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true">${ButtonOptions}</button>
             <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
         </div>
         <p class="itemOverview mobileOverview"></p>
         <div data-role="content" style="padding-top: 0;">
@@ -162,7 +162,7 @@
                 <div class="listTopPaging">
                 </div>
             </div>
-            <div id="items" class="itemsContainer">
+            <div id="items" class="itemsContainer" style="text-align:center;">
             </div>
         </div>
     </div>

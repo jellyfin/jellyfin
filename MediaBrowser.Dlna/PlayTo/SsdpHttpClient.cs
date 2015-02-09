@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
 using System.Globalization;
@@ -29,11 +30,7 @@ namespace MediaBrowser.Dlna.PlayTo
             string postData, 
             string header = null)
         {
-            var serviceUrl = service.ControlUrl;
-            if (!serviceUrl.StartsWith("/"))
-                serviceUrl = "/" + serviceUrl;
-
-            var response = await PostSoapDataAsync(baseUrl + serviceUrl, "\"" + service.ServiceType + "#" + command + "\"", postData, header)
+            var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header)
                 .ConfigureAwait(false);
 
             using (var stream = response.Content)
@@ -43,6 +40,20 @@ namespace MediaBrowser.Dlna.PlayTo
                     return XDocument.Parse(reader.ReadToEnd(), LoadOptions.PreserveWhitespace);
                 }
             }
+        }
+
+        private string NormalizeServiceUrl(string baseUrl, string serviceUrl)
+        {
+            // If it's already a complete url, don't stick anything onto the front of it
+            if (serviceUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return serviceUrl;
+            }
+
+            if (!serviceUrl.StartsWith("/"))
+                serviceUrl = "/" + serviceUrl;
+
+            return baseUrl + serviceUrl;
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -14,9 +15,19 @@ namespace MediaBrowser.Controller.Channels
 
         public override bool IsVisible(User user)
         {
-            if (user.Policy.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+            if (user.Policy.BlockedChannels != null)
             {
-                return false;
+                if (user.Policy.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
             
             return base.IsVisible(user);
@@ -50,7 +61,22 @@ namespace MediaBrowser.Controller.Channels
 
         protected override string GetInternalMetadataPath(string basePath)
         {
-            return System.IO.Path.Combine(basePath, "channels", Id.ToString("N"), "metadata");
+            return GetInternalMetadataPath(basePath, Id);
+        }
+
+        public static string GetInternalMetadataPath(string basePath, Guid id)
+        {
+            return System.IO.Path.Combine(basePath, "channels", id.ToString("N"), "metadata");
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
+        protected override bool IsAllowTagFilterEnforced()
+        {
+            return false;
         }
     }
 }

@@ -329,9 +329,24 @@
 
         reloadItems(page);
 
+        // on here
+        $('.btnOrganize', page).taskButton({
+            mode: 'on',
+            progressElem: $('.organizeProgress', page),
+            panel: $('.organizeTaskPanel', page),
+            taskKey: 'AutoOrganize'
+        });
+
     }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
 
+        var page = this;
+
         currentResult = null;
+
+        // off here
+        $('.btnOrganize', page).taskButton({
+            mode: 'off'
+        });
     });
 
     window.OrganizerLogPage = {

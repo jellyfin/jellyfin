@@ -1,13 +1,14 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
+using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -111,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new VideoListResolver(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new VideoListResolver(namingOptions, new PatternsLogger());
             var resolverResult = resolver.Resolve(files.Select(i => new PortableFileInfo
             {
                 FullName = i.FullName,
@@ -125,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 Items = videos
             };
 
-            var isInMixedFolder = resolverResult.Count > 0;
+            var isInMixedFolder = resolverResult.Count > 1;
 
             foreach (var video in resolverResult)
             {
@@ -436,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-            var resolver = new StackResolver(namingOptions, new Naming.Logging.NullLogger());
+            var resolver = new StackResolver(namingOptions, new PatternsLogger());
 
             var result = resolver.ResolveDirectories(folderPaths);
 

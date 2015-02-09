@@ -235,7 +235,7 @@
 
         if (mediaType == 'Audio') {
 
-            url = serverAddress + '/mediabrowser/audio/' + itemId + '/stream.' + mediaSourceInfo.streamContainer;
+            url = serverAddress + '/audio/' + itemId + '/stream.' + mediaSourceInfo.streamContainer;
 
             url += '?mediasourceid=' + mediaSourceInfo.mediaSource.Id;
 
@@ -263,10 +263,10 @@
         else if (mediaType == 'Video') {
 
             if (mediaSourceInfo.isStatic) {
-                url = serverAddress + '/mediabrowser/videos/' + itemId + '/stream.' + mediaSourceInfo.streamContainer + '?static=true';
+                url = serverAddress + '/videos/' + itemId + '/stream.' + mediaSourceInfo.streamContainer + '?static=true';
             }
             else {
-                url = serverAddress + '/mediabrowser/videos/' + itemId + '/stream.' + mediaSourceInfo.streamContainer + '?static=false';
+                url = serverAddress + '/videos/' + itemId + '/stream.' + mediaSourceInfo.streamContainer + '?static=false';
             }
 
             url += '&maxaudiochannels=' + codecLimits.maxVideoAudioChannels;

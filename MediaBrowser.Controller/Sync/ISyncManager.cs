@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,6 +12,12 @@ namespace MediaBrowser.Controller.Sync
 {
     public interface ISyncManager
     {
+        event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+        event EventHandler<GenericEventArgs<SyncJob>> SyncJobUpdated;
+        event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
+        event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
+
         /// <summary>
         /// Creates the job.
         /// </summary>
@@ -29,7 +37,7 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;SyncJobItem&gt;.</returns>
         QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query);
-        
+
         /// <summary>
         /// Gets the job.
         /// </summary>
@@ -43,6 +51,20 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="job">The job.</param>
         /// <returns>Task.</returns>
         Task UpdateJob(SyncJob job);
+
+        /// <summary>
+        /// Res the enable job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReEnableJobItem(string id);
+
+        /// <summary>
+        /// Cnacels the job item.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task CancelJobItem(string id);
 
         /// <summary>
         /// Cancels the job.
@@ -109,5 +131,55 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="request">The request.</param>
         /// <returns>Task&lt;SyncDataResponse&gt;.</returns>
         Task<SyncDataResponse> SyncData(SyncDataRequest request);
+
+        /// <summary>
+        /// Marks the job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task MarkJobItemForRemoval(string id);
+
+        /// <summary>
+        /// Unmarks the job item for removal.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task UnmarkJobItemForRemoval(string id);
+
+        /// <summary>
+        /// Gets the library item ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;System.String&gt;.</returns>
+        QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query);
+
+        /// <summary>
+        /// Gets the audio options.
+        /// </summary>
+        /// <param name="jobItem">The job item.</param>
+        /// <returns>AudioOptions.</returns>
+        AudioOptions GetAudioOptions(SyncJobItem jobItem);
+
+        /// <summary>
+        /// Gets the video options.
+        /// </summary>
+        /// <param name="jobItem">The job item.</param>
+        /// <param name="job">The job.</param>
+        /// <returns>VideoOptions.</returns>
+        VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job);
+
+        /// <summary>
+        /// Reports the synchronize job item transfer beginning.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferBeginning(string id);
+
+        /// <summary>
+        /// Reports the synchronize job item transfer failed.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task ReportSyncJobItemTransferFailed(string id);
     }
 }

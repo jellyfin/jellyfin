@@ -27,7 +27,7 @@
             userId: userId,
             TargetId: target,
 
-            Quality: $('#selectQuality', form).val(),
+            Quality: $('#selectQuality', form).val() || null,
 
             Name: $('#txtSyncJobName', form).val(),
 
@@ -81,7 +81,14 @@
             var html = '<div data-role="panel" data-position="right" data-display="overlay" class="syncPanel" data-position-fixed="true" data-theme="a">';
 
             html += '<div>';
-            html += '<h1 style="margin-top:.5em;">' + Globalize.translate('SyncMedia') + '</h1>';
+
+            html += '<div style="margin:1em 0 1.5em;">';
+            html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
+            html += '<a class="accentButton accentButton-g" style="display:inline-block;vertical-align:middle;margin-top:0;margin-left: 20px;" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">';
+            html += '<i class="fa fa-info-circle"></i>';
+            html += Globalize.translate('ButtonHelp');
+            html += '</a>';
+            html += '</div>';
 
             html += '<form class="formSubmitSyncRequest">';
 
@@ -108,14 +115,18 @@
 
             html += '<br/>';
 
-            html += '<div>';
-            html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
-            html += '<select id="selectQuality" data-mini="true">';
-            html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
-            html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
-            html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
-            html += '</select>';
-            html += '</div>';
+            if (result.Options.indexOf('Quality') != -1) {
+                html += '<div>';
+                html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
+                html += '<select id="selectQuality" data-mini="true">';
+                html += '<option value="Original">' + Globalize.translate('OptionOriginal') + '</option>';
+                html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
+                html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
+                html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
+                html += '</select>';
+                html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncQualityHelp') + '</div>';
+                html += '</div>';
+            }
 
             //html += '<div data-role="collapsible" style="margin:1.5em 0">';
             //html += '<h2>' + Globalize.translate('HeaderSettings') + '</h2>';
@@ -166,6 +177,8 @@
                 $(this).off("panelclose").remove();
             });
 
+            $('#selectQuality', elem).val('High').selectmenu('refresh');
+
             $('form', elem).on('submit', function () {
 
                 submitJob(userId, options, this);
@@ -203,8 +216,7 @@
 
     function isAvailable(item, user) {
 
-        return false;
-        //return item.SupportsSync;
+        return item.SupportsSync;
     }
 
     window.SyncManager = {
@@ -226,7 +238,7 @@
         Dashboard.getCurrentUser().done(function (user) {
 
             if (user.Policy.EnableSync) {
-                $('.categorySyncButton', page).hide();
+                $('.categorySyncButton', page).show();
             } else {
                 $('.categorySyncButton', page).hide();
             }

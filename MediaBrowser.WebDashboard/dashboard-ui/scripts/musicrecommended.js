@@ -2,7 +2,6 @@
 
     $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
 
-        var screenWidth = $(window).width();
         var userId = Dashboard.getCurrentUserId();
 
         var page = this;
@@ -26,8 +25,9 @@
                 showChildCountIndicator: true,
                 shape: "square",
                 showTitle: true,
-                showParentTitle: true
-            })).createCardMenus();
+                showParentTitle: true,
+                lazy: true
+            })).lazyChildren();
 
         });
 
@@ -59,9 +59,10 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play'
+                defaultAction: 'play',
+                lazy: true
 
-            })).createCardMenus();
+            })).lazyChildren();
 
         });
 
@@ -93,9 +94,10 @@
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play'
+                defaultAction: 'play',
+                lazy: true
 
-            })).createCardMenus();
+            })).lazyChildren();
 
         });
 

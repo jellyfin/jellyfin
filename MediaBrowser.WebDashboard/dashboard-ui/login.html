@@ -9,7 +9,8 @@
         <div data-role="content">
 
             <form class="manualLoginForm" id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
-                <h2 style="text-align: left;">${HeaderPleaseSignIn}</h2>
+                
+                <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
                 <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
                 <input type="text" name="txtManualName" id="txtManualName" required="required" />
@@ -36,13 +37,14 @@
             </form>
 
             <div class="visualLoginForm" style="display: none; text-align: center;">
+                <br/>
                 <div id="divUsers" class="itemsContainer"></div>
 
                 <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
 
                 <p>
-                    <a href="forgotpassword.html" style="margin-right: 3em;">${ButtonForgotPassword}</a> 
                     <a href="#" class="lnkManualLogin" onclick="LoginPage.showManualForm($.mobile.activePage, true);">${ButtonManualLogin}</a>
+                    <a href="forgotpassword.html" style="margin-left: 2em;">${ButtonForgotPassword}</a> 
                 </p>
 
             </div>

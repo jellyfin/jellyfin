@@ -143,8 +143,7 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateNamedConfiguration request)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var key = pathInfo.GetArgumentValue<string>(2);
+            var key = GetPathValue(2);
 
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = _jsonSerializer.DeserializeFromStream(request.RequestStream, configurationType);

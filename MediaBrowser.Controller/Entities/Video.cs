@@ -64,6 +64,19 @@ namespace MediaBrowser.Controller.Entities
             LinkedAlternateVersions = new List<LinkedChild>();
         }
 
+        public override bool CanDownload()
+        {
+            if (VideoType == VideoType.HdDvd || VideoType == VideoType.Dvd ||
+                VideoType == VideoType.BluRay)
+            {
+                return false;
+            }
+
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
+        }
+
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
@@ -409,7 +422,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<MediaStream> GetMediaStreams()
         {
-            return ItemRepository.GetMediaStreams(new MediaStreamQuery
+            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
                 ItemId = Id
             });
@@ -422,7 +435,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return ItemRepository.GetMediaStreams(new MediaStreamQuery
+            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
                 ItemId = Id,
                 Index = DefaultVideoStreamIndex.Value
@@ -461,7 +474,8 @@ namespace MediaBrowser.Controller.Entities
 
         private static MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, Video i, MediaSourceType type)
         {
-            var mediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList();
+            var mediaStreams = MediaSourceManager.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id })
+                .ToList();
 
             var locationType = i.LocationType;
 

@@ -33,8 +33,7 @@
   <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
-  <SupportsDirectRemoteContent>false</SupportsDirectRemoteContent>
-  <SupportsCustomHttpHeaders>false</SupportsCustomHttpHeaders>
+  <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="ts" audioCodec="ac3" videoCodec="h264" type="Video" />

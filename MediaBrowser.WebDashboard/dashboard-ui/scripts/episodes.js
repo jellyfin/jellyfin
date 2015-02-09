@@ -32,7 +32,6 @@
             $(document).scrollTop(0);
 
             var html = '';
-
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -45,6 +44,7 @@
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls();
+            var trigger = false;
 
             if (view == "List") {
 
@@ -53,6 +53,7 @@
                     context: 'tv',
                     sortBy: query.SortBy
                 });
+                trigger = true;
             }
             else if (view == "Poster") {
                 html += LibraryBrowser.getPosterViewHtml({
@@ -77,9 +78,13 @@
                 });
             }
 
-            html += pagingHtml;
+            var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                elem.trigger('create');
+            }
+
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

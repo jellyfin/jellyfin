@@ -340,7 +340,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
-            if (!_config.Configuration.EnableTvDbUpdates)
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }

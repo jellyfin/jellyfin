@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return "MusicGenre-" + Name;
         }
@@ -30,6 +30,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -38,10 +39,16 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -52,7 +59,12 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(i => (i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase));
+            return inputItems.Where(GetItemFilter());
+        }
+
+        public Func<BaseItem, bool> GetItemFilter()
+        {
+            return i => (i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

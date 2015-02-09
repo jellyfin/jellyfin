@@ -57,6 +57,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// Gets the similar items.
         /// </summary>
+        /// <param name="dtoOptions">The dto options.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="libraryManager">The library manager.</param>
@@ -67,7 +68,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
             var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
 
@@ -75,13 +76,13 @@ namespace MediaBrowser.Api
                 (request.UserId.HasValue ? user.RootFolder :
                 libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
-            var fields = request.GetItemFields().ToList();
+            Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
 
             var inputItems = user == null
-                                 ? libraryManager.RootFolder.GetRecursiveChildren().Where(i => i.Id != item.Id)
-                                 : user.RootFolder.GetRecursiveChildren(user).Where(i => i.Id != item.Id);
+                                 ? libraryManager.RootFolder.GetRecursiveChildren(filter)
+                                 : user.RootFolder.GetRecursiveChildren(user, filter);
 
-            var items = GetSimilaritems(item, inputItems.Where(includeInSearch), getSimilarityScore)
+            var items = GetSimilaritems(item, inputItems, getSimilarityScore)
                 .ToList();
 
             IEnumerable<BaseItem> returnItems = items;
@@ -93,7 +94,7 @@ namespace MediaBrowser.Api
 
             var result = new ItemsResult
             {
-                Items = returnItems.Select(i => dtoService.GetBaseItemDto(i, fields, user)).ToArray(),
+                Items = dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),
 
                 TotalRecordCount = items.Count
             };
@@ -164,7 +165,7 @@ namespace MediaBrowser.Api
 
             // Find common keywords
             points += GetKeywords(item1).Where(i => GetKeywords(item2).Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 10);
-            
+
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
 

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
@@ -25,8 +24,8 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var items = _libraryManager.RootFolder
-                .RecursiveChildren
-                .OfType<IHasTrailers>()
+                .GetRecursiveChildren(i => i is IHasTrailers)
+                .Cast<IHasTrailers>()
                 .ToList();
 
             var channelTrailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery

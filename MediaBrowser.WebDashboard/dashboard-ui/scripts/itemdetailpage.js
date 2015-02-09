@@ -146,7 +146,7 @@
 
         var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
-        $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, imageHref));
+        LibraryBrowser.renderDetailImage($('.detailImageContainer', page), item, imageHref);
     }
 
     function onWebSocketMessage(e, data) {
@@ -339,11 +339,11 @@
             renderCast(page, item, context, 6);
         }
 
-        if (!item.PartCount || item.PartCount < 2) {
-            $('#additionalPartsCollapsible', page).addClass('hide');
-        } else {
+        if (item.PartCount && item.PartCount > 1) {
             $('#additionalPartsCollapsible', page).removeClass('hide');
             renderAdditionalParts(page, item, user);
+        } else {
+            $('#additionalPartsCollapsible', page).addClass('hide');
         }
 
         $('#themeSongsCollapsible', page).hide();
@@ -493,7 +493,7 @@
     function renderTabButtons(page, item) {
 
         var elem = $('.tabDetails', page)[0];
-        var text = elem.textContent || elem.innerText;
+        var text = elem.textContent || elem.innerText || '';
 
         if (text.trim()) {
 
@@ -642,7 +642,7 @@
                 overlayText: item.Type != "MusicAlbum"
             });
 
-            $('#similarContent', page).html(html).createCardMenus();
+            $('#similarContent', page).html(html).lazyChildren();
         });
     }
 
@@ -717,10 +717,42 @@
         }
     }
 
-    var _childrenItemsQuery = null;
+    function getEpisodesFunction(seriesId, query) {
+
+        query = $.extend({}, query);
+
+        return function (index, limit, fields) {
+
+            query.StartIndex = index;
+            query.Limit = limit;
+            query.Fields = fields;
+
+            return ApiClient.getEpisodes(seriesId, query);
+
+        };
+
+    }
+
+    function getAlbumSongsFunction(query) {
+
+        query = $.extend({}, query);
+
+        return function (index, limit, fields) {
+
+            query.StartIndex = index;
+            query.Limit = limit;
+            query.Fields = fields;
+
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+
+        };
+
+    }
+
+    var _childrenItemsFunction = null;
     function renderChildren(page, item, user, context) {
 
-        _childrenItemsQuery = null;
+        _childrenItemsFunction = null;
 
         var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio,SyncInfo";
 
@@ -753,14 +785,24 @@
                 userId: user.Id,
                 Fields: fields
             });
+
+            _childrenItemsFunction = getEpisodesFunction(item.SeriesId, {
+
+                seasonId: item.Id,
+                userId: user.Id
+            });
+        }
+        else if (item.Type == "MusicAlbum") {
+
+            _childrenItemsFunction = getAlbumSongsFunction(query);
         }
 
-        _childrenItemsQuery = query;
         promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
         promise.done(function (result) {
 
             var html = '';
+            var trigger = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -773,6 +815,7 @@
                     playFromHere: true,
                     defaultAction: 'playallfromhere'
                 });
+                trigger = true;
 
             }
             else if (item.Type == "Series") {
@@ -792,6 +835,7 @@
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                     context: context,
+                    playFromHere: true,
                     overlayText: true
                 });
             }
@@ -805,7 +849,11 @@
                 });
             }
 
-            $('.childrenItemsContainer', page).html(html).trigger('create').createCardMenus();
+            var elem = $('.childrenItemsContainer', page).html(html).lazyChildren();
+
+            if (trigger) {
+                elem.trigger('create');
+            }
 
             if (item.Type == "BoxSet") {
 
@@ -1560,11 +1608,11 @@
 
         $('.childrenItemsContainer', page).on('playallfromhere', function (e, index) {
 
-            LibraryBrowser.playAllFromHere(_childrenItemsQuery, index);
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
         }).on('queueallfromhere', function (e, index) {
 
-            LibraryBrowser.queueAllFromHere(_childrenItemsQuery, index);
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 

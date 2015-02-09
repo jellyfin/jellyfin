@@ -101,6 +101,7 @@
     <Compile Include="Collections\ICollectionManager.cs" />
     <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Connect\UserLinkResult.cs" />
+    <Compile Include="Devices\CameraImageUploadInfo.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Devices\IDeviceRepository.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Dlna\IContentDirectory.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
+    <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
@@ -117,7 +119,6 @@
     <Compile Include="Drawing\ImageStream.cs" />
     <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
-    <Compile Include="Entities\AdultVideo.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
     <Compile Include="Entities\Audio\IHasMusicGenres.cs" />
     <Compile Include="Entities\Book.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
+    <Compile Include="Library\IMediaSourceManager.cs" />
     <Compile Include="Library\IMetadataFileSaver.cs" />
     <Compile Include="Library\IMetadataSaver.cs" />
     <Compile Include="Library\IMusicManager.cs" />
@@ -312,9 +314,6 @@
     <Compile Include="Library\ILibraryManager.cs" />
     <Compile Include="Library\IUserManager.cs" />
     <Compile Include="Library\Profiler.cs" />
-    <Compile Include="Localization\BaseStrings.cs" />
-    <Compile Include="Localization\LocalizedStringData.cs" />
-    <Compile Include="Localization\LocalizedStrings.cs" />
     <Compile Include="Persistence\IDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\IItemRepository.cs" />
     <Compile Include="Persistence\IRepository.cs" />
@@ -343,6 +342,7 @@
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
     <Compile Include="Sync\ICloudSyncProvider.cs" />
+    <Compile Include="Sync\IServerSyncProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Sync\ISyncRepository.cs" />

@@ -62,8 +62,9 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <param name="serverUuId">The server uu identifier.</param>
+        /// <param name="serverAddress">The server address.</param>
         /// <returns>System.String.</returns>
-        string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId);
+        string GetServerDescriptionXml(IDictionary<string, string> headers, string serverUuId, string serverAddress);
 
         /// <summary>
         /// Gets the icon.

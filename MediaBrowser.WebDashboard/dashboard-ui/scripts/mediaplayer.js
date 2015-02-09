@@ -106,9 +106,14 @@
             // Chrome, Firefox or IE with plugin installed
             // For some reason in chrome pausing mp4 is causing the video to fail. 
             // So for now it will have to prioritize webm
-            if (self.canPlayWebm() && ($.browser.chrome || $.browser.msie)) {
+            if (self.canPlayWebm()) {
 
-                return '.webm';
+                if ($.browser.msie) {
+                    return '.webm';
+                }
+                if ($.browser.chrome) {
+                    return '.webm';
+                }
             }
 
             return '.mp4';
@@ -297,14 +302,14 @@
                 return false;
             }
 
-            if (subtitleStream && (!subtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
+            if (subtitleStream && (!subtitleStream.SupportsExternalStream || !subtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
                 return false;
             }
 
             if (videoStream.IsCabac != null && !videoStream.IsCabac) {
                 console.log('Video not CABAC');
-                return false;
+                //return false;
             }
 
             if (!videoStream.Width) {
@@ -367,7 +372,7 @@
 
             var canPlayDirect = self.canPlayVideoDirect(mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
 
-            var audioBitrate = bitrate >= 700000 ? 128000 : 64000;
+            var audioBitrate = bitrate >= 700000 ? 192000 : 64000;
 
             var videoBitrate = bitrate - audioBitrate;
 
@@ -551,8 +556,8 @@
                 ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
                     userId: Dashboard.getCurrentUserId()
 
-                })).done(function(result) {
-                    
+                })).done(function (result) {
+
                     self.currentItem = item;
                     self.currentMediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
 

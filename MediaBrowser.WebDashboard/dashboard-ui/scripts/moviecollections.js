@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "BoxSet",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo,CanDelete",
         StartIndex: 0,
         ImageTypeLimit: 1,
         EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
@@ -41,18 +41,17 @@
                 ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
                 '';
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
                 additionalButtonsHtml: addiontalButtonsHtml
-            });
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (result.TotalRecordCount) {
 
@@ -63,19 +62,19 @@
                         context: 'movies',
                         sortBy: query.SortBy
                     });
+                    trigger = true;
                 }
                 else if (view == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'movies',
-                        showTitle: false,
+                        showTitle: true,
                         centerText: true,
                         lazy: true
                     });
                 }
 
-                html += pagingHtml;
                 $('.noItemsMessage', page).hide();
 
             } else {
@@ -83,7 +82,11 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            $('.itemsContainer', page).html(html).lazyChildren();
+
+            if (trigger) {
+                $('.itemsContainer', page).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -229,12 +232,14 @@
         if (context == 'movies') {
             $('.collectionTabs', page).hide();
             $('.movieTabs', page).show();
+
+            // TODO: Improve in the future to limit scope
+            query.ParentId = null;
         } else {
             $('.collectionTabs', page).show();
             $('.movieTabs', page).hide();
+            query.ParentId = LibraryMenu.getTopParentId();
         }
-
-        //query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
 
@@ -267,24 +272,91 @@
 
 (function ($, document) {
 
-    function showNewCollectionPanel(page, items) {
+    function getNewCollectionPanel(createIfNeeded) {
 
-        $('.fldSelectedItemIds', page).val(items.join(','));
+        var panel = $('.newCollectionPanel');
 
-        var panel = $('.newCollectionPanel', page).panel('toggle');
+        if (createIfNeeded && !panel.length) {
 
-        populateCollections(panel);
+            var html = '';
+
+            html += '<div>';
+            html += '<div data-role="panel" class="newCollectionPanel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="a">';
+            html += '<form class="newCollectionForm">';
+
+            html += '<h3>' + Globalize.translate('HeaderAddToCollection') + '</h3>';
+
+            html += '<div class="fldSelectCollection">';
+            html += '<br />';
+            html += '<label for="selectCollectionToAddTo">' + Globalize.translate('LabelSelectCollection') + '</label>';
+            html += '<select id="selectCollectionToAddTo" data-mini="true"></select>';
+            html += '</div>';
+
+            html += '<div class="newCollectionInfo">';
+            html += '<br />';
+
+            html += '<div>';
+            html += '<label for="txtNewCollectionName">' + Globalize.translate('LabelName') + '</label>';
+            html += '<input type="text" id="txtNewCollectionName" required="required" />';
+            html += '<div class="fieldDescription">' + Globalize.translate('NewCollectionNameExample') + '</div>';
+            html += '</div>';
+
+            html += '<br />';
+
+            html += '<div>';
+            html += '<label for="chkEnableInternetMetadata">' + Globalize.translate('OptionSearchForInternetMetadata') + '</label>';
+            html += '<input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />';
+            html += '</div>';
+
+            // newCollectionInfo
+            html += '</div>';
+
+            html += '<br />';
+            html += '<p>';
+            html += '<input class="fldSelectedItemIds" type="hidden" />';
+            html += '<button type="submit" data-icon="plus" data-mini="true" data-theme="b">' + Globalize.translate('ButtonSubmit') + '</button>';
+            html += '</p>';
+
+            html += '</form>';
+            html += '</div>';
+            html += '</div>';
+
+            panel = $(html).appendTo(document.body).trigger('create').find('.newCollectionPanel');
+
+            $('#selectCollectionToAddTo', panel).on('change', function () {
+
+                if (this.value) {
+                    $('.newCollectionInfo', panel).hide();
+                    $('#txtNewCollectionName', panel).removeAttr('required');
+                } else {
+                    $('.newCollectionInfo', panel).show();
+                    $('#txtNewCollectionName', panel).attr('required', 'required');
+                }
+            });
+
+            $('.newCollectionForm', panel).off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
+        }
+        return panel;
+    }
+
+    function showCollectionPanel(items) {
+
+        var panel = getNewCollectionPanel(true).panel('toggle');
+
+        $('.fldSelectedItemIds', panel).val(items.join(','));
+
+        if (items.length) {
+            $('.fldSelectCollection', panel).show();
+            populateCollections(panel);
+        } else {
+            $('.fldSelectCollection', panel).hide();
+            $('#selectCollectionToAddTo', panel).html('').val('').selectmenu('refresh').trigger('change');
+        }
     }
 
     function populateCollections(panel) {
 
         var select = $('#selectCollectionToAddTo', panel);
-
-        if (!select.length) {
-
-            $('#txtNewCollectionName', panel).val('').focus();
-            return;
-        }
 
         $('.newCollectionInfo', panel).hide();
 
@@ -314,24 +386,10 @@
 
         var page = this;
 
-        $('.itemsContainer', page).on('itemsrendered', function () {
+        // The button is created dynamically
+        $(page).on('click', '.btnNewCollection', function () {
 
-            $('.btnNewCollection', page).off('click.newcollectionpanel').on('click.newcollectionpanel', function () {
-
-                showNewCollectionPanel(page, []);
-            });
-
-        });
-
-        $('#selectCollectionToAddTo', page).on('change', function () {
-
-            if (this.value) {
-                $('.newCollectionInfo', page).hide();
-                $('#txtNewCollectionName', page).removeAttr('required');
-            } else {
-                $('.newCollectionInfo', page).show();
-                $('#txtNewCollectionName', page).attr('required', 'required');
-            }
+            showCollectionPanel(page, []);
         });
     });
 
@@ -346,13 +404,13 @@
         });
     }
 
-    function createCollection(page) {
+    function createCollection(panel) {
 
         var url = ApiClient.getUrl("Collections", {
 
-            Name: $('#txtNewCollectionName', page).val(),
-            IsLocked: !$('#chkEnableInternetMetadata', page).checked(),
-            Ids: $('.fldSelectedItemIds', page).val() || ''
+            Name: $('#txtNewCollectionName', panel).val(),
+            IsLocked: !$('#chkEnableInternetMetadata', panel).checked(),
+            Ids: $('.fldSelectedItemIds', panel).val() || ''
 
             //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
 
@@ -369,17 +427,17 @@
 
             var id = result.Id;
 
-            $('.newCollectionPanel', page).panel('toggle');
+            panel.panel('toggle');
             redirectToCollection(id);
 
         });
     }
 
-    function addToCollection(page, id) {
+    function addToCollection(panel, id) {
 
         var url = ApiClient.getUrl("Collections/" + id + "/Items", {
 
-            Ids: $('.fldSelectedItemIds', page).val() || ''
+            Ids: $('.fldSelectedItemIds', panel).val() || ''
         });
 
         ApiClient.ajax({
@@ -390,33 +448,40 @@
 
             Dashboard.hideLoadingMsg();
 
-            $('.newCollectionPanel', page).panel('toggle');
-            redirectToCollection(id);
+            panel.panel('toggle');
 
+            Dashboard.alert(Globalize.translate('MessageItemsAdded'));
         });
     }
 
     window.BoxSetEditor = {
 
-        showPanel: function (page, items) {
-            showNewCollectionPanel(page, items);
+        showPanel: function (items) {
+            showCollectionPanel(items);
         },
 
         onNewCollectionSubmit: function () {
 
             Dashboard.showLoadingMsg();
 
-            var page = $(this).parents('.page');
+            var panel = getNewCollectionPanel(false);
 
-            var collectionId = $('#selectCollectionToAddTo', page).val();
+            var collectionId = $('#selectCollectionToAddTo', panel).val();
 
             if (collectionId) {
-                addToCollection(page, collectionId);
+                addToCollection(panel, collectionId);
             } else {
-                createCollection(page);
+                createCollection(panel);
             }
 
             return false;
+        },
+
+        supportsAddingToCollection: function (item) {
+
+            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode'];
+
+            return item.LocationType == 'FileSystem' && !item.CollectionType && invalidTypes.indexOf(item.Type) == -1;
         }
     };
 

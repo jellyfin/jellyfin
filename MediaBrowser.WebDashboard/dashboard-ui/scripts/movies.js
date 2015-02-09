@@ -40,11 +40,13 @@
                 viewButton: true,
                 showLimit: false,
                 addSelectionButton: true
+
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -56,7 +58,6 @@
                     overlayText: true,
                     showTitle: false
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "ThumbCard") {
 
@@ -70,7 +71,6 @@
                     cardLayout: true,
                     showYear: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Banner") {
 
@@ -81,7 +81,6 @@
                     context: 'movies',
                     lazy: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "List") {
 
@@ -90,7 +89,7 @@
                     context: 'movies',
                     sortBy: query.SortBy
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
+                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -102,7 +101,6 @@
                     lazy: true,
                     overlayText: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "PosterCard") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -114,7 +112,6 @@
                     lazy: true,
                     cardLayout: true
                 });
-                $('.itemsContainer', page).removeClass('timelineItemsContainer');
             }
             else if (view == "Timeline") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -126,12 +123,15 @@
                     centerText: true,
                     lazy: true
                 });
-                $('.itemsContainer', page).addClass('timelineItemsContainer');
             }
 
-            html += pagingHtml;
+            var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            if (trigger) {
+                $(elem).trigger('create');
+            }
+
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

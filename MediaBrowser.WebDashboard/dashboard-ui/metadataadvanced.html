@@ -13,7 +13,7 @@
                     <a href="metadata.html" data-role="button">${TabBasics}</a>
                     <a href="metadataimages.html" data-role="button">${TabServices}</a>
                     <a href="metadatasubtitles.html" data-role="button">${TabSubtitles}</a>
-                    <a href="metadatakodi.html" data-role="button">${TabKodiMetadata}</a>
+                    <a href="metadatanfo.html" data-role="button">${TabNfo}</a>
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
@@ -47,13 +47,8 @@
                         <div>
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
-                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdatesFanart}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                                </li>
-                                <li>
-                                    <input type="checkbox" id="chkEnableTmdbPersonUpdates" data-mini="true" />
-                                    <label for="chkEnableTmdbPersonUpdates">${LabelAutomaticUpdatesTmdb}</label>
+                                    <input type="checkbox" id="chkEnableTmdbUpdates" data-mini="true" />
+                                    <label for="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</label>
                                     <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
                                 </li>
                                 <li>
@@ -108,13 +103,33 @@
                                     <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
                                 </li>
                             </ul>
-                            <br/>
+                            <br />
                             <div>
                                 <label for="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</label>
                                 <input type="checkbox" id="chkExtractChaptersDuringLibraryScan" />
                                 <div class="fieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
                             </div>
                             <br />
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Fanart.tv</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtFanartApiKey">${LabelFanartApiKey}</label>
+                                    <input type="text" id="txtFanartApiKey" />
+                                    <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
+                                    <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
+                                </li>
+                                <li>
+                                    <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
+                                    <label for="chkEnableFanartUpdates">${LabelAutomaticUpdates}</label>
+                                    <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -148,19 +163,6 @@
                                         <label for="chkPeopleOthers">${OptionOthers}</label>
                                     </div>
                                     <div class="fieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div data-role="collapsible">
-                        <h2>${HeaderTrailersAndExtras}</h2>
-                        <div>
-                            <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <input type="checkbox" id="chkFindTrailers" data-mini="true" />
-                                    <label for="chkFindTrailers">${OptionFindTrailers}</label>
                                 </li>
                             </ul>
                         </div>

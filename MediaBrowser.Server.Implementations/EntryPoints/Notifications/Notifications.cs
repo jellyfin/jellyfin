@@ -3,6 +3,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -44,8 +45,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly object _libraryChangedSyncLock = new object();
 
         private readonly IConfigurationManager _config;
+        private readonly IDeviceManager _deviceManager;
 
-        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config)
+        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager)
         {
             _installationManager = installationManager;
             _userManager = userManager;
@@ -56,6 +58,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _sessionManager = sessionManager;
             _appHost = appHost;
             _config = config;
+            _deviceManager = deviceManager;
         }
 
         public void Run()
@@ -74,6 +77,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
+            _deviceManager.CameraImageUploaded +=_deviceManager_CameraImageUploaded;
+        }
+
+        async void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
+        {
+            var type = NotificationType.CameraImageUploaded.ToString();
+
+            var notification = new NotificationRequest
+            {
+                NotificationType = type
+            };
+
+            notification.Variables["DeviceName"] = e.Argument.Device.Name;
+
+            await SendNotification(notification).ConfigureAwait(false);
         }
 
         async void _appHost_ApplicationUpdated(object sender, GenericEventArgs<PackageVersionInfo> e)
@@ -451,6 +469,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged -= _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
+
+            _deviceManager.CameraImageUploaded -= _deviceManager_CameraImageUploaded;
         }
 
         private void DisposeLibraryUpdateTimer()

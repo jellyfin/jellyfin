@@ -15,7 +15,7 @@
 
             if (showManualForm) {
 
-                LoginPage.showManualForm(page, false);
+                LoginPage.showManualForm(page, false, false);
 
             } else {
                 LoginPage.showVisualForm(page);
@@ -36,10 +36,15 @@
         LoginPage.showVisualForm($.mobile.activePage);
     },
 
-    showManualForm: function (page, showCancel) {
+    showManualForm: function (page, showCancel, focusPassword) {
         $('.visualLoginForm', page).hide();
         $('#manualLoginForm', page).show();
-        $('#txtManualName', page).focus();
+
+        if (focusPassword) {
+            $('#txtManualPassword', page).focus();
+        } else {
+            $('#txtManualName', page).focus();
+        }
 
         if (showCancel) {
             $('.btnCancel', page).show();
@@ -175,7 +180,7 @@
             } else {
                 $('#txtManualName', page).val(name);
                 $('#txtManualPassword', '#loginPage').val('');
-                LoginPage.showManualForm(page, true);
+                LoginPage.showManualForm(page, true, true);
             }
         });
     },

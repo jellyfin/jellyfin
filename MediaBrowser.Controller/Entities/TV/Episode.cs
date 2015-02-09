@@ -56,6 +56,15 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        protected override bool SupportsOwnedItems
+        {
+            get
+            {
+                return IsStacked || MediaSourceCount > 1;
+            }
+        }
+
+        [IgnoreDataMember]
         public int? AiredSeasonNumber
         {
             get
@@ -117,7 +126,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var series = Series;
 
@@ -126,7 +135,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return series.GetUserDataKey() + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000");
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         /// <summary>

@@ -156,6 +156,20 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
+
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
     }
 
     [Route("/Shows/{Id}/Seasons", "GET", Summary = "Gets seasons for a tv series")]
@@ -238,7 +252,9 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarShows request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataManager,
@@ -254,10 +270,10 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId)
-                .OfType<Episode>();
+            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Episode);
 
-            var itemsList = _libraryManager.Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
+            var itemsList = _libraryManager
+                .Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
                 .Cast<Episode>()
                 .ToList();
 
@@ -270,9 +286,9 @@ namespace MediaBrowser.Api
 
             var pagedItems = ApplyPaging(previousEpisodes, request.StartIndex, request.Limit);
 
-            var options = request.GetDtoOptions();
+            var options = GetDtoOptions(request);
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, options, user).ToArray();
 
             var result = new ItemsResult
             {
@@ -301,9 +317,9 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var options = request.GetDtoOptions();
+            var options = GetDtoOptions(request);
 
-            var returnItems = result.Items.Select(i => _dtoService.GetBaseItemDto(i, options, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user).ToArray();
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
@@ -365,9 +381,9 @@ namespace MediaBrowser.Api
                     .Cast<Season>();
             }
 
-            var fields = request.GetItemFields().ToList();
+            var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = seasons.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
@@ -411,7 +427,18 @@ namespace MediaBrowser.Api
 
             IEnumerable<Episode> episodes;
 
-            if (string.IsNullOrEmpty(request.SeasonId))
+            if (!string.IsNullOrWhiteSpace(request.SeasonId))
+            {
+                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
+
+                if (season == null)
+                {
+                    throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
+                }
+
+                episodes = season.GetEpisodes(user);
+            } 
+            else if (request.Season.HasValue)
             {
                 var series = _libraryManager.GetItemById(request.Id) as Series;
 
@@ -424,14 +451,14 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
+                var series = _libraryManager.GetItemById(request.Id) as Series;
 
-                if (season == null)
+                if (series == null)
                 {
-                    throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
+                    throw new ResourceNotFoundException("No series exists with Id " + request.Id);
                 }
 
-                episodes = season.GetEpisodes(user);
+                episodes = series.GetEpisodes(user);
             }
 
             // Filter after the fact in case the ui doesn't want them
@@ -448,24 +475,27 @@ namespace MediaBrowser.Api
                 episodes = episodes.Where(i => i.IsVirtualUnaired == val);
             }
 
+            IEnumerable<BaseItem> returnItems = episodes;
+
             // This must be the last filter
             if (!string.IsNullOrEmpty(request.AdjacentTo))
             {
-                episodes = UserViewBuilder.FilterForAdjacency(episodes, request.AdjacentTo)
-                    .Cast<Episode>();
+                returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            var fields = request.GetItemFields().ToList();
+            returnItems = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems);
 
-            episodes = _libraryManager.ReplaceVideosWithPrimaryVersions(episodes).Cast<Episode>();
+            var pagedItems = ApplyPaging(returnItems, request.StartIndex, request.Limit);
+            
+            var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = episodes.Select(i => _dtoService.GetBaseItemDto(i, fields, user))
+            var dtos = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user)
                 .ToArray();
 
             return new ItemsResult
             {
-                TotalRecordCount = returnItems.Length,
-                Items = returnItems
+                TotalRecordCount = dtos.Length,
+                Items = dtos
             };
         }
     }

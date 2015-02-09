@@ -38,7 +38,6 @@
             }
 
             var html = '';
-
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -61,11 +60,9 @@
                 overlayText: false
             });
 
-            $('.itemsContainer', page).removeClass('timelineItemsContainer');
+            var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
-            html += pagingHtml;
-
-            $('.itemsContainer', page).html(html).trigger('create').createCardMenus();
+            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

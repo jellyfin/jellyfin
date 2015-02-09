@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -15,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.Movies
             return Path.Combine(path, filename);
         }
 
-        public static string GetImageLanguagesParam(ILocalizationManager localization, string preferredLanguage)
+        public static string GetImageLanguagesParam(string preferredLanguage)
         {
             var languages = new List<string>();
 
@@ -275,18 +275,6 @@ namespace MediaBrowser.Providers.Movies
             {
                 languages.Add("en");
             }
-
-            var firstLetter = string.IsNullOrWhiteSpace(preferredLanguage)
-                ? string.Empty
-                : preferredLanguage.Substring(0, 1);
-
-            var allLanguages = localization.GetCultures()
-                .Select(i => i.TwoLetterISOLanguageName)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Where(i => !languages.Contains(i, StringComparer.OrdinalIgnoreCase) && i.StartsWith(firstLetter, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            //languages.AddRange(allLanguages);
 
             return string.Join(",", languages.ToArray());
         }
@@ -308,7 +296,7 @@ namespace MediaBrowser.Providers.Movies
                 url += string.Format("&language={0}", language);
             }
 
-            var includeImageLanguageParam = GetImageLanguagesParam(_localization, language);
+            var includeImageLanguageParam = GetImageLanguagesParam(language);
             // Get images in english and with no language
             url += "&include_image_language=" + includeImageLanguageParam;
 
@@ -335,26 +323,29 @@ namespace MediaBrowser.Providers.Movies
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
+            // If the language preference isn't english, then have the overview fallback to english if it's blank
+            if (mainResult != null &&
+                string.IsNullOrEmpty(mainResult.overview) && 
+                !string.IsNullOrEmpty(language) && 
+                !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
-                if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+                _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
+
+                url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
+
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {
-                    _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = AcceptHeader,
+                    CacheMode = cacheMode,
+                    CacheLength = cacheLength
 
-                    url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
+                }).ConfigureAwait(false))
+                {
+                    var englishResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
 
-                    using (var json = await GetMovieDbResponse(new HttpRequestOptions
-                    {
-                        Url = url,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = AcceptHeader,
-                        CacheMode = cacheMode,
-                        CacheLength = cacheLength
-
-                    }).ConfigureAwait(false))
-                    {
-                        mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
-                    }
+                    mainResult.overview = englishResult.overview;
                 }
             }
 
@@ -371,9 +362,14 @@ namespace MediaBrowser.Providers.Movies
             return _httpClient.Get(options);
         }
 
+        public TheMovieDbOptions GetTheMovieDbOptions()
+        {
+            return _configurationManager.GetConfiguration<TheMovieDbOptions>("themoviedb");
+        }
+
         public bool HasChanged(IHasMetadata item, DateTime date)
         {
-            if (!_configurationManager.Configuration.EnableTmdbUpdates)
+            if (!GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -603,6 +599,21 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbResourcePool
             });
+        }
+    }
+
+    public class TmdbConfigStore : IConfigurationFactory
+    {
+        public IEnumerable<ConfigurationStore> GetConfigurations()
+        {
+            return new List<ConfigurationStore>
+            {
+                new ConfigurationStore
+                {
+                     Key = "themoviedb",
+                     ConfigurationType = typeof(TheMovieDbOptions)
+                }
+            };
         }
     }
 }

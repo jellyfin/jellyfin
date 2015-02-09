@@ -16,6 +16,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The device identifier.</value>
         public string TargetId { get; set; }
         /// <summary>
+        /// Gets or sets the name of the target.
+        /// </summary>
+        /// <value>The name of the target.</value>
+        public string TargetName { get; set; }
+        /// <summary>
         /// Gets or sets the quality.
         /// </summary>
         /// <value>The quality.</value>
@@ -93,6 +98,7 @@ namespace MediaBrowser.Model.Sync
         public SyncJob()
         {
             RequestedItemIds = new List<string>();
+            Quality = SyncQuality.High;
         }
     }
 }

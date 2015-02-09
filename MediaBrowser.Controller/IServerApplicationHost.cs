@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller
 {
@@ -19,12 +19,6 @@ namespace MediaBrowser.Controller
         SystemInfo GetSystemInfo();
 
         /// <summary>
-        /// Gets the name of the web application.
-        /// </summary>
-        /// <value>The name of the web application.</value>
-        string WebApplicationName { get; }
-
-        /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].
         /// </summary>
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
@@ -34,7 +28,19 @@ namespace MediaBrowser.Controller
         /// Gets the HTTP server port.
         /// </summary>
         /// <value>The HTTP server port.</value>
-        int HttpServerPort { get; }
+        int HttpPort { get; }
+
+        /// <summary>
+        /// Gets the HTTPS port.
+        /// </summary>
+        /// <value>The HTTPS port.</value>
+        int HttpsPort { get; }
+        
+        /// <summary>
+        /// Gets a value indicating whether [supports HTTPS].
+        /// </summary>
+        /// <value><c>true</c> if [supports HTTPS]; otherwise, <c>false</c>.</value>
+        bool EnableHttps { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has update available.
@@ -49,9 +55,15 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets the HTTP server ip addresses.
+        /// Gets the local ip address.
         /// </summary>
-        /// <value>The HTTP server ip addresses.</value>
-        IEnumerable<string> HttpServerIpAddresses { get; }
+        /// <value>The local ip address.</value>
+        string LocalIpAddress { get; }
+
+        /// <summary>
+        /// Gets the local API URL.
+        /// </summary>
+        /// <value>The local API URL.</value>
+        string LocalApiUrl { get; }
     }
 }

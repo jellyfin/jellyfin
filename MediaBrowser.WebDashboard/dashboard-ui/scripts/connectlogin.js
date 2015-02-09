@@ -2,9 +2,7 @@
 
     function onLoggedIn() {
 
-        // Need to switch from https to http
-
-        window.location = getWindowUrl().replace(/https/gi, 'http').replace(/connectlogin/gi, 'selectserver');
+        Dashboard.navigate('selectserver.html');
     }
 
     function login(page, username, password) {
@@ -36,7 +34,6 @@
         var password = $('#txtManualPassword', page).val();
 
         login(page, user, password);
-
     }
 
     window.ConnectLoginPage = {

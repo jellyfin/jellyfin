@@ -25,42 +25,45 @@
 
             var item = items[i];
 
-            var imgUrl;
+            var icon;
 
             switch (item.CollectionType) {
                 case "movies":
-                    imgUrl = "css/images/items/folders/movies.png";
+                    icon = "fa-film";
                     break;
                 case "music":
-                    imgUrl = "css/images/items/folders/music.png";
+                    icon = "fa-music";
                     break;
                 case "photos":
-                    imgUrl = "css/images/items/folders/photos.png";
+                    icon = "fa-photo";
                     break;
                 case "livetv":
                 case "tvshows":
-                    imgUrl = "css/images/items/folders/tv.png";
+                    icon = "fa-video-camera";
                     break;
                 case "games":
-                    imgUrl = "css/images/items/folders/games.png";
+                    icon = "fa-gamepad";
                     break;
                 case "trailers":
-                    imgUrl = "css/images/items/folders/movies.png";
+                    icon = "fa-film";
                     break;
                 case "homevideos":
-                    imgUrl = "css/images/items/folders/homevideos.png";
+                    icon = "fa-video-camera";
                     break;
                 case "musicvideos":
-                    imgUrl = "css/images/items/folders/musicvideos.png";
+                    icon = "fa-video-camera";
                     break;
                 case "books":
-                    imgUrl = "css/images/items/folders/books.png";
+                    icon = "fa-book";
                     break;
                 case "channels":
-                    imgUrl = "css/images/items/folders/channels.png";
+                    icon = "fa-globe";
+                    break;
+                case "playlists":
+                    icon = "fa-list";
                     break;
                 default:
-                    imgUrl = "css/images/items/folders/folder.png";
+                    icon = "fa-folder-o";
                     break;
             }
 
@@ -75,15 +78,14 @@
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
 
-            var style = 'background-image:url(\'' + imgUrl + '\');';
-
             var imageCssClass = '';
 
-            html += '<div class="posterItemImage ' + imageCssClass + '" style="' + style + '">';
+            html += '<div class="posterItemImage ' + imageCssClass + '">';
             html += '</div>';
 
             html += "<div class='posterItemDefaultText posterItemText'>";
-            html += item.Name;
+            html += '<i class="fa ' + icon + '"></i>';
+            html += '<span>' + item.Name + '</span>';
             html += "</div>";
 
             html += "</a>";
@@ -123,7 +125,9 @@
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsPlayed: false
+            IsPlayed: false,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
@@ -135,11 +139,11 @@
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
                 html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
                 html += '</div>';
-                html += '<div>';
+                html += '<div class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     preferThumb: true,
-                    shape: 'homePageBackdrop',
+                    shape: 'backdrop',
                     context: context || 'home',
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
@@ -148,7 +152,8 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            $(elem).html(html).lazyChildren();
+            $(elem).createCardMenus();
         });
     }
 
@@ -170,7 +175,7 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
-                html += '<div>';
+                html += '<div class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
@@ -182,7 +187,8 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            $(elem).html(html).lazyChildren();
+            $(elem).createCardMenus();
         });
     }
 
@@ -221,7 +227,7 @@
             }
 
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
 
             handleLibraryLinkNavigations(elem);
         });
@@ -231,7 +237,8 @@
 
         ApiClient.getItems(userId, {
 
-            SortBy: "SortName"
+            SortBy: "SortName",
+            ImageTypeLimit: 1
 
         }).done(function (result) {
 
@@ -257,7 +264,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            $(elem).html(html).lazyChildren();
 
             handleLibraryLinkNavigations(elem);
         });
@@ -277,7 +284,9 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
         ApiClient.getItems(userId, options).done(function (result) {
@@ -290,7 +299,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferBackdrop: true,
-                    shape: 'homePageBackdrop',
+                    shape: 'backdrop',
                     overlayText: screenWidth >= 600,
                     showTitle: true,
                     showParentTitle: true,
@@ -300,7 +309,8 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).trigger('create').createCardMenus();
+            $(elem).html(html).lazyChildren();
+            $(elem).createCardMenus();
         });
     }
 
@@ -308,7 +318,12 @@
 
         $('a.posterItem', elem).on('click', function () {
 
-            var text = $('.posterItemText', this).html();
+            var textElem = $('.posterItemText span', this);
+
+            if (!textElem.length) {
+                textElem = $('.posterItemText', this);
+            }
+            var text = textElem.html();
 
             LibraryMenu.setText(text);
         });
@@ -350,7 +365,7 @@
 
         var options = {
 
-            Limit: screenWidth >= 1600 ? 6 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
+            Limit: screenWidth >= 1600 ? 10 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
@@ -368,9 +383,10 @@
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + text + '</h1>';
-                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton">d</a>';
+                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
                 html += '</div>';
             }
+            html += '<div class="itemsContainer">';
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: 'autohome',
@@ -380,8 +396,10 @@
                 context: 'channels',
                 lazy: true
             });
+            html += '</div>';
 
-            $('#channel' + channel.Id + '', page).html(html).trigger('create').createCardMenus();
+            var elem = $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create');
+            $(elem).createCardMenus();
         });
     }
 
@@ -403,7 +421,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvrecordings.html?context=livetv" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton">d</a>';
+                html += '<a href="livetvrecordings.html?context=livetv" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
                 html += '</div>';
             }
 
@@ -419,7 +437,7 @@
                 lazy: true
             });
 
-            elem.html(html).trigger('create').createCardMenus();
+            elem.html(html).lazyChildren().trigger('create');
 
         });
     }
@@ -467,7 +485,7 @@
             Sections.loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'homePageBackdrop', index);
+            Sections.loadLibraryTiles(elem, userId, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
             Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index);
@@ -487,7 +505,7 @@
         }
 
         else if (section == 'folders') {
-            Sections.loadLibraryFolders(elem, userId, 'homePageBackdrop', index);
+            Sections.loadLibraryFolders(elem, userId, 'backdrop', index);
 
         } else if (section == 'latestchannelmedia') {
             Sections.loadLatestChannelMedia(elem, userId);

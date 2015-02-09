@@ -1,9 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -21,7 +24,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
@@ -35,6 +38,7 @@ namespace MediaBrowser.Api
         public IRequest Request { get; set; }
 
         public ISessionContext SessionContext { get; set; }
+        public IAuthorizationContext AuthorizationContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -109,6 +113,37 @@ namespace MediaBrowser.Api
         private readonly char[] _dashReplaceChars = { '?', '/', '&' };
         private const char SlugChar = '-';
 
+        protected DtoOptions GetDtoOptions(object request)
+        {
+            var options = new DtoOptions();
+
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+            var hasFields = request as IHasItemFields;
+            if (hasFields != null)
+            {
+                options.Fields = hasFields.GetItemFields().ToList();
+            }
+
+            var hasDtoOptions = request as IHasDtoOptions;
+            if (hasDtoOptions != null)
+            {
+                options.EnableImages = hasDtoOptions.EnableImages ?? true;
+
+                if (hasDtoOptions.ImageTypeLimit.HasValue)
+                {
+                    options.ImageTypeLimit = hasDtoOptions.ImageTypeLimit.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
+                {
+                    options.ImageTypes = (hasDtoOptions.EnableImageTypes ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToList();
+                }
+            }
+
+            return options;
+        }
+
         protected MusicArtist GetArtist(string name, ILibraryManager libraryManager)
         {
             return libraryManager.GetArtist(DeSlugArtistName(name, libraryManager));
@@ -139,11 +174,11 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IEnumerable<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId = null)
+        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem,bool> filter)
         {
             if (!string.IsNullOrEmpty(parentId))
             {
-                var folder = (Folder) libraryManager.GetItemById(new Guid(parentId));
+                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
 
                 if (userId.HasValue)
                 {
@@ -154,10 +189,13 @@ namespace MediaBrowser.Api
                         throw new ArgumentException("User not found");
                     }
 
-                    return folder.GetRecursiveChildren(user);
+                    return folder
+                        .GetRecursiveChildren(user, filter)
+                        .ToList();
                 }
 
-                return folder.GetRecursiveChildren();
+                return folder
+                    .GetRecursiveChildren(filter);
             }
             if (userId.HasValue)
             {
@@ -168,10 +206,16 @@ namespace MediaBrowser.Api
                     throw new ArgumentException("User not found");
                 }
 
-                return userManager.GetUserById(userId.Value).RootFolder.GetRecursiveChildren(user);
+                return userManager
+                    .GetUserById(userId.Value)
+                    .RootFolder
+                    .GetRecursiveChildren(user, filter)
+                    .ToList();
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren();
+            return libraryManager
+                .RootFolder
+                .GetRecursiveChildren(filter);
         }
 
         /// <summary>
@@ -187,8 +231,9 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.RecursiveChildren
-                .OfType<Audio>()
+            return libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is IHasArtist)
+                .Cast<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -229,8 +274,8 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren()
-                .OfType<Game>()
+            return libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is Game)
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -252,7 +297,8 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren()
+            return libraryManager.RootFolder
+                .GetRecursiveChildren()
                 .SelectMany(i => i.Studios)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .FirstOrDefault(i =>
@@ -274,7 +320,8 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder.GetRecursiveChildren()
+            return libraryManager.RootFolder
+                .GetRecursiveChildren()
                 .SelectMany(i => i.People)
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -287,6 +334,20 @@ namespace MediaBrowser.Api
                 }) ?? name;
         }
 
+        protected string GetPathValue(int index)
+        {
+            var pathInfo = PathInfo.Parse(Request.PathInfo);
+            var first = pathInfo.GetArgumentValue<string>(0);
+
+            // backwards compatibility
+            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase))
+            {
+                index++;
+            }
+
+            return pathInfo.GetArgumentValue<string>(index);
+        }
+
         /// <summary>
         /// Gets the name of the item by.
         /// </summary>
@@ -294,7 +355,6 @@ namespace MediaBrowser.Api
         /// <param name="type">The type.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns>Task{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentException"></exception>
         protected BaseItem GetItemByName(string name, string type, ILibraryManager libraryManager)
         {
             BaseItem item;

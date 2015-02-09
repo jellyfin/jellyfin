@@ -72,6 +72,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private int CompareEpisodeToSpecial(Episode x, Episode y)
         {
+            // http://thetvdb.com/wiki/index.php?title=Special_Episodes
+
             var xSeason = x.PhysicalSeasonNumber ?? -1;
             var ySeason = y.AirsAfterSeasonNumber ?? y.AirsBeforeSeasonNumber ?? -1;
 

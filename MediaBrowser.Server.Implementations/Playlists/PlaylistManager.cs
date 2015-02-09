@@ -81,8 +81,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
                         var folder = item as Folder;
                         if (folder != null)
                         {
-                            options.MediaType = folder.GetRecursiveChildren()
-                                .Where(i => !i.IsFolder && i.SupportsAddingToPlaylist)
+                            options.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
                                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
                         }

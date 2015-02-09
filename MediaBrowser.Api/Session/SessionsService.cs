@@ -243,8 +243,13 @@ namespace MediaBrowser.Api.Session
         [ApiMember(Name = "SupportsSync", Description = "Determines whether sync is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsSync { get; set; }
 
-        [ApiMember(Name = "SupportsUniqueIdentifier", Description = "Determines whether the device supports a unique identifier.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool SupportsUniqueIdentifier { get; set; }
+        [ApiMember(Name = "SupportsPersistentIdentifier", Description = "Determines whether the device supports a unique identifier.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool SupportsPersistentIdentifier { get; set; }
+
+        public PostCapabilities()
+        {
+            SupportsPersistentIdentifier = true;
+        }
     }
 
     [Route("/Sessions/Capabilities/Full", "POST", Summary = "Updates capabilities for a device")]
@@ -556,7 +561,7 @@ namespace MediaBrowser.Api.Session
 
                 SupportsSync = request.SupportsSync,
 
-                SupportsUniqueIdentifier = request.SupportsUniqueIdentifier
+                SupportsPersistentIdentifier = request.SupportsPersistentIdentifier
             });
         }
 

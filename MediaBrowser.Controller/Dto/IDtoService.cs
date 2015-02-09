@@ -44,6 +44,17 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>BaseItemDto.</returns>
         BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null);
+
+        /// <summary>
+        /// Gets the base item dtos.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        /// <param name="owner">The owner.</param>
+        /// <returns>IEnumerable&lt;BaseItemDto&gt;.</returns>
+        IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null,
+            BaseItem owner = null);
         
         /// <summary>
         /// Gets the chapter information dto.

@@ -40,6 +40,7 @@ namespace MediaBrowser.Model.Entities
         NesBoxRom = 14,
         TvRage = 15,
         AudioDbArtist = 16,
-        AudioDbAlbum = 17
+        AudioDbAlbum = 17,
+        MusicBrainzTrack = 18
     }
 }

@@ -1,6 +1,6 @@
 ﻿using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;

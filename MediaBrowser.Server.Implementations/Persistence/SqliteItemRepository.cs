@@ -1,7 +1,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -204,6 +203,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -272,6 +273,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
+            CheckDisposed();
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select type,data from TypedBaseItems where guid = @guid";
@@ -356,6 +359,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <exception cref="System.ArgumentNullException">id</exception>
         public IEnumerable<ChapterInfo> GetChapters(Guid id)
         {
+            CheckDisposed();
             return _chapterRepository.GetChapters(id);
         }
 
@@ -368,6 +372,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <exception cref="System.ArgumentNullException">id</exception>
         public ChapterInfo GetChapter(Guid id, int index)
         {
+            CheckDisposed();
             return _chapterRepository.GetChapter(id, index);
         }
 
@@ -387,6 +392,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </exception>
         public Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
         {
+            CheckDisposed();
             return _chapterRepository.SaveChapters(id, chapters, cancellationToken);
         }
 
@@ -401,6 +407,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly object _disposeLock = new object();
 
+        private bool _disposed;
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
+            }
+        }
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -409,6 +424,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             if (dispose)
             {
+                _disposed = true;
+
                 try
                 {
                     lock (_disposeLock)
@@ -457,6 +474,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("parentId");
             }
 
+            CheckDisposed();
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select ItemId from ChildrenIds where ParentId = @ParentId";
@@ -480,6 +499,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("parentId");
             }
 
+            CheckDisposed();
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select type,data from TypedBaseItems where guid in (select ItemId from ChildrenIds where ParentId = @ParentId)";
@@ -508,6 +529,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("type");
             }
 
+            CheckDisposed();
+            
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select type,data from TypedBaseItems where type = @type";
@@ -536,6 +559,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -599,6 +624,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("children");
             }
 
+            CheckDisposed();
+            
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
@@ -660,11 +687,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query)
         {
+            CheckDisposed();
             return _mediaStreamsRepository.GetMediaStreams(query);
         }
 
         public Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
         {
+            CheckDisposed();
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
     }

@@ -1,4 +1,4 @@
-﻿(function (globalScope, $) {
+﻿(function (globalScope) {
 
     if (!globalScope.MediaBrowser) {
         globalScope.MediaBrowser = {};
@@ -17,7 +17,9 @@
         Remote: 1
     };
 
-    globalScope.MediaBrowser.ConnectionManager = function (credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ConnectionManager = function ($, logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
+
+        logger.log('Begin MediaBrowser.ConnectionManager constructor');
 
         var self = this;
         var apiClients = [];
@@ -64,7 +66,7 @@
             return $.ajax({
 
                 type: "GET",
-                url: url + "/mediabrowser/system/info/public",
+                url: url + "/system/info/public",
                 dataType: "json",
 
                 timeout: timeout || 15000
@@ -88,6 +90,15 @@
         self.currentApiClient = function () {
 
             return apiClients[0];
+        };
+
+        self.connectUserId = function () {
+            return credentialProvider.credentials().ConnectUserId;
+        };
+
+        self.connectToken = function () {
+
+            return credentialProvider.credentials().ConnectAccessToken;
         };
 
         self.addApiClient = function (apiClient, enableAutomaticNetworking) {
@@ -128,7 +139,7 @@
 
                 var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-                apiClient = new MediaBrowser.ApiClient(url, appName, appVersion, deviceName, deviceId, capabilities);
+                apiClient = new MediaBrowser.ApiClient($, logger, url, appName, appVersion, deviceName, deviceId, capabilities);
 
                 apiClients.push(apiClient);
 
@@ -257,7 +268,7 @@
 
             var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
-            url += "/mediabrowser/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
+            url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
             return $.ajax({
                 type: "GET",
@@ -288,7 +299,7 @@
             $.ajax({
 
                 type: "GET",
-                url: url + "/mediabrowser/system/info",
+                url: url + "/system/info",
                 dataType: "json",
                 headers: {
                     "X-MediaBrowser-Token": server.AccessToken
@@ -303,7 +314,7 @@
                     $.ajax({
 
                         type: "GET",
-                        url: url + "/mediabrowser/users/" + server.UserId,
+                        url: url + "/users/" + server.UserId,
                         dataType: "json",
                         headers: {
                             "X-MediaBrowser-Token": server.AccessToken
@@ -448,25 +459,16 @@
             });
         };
 
-        self.connectUserId = function () {
-            return credentialProvider.credentials().ConnectUserId;
-        };
-
-        self.connectToken = function () {
-
-            return credentialProvider.credentials().ConnectAccessToken;
-        };
-
         function getConnectServers() {
 
-            if (!self.connectToken()) {
-                throw new Error("null connectToken");
-            }
-            if (!self.connectUserId()) {
-                throw new Error("null connectUserId");
-            }
+            logger.log('Begin getConnectServers');
 
             var deferred = $.Deferred();
+
+            if (!self.connectToken() || !self.connectUserId()) {
+                deferred.resolveWith(null, [[]]);
+                return deferred.promise();
+            }
 
             var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId();
 
@@ -505,6 +507,8 @@
 
         self.getServers = function () {
 
+            logger.log('Begin getServers');
+
             // Clone the array
             var credentials = credentialProvider.credentials();
             var servers = credentials.servers.slice(0);
@@ -519,17 +523,19 @@
                     return b.DateLastAccessed - a.DateLastAccessed;
                 });
 
-                deferred.resolveWith(null, [newList]);
-
                 credentials.servers = newList;
 
                 credentialProvider.credentials(credentials);
+
+                deferred.resolveWith(null, [newList]);
             });
 
             return deferred.promise();
         };
 
         self.connect = function () {
+
+            logger.log('Begin connect');
 
             var deferred = $.Deferred();
 
@@ -916,6 +922,7 @@
             });
         };
 
+        return self;
     };
 
-})(window, jQuery);
+})(window, window.jQuery, window.Logger);

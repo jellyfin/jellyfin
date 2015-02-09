@@ -60,4 +60,10 @@
 
     };
 
+    $.fn.lazyChildren = function () {
+
+        $(".lazy", this).unveil(200);
+        return this;
+    };
+
 })(window.jQuery || window.Zepto);

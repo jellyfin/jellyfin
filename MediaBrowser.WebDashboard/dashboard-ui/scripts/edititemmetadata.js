@@ -963,11 +963,13 @@
         };
 
         self.addElementToEditableListview = function (source, sortCallback) {
-            var input = $(source).parent().find('input[type="text"], select');
+
+            var parent = $(source).parents('*[data-role="editableListviewContainer"]');
+            var input = parent.find('.txtEditableListview, select');
             var text = input.val();
-            input.val('');
+
             if (text == '') return;
-            var list = $(source).parents('[data-role="editableListviewContainer"]').find('ul[data-role="listview"]');
+            var list = parent.find('ul[data-role="listview"]');
             var items = editableListViewValues(list);
             items.push(text);
             populateListView(list, items, sortCallback);

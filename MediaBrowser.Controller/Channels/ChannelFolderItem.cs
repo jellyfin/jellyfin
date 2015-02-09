@@ -1,11 +1,10 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Users;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -40,7 +39,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return ExternalId;
         }
@@ -75,6 +74,11 @@ namespace MediaBrowser.Controller.Channels
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

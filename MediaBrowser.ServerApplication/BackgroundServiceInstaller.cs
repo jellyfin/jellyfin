@@ -25,7 +25,7 @@ namespace MediaBrowser.ServerApplication
                 Description = "The windows background service for Media Browser Server.",
 
                 // Will ensure the network is available
-                ServicesDependedOn = new[] { "LanmanServer" }
+                ServicesDependedOn = new[] { "LanmanServer", "Tcpip" }
             };
 
             // Microsoft didn't add the ability to add a

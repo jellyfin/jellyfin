@@ -138,3 +138,64 @@
         -webkit-transform: rotate(360deg);
     }
 }
+
+.headerSearchInput {
+    margin: 0;
+    background: #222;
+    border: 0;
+    color: #ddd;
+    border-radius: 3px;
+    padding: 4px 7px 3px 50px;
+    font-size: 14px;
+    font-family: Roboto;
+    outline: none;
+    vertical-align: middle;
+    width: 180px;
+}
+
+.searchInputIcon {
+    position: absolute;
+    left: 20px;
+    top: 6px;
+    font-size: 14px !important;
+    color: #ddd !important;
+}
+
+.viewMenuSearch {
+    position: relative;
+    display: none;
+    margin-left: 2em;
+}
+
+@media all and (min-width: 1200px) {
+
+    .viewMenuSearch {
+        display: inline-block;
+    }
+
+    .headerSearchButton {
+        display: none;
+    }
+}
+
+.searchResultsOverlay {
+    position: fixed;
+    background: rgba(34, 34, 34, 1);
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+    border: 0 !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.searchResultsContainer {
+    padding: 2em;
+}
+
+.btnCloseSearch {
+    padding: 0 5px;
+    outline: 0;
+}

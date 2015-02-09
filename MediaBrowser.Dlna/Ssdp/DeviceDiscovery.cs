@@ -86,7 +86,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             try
             {
-                var ip = _appHost.HttpServerIpAddresses.FirstOrDefault();
+                var ip = _appHost.LocalIpAddress;
 
                 if (!string.IsNullOrWhiteSpace(ip))
                 {

@@ -12,15 +12,19 @@
     margin-left: .5em;
 }
 
-.libraryPage[data-theme='b'] {
-    background-color: #202020;
+.backdropPage.ui-page-theme-a {
+    background-color: rgba(240, 240,240, .86) !important;
 }
 
-.backdropPage {
+    .backdropPage.ui-page-theme-a:not(.lightBackdropPage) {
+        background-color: rgba(240, 240,240, .94) !important;
+    }
+
+.backdropPage.ui-page-theme-b {
     background-color: rgba(20, 20,20, .86) !important;
 }
 
-    .backdropPage:not(.lightBackdropPage) {
+    .backdropPage.ui-page-theme-b:not(.lightBackdropPage) {
         background-color: rgba(20, 20,20, .94) !important;
     }
 
@@ -46,13 +50,8 @@
 @media all and (max-width: 1200px) {
 
     .libraryPage > .ui-content {
-        padding-left: .4em !important;
-        padding-right: .4em !important;
-    }
-
-    .detailSection {
-        margin-left: .25em;
-        margin-right: .25em;
+        padding-left: .5em !important;
+        padding-right: .5em !important;
     }
 }
 
@@ -109,23 +108,15 @@
 
 @media all and (min-width: 600px) {
 
-    .itemsContainer:not(.fullWidthItemsContainer):not(.smallItemsContainer) {
+    .paddedItemsContainer {
         padding: 0 .8em;
-        margin-right: 10px;
     }
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 90%;
-    }
-}
-
-@media all and (min-width: 1600px) {
-
-    .ehsContent {
-        width: 92%;
+        width: 94%;
     }
 }
 
@@ -144,9 +135,13 @@
 }
 
 .detailButtonsContainer {
-    padding: .35em 0 .35em;
+    padding: 0 0 1em;
     text-align: center;
 }
+
+    .detailButtonsContainer a, .detailButtonsContainer button {
+        margin-top: 0;
+    }
 
 .viewSettings {
     margin: 0 0 .25em;
@@ -264,7 +259,7 @@
     display: inline-block;
     font-size: 12px;
     text-align: center;
-    padding: 2px 4px;
+    padding: 1px 6px 0;
     border-radius: 2px;
 }
 
@@ -375,7 +370,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 600px;
+    height: 550px;
     position: relative;
 }
 
@@ -389,14 +384,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .noBackdrop {
     height: auto;
-    border: 0;
+    margin: 2.5em 0 0;
 }
 
     .noBackdrop .itemBackdropContent {
         background-color: transparent;
-        position: static;
-        margin-top: 1em;
     }
+
+    .noBackdrop .itemBackdropContent {
+        position: static;
+    }
+
 
 .lnkSibling {
     position: fixed;
@@ -414,12 +412,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-decoration: underline;
     }
 
-@media all and (max-width: 1000px) {
-
-    .lnkSibling {
-        display: none !important;
+    .lnkSibling:not(.hide) {
+        display: block;
     }
-}
+
 
 .lnkPreviousItem {
     left: 10px;
@@ -429,19 +425,49 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 0;
 }
 
+.detailImageContainer {
+    position: absolute;
+    top: -66px;
+}
+
+.portraitDetailImageContainer {
+    top: -26px;
+}
+
+.thumbDetailImageContainer {
+    top: -26px;
+}
+
+.noBackdrop .squareDetailImageContainer {
+    top: 0;
+}
+
+.noBackdrop .detailImageContainer {
+    position: static;
+    display: inline-block;
+    vertical-align: top;
+}
+
 .itemDetailImage {
-    max-height: 280px;
-    max-width: 320px;
     -moz-box-shadow: 0px 0 20px #000;
     -webkit-box-shadow: 0px 0 20px #000;
     box-shadow: 0px 0 20px #000;
     border: solid 1px #222;
-    margin-top: -20px;
-    margin-bottom: 10px;
 }
 
-.noBackdrop .itemDetailImage {
-    margin-top: 0;
+.thumbDetailImageContainer img {
+    max-width: 360px;
+    max-height: 203px;
+}
+
+.squareDetailImageContainer img {
+    max-width: 240px;
+    max-height: 240px;
+}
+
+.portraitDetailImageContainer img {
+    max-width: 210px;
+    max-height: 300px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -450,15 +476,103 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     box-shadow: 0 0 20px 3px #38c;
 }
 
-.itemByNameImageContainer .itemDetailImage {
-    margin: 0 !important;
-    max-height: 220px;
+.detailContentEffectedByThumbImage:not(.lastDetailContentEffectedByImage) {
+    margin-left: 380px;
+}
+
+.detailContentEffectedBySquareImage:not(.lastDetailContentEffectedByImage) {
+    margin-left: 260px;
+}
+
+.detailContentEffectedByPortraitImage {
+    margin-left: 220px;
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedByThumbImage {
+    padding: 0 .5em;
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
+    padding: 0 .5em;
+}
+
+.lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+    min-height: 115px;
+}
+
+.noBackdrop .detailContentEffectedByImage {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.noBackdrop + .ui-content .lastDetailContentEffectedByImage {
+    margin-top: 0;
+    margin-left: 0;
+    min-height: initial;
 }
 
 .parentName {
     font-size: 14px;
     display: block;
     margin-bottom: .5em;
+}
+
+@media all and (min-width: 800px) {
+    .lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
+        margin-top: 2em;
+    }
+}
+
+@media all and (max-width: 1000px) {
+    .detailImageContainer {
+        margin-left: 20px;
+    }
+
+    .thumbDetailImageContainer img {
+        max-width: 340px;
+    }
+
+    .squareDetailImageContainer img {
+        max-width: 220px;
+    }
+
+    .portraitDetailImageContainer img {
+        max-width: 185px;
+    }
+
+    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+        min-height: 85px;
+    }
+}
+
+@media all and (max-width: 800px) {
+    .detailContentEffectedByThumbImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+    .detailContentEffectedBySquareImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+    .detailContentEffectedByPortraitImage {
+        margin-left: 0 !important;
+        padding: 0 1em;
+    }
+
+    .portraitDetailImageContainer img {
+        max-height: 120px;
+    }
+
+    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
+        min-height: initial;
+    }
+
+
+    .parentName {
+        margin-bottom: 1em;
+    }
 }
 
 .inlineItemName {
@@ -519,7 +633,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSection {
     vertical-align: top;
-    margin-bottom: 2.5em;
+    margin-bottom: 2em;
 }
 
 .detailCollapsibleSection:not(.hide) + .detailCollapsibleSection {
@@ -541,15 +655,31 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeader {
     background-clip: border-box;
-    background-color: #141414;
-    font-size: 16px;
-    font-weight: 400;
     padding: .75em 0 .75em 1em;
     border-radius: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     position: relative;
+}
+
+    .detailSectionHeader, .detailSectionHeader h3 {
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+.ui-page-theme-a .detailSectionHeader {
+    background-color: #ddd;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+}
+
+    .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
+        font-weight: 500;
+    }
+
+.ui-page-theme-b .detailSectionHeader {
+    background-color: #141414;
 }
 
 .detailSectionHeaderButton {
@@ -597,7 +727,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 10px;
+    bottom: 3px;
     right: 0;
     left: 0;
     text-align: center;
@@ -624,25 +754,19 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-width: 750px) {
+@media all and (max-width: 800px) {
 
     .editorMenuLink {
         display: none;
     }
 
-    .itemBackdrop {
-        height: auto;
-    }
-
-    .itemBackdropContent {
-        position: static;
-        padding: 1em 1em .5em;
+    .itemBackdrop:not(.noBackdrop) {
+        height: 280px;
     }
 
     .itemDetailImage {
         max-height: 240px;
         max-width: 100px;
-        margin-top: 0;
     }
 
     .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
@@ -657,34 +781,28 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         font-size: 18px;
     }
 
-        .inlineItemName + .itemMiscInfo {
-            margin-left: 0 !important;
-            margin-top: 1em;
-            display: block !important;
-        }
-
-    .primaryDetailPageContent .userDataIcons {
-        margin-left: 0 !important;
-        margin-top: 1em;
-        display: block;
-    }
-}
-
-
-@media all and (min-width: 750px) {
-
-    .lnkSibling:not(.hide) {
-        display: block;
+    .primaryDetailPageContent p {
+        margin: 1em 0 !important;
     }
 
-    .itemBackdrop:not(.noBackdrop) {
-        border-bottom: 1px solid #111;
+    .backdropDetailPageContent {
+        text-align: center;
+    }
+
+    .detailImageContainer {
+        display: none;
+    }
+
+    .noBackdrop .detailImageContainer {
+        display: block;
+        position: static;
+        text-align: center;
     }
 }
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 900px;
+        max-width: 950px;
         width: auto;
     }
 }
@@ -703,6 +821,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     overflow: hidden;
 }
 
+.mediaInfoContent {
+    line-height: 1.5em;
+}
+
 .mediaInfoStream {
     margin: 1em 3em 1em 0;
     display: inline-block;
@@ -713,6 +835,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .mediaInfoStreamType {
     display: block;
     color: #fff;
+    margin-bottom: 1em;
+    font-size: 16px;
 }
 
 .mediaInfoAttribute {
@@ -814,20 +938,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-weight: bold;
 }
 
-.scenePosterViewItem img {
-    max-width: 150px !important;
-}
-
 @media all and (min-width: 650px) {
     .libraryTabs .ui-btn-inner {
         padding: .5em 15px !important;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .scenePosterViewItem img {
-        max-width: 200px !important;
     }
 }
 
@@ -914,12 +1027,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .itemsContainer {
-    text-align: center;
     margin: 0 auto;
-}
-
-.timelineItemsContainer {
-    text-align: left;
 }
 
 .alphabetPicker {
@@ -990,7 +1098,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 20px;
+        margin-right: 25px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .itemsContainerWithAlphaPicker {
+        margin-right: 10px;
     }
 }
 
@@ -1260,7 +1375,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .listItem a:first-child {
     margin-right: 0 !important;
     background-color: transparent !important;
+}
+
+.ui-page-theme-a .listItem a:first-child {
     border-color: #d8d8d8 !important;
+}
+
+.ui-page-theme-b .listItem a:first-child {
+    border-color: #383838 !important;
 }
 
 .listItem a + a {
@@ -1268,16 +1390,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     z-index: 1000;
 }
 
-.listItem:hover a {
+.ui-page-theme-a .listItem:hover a {
     background-color: #eee !important;
 }
 
-.page[data-theme='b'] .listItem:hover a {
+.ui-page-theme-b .listItem:hover a {
     background-color: #333 !important;
-}
-
-.page[data-theme='b'] .listItem a:first-child {
-    border-color: #282828 !important;
 }
 
 @media all and (max-width: 600px) {
@@ -1289,4 +1407,44 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .tapHoldMenu li a, .playFlyout li a {
     font-size: 14px;
+}
+
+.userProfileSettingsForm {
+    max-width: 700px;
+}
+
+    .userProfileSettingsForm .detailSectionContent {
+        padding: 0 1em;
+    }
+
+@media all and (max-width: 700px) {
+
+    .userProfileSettingsForm .detailSection {
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+}
+
+.smallDetailImageContainer img {
+    -moz-box-shadow: 0px 0 20px #000;
+    -webkit-box-shadow: 0px 0 20px #000;
+    box-shadow: 0px 0 20px #000;
+    border: solid 1px #222;
+    max-width: 240px;
+    max-height: 240px;
+}
+
+@media all and (max-width: 800px) {
+
+    .smallDetailImageContainer img {
+        max-width: 120px;
+        max-height: 120px;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .smallDetailImageContainer {
+        padding-left: 1em;
+    }
 }

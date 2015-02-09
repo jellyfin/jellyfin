@@ -7,5 +7,6 @@ namespace MediaBrowser.Model.Dlna
         public string Name { get; set; }
         public bool IsForced { get; set; }
         public string Format { get; set; }
+        public int Index { get; set; }
     }
 }

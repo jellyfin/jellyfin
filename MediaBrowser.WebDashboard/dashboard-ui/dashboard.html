@@ -12,9 +12,18 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
                     <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
-                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
                 <div class="dashboardContent">
+                    <div class="supporterPromotion" style="display:none;">
+                        <a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;">
+                            <div>
+                                ${HeaderSupportTheTeam}
+                            </div>
+                            <div style="font-weight:normal;font-size:90%;margin-top:5px;">
+                                ${TextEnjoyBonusFeatures}
+                            </div>
+                        </a>
+                    </div>
                     <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
                         <h1 style="margin-top: 0;" class="tourHeader"></h1>
                         <p>
@@ -43,13 +52,12 @@
                                         <a href="http://mediabrowser.tv/download" target="_blank">${PleaseUpdateManually}</a>
                                     </div>
                                 </div>
-                                <div id="updateFail" style="color: #cc0000; display: none;">${ErrorConnectingToMediaBrowserRepository}</div>
                                 <p id="ports"></p>
                                 <div id="pPluginUpdates"></div>
 
+                                <p class="localUrl"></p>
                                 <p class="externalUrl"></p>
-                                <p class="supporterIconContainer">
-                                </p>
+
                                 <div style="margin-top: 1em;">
                                     <button class="btnRestartContainer hide" id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">${ButtonRestart}</button>
                                     <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">${ButtonShutdown}</button>
@@ -57,6 +65,8 @@
                             </div>
                         </div>
 
+                        <p class="supporterIconContainer" style="padding-left: .5em;margin: 1em 0 0;">
+                        </p>
                         <div id="collapsiblePendingInstallations" data-role="collapsible" data-collapsed="false" style="margin-top: 2em; display: none;">
                             <h3>${HeaderPendingInstallations}</h3>
                             <p>${LabelComponentsUpdated}</p>
@@ -82,25 +92,12 @@
                             </div>
                         </div>
 
-                        <div data-role="collapsible" data-collapsed="true" style="margin-top: 1em;">
-                            <h3>${HeaderLinks}</h3>
-                            <div>
-                                <p><a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a></p>
-                                <p><a href="https://github.com/MediaBrowser/MediaBrowser" target="_blank">${LinkGithub}</a></p>
-                                <p><a href="../swagger-ui/index.html" target="_blank">${LinkApiDocumentation}</a></p>
-                            </div>
-                        </div>
-
                         <div data-role="collapsible" data-collapsed="true">
-                            <h3>${HeaderSystemPaths}</h3>
+                            <h3>${HeaderPaths}</h3>
                             <div>
                                 <p>
                                     <b>${LabelCache}</b><br />
                                     <span id="cachePath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelImagesByName}</b><br />
-                                    <span id="imagesByNamePath"></span>
                                 </p>
                                 <p>
                                     <b>${LabelLogs}</b><br />
@@ -114,46 +111,10 @@
                                     <b>${LabelTranscodingTemporaryFiles}</b><br />
                                     <span id="transcodingTemporaryPath"></span>
                                 </p>
-                            </div>
-                        </div>
-
-                        <div id="contribute" style="margin-top: 2em; display: none;">
-                            <h2 style="margin: 0 0 .35em;">${HeaderHelpImproveMediaBrowser}</h2>
-                            <div>
-                                <a data-role="button" data-icon="mail" data-mini="true" href="supporter.html">${ButtonDonate}</a>
-                                <a href="https://github.com/MediaBrowser/MediaBrowser/wiki" data-role="button" target="_blank" data-icon="user" data-mini="true">Join the Development Team</a>
-
-                                <p class="appLinks" style="padding-left: 5px;">
-                                    <a href="http://www.amazon.com/Mark-Linton-Mediabrowser-Android-Client/dp/B00GVH9O0I" target="_blank">
-                                        <img src="css/images/clients/amazon.png" title="Android via Amazon App Store" />
-                                    </a>
-                                    <a href="https://play.google.com/store/apps/details?id=com.mb.android&hl=en" target="_blank">
-                                        <img src="css/images/clients/playstore.png" title="Android via Google Play Store" />
-                                    </a>
-                                    <a href="https://itunes.apple.com/us/app/media-browser-for-ios/id705058087" target="_blank">
-                                        <img src="css/images/clients/ios.png" title="iOS" />
-                                    </a>
-                                    <a href="http://www.roku.com/channels/#!details/44191/media-browser-for-roku" target="_blank">
-                                        <img src="css/images/clients/roku.jpg" title="Roku" />
-                                    </a>
-                                    <a href="http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86" target="_blank">
-                                        <img src="css/images/clients/windowsphone.png" title="Windows Phone" />
-                                    </a>
-                                    <a href="http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06" target="_blank">
-                                        <img src="css/images/clients/windowsrt.png" title="Windows 8.1" />
-                                    </a>
-                                    <a href="http://mediabrowser.tv" target="_blank" title="Windows Media Center">
-                                        <img src="css/images/clients/mbc.png" />
-                                    </a>
-                                    <a href="http://mediabrowser.tv/download" target="_blank" title="XBMB3C">
-                                        <img src="css/images/clients/kodi.png" />
-                                    </a>
-                                    <a href="http://forum.team-mediaportal.com/threads/plugin-mediabrowser-for-mediaportal-v0-13-beta-2013-10-21.119513" target="_blank" title="Media Portal">
-                                        <img src="css/images/clients/mediaportal.png" />
-                                    </a>
+                                <p>
+                                    <b>${LabelImagesByName}</b><br />
+                                    <span id="imagesByNamePath"></span>
                                 </p>
-                                <br />
-
                             </div>
                         </div>
                     </div>
@@ -171,6 +132,16 @@
                             <h3>${HeaderLatestNews}</h3>
                             <div class="latestNewsItems">
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboardFooter">
+                        <div style="height:1px;" class="ui-bar-inherit"></div>
+                        <div style="margin-top:1em;">
+                            <a href="http://mediabrowser.tv" target="_blank">Media Browser</a>
+                            <a href="http://mediabrowser.tv/community" target="_blank">${LinkCommunity}</a>
+                            <a href="https://github.com/MediaBrowser" target="_blank">${LinkGithub}</a>
+                            <a class="swaggerLink" target="_blank" href="#">${LinkApi}</a>
                         </div>
                     </div>
                 </div>

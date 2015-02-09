@@ -6,7 +6,7 @@
 
         html += '<fieldset data-role="controlgroup">';
 
-        html += '<legend>' + Globalize.translate('HeaderMediaFolders') + '</legend>';
+        html += '<legend>' + Globalize.translate('HeaderLibraries') + '</legend>';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
@@ -16,13 +16,15 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkMediaFolder" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
         html += '</fieldset>';
 
-        $('.mediaFolderAccess', page).html(html).trigger('create');
+        $('.folderAccess', page).html(html).trigger('create');
+
+        $('#chkEnableAllFolders', page).checked(true).checkboxradio('refresh').trigger('change');
     }
 
     function loadChannels(page, channels) {
@@ -41,7 +43,7 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkChannel" data-foldername="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
+            html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + folder.Name + '</label>';
         }
 
@@ -54,6 +56,8 @@
         } else {
             $('.channelAccessContainer', page).hide();
         }
+
+        $('#chkEnableAllChannels', page).checked(true).checkboxradio('refresh').trigger('change');
     }
 
     function loadUser(page) {
@@ -81,17 +85,23 @@
 
         ApiClient.createUser(name).done(function (user) {
 
-            user.Policy.BlockedMediaFolders = $('.chkMediaFolder:not(:checked)', page).map(function () {
+            user.Policy.EnableAllFolders = $('#chkEnableAllFolders', page).checked();
+            user.Policy.EnabledFolders = user.Policy.EnableAllFolders ?
+                [] :
+                $('.chkFolder:checked', page).map(function () {
 
-                return this.getAttribute('data-foldername');
+                    return this.getAttribute('data-id');
 
-            }).get();
+                }).get();
 
-            user.Policy.BlockedChannels = $('.chkChannel:not(:checked)', page).map(function () {
+            user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
+            user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
+                [] :
+                $('.chkChannel:checked', page).map(function () {
 
-                return this.getAttribute('data-foldername');
+                    return this.getAttribute('data-id');
 
-            }).get();
+                }).get();
 
             ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
@@ -123,7 +133,31 @@
 
     window.NewUserPage = new newUserPage();
 
-    $(document).on('pageshow', "#newUserPage", function () {
+    $(document).on('pageinit', "#newUserPage", function () {
+
+        var page = this;
+
+        $('#chkEnableAllChannels', page).on('change', function () {
+
+            if (this.checked) {
+                $('.channelAccessListContainer', page).hide();
+            } else {
+                $('.channelAccessListContainer', page).show();
+            }
+
+        });
+
+        $('#chkEnableAllFolders', page).on('change', function () {
+
+            if (this.checked) {
+                $('.folderAccessListContainer', page).hide();
+            } else {
+                $('.folderAccessListContainer', page).show();
+            }
+
+        });
+
+    }).on('pageshow', "#newUserPage", function () {
 
         var page = this;
 

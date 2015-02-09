@@ -56,10 +56,12 @@ namespace MediaBrowser.Providers.People
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
+            // Avoid implicitly captured closure
+            var itemName = item.Name;
+
             var seriesWithPerson = _library.RootFolder
-                .RecursiveChildren
-                .OfType<Series>()
-                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && i.People.Any(p => string.Equals(p.Name, item.Name, StringComparison.OrdinalIgnoreCase)))
+                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && i.People.Any(p => string.Equals(p.Name, itemName, StringComparison.OrdinalIgnoreCase)))
+                .Cast<Series>()
                 .ToList();
 
             var infos = seriesWithPerson.Select(i => GetImageFromSeriesData(i, item.Name, cancellationToken))

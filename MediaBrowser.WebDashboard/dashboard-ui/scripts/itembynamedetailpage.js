@@ -2,7 +2,7 @@
 
     var currentItem;
     var shape;
-    var currentItemsQuery;
+    var _childrenItemsFunction;
 
     function getPromise() {
 
@@ -385,9 +385,7 @@
         }
     }
 
-    function loadItems(page, options) {
-
-        Dashboard.showLoadingMsg();
+    function getItemsFunction(options) {
 
         var query = {
 
@@ -409,7 +407,42 @@
 
         addCurrentItemToQuery(query);
 
-        currentItemsQuery = query;
+        return function (index, limit, fields) {
+
+            query.StartIndex = index;
+            query.Limit = limit;
+            query.Fields = fields;
+
+            return ApiClient.getItems(Dashboard.getCurrentUserId(), query);
+
+        };
+
+    }
+
+    function loadItems(page, options) {
+
+        Dashboard.showLoadingMsg();
+
+        _childrenItemsFunction = getItemsFunction(options);
+        var query = {
+
+            SortBy: "SortName",
+            SortOrder: "Ascending",
+            IncludeItemTypes: "",
+            Recursive: true,
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,SyncInfo",
+            Limit: LibraryBrowser.getDefaultPageSize(),
+            StartIndex: 0,
+            CollapseBoxSetItems: false
+        };
+
+        query = $.extend(query, options || {});
+
+        if (query.IncludeItemTypes == "Audio") {
+            query.SortBy = "AlbumArtist,Album,SortName";
+        }
+
+        addCurrentItemToQuery(query);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
@@ -433,7 +466,6 @@
                     playFromHere: true,
                     defaultAction: 'playallfromhere'
                 });
-
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
 
@@ -489,7 +521,7 @@
 
             html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
 
-            $('#items', page).html(html).trigger('create').createCardMenus();
+            $('#items', page).html(html).trigger('create').lazyChildren();
 
             $('.btnNextPage', page).on('click', function () {
 
@@ -524,11 +556,11 @@
 
         $('.itemsContainer', page).on('playallfromhere', function (e, index) {
 
-            LibraryBrowser.playAllFromHere(currentItemsQuery, index);
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
         }).on('queueallfromhere', function (e, index) {
 
-            LibraryBrowser.queueAllFromHere(currentItemsQuery, index);
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 

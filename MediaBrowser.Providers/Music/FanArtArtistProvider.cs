@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -373,7 +374,8 @@ namespace MediaBrowser.Providers.Music
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = FanartSeriesProvider.Current.GetFanartOptions();
+            if (!options.EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -422,6 +424,12 @@ namespace MediaBrowser.Providers.Music
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = string.Format(FanArtBaseUrl, ApiKey, musicBrainzId);
+
+            var clientKey = FanartSeriesProvider.Current.GetFanartOptions().UserApiKey;
+            if (!string.IsNullOrWhiteSpace(clientKey))
+            {
+                url += "&client_key=" + clientKey;
+            }
 
             var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
 

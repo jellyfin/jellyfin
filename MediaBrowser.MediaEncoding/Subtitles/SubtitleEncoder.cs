@@ -149,22 +149,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
-            var stream = await GetSubtitleStream(fileInfo.Item1, subtitleStream.Language, fileInfo.Item3).ConfigureAwait(false);
+            var stream = await GetSubtitleStream(fileInfo.Item1, fileInfo.Item3).ConfigureAwait(false);
 
             return new Tuple<Stream, string>(stream, fileInfo.Item2);
         }
 
-        private async Task<Stream> GetSubtitleStream(string path, string language, bool requiresCharset)
+        private async Task<Stream> GetSubtitleStream(string path, bool requiresCharset)
         {
-            if (requiresCharset && !string.IsNullOrEmpty(language))
+            if (requiresCharset)
             {
-                var charset = GetSubtitleFileCharacterSet(path, language);
+                var charset = GetSubtitleFileCharacterSet(path);
 
                 if (!string.IsNullOrEmpty(charset))
                 {
                     using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                     {
-                        using (var reader = new StreamReader(fs, Encoding.GetEncoding(charset)))
+                        using (var reader = new StreamReader(fs, GetEncoding(charset)))
                         {
                             var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
@@ -177,6 +177,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             return File.OpenRead(path);
+        }
+
+        private Encoding GetEncoding(string charset)
+        {
+            if (string.IsNullOrWhiteSpace(charset))
+            {
+                throw new ArgumentNullException("charset");
+            }
+
+            try
+            {
+                return Encoding.GetEncoding(charset);
+            }
+            catch (ArgumentException)
+            {
+                return Encoding.GetEncoding(charset.Replace("-", string.Empty));
+            }
         }
 
         private async Task<Tuple<string, string, bool>> GetReadableFile(string mediaPath,
@@ -227,8 +244,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 // Convert    
                 var outputPath = GetSubtitleCachePath(mediaPath, subtitleStream.Index, ".srt");
 
-                await ConvertTextSubtitleToSrt(subtitleStream.Path, outputPath, subtitleStream.Language, cancellationToken)
-                        .ConfigureAwait(false);
+                await ConvertTextSubtitleToSrt(subtitleStream.Path, outputPath, cancellationToken).ConfigureAwait(false);
 
                 return new Tuple<string, string, bool>(outputPath, "srt", true);
             }
@@ -254,7 +270,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
-                return new SrtParser();
+                return new SrtParser(_logger);
             }
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
@@ -321,11 +337,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task ConvertTextSubtitleToSrt(string inputPath, string outputPath, string language,
-            CancellationToken cancellationToken)
+        public async Task ConvertTextSubtitleToSrt(string inputPath, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -335,7 +349,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ConvertTextSubtitleToSrtInternal(inputPath, outputPath, language).ConfigureAwait(false);
+                    await ConvertTextSubtitleToSrtInternal(inputPath, outputPath).ConfigureAwait(false);
                 }
             }
             finally
@@ -349,15 +363,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// </summary>
         /// <param name="inputPath">The input path.</param>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="language">The language.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// inputPath
+        /// <exception cref="System.ArgumentNullException">inputPath
         /// or
-        /// outputPath
-        /// </exception>
+        /// outputPath</exception>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task ConvertTextSubtitleToSrtInternal(string inputPath, string outputPath, string language)
+        private async Task ConvertTextSubtitleToSrtInternal(string inputPath, string outputPath)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -371,9 +382,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            var encodingParam = string.IsNullOrEmpty(language)
-                ? string.Empty
-                : GetSubtitleFileCharacterSet(inputPath, language);
+            var encodingParam = GetSubtitleFileCharacterSet(inputPath);
 
             if (!string.IsNullOrEmpty(encodingParam))
             {
@@ -459,7 +468,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     try
                     {
                         _logger.Info("Deleting converted subtitle due to failure: ", outputPath);
-                        File.Delete(outputPath);
+                        _fileSystem.DeleteFile(outputPath);
                     }
                     catch (IOException ex)
                     {
@@ -608,7 +617,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 try
                 {
                     _logger.Info("Deleting extracted subtitle due to failure: {0}", outputPath);
-                    File.Delete(outputPath);
+                    _fileSystem.DeleteFile(outputPath);
                 }
                 catch (FileNotFoundException)
                 {
@@ -696,27 +705,31 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Gets the subtitle language encoding param.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="language">The language.</param>
         /// <returns>System.String.</returns>
-        public string GetSubtitleFileCharacterSet(string path, string language)
+        public string GetSubtitleFileCharacterSet(string path)
         {
-            //var charset = DetectCharset(path);
-
-            //if (!string.IsNullOrWhiteSpace(charset))
-            //{
-            //    if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        return null;
-            //    }
-
-            //    return charset;
-            //}
-
             if (GetFileEncoding(path).Equals(Encoding.UTF8))
             {
                 return string.Empty;
             }
 
+            var charset = DetectCharset(path);
+
+            if (!string.IsNullOrWhiteSpace(charset))
+            {
+                if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                return charset;
+            }
+
+            return null;
+        }
+
+        public string GetSubtitleFileCharacterSetFromLanguage(string language)
+        {
             switch (language.ToLower())
             {
                 case "pol":

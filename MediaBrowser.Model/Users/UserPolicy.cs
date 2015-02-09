@@ -42,7 +42,8 @@ namespace MediaBrowser.Model.Users
 
         public bool EnableMediaPlayback { get; set; }
         public bool EnableContentDeletion { get; set; }
-        
+        public bool EnableContentDownloading { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable synchronize].
         /// </summary>
@@ -52,6 +53,12 @@ namespace MediaBrowser.Model.Users
         public string[] EnabledDevices { get; set; }
         public bool EnableAllDevices { get; set; }
 
+        public string[] EnabledChannels { get; set; }
+        public bool EnableAllChannels { get; set; }
+
+        public string[] EnabledFolders { get; set; }
+        public bool EnableAllFolders { get; set; }
+
         public UserPolicy()
         {
             EnableLiveTvManagement = true;
@@ -59,17 +66,23 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvAccess = true;
             EnableSharedDeviceControl = true;
 
-            BlockedMediaFolders = new string[] { };
             BlockedTags = new string[] { };
-            BlockedChannels = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             EnableUserPreferenceAccess = true;
 
             AccessSchedules = new AccessSchedule[] { };
 
+            EnableAllChannels = true;
+            EnabledChannels = new string[] { };
+
+            EnableAllFolders = true;
+            EnabledFolders = new string[] { };
+
             EnabledDevices = new string[] { };
             EnableAllDevices = true;
+
+            EnableContentDownloading = true;
         }
     }
 }

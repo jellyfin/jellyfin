@@ -245,7 +245,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var collections = user.RootFolder.GetChildren(user, true).ToList();
 
-            var allRecursiveChildren = user.RootFolder.GetRecursiveChildren(user)
+            var allRecursiveChildren = user.RootFolder
+                .GetRecursiveChildren(user)
                 .Select(i => i.Id)
                 .Distinct()
                 .ToDictionary(i => i);

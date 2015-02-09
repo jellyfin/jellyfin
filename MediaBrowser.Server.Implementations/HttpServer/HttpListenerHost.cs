@@ -3,7 +3,6 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.HttpServer.NetListener;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Api.Swagger;
@@ -24,7 +23,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : ServiceStackHost, IHttpServer
     {
-        private string HandlerPath { get; set; }
         private string DefaultRedirectPath { get; set; }
 
         private readonly ILogger _logger;
@@ -42,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
 
-        private readonly bool _supportsNativeWebSocket;
+        public string CertificatePath { get; private set; }
 
         /// <summary>
         /// Gets the local end points.
@@ -62,18 +60,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        public HttpListenerHost(IApplicationHost applicationHost, 
-            ILogManager logManager, 
-            string serviceName, 
-            string handlerPath, 
-            string defaultRedirectPath, 
-            bool supportsNativeWebSocket, 
+        public HttpListenerHost(IApplicationHost applicationHost,
+            ILogManager logManager,
+            string serviceName,
+            string defaultRedirectPath,
             params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
-            _supportsNativeWebSocket = supportsNativeWebSocket;
-            HandlerPath = handlerPath;
 
             _logger = logManager.GetLogger("HttpServer");
 
@@ -134,13 +128,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             base.OnConfigLoad();
 
-            Config.HandlerFactoryPath = string.IsNullOrEmpty(HandlerPath)
-                ? null
-                : HandlerPath;
+            Config.HandlerFactoryPath = null;
 
-            Config.MetadataRedirectPath = string.IsNullOrEmpty(HandlerPath)
-                ? "metadata"
-                : PathUtils.CombinePaths(HandlerPath, "metadata");
+            Config.MetadataRedirectPath = "metadata";
         }
 
         protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
@@ -215,12 +205,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            if (_supportsNativeWebSocket && NativeWebSocket.IsSupported)
-            {
-                return new HttpListenerServer(_logger, OnRequestReceived);
-            }
-
-            return new WebSocketSharpListener(_logger, OnRequestReceived);
+            return new WebSocketSharpListener(_logger, OnRequestReceived, CertificatePath);
         }
 
         private void WebSocketHandler(WebSocketConnectEventArgs args)
@@ -241,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     return;
                 }
-                
+
                 var errorResponse = new ErrorResponse
                 {
                     ResponseStatus = new ResponseStatus
@@ -310,24 +295,24 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var operationName = httpReq.OperationName;
             var localPath = url.LocalPath;
 
-            if (string.Equals(localPath, "/" + HandlerPath + "/", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl(DefaultRedirectPath);
+                httpRes.RedirectToUrl("/../" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
-            if (string.Equals(localPath, "/" + HandlerPath, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl(HandlerPath + "/" + DefaultRedirectPath);
+                httpRes.RedirectToUrl("../" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl(HandlerPath + "/" + DefaultRedirectPath);
+                httpRes.RedirectToUrl(DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.IsNullOrEmpty(localPath))
             {
-                httpRes.RedirectToUrl("/" + HandlerPath + "/" + DefaultRedirectPath);
+                httpRes.RedirectToUrl("/" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
 
@@ -382,12 +367,33 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             base.Init();
         }
 
-        //public override RouteAttribute[] GetRouteAttributes(System.Type requestType)
-        //{
-        //    var routes = base.GetRouteAttributes(requestType);
-        //    routes.Each(x => x.Path = "/api" + x.Path);
-        //    return routes;
-        //}
+        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        {
+            var routes = base.GetRouteAttributes(requestType).ToList();
+            var clone = routes.ToList();
+
+            foreach (var route in clone)
+            {
+                routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
+            }
+
+            return routes.ToArray();
+        }
+
+        private string NormalizeRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/mediabrowser" + path;
+            }
+
+            return "mediabrowser/" + path;
+        }
 
         /// <summary>
         /// Releases the specified instance.
@@ -425,8 +431,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             GC.SuppressFinalize(this);
         }
 
-        public void StartServer(IEnumerable<string> urlPrefixes)
+        public void StartServer(IEnumerable<string> urlPrefixes, string certificatePath)
         {
+            CertificatePath = certificatePath;
             UrlPrefixes = urlPrefixes.ToList();
             Start(UrlPrefixes.First());
         }

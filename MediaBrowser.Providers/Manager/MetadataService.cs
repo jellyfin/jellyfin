@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name);
+                Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name ?? "Unknown name");
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
@@ -163,14 +163,13 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            updateType = updateType | BeforeSave(itemOfType);
-
-            var providersHadChanges = updateType > ItemUpdateType.None;
+            updateType = updateType | (await BeforeSave(itemOfType, item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata, updateType).ConfigureAwait(false));
 
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || providersHadChanges || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
+            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
             {
-                if (refreshOptions.ForceSave || providersHadChanges || refreshOptions.ReplaceAllMetadata)
+                // If any of these properties are set then make sure the updateType is not None, just to force everything to save
+                if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
                 {
                     updateType = updateType | ItemUpdateType.MetadataDownload;
                 }
@@ -179,10 +178,19 @@ namespace MediaBrowser.Providers.Manager
                 await SaveItem(itemOfType, updateType, cancellationToken);
             }
 
-            if (providersHadChanges || refreshResult.IsDirty)
+            if (updateType > ItemUpdateType.None || refreshResult.IsDirty)
             {
                 await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
+
+            await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+        }
+
+        private readonly Task _cachedTask = Task.FromResult(true);
+        protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        {
+            item.AfterMetadataRefresh();
+            return _cachedTask;
         }
 
         private void MergeIdentities(TItemType item, TIdType id)
@@ -194,14 +202,17 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
+        private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
+        /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual ItemUpdateType BeforeSave(TItemType item)
+        protected virtual Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            return ItemUpdateType.None;
+            return _cachedResult;
         }
 
         /// <summary>
@@ -319,11 +330,11 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item, 
-            TIdType id, 
-            MetadataRefreshOptions options, 
-            List<IMetadataProvider> providers, 
-            ItemImageProvider imageService, 
+        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item,
+            TIdType id,
+            MetadataRefreshOptions options,
+            List<IMetadataProvider> providers,
+            ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult
@@ -435,8 +446,7 @@ namespace MediaBrowser.Providers.Manager
                 localProviders.Count == 0 &&
                 refreshResult.UpdateType > ItemUpdateType.None)
             {
-                // TODO: If the new metadata from above has some blank data, this
-                // can cause old data to get filled into those empty fields
+                // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
                 MergeData(item, temp, new List<MetadataFields>(), false, true);
             }
 
@@ -549,11 +559,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (refreshResult.Successes > 0)
-            {
-                AfterRemoteRefresh(temp);
-            }
-
             return refreshResult;
         }
 
@@ -568,11 +573,6 @@ namespace MediaBrowser.Providers.Manager
                     hasTrailers.RemoteTrailers.Clear();
                 }
             }
-        }
-
-        protected virtual void AfterRemoteRefresh(TItemType item)
-        {
-
         }
 
         private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
@@ -610,10 +610,10 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(TItemType source, 
-            TItemType target, 
-            List<MetadataFields> lockedFields, 
-            bool replaceData, 
+        protected abstract void MergeData(TItemType source,
+            TItemType target,
+            List<MetadataFields> lockedFields,
+            bool replaceData,
             bool mergeMetadataSettings);
 
         public virtual int Order

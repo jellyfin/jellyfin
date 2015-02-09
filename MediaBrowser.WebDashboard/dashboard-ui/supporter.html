@@ -91,15 +91,16 @@
                         <br />
 
                         <input type="hidden" name="cmd" id="ppCmd" value="_xclick">
-                        <input type="hidden" name="business" value="donate@mediabrowser3.com">
+                        <input type="hidden" name="business" value="donation@mediabrowser.tv">
                         <input type="hidden" name="currency_code" value="USD">
                         <input type="hidden" name="item_name" value="Media Browser Supporter">
                         <input type="hidden" name="item_number" id="ppItemNo" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
 
-                        <button type="submit" data-icon="arrow-r" data-iconpos="right">
-                            <img src="css/images/supporter/donatepaypal.png" />
+                        <button type="submit" data-role="none" class="btn" style="background-color:#179BD7">
+                            <i class="fa fa-paypal"></i>
+                            <span>${ButtonDonateWithPayPal}</span>
                         </button>
 
                         <input type="hidden" id="donateAmt" name="amount" />

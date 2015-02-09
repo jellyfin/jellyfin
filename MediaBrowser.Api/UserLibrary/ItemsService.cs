@@ -169,8 +169,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "ExcludeLocationTypes", Description = "Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ExcludeLocationTypes { get; set; }
 
-        public bool IncludeIndexContainers { get; set; }
-
         [ApiMember(Name = "IsMissing", Description = "Optional filter by items that are missing episodes or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMissing { get; set; }
 
@@ -321,14 +319,14 @@ namespace MediaBrowser.Api.UserLibrary
             var result = await GetItemsToSerialize(request, user, parentItem).ConfigureAwait(false);
 
             var isFiltered = result.Item2;
-            var dtoOptions = request.GetDtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             if (isFiltered)
             {
                 return new ItemsResult
                 {
                     TotalRecordCount = result.Item1.TotalRecordCount,
-                    Items = result.Item1.Items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray()
+                    Items = _dtoService.GetBaseItemDtos(result.Item1.Items, dtoOptions, user).ToArray()
                 };
             }
 
@@ -362,7 +360,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ToArray();
 
             return new ItemsResult
             {
@@ -396,52 +394,29 @@ namespace MediaBrowser.Api.UserLibrary
 
             else if (request.Recursive)
             {
-                if (user == null)
-                {
-                    items = ((Folder)item).RecursiveChildren;
+                var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                    items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
-                }
-                else
-                {
-                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, user));
-
-                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
-                }
+                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
             }
             else
             {
                 if (user == null)
                 {
-                    items = ((Folder)item).Children;
+                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
 
-                    items = _libraryManager.ReplaceVideosWithPrimaryVersions(items);
+                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
                 }
-                else
+
+                var userRoot = item as UserRootFolder;
+
+                if (userRoot == null)
                 {
-                    var userRoot = item as UserRootFolder;
+                    var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                    if (userRoot == null)
-                    {
-                        var result = await ((Folder)item).GetItems(GetItemsQuery(request, user));
-
-                        return new Tuple<QueryResult<BaseItem>, bool>(result, true);
-                    }
-
-                    items = ((Folder)item).GetChildren(user, true);
+                    return new Tuple<QueryResult<BaseItem>, bool>(result, true);
                 }
-            }
 
-            if (request.IncludeIndexContainers)
-            {
-                var list = items.ToList();
-
-                var containers = list.Select(i => i.IndexContainer)
-                    .Where(i => i != null);
-
-                list.AddRange(containers);
-
-                items = list.Distinct();
+                items = ((Folder)item).GetChildren(user, true);
             }
 
             return new Tuple<QueryResult<BaseItem>, bool>(new QueryResult<BaseItem>
@@ -464,7 +439,7 @@ namespace MediaBrowser.Api.UserLibrary
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
 
-                Filter = (i, u) => ApplyAdditionalFilters(request, i, u, true, _libraryManager),
+                Filter = i => ApplyAdditionalFilters(request, i, user, true, _libraryManager),
 
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,

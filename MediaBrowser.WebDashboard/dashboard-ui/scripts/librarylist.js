@@ -185,6 +185,17 @@
         return false;
     }
 
+    function onAddToCollectionButtonClick() {
+
+        var id = this.getAttribute('data-itemid');
+
+        closeContextMenu();
+
+        BoxSetEditor.showPanel([id]);
+
+        return false;
+    }
+
     function onAddToPlaylistButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -377,8 +388,16 @@
 
             var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
 
+            if (commands.indexOf('addtocollection') != -1) {
+                html += '<li data-icon="plus"><a href="#" class="btnAddToCollection" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+            }
+
             if (commands.indexOf('playlist') != -1) {
                 html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+            }
+
+            if (commands.indexOf('delete') != -1) {
+                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
 
             if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
@@ -390,7 +409,7 @@
             }
 
             html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
-            html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
+            //html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
             if (options.showPlayOptions !== false) {
 
@@ -435,10 +454,6 @@
                 html += '<li data-icon="cloud"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
             }
 
-            if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
-            }
-
             html += '</ul>';
 
             html += '</div>';
@@ -464,6 +479,7 @@
             $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
             $('.btnDelete', elem).on('click', onDeleteButtonClick);
             $('.btnSync', elem).on('click', onSyncButtonClick);
+            $('.btnAddToCollection', elem).on('click', onAddToCollectionButtonClick);
         });
     }
 
@@ -581,7 +597,7 @@
 
             $($.mobile.activePage).append(html);
 
-            var elem = $('.groupingMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
+            $('.groupingMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
 
                 $(this).off("popupafterclose").remove();
                 $(card).removeClass('hasContextMenu');
@@ -673,19 +689,17 @@
             preventHover = true;
         }
 
-        var elems = '.card:not(.bannerCard)';
-
-        $('.card', this).on('contextmenu.cardMenu', onCardTapHold);
-
-        $('.listviewMenuButton', this).on('click', onListViewMenuButtonClick);
-
-        $('.groupedCard', this).on('click', onGroupedCardClick);
-
-        return this.off('.cardHoverMenu')
-            .on('mouseenter.cardHoverMenu', elems, onHoverIn)
-            .on('mouseleave.cardHoverMenu', elems, onHoverOut)
-            .on("touchstart.cardHoverMenu", elems, preventTouchHover)
-            .trigger('itemsrendered');
+        return this
+            .off('.cardMenu')
+            .on('contextmenu.cardMenu', '.card', onCardTapHold)
+            .off('.latestgroupings')
+            .on('click.latestgroupings', '.groupedCard', onGroupedCardClick)
+            .off('.dotmenu')
+            .on('click.dotmenu', '.listviewMenuButton', onListViewMenuButtonClick)
+            .off('.cardHoverMenu')
+            .on('mouseenter.cardHoverMenu', '.card:not(.bannerCard)', onHoverIn)
+            .on('mouseleave.cardHoverMenu', '.card:not(.bannerCard)', onHoverOut)
+            .on("touchstart.cardHoverMenu", '.card:not(.bannerCard)', preventTouchHover);
     };
 
     function toggleSelections(page) {
@@ -828,7 +842,7 @@
             return;
         }
 
-        BoxSetEditor.showPanel(page, selection);
+        BoxSetEditor.showPanel(selection);
     }
 
     function addToPlaylist(page) {
@@ -932,14 +946,13 @@
 
         }).join('')).selectmenu('refresh');
 
-        $('.itemsContainer', page).on('itemsrendered', function () {
+        $(page).on('click', '.btnToggleSelections', function () {
 
-            $('.btnToggleSelections', page).off('click.toggleselections').on('click.toggleselections', function () {
-                toggleSelections(page);
-            });
+            toggleSelections(page);
 
-            $('.itemWithAction', this).on('click', onItemWithActionClick);
-        });
+        }).on('click', '.itemWithAction', onItemWithActionClick);
+
+        $('.itemsContainer', page).createCardMenus();
 
     }).on('pagebeforeshow', ".libraryPage", function () {
 

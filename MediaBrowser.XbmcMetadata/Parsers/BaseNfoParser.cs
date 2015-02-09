@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -128,6 +128,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (!string.IsNullOrWhiteSpace(imdbId))
                     {
                         item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                    }
+
+                    // If the file is just an imdb url, don't go any further
+                    if (index == 0)
+                    {
+                        return;
                     }
 
                     xml = xml.Substring(0, index + 1);

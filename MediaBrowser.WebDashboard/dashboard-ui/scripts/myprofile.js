@@ -181,20 +181,7 @@
 
     window.MyProfilePage = new myProfilePage();
 
-    $(document).on('pagebeforeshow', "#userImagePage", function () {
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (loggedInUser) {
-
-            if (loggedInUser.Policy.IsAdministrator) {
-                $('#lnkParentalControl', page).show();
-            } else {
-                $('#lnkParentalControl', page).hide();
-            }
-        });
-
-    }).on('pageinit', "#userImagePage", function () {
+    $(document).on('pageinit', "#userImagePage", function () {
 
         var page = this;
 
@@ -248,7 +235,15 @@
                 $('.passwordSection', page).show();
             }
 
-            $('#chkEnableLocalAccessWithoutPassword', page).checked(user.Configuration.EnableLocalPassword).checkboxradio('refresh');
+            if (user.HasConfiguredEasyPassword) {
+                $('#txtEasyPassword', page).val('').attr('placeholder', '******');
+                $('#btnResetEasyPassword', page).show();
+            } else {
+                $('#txtEasyPassword', page).val('').attr('placeholder', '');
+                $('#btnResetEasyPassword', page).hide();
+            }
+
+            $('#chkEnableLocalEasyPassword', page).checked(user.Configuration.EnableLocalPassword).checkboxradio('refresh');
         });
 
         $('#txtCurrentPassword', page).val('');
@@ -256,13 +251,30 @@
         $('#txtNewPasswordConfirm', page).val('');
     }
 
-    function save(page) {
+    function saveEasyPassword(page) {
 
         var userId = getParameterByName("userId");
 
+        var easyPassword = $('#txtEasyPassword', page).val();
+
+        if (easyPassword) {
+
+            ApiClient.updateEasyPassword(userId, easyPassword).done(function () {
+
+                onEasyPasswordSaved(page, userId);
+
+            });
+
+        } else {
+            onEasyPasswordSaved(page, userId);
+        }
+    }
+
+    function onEasyPasswordSaved(page, userId) {
+
         ApiClient.getUser(userId).done(function (user) {
 
-            user.Configuration.EnableLocalPassword = $('#chkEnableLocalAccessWithoutPassword', page).checked();
+            user.Configuration.EnableLocalPassword = $('#chkEnableLocalEasyPassword', page).checked();
 
             ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
 
@@ -321,7 +333,7 @@
 
             Dashboard.showLoadingMsg();
 
-            save(page);
+            saveEasyPassword(page);
 
             // Disable default form submission
             return false;
@@ -357,24 +369,41 @@
             });
 
         };
+
+        self.resetEasyPassword = function () {
+
+            var msg = Globalize.translate('PinCodeResetConfirmation');
+
+            var page = $.mobile.activePage;
+
+            Dashboard.confirm(msg, Globalize.translate('HeaderPinCodeReset'), function (result) {
+
+                if (result) {
+                    var userId = getParameterByName("userId");
+
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.resetEasyPassword(userId).done(function () {
+
+                        Dashboard.hideLoadingMsg();
+
+                        Dashboard.alert({
+                            message: Globalize.translate('PinCodeResetComplete'),
+                            title: Globalize.translate('HeaderPinCodeReset')
+                        });
+
+                        loadUser(page);
+
+                    });
+                }
+            });
+
+        };
     }
 
     window.UpdatePasswordPage = new updatePasswordPage();
 
-    $(document).on('pagebeforeshow', "#userImagePage", function () {
-
-        var page = this;
-
-        Dashboard.getCurrentUser().done(function (loggedInUser) {
-
-            if (loggedInUser.Policy.IsAdministrator) {
-                $('#lnkParentalControl', page).show();
-            } else {
-                $('#lnkParentalControl', page).hide();
-            }
-        });
-
-    }).on('pageshow', "#userImagePage", function () {
+    $(document).on('pageshow', ".userPasswordPage", function () {
 
         var page = this;
 
