@@ -81,7 +81,7 @@
         Dashboard.setPageTitle(user.Name);
 
         loadUnratedItems(page, user);
-        loadTags(page, user.Policy.BlockedTags);
+        loadTags(page, user.Policy.TagFilters);
 
         populateRatings(allParentalRatings, page);
 
@@ -120,11 +120,17 @@
 
             li += '<a href="#">';
 
-            li += '<div style="font-weight:normal;">' + h + '</div>';
+            li += '<h3>' + h.Tag + '</h3>';
+
+            if (h.Mode == 'Allow') {
+                li += '<p style="color:green;">Allow</p>';
+            } else if (h.Mode == 'Block') {
+                li += '<p style="color:red;">Block</p>';
+            }
 
             li += '</a>';
 
-            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '"></a>';
+            li += '<a class="tagFilter btnDeleteTag" href="#" data-tag="' + h.Tag + '" data-mode="' + h.Mode + '"></a>';
 
             li += '</li>';
 
@@ -132,14 +138,15 @@
 
         }).join('') + '</ul>';
 
-        var elem = $('.blockedTags', page).html(html).trigger('create');
+        var elem = $('.tagFilters', page).html(html).trigger('create');
 
         $('.btnDeleteTag', elem).on('click', function () {
 
             var tag = this.getAttribute('data-tag');
+            var mode = this.getAttribute('data-mode');
 
             var newTags = tags.filter(function (t) {
-                return t != tag;
+                return t.Tag != tag || t.Mode != mode;
             });
 
             loadTags(page, newTags);
@@ -209,7 +216,7 @@
 
         user.Policy.AccessSchedules = getSchedulesFromPage(page);
 
-        user.Policy.BlockedTags = getTagsFromPage(page);
+        user.Policy.TagFilters = getTagsFromPage(page);
 
         ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
@@ -244,8 +251,8 @@
             return false;
         },
 
-        onTagFormSubmit: function() {
-            
+        onTagFormSubmit: function () {
+
             var page = $(this).parents('.page');
 
             saveTag(page);
@@ -329,12 +336,15 @@
     function saveTag(page) {
 
         var tag = $('#txtTag', page).val();
+        var mode = $('#selectTagMode', page).val();
         var tags = getTagsFromPage(page);
 
-        if (tags.indexOf(tag) == -1) {
-            tags.push(tag);
-            loadTags(page, tags);
-        }
+        tags.push({
+            Tag: tag,
+            Mode: mode
+        });
+
+        loadTags(page, tags);
 
         $('#popupTag', page).popup('close');
     }
@@ -354,9 +364,12 @@
 
     function getTagsFromPage(page) {
 
-        return $('.blockedTag', page).map(function () {
+        return $('.tagFilter', page).map(function () {
 
-            return this.getAttribute('data-tag');
+            return {
+                Tag: this.getAttribute('data-tag'),
+                Mode: this.getAttribute('data-mode')
+            };
 
         }).get();
     }
@@ -365,6 +378,7 @@
 
         $('#popupTag', page).popup('open');
         $('#txtTag', page).val('').focus();
+        $('#selectTagMode', page).val('Block').selectmenu('refresh').trigger('change');
     }
 
     $(document).on('pageinit', "#userParentalControlPage", function () {
@@ -381,6 +395,15 @@
         $('.btnAddTag', page).on('click', function () {
 
             showTagPopup(page);
+        });
+
+        $('#selectTagMode', page).on('change', function () {
+
+            if (this.value == 'Allow') {
+                $('.allowModeHelp', page).show();
+            } else {
+                $('.allowModeHelp', page).hide();
+            }
         });
 
         populateHours(page);

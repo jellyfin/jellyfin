@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -77,6 +78,19 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
+        }
+
+        protected override bool IsTagFilterEnforced(TagFilterMode mode)
+        {
+            if (this is ICollectionFolder)
+            {
+                return false;
+            }
+            if (this is UserView)
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>

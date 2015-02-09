@@ -32,10 +32,10 @@
 
                     <div>
                         <div>
-                            <div class="ui-controlgroup-label" style="display:inline-block;">${LabelBlockItemsWithTags}</div>
+                            <div class="ui-controlgroup-label" style="display:inline-block;">${LabelBlockOrAllowItemsWithTags}</div>
                             <button type="button" class="btnAddTag" data-inline="true" data-mini="true" data-iconpos="notext" data-icon="plus" style="vertical-align:middle;margin: -5px 0 0 1em;">${ButtonAdd}</button>
                         </div>
-                        <div class="blockedTags" style="margin-top:.5em;">
+                        <div class="tagFilters" style="margin-top:.5em;">
 
                         </div>
                     </div>
@@ -80,6 +80,14 @@
                                 <li>
                                     <label for="txtTag">${LabelTag}</label>
                                     <input id="txtTag" type="text" required="required" />
+                                </li>
+                                <li>
+                                    <label for="selectTagMode">${LabelTagFilterMode}</label>
+                                    <select id="selectTagMode" data-mini="true">
+                                        <option value="Block">${OptionBlockItemWithTag}</option>
+                                        <option value="Allow">${OptionAllowItemWithTag}</option>
+                                    </select>
+                                    <div class="fieldDescription allowModeHelp">${LabelTagFilterAllowModeHelp}</div>
                                 </li>
                                 <li>
                                     <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>

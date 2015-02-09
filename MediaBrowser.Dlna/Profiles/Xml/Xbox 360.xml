@@ -8,10 +8,10 @@
       <HttpHeaderInfo name="User-Agent" value="Xenon" match="Substring" />
     </Headers>
   </Identification>
-  <FriendlyName>${HostName} : 1 : Windows Media Connect</FriendlyName>
+  <FriendlyName>${HostName} : 1</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
-  <ModelName>Windows Media Connect</ModelName>
+  <ModelName>Windows Media Player Sharing</ModelName>
   <ModelDescription>Media Browser</ModelDescription>
   <ModelNumber>12.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>

@@ -58,6 +58,8 @@ namespace MediaBrowser.Model.Users
 
         public string[] EnabledFolders { get; set; }
         public bool EnableAllFolders { get; set; }
+
+        public TagFilter[] TagFilters { get; set; }
         
         public UserPolicy()
         {
@@ -66,7 +68,6 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvAccess = true;
             EnableSharedDeviceControl = true;
 
-            BlockedTags = new string[] { };
             BlockUnratedItems = new UnratedItem[] { };
 
             EnableUserPreferenceAccess = true;
@@ -83,6 +84,8 @@ namespace MediaBrowser.Model.Users
             EnableAllDevices = true;
 
             EnableContentDownloading = true;
+
+            TagFilters = new TagFilter[] { };
         }
     }
 }
