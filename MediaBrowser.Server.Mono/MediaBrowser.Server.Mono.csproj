@@ -57,6 +57,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
@@ -70,6 +75,7 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Native\BaseMonoApp.cs" />
+    <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Native\NativeApp.cs" />

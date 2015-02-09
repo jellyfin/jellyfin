@@ -67,29 +67,26 @@ namespace MediaBrowser.Server.Implementations.Intros
                 ? null
                 : _localization.GetRatingLevel(item.OfficialRating);
 
-            var libaryItems = user.RootFolder.GetRecursiveChildren(user, false)
-                .ToList();
-
             var random = new Random(Environment.TickCount + Guid.NewGuid().GetHashCode());
 
             var candidates = new List<ItemWithTrailer>();
 
             if (config.EnableIntrosFromMoviesInLibrary)
             {
-                var itemsWithTrailers = libaryItems
-                  .Where(i =>
-                  {
-                      var hasTrailers = i as IHasTrailers;
+                var itemsWithTrailers = user.RootFolder
+                    .GetRecursiveChildren(user, i =>
+                    {
+                        var hasTrailers = i as IHasTrailers;
 
-                      if (hasTrailers != null && hasTrailers.LocalTrailerIds.Count > 0)
-                      {
-                          if (i is Movie)
-                          {
-                              return !IsDuplicate(item, i);
-                          }
-                      }
-                      return false;
-                  });
+                        if (hasTrailers != null && hasTrailers.LocalTrailerIds.Count > 0)
+                        {
+                            if (i is Movie)
+                            {
+                                return !IsDuplicate(item, i);
+                            }
+                        }
+                        return false;
+                    });
 
                 candidates.AddRange(itemsWithTrailers.Select(i => new ItemWithTrailer
                 {
@@ -141,15 +138,16 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }));
             }
 
+            return GetResult(item, candidates, config, ratingLevel);
+        }
+
+        private IEnumerable<IntroInfo> GetResult(BaseItem item, IEnumerable<ItemWithTrailer> candidates, CinemaModeConfiguration config, int? ratingLevel)
+        {
             var customIntros = !string.IsNullOrWhiteSpace(config.CustomIntroPath) ?
                 GetCustomIntros(item) :
                 new List<IntroInfo>();
 
             var trailerLimit = config.TrailerLimit;
-            if (customIntros.Count > 0)
-            {
-                trailerLimit--;
-            }
 
             // Avoid implicitly captured closure
             return candidates.Where(i =>

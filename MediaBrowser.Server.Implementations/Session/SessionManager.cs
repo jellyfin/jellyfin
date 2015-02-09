@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -11,7 +10,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -58,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Session
         private readonly IMusicManager _musicManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;
-        private readonly IItemRepository _itemRepo;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -99,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
 
-        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IItemRepository itemRepo, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
+        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager)
         {
             _userDataRepository = userDataRepository;
             _logger = logger;
@@ -109,12 +107,12 @@ namespace MediaBrowser.Server.Implementations.Session
             _musicManager = musicManager;
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _itemRepo = itemRepo;
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _httpClient = httpClient;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
+            _mediaSourceManager = mediaSourceManager;
 
             _deviceManager.DeviceOptionsUpdated += _deviceManager_DeviceOptionsUpdated;
         }
@@ -307,21 +305,21 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="libraryItem">The library item.</param>
         private void UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
         {
-            var runtimeTicks = libraryItem == null ? null : libraryItem.RunTimeTicks;
-
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
                 info.MediaSourceId = info.ItemId;
             }
 
-            if (!string.Equals(info.ItemId, info.MediaSourceId) &&
-                !string.IsNullOrWhiteSpace(info.MediaSourceId))
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && info.Item == null && libraryItem != null)
             {
-                runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
-            }
+                var runtimeTicks = libraryItem.RunTimeTicks;
 
-            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
-            {
+                if (!string.Equals(info.ItemId, info.MediaSourceId) &&
+                    !string.IsNullOrWhiteSpace(info.MediaSourceId))
+                {
+                    runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
+                }
+
                 var current = session.NowPlayingItem;
 
                 if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
@@ -518,7 +516,8 @@ namespace MediaBrowser.Server.Implementations.Session
                             Item = session.NowPlayingItem,
                             ItemId = (session.NowPlayingItem == null ? null : session.NowPlayingItem.Id),
                             SessionId = session.Id,
-                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId)
+                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId),
+                            PositionTicks = session.PlayState == null ? null : session.PlayState.PositionTicks
                         });
                     }
                     catch (Exception ex)
@@ -711,7 +710,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.ItemId) && libraryItem != null)
+            if (!string.IsNullOrWhiteSpace(info.ItemId) && info.Item == null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
@@ -870,14 +869,14 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 if (items.Any(i => !session.QueueableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id.ToString()));
+                    throw new ArgumentException(string.Format("{0} is unable to queue the requested media type.", session.DeviceName ?? session.Id));
                 }
             }
             else
             {
                 if (items.Any(i => !session.PlayableMediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
                 {
-                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id.ToString()));
+                    throw new ArgumentException(string.Format("{0} is unable to play the requested media type.", session.DeviceName ?? session.Id));
                 }
             }
 
@@ -895,14 +894,28 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(new Guid(id));
 
+            var byName = item as IItemByName;
+
+            if (byName != null)
+            {
+                var itemFilter = byName.GetItemFilter();
+
+                var items = user == null ?
+                    _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)) :
+                    user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && itemFilter(i));
+
+                items = items.OrderBy(i => i.SortName);
+
+                return items;
+            }
+            
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
 
-                var items = user == null ? folder.RecursiveChildren :
-                    folder.GetRecursiveChildren(user);
-
-                items = items.Where(i => !i.IsFolder);
+                var items = user == null ?
+                    folder.GetRecursiveChildren(i => !i.IsFolder) :
+                    folder.GetRecursiveChildren(user, i => !i.IsFolder);
 
                 items = items.OrderBy(i => i.SortName);
 
@@ -914,37 +927,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
         {
-            var item = _libraryManager.GetItemById(new Guid(id));
+            var item = _libraryManager.GetItemById(id);
 
-            var audio = item as Audio;
-
-            if (audio != null)
-            {
-                return _musicManager.GetInstantMixFromSong(audio, user);
-            }
-
-            var artist = item as MusicArtist;
-
-            if (artist != null)
-            {
-                return _musicManager.GetInstantMixFromArtist(artist.Name, user);
-            }
-
-            var album = item as MusicAlbum;
-
-            if (album != null)
-            {
-                return _musicManager.GetInstantMixFromAlbum(album, user);
-            }
-
-            var genre = item as MusicGenre;
-
-            if (genre != null)
-            {
-                return _musicManager.GetInstantMixFromGenres(new[] { genre.Name }, user);
-            }
-
-            return new BaseItem[] { };
+            return _musicManager.GetInstantMixFromItem(item, user);
         }
 
         public Task SendBrowseCommand(string controllingSessionId, string sessionId, BrowseRequest command, CancellationToken cancellationToken)
@@ -1356,7 +1341,14 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+                try
+                {
+                    await SaveCapabilities(session.DeviceId, capabilities).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving device capabilities", ex);
+                }
             }
         }
 
@@ -1568,7 +1560,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(mediaSourceId))
             {
-                info.MediaStreams = _itemRepo.GetMediaStreams(new MediaStreamQuery
+                info.MediaStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
                 {
                     ItemId = new Guid(mediaSourceId)
 
@@ -1631,6 +1623,48 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
                 string.Equals(i.Client, client));
+        }
+
+        public Task SendMessageToUserSessions<T>(string userId, string name, T data,
+            CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && i.ContainsUser(userId)).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendMessage(name, data, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending message", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data,
+            CancellationToken cancellationToken)
+        {
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendMessage(name, data, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending message", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
         }
     }
 }

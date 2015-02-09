@@ -10,8 +10,6 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StreamBuilder
     {
-        private readonly string[] _serverTextSubtitleOutputs = { "srt", "vtt", "ttml" };
-
         public StreamInfo BuildAudioItem(AudioOptions options)
         {
             ValidateAudioInput(options);
@@ -110,7 +108,8 @@ namespace MediaBrowser.Model.Dlna
                 MediaType = DlnaProfileType.Audio,
                 MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context
+                Context = options.Context,
+                DeviceProfile = options.Profile
             };
 
             int? maxBitrateSetting = options.GetMaxBitrate();
@@ -242,7 +241,8 @@ namespace MediaBrowser.Model.Dlna
                 MediaType = DlnaProfileType.Video,
                 MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context
+                Context = options.Context,
+                DeviceProfile = options.Profile
             };
 
             int? audioStreamIndex = options.AudioStreamIndex ?? item.DefaultAudioStreamIndex;
@@ -258,7 +258,7 @@ namespace MediaBrowser.Model.Dlna
             if (IsEligibleForDirectPlay(item, maxBitrateSetting, subtitleStream, options))
             {
                 // See if it can be direct played
-                var directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream);
+                var directPlay = GetVideoDirectPlayProfile(options, options.Profile, item, videoStream, audioStream);
 
                 if (directPlay != null)
                 {
@@ -267,7 +267,10 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        playlistItem.SubtitleDeliveryMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+
+                        playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                        playlistItem.SubtitleFormat = subtitleProfile.Format;
                     }
 
                     return playlistItem;
@@ -289,7 +292,10 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (subtitleStream != null)
                 {
-                    playlistItem.SubtitleDeliveryMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+
+                    playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
+                    playlistItem.SubtitleFormat = subtitleProfile.Format;
                 }
 
                 playlistItem.PlayMethod = PlayMethod.Transcode;
@@ -374,7 +380,8 @@ namespace MediaBrowser.Model.Dlna
             return 128000;
         }
 
-        private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
+        private PlayMethod? GetVideoDirectPlayProfile(VideoOptions options,
+            DeviceProfile profile,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream)
@@ -498,12 +505,12 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaSource.Protocol == MediaProtocol.Http)
             {
-                if (!profile.SupportsDirectRemoteContent)
+                if (!options.SupportsDirectRemoteContent)
                 {
                     return null;
                 }
 
-                if (mediaSource.RequiredHttpHeaders.Count > 0 && !profile.SupportsCustomHttpHeaders)
+                if (mediaSource.RequiredHttpHeaders.Count > 0 && !options.SupportsCustomHttpHeaders)
                 {
                     return null;
                 }
@@ -520,14 +527,9 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                if (!subtitleStream.IsTextSubtitleStream)
-                {
-                    return false;
-                }
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
 
-                SubtitleDeliveryMethod subtitleMethod = GetSubtitleDeliveryMethod(subtitleStream, options);
-
-                if (subtitleMethod != SubtitleDeliveryMethod.External && subtitleMethod != SubtitleDeliveryMethod.Embed)
+                if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     return false;
                 }
@@ -536,43 +538,33 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        private SubtitleDeliveryMethod GetSubtitleDeliveryMethod(MediaStream subtitleStream,
-            VideoOptions options)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile)
         {
-            if (subtitleStream.IsTextSubtitleStream)
+            // Look for an external profile that matches the stream type (text/graphical)
+            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                // See if the device can retrieve the subtitles externally
-                bool supportsSubsExternally = options.Context == EncodingContext.Streaming &&
-                    ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.External, _serverTextSubtitleOutputs);
-
-                if (supportsSubsExternally)
+                if (subtitleStream.SupportsExternalStream)
                 {
-                    return SubtitleDeliveryMethod.External;
-                }
-
-                // See if the device can retrieve the subtitles externally
-                bool supportsEmbedded = ContainsSubtitleFormat(options.Profile.SubtitleProfiles, SubtitleDeliveryMethod.Embed, _serverTextSubtitleOutputs);
-
-                if (supportsEmbedded)
-                {
-                    return SubtitleDeliveryMethod.Embed;
+                    if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    {
+                        return profile;
+                    }
                 }
             }
 
-            return SubtitleDeliveryMethod.Encode;
-        }
-
-        private bool ContainsSubtitleFormat(SubtitleProfile[] profiles, SubtitleDeliveryMethod method, string[] formats)
-        {
-            foreach (SubtitleProfile profile in profiles)
+            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                if (method == profile.Method && ListHelper.ContainsIgnoreCase(formats, profile.Format))
+                if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    return true;
+                    return profile;
                 }
             }
 
-            return false;
+            return new SubtitleProfile
+            {
+                Method = SubtitleDeliveryMethod.Encode,
+                Format = subtitleStream.Codec
+            };
         }
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)

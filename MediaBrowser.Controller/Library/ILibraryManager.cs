@@ -123,14 +123,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        IEnumerable<VirtualFolderInfo> GetDefaultVirtualFolders();
-
-        /// <summary>
-        /// Gets the view.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        IEnumerable<VirtualFolderInfo> GetVirtualFolders(User user);
+        IEnumerable<VirtualFolderInfo> GetVirtualFolders();
 
         /// <summary>
         /// Gets the item by id.

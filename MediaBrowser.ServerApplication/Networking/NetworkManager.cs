@@ -156,6 +156,16 @@ namespace MediaBrowser.ServerApplication.Networking
         }
 
         /// <summary>
+        /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
+        /// </summary>
+        /// <param name="certificatePath">The path to generate the certificate.</param>
+        /// <param name="hostname">The common name for the certificate.</param>
+        public void GenerateSelfSignedSslCertificate(string certificatePath, string hostname)
+        {
+            CertificateGenerator.CreateSelfSignCertificatePfx(certificatePath, hostname, Logger);
+        }
+
+        /// <summary>
         /// Gets the network prefix.
         /// </summary>
         /// <value>The network prefix.</value>

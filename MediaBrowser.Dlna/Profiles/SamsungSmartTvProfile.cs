@@ -336,6 +336,13 @@ namespace MediaBrowser.Dlna.Profiles
                     Container = "mkv",
                     MimeType = "video/x-mkv",
                     Type = DlnaProfileType.Video
+                },
+
+                new ResponseProfile
+                {
+                    Container = "flac",
+                    MimeType = "audio/x-flac",
+                    Type = DlnaProfileType.Audio
                 }
             };
 

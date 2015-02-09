@@ -74,7 +74,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 ValidateUserAccess(user, request, authAttribtues, auth);
             }
 
-            if (!IsExemptFromRoles(auth, authAttribtues))
+            var info = GetTokenInfo(request);
+
+            if (!IsExemptFromRoles(auth, authAttribtues, info))
             {
                 var roles = authAttribtues.GetRoles().ToList();
 
@@ -142,10 +144,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
+        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, AuthenticationInfo tokenInfo)
         {
             if (!_config.Configuration.IsStartupWizardCompleted &&
                 authAttribtues.AllowBeforeStartupWizard)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(auth.Token))
+            {
+                return true;
+            }
+
+            if (tokenInfo != null && string.IsNullOrWhiteSpace(tokenInfo.UserId))
             {
                 return true;
             }
@@ -175,6 +187,23 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     };
                 }
             }
+            if (roles.Contains("download", StringComparer.OrdinalIgnoreCase))
+            {
+                if (user == null || !user.Policy.EnableContentDownloading)
+                {
+                    throw new SecurityException("User does not have download access.")
+                    {
+                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                    };
+                }
+            }
+        }
+
+        private AuthenticationInfo GetTokenInfo(IServiceRequest request)
+        {
+            object info;
+            request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
+            return info as AuthenticationInfo;
         }
 
         private bool IsValidConnectKey(string token)
@@ -194,7 +223,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 throw new SecurityException("Access token is invalid or expired.");
             }
 
-            var info = (AuthenticationInfo)request.Items["OriginalAuthenticationInfo"];
+            var info = GetTokenInfo(request);
 
             if (info == null)
             {

@@ -133,5 +133,33 @@ namespace MediaBrowser.Common.IO
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [is path file] [the specified path]; otherwise, <c>false</c>.</returns>
         bool IsPathFile(string path);
+
+        /// <summary>
+        /// Deletes the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="sendToRecycleBin">if set to <c>true</c> [send to recycle bin].</param>
+        void DeleteFile(string path, bool sendToRecycleBin);
+
+        /// <summary>
+        /// Deletes the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="sendToRecycleBin">if set to <c>true</c> [send to recycle bin].</param>
+        void DeleteDirectory(string path, bool recursive, bool sendToRecycleBin);
+
+        /// <summary>
+        /// Deletes the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        void DeleteFile(string path);
+
+        /// <summary>
+        /// Deletes the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        void DeleteDirectory(string path, bool recursive);
     }
 }

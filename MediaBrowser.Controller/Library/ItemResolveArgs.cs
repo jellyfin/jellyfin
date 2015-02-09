@@ -17,7 +17,6 @@ namespace MediaBrowser.Controller.Library
         /// The _app paths
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
-        private readonly ILibraryManager _libraryManager;
 
         public IDirectoryService DirectoryService { get; private set; }
 
@@ -25,11 +24,10 @@ namespace MediaBrowser.Controller.Library
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager, IDirectoryService directoryService)
+        /// <param name="directoryService">The directory service.</param>
+        public ItemResolveArgs(IServerApplicationPaths appPaths, IDirectoryService directoryService)
         {
             _appPaths = appPaths;
-            _libraryManager = libraryManager;
             DirectoryService = directoryService;
         }
 
@@ -133,18 +131,6 @@ namespace MediaBrowser.Controller.Library
             get
             {
                 return IsDirectory && string.Equals(Path, _appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is root.
-        /// </summary>
-        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
-        public bool IsRoot
-        {
-            get
-            {
-                return Parent == null;
             }
         }
 

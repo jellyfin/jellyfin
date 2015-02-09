@@ -85,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _logger.Info("Requested to delete {0}", result.OriginalPath);
             try
             {
-                File.Delete(result.OriginalPath);
+                _fileSystem.DeleteFile(result.OriginalPath);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -29,5 +30,15 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The item identifier.</value>
         public string ItemId { get; set; }
+        /// <summary>
+        /// Gets or sets the user ids with access.
+        /// </summary>
+        /// <value>The user ids with access.</value>
+        public List<string> UserIdsWithAccess { get; set; }
+
+        public LocalItem()
+        {
+            UserIdsWithAccess = new List<string>();
+        }
     }
 }

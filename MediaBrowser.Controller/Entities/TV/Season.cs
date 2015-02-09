@@ -81,10 +81,10 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override IEnumerable<string> GetIndexByOptions()
         {
             return new List<string> {            
-                {LocalizedStrings.Instance.GetString("NoneDispPref")}, 
-                {LocalizedStrings.Instance.GetString("PerformerDispPref")},
-                {LocalizedStrings.Instance.GetString("DirectorDispPref")},
-                {LocalizedStrings.Instance.GetString("YearDispPref")},
+                {"None"}, 
+                {"Performer"},
+                {"Director"},
+                {"Year"},
             };
         }
 
@@ -92,7 +92,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             if (Series != null)
             {
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return Series.GetUserDataKey() + seasonNo.ToString("000");
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private IEnumerable<Episode> GetEpisodes()
         {
-            var episodes = RecursiveChildren.OfType<Episode>();
+            var episodes = GetRecursiveChildren().OfType<Episode>();
             var series = Series;
 
             if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
@@ -254,12 +254,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 if (seasonNumber.HasValue)
                 {
-                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
                         .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
                 }
                 else
                 {
-                    list.AddRange(series.RecursiveChildren.OfType<Episode>()
+                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
                         .Where(i => !i.ParentIndexNumber.HasValue));
                 }
 

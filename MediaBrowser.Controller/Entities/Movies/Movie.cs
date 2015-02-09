@@ -25,12 +25,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public List<Guid> ThemeVideoIds { get; set; }
         public List<string> ProductionLocations { get; set; }
 
-        /// <summary>
-        /// This is just a cache to enable quick access by Id
-        /// </summary>
-        [IgnoreDataMember]
-        public List<Guid> BoxSetIdList { get; set; }
-
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
@@ -40,7 +34,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            BoxSetIdList = new List<Guid>();
             Taglines = new List<string>();
             Keywords = new List<string>();
             ProductionLocations = new List<string>();
@@ -107,9 +100,9 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
+            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)

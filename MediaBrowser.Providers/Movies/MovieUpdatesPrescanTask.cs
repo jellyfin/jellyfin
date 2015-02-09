@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Movies
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableTmdbUpdates)
+            if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
                 progress.Report(100);
                 return;
@@ -177,9 +177,8 @@ namespace MediaBrowser.Providers.Movies
             var numComplete = 0;
 
             // Gather all movies into a lookup by tmdb id
-            var allMovies = _libraryManager.RootFolder.RecursiveChildren
-                .Where(i => i is Movie)
-                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
+            var allMovies = _libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is Movie && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
                 .ToLookup(i => i.GetProviderId(MetadataProviders.Tmdb));
 
             foreach (var id in list)

@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
 
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
                 return key;
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

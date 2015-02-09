@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -161,10 +162,10 @@ namespace MediaBrowser.Providers.TV
             PopulateImages(list, obj.tvposter, ImageType.Primary, 1000, 1426);
         }
 
-        private void PopulateImages(List<RemoteImageInfo> list, 
-            List<Image> images, 
-            ImageType type, 
-            int width, 
+        private void PopulateImages(List<RemoteImageInfo> list,
+            List<Image> images,
+            ImageType type,
+            int width,
             int height,
             bool allowSeasonAll = false)
         {
@@ -283,6 +284,11 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
+        public FanartOptions GetFanartOptions()
+        {
+            return _config.GetConfiguration<FanartOptions>("fanart");
+        }
+
         /// <summary>
         /// Downloads the series json.
         /// </summary>
@@ -294,6 +300,12 @@ namespace MediaBrowser.Providers.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, tvdbId);
+
+            var clientKey = GetFanartOptions().UserApiKey;
+            if (!string.IsNullOrWhiteSpace(clientKey))
+            {
+                url += "&client_key=" + clientKey;
+            }
 
             var path = GetFanartJsonPath(tvdbId);
 
@@ -331,7 +343,8 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = GetFanartOptions();
+            if (!options.EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -376,6 +389,21 @@ namespace MediaBrowser.Providers.TV
             public List<Image> characterart { get; set; }
             public List<Image> tvposter { get; set; }
             public List<Image> seasonbanner { get; set; }
+        }
+    }
+
+    public class FanartConfigStore : IConfigurationFactory
+    {
+        public IEnumerable<ConfigurationStore> GetConfigurations()
+        {
+            return new List<ConfigurationStore>
+            {
+                new ConfigurationStore
+                {
+                     Key = "fanart",
+                     ConfigurationType = typeof(FanartOptions)
+                }
+            };
         }
     }
 }

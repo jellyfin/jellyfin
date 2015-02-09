@@ -16,15 +16,14 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public override bool IsVisible(User user)
         {
-            return base.IsVisible(user) && GetRecursiveChildren(user, false)
+            return base.IsVisible(user) && GetChildren(user, false)
                 .OfType<Playlist>()
                 .Any(i => i.IsVisible(user));
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return RecursiveChildren
-                .OfType<Playlist>();
+            return GetRecursiveChildren(i => i is Playlist);
         }
 
         public override bool IsHidden

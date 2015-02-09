@@ -209,6 +209,12 @@ namespace MediaBrowser.Server.Implementations.Session
             return SendMessage(command.Name, command.Arguments, cancellationToken);
         }
 
+        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            // Not supported or needed right now
+            return Task.FromResult(true);
+        }
+
         private string ToQueryString(Dictionary<string, string> nvc)
         {
             var array = (from item in nvc

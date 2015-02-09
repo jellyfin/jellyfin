@@ -32,6 +32,9 @@ namespace MediaBrowser.Api.ScheduledTasks
     {
         [ApiMember(Name = "IsHidden", Description = "Optional filter tasks that are hidden, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsHidden { get; set; }
+
+        [ApiMember(Name = "IsEnabled", Description = "Optional filter tasks that are enabled, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsEnabled { get; set; }
     }
 
     /// <summary>
@@ -132,6 +135,25 @@ namespace MediaBrowser.Api.ScheduledTasks
                 });
             }
 
+            if (request.IsEnabled.HasValue)
+            {
+                var val = request.IsEnabled.Value;
+
+                result = result.Where(i =>
+                {
+                    var isEnabled = true;
+
+                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
+
+                    if (configurableTask != null)
+                    {
+                        isEnabled = configurableTask.IsEnabled;
+                    }
+
+                    return isEnabled == val;
+                });
+            }
+            
             var infos = result
                 .Select(ScheduledTaskHelpers.GetTaskInfo)
                 .ToList();
@@ -202,8 +224,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             // We need to parse this manually because we told service stack not to with IRequiresRequestStream
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var id = pathInfo.GetArgumentValue<string>(1);
+            var id = GetPathValue(1);
 
             var task = TaskManager.ScheduledTasks.FirstOrDefault(i => string.Equals(i.Id, id));
 

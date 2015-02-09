@@ -36,8 +36,8 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
-            var items = GetAllLibraryItems(user, parentIds)
-                .OfType<Series>();
+            var items = GetAllLibraryItems(user, parentIds, i => i is Series)
+                .Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -54,8 +54,9 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var items = parentsFolders.SelectMany(i => i.GetRecursiveChildren(user))
-                .OfType<Series>();
+            var items = parentsFolders
+                .SelectMany(i => i.GetRecursiveChildren(user, s => s is Series))
+                .Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -63,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds)
+        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds, Func<BaseItem,bool> filter)
         {
             if (parentIds.Length > 0)
             {
@@ -71,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 {
                     var folder = (Folder)_libraryManager.GetItemById(new Guid(i));
 
-                    return folder.GetRecursiveChildren(user);
+                    return folder.GetRecursiveChildren(user, filter);
 
                 });
             }
@@ -81,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            return user.RootFolder.GetRecursiveChildren(user);
+            return user.RootFolder.GetRecursiveChildren(user, filter);
         }
 
         public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<Series> series)
@@ -92,7 +93,8 @@ namespace MediaBrowser.Server.Implementations.TV
             return FilterSeries(request, series)
                 .AsParallel()
                 .Select(i => GetNextUp(i, currentUser))
-                .Where(i => i.Item1 != null)
+                // Include if an episode was found, and either the series is not unwatched or the specific series was requested
+                .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
                 .OrderByDescending(i =>
                 {
                     var episode = i.Item1;
@@ -122,11 +124,12 @@ namespace MediaBrowser.Server.Implementations.TV
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime> GetNextUp(Series series, User user)
+        private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
             // Get them in display order, then reverse
             var allEpisodes = series.GetSeasons(user, true, true)
-                .SelectMany(i => i.GetEpisodes(user, true, true))
+                .Where(i => !i.IndexNumber.HasValue || i.IndexNumber.Value != 0)
+                .SelectMany(i => i.GetEpisodes(user))
                 .Reverse()
                 .ToList();
 
@@ -160,10 +163,13 @@ namespace MediaBrowser.Server.Implementations.TV
 
             if (lastWatched != null)
             {
-                return new Tuple<Episode, DateTime>(nextUp, lastWatchedDate);
+                return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
             }
 
-            return new Tuple<Episode, DateTime>(null, lastWatchedDate);
+            var firstEpisode = allEpisodes.LastOrDefault(i => i.LocationType != LocationType.Virtual && !i.IsPlayed(user));
+
+            // Return the first episode
+            return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);
         }
 
         private IEnumerable<Series> FilterSeries(NextUpQuery request, IEnumerable<Series> items)

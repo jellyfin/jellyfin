@@ -107,7 +107,8 @@ namespace MediaBrowser.Server.Implementations.News
             {
                 Date = i.Date,
                 Name = i.Title,
-                Description = i.Link,
+                Description = i.Description,
+                Url = i.Link,
                 UserIds = _userManager.Users.Select(u => u.Id.ToString("N")).ToList()
 
             }, cancellationToken));

@@ -39,12 +39,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
 
-            // If the resolver didn't specify this
-            if (string.IsNullOrEmpty(item.DisplayMediaType))
-            {
-                item.DisplayMediaType = item.GetType().Name;
-            }
-
             item.IsLocked = item.Path.IndexOf("[dontfetchmeta]", StringComparison.OrdinalIgnoreCase) != -1 ||
                 item.Parents.Any(i => i.IsLocked);
 
@@ -78,12 +72,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
-
-            // If the resolver didn't specify this
-            if (string.IsNullOrEmpty(item.DisplayMediaType))
-            {
-                item.DisplayMediaType = item.GetType().Name;
-            }
 
             // Make sure the item has a name
             EnsureName(item, args.FileInfo);

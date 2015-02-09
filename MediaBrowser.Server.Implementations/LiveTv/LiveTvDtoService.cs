@@ -229,6 +229,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ServerId = _appHost.SystemId
             };
 
+            dto.CanDelete = user == null
+                ? recording.CanDelete()
+                : recording.CanDelete(user);
+            
             dto.MediaStreams = dto.MediaSources.SelectMany(i => i.MediaStreams).ToList();
 
             if (info.Status == RecordingStatus.InProgress)

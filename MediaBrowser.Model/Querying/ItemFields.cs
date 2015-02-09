@@ -1,5 +1,4 @@
-﻿
-namespace MediaBrowser.Model.Querying
+﻿namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Used to control the data that gets attached to DtoBaseItems
@@ -25,6 +24,16 @@ namespace MediaBrowser.Model.Querying
         /// The budget
         /// </summary>
         Budget,
+
+        /// <summary>
+        /// The can delete
+        /// </summary>
+        CanDelete,
+
+        /// <summary>
+        /// The can download
+        /// </summary>
+        CanDownload,
 
         /// <summary>
         /// The chapters

@@ -47,9 +47,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the subtitle language encoding parameter.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="language">The language.</param>
         /// <returns>System.String.</returns>
-        string GetSubtitleFileCharacterSet(string path, string language);
+        string GetSubtitleFileCharacterSet(string path);
 
     }
 }

@@ -165,15 +165,17 @@ namespace MediaBrowser.Dlna.Main
             {
                 var guid = address.GetMD5();
 
-                var descriptorURI = "/mediabrowser/dlna/" + guid.ToString("N") + "/description.xml";
+                var descriptorURI = "/dlna/" + guid.ToString("N") + "/description.xml";
 
-                var uri = new Uri(string.Format("http://{0}:{1}{2}", address, _config.Configuration.HttpServerPortNumber, descriptorURI));
+                var uri = new Uri(string.Format("http://{0}:{1}{2}", address, _appHost.HttpPort, descriptorURI));
 
                 var services = new List<string>
                 {
                     "upnp:rootdevice", 
                     "urn:schemas-upnp-org:device:MediaServer:1", 
                     "urn:schemas-upnp-org:service:ContentDirectory:1", 
+                    "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
                     "uuid:" + guid.ToString("N")
                 };
                 

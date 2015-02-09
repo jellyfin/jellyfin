@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
@@ -36,6 +35,34 @@ namespace MediaBrowser.Api.Sync
     [Route("/Sync/JobItems", "GET", Summary = "Gets sync job items.")]
     public class GetSyncJobItems : SyncJobItemQuery, IReturn<QueryResult<SyncJobItem>>
     {
+    }
+
+    [Route("/Sync/JobItems/{Id}/Enable", "POST", Summary = "Enables a cancelled or queued sync job item")]
+    public class EnableSyncJobItem : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}/MarkForRemoval", "POST", Summary = "Marks a job item for removal")]
+    public class MarkJobItemForRemoval : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}/UnmarkForRemoval", "POST", Summary = "Unmarks a job item for removal")]
+    public class UnmarkJobItemForRemoval : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}", "DELETE", Summary = "Cancels a sync job item")]
+    public class CancelSyncJobItem : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
     }
 
     [Route("/Sync/Jobs", "GET", Summary = "Gets sync jobs.")]
@@ -83,6 +110,16 @@ namespace MediaBrowser.Api.Sync
     {
         [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Sync/JobItems/{Id}/AdditionalFiles", "GET", Summary = "Gets a sync job item file")]
+    public class GetSyncJobItemAdditionalFile
+    {
+        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Name { get; set; }
     }
 
     [Route("/Sync/OfflineActions", "POST", Summary = "Reports an action that occurred while offline.")]
@@ -169,10 +206,13 @@ namespace MediaBrowser.Api.Sync
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
 
-            if (jobItem.Status != SyncJobItemStatus.Transferring)
+            if (jobItem.Status < SyncJobItemStatus.ReadyToTransfer)
             {
                 throw new ArgumentException("The job item is not yet ready for transfer.");
             }
+
+            var task = _syncManager.ReportSyncJobItemTransferBeginning(request.Id);
+            Task.WaitAll(task);
 
             return ToStaticFileResult(jobItem.OutputPath);
         }
@@ -198,10 +238,11 @@ namespace MediaBrowser.Api.Sync
                     }
                 };
 
-                var dtos = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                var items = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)
-                    .Where(i => i != null)
-                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions))
+                    .Where(i => i != null);
+
+                var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions)
                     .ToList();
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);
@@ -240,6 +281,53 @@ namespace MediaBrowser.Api.Sync
         public void Post(UpdateSyncJob request)
         {
             var task = _syncManager.UpdateJob(request);
+
+            Task.WaitAll(task);
+        }
+
+        public object Get(GetSyncJobItemAdditionalFile request)
+        {
+            var jobItem = _syncManager.GetJobItem(request.Id);
+
+            if (jobItem.Status < SyncJobItemStatus.ReadyToTransfer)
+            {
+                throw new ArgumentException("The job item is not yet ready for transfer.");
+            }
+
+            var file = jobItem.AdditionalFiles.FirstOrDefault(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (file == null)
+            {
+                throw new ArgumentException("Sync job additional file not found.");
+            }
+
+            return ToStaticFileResult(file.Path);
+        }
+
+        public void Post(EnableSyncJobItem request)
+        {
+            var task = _syncManager.ReEnableJobItem(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Delete(CancelSyncJobItem request)
+        {
+            var task = _syncManager.CancelJobItem(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(MarkJobItemForRemoval request)
+        {
+            var task = _syncManager.MarkJobItemForRemoval(request.Id);
+
+            Task.WaitAll(task);
+        }
+
+        public void Post(UnmarkJobItemForRemoval request)
+        {
+            var task = _syncManager.UnmarkJobItemForRemoval(request.Id);
 
             Task.WaitAll(task);
         }

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
@@ -13,7 +12,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Audio}.</returns>
-        IEnumerable<Audio> GetInstantMixFromSong(Audio item, User user);
+        IEnumerable<Audio> GetInstantMixFromItem(BaseItem item, User user);
         /// <summary>
         /// Gets the instant mix from artist.
         /// </summary>
@@ -21,20 +20,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Audio}.</returns>
         IEnumerable<Audio> GetInstantMixFromArtist(string name, User user);
-        /// <summary>
-        /// Gets the instant mix from album.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{Audio}.</returns>
-        IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user);
-        /// <summary>
-        /// Gets the instant mix from playlist.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable&lt;Audio&gt;.</returns>
-        IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user);
         /// <summary>
         /// Gets the instant mix from genre.
         /// </summary>

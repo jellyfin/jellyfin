@@ -362,7 +362,7 @@ namespace MediaBrowser.Providers.TV
             if (item.LocationType != LocationType.Virtual)
             {
                 // For non-virtual items, only enable if configured
-                if (!_config.Configuration.EnableTvDbUpdates)
+                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
                 {
                     return false;
                 }

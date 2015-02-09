@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
-    public class EpisodeXmlProvider : BaseXmlProvider<Episode>, IHasOrder
+    public class EpisodeXmlProvider : BaseXmlProvider<Episode>
     {
         private readonly ILogger _logger;
 
@@ -39,15 +39,6 @@ namespace MediaBrowser.LocalMetadata.Providers
             var metadataFile = Path.Combine(metadataPath, Path.ChangeExtension(Path.GetFileName(info.Path), ".xml"));
 
             return directoryService.GetFile(metadataFile);
-        }
-
-        public int Order
-        {
-            get
-            {
-                // After Xbmc
-                return 1;
-            }
         }
     }
 }

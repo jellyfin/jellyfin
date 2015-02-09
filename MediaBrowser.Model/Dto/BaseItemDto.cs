@@ -56,6 +56,8 @@ namespace MediaBrowser.Model.Dto
         public int? AirsBeforeEpisodeNumber { get; set; }
         public int? AbsoluteEpisodeNumber { get; set; }
         public bool? DisplaySpecialsWithSeasons { get; set; }
+        public bool? CanDelete { get; set; }
+        public bool? CanDownload { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
@@ -69,7 +71,8 @@ namespace MediaBrowser.Model.Dto
         public int? AnimeSeriesIndex { get; set; }
 
         public bool? SupportsSync { get; set; }
-        
+        public bool? HasSyncJob { get; set; }
+
         /// <summary>
         /// Gets or sets the DVD season number.
         /// </summary>
@@ -222,12 +225,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The run time ticks.</value>
         public long? RunTimeTicks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the recursive unplayed item count.
-        /// </summary>
-        /// <value>The recursive unplayed item count.</value>
-        public int? RecursiveUnplayedItemCount { get; set; }
 
         /// <summary>
         /// Gets or sets the play access.

@@ -90,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<PlayRequest>
+            return SendMessageInternal(new WebSocketMessage<PlayRequest>
             {
                 MessageType = "Play",
                 Data = command
@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<PlaystateRequest>
+            return SendMessageInternal(new WebSocketMessage<PlaystateRequest>
             {
                 MessageType = "Playstate",
                 Data = command
@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendLibraryUpdateInfo(LibraryUpdateInfo info, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<LibraryUpdateInfo>
+            return SendMessagesInternal(new WebSocketMessage<LibraryUpdateInfo>
             {
                 MessageType = "LibraryChanged",
                 Data = info
@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendRestartRequiredNotification(SystemInfo info, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<SystemInfo>
+            return SendMessagesInternal(new WebSocketMessage<SystemInfo>
             {
                 MessageType = "RestartRequired",
                 Data = info
@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<UserDataChangeInfo>
+            return SendMessagesInternal(new WebSocketMessage<UserDataChangeInfo>
             {
                 MessageType = "UserDataChanged",
                 Data = info
@@ -158,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<string>
+            return SendMessagesInternal(new WebSocketMessage<string>
             {
                 MessageType = "ServerShuttingDown",
                 Data = string.Empty
@@ -173,7 +173,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         public Task SendServerRestartNotification(CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<string>
+            return SendMessagesInternal(new WebSocketMessage<string>
             {
                 MessageType = "ServerRestarting",
                 Data = string.Empty
@@ -183,7 +183,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
-            return SendMessage(new WebSocketMessage<GeneralCommand>
+            return SendMessageInternal(new WebSocketMessage<GeneralCommand>
             {
                 MessageType = "GeneralCommand",
                 Data = command
@@ -193,7 +193,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<SessionInfoDto>
+            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "SessionEnded",
                 Data = sessionInfo
@@ -203,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaybackStartNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<SessionInfoDto>
+            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "PlaybackStart",
                 Data = sessionInfo
@@ -213,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaybackStoppedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
         {
-            return SendMessages(new WebSocketMessage<SessionInfoDto>
+            return SendMessagesInternal(new WebSocketMessage<SessionInfoDto>
             {
                 MessageType = "PlaybackStopped",
                 Data = sessionInfo
@@ -221,7 +221,17 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken);
         }
 
-        private Task SendMessage<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            return SendMessagesInternal(new WebSocketMessage<T>
+            {
+                Data = data,
+                MessageType = name
+
+            }, cancellationToken);
+        }
+
+        private Task SendMessageInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             if (SkipSending()) return Task.FromResult(true);
 
@@ -230,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return socket.SendAsync(message, cancellationToken);
         }
 
-        private Task SendMessages<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        private Task SendMessagesInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             if (SkipSending()) return Task.FromResult(true);
 

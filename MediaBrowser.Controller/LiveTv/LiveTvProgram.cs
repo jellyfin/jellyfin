@@ -2,11 +2,12 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Users;
 using System;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -16,7 +17,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return GetClientTypeName() + "-" + Name;
         }
@@ -138,6 +139,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -150,6 +152,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -158,6 +161,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
@@ -166,6 +170,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        [IgnoreDataMember]
         public bool IsAiring
         {
             get
@@ -176,6 +181,7 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        [IgnoreDataMember]
         public bool HasAired
         {
             get
@@ -203,6 +209,16 @@ namespace MediaBrowser.Controller.LiveTv
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"));
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

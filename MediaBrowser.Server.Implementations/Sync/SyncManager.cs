@@ -1,5 +1,8 @@
 ﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -12,7 +15,9 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
@@ -22,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
@@ -37,10 +43,19 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IApplicationHost _appHost;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IFileSystem _fileSystem;
+        private readonly Func<ISubtitleEncoder> _subtitleEncoder;
+        private readonly IConfigurationManager _config;
 
         private ISyncProvider[] _providers = { };
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder)
+        public event EventHandler<GenericEventArgs<SyncJobCreationResult>> SyncJobCreated;
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobCancelled;
+        public event EventHandler<GenericEventArgs<SyncJob>> SyncJobUpdated;
+        public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
+        public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
+
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -51,6 +66,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             _appHost = appHost;
             _tvSeriesManager = tvSeriesManager;
             _mediaEncoder = mediaEncoder;
+            _fileSystem = fileSystem;
+            _subtitleEncoder = subtitleEncoder;
+            _config = config;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -60,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
+            var processor = GetSyncJobProcessor();
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -124,13 +142,41 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             await processor.EnsureJobItems(job).ConfigureAwait(false);
 
-            return new SyncJobCreationResult
+            // If it already has a converting status then is must have been aborted during conversion
+            var jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
             {
-                Job = GetJob(jobId)
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                JobId = jobId
+            });
+
+            await processor.SyncJobItems(jobItemsResult.Items, false, new Progress<double>(), CancellationToken.None)
+                    .ConfigureAwait(false);
+
+            jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                JobId = jobId
+            });
+
+            var returnResult = new SyncJobCreationResult
+            {
+                Job = GetJob(jobId),
+                JobItems = jobItemsResult.Items.ToList()
             };
+
+            if (SyncJobCreated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobCreated, this, new GenericEventArgs<SyncJobCreationResult>
+                {
+                    Argument = returnResult
+
+                }, _logger);
+            }
+
+            return returnResult;
         }
 
-        public Task UpdateJob(SyncJob job)
+        public async Task UpdateJob(SyncJob job)
         {
             // Get fresh from the db and only update the fields that are supported to be changed.
             var instance = _repo.GetJob(job.Id);
@@ -141,7 +187,47 @@ namespace MediaBrowser.Server.Implementations.Sync
             instance.SyncNewContent = job.SyncNewContent;
             instance.ItemLimit = job.ItemLimit;
 
-            return _repo.Update(instance);
+            await _repo.Update(instance).ConfigureAwait(false);
+
+            OnSyncJobUpdated(instance);
+        }
+
+        internal void OnSyncJobUpdated(SyncJob job)
+        {
+            if (SyncJobUpdated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobUpdated, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
+        }
+
+        internal async Task UpdateSyncJobItemInternal(SyncJobItem jobItem)
+        {
+            await _repo.Update(jobItem).ConfigureAwait(false);
+            
+            if (SyncJobUpdated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobItemUpdated, this, new GenericEventArgs<SyncJobItem>
+                {
+                    Argument = jobItem
+
+                }, _logger);
+            }
+        }
+
+        internal void OnSyncJobItemCreated(SyncJobItem job)
+        {
+            if (SyncJobUpdated != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobItemCreated, this, new GenericEventArgs<SyncJobItem>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
         }
 
         public async Task<QueryResult<SyncJob>> GetJobs(SyncJobQuery query)
@@ -158,13 +244,21 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task FillMetadata(SyncJob job)
         {
+            var target = GetSyncTargets(job.UserId)
+                .FirstOrDefault(i => string.Equals(i.Id, job.TargetId, StringComparison.OrdinalIgnoreCase));
+
+            if (target != null)
+            {
+                job.TargetName = target.Name;
+            }
+
             var item = job.RequestedItemIds
                 .Select(_libraryManager.GetItemById)
                 .FirstOrDefault(i => i != null);
 
             if (item == null)
             {
-                var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
+                var processor = GetSyncJobProcessor();
 
                 var user = _userManager.GetUserById(job.UserId);
 
@@ -255,9 +349,40 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public Task CancelJob(string id)
+        public async Task CancelJob(string id)
         {
-            return _repo.DeleteJob(id);
+            var job = GetJob(id);
+
+            if (job == null)
+            {
+                throw new ArgumentException("Job not found.");
+            }
+
+            await _repo.DeleteJob(id).ConfigureAwait(false);
+
+            var path = GetSyncJobProcessor().GetTemporaryPath(id);
+
+            try
+            {
+                _fileSystem.DeleteDirectory(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting directory {0}", ex, path);
+            }
+
+            if (SyncJobCancelled != null)
+            {
+                EventHelper.FireEventIfNotNull(SyncJobCancelled, this, new GenericEventArgs<SyncJob>
+                {
+                    Argument = job
+
+                }, _logger);
+            }
         }
 
         public SyncJob GetJob(string id)
@@ -332,7 +457,27 @@ namespace MediaBrowser.Server.Implementations.Sync
                         return false;
                     }
 
+                    if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
+                    {
+                        return false;
+                    }
+                    
+                    if (video.IsPlaceHolder)
+                    {
+                        return false;
+                    }
+
+                    if (video.IsArchive)
+                    {
+                        return false;
+                    }
+
                     if (video.IsStacked)
+                    {
+                        return false;
+                    }
+
+                    if (video.IsShortcut)
                     {
                         return false;
                     }
@@ -392,11 +537,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;
 
-            if (jobItem.RequiresConversion)
+            if (!string.IsNullOrWhiteSpace(jobItem.TemporaryPath))
             {
                 try
                 {
-                    File.Delete(jobItem.OutputPath);
+                    _fileSystem.DeleteDirectory(jobItem.TemporaryPath, true);
+                }
+                catch (DirectoryNotFoundException)
+                {
                 }
                 catch (Exception ex)
                 {
@@ -404,11 +552,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
             }
 
-            await _repo.Update(jobItem).ConfigureAwait(false);
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
 
-            var processor = new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder());
+            var processor = GetSyncJobProcessor();
 
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        private SyncJobProcessor GetSyncJobProcessor()
+        {
+            return new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder(), _subtitleEncoder(), _config, _fileSystem);
         }
 
         public SyncJobItem GetJobItem(string id)
@@ -432,14 +585,34 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var job = _repo.GetJob(jobItem.JobId);
 
+            if (job == null)
+            {
+                _logger.Error("GetJobItemInfo job id {0} no longer exists", jobItem.JobId);
+                return null;
+            }
+
             var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
+            if (libraryItem == null)
+            {
+                _logger.Error("GetJobItemInfo library item with id {0} no longer exists", jobItem.ItemId);
+                return null;
+            }
 
             var syncedItem = new SyncedItem
             {
                 SyncJobId = jobItem.JobId,
                 SyncJobItemId = jobItem.Id,
                 ServerId = _appHost.SystemId,
-                UserId = job.UserId
+                UserId = job.UserId,
+                AdditionalFiles = jobItem.AdditionalFiles.Select(i => new ItemFileInfo
+                {
+                    ImageType = i.ImageType,
+                    Name = i.Name,
+                    Type = i.Type,
+                    Index = i.Index
+
+                }).ToList()
             };
 
             var dtoOptions = new DtoOptions();
@@ -456,13 +629,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
 
-            // TODO: this should be the media source of the transcoded output
-            syncedItem.Item.MediaSources = syncedItem.Item.MediaSources
-                .Where(i => string.Equals(i.Id, jobItem.MediaSourceId))
-                .ToList();
-
             var mediaSource = syncedItem.Item.MediaSources
                .FirstOrDefault(i => string.Equals(i.Id, jobItem.MediaSourceId));
+
+            syncedItem.Item.MediaSources = new List<MediaSourceInfo>();
 
             // This will be null for items that are not audio/video
             if (mediaSource == null)
@@ -472,6 +642,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             else
             {
                 syncedItem.OriginalFileName = Path.GetFileName(mediaSource.Path);
+                syncedItem.Item.MediaSources.Add(mediaSource);
             }
 
             return syncedItem;
@@ -487,10 +658,15 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Transferring }
+                Statuses = new List<SyncJobItemStatus>
+                {
+                    SyncJobItemStatus.ReadyToTransfer
+                }
             });
 
-            return jobItemResult.Items.Select(GetJobItemInfo)
+            return jobItemResult.Items
+                .Select(GetJobItemInfo)
+                .Where(i => i != null)
                 .ToList();
         }
 
@@ -511,7 +687,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                     var job = _repo.GetJob(jobItem.JobId);
                     var user = _userManager.GetUserById(job.UserId);
 
-                    if (user == null)
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        // Tell the device to remove it since it has been marked for removal
+                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                    }
+                    else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         response.ItemIdsToRemove.Add(jobItem.ItemId);
@@ -539,7 +720,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     // Content is no longer on the device
                     jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
-                    await _repo.Update(jobItem).ConfigureAwait(false);
+                    await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
                 }
             }
 
@@ -561,7 +742,49 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             response.ItemIdsToRemove = response.ItemIdsToRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
+            var itemsOnDevice = request.LocalItemIds
+                .Except(response.ItemIdsToRemove)
+                .ToList();
+
+            SetUserAccess(request, response, itemsOnDevice);
+
             return response;
+        }
+
+        private void SetUserAccess(SyncDataRequest request, SyncDataResponse response, List<string> itemIds)
+        {
+            var users = request.OfflineUserIds
+                .Select(_userManager.GetUserById)
+                .Where(i => i != null)
+                .ToList();
+
+            foreach (var itemId in itemIds)
+            {
+                var item = _libraryManager.GetItemById(itemId);
+
+                if (item != null)
+                {
+                    var usersWithAccess = new List<User>();
+
+                    foreach (var user in users)
+                    {
+                        if (IsUserVisible(item, user))
+                        {
+                            usersWithAccess.Add(user);
+                        }
+                    }
+
+                    response.ItemUserAccess[itemId] = users
+                        .Select(i => i.Id.ToString("N"))
+                        .OrderBy(i => i)
+                        .ToList();
+                }
+            }
+        }
+
+        private bool IsUserVisible(BaseItem item, User user)
+        {
+            return item.IsVisibleStandalone(user);
         }
 
         private bool IsLibraryItemAvailable(BaseItem item)
@@ -574,6 +797,162 @@ namespace MediaBrowser.Server.Implementations.Sync
             // TODO: Make sure it hasn't been deleted
 
             return true;
+        }
+
+        public async Task ReEnableJobItem(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Failed && jobItem.Status != SyncJobItemStatus.Cancelled)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.Status = SyncJobItemStatus.Queued;
+            jobItem.Progress = 0;
+            jobItem.IsMarkedForRemoval = false;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task CancelJobItem(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Queued && jobItem.Status != SyncJobItemStatus.ReadyToTransfer && jobItem.Status != SyncJobItemStatus.Converting)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.Status = SyncJobItemStatus.Cancelled;
+            jobItem.Progress = 0;
+            jobItem.IsMarkedForRemoval = true;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+
+            var path = processor.GetTemporaryPath(jobItem);
+
+            try
+            {
+                _fileSystem.DeleteDirectory(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting directory {0}", ex, path);
+            }
+        }
+
+        public async Task MarkJobItemForRemoval(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Synced)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.IsMarkedForRemoval = true;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task UnmarkJobItemForRemoval(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            if (jobItem.Status != SyncJobItemStatus.Synced)
+            {
+                throw new ArgumentException("Operation is not valid for this job item");
+            }
+
+            jobItem.IsMarkedForRemoval = false;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task ReportSyncJobItemTransferBeginning(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            jobItem.Status = SyncJobItemStatus.Transferring;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public async Task ReportSyncJobItemTransferFailed(string id)
+        {
+            var jobItem = _repo.GetJobItem(id);
+
+            jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
+
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+        }
+
+        public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
+        {
+            return _repo.GetLibraryItemIds(query);
+        }
+
+        public AudioOptions GetAudioOptions(SyncJobItem jobItem)
+        {
+            var profile = GetDeviceProfile(jobItem.TargetId);
+
+            return new AudioOptions
+            {
+                Profile = profile
+            };
+        }
+
+        public VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
+        {
+            var profile = GetDeviceProfile(jobItem.TargetId);
+            var maxBitrate = profile.MaxStaticBitrate;
+
+            if (maxBitrate.HasValue)
+            {
+                if (job.Quality == SyncQuality.Medium)
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
+                }
+                else if (job.Quality == SyncQuality.Low)
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
+                }
+            }
+
+            return new VideoOptions
+            {
+                Profile = profile,
+                MaxBitrate = maxBitrate
+            };
         }
     }
 }

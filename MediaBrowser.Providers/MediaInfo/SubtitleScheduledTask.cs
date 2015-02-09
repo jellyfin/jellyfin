@@ -58,10 +58,13 @@ namespace MediaBrowser.Providers.MediaInfo
             var options = GetOptions();
 
             var videos = _libraryManager.RootFolder
-                .RecursiveChildren
-                .OfType<Video>()
-                .Where(i =>
+                .GetRecursiveChildren(i =>
                 {
+                    if (!(i is Video))
+                    {
+                        return false;
+                    }
+
                     if (i.LocationType == LocationType.Remote || i.LocationType == LocationType.Virtual)
                     {
                         return false;
@@ -72,6 +75,7 @@ namespace MediaBrowser.Providers.MediaInfo
                            (options.DownloadMovieSubtitles &&
                             i is Movie);
                 })
+                .Cast<Video>()
                 .ToList();
 
             var numComplete = 0;

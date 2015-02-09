@@ -5,10 +5,8 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -226,6 +224,18 @@ namespace MediaBrowser.Api.Library
         public string TvdbId { get; set; }
     }
 
+    [Route("/Items/{Id}/Download", "GET", Summary = "Downloads item media")]
+    [Authenticated(Roles = "download")]
+    public class GetDownload
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -272,8 +282,8 @@ namespace MediaBrowser.Api.Library
                 items = items.Where(i => i.IsHidden == val).ToList();
             }
 
-            var dtoOptions = new DtoOptions();
-            
+            var dtoOptions = GetDtoOptions(request);
+
             var result = new ItemsResult
             {
                 TotalRecordCount = items.Count,
@@ -287,6 +297,28 @@ namespace MediaBrowser.Api.Library
         public void Post(PostUpdatedSeries request)
         {
             Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+        }
+
+        public object Get(GetDownload request)
+        {
+            var item = _libraryManager.GetItemById(request.Id);
+
+            if (!item.CanDelete())
+            {
+                throw new ArgumentException("Item does not support downloading");
+            }
+
+            var headers = new Dictionary<string, string>();
+
+            // Quotes are valid in linux. They'll possibly cause issues here
+            var filename = Path.GetFileName(item.Path).Replace("\"", string.Empty);
+            headers["Content-Disposition"] = string.Format("attachment; filename=\"{0}\"", filename);
+
+            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                Path = item.Path,
+                ResponseHeaders = headers
+            });
         }
 
         public object Get(GetFile request)
@@ -344,10 +376,10 @@ namespace MediaBrowser.Api.Library
 
             var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             BaseItem parent = item.Parent;
-            
+
             while (parent != null)
             {
                 if (user != null)
@@ -392,52 +424,43 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager)
-                .Where(i => i.LocationType != LocationType.Virtual)
-                .ToList();
-
-            var filteredItems = request.UserId.HasValue ? FilterItems(items, request, request.UserId.Value).ToList() : items;
-
-            var albums = filteredItems.OfType<MusicAlbum>().ToList();
-            var episodes = filteredItems.OfType<Episode>().ToList();
-            var games = filteredItems.OfType<Game>().ToList();
-            var movies = filteredItems.OfType<Movie>().ToList();
-            var musicVideos = filteredItems.OfType<MusicVideo>().ToList();
-            var boxsets = filteredItems.OfType<BoxSet>().ToList();
-            var books = filteredItems.OfType<Book>().ToList();
-            var songs = filteredItems.OfType<Audio>().ToList();
-            var series = filteredItems.OfType<Series>().ToList();
+            var filteredItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i.LocationType != LocationType.Virtual && FilterItem(i, request, request.UserId));
 
             var counts = new ItemCounts
             {
-                AlbumCount = albums.Count,
-                EpisodeCount = episodes.Count,
-                GameCount = games.Count,
-                GameSystemCount = filteredItems.OfType<GameSystem>().Count(),
-                MovieCount = movies.Count,
-                SeriesCount = series.Count,
-                SongCount = songs.Count,
-                MusicVideoCount = musicVideos.Count,
-                BoxSetCount = boxsets.Count,
-                BookCount = books.Count,
+                AlbumCount = filteredItems.Count(i => i is MusicAlbum),
+                EpisodeCount = filteredItems.Count(i => i is Episode),
+                GameCount = filteredItems.Count(i => i is Game),
+                GameSystemCount = filteredItems.Count(i => i is GameSystem),
+                MovieCount = filteredItems.Count(i => i is Movie),
+                SeriesCount = filteredItems.Count(i => i is Series),
+                SongCount = filteredItems.Count(i => i is Audio),
+                MusicVideoCount = filteredItems.Count(i => i is MusicVideo),
+                BoxSetCount = filteredItems.Count(i => i is BoxSet),
+                BookCount = filteredItems.Count(i => i is Book),
 
-                UniqueTypes = items.Select(i => i.GetClientTypeName()).Distinct().ToList()
+                UniqueTypes = filteredItems.Select(i => i.GetClientTypeName()).Distinct().ToList()
             };
 
             return ToOptimizedSerializedResultUsingCache(counts);
         }
 
-        private IEnumerable<T> FilterItems<T>(IEnumerable<T> items, GetItemCounts request, Guid userId)
-            where T : BaseItem
+        private bool FilterItem(BaseItem item, GetItemCounts request, Guid? userId)
         {
-            if (request.IsFavorite.HasValue)
+            if (userId.HasValue)
             {
-                var val = request.IsFavorite.Value;
+                if (request.IsFavorite.HasValue)
+                {
+                    var val = request.IsFavorite.Value;
 
-                items = items.Where(i => _userDataManager.GetUserData(userId, i.GetUserDataKey()).IsFavorite == val);
+                    if (_userDataManager.GetUserData(userId.Value, item.GetUserDataKey()).IsFavorite != val)
+                    {
+                        return false;
+                    }
+                }
             }
 
-            return items;
+            return true;
         }
 
         /// <summary>
@@ -467,23 +490,9 @@ namespace MediaBrowser.Api.Library
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = _userManager.GetUserById(auth.UserId);
 
-            if (item is Playlist || item is BoxSet)
+            if (!item.CanDelete(user))
             {
-                // For now this is allowed if user can see the playlist
-            }
-            else if (item is ILiveTvRecording)
-            {
-                if (!user.Policy.EnableLiveTvManagement)
-                {
-                    throw new UnauthorizedAccessException();
-                }
-            }
-            else
-            {
-                if (!user.Policy.EnableContentDeletion)
-                {
-                    throw new UnauthorizedAccessException();
-                }
+                throw new UnauthorizedAccessException();
             }
 
             var task = _libraryManager.DeleteItem(item);
@@ -544,7 +553,7 @@ namespace MediaBrowser.Api.Library
                 ThemeSongsResult = themeSongs,
                 ThemeVideosResult = themeVideos,
 
-                SoundtrackSongsResult = GetSoundtrackSongs(request.Id, request.UserId, request.InheritFromParent)
+                SoundtrackSongsResult = GetSoundtrackSongs(request, request.Id, request.UserId, request.InheritFromParent)
             });
         }
 
@@ -597,7 +606,7 @@ namespace MediaBrowser.Api.Library
                 }
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = themeSongIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
@@ -667,7 +676,7 @@ namespace MediaBrowser.Api.Library
                 }
             }
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = themeVideoIds.Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
@@ -711,13 +720,24 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetYearIndex request)
         {
-            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager);
+            var includeTypes = string.IsNullOrWhiteSpace(request.IncludeItemTypes)
+             ? new string[] { }
+             : request.IncludeItemTypes.Split(',');
 
-            if (!string.IsNullOrEmpty(request.IncludeItemTypes))
+            Func<BaseItem, bool> filter = i =>
             {
-                var vals = request.IncludeItemTypes.Split(',');
-                items = items.Where(f => vals.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
+                if (includeTypes.Length > 0)
+                {
+                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+
+            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, filter);
 
             var lookup = items
                 .ToLookup(i => i.ProductionYear ?? -1)
@@ -732,23 +752,22 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedSerializedResultUsingCache(lookup);
         }
 
-        public ThemeMediaResult GetSoundtrackSongs(string id, Guid? userId, bool inheritFromParent)
+        public ThemeMediaResult GetSoundtrackSongs(GetThemeMedia request, string id, Guid? userId, bool inheritFromParent)
         {
             var user = userId.HasValue ? _userManager.GetUserById(userId.Value) : null;
 
             var item = string.IsNullOrEmpty(id)
                            ? (userId.HasValue
                                   ? user.RootFolder
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(id);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetSoundtrackSongIds(item, inheritFromParent)
                 .Select(_libraryManager.GetItemById)
                 .OfType<MusicAlbum>()
-                .SelectMany(i => i.RecursiveChildren)
-                .OfType<Audio>()
+                .SelectMany(i => i.GetRecursiveChildren(a => a is Audio))
                 .OrderBy(i => i.SortName)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 

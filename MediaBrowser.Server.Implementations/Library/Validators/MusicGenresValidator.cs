@@ -34,19 +34,16 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder.RecursiveChildren.Where(i => (i is IHasMusicGenres))
+            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => (i is IHasMusicGenres))
                 .SelectMany(i => i.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            progress.Report(2);
             var numComplete = 0;
             var count = items.Count;
 
             foreach (var name in items)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 try
                 {
                     var itemByName = _libraryManager.GetMusicGenre(name);
@@ -66,9 +63,9 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 numComplete++;
                 double percent = numComplete;
                 percent /= count;
-                percent *= 90;
+                percent *= 100;
 
-                progress.Report(percent + 10);
+                progress.Report(percent);
             }
 
             progress.Report(100);

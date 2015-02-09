@@ -76,6 +76,7 @@
     <Compile Include="ApiClient\ServerCredentials.cs" />
     <Compile Include="ApiClient\ServerDiscoveryInfo.cs" />
     <Compile Include="ApiClient\ServerInfo.cs" />
+    <Compile Include="ApiClient\ServerUserInfo.cs" />
     <Compile Include="ApiClient\SessionUpdatesEventArgs.cs" />
     <Compile Include="ApiClient\WakeOnLanInfo.cs" />
     <Compile Include="Branding\BrandingOptions.cs" />
@@ -97,8 +98,11 @@
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
     <Compile Include="Configuration\EncodingOptions.cs" />
+    <Compile Include="Configuration\FanartOptions.cs" />
     <Compile Include="Configuration\MetadataConfiguration.cs" />
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
+    <Compile Include="Configuration\TheMovieDbOptions.cs" />
+    <Compile Include="Configuration\TvdbOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />
@@ -132,7 +136,6 @@
     <Compile Include="Dto\NameValuePair.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
-    <Compile Include="Dto\VideoStreamOptions.cs" />
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
     <Compile Include="Entities\SupporterInfo.cs" />
@@ -262,7 +265,6 @@
     <Compile Include="MediaInfo\SubtitleFormat.cs" />
     <Compile Include="MediaInfo\TransportStreamTimestamp.cs" />
     <Compile Include="MediaInfo\VideoCodec.cs" />
-    <Compile Include="News\NewsChannel.cs" />
     <Compile Include="News\NewsItem.cs" />
     <Compile Include="News\NewsQuery.cs" />
     <Compile Include="Notifications\NotificationRequest.cs" />
@@ -366,6 +368,7 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Sync\CompleteSyncJobInfo.cs" />
     <Compile Include="Sync\DeviceFileInfo.cs" />
     <Compile Include="Sync\ItemFIleInfo.cs" />
     <Compile Include="Sync\ItemFileType.cs" />
@@ -385,6 +388,7 @@
     <Compile Include="Sync\SyncJobRequest.cs" />
     <Compile Include="Sync\SyncJobStatus.cs" />
     <Compile Include="Sync\SyncOptions.cs" />
+    <Compile Include="Sync\SyncParameter.cs" />
     <Compile Include="Sync\SyncQuality.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />

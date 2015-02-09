@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Controller.Devices;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
@@ -66,14 +67,16 @@ namespace MediaBrowser.Api.Playback
 
         protected ILiveTvManager LiveTvManager { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
+        protected IDeviceManager DeviceManager { get; private set; }
         protected IChannelManager ChannelManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager)
         {
+            DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
             ChannelManager = channelManager;
             DlnaManager = dlnaManager;
@@ -119,8 +122,8 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         private string GetOutputFilePath(StreamState state)
         {
-            var folder = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower());
-            
+            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
+
             var outputFileExtension = GetOutputFileExtension(state);
 
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
@@ -320,13 +323,13 @@ namespace MediaBrowser.Api.Playback
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        param += " -crf 23";
+                        param += " -subq 0 -crf 23";
                         break;
                     case EncodingQuality.HighQuality:
-                        param += " -crf 20";
+                        param += " -subq 3 -crf 20";
                         break;
                     case EncodingQuality.MaxQuality:
-                        param += " -crf 18";
+                        param += " -subq 6 -crf 18";
                         break;
                 }
             }
@@ -345,6 +348,41 @@ namespace MediaBrowser.Api.Playback
                         break;
                     case EncodingQuality.MaxQuality:
                         param += " -crf 21";
+                        break;
+                }
+            }
+
+            // h264 (h264_qsv)
+            else if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                switch (qualitySetting)
+                {
+                    case EncodingQuality.HighSpeed:
+                        param = "-preset 7";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param = "-preset 4";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param = "-preset 1";
+                        break;
+                }
+
+            }
+
+            // h264 (libnvenc)
+            else if (string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                switch (qualitySetting)
+                {
+                    case EncodingQuality.HighSpeed:
+                        param = "-preset high-performance";
+                        break;
+                    case EncodingQuality.HighQuality:
+                        param = "";
+                        break;
+                    case EncodingQuality.MaxQuality:
+                        param = "-preset high-quality";
                         break;
                 }
             }
@@ -426,10 +464,50 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                param += " -level " + state.VideoRequest.Level;
+                // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                if (String.Equals(H264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(H264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    switch (state.VideoRequest.Level)
+                    {
+                        case "30":
+                            param += " -level 3";
+                            break;
+                        case "31":
+                            param += " -level 3.1";
+                            break;
+                        case "32":
+                            param += " -level 3.2";
+                            break;
+                        case "40":
+                            param += " -level 4";
+                            break;
+                        case "41":
+                            param += " -level 4.1";
+                            break;
+                        case "42":
+                            param += " -level 4.2";
+                            break;
+                        case "50":
+                            param += " -level 5";
+                            break;
+                        case "51":
+                            param += " -level 5.1";
+                            break;
+                        case "52":
+                            param += " -level 5.2";
+                            break;
+                        default:
+                            param += " -level " + state.VideoRequest.Level;
+                            break;
+                    }
+                }
+                else
+                {
+                    param += " -level " + state.VideoRequest.Level;
+                }
             }
 
-            return param;
+            return "-pix_fmt yuv420p " + param;
         }
 
         protected string GetAudioFilterParam(StreamState state, bool isHls)
@@ -567,6 +645,11 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                filters[filters.Count - 1] += ":flags=fast_bilinear";
+            }
+
             var output = string.Empty;
 
             if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
@@ -606,7 +689,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language);
+                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath);
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
@@ -834,7 +917,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (SupportsThrottleWithStream)
                     {
-                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/mediabrowser/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
+                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
 
                         url += "&transcodingJobId=" + transcodingJobId;
 
@@ -1181,6 +1264,22 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
                 {
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                }
+
+                // h264_qsv
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (hasFixedResolution)
+                    {
+                        if (isHls)
+                        {
+                            return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
+                        }
+
+                        return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    }
+
+                    return string.Format(" -b:v {0} -maxrate ({0}*1.2) -bufsize ({0}*2)", bitrate.Value.ToString(UsCulture));
                 }
 
                 // H264
@@ -1991,9 +2090,26 @@ namespace MediaBrowser.Api.Playback
                 headers[key] = Request.Headers[key];
             }
 
-            state.DeviceProfile = string.IsNullOrWhiteSpace(state.Request.DeviceProfileId) ?
-                DlnaManager.GetProfile(headers) :
-                DlnaManager.GetProfile(state.Request.DeviceProfileId);
+            if (!string.IsNullOrWhiteSpace(state.Request.DeviceProfileId))
+            {
+                state.DeviceProfile = DlnaManager.GetProfile(state.Request.DeviceProfileId);
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
+                {
+                    var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
+
+                    if (caps != null)
+                    {
+                        state.DeviceProfile = caps.DeviceProfile;
+                    }
+                    else
+                    {
+                        state.DeviceProfile = DlnaManager.GetProfile(headers);
+                    }
+                }
+            }
 
             var profile = state.DeviceProfile;
 

@@ -26,7 +26,14 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The server identifier.</value>
         public string ServerId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the name of the server.
+        /// This is not used by the server and is for client-side usage only.
+        /// </summary>
+        /// <value>The name of the server.</value>
+        public string ServerName { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the connect user.
         /// </summary>
@@ -48,7 +55,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
-
+        
+        /// <summary>
+        /// Gets or sets the offline password.
+        /// </summary>
+        /// <value>The offline password.</value>
+        public string OfflinePassword { get; set; }
+        
         /// <summary>
         /// Gets or sets the primary image tag.
         /// </summary>
@@ -66,6 +79,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
         public bool HasConfiguredPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has configured easy password.
+        /// </summary>
+        /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
+        public bool HasConfiguredEasyPassword { get; set; }
         
         /// <summary>
         /// Gets or sets the last login date.
@@ -102,7 +121,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
-        
+
         /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>

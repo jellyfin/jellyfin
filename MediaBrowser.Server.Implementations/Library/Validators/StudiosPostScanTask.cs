@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,13 +16,16 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        public StudiosPostScanTask(ILibraryManager libraryManager)
+        public StudiosPostScanTask(ILibraryManager libraryManager, ILogger logger)
         {
             _libraryManager = libraryManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -32,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ((LibraryManager)_libraryManager).ValidateStudios(cancellationToken, progress);
+            return new StudiosValidator(_libraryManager, _logger).Run(progress, cancellationToken);
         }
     }
 }

@@ -35,19 +35,18 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             IEnumerable<BaseItem> inputItems;
 
+            Func<BaseItem, bool> filter = i => !(i is ICollectionFolder);
+
             if (string.IsNullOrWhiteSpace(query.UserId))
             {
-                inputItems = _libraryManager.RootFolder.RecursiveChildren;
+                inputItems = _libraryManager.RootFolder.GetRecursiveChildren(filter);
             }
             else
             {
                 var user = _userManager.GetUserById(query.UserId);
 
-                inputItems = user.RootFolder.GetRecursiveChildren(user, true);
+                inputItems = user.RootFolder.GetRecursiveChildren(user, filter);
             }
-
-
-            inputItems = inputItems.Where(i => !(i is ICollectionFolder));
 
             inputItems = _libraryManager.ReplaceVideosWithPrimaryVersions(inputItems);
 

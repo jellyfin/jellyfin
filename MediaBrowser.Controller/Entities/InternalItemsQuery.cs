@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
 
         public User User { get; set; }
 
-        public Func<BaseItem, User, bool> Filter { get; set; }
+        public Func<BaseItem, bool> Filter { get; set; }
 
         public bool? IsFolder { get; set; }
         public bool? IsFavorite { get; set; }

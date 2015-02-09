@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The reference frames.</value>
         public int? RefFrames { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the length of the packet.
         /// </summary>
@@ -141,16 +141,26 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type != MediaStreamType.Subtitle) return false;
 
-                string codec = Codec ?? string.Empty;
-
-                // sub = external .sub file
-
-                return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
-                       StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
-                       !StringHelper.EqualsIgnoreCase(codec, "sub");
+                return IsTextFormat(Codec);
             }
         }
 
+        public static bool IsTextFormat(string format)
+        {
+            string codec = format ?? string.Empty;
+
+            // sub = external .sub file
+
+            return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
+                   StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
+                   !StringHelper.EqualsIgnoreCase(codec, "sub");
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports external stream].
+        /// </summary>
+        /// <value><c>true</c> if [supports external stream]; otherwise, <c>false</c>.</value>
+        public bool SupportsExternalStream { get; set; }
 
         /// <summary>
         /// Gets or sets the filename.

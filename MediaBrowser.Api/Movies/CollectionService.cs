@@ -71,7 +71,7 @@ namespace MediaBrowser.Api.Movies
 
             }).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
 

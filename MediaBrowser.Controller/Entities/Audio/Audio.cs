@@ -4,11 +4,11 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -81,6 +81,15 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        protected override bool SupportsOwnedItems
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override Folder LatestItemsIndexContainer
         {
             get
@@ -102,6 +111,13 @@ namespace MediaBrowser.Controller.Entities.Audio
 
                 return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
             }
+        }
+
+        public override bool CanDownload()
+        {
+            var locationType = LocationType;
+            return locationType != LocationType.Remote &&
+                   locationType != LocationType.Virtual;
         }
 
         /// <summary>
@@ -169,7 +185,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             var parent = FindParent<MusicAlbum>();
 
@@ -186,7 +202,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 }
             }
 
-            return base.GetUserDataKey();
+            return base.CreateUserDataKey();
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
@@ -223,7 +239,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 Id = i.Id.ToString("N"),
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
-                MediaStreams = ItemRepository.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                MediaStreams = MediaSourceManager.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
                 Name = i.Name,
                 Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,

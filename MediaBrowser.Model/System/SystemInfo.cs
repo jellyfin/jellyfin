@@ -39,6 +39,12 @@ namespace MediaBrowser.Model.System
         public bool HasPendingRestart { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [supports synchronize].
+        /// </summary>
+        /// <value><c>true</c> if [supports synchronize]; otherwise, <c>false</c>.</value>
+        public bool SupportsSync { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is network deployed.
         /// </summary>
         /// <value><c>true</c> if this instance is network deployed; otherwise, <c>false</c>.</value>
@@ -61,12 +67,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The completed installations.</value>
         public List<InstallationInfo> CompletedInstallations { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports native web socket].
-        /// </summary>
-        /// <value><c>true</c> if [supports native web socket]; otherwise, <c>false</c>.</value>
-        public bool SupportsNativeWebSocket { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.
@@ -127,6 +127,18 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The HTTP server port number.</value>
         public int HttpServerPortNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable HTTPS].
+        /// </summary>
+        /// <value><c>true</c> if [enable HTTPS]; otherwise, <c>false</c>.</value>
+        public bool SupportsHttps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTPS server port number.
+        /// </summary>
+        /// <value>The HTTPS server port number.</value>
+        public int HttpsPortNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.

@@ -60,5 +60,12 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="userId">The user identifier.</param>
         /// <returns>Folder.</returns>
         Folder GetCollectionsFolder(string userId);
+
+        /// <summary>
+        /// Gets the collections.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable&lt;BoxSet&gt;.</returns>
+        IEnumerable<BoxSet> GetCollections(User user);
     }
 }

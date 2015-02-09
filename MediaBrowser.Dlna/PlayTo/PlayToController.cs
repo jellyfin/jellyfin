@@ -272,7 +272,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             return new PlaybackStartInfo
             {
-                ItemId = mediaInfo.Id,
+                ItemId = info.ItemId,
                 SessionId = _session.Id,
                 PositionTicks = ticks,
                 IsMuted = _device.IsMuted,
@@ -898,6 +898,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 return request;
             }
+        }
+
+        public Task SendMessage<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            // Not supported or needed right now
+            return Task.FromResult(true);
         }
     }
 }

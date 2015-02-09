@@ -15,12 +15,6 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Gets the synchronize targets.
         /// </summary>
-        /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncTarget> GetSyncTargets();
-
-        /// <summary>
-        /// Gets the synchronize targets.
-        /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
         IEnumerable<SyncTarget> GetSyncTargets(string userId);

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -34,5 +35,15 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
+        /// <summary>
+        /// Gets or sets the additional files.
+        /// </summary>
+        /// <value>The additional files.</value>
+        public List<ItemFileInfo> AdditionalFiles { get; set; }
+
+        public SyncedItem()
+        {
+            AdditionalFiles = new List<ItemFileInfo>();
+        }
     }
 }

@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = GetArtist(request.Name, LibraryManager);
 
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = GetDtoOptions(request);
 
             if (request.UserId.HasValue)
             {
@@ -130,8 +130,8 @@ namespace MediaBrowser.Api.UserLibrary
             if (request is GetAlbumArtists)
             {
                 return items
+                    .Where(i => !i.IsFolder)
                     .OfType<IHasAlbumArtist>()
-                    .Where(i => !(i is MusicAlbum))
                     .SelectMany(i => i.AlbumArtists)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .Select(name =>
@@ -150,8 +150,8 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             return items
+                .Where(i => !i.IsFolder)
                 .OfType<IHasArtist>()
-                .Where(i => !(i is MusicAlbum))
                 .SelectMany(i => i.AllArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(name =>

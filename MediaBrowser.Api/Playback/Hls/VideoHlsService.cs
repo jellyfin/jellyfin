@@ -1,11 +1,11 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
@@ -57,8 +57,7 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public class VideoHlsService : BaseHlsService
     {
-        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder)
+        public VideoHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
         {
         }
 
@@ -71,7 +70,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
 
-            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower(), file);
+            file = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, file);
 
             return ResultFactory.GetStaticFileResult(Request, file);
         }

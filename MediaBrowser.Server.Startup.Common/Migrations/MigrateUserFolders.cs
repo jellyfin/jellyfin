@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using System;
 using System.IO;
 using System.Linq;
@@ -8,10 +9,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
     public class MigrateUserFolders : IVersionMigration
     {
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public MigrateUserFolders(IServerApplicationPaths appPaths)
+        public MigrateUserFolders(IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public void Run()
@@ -25,7 +28,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
                 foreach (var folder in folders)
                 {
-                    Directory.Delete(folder.FullName, true);
+                    _fileSystem.DeleteDirectory(folder.FullName, true);
                 }
             }
             catch (IOException)

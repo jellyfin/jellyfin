@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -27,12 +29,18 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The name of the item.</value>
         public string ItemName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the media source identifier.
         /// </summary>
         /// <value>The media source identifier.</value>
         public string MediaSourceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media source.
+        /// </summary>
+        /// <value>The media source.</value>
+        public MediaSourceInfo MediaSource { get; set; }
         
         /// <summary>
         /// Gets or sets the target identifier.
@@ -74,9 +82,29 @@ namespace MediaBrowser.Model.Sync
         /// <value>The primary image tag.</value>
         public string PrimaryImageTag { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether [requires conversion].
+        /// Gets or sets the temporary path.
         /// </summary>
-        /// <value><c>true</c> if [requires conversion]; otherwise, <c>false</c>.</value>
-        public bool RequiresConversion { get; set; }
+        /// <value>The temporary path.</value>
+        public string TemporaryPath { get; set; }
+        /// <summary>
+        /// Gets or sets the additional files.
+        /// </summary>
+        /// <value>The additional files.</value>
+        public List<ItemFileInfo> AdditionalFiles { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is marked for removal.
+        /// </summary>
+        /// <value><c>true</c> if this instance is marked for removal; otherwise, <c>false</c>.</value>
+        public bool IsMarkedForRemoval { get; set; }
+        /// <summary>
+        /// Gets or sets the index of the job item.
+        /// </summary>
+        /// <value>The index of the job item.</value>
+        public int JobItemIndex { get; set; }
+
+        public SyncJobItem()
+        {
+            AdditionalFiles = new List<ItemFileInfo>();
+        }
     }
 }

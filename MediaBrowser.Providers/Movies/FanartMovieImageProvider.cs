@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -216,7 +217,8 @@ namespace MediaBrowser.Providers.Movies
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            if (!_config.Configuration.EnableFanArtUpdates)
+            var options = FanartSeriesProvider.Current.GetFanartOptions();
+            if (!options.EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -282,6 +284,12 @@ namespace MediaBrowser.Providers.Movies
             cancellationToken.ThrowIfCancellationRequested();
 
             var url = string.Format(FanArtBaseUrl, FanartArtistProvider.ApiKey, id);
+
+            var clientKey = FanartSeriesProvider.Current.GetFanartOptions().UserApiKey;
+            if (!string.IsNullOrWhiteSpace(clientKey))
+            {
+                url += "&client_key=" + clientKey;
+            }
 
             var path = GetFanartJsonPath(id);
 

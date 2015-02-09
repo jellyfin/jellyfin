@@ -4,9 +4,10 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Users;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -16,22 +17,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
             return GetClientTypeName() + "-" + Name;
-        }
-
-        /// <summary>
-        /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        public override string ContainingFolderPath
-        {
-            get
-            {
-                return Path;
-            }
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
@@ -43,17 +31,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
             {
                 return false;
             }
-        }
-
-        public override bool IsSaveLocalMetadataEnabled()
-        {
-            return true;
         }
 
         /// <summary>
@@ -106,6 +90,7 @@ namespace MediaBrowser.Controller.LiveTv
             return number.ToString("000-") + (Name ?? string.Empty);
         }
 
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
@@ -144,6 +129,16 @@ namespace MediaBrowser.Controller.LiveTv
             list.Add(info);
 
             return list;
+        }
+
+        protected override string GetInternalMetadataPath(string basePath)
+        {
+            return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"), "metadata");
+        }
+
+        public override bool CanDelete()
+        {
+            return false;
         }
     }
 }

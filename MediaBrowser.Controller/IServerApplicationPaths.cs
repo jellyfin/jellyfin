@@ -60,12 +60,6 @@ namespace MediaBrowser.Controller
         string GameGenrePath { get; }
 
         /// <summary>
-        /// Gets the artists path.
-        /// </summary>
-        /// <value>The artists path.</value>
-        string ArtistsPath { get; }
-
-        /// <summary>
         /// Gets the path to the Studio directory
         /// </summary>
         /// <value>The studio path.</value>

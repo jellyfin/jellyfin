@@ -170,7 +170,7 @@ namespace MediaBrowser.Providers.BoxSets
                 url += string.Format("&language={0}", language);
             }
 
-            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(_localization, language);
+            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(language);
             // Get images in english and with no language
             url += "&include_image_language=" + includeImageLanguageParam;
 

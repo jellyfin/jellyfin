@@ -48,21 +48,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// TODO: Remove
-        /// </summary>
-        public string Artist
-        {
-            get { return Artists.FirstOrDefault(); }
-            set
-            {
-                if (!string.IsNullOrEmpty(value) && !Artists.Contains(value, StringComparer.OrdinalIgnoreCase))
-                {
-                    Artists.Add(value);
-                }
-            }
-        }
-
-        /// <summary>
         /// Determines whether the specified name has artist.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -76,9 +61,9 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        public override string GetUserDataKey()
+        protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.GetUserDataKey();
+            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

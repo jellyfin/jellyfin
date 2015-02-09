@@ -93,6 +93,11 @@ namespace MediaBrowser.Controller.Net
             }
         }
 
+        protected virtual void ParseMessageParams(string[] values)
+        {
+            
+        }
+
         /// <summary>
         /// Starts sending messages over a web socket
         /// </summary>
@@ -103,6 +108,11 @@ namespace MediaBrowser.Controller.Net
 
             var dueTimeMs = long.Parse(vals[0], UsCulture);
             var periodMs = long.Parse(vals[1], UsCulture);
+
+            if (vals.Length > 2)
+            {
+                ParseMessageParams(vals.Skip(2).ToArray());
+            }
 
             var cancellationTokenSource = new CancellationTokenSource();
 

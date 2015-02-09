@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
@@ -22,6 +21,7 @@ using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.TV;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Validators;
+using MediaBrowser.Server.Implementations.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
 using System.Collections.Concurrent;
@@ -218,11 +218,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _root folder sync lock
         /// </summary>
-        private object _rootFolderSyncLock = new object();
-        /// <summary>
-        /// The _root folder initialized
-        /// </summary>
-        private bool _rootFolderInitialized;
+        private readonly object _rootFolderSyncLock = new object();
         /// <summary>
         /// Gets the root folder.
         /// </summary>
@@ -231,17 +227,17 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             get
             {
-                LazyInitializer.EnsureInitialized(ref _rootFolder, ref _rootFolderInitialized, ref _rootFolderSyncLock, CreateRootFolder);
-                return _rootFolder;
-            }
-            private set
-            {
-                _rootFolder = value;
-
-                if (value == null)
+                if (_rootFolder == null)
                 {
-                    _rootFolderInitialized = false;
+                    lock (_rootFolderSyncLock)
+                    {
+                        if (_rootFolder == null)
+                        {
+                            _rootFolder = CreateRootFolder();
+                        }
+                    }
                 }
+                return _rootFolder;
             }
         }
 
@@ -336,8 +332,8 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
         {
-            var seasons = RootFolder.RecursiveChildren
-                .OfType<Season>()
+            var seasons = RootFolder.GetRecursiveChildren(i => i is Season)
+                .Cast<Season>()
                 .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.Ordinal))
                 .ToList();
 
@@ -392,7 +388,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var locationType = item.LocationType;
 
             var children = item.IsFolder
-                ? ((Folder)item).RecursiveChildren.ToList()
+                ? ((Folder)item).GetRecursiveChildren().ToList()
                 : new List<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
@@ -401,11 +397,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    Directory.Delete(metadataPath, true);
+                    _fileSystem.DeleteDirectory(metadataPath, true);
                 }
                 catch (DirectoryNotFoundException)
                 {
-
+                    
                 }
                 catch (Exception ex)
                 {
@@ -420,12 +416,12 @@ namespace MediaBrowser.Server.Implementations.Library
                     if (Directory.Exists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
-                        Directory.Delete(path, true);
+                        _fileSystem.DeleteDirectory(path, true);
                     }
                     else if (File.Exists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
-                        File.Delete(path);
+                        _fileSystem.DeleteFile(path);
                     }
                 }
 
@@ -521,6 +517,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
             var dict = new Dictionary<Guid, BaseItem>();
 
             foreach (var item in items)
@@ -577,12 +578,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var fullPath = fileInfo.FullName;
 
-            if (string.IsNullOrWhiteSpace(collectionType))
+            if (string.IsNullOrWhiteSpace(collectionType) && parent != null)
             {
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, this, directoryService)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 Parent = parent,
                 Path = fullPath,
@@ -756,12 +757,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
                         Directory.CreateDirectory(userRootPath);
 
-                        _userRootFolder = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
+                        var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
-                        if (_userRootFolder == null)
+                        if (tmpItem == null)
                         {
-                            _userRootFolder = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
+                            tmpItem = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
                         }
+
+                        _userRootFolder = tmpItem;
                     }
                 }
             }
@@ -841,13 +844,25 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Gets the artists path.
+        /// </summary>
+        /// <value>The artists path.</value>
+        public string ArtistsPath
+        {
+            get
+            {
+                return Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath, "artists");
+            }
+        }
+
+        /// <summary>
         /// Gets a Genre
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
         public MusicArtist GetArtist(string name)
         {
-            return GetItemByName<MusicArtist>(ConfigurationManager.ApplicationPaths.ArtistsPath, name);
+            return GetItemByName<MusicArtist>(ArtistsPath, name);
         }
 
         private T GetItemByName<T>(string path, string name)
@@ -892,14 +907,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return obj as T;
         }
 
-        /// <summary>
-        /// Creates an IBN item based on a given path
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path">The path.</param>
-        /// <param name="name">The name.</param>
-        /// <returns>Task{``0}.</returns>
-        /// <exception cref="System.IO.IOException">Path not created:  + path</exception>
         private T CreateItemByName<T>(string path, string name, Guid id)
             where T : BaseItem, new()
         {
@@ -909,9 +916,10 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var validFilename = _fileSystem.GetValidFilename(name).Trim();
 
-                var existing = RootFolder.RecursiveChildren
-                    .OfType<T>()
-                    .FirstOrDefault(i => string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase));
+                var existing = RootFolder
+                    .GetRecursiveChildren(i => i is T && string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase))
+                    .Cast<T>()
+                    .FirstOrDefault();
 
                 if (existing != null)
                 {
@@ -925,7 +933,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!fileInfo.Exists)
             {
-                fileInfo = Directory.CreateDirectory(path);
+                try
+                {
+                    fileInfo = Directory.CreateDirectory(path);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    _logger.Error("Error creating directory {0}", ex, path);
+                    throw new Exception(string.Format("Error creating directory {0}", path), ex);
+                }
 
                 isNew = true;
             }
@@ -965,76 +981,6 @@ namespace MediaBrowser.Server.Implementations.Library
             Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager).ValidatePeople(cancellationToken, progress);
-        }
-
-        /// <summary>
-        /// Validates the artists.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateArtists(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.ArtistsPath);
-
-            return new ArtistsValidator(this, _userManager, _logger).Run(progress, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the music genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateMusicGenres(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.MusicGenrePath);
-
-            return new MusicGenresValidator(this, _logger).Run(progress, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the game genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateGameGenres(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.GameGenrePath);
-
-            return new GameGenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the studios.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateStudios(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.StudioPath);
-
-            return new StudiosValidator(this, _userManager, _logger).Run(progress, cancellationToken);
-        }
-
-        /// <summary>
-        /// Validates the genres.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateGenres(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            // Ensure the location is unavailable.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.GenrePath);
-
-            return new GenresValidator(this, _userManager, _logger).Run(progress, cancellationToken);
         }
 
         /// <summary>
@@ -1152,7 +1098,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await task.Run(innerProgress, cancellationToken);
+                    await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1176,19 +1122,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Gets the default view.
         /// </summary>
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetDefaultVirtualFolders()
+        public IEnumerable<VirtualFolderInfo> GetVirtualFolders()
         {
             return GetView(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath);
-        }
-
-        /// <summary>
-        /// Gets the view.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
-        public IEnumerable<VirtualFolderInfo> GetVirtualFolders(User user)
-        {
-            return GetDefaultVirtualFolders();
         }
 
         /// <summary>
@@ -1637,7 +1573,7 @@ namespace MediaBrowser.Server.Implementations.Library
             CancellationToken cancellationToken)
         {
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
-                "views");
+                            "views");
 
             path = Path.Combine(path, _fileSystem.GetValidFilename(type));
 
@@ -1708,7 +1644,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var id = GetNewItemId("7_namedview_" + name + user.Id.ToString("N") + parentId, typeof(UserView));
 
-            var path = BaseItem.GetInternalMetadataPathForId(id);
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", "specialviews", id.ToString("N"));
 
             var item = GetItemById(id) as UserView;
 
@@ -1754,7 +1690,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public bool IsVideoFile(string path)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new PatternsLogger());
             return resolver.IsVideoFile(path);
         }
 
@@ -1772,7 +1708,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
             var resolver = new EpisodeResolver(GetNamingOptions(),
-                new Naming.Logging.NullLogger());
+                new PatternsLogger());
 
             var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ?
                 FileInfoType.Directory :
@@ -1910,7 +1846,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new PatternsLogger());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -1929,7 +1865,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -1982,7 +1918,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new Naming.Logging.NullLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
             {
@@ -2020,7 +1956,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(GetNamingOptions(), new Naming.Logging.NullLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new PatternsLogger(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 

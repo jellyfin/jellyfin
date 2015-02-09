@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Logging;
@@ -21,14 +22,16 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         private ConcurrentBag<DeviceInfo> _devices;
 
-        public DeviceRepository(IApplicationPaths appPaths, IJsonSerializer json, ILogger logger)
+        public DeviceRepository(IApplicationPaths appPaths, IJsonSerializer json, ILogger logger, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
             _json = json;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         private string GetDevicesPath()
@@ -57,6 +60,12 @@ namespace MediaBrowser.Server.Implementations.Devices
         public Task SaveCapabilities(string reportedId, ClientCapabilities capabilities)
         {
             var device = GetDevice(reportedId);
+
+            if (device == null)
+            {
+                throw new ArgumentException("No device has been registed with id " + reportedId);
+            }
+
             device.Capabilities = capabilities;
             SaveDevice(device);
 
@@ -72,6 +81,11 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public DeviceInfo GetDevice(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             return GetDevices()
                 .FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
@@ -129,12 +143,12 @@ namespace MediaBrowser.Server.Implementations.Devices
             {
                 try
                 {
-                    Directory.Delete(path, true);
+                    _fileSystem.DeleteDirectory(path, true);
                 }
                 catch (DirectoryNotFoundException)
                 {
                 }
-
+                
                 _devices = null;
             }
 

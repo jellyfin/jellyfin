@@ -84,7 +84,9 @@ namespace MediaBrowser.Api.Movies
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarTrailers request)
         {
-            var result = SimilarItemsHelper.GetSimilarItemsResult(_userManager,
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
@@ -119,9 +121,9 @@ namespace MediaBrowser.Api.Movies
 
             var pagedItems = ApplyPaging(request, itemsArray);
 
-            var fields = request.GetItemFields().ToList();
+            var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = pagedItems.Select(i => _dtoService.GetBaseItemDto(i, fields, user)).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ToArray();
 
             return new ItemsResult
             {

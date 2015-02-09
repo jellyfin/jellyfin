@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Sync
 {
     public class SyncJobQuery
@@ -14,11 +15,6 @@ namespace MediaBrowser.Model.Sync
         /// <value>The limit.</value>
         public int? Limit { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is completed.
-        /// </summary>
-        /// <value><c>null</c> if [is completed] contains no value, <c>true</c> if [is completed]; otherwise, <c>false</c>.</value>
-        public bool? IsCompleted { get; set; }
-        /// <summary>
         /// Gets or sets the target identifier.
         /// </summary>
         /// <value>The target identifier.</value>
@@ -28,5 +24,20 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>The status.</value>
+        public List<SyncJobStatus> Statuses { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [synchronize new content].
+        /// </summary>
+        /// <value><c>null</c> if [synchronize new content] contains no value, <c>true</c> if [synchronize new content]; otherwise, <c>false</c>.</value>
+        public bool? SyncNewContent { get; set; }
+
+        public SyncJobQuery()
+        {
+            Statuses = new List<SyncJobStatus>();
+        }
     }
 }

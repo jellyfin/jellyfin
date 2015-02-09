@@ -185,13 +185,15 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var provided = 0;
 
-            int? requested = 0;
+            // Default to null instead of 0
+            // Upnp inspector sends 0 as requestedCount when it wants everything
+            int? requestedCount = null;
             int? start = 0;
 
             int requestedVal;
             if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
             {
-                requested = requestedVal;
+                requestedCount = requestedVal;
             }
 
             int startVal;
@@ -221,7 +223,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 
                 if (item.IsFolder || serverItem.StubType.HasValue)
                 {
-                    var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requested).ConfigureAwait(false));
+                    var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
 
                     result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id));
                 }
@@ -234,7 +236,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }
             else
             {
-                var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requested).ConfigureAwait(false));
+                var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
                 totalCount = childrenResult.TotalRecordCount;
 
                 provided = childrenResult.Items.Length;
@@ -277,13 +279,15 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             // sort example: dc:title, dc:date
 
-            int? requested = 0;
+            // Default to null instead of 0
+            // Upnp inspector sends 0 as requestedCount when it wants everything
+            int? requestedCount = null;
             int? start = 0;
 
             int requestedVal;
             if (sparams.ContainsKey("RequestedCount") && int.TryParse(sparams["RequestedCount"], out requestedVal) && requestedVal > 0)
             {
-                requested = requestedVal;
+                requestedCount = requestedVal;
             }
 
             int startVal;
@@ -311,7 +315,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var item = serverItem.Item;
 
-            var childrenResult = (await GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requested).ConfigureAwait(false));
+            var childrenResult = (await GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requestedCount).ConfigureAwait(false));
 
             var totalCount = childrenResult.TotalRecordCount;
 
@@ -479,9 +483,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
         {
-            var items = user.RootFolder.GetRecursiveChildren(user)
-                .Where(i => i is Movie || i is Series)
-                .Where(i => i.ContainsPerson(person.Name))
+            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Series && i.ContainsPerson(person.Name))
                 .ToList();
 
             var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
@@ -595,7 +597,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             });
         }
 
-        private bool FilterUnsupportedContent(BaseItem i, User user)
+        private bool FilterUnsupportedContent(BaseItem i)
         {
             // Unplayable
             if (i.LocationType == LocationType.Virtual && !i.IsFolder)

@@ -54,6 +54,7 @@ namespace MediaBrowser.Model.Dlna
         
         public float? MaxFramerate { get; set; }
 
+        public DeviceProfile DeviceProfile { get; set; }
         public string DeviceProfileId { get; set; }
         public string DeviceId { get; set; }
 
@@ -160,11 +161,6 @@ namespace MediaBrowser.Model.Dlna
 
             List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
-            if (SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
-            {
-                return list;
-            }
-
             // HLS will preserve timestamps so we can just grab the full subtitle stream
             long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
                 ? 0
@@ -175,7 +171,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 foreach (MediaStream stream in MediaSource.MediaStreams)
                 {
-                    if (stream.Type == MediaStreamType.Subtitle && stream.IsTextSubtitleStream && stream.Index == SubtitleStreamIndex.Value)
+                    if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
                     {
                         AddSubtitle(list, stream, baseUrl, startPositionTicks);
                     }
@@ -186,7 +182,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 foreach (MediaStream stream in MediaSource.MediaStreams)
                 {
-                    if (stream.Type == MediaStreamType.Subtitle && stream.IsTextSubtitleStream && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
+                    if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
                     {
                         AddSubtitle(list, stream, baseUrl, startPositionTicks);
                     }
@@ -198,6 +194,13 @@ namespace MediaBrowser.Model.Dlna
 
         private void AddSubtitle(List<SubtitleStreamInfo> list, MediaStream stream, string baseUrl, long startPositionTicks)
         {
+            var subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile);
+
+            if (subtitleProfile.Method != SubtitleDeliveryMethod.External)
+            {
+                return;
+            }
+
             string url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
                 baseUrl,
                 ItemId,
@@ -212,7 +215,8 @@ namespace MediaBrowser.Model.Dlna
                 IsForced = stream.IsForced,
                 Language = stream.Language,
                 Name = stream.Language ?? "Unknown",
-                Format = SubtitleFormat
+                Format = SubtitleFormat,
+                Index = stream.Index
             });
         }
 

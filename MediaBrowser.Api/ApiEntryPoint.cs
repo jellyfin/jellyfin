@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
@@ -39,6 +39,7 @@ namespace MediaBrowser.Api
         private readonly IServerConfigurationManager _config;
 
         private readonly ISessionManager _sessionManager;
+        private readonly IFileSystem _fileSystem;
 
         public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1, 1);
 
@@ -48,11 +49,12 @@ namespace MediaBrowser.Api
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="config">The configuration.</param>
-        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config)
+        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             Logger = logger;
             _sessionManager = sessionManager;
             _config = config;
+            _fileSystem = fileSystem;
 
             Instance = this;
         }
@@ -86,12 +88,12 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, EncodingContext.Streaming.ToString().ToLower());
+            var path = _config.ApplicationPaths.TranscodingTempPath;
 
             foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
                 .ToList())
             {
-                File.Delete(file);
+                _fileSystem.DeleteFile(file);
             }
         }
 
@@ -462,7 +464,7 @@ namespace MediaBrowser.Api
         /// <param name="outputFilePath">The output file path.</param>
         private void DeleteProgressivePartialStreamFiles(string outputFilePath)
         {
-            File.Delete(outputFilePath);
+            _fileSystem.DeleteFile(outputFilePath);
         }
 
         /// <summary>
@@ -479,13 +481,13 @@ namespace MediaBrowser.Api
                 .ToList();
 
             Exception e = null;
-
+            
             foreach (var file in filesToDelete)
             {
                 try
                 {
                     Logger.Info("Deleting HLS file {0}", file);
-                    File.Delete(file);
+                    _fileSystem.DeleteFile(file);
                 }
                 catch (DirectoryNotFoundException)
                 {

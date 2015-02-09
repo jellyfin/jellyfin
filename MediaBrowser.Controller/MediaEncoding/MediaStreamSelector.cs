@@ -38,7 +38,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             SubtitlePlaybackMode mode,
             string audioTrackLanguage)
         {
-            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages).ToList();
+            streams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages)
+                .ToList();
 
             var full = streams.Where(s => !s.IsForced);
 
@@ -81,21 +82,24 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private static IEnumerable<MediaStream> GetSortedStreams(IEnumerable<MediaStream> streams, MediaStreamType type, List<string> languagePreferences)
         {
-            var orderStreams = streams
-                .Where(i => i.Type == type);
-
             // Give some preferance to external text subs for better performance
-            return orderStreams.OrderBy(i =>
+            return streams.Where(i => i.Type == type)
+                .OrderBy(i =>
             {
                 var index = languagePreferences.FindIndex(l => string.Equals(i.Language, l, StringComparison.OrdinalIgnoreCase));
 
                 return index == -1 ? 100 : index;
             })
-                 .ThenBy(i => i.IsDefault)
-                 .ThenBy(i => i.IsTextSubtitleStream)
-                 .ThenBy(i => i.IsExternal)
-                 .ThenBy(i => i.Index)
-                 .ToList();
+                 .ThenBy(i => GetBooleanOrderBy(i.IsDefault))
+                 .ThenBy(i => GetBooleanOrderBy(i.SupportsExternalStream))
+                 .ThenBy(i => GetBooleanOrderBy(i.IsTextSubtitleStream))
+                 .ThenBy(i => GetBooleanOrderBy(i.IsExternal))
+                 .ThenBy(i => i.Index);
+        }
+
+        private static int GetBooleanOrderBy(bool value)
+        {
+            return value ? 0 : 1;
         }
     }
 }
