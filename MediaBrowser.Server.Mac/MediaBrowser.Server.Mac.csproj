@@ -71,6 +71,7 @@
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Security">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
     </Reference>
