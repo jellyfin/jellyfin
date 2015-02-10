@@ -54,7 +54,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItems({
+        ApiClient.getItems(null, {
             recursive: true,
             includeItemTypes: 'Series',
             sortBy: 'SortName'

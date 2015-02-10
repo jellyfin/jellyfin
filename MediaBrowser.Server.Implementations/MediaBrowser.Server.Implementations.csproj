@@ -153,8 +153,8 @@
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
-    <Compile Include="HttpServer\NetListener\HttpListenerServer.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
+    <Compile Include="HttpServer\NetListener\HttpListenerServer.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
@@ -222,7 +222,6 @@
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
-    <Compile Include="LiveTv\CleanDatabaseScheduledTask.cs" />
     <Compile Include="LiveTv\LiveTvConfigurationFactory.cs" />
     <Compile Include="LiveTv\LiveTvDtoService.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
