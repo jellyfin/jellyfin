@@ -89,7 +89,7 @@ namespace MediaBrowser.Server.Mac
 
 			var nativeApp = new NativeApp();
 
-			AppHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", false, nativeApp);
+			AppHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", nativeApp);
 
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (AppHost.ApplicationVersion.ToString());
