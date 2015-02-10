@@ -1044,13 +1044,18 @@ namespace MediaBrowser.Server.Startup.Common
 
                 if (!string.IsNullOrWhiteSpace(address))
                 {
-                    address = string.Format("http://{0}:{1}",
-                        address,
-                        HttpPort.ToString(CultureInfo.InvariantCulture));
+                    address = GetLocalApiUrl(address);
                 }
 
                 return address;
             }
+        }
+
+        public string GetLocalApiUrl(string host)
+        {
+            return string.Format("http://{0}:{1}",
+                host,
+                HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
         public string LocalIpAddress

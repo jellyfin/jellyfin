@@ -97,7 +97,7 @@
     "HeaderSelectSubtitles": "W\u00f6hle Untertitel",
     "ButtonMarkForRemoval": "Entferne von Ger\u00e4t",
     "ButtonUnmarkForRemoval": "Abbrechen von Entfernen von Ger\u00e4t",
-    "LabelSyncQualityHelp": "Verwenden Sie \"Hohe Qualit\u00e4t\" f\u00fcr die maximale vom Ger\u00e4t unterst\u00fctzte Qualit\u00e4t. Mittlere und geringe Qualit\u00e4t werden die erlaubte Datenrate reduzieren.",
+    "LabelSyncQualityHelp": "Use high quality for the maximum supported quality by the device. Medium and low quality will reduce the allowed bitrate. Original will sync the original file, regardless of whether the device is capable of playing it or not.",
     "LabelDefaultStream": "(Default)",
     "LabelForcedStream": "(Erzwungen)",
     "LabelDefaultForcedStream": "(Standard\/Erzwungen)",
@@ -273,7 +273,7 @@
     "ButtonStart": "Start",
     "HeaderChannels": "Kan\u00e4le",
     "HeaderMediaFolders": "Medienverzeichnisse",
-    "HeaderBlockItemsWithNoRating": "Blockiere Elemente ohne Bewertungsinformationen:",
+    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
     "OptionBlockOthers": "Andere",
     "OptionBlockTvShows": "TV Serien",
     "OptionBlockTrailers": "Trailer",
@@ -698,6 +698,7 @@
     "LabelSyncTo": "Synchronisiere mit:",
     "LabelSyncJobName": "Synchronisations-Aufgabe:",
     "LabelQuality": "Qualit\u00e4t:",
+    "OptionOriginal": "Original",
     "OptionHigh": "Hoch",
     "OptionMedium": "Mittel",
     "OptionLow": "Niedrig",
@@ -717,6 +718,5 @@
     "SyncJobItemStatusSynced": "Synchronisiert",
     "SyncJobItemStatusFailed": "Fehlgeschlagen.",
     "SyncJobItemStatusRemovedFromDevice": "Entfernt von Ger\u00e4t",
-    "SyncJobItemStatusCancelled": "Abgebrochen",
-    "MessageJobItemHasNoActions": "d"
+    "SyncJobItemStatusCancelled": "Abgebrochen"
 }
