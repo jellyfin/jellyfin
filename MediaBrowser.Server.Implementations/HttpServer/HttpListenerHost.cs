@@ -297,12 +297,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl("/../" + DefaultRedirectPath);
+                httpRes.RedirectToUrl(DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl("../" + DefaultRedirectPath);
+                httpRes.RedirectToUrl("mediabrowser/" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))

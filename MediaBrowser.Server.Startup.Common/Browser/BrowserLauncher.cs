@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenDashboardPage(string page, IServerApplicationHost appHost, ILogger logger)
         {
-            var url = "http://localhost:" + appHost.HttpPort + "/web/" + page;
+            var url = appHost.GetLocalApiUrl("localhost") + "/web/" + page;
 
             OpenUrl(url, logger);
         }
@@ -68,7 +68,9 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenSwagger(IServerApplicationHost appHost, ILogger logger)
         {
-            OpenUrl("http://localhost:" + appHost.HttpPort + "/swagger-ui/index.html", logger);
+            var url = appHost.GetLocalApiUrl("localhost") + "/swagger-ui/index.html";
+
+            OpenUrl(url, logger);
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
             {
                 logger.ErrorException("Error launching url: {0}", ex, url);
 
-                Console.WriteLine(string.Format("Error launching url: {0}", ex));
+                Console.WriteLine("Error launching url: {0}", ex.Message);
                 Console.WriteLine(ex.Message);
 
 //#if !__MonoCS__
