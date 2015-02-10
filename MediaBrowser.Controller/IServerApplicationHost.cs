@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Controller
 {
@@ -65,5 +64,12 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The local API URL.</value>
         string LocalApiUrl { get; }
+
+        /// <summary>
+        /// Gets the local API URL.
+        /// </summary>
+        /// <param name="host">The host.</param>
+        /// <returns>System.String.</returns>
+        string GetLocalApiUrl(string host);
     }
 }

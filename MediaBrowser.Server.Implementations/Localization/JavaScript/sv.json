@@ -97,7 +97,7 @@
     "HeaderSelectSubtitles": "V\u00e4lj undertexter",
     "ButtonMarkForRemoval": "Remove from device",
     "ButtonUnmarkForRemoval": "Cancel removal from device",
-    "LabelSyncQualityHelp": "Use high quality for the maximum supported quality by the device. Medium and low quality will reduce the allowed bitrate.",
+    "LabelSyncQualityHelp": "Use high quality for the maximum supported quality by the device. Medium and low quality will reduce the allowed bitrate. Original will sync the original file, regardless of whether the device is capable of playing it or not.",
     "LabelDefaultStream": "(f\u00f6rvalda)",
     "LabelForcedStream": "(tvingade)",
     "LabelDefaultForcedStream": "(f\u00f6rvalda\/tvingade)",
@@ -273,7 +273,7 @@
     "ButtonStart": "Start",
     "HeaderChannels": "Kanaler",
     "HeaderMediaFolders": "Mediamappar",
-    "HeaderBlockItemsWithNoRating": "Blockera objekt utan \u00e5ldersgr\u00e4ns:",
+    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
     "OptionBlockOthers": "\u00d6vrigt",
     "OptionBlockTvShows": "TV-serier",
     "OptionBlockTrailers": "Trailers",
@@ -698,6 +698,7 @@
     "LabelSyncTo": "Sync to:",
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Quality:",
+    "OptionOriginal": "Original",
     "OptionHigh": "High",
     "OptionMedium": "Medium",
     "OptionLow": "Low",
@@ -717,6 +718,5 @@
     "SyncJobItemStatusSynced": "Synced",
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
-    "SyncJobItemStatusCancelled": "Cancelled",
-    "MessageJobItemHasNoActions": "d"
+    "SyncJobItemStatusCancelled": "Cancelled"
 }

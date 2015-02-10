@@ -904,9 +904,8 @@ namespace MediaBrowser.Server.Implementations.Session
                     _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)) :
                     user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && itemFilter(i));
 
-                items = items.OrderBy(i => i.SortName);
-
-                return items;
+                return FilterToSingleMediaType(items)
+                    .OrderBy(i => i.SortName);
             }
             
             if (item.IsFolder)
@@ -917,12 +916,20 @@ namespace MediaBrowser.Server.Implementations.Session
                     folder.GetRecursiveChildren(i => !i.IsFolder) :
                     folder.GetRecursiveChildren(user, i => !i.IsFolder);
 
-                items = items.OrderBy(i => i.SortName);
-
-                return items;
+                return FilterToSingleMediaType(items)
+                    .OrderBy(i => i.SortName);
             }
 
             return new[] { item };
+        }
+
+        private IEnumerable<BaseItem> FilterToSingleMediaType(IEnumerable<BaseItem> items)
+        {
+            return items
+                .Where(i => !string.IsNullOrWhiteSpace(i.MediaType))
+                .ToLookup(i => i.MediaType, StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(i => i.Count())
+                .FirstOrDefault();
         }
 
         private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
