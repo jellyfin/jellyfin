@@ -97,7 +97,7 @@
     "HeaderSelectSubtitles": "Selecione Legendas",
     "ButtonMarkForRemoval": "Remover do dispositivo",
     "ButtonUnmarkForRemoval": "Cancelar remo\u00e7\u00e3o do dispositivo",
-    "LabelSyncQualityHelp": "Use high quality for the maximum supported quality by the device. Medium and low quality will reduce the allowed bitrate. Original will sync the original file, regardless of whether the device is capable of playing it or not.",
+    "LabelSyncQualityHelp": "Use alta qualidade para usar a qualidade m\u00e1xima suportada pelo dispositivo. Qualidades m\u00e9dia e baixa reduzir\u00e3o a taxa permitida. Original sincronizar\u00e1 o arquivo original, independente se o dispositivo ser\u00e1 capaz de reproduzi-lo.",
     "LabelDefaultStream": "(Padr\u00e3o)",
     "LabelForcedStream": "(For\u00e7ada)",
     "LabelDefaultForcedStream": "(Padr\u00e3o\/For\u00e7ada)",
