@@ -113,7 +113,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return info;
         }
 
-        private void DeleteOlderFolders(string path, IEnumerable<string> excludeFolders )
+        private void DeleteOlderFolders(string path, IEnumerable<string> excludeFolders)
         {
             var folders = Directory.GetDirectories(path)
                 .Where(i => !excludeFolders.Contains(i, StringComparer.OrdinalIgnoreCase))
@@ -155,9 +155,9 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 {
                     return new FFMpegInfo
                     {
-                         EncoderPath = encoder,
-                         ProbePath = probe,
-                         Version = Path.GetFileName(Path.GetDirectoryName(probe))
+                        EncoderPath = encoder,
+                        ProbePath = probe,
+                        Version = Path.GetFileName(Path.GetDirectoryName(probe))
                     };
                 }
             }
@@ -217,7 +217,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             {
                 ExtractArchive(downloadinfo, tempFile, tempFolder);
 
-                var files = Directory.EnumerateFiles(tempFolder, "*", SearchOption.AllDirectories).ToList();
+                var files = Directory.EnumerateFiles(tempFolder, "*", SearchOption.AllDirectories)
+                    .ToList();
 
                 foreach (var file in files.Where(i =>
                     {
@@ -244,6 +245,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             // Linux: File permission to 666, and user's execute bit
             if (_environment.OperatingSystem == OperatingSystem.Bsd || _environment.OperatingSystem == OperatingSystem.Linux || _environment.OperatingSystem == OperatingSystem.Osx)
             {
+                _logger.Info("Syscall.chmod {0} FilePermissions.DEFFILEMODE | FilePermissions.S_IRWXU | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH", path);
+
                 Syscall.chmod(path, FilePermissions.DEFFILEMODE | FilePermissions.S_IRWXU | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH);
             }
         }
@@ -307,7 +310,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     Task.Run(async () =>
                     {
                         await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
-                        
+
                         await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
                     });
                 }
@@ -380,7 +383,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
 
             Extract7zArchive(tempFile, fontsDirectory);
-            
+
             try
             {
                 _fileSystem.DeleteFile(tempFile);
