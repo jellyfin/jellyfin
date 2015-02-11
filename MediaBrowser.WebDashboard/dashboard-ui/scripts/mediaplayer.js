@@ -347,6 +347,12 @@
                 return false;
             }
 
+            if (mediaSource.Protocol == 'Http') {
+                if (Dashboard.isConnectMode()) {
+                    return false;
+                }
+            }
+
             if (extension == 'm4v' || extension == 'mkv') {
                 return $.browser.chrome != null;
             }

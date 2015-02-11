@@ -126,6 +126,21 @@ var Dashboard = {
         var address = store.getItem('serverAddress');
 
         if (!address && !Dashboard.isConnectMode()) {
+
+            // Try to get the server address from the browser url
+            // This will preserve protocol, hostname, port and subdirectory
+            var urlLower = getWindowUrl().toLowerCase();
+            var index = urlLower.indexOf('/web');
+            if (index == -1) {
+                index = urlLower.index('/dashboard');
+            }
+
+            if (index != -1) {
+                address = urlLower.substring(0, index);
+                return address;
+            }
+
+            // If the above failed, just piece it together manually
             var loc = window.location;
 
             address = loc.protocol + '//' + loc.hostname;

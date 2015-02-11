@@ -47,11 +47,6 @@
             return serverAddress;
         };
 
-        self.apiPrefix = function () {
-
-            return "";
-        };
-
         self.serverInfo = function (info) {
 
             serverInfo = info || serverInfo;
@@ -311,9 +306,7 @@
                 throw new Error("Url name cannot be empty");
             }
 
-            var url = serverAddress;
-
-            url += self.apiPrefix() + "/" + name;
+            var url = serverAddress + "/" + name;
 
             if (params) {
                 url += "?" + $.param(params);
@@ -341,9 +334,7 @@
 
         self.openWebSocket = function () {
 
-            var url = serverAddress + self.apiPrefix();
-
-            url = url.replace('http', 'ws');
+            var url = serverAddress.replace('http', 'ws');
 
             webSocket = new WebSocket(url);
 
