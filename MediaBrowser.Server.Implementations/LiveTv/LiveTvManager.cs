@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -475,7 +476,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.ProviderImageUrl = channelInfo.ImageUrl;
             item.HasProviderImage = channelInfo.HasImage;
             item.ProviderImagePath = channelInfo.ImagePath;
-            
+
             if (string.IsNullOrEmpty(item.Name))
             {
                 item.Name = channelInfo.Name;
@@ -887,7 +888,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await RefreshChannelsInternal(progress, cancellationToken).ConfigureAwait(false);
+                var innerProgress = new ActionableProgress<double>();
+                innerProgress.RegisterAction(p => progress.Report(p * .9));
+                await RefreshChannelsInternal(innerProgress, cancellationToken).ConfigureAwait(false);
+
+                innerProgress = new ActionableProgress<double>();
+                innerProgress.RegisterAction(p => progress.Report(90 + (p * .1)));
+                await CleanDatabaseInternal(progress, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -998,14 +1005,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task CleanDatabase(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var service = ActiveService;
-
-            if (service == null)
-            {
-                progress.Report(100);
-                return;
-            }
-
             await _refreshSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
@@ -1018,8 +1017,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
+        private Task CleanDatabaseInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            return DeleteOldPrograms(_programs.Keys.ToList(), progress, cancellationToken);
+        }
+
         private async Task DeleteOldPrograms(List<Guid> currentIdList, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            var service = ActiveService;
+
+            if (service == null)
+            {
+                progress.Report(100);
+                return;
+            }
+
             var list = _itemRepo.GetItemsOfType(typeof(LiveTvProgram)).ToList();
 
             var numComplete = 0;

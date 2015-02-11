@@ -44,6 +44,11 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <value>The daily download limit.</value>
         public int? DailyDownloadLimit { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports downloading].
+        /// </summary>
+        /// <value><c>true</c> if [supports downloading]; otherwise, <c>false</c>.</value>
+        public bool SupportsContentDownloading { get; set; }
 
         public InternalChannelFeatures()
         {

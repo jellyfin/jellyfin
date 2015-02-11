@@ -110,7 +110,10 @@
 
             }).join('');
             html += '</select>';
-
+            if (!targets.length) {
+                html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncNoTargetsHelp') + '</div>';
+                html += '<div class="fieldDescription"><a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></div>';
+            }
             html += '</div>';
 
             html += '<br/>';
@@ -185,33 +188,6 @@
                 return false;
             });
         });
-    }
-
-    function showUnwatchedFilter(items) {
-
-        return items.filter(function (i) {
-
-            return i.MediaType == "Video" || i.IsFolder || i.Type == "Person" || i.Type == "Genre" || i.Type == "MusicGenre" || i.Type == "GameGenre" || i.Type == "Studio" || i.Type == "MusicArtist";
-
-        }).length > 0;
-    }
-
-    function showItemLimit(items) {
-
-        return items.length > 1 || items.filter(function (i) {
-
-            return i.IsFolder || i.Type == "Person" || i.Type == "Genre" || i.Type == "MusicGenre" || i.Type == "GameGenre" || i.Type == "Studio" || i.Type == "MusicArtist";
-
-        }).length > 0;
-    }
-
-    function showSyncNew(items) {
-
-        return items.filter(function (i) {
-
-            return i.IsFolder || i.Type == "Person" || i.Type == "Genre" || i.Type == "MusicGenre" || i.Type == "GameGenre" || i.Type == "Studio" || i.Type == "MusicArtist";
-
-        }).length > 0;
     }
 
     function isAvailable(item, user) {

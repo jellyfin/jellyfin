@@ -843,10 +843,13 @@ namespace MediaBrowser.Server.Startup.Common
                 if (ServerConfigurationManager.Configuration.HttpServerPortNumber != HttpPort ||
                     ServerConfigurationManager.Configuration.HttpsPortNumber != HttpsPort)
                 {
-                    ServerConfigurationManager.Configuration.IsPortAuthorized = false;
-                    ServerConfigurationManager.SaveConfiguration();
+                    if (ServerConfigurationManager.Configuration.IsPortAuthorized)
+                    {
+                        ServerConfigurationManager.Configuration.IsPortAuthorized = false;
+                        ServerConfigurationManager.SaveConfiguration();
 
-                    requiresRestart = true;
+                        requiresRestart = true;
+                    }
                 }
             }
 

@@ -219,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("wanApiAddress");
             }
-            
+
             var url = "Servers";
             url = GetConnectUrl(url);
 
@@ -699,7 +699,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("ConnectAccessKey");
             }
-            
+
             options.RequestHeaders.Add("X-Connect-Token", ConnectAccessKey);
         }
 
@@ -723,7 +723,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("ConnectServerId");
             }
-            
+
             var url = GetConnectUrl("ServerAuthorizations");
 
             url += "?serverId=" + ConnectServerId;
@@ -956,6 +956,10 @@ namespace MediaBrowser.Server.Implementations.Connect
                     _data.LastAuthorizationsRefresh = DateTime.UtcNow;
                     CacheData();
                 }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing authorization", ex);
+                }
                 finally
                 {
                     _operationLock.Release();
@@ -1010,7 +1014,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("ConnectServerId");
             }
-     
+
             var url = GetConnectUrl("ServerAuthorizations");
 
             var options = new HttpRequestOptions
@@ -1074,7 +1078,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 });
 
             SetApplicationHeader(options);
-            
+
             // No need to examine the response
             using (var response = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
             {
@@ -1094,7 +1098,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 throw new ArgumentNullException("user");
             }
-            
+
             if (string.IsNullOrEmpty(user.ConnectUserId))
             {
                 return;

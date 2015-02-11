@@ -508,7 +508,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 SupportsLatestMedia = supportsLatest,
                 Name = channel.Name,
                 Id = channel.Id.ToString("N"),
-                SupportsContentDownloading = isIndexable || supportsLatest,
+                SupportsContentDownloading = features.SupportsContentDownloading && (isIndexable || supportsLatest),
                 AutoRefreshLevels = features.AutoRefreshLevels
             };
         }
