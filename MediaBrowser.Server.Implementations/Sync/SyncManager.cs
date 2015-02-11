@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
@@ -207,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         internal async Task UpdateSyncJobItemInternal(SyncJobItem jobItem)
         {
             await _repo.Update(jobItem).ConfigureAwait(false);
-            
+
             if (SyncJobUpdated != null)
             {
                 EventHelper.FireEventIfNotNull(SyncJobItemUpdated, this, new GenericEventArgs<SyncJobItem>
@@ -433,6 +434,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool SupportsSync(BaseItem item)
         {
+            if (item is Playlist)
+            {
+                return true;
+            }
+
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase) ||
@@ -461,7 +467,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         return false;
                     }
-                    
+
                     if (video.IsPlaceHolder)
                     {
                         return false;
