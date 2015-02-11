@@ -4,6 +4,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
+using MediaBrowser.Server.Mono.Networking;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -34,6 +35,16 @@ namespace MediaBrowser.Server.Mac
 		public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
 			return new List<FileSystemEntryInfo> ();
-        }
+		}
+
+		/// <summary>
+		/// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
+		/// </summary>
+		/// <param name="certificatePath">The path to generate the certificate.</param>
+		/// <param name="hostname">The common name for the certificate.</param>
+		public void GenerateSelfSignedSslCertificate(string certificatePath, string hostname)
+		{
+			CertificateGenerator.CreateSelfSignCertificatePfx(certificatePath, hostname, Logger);
+		}
     }
 }
