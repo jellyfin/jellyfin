@@ -669,11 +669,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("newPasswordSha1");
             }
 
-            if (user.ConnectLinkType.HasValue && user.ConnectLinkType.Value == UserLinkType.Guest)
-            {
-                throw new ArgumentException("Passwords for guests cannot be changed.");
-            }
-
             user.EasyPassword = newPasswordSha1;
 
             await UpdateUser(user).ConfigureAwait(false);
