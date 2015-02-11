@@ -132,7 +132,7 @@ var Dashboard = {
             var urlLower = getWindowUrl().toLowerCase();
             var index = urlLower.indexOf('/web');
             if (index == -1) {
-                index = urlLower.index('/dashboard');
+                index = urlLower.indexOf('/dashboard');
             }
 
             if (index != -1) {

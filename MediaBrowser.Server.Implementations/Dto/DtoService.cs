@@ -128,6 +128,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
 
+                FillSyncInfo(dto, item, options);
                 return dto;
             }
 
@@ -307,6 +308,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var dto = GetBaseItemDtoInternal(item, options, user);
 
             SetItemByNameInfo(item, dto, taggedItems, user);
+            FillSyncInfo(dto, item, options);
 
             return dto;
         }
