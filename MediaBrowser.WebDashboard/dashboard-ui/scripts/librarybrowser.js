@@ -322,7 +322,7 @@
 
             commands.push('refresh');
 
-            if (SyncManager.isAvailable(item)) {
+            if (SyncManager.isAvailable(item, user)) {
                 commands.push('sync');
             }
 

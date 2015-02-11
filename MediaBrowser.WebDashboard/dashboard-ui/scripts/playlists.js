@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Playlist",
         Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete",
+        Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
         StartIndex: 0
     };
 
