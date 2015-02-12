@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Wiedergabeliste erlauben es dir eine Liste mit Inhalt zu erstellen der fortlaufend abgespielt wird. Um einer Wiedergabeliste Inhalte hinzuzuf\u00fcgen klicke rechts oder mache einen langen Tap und w\u00e4hle daraufhin \"Zur Wiedergabeliste hinzuf\u00fcgen\" aus.",
     "MessageNoPlaylistItemsAvailable": "Diese Wiedergabeliste ist momentan leer.",
     "ButtonDismiss": "Verwerfen",
-    "ButtonEditOtherUserPreferences": "Bearbeite dieses Benutzerprofil, Passwort und pers\u00f6nlichen Pr\u00e4ferenzen.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "Bevorzugte Qualit\u00e4t des Internetstreams",
     "LabelChannelStreamQualityHelp": "In einer Umgebung mit langsamer Bandbreite kann die Beschr\u00e4nkung der Wiedergabequalit\u00e4t eine fl\u00fcssige Darstellung sichern.",
     "OptionBestAvailableStreamQuality": "Die besten verf\u00fcgbaren",

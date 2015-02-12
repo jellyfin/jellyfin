@@ -116,8 +116,8 @@
     "HeaderVideoPlaybackSettings": "Inst\u00e4llningar f\u00f6r videouppspelning",
     "HeaderPlaybackSettings": "Uppspelningsinst\u00e4llningar",
     "LabelAudioLanguagePreference": "\u00d6nskat spr\u00e5k f\u00f6r ljudsp\u00e5r",
-    "LabelSubtitleLanguagePreference": "\u00d6nskat spr\u00e5k f\u00f6r undertexter",
-    "OptionDefaultSubtitles": "F\u00f6rval",
+    "LabelSubtitleLanguagePreference": "\u00d6nskat spr\u00e5k f\u00f6r undertexter:",
+    "OptionDefaultSubtitles": "Standard",
     "OptionOnlyForcedSubtitles": "Endast tvingande undertexter",
     "OptionAlwaysPlaySubtitles": "Visa alltid undertexter",
     "OptionNoSubtitles": "Inga undertexter",
@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Spellistor l\u00e5ter dig skapa listor med inneh\u00e5ll att spela upp i ordning. F\u00f6r att l\u00e4gga till objekt i spellistor, h\u00f6gerklicka eller tryck-och-h\u00e5ll och v\u00e4lj \"l\u00e4gg till i spellista\".",
     "MessageNoPlaylistItemsAvailable": "Den h\u00e4r spellistan \u00e4r tom.",
     "ButtonDismiss": "Avvisa",
-    "ButtonEditOtherUserPreferences": "Redigera denna anv\u00e4ndarens profil, l\u00f6senord och personliga preferenser",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "\u00d6nskad kvalitet vid str\u00f6mning via Internet:",
     "LabelChannelStreamQualityHelp": "N\u00e4r bandbredden \u00e4r begr\u00e4nsad kan en l\u00e4gre kvalitet ge en mera st\u00f6rningsfri upplevelse.",
     "OptionBestAvailableStreamQuality": "B\u00e4sta tillg\u00e4ngliga",
@@ -1350,7 +1350,7 @@
     "NameSeasonNumber": "Season {0}",
     "LabelNewUserNameHelp": "Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)",
     "TabJobs": "Jobs",
-    "TabSyncJobs": "Sync Jobs",
+    "TabSyncJobs": "Synkjobb",
     "LabelTagFilterMode": "Mode:",
     "LabelTagFilterAllowModeHelp": "If allowed tags are used as part of a deeply nested folder structure, content that is tagged will require parent folders to be tagged as well."
 }
