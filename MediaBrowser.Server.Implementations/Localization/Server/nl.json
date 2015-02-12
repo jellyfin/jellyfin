@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Met afspeellijsten kunt u een lijst maken waarvan de items achter elkaar afgespeeld worden. Om een item toe te voegen klikt u met rechts of tik en houd het vast om het te selecteren, klik vervolgens op Toevoegen aan afspeellijst.",
     "MessageNoPlaylistItemsAvailable": "De afspeellijst is momenteel leeg.",
     "ButtonDismiss": "Afwijzen",
-    "ButtonEditOtherUserPreferences": "Wijzig het gebruikersprofiel, wachtwoord en persoonlijke voorkeuren voor deze gebruiker.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "Voorkeurs kwaliteit internet stream:",
     "LabelChannelStreamQualityHelp": "Bij weinig beschikbare bandbreedte kan het verminderen van de kwaliteit betere streams opleveren.",
     "OptionBestAvailableStreamQuality": "Best beschikbaar",

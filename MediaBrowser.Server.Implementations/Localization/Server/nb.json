@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Spillelister tillater deg \u00e5 lage lister over innhold til \u00e5 spille etter hverandre p\u00e5 en gang. For \u00e5 legge til elementer i spillelister, h\u00f8yreklikk eller trykk og hold, og velg Legg til i spilleliste.",
     "MessageNoPlaylistItemsAvailable": "Denne spillelisten er forel\u00f8pig tom",
     "ButtonDismiss": "Avvis",
-    "ButtonEditOtherUserPreferences": "Rediger denne brukers profil, passord og personlige preferanser.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "Foretrukket internet streaming kvalitet.",
     "LabelChannelStreamQualityHelp": "P\u00e5 en linje med lav b\u00e5ndbredde, vil begrensing av kvalitet hjelpe med \u00e5 gi en mer behagelig streaming opplevelse.",
     "OptionBestAvailableStreamQuality": "Beste tilgjengelig",
