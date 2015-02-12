@@ -6,8 +6,7 @@
     // The base query options
     var query = {
 
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio",
+        Fields: "PrimaryImageAspectRatio,SyncInfo",
         StartIndex: 0,
         ImageTypeLimit: 1,
         EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
@@ -21,13 +20,14 @@
     function getItemsFunction(itemsQuery) {
 
         itemsQuery = $.extend({}, itemsQuery);
+        itemsQuery.SortBy = null;
+        itemsQuery.SortOrder = null;
 
         return function (index, limit, fields) {
 
             itemsQuery.StartIndex = index;
             itemsQuery.Limit = limit;
             itemsQuery.Fields = fields;
-
             return ApiClient.getItems(Dashboard.getCurrentUserId(), itemsQuery);
 
         };

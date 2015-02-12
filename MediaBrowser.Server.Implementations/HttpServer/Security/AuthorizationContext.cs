@@ -129,6 +129,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 if (tokenInfo != null)
                 {
                     info.UserId = tokenInfo.UserId;
+
+                    // TODO: Remove these checks for IsNullOrWhiteSpace
+                    if (string.IsNullOrWhiteSpace(info.Client))
+                    {
+                        info.Client = tokenInfo.AppName;
+                    }
+                    if (string.IsNullOrWhiteSpace(info.Device))
+                    {
+                        info.Device = tokenInfo.DeviceName;
+                    }
+                    if (string.IsNullOrWhiteSpace(info.DeviceId))
+                    {
+                        info.DeviceId = tokenInfo.DeviceId;
+                    }
                 }
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
