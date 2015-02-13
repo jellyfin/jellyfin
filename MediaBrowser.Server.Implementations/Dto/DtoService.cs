@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                 }
 
-                FillSyncInfo(dto, item, itemIdsWithSyncJobs, options);
+                FillSyncInfo(dto, item, itemIdsWithSyncJobs, options, user);
 
                 list.Add(dto);
             }
@@ -128,11 +128,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
 
-                FillSyncInfo(dto, item, options);
+                FillSyncInfo(dto, item, options, user);
                 return dto;
             }
 
-            FillSyncInfo(dto, item, options);
+            FillSyncInfo(dto, item, options, user);
 
             return dto;
         }
@@ -171,11 +171,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             return result.Items;
         }
 
-        private void FillSyncInfo(BaseItemDto dto, BaseItem item, DtoOptions options)
+        private void FillSyncInfo(BaseItemDto dto, BaseItem item, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
-                dto.SupportsSync = _syncManager.SupportsSync(item);
+                var userCanSync = user != null && user.Policy.EnableSync;
+                dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
             }
 
             if (dto.SupportsSync ?? false)
@@ -184,11 +185,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private void FillSyncInfo(BaseItemDto dto, BaseItem item, IEnumerable<string> itemIdsWithSyncJobs, DtoOptions options)
+        private void FillSyncInfo(BaseItemDto dto, BaseItem item, IEnumerable<string> itemIdsWithSyncJobs, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
-                dto.SupportsSync = _syncManager.SupportsSync(item);
+                var userCanSync = user != null && user.Policy.EnableSync;
+                dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
             }
 
             if (dto.SupportsSync ?? false)
@@ -308,7 +310,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var dto = GetBaseItemDtoInternal(item, options, user);
 
             SetItemByNameInfo(item, dto, taggedItems, user);
-            FillSyncInfo(dto, item, options);
+            FillSyncInfo(dto, item, options, user);
 
             return dto;
         }

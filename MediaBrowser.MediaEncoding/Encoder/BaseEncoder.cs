@@ -631,13 +631,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 switch (qualitySetting)
                 {
                     case EncodingQuality.HighSpeed:
-                        param += " -subq 0 -crf 23";
+                        param += " -crf 28";
                         break;
                     case EncodingQuality.HighQuality:
-                        param += " -subq 3 -crf 20";
+                        param += " -crf 25";
                         break;
                     case EncodingQuality.MaxQuality:
-                        param += " -subq 6 -crf 18";
+                        param += " -crf 21";
                         break;
                 }
             }

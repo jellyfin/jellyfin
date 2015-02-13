@@ -439,6 +439,16 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return true;
             }
 
+            if (item is Person)
+            {
+                return false;
+            }
+
+            if (item is Year)
+            {
+                return false;
+            }
+
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase) ||
