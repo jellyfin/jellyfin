@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Playlist ti permettere di mettere in coda gli elementi da riprodurre.Usa il tasto destro o tap e tieni premuto quindi seleziona elemento da aggiungere",
     "MessageNoPlaylistItemsAvailable": "Questa playlist al momento \u00e8 vuota",
     "ButtonDismiss": "Cancella",
-    "ButtonEditOtherUserPreferences": "Modifica questo profilo utente, la password e le preferenze personali.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "Preferenziale qualit\u00e0 del flusso internet:",
     "LabelChannelStreamQualityHelp": "In un ambiente a bassa larghezza di banda, limitando la qualit\u00e0 pu\u00f2 contribuire a garantire un'esperienza di streaming continuo.",
     "OptionBestAvailableStreamQuality": "Migliore disponibile",

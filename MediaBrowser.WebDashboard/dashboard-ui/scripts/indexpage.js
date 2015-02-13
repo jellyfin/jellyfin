@@ -539,7 +539,7 @@
         }
     }
 
-    var homePageDismissValue = '4';
+    var homePageDismissValue = '5';
     var homePageTourKey = 'homePageTour';
 
     function dismissWelcome(page, userId) {
@@ -579,6 +579,7 @@
                 { href: 'css/images/tour/web/tourmovies.jpg', title: Globalize.translate('WebClientTourMovies') },
                 { href: 'css/images/tour/web/tourmouseover.jpg', title: Globalize.translate('WebClientTourMouseOver') },
                 { href: 'css/images/tour/web/tourtaphold.jpg', title: Globalize.translate('WebClientTourTapHold') },
+                { href: 'css/images/tour/web/tourmysync.png', title: Globalize.translate('WebClientTourMySync') },
                 { href: 'css/images/tour/web/toureditor.png', title: Globalize.translate('WebClientTourMetadataManager') },
                 { href: 'css/images/tour/web/tourplaylist.png', title: Globalize.translate('WebClientTourPlaylists') },
                 { href: 'css/images/tour/web/tourcollections.jpg', title: Globalize.translate('WebClientTourCollections') },

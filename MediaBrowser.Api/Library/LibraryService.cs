@@ -1,15 +1,19 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Activity;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
@@ -251,24 +255,24 @@ namespace MediaBrowser.Api.Library
         private readonly IUserDataManager _userDataManager;
 
         private readonly IDtoService _dtoService;
-        private readonly IChannelManager _channelManager;
-        private readonly ISessionManager _sessionManager;
         private readonly IAuthorizationContext _authContext;
+        private readonly IActivityManager _activityManager;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IChannelManager channelManager, ISessionManager sessionManager, IAuthorizationContext authContext)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
-            _channelManager = channelManager;
-            _sessionManager = sessionManager;
             _authContext = authContext;
+            _activityManager = activityManager;
+            _localization = localization;
         }
 
         public object Get(GetMediaFolders request)
@@ -302,10 +306,23 @@ namespace MediaBrowser.Api.Library
         public object Get(GetDownload request)
         {
             var item = _libraryManager.GetItemById(request.Id);
+            var auth = _authContext.GetAuthorizationInfo(Request);
 
-            if (!item.CanDelete())
+            var user = _userManager.GetUserById(auth.UserId);
+
+            if (user != null)
             {
-                throw new ArgumentException("Item does not support downloading");
+                if (!item.CanDownload(user))
+                {
+                    throw new ArgumentException("Item does not support downloading");
+                }
+            }
+            else
+            {
+                if (!item.CanDownload())
+                {
+                    throw new ArgumentException("Item does not support downloading");
+                }
             }
 
             var headers = new Dictionary<string, string>();
@@ -314,11 +331,35 @@ namespace MediaBrowser.Api.Library
             var filename = Path.GetFileName(item.Path).Replace("\"", string.Empty);
             headers["Content-Disposition"] = string.Format("attachment; filename=\"{0}\"", filename);
 
+            if (user != null)
+            {
+                LogDownload(item, user, auth);
+            }
+
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = item.Path,
                 ResponseHeaders = headers
             });
+        }
+
+        private async void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
+        {
+            try
+            {
+                await _activityManager.Create(new ActivityLogEntry
+                {
+                    Name = string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
+                    Type = "UserDownloadingContent",
+                    ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
+                    UserId = auth.UserId
+
+                }).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Logged at lower levels
+            }
         }
 
         public object Get(GetFile request)

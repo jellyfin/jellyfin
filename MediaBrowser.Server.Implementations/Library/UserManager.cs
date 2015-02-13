@@ -410,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Library
             dto.HasPassword = !IsPasswordEmpty(offlinePasswordHash);
 
             // Hash the pin with the device Id to create a unique result for this device
-            dto.OfflinePassword = GetSha1String(offlinePasswordHash + deviceId);
+            dto.OfflinePassword = GetSha1String((offlinePasswordHash + deviceId).ToLower());
 
             dto.ServerName = _appHost.FriendlyName;
 

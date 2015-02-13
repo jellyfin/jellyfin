@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Playlists allow you to create lists of content to play consecutively at a time. To add items to playlists, right click or tap and hold, then select Add to Playlist.",
     "MessageNoPlaylistItemsAvailable": "This playlist is currently empty.",
     "ButtonDismiss": "Dismiss",
-    "ButtonEditOtherUserPreferences": "Edit this user's profile, password and personal preferences.",
+    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
     "LabelChannelStreamQuality": "Preferred internet stream quality:",
     "LabelChannelStreamQualityHelp": "In a low bandwidth environment, limiting quality can help ensure a smooth streaming experience.",
     "OptionBestAvailableStreamQuality": "Best available",
