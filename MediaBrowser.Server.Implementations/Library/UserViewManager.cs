@@ -86,7 +86,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(CollectionType.Movies, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
-            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Games, StringComparison.OrdinalIgnoreCase)))
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
+                || _config.Configuration.EnableLegacyCollections)
             {
                 list.Add(await GetUserView(CollectionType.Games, string.Empty, cancellationToken).ConfigureAwait(false));
             }
