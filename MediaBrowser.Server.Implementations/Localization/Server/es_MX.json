@@ -891,7 +891,7 @@
     "MessageNoPlaylistsAvailable": "Las listas de reproducci\u00f3n le permiten crear listas de contenidos a ser reproducidos de manera consecutiva. Para agregar \u00edtems a una lista de reproducci\u00f3n, haga clic derecho o seleccione y mantenga, despu\u00e9s seleccione Agregar a Lista de Reproducci\u00f3n.",
     "MessageNoPlaylistItemsAvailable": "Esta lista de reproducci\u00f3n se encuentra vac\u00eda.",
     "ButtonDismiss": "Descartar",
-    "ButtonEditOtherUserPreferences": "Edit this user's profile, image and personal preferences.",
+    "ButtonEditOtherUserPreferences": "Editar el perf\u00edl de este usuario. im\u00e1gen y preferencias personales.",
     "LabelChannelStreamQuality": "Calidad por defecto para transmisi\u00f3n por internet:",
     "LabelChannelStreamQualityHelp": "En un ambiente de ancho de banda limitado, limitar la calidad puede ayudar a asegurar una experiencia de transimisi\u00f3n en tiempo real fluida.",
     "OptionBestAvailableStreamQuality": "La mejor disponible",
