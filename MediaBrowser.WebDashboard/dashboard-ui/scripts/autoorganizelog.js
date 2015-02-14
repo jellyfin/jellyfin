@@ -311,6 +311,21 @@
         }
     }
 
+    function onWebSocketMessage(e, msg) {
+
+        var page = $.mobile.activePage;
+
+        if (msg.MessageType == "ScheduledTaskEnded") {
+
+            var result = msg.Data;
+
+            if (result.Key == 'AutoOrganize') {
+
+                reloadItems(page);
+            }
+        }
+    }
+
     $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
@@ -337,6 +352,8 @@
             taskKey: 'AutoOrganize'
         });
 
+        $(ApiClient).on("websocketmessage.autoorganizelog", onWebSocketMessage);
+
     }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
@@ -347,6 +364,8 @@
         $('.btnOrganize', page).taskButton({
             mode: 'off'
         });
+
+        $(ApiClient).off(".autoorganizelog");
     });
 
     window.OrganizerLogPage = {

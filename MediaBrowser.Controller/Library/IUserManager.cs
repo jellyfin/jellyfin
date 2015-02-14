@@ -121,9 +121,8 @@ namespace MediaBrowser.Controller.Library
         /// Gets the offline user dto.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="deviceId">The device identifier.</param>
         /// <returns>UserDto.</returns>
-        UserDto GetOfflineUserDto(User user, string deviceId);
+        UserDto GetOfflineUserDto(User user);
 
         /// <summary>
         /// Resets the easy password.

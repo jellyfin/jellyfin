@@ -33,16 +33,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 case OperatingSystem.Linux:
 
                     info.ArchiveType = "7z";
-
-                    switch (environment.SystemArchitecture)
-                    {
-                        case Architecture.X86_X64:
-                            info.Version = "20150124";
-                            break;
-                        case Architecture.X86:
-                            info.Version = "20150124";
-                            break;
-                    }
+                    info.Version = "20150124";
                     break;
                 case OperatingSystem.Osx:
 
