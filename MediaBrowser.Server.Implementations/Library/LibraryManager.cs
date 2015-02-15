@@ -401,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -1489,6 +1489,23 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.RetrieveItem(id);
         }
 
+        public IEnumerable<Folder> GetCollectionFolders(BaseItem item)
+        {
+            while (!(item.Parent is AggregateFolder) && item.Parent != null)
+            {
+                item = item.Parent;
+            }
+
+            if (item == null)
+            {
+                return new List<Folder>();
+            }
+
+            return GetUserRootFolder().Children
+                .OfType<Folder>()
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path));
+        }
+
         public string GetContentType(BaseItem item)
         {
             string configuredContentType = GetConfiguredContentType(item, false);
@@ -1547,7 +1564,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             return null;
         }
-        
+
         private string GetTopFolderContentType(BaseItem item)
         {
             while (!(item.Parent is AggregateFolder) && item.Parent != null)
@@ -1840,7 +1857,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 options.VideoFileExtensions.Remove(".rar");
                 options.VideoFileExtensions.Remove(".zip");
             }
-            
+
             return options;
         }
 

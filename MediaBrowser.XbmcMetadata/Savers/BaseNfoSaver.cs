@@ -589,6 +589,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("language", hasLanguage.PreferredMetadataLanguage);
                 }
+                if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataCountryCode))
+                {
+                    writer.WriteElementString("countrycode", hasLanguage.PreferredMetadataCountryCode);
+                }
             }
 
             if (item.PremiereDate.HasValue && !(item is Episode))
