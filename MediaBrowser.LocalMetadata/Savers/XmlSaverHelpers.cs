@@ -421,6 +421,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     builder.Append("<Language>" + SecurityElement.Escape(hasLanguage.PreferredMetadataLanguage) + "</Language>");
                 }
+                if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataCountryCode))
+                {
+                    builder.Append("<CountryCode>" + SecurityElement.Escape(hasLanguage.PreferredMetadataCountryCode) + "</CountryCode>");
+                }
             }
 
             // Use original runtime here, actual file runtime later in MediaInfo

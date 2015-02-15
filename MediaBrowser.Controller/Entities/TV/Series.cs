@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -10,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities.TV
 {

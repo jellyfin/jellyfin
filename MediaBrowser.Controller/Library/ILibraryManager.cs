@@ -393,5 +393,12 @@ namespace MediaBrowser.Controller.Library
         /// <returns>IEnumerable&lt;Video&gt;.</returns>
         IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
             IDirectoryService directoryService);
+
+        /// <summary>
+        /// Gets the collection folders.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>IEnumerable&lt;Folder&gt;.</returns>
+        IEnumerable<Folder> GetCollectionFolders(BaseItem item);
     }
 }
