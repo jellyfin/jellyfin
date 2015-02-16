@@ -38,6 +38,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private readonly DeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
+        private readonly string _accessToken;
 
         public bool IsSessionActive
         {
@@ -54,7 +55,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization)
         {
             _session = session;
             _itemRepository = itemRepository;
@@ -67,6 +68,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _deviceDiscovery = deviceDiscovery;
             _userDataManager = userDataManager;
             _localization = localization;
+            _accessToken = accessToken;
             _logger = logger;
         }
 
@@ -306,18 +308,16 @@ namespace MediaBrowser.Dlna.PlayTo
             var playlist = new List<PlaylistItem>();
             var isFirst = true;
 
-            var serverAddress = GetServerAddress();
-
             foreach (var item in items)
             {
                 if (isFirst && command.StartPositionTicks.HasValue)
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, serverAddress));
+                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value));
                     isFirst = false;
                 }
                 else
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, 0, serverAddress));
+                    playlist.Add(CreatePlaylistItem(item, user, 0));
                 }
             }
 
@@ -381,7 +381,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (info.Item != null && !info.IsDirectStream)
                 {
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
-                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
@@ -458,12 +458,12 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string serverAddress)
+        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks)
         {
-            return CreatePlaylistItem(item, user, startPostionTicks, serverAddress, null, null, null);
+            return CreatePlaylistItem(item, user, startPostionTicks, null, null, null);
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string serverAddress, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
 
@@ -478,9 +478,9 @@ namespace MediaBrowser.Dlna.PlayTo
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
 
-            playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(serverAddress);
+            playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken);
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, serverAddress, _userDataManager, _localization)
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization)
                 .GetItemDidl(item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
@@ -745,7 +745,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
-                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
@@ -771,7 +771,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     var newPosition = progress.PositionTicks ?? 0;
 
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
-                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, GetServerAddress(), info.MediaSourceId, info.AudioStreamIndex, newIndex);
+                    var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
