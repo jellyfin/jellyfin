@@ -98,6 +98,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     if (controller == null)
                     {
                         var serverAddress = GetServerAddress(localIp);
+                        string accessToken = null;
 
                         sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
                             _sessionManager,
@@ -108,6 +109,7 @@ namespace MediaBrowser.Dlna.PlayTo
                             _userManager,
                             _imageProcessor,
                             serverAddress,
+                            accessToken,
                             _deviceDiscovery,
                             _userDataManager,
                             _localization);

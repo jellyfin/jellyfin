@@ -4,7 +4,7 @@
 
         var self = this;
 
-        self.isOnline = function () {
+        self.isNetworkAvailable = function () {
 
             var online = navigator.onLine;
 
@@ -13,6 +13,11 @@
             }
 
             return online;
+        };
+
+        self.isAnyLocalNetworkAvailable = function () {
+
+            return self.isNetworkAvailable();
         };
     }
 

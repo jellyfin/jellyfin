@@ -337,7 +337,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.getServers().done(function (servers) {
+        ConnectionManager.getAvailableServers().done(function (servers) {
 
             renderServers(page, servers);
 

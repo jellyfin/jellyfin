@@ -1336,7 +1336,7 @@ var Dashboard = {
         SupportsPersistentIdentifier: false
     };
 
-    window.ConnectionManager = new MediaBrowser.ConnectionManager(jQuery, Logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);
+    window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);
 
     if (Dashboard.isConnectMode()) {
 
@@ -1347,7 +1347,7 @@ var Dashboard = {
 
         if (!Dashboard.isServerlessPage()) {
             if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
-                window.ApiClient = new MediaBrowser.ApiClient(jQuery, Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+                window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
 
                 ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
@@ -1362,7 +1362,7 @@ var Dashboard = {
 
     } else {
 
-        window.ApiClient = new MediaBrowser.ApiClient(jQuery, Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+        window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
 
         ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 

@@ -210,7 +210,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     try
                     {
-                        _fileSystem.DeleteFile(path);
+                        DeleteLibraryFile(path);
                     }
                     catch (IOException ex)
                     {
@@ -222,6 +222,15 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     }
                 }
             }
+        }
+
+        private void DeleteLibraryFile(string path)
+        {
+            var filename = Path.GetFileNameWithoutExtension(path);
+
+            _fileSystem.DeleteFile(path);
+
+            // Now find other files
         }
 
         private List<string> GetOtherDuplicatePaths(string targetPath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber)
@@ -281,11 +290,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             Directory.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
 
-            var copy = File.Exists(result.TargetPath);
+            var targetAlreadyExists = File.Exists(result.TargetPath);
 
             try
             {
-                if (copy || options.CopyOriginalFile)
+                if (targetAlreadyExists || options.CopyOriginalFile)
                 {
                     File.Copy(result.OriginalPath, result.TargetPath, true);
                 }
@@ -312,7 +321,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 _libraryMonitor.ReportFileSystemChangeComplete(result.TargetPath, true);
             }
 
-            if (copy && !options.CopyOriginalFile)
+            if (targetAlreadyExists && !options.CopyOriginalFile)
             {
                 try
                 {
