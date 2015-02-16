@@ -1,6 +1,6 @@
 ﻿(function (globalScope) {
 
-    globalScope.Deferred = {
+    globalScope.DeferredBuilder = {
 
         Deferred: function () {
             return jQuery.Deferred();

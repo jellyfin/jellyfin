@@ -5,7 +5,7 @@
     }
 
     globalScope.MediaBrowser.ConnectionState = {
-        Unavilable: 0,
+        Unavailable: 0,
         ServerSelection: 1,
         ServerSignIn: 2,
         SignedIn: 3,
@@ -38,8 +38,8 @@
 
             deferred.resolveWith(null, [
             {
-                state: MediaBrowser.ConnectionState.Unavilable,
-                connectUser: self.connectUser()
+                State: MediaBrowser.ConnectionState.Unavailable,
+                ConnectUser: self.connectUser()
             }]);
         }
 
@@ -229,7 +229,7 @@
 
         function ensureConnectUser(credentials) {
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             if (connectUser && connectUser.Id == credentials.ConnectUserId) {
                 deferred.resolveWith(null, [[]]);
@@ -313,7 +313,7 @@
 
         function validateAuthentication(server, connectionMode) {
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
 
@@ -395,7 +395,7 @@
 
         self.user = function () {
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             var localUser;
 
@@ -454,7 +454,7 @@
                 }
             }
 
-            return Deferred.when(promises).done(function () {
+            return DeferredBuilder.when(promises).done(function () {
 
                 var credentials = credentialProvider.credentials();
 
@@ -494,7 +494,7 @@
 
             logger.log('Begin getConnectServers');
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             if (!self.connectToken() || !self.connectUserId()) {
                 deferred.resolveWith(null, [[]]);
@@ -544,7 +544,7 @@
             var credentials = credentialProvider.credentials();
             var servers = credentials.servers.slice(0);
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             getConnectServers().done(function (result) {
 
@@ -568,7 +568,7 @@
 
             logger.log('Begin connect');
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
             var isResolved = false;
 
             if (capabilities.SupportsOfflineAccess) {
@@ -602,7 +602,7 @@
 
             logger.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             if (servers.length == 1) {
 
@@ -661,11 +661,11 @@
 
         self.connectToServer = function (server, options) {
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             var tests = [];
 
-            if (server.LastConnectionMode) {
+            if (server.LastConnectionMode != null) {
                 tests.push(server.LastConnectionMode);
             }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
@@ -691,11 +691,21 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
+        function onFailedConnection(deferred) {
+
+            var result = {
+                State: MediaBrowser.ConnectionState.Unavailable,
+                ConnectUser: connectUser
+            };
+
+            deferred.resolveWith(null, [result]);
+        }
+
         function testNextConnectionMode(tests, index, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred) {
 
             if (index >= tests.length) {
 
-                OnFailedConnection(response);
+                onFailedConnection(deferred);
                 return;
             }
 
@@ -726,6 +736,8 @@
                 testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
                 return;
             }
+
+            logger.log('testing connection mode ' + mode + ' with server ' + server.Name);
 
             tryConnect(address, timeout).done(function (result) {
 
@@ -833,7 +845,7 @@
                 address = "http://" + address;
             }
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             tryConnect(address, 15000).done(function (publicInfo) {
 

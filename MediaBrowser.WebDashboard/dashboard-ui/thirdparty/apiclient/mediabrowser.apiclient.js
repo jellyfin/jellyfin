@@ -151,7 +151,7 @@
                 return AjaxApi.ajax(request).fail(onRequestFail);
             }
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
             self.ajaxWithFailover(request, deferred, true);
             return deferred.promise();
         };
@@ -218,7 +218,7 @@
 
         function tryReconnect() {
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
             setTimeout(function () {
                 tryReconnectInternal(deferred, self.connectionMode, 0);
             }, 500);
@@ -524,7 +524,7 @@
                 }).done(done);
             }
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
             deferred.resolveWith(null, []);
             return deferred.promise().done(done);
         };
@@ -1983,7 +1983,7 @@
                 throw new Error("File must be an image.");
             }
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             var reader = new FileReader();
 
@@ -2045,7 +2045,7 @@
 
             url += "/" + imageType;
 
-            var deferred = Deferred.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             var reader = new FileReader();
 
@@ -3227,7 +3227,7 @@
 
             if (self.isWebSocketOpen()) {
 
-                var deferred = Deferred.Deferred();
+                var deferred = DeferredBuilder.Deferred();
 
                 var msg = JSON.stringify(options);
 
@@ -3260,7 +3260,7 @@
 
             if (self.isWebSocketOpen()) {
 
-                var deferred = Deferred.Deferred();
+                var deferred = DeferredBuilder.Deferred();
 
                 var msg = JSON.stringify(options);
 
@@ -3293,7 +3293,7 @@
 
             if (self.isWebSocketOpen()) {
 
-                var deferred = Deferred.Deferred();
+                var deferred = DeferredBuilder.Deferred();
 
                 var msg = JSON.stringify(options);
 
