@@ -691,21 +691,12 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
-        function onFailedConnection(deferred) {
-
-            var result = {
-                State: MediaBrowser.ConnectionState.Unavailable,
-                ConnectUser: connectUser
-            };
-
-            deferred.resolveWith(null, [result]);
-        }
-
         function testNextConnectionMode(tests, index, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred) {
 
             if (index >= tests.length) {
 
-                onFailedConnection(deferred);
+                logger.log('Tested all connection modes. Failing server connection.');
+                resolveWithFailure(deferred);
                 return;
             }
 
@@ -741,9 +732,12 @@
 
             tryConnect(address, timeout).done(function (result) {
 
+                logger.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
                 onSuccessfulConnection(server, result, mode, options, deferred);
 
             }).fail(function () {
+
+                logger.log('test failed for connection mode ' + mode + ' with server ' + server.Name);
 
                 if (enableRetry) {
 
@@ -754,9 +748,9 @@
                     testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
 
                 } else {
+                    testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
 
                 }
-                testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
             });
         }
 
@@ -861,9 +855,6 @@
 
                     deferred.resolveWith(null, [result]);
 
-                }).fail(function () {
-
-                    resolveWithFailure(deferred);
                 });
 
             }).fail(function () {
