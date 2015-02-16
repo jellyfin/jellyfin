@@ -59,7 +59,6 @@
                         { MacAddress: systemInfo.MacAddress }
                 ];
             }
-
         }
 
         function tryConnect(url, timeout) {
@@ -490,18 +489,18 @@
             });
         };
 
-        function getConnectServers() {
+        function getConnectServers(credentials) {
 
             logger.log('Begin getConnectServers');
 
             var deferred = DeferredBuilder.Deferred();
 
-            if (!self.connectToken() || !self.connectUserId()) {
+            if (!credentials.ConnectAccessToken || !credentials.ConnectUserId) {
                 deferred.resolveWith(null, [[]]);
                 return deferred.promise();
             }
 
-            var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId();
+            var url = "https://connect.mediabrowser.tv/service/servers?userId=" + credentials.ConnectUserId;
 
             AjaxApi.ajax({
                 type: "GET",
@@ -509,7 +508,7 @@
                 dataType: "json",
                 headers: {
                     "X-Application": appName + "/" + appVersion,
-                    "X-Connect-UserToken": self.connectToken()
+                    "X-Connect-UserToken": credentials.ConnectAccessToken
                 }
 
             }).done(function (servers) {
@@ -542,27 +541,71 @@
 
             // Clone the array
             var credentials = credentialProvider.credentials();
-            var servers = credentials.servers.slice(0);
 
             var deferred = DeferredBuilder.Deferred();
 
-            getConnectServers().done(function (result) {
+            var connectServersPromise = getConnectServers(credentials);
+            var findServersPromise = findServers();
 
-                var newList = mergeServers(servers, result);
+            connectServersPromise.done(function (connectServers) {
 
-                newList.sort(function (a, b) {
-                    return b.DateLastAccessed - a.DateLastAccessed;
+                findServersPromise.done(function (foundServers) {
+
+                    var servers = credentials.servers.slice(0);
+                    mergeServers(servers, foundServers);
+                    mergeServers(servers, connectServers);
+
+                    servers = filterServers(servers, connectServers);
+
+                    servers.sort(function (a, b) {
+                        return b.DateLastAccessed - a.DateLastAccessed;
+                    });
+
+                    credentials.servers = servers;
+
+                    credentialProvider.credentials(credentials);
+
+                    deferred.resolveWith(null, [servers]);
                 });
-
-                credentials.servers = newList;
-
-                credentialProvider.credentials(credentials);
-
-                deferred.resolveWith(null, [newList]);
             });
 
             return deferred.promise();
         };
+
+        function filterServers(servers, connectServers) {
+
+            return servers.filter(function (server) {
+
+                // It's not a connect server, so assume it's still valid
+                if (!server.ExchangeToken) {
+                    return true;
+                }
+
+                return connectServers.filter(function (connectServer) {
+
+                    return server.Id == connectServer.Id;
+
+                }).length > 0;
+            });
+        }
+
+        function findServers() {
+
+            var deferred = DeferredBuilder.Deferred();
+            ServerDiscovery.findServers().done(function (foundServers) {
+
+                var servers = foundServers.map(function (foundServer) {
+
+                    return {
+                        Id: foundServer.Id,
+                        LocalAddress: foundServer.Address,
+                        Name: foundServer.Name
+                    };
+                });
+                deferred.resolveWith(null, [servers]);
+            });
+            return deferred.promise();
+        }
 
         self.connect = function () {
 
@@ -929,7 +972,9 @@
 
         self.getUserInvitations = function () {
 
-            if (!self.connectToken()) {
+            var connectToken = self.connectToken();
+
+            if (!connectToken) {
                 throw new Error("null connectToken");
             }
             if (!self.connectUserId()) {
@@ -943,7 +988,7 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
 
@@ -952,10 +997,12 @@
 
         self.deleteServer = function (serverId) {
 
+            var connectToken = self.connectToken();
+
             if (!serverId) {
                 throw new Error("null serverId");
             }
-            if (!self.connectToken()) {
+            if (!connectToken) {
                 throw new Error("null connectToken");
             }
             if (!self.connectUserId()) {
@@ -968,7 +1015,7 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
 
@@ -987,10 +1034,12 @@
 
         self.rejectServer = function (serverId) {
 
+            var connectToken = self.connectToken();
+
             if (!serverId) {
                 throw new Error("null serverId");
             }
-            if (!self.connectToken()) {
+            if (!connectToken) {
                 throw new Error("null connectToken");
             }
             if (!self.connectUserId()) {
@@ -1003,7 +1052,7 @@
                 type: "DELETE",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
 
@@ -1012,10 +1061,12 @@
 
         self.acceptServer = function (serverId) {
 
+            var connectToken = self.connectToken();
+
             if (!serverId) {
                 throw new Error("null serverId");
             }
-            if (!self.connectToken()) {
+            if (!connectToken) {
                 throw new Error("null connectToken");
             }
             if (!self.connectUserId()) {
@@ -1028,7 +1079,7 @@
                 type: "GET",
                 url: url,
                 headers: {
-                    "X-Connect-UserToken": self.connectToken(),
+                    "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
 
