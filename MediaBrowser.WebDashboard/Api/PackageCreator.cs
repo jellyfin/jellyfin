@@ -194,7 +194,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
             sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
-            sb.Append("<meta name=\"msapplication-TileColor\" content=\"#2F2F2F\">");
+            sb.Append("<meta name=\"msapplication-TileColor\" content=\"#23456B\">");
 
             return sb.ToString();
         }
