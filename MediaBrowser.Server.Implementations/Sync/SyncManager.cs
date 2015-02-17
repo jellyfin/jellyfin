@@ -683,7 +683,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var userData = _userDataManager.GetUserData(new Guid(action.UserId), item.GetUserDataKey());
 
             userData.LastPlayedDate = action.Date;
-            _userDataManager.UpdatePlayState(item, userData, action.PositionTicks ?? item.RunTimeTicks ?? 0);
+            _userDataManager.UpdatePlayState(item, userData, action.PositionTicks);
 
             return _userDataManager.SaveUserData(new Guid(action.UserId), item, userData, UserDataSaveReason.Import, CancellationToken.None);
         }
