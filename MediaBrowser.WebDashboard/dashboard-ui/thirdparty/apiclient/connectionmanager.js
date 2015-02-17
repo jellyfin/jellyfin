@@ -592,19 +592,41 @@
         function findServers() {
 
             var deferred = DeferredBuilder.Deferred();
-            ServerDiscovery.findServers().done(function (foundServers) {
+            ServerDiscovery.findServers(2000).done(function (foundServers) {
 
                 var servers = foundServers.map(function (foundServer) {
 
                     return {
                         Id: foundServer.Id,
                         LocalAddress: foundServer.Address,
-                        Name: foundServer.Name
+                        Name: foundServer.Name,
+                        ManualAddress: convertEndpointAddressToManualAddress(foundServer)
                     };
                 });
                 deferred.resolveWith(null, [servers]);
             });
             return deferred.promise();
+        }
+
+        function convertEndpointAddressToManualAddress(info) {
+
+            if (info.Address && info.EndpointAddress) {
+                var address = info.EndpointAddress.split(":")[0];
+
+                // Determine the port, if any
+                var parts = info.Address.split(":");
+                if (parts.length > 1) {
+                    var portString = parts[parts.length - 1];
+
+                    if (!isNaN(parseInt(portString))) {
+                        address += ":" + portString;
+                    }
+                }
+
+                return normalizeAddress(address);
+            }
+
+            return null;
         }
 
         self.connect = function () {
@@ -876,11 +898,18 @@
             }
         };
 
-        self.connectToAddress = function (address) {
+        function normalizeAddress(address) {
 
             if (address.toLowerCase().indexOf('http') != 0) {
                 address = "http://" + address;
             }
+
+            return address;
+        }
+
+        self.connectToAddress = function (address) {
+
+            address = normalizeAddress(address);
 
             var deferred = DeferredBuilder.Deferred();
 
