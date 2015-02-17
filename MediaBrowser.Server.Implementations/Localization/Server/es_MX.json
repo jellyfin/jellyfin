@@ -1101,6 +1101,7 @@
     "MessageApplicationUpdated": "Se ha actualizado el Servidor de Media Browser",
     "AuthenticationSucceededWithUserName": "{0} autenticado con \u00e9xito",
     "FailedLoginAttemptWithUserName": "Intento fallido de inicio de sesi\u00f3n de {0}",
+    "UserDownloadingItemWithValues": "{0} esta descargando {1}",
     "UserStartedPlayingItemWithValues": "{0} ha iniciado la reproducci\u00f3n de {1}",
     "UserStoppedPlayingItemWithValues": "{0} ha detenido la reproducci\u00f3n de {1}",
     "AppDeviceValues": "App: {0}, Dispositivo: {1}",
