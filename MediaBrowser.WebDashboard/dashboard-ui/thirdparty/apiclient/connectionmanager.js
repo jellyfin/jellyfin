@@ -169,6 +169,23 @@
             return apiClient;
         }
 
+        self.getOrCreateApiClient = function (serverId) {
+
+            var apiClient = self.getApiClient(serverId);
+
+            if (apiClient) {
+                return apiClient;
+            }
+
+            var credentials = credentialProvider.credentials();
+            var server = credentials.servers.filter(function (s) {
+                return stringEqualsIgnoreCase(s.Id, serverId);
+
+            })[0];
+
+            return getOrAddApiClient(server, server.LastConnectionMode);
+        };
+
         function onAuthenticated(apiClient, result, options, saveCredentials) {
 
             var server = apiClient.serverInfo;
