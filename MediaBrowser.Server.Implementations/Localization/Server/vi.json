@@ -1101,6 +1101,7 @@
     "MessageApplicationUpdated": "Media Browser Server has been updated",
     "AuthenticationSucceededWithUserName": "{0} successfully authenticated",
     "FailedLoginAttemptWithUserName": "Failed login attempt from {0}",
+    "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",

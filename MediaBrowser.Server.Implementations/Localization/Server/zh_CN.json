@@ -1101,6 +1101,7 @@
     "MessageApplicationUpdated": "Media Browser\u670d\u52a1\u5668\u5df2\u66f4\u65b0",
     "AuthenticationSucceededWithUserName": "{0} \u6210\u529f\u88ab\u6388\u6743",
     "FailedLoginAttemptWithUserName": "\u5931\u8d25\u7684\u767b\u5f55\u5c1d\u8bd5\uff0c\u6765\u81ea {0}",
+    "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "UserStartedPlayingItemWithValues": "{0} \u5f00\u59cb\u64ad\u653e {1}",
     "UserStoppedPlayingItemWithValues": "{0} \u505c\u6b62\u64ad\u653e {1}",
     "AppDeviceValues": "App\uff1a {0}\uff0c\u8bbe\u5907\uff1a {1}",
