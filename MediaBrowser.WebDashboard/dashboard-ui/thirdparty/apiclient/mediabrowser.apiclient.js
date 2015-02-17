@@ -2463,7 +2463,6 @@
 
             }).done(function (result) {
 
-
                 Events.trigger(self, 'authenticated', [result]);
             });
         };

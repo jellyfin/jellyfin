@@ -47,6 +47,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly Func<ISubtitleEncoder> _subtitleEncoder;
         private readonly IConfigurationManager _config;
+        private IUserDataManager _userDataManager;
 
         private ISyncProvider[] _providers = { };
 
@@ -56,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -70,6 +71,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
             _config = config;
+            _userDataManager = userDataManager;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -666,7 +668,24 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task ReportOfflineAction(UserAction action)
         {
-            return Task.FromResult(true);
+            switch (action.Type)
+            {
+                case UserActionType.PlayedItem:
+                    return ReportOfflinePlayedItem(action);
+                default:
+                    throw new ArgumentException("Unexpected action type");
+            }
+        }
+
+        private Task ReportOfflinePlayedItem(UserAction action)
+        {
+            var item = _libraryManager.GetItemById(action.ItemId);
+            var userData = _userDataManager.GetUserData(new Guid(action.UserId), item.GetUserDataKey());
+
+            userData.LastPlayedDate = action.Date;
+            _userDataManager.UpdatePlayState(item, userData, action.PositionTicks ?? item.RunTimeTicks ?? 0);
+
+            return _userDataManager.SaveUserData(new Guid(action.UserId), item, userData, UserDataSaveReason.Import, CancellationToken.None);
         }
 
         public List<SyncedItem> GetReadySyncItems(string targetId)

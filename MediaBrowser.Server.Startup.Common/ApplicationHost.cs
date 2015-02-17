@@ -445,7 +445,7 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager);
