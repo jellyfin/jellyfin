@@ -491,9 +491,10 @@ namespace MediaBrowser.Api
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            returnItems = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems);
+            var returnList = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems)
+                .ToList();
 
-            var pagedItems = ApplyPaging(returnItems, request.StartIndex, request.Limit);
+            var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
             
             var dtoOptions = GetDtoOptions(request);
 
@@ -502,7 +503,7 @@ namespace MediaBrowser.Api
 
             return new ItemsResult
             {
-                TotalRecordCount = dtos.Length,
+                TotalRecordCount = returnList.Count,
                 Items = dtos
             };
         }

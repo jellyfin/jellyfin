@@ -135,10 +135,17 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ParentId = request.ParentId
             };
 
-            // It's just a static list
-            if (!items.Any(i => i.IsFolder || i is IItemByName))
+            if (!request.Category.HasValue && request.ItemIds != null)
             {
-                job.SyncNewContent = false;
+                var requestedItems = request.ItemIds
+                    .Select(_libraryManager.GetItemById)
+                    .Where(i => i != null);
+
+                // It's just a static list
+                if (!requestedItems.Any(i => i.IsFolder || i is IItemByName))
+                {
+                    job.SyncNewContent = false;
+                }
             }
 
             await _repo.Create(job).ConfigureAwait(false);
