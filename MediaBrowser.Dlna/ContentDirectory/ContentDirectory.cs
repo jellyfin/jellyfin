@@ -67,7 +67,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
                           _dlna.GetDefaultProfile();
 
             var serverAddress = request.RequestedUrl.Substring(0, request.RequestedUrl.IndexOf("/dlna", StringComparison.OrdinalIgnoreCase));
-            
+            string accessToken = null;
+
             var user = GetUser(profile);
 
             return new ControlHandler(
@@ -75,6 +76,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 _libraryManager,
                 profile,
                 serverAddress,
+                accessToken,
                 _imageProcessor,
                 _userDataManager,
                 user,

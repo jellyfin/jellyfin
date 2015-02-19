@@ -459,6 +459,11 @@
         });
 
         $('.btnCloseSearch').on('click', closeSearchOverlay);
+
+        $('.viewMenuSearchForm').on('submit', function () {
+
+            return false;
+        });
     }
 
     function closeSearchOverlay() {

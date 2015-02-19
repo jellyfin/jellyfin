@@ -1101,6 +1101,7 @@
     "MessageApplicationUpdated": "Media Browser Server har uppdaterats",
     "AuthenticationSucceededWithUserName": "{0} har autentiserats",
     "FailedLoginAttemptWithUserName": "Misslyckat inloggningsf\u00f6rs\u00f6k fr\u00e5n {0}",
+    "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "UserStartedPlayingItemWithValues": "{0} har p\u00e5b\u00f6rjat uppspelning av {1}",
     "UserStoppedPlayingItemWithValues": "{0} har avslutat uppspelning av {1}",
     "AppDeviceValues": "App: {0}, enhet: {1}",

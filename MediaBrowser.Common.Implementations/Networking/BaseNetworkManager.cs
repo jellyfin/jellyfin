@@ -169,24 +169,27 @@ namespace MediaBrowser.Common.Implementations.Networking
             IPAddress address;
             if (resolveHost && !IPAddress.TryParse(endpoint, out address))
             {
-                var host = new Uri(endpoint).DnsSafeHost;
-
-                Logger.Debug("Resolving host {0}", host);
-
-                try
+                Uri uri;
+                if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out uri))
                 {
-                    address = GetIpAddresses(host).FirstOrDefault();
+                    var host = uri.DnsSafeHost;
+                    Logger.Debug("Resolving host {0}", host);
 
-                    if (address != null)
+                    try
                     {
-                        Logger.Debug("{0} resolved to {1}", host, address);
+                        address = GetIpAddresses(host).FirstOrDefault();
 
-                        return IsInLocalNetworkInternal(address.ToString(), false);
+                        if (address != null)
+                        {
+                            Logger.Debug("{0} resolved to {1}", host, address);
+
+                            return IsInLocalNetworkInternal(address.ToString(), false);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error resovling hostname {0}", ex, host);
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error resovling hostname {0}", ex, host);
+                    }
                 }
             }
 

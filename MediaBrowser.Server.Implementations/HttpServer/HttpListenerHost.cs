@@ -380,6 +380,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
+                // TODO: This is a hack for iOS. Remove it asap.
+                routes.Add(new RouteAttribute(DoubleNormalizeRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
             }
 
             return routes.ToArray();
@@ -393,6 +401,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             return "mediabrowser/" + path;
+        }
+
+        private string DoubleNormalizeRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/mediabrowser/mediabrowser" + path;
+            }
+
+            return "mediabrowser//mediabrowser" + path;
         }
 
         /// <summary>

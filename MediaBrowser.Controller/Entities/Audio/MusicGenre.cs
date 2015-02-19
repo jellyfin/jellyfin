@@ -44,6 +44,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return false;
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>

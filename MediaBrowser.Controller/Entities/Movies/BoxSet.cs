@@ -79,6 +79,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Gets the trailer ids.
         /// </summary>

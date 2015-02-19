@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <param name="targetId">The target identifier.</param>
         /// <returns>List&lt;SyncedItem&gt;.</returns>
-        List<SyncedItem> GetReadySyncItems(string targetId);
+        Task<List<SyncedItem>> GetReadySyncItems(string targetId);
 
         /// <summary>
         /// Synchronizes the data.

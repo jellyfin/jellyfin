@@ -976,14 +976,21 @@ namespace MediaBrowser.Controller.Entities
                 lang = hasLang.PreferredMetadataLanguage;
             }
 
-            if (string.IsNullOrEmpty(lang))
+            if (string.IsNullOrWhiteSpace(lang))
             {
                 lang = Parents.OfType<IHasPreferredMetadataLanguage>()
                     .Select(i => i.PreferredMetadataLanguage)
-                    .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                    .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
 
-            if (string.IsNullOrEmpty(lang))
+            if (string.IsNullOrWhiteSpace(lang))
+            {
+                lang = LibraryManager.GetCollectionFolders(this)
+                    .Select(i => i.PreferredMetadataLanguage)
+                    .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            }
+
+            if (string.IsNullOrWhiteSpace(lang))
             {
                 lang = ConfigurationManager.Configuration.PreferredMetadataLanguage;
             }
@@ -1006,14 +1013,21 @@ namespace MediaBrowser.Controller.Entities
                 lang = hasLang.PreferredMetadataCountryCode;
             }
 
-            if (string.IsNullOrEmpty(lang))
+            if (string.IsNullOrWhiteSpace(lang))
             {
                 lang = Parents.OfType<IHasPreferredMetadataLanguage>()
                     .Select(i => i.PreferredMetadataCountryCode)
-                    .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                    .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
 
-            if (string.IsNullOrEmpty(lang))
+            if (string.IsNullOrWhiteSpace(lang))
+            {
+                lang = LibraryManager.GetCollectionFolders(this)
+                    .Select(i => i.PreferredMetadataCountryCode)
+                    .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            }
+
+            if (string.IsNullOrWhiteSpace(lang))
             {
                 lang = ConfigurationManager.Configuration.MetadataCountryCode;
             }

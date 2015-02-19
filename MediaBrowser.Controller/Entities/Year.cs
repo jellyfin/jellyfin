@@ -52,6 +52,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
             int year;

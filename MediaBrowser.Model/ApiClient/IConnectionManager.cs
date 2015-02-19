@@ -55,6 +55,13 @@ namespace MediaBrowser.Model.ApiClient
         IApiClient GetApiClient(IHasServerId item);
 
         /// <summary>
+        /// Gets the API client.
+        /// </summary>
+        /// <param name="serverId">The server identifier.</param>
+        /// <returns>IApiClient.</returns>
+        IApiClient GetApiClient(string serverId);
+        
+        /// <summary>
         /// Connects the specified cancellation token.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

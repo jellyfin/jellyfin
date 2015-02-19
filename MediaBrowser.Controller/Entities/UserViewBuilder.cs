@@ -1632,7 +1632,7 @@ namespace MediaBrowser.Controller.Entities
                     var ok = new[] { item }.Any(i =>
                             i.People != null &&
                             i.People.Any(p =>
-                                p.Name.Equals(query.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
+                                string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase))));
 
                     if (!ok)
                     {

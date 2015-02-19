@@ -1026,7 +1026,8 @@
                 AudioStreamIndex: mediaSource.DefaultAudioStreamIndex,
                 deviceId: ApiClient.deviceId(),
                 Static: false,
-                mediaSourceId: mediaSource.Id
+                mediaSourceId: mediaSource.Id,
+                api_key: ApiClient.accessToken()
             };
 
             if (selectedSubtitleStream && (!self.supportsSubtitleStreamExternally(selectedSubtitleStream) || !self.supportsTextTracks())) {
@@ -1147,7 +1148,8 @@
 
                     var textStream = textStreams[i];
                     var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
-                        startPositionTicks: (startPosition || 0)
+                        startPositionTicks: (startPosition || 0),
+                        api_key: ApiClient.accessToken()
                     });
 
                     var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';

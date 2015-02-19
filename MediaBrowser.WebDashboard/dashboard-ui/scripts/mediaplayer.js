@@ -1293,7 +1293,8 @@
                 audioBitrate: 128000,
                 StartTimeTicks: startPositionTicks,
                 mediaSourceId: mediaSource.Id,
-                deviceId: ApiClient.deviceId()
+                deviceId: ApiClient.deviceId(),
+                api_key: ApiClient.accessToken()
             };
 
             var sourceContainer = (mediaSource.Container || '').toLowerCase();
