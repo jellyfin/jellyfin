@@ -1281,7 +1281,8 @@ var Dashboard = {
             PlayableMediaTypes: "Audio,Video",
 
             SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
-            SupportsPersistentIdentifier: false
+            SupportsPersistentIdentifier: false,
+            SupportsMediaControl: true
         };
     }
 };
