@@ -695,8 +695,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _userDataManager.SaveUserData(new Guid(action.UserId), item, userData, UserDataSaveReason.Import, CancellationToken.None);
         }
 
-        public List<SyncedItem> GetReadySyncItems(string targetId)
+        public async Task<List<SyncedItem>> GetReadySyncItems(string targetId)
         {
+            var processor = GetSyncJobProcessor();
+
+            await processor.SyncJobItems(targetId, false, new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,

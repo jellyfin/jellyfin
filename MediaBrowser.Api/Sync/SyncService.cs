@@ -272,9 +272,11 @@ namespace MediaBrowser.Api.Sync
             }
         }
 
-        public object Get(GetReadySyncItems request)
+        public async Task<object> Get(GetReadySyncItems request)
         {
-            return ToOptimizedResult(_syncManager.GetReadySyncItems(request.TargetId));
+            var result = await _syncManager.GetReadySyncItems(request.TargetId).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Post(SyncData request)

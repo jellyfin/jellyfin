@@ -210,9 +210,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
-                    var renameRelatedFiles = false;
-                    //var renameRelatedFiles = !hasRenamedFiles && 
-                    //    string.Equals(Path.GetDirectoryName(path), Path.GetDirectoryName(result.TargetPath), StringComparison.OrdinalIgnoreCase);
+                    var renameRelatedFiles = !hasRenamedFiles &&
+                        string.Equals(Path.GetDirectoryName(path), Path.GetDirectoryName(result.TargetPath), StringComparison.OrdinalIgnoreCase);
 
                     if (renameRelatedFiles)
                     {
