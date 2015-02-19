@@ -52,6 +52,16 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            if (IsAccessedByName)
+            {
+                return true;
+            }
+
+            return base.IsSaveLocalMetadataEnabled();
+        }
+
         private readonly Task _cachedTask = Task.FromResult(true);
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {

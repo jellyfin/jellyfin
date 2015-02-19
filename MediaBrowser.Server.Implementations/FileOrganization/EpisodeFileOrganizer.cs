@@ -5,10 +5,12 @@ using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
+using MediaBrowser.Server.Implementations.Library;
+using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,8 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Library;
-using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
@@ -202,15 +202,26 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (overwriteExisting)
             {
+                var hasRenamedFiles = false;
+
                 foreach (var path in otherDuplicatePaths)
                 {
                     _logger.Debug("Removing duplicate episode {0}", path);
 
                     _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
+                    var renameRelatedFiles = false;
+                    //var renameRelatedFiles = !hasRenamedFiles && 
+                    //    string.Equals(Path.GetDirectoryName(path), Path.GetDirectoryName(result.TargetPath), StringComparison.OrdinalIgnoreCase);
+
+                    if (renameRelatedFiles)
+                    {
+                        hasRenamedFiles = true;
+                    }
+
                     try
                     {
-                        DeleteLibraryFile(path);
+                        DeleteLibraryFile(path, renameRelatedFiles, result.TargetPath);
                     }
                     catch (IOException ex)
                     {
@@ -224,13 +235,41 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
         }
 
-        private void DeleteLibraryFile(string path)
+        private void DeleteLibraryFile(string path, bool renameRelatedFiles, string targetPath)
         {
-            var filename = Path.GetFileNameWithoutExtension(path);
-
             _fileSystem.DeleteFile(path);
 
+            if (!renameRelatedFiles)
+            {
+                return;
+            }
+
             // Now find other files
+            var originalFilenameWithoutExtension = Path.GetFileNameWithoutExtension(path);
+            var directory = Path.GetDirectoryName(path);
+
+            if (!string.IsNullOrWhiteSpace(originalFilenameWithoutExtension) && !string.IsNullOrWhiteSpace(directory))
+            {
+                // Get all related files, e.g. metadata, images, etc
+                var files = Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+                    .Where(i => (Path.GetFileNameWithoutExtension(i) ?? string.Empty).StartsWith(originalFilenameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var targetFilenameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
+                
+                foreach (var file in files)
+                {
+                    directory = Path.GetDirectoryName(file);
+                    var filename = Path.GetFileName(file);
+
+                    filename = filename.Replace(originalFilenameWithoutExtension, targetFilenameWithoutExtension,
+                        StringComparison.OrdinalIgnoreCase);
+
+                    var destination = Path.Combine(directory, filename);
+
+                    File.Move(file, destination);
+                }
+            }
         }
 
         private List<string> GetOtherDuplicatePaths(string targetPath, Series series, int seasonNumber, int episodeNumber, int? endingEpisodeNumber)

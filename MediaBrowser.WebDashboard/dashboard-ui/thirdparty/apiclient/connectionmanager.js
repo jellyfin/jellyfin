@@ -188,7 +188,7 @@
 
         function onAuthenticated(apiClient, result, options, saveCredentials) {
 
-            var server = apiClient.serverInfo;
+            var server = apiClient.serverInfo();
 
             var credentials = credentialProvider.credentials();
 
@@ -202,7 +202,7 @@
                 server.AccessToken = null;
             }
 
-            credentials.addOrUpdateServer(credentials.servers, server);
+            credentialProvider.addOrUpdateServer(credentials.servers, server);
             saveUserInfoIntoCredentials(server, result.User);
             credentialProvider.credentials(credentials);
 

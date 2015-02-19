@@ -45,6 +45,11 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
@@ -62,7 +67,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return inputItems.Where(GetItemFilter());
         }
-
 
         public Func<BaseItem, bool> GetItemFilter()
         {
