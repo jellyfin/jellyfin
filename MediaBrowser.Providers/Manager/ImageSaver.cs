@@ -82,14 +82,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = true;
             }
-            if (item is IItemByName)
-            {
-                var hasDualAccess = item as IHasDualAccess;
-                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
-                {
-                    saveLocally = true;
-                }
-            }
 
             if (type != ImageType.Primary && item is Episode)
             {

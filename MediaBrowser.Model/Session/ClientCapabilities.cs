@@ -20,11 +20,6 @@ namespace MediaBrowser.Model.Session
 
         public DeviceProfile DeviceProfile { get; set; }
 
-        /// <summary>
-        /// Usage should be migrated to SupportsPersistentIdentifier. Keeping this to preserve data.
-        /// </summary>
-        public bool? SupportsUniqueIdentifier { get; set; }
-        
         public ClientCapabilities()
         {
             PlayableMediaTypes = new List<string>();

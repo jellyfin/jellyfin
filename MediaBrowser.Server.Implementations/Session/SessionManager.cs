@@ -1327,8 +1327,7 @@ namespace MediaBrowser.Server.Implementations.Session
             ClientCapabilities capabilities,
             bool saveCapabilities)
         {
-            session.PlayableMediaTypes = capabilities.PlayableMediaTypes;
-            session.SupportedCommands = capabilities.SupportedCommands;
+            session.Capabilities = capabilities;
 
             if (!string.IsNullOrWhiteSpace(capabilities.MessageCallbackUrl))
             {
