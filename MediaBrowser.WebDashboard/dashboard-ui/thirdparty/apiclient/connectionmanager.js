@@ -141,9 +141,9 @@
 
             if (!apiClient) {
 
-                var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+                var url = self.getServerAddress(server, connectionMode);
 
-                apiClient = new MediaBrowser.ApiClient(logger, url, appName, appVersion, deviceName, deviceId, capabilities);
+                apiClient = new MediaBrowser.ApiClient(logger, url, appName, appVersion, deviceName, deviceId);
 
                 apiClients.push(apiClient);
 
@@ -303,7 +303,7 @@
                 throw new Error("credentials.ConnectUserId cannot be null");
             }
 
-            var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+            var url = self.getServerAddress(server, connectionMode);
 
             url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
@@ -331,7 +331,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            var url = connectionMode == MediaBrowser.ConnectionMode.Local ? server.LocalAddress : server.RemoteAddress;
+            var url = self.getServerAddress(server, connectionMode);
 
             AjaxApi.ajax({
 

@@ -336,11 +336,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new[] { item };
         }
 
-        public async Task EnsureSyncJobItems(CancellationToken cancellationToken)
+        private async Task EnsureSyncJobItems(string targetId, CancellationToken cancellationToken)
         {
             var jobResult = _syncRepo.GetJobs(new SyncJobQuery
             {
-                SyncNewContent = true
+                SyncNewContent = true,
+                TargetId = targetId
             });
 
             foreach (var job in jobResult.Items)
@@ -356,7 +357,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task Sync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            await EnsureSyncJobItems(cancellationToken).ConfigureAwait(false);
+            await EnsureSyncJobItems(null, cancellationToken).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
@@ -373,6 +374,21 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             // TODO
             // Clean files in sync temp folder that are not linked to any sync jobs
+        }
+
+        public async Task SyncJobItems(string targetId, bool enableConversion, IProgress<double> progress,
+            CancellationToken cancellationToken)
+        {
+            await EnsureSyncJobItems(targetId, cancellationToken).ConfigureAwait(false);
+
+            // If it already has a converting status then is must have been aborted during conversion
+            var result = _syncRepo.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                TargetId = targetId
+            });
+
+            await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SyncJobItems(SyncJobItem[] items, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)

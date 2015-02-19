@@ -10,7 +10,7 @@
      * @param {String} clientName 
      * @param {String} applicationVersion 
      */
-    globalScope.MediaBrowser.ApiClient = function (logger, serverAddress, clientName, applicationVersion, deviceName, deviceId, capabilities) {
+    globalScope.MediaBrowser.ApiClient = function (logger, serverAddress, clientName, applicationVersion, deviceName, deviceId) {
 
         if (!serverAddress) {
             throw new Error("Must supply a serverAddress");
@@ -353,8 +353,6 @@
                 setTimeout(function () {
 
                     self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
-
-                    self.reportCapabilities(capabilities);
 
                     Events.trigger(self, 'websocketopen');
 

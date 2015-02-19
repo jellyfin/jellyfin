@@ -861,6 +861,7 @@ var Dashboard = {
         }
 
         ApiClient.openWebSocket();
+        ApiClient.reportCapabilities(Dashboard.capabilities());
     },
 
     processGeneralCommand: function (cmd) {
@@ -1273,6 +1274,15 @@ var Dashboard = {
     isServerlessPage: function () {
         var url = getWindowUrl().toLowerCase();
         return url.indexOf('connectlogin.html') != -1 || url.indexOf('selectserver.html') != -1;
+    },
+
+    capabilities: function () {
+        return {
+            PlayableMediaTypes: "Audio,Video",
+
+            SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
+            SupportsPersistentIdentifier: false
+        };
     }
 };
 
@@ -1329,12 +1339,7 @@ var Dashboard = {
     var deviceId = MediaBrowser.generateDeviceId();
     var credentialProvider = new MediaBrowser.CredentialProvider();
 
-    var capabilities = {
-        PlayableMediaTypes: "Audio,Video",
-
-        SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
-        SupportsPersistentIdentifier: false
-    };
+    var capabilities = Dashboard.capabilities();
 
     window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);
 
@@ -1347,7 +1352,7 @@ var Dashboard = {
 
         if (!Dashboard.isServerlessPage()) {
             if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
-                window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+                window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
 
                 ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
@@ -1362,7 +1367,7 @@ var Dashboard = {
 
     } else {
 
-        window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId, capabilities);
+        window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
 
         ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
