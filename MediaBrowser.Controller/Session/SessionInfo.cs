@@ -14,23 +14,16 @@ namespace MediaBrowser.Controller.Session
         public SessionInfo()
         {
             QueueableMediaTypes = new List<string>();
-            PlayableMediaTypes = new List<string>
-            {
-                MediaType.Audio,
-                MediaType.Book,
-                MediaType.Game,
-                MediaType.Photo,
-                MediaType.Video
-            };
 
             AdditionalUsers = new List<SessionUserInfo>();
-            SupportedCommands = new List<string>();
             PlayState = new PlayerStateInfo();
         }
 
         public PlayerStateInfo PlayState { get; set; }
         
         public List<SessionUserInfo> AdditionalUsers { get; set; }
+
+        public ClientCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// Gets or sets the remote end point.
@@ -48,7 +41,17 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public List<string> PlayableMediaTypes { get; set; }
+        public List<string> PlayableMediaTypes
+        {
+            get
+            {
+                if (Capabilities == null)
+                {
+                    return new List<string>();
+                }
+                return Capabilities.PlayableMediaTypes;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the id.
@@ -126,7 +129,17 @@ namespace MediaBrowser.Controller.Session
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public List<string> SupportedCommands { get; set; }
+        public List<string> SupportedCommands
+        {
+            get
+            {
+                if (Capabilities == null)
+                {
+                    return new List<string>();
+                }
+                return Capabilities.SupportedCommands;
+            }
+        }
 
         public TranscodingInfo TranscodingInfo { get; set; }
 
@@ -151,6 +164,11 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
+                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                {
+                    return false;
+                }
+
                 if (SessionController != null)
                 {
                     return SessionController.SupportsMediaControl;

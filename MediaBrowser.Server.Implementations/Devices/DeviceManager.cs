@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.Devices
                 devices = devices.Where(i =>
                 {
                     var caps = GetCapabilities(i.Id);
-                    var deviceVal = caps.SupportsUniqueIdentifier ?? caps.SupportsPersistentIdentifier;
+                    var deviceVal = caps.SupportsPersistentIdentifier;
                     return deviceVal == val;
                 });
             }
