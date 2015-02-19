@@ -88,6 +88,12 @@ namespace MediaBrowser.Model.Dto
         public int? PercentPlayed { get; set; }
 
         /// <summary>
+        /// Gets or sets the un played count.
+        /// </summary>
+        /// <value>The un played count.</value>
+        public int? UnPlayedCount { get; set; }
+        
+        /// <summary>
         /// Gets or sets the color of the background.
         /// </summary>
         /// <value>The color of the background.</value>
