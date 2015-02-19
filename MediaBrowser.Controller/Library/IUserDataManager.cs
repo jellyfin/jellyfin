@@ -64,6 +64,6 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion
         /// </summary>
-        bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks);
+        bool UpdatePlayState(BaseItem item, UserItemData data, long? positionTicks);
     }
 }

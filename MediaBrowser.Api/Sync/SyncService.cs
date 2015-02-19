@@ -145,12 +145,14 @@ namespace MediaBrowser.Api.Sync
         private readonly ISyncManager _syncManager;
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
 
-        public SyncService(ISyncManager syncManager, IDtoService dtoService, ILibraryManager libraryManager)
+        public SyncService(ISyncManager syncManager, IDtoService dtoService, ILibraryManager libraryManager, IUserManager userManager)
         {
             _syncManager = syncManager;
             _dtoService = dtoService;
             _libraryManager = libraryManager;
+            _userManager = userManager;
         }
 
         public object Get(GetSyncTargets request)
@@ -238,11 +240,15 @@ namespace MediaBrowser.Api.Sync
                     }
                 };
 
+                var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+
+                var authenticatedUser = _userManager.GetUserById(auth.UserId);
+                
                 var items = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)
                     .Where(i => i != null);
 
-                var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions)
+                var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions, authenticatedUser)
                     .ToList();
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);
@@ -266,9 +272,11 @@ namespace MediaBrowser.Api.Sync
             }
         }
 
-        public object Get(GetReadySyncItems request)
+        public async Task<object> Get(GetReadySyncItems request)
         {
-            return ToOptimizedResult(_syncManager.GetReadySyncItems(request.TargetId));
+            var result = await _syncManager.GetReadySyncItems(request.TargetId).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Post(SyncData request)

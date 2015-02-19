@@ -402,15 +402,17 @@ namespace MediaBrowser.Server.Implementations.Library
             return dto;
         }
 
-        public UserDto GetOfflineUserDto(User user, string deviceId)
+        public UserDto GetOfflineUserDto(User user)
         {
             var dto = GetUserDto(user);
 
             var offlinePasswordHash = GetLocalPasswordHash(user);
             dto.HasPassword = !IsPasswordEmpty(offlinePasswordHash);
 
+            dto.OfflinePasswordSalt = Guid.NewGuid().ToString("N");
+
             // Hash the pin with the device Id to create a unique result for this device
-            dto.OfflinePassword = GetSha1String((offlinePasswordHash + deviceId).ToLower());
+            dto.OfflinePassword = GetSha1String((offlinePasswordHash + dto.OfflinePasswordSalt).ToLower());
 
             dto.ServerName = _appHost.FriendlyName;
 

@@ -1,8 +1,8 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -48,6 +48,11 @@ namespace MediaBrowser.Controller.Entities
         public override bool CanDelete()
         {
             return false;
+        }
+
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
         }
 
         /// <summary>

@@ -47,6 +47,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly Func<ISubtitleEncoder> _subtitleEncoder;
         private readonly IConfigurationManager _config;
+        private IUserDataManager _userDataManager;
 
         private ISyncProvider[] _providers = { };
 
@@ -56,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -70,6 +71,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
             _config = config;
+            _userDataManager = userDataManager;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -133,10 +135,17 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ParentId = request.ParentId
             };
 
-            // It's just a static list
-            if (!items.Any(i => i.IsFolder || i is IItemByName))
+            if (!request.Category.HasValue && request.ItemIds != null)
             {
-                job.SyncNewContent = false;
+                var requestedItems = request.ItemIds
+                    .Select(_libraryManager.GetItemById)
+                    .Where(i => i != null);
+
+                // It's just a static list
+                if (!requestedItems.Any(i => i.IsFolder || i is IItemByName))
+                {
+                    job.SyncNewContent = false;
+                }
             }
 
             await _repo.Create(job).ConfigureAwait(false);
@@ -666,11 +675,32 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task ReportOfflineAction(UserAction action)
         {
-            return Task.FromResult(true);
+            switch (action.Type)
+            {
+                case UserActionType.PlayedItem:
+                    return ReportOfflinePlayedItem(action);
+                default:
+                    throw new ArgumentException("Unexpected action type");
+            }
         }
 
-        public List<SyncedItem> GetReadySyncItems(string targetId)
+        private Task ReportOfflinePlayedItem(UserAction action)
         {
+            var item = _libraryManager.GetItemById(action.ItemId);
+            var userData = _userDataManager.GetUserData(new Guid(action.UserId), item.GetUserDataKey());
+
+            userData.LastPlayedDate = action.Date;
+            _userDataManager.UpdatePlayState(item, userData, action.PositionTicks);
+
+            return _userDataManager.SaveUserData(new Guid(action.UserId), item, userData, UserDataSaveReason.Import, CancellationToken.None);
+        }
+
+        public async Task<List<SyncedItem>> GetReadySyncItems(string targetId)
+        {
+            var processor = GetSyncJobProcessor();
+
+            await processor.SyncJobItems(targetId, false, new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,

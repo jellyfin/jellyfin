@@ -294,6 +294,19 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "CountryCode":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        var hasLanguage = item as IHasPreferredMetadataLanguage;
+                        if (hasLanguage != null)
+                        {
+                            hasLanguage.PreferredMetadataCountryCode = val;
+                        }
+
+                        break;
+                    }
+
                 case "PlaceOfBirth":
                     {
                         var val = reader.ReadElementContentAsString();

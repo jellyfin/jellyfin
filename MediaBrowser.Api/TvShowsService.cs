@@ -157,6 +157,9 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "AdjacentTo", Description = "Optional. Return items that are siblings of a supplied item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string AdjacentTo { get; set; }
 
+        [ApiMember(Name = "StartItemId", Description = "Optional. Skip through the list until a given item is found.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string StartItemId { get; set; }
+        
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
@@ -475,6 +478,11 @@ namespace MediaBrowser.Api
                 episodes = episodes.Where(i => i.IsVirtualUnaired == val);
             }
 
+            if (!string.IsNullOrWhiteSpace(request.StartItemId))
+            {
+                episodes = episodes.SkipWhile(i => !string.Equals(i.Id.ToString("N"), request.StartItemId, StringComparison.OrdinalIgnoreCase));
+            }
+
             IEnumerable<BaseItem> returnItems = episodes;
 
             // This must be the last filter
@@ -483,9 +491,10 @@ namespace MediaBrowser.Api
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            returnItems = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems);
+            var returnList = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems)
+                .ToList();
 
-            var pagedItems = ApplyPaging(returnItems, request.StartIndex, request.Limit);
+            var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
             
             var dtoOptions = GetDtoOptions(request);
 
@@ -494,7 +503,7 @@ namespace MediaBrowser.Api
 
             return new ItemsResult
             {
-                TotalRecordCount = dtos.Length,
+                TotalRecordCount = returnList.Count,
                 Items = dtos
             };
         }

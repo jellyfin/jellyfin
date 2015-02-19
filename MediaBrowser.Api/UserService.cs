@@ -365,9 +365,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-
-            var result = _userManager.GetOfflineUserDto(user, auth.DeviceId);
+            var result = _userManager.GetOfflineUserDto(user);
 
             return ToOptimizedResult(result);
         }

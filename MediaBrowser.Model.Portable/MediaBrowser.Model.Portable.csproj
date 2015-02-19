@@ -110,6 +110,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\IServerEvents.cs">
       <Link>ApiClient\IServerEvents.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\NetworkStatus.cs">
+      <Link>ApiClient\NetworkStatus.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\RemoteLogoutReason.cs">
       <Link>ApiClient\RemoteLogoutReason.cs</Link>
     </Compile>

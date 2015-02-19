@@ -1101,6 +1101,7 @@
     "MessageApplicationUpdated": "Media Browser Server is bijgewerkt",
     "AuthenticationSucceededWithUserName": "{0} is succesvol geverifieerd",
     "FailedLoginAttemptWithUserName": "Mislukte aanmeld poging van {0}",
+    "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "UserStartedPlayingItemWithValues": "{0} heeft afspelen van {1} gestart",
     "UserStoppedPlayingItemWithValues": "{0} heeft afspelen van {1} gestopt",
     "AppDeviceValues": "App: {0}, Apparaat: {1}",

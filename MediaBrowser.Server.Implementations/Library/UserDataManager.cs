@@ -208,10 +208,11 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
-        public bool UpdatePlayState(BaseItem item, UserItemData data, long positionTicks)
+        public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
         {
             var playedToCompletion = false;
 
+            var positionTicks = reportedPositionTicks ?? item.RunTimeTicks ?? 0;
             var hasRuntime = item.RunTimeTicks.HasValue && item.RunTimeTicks > 0;
 
             // If a position has been reported, and if we know the duration

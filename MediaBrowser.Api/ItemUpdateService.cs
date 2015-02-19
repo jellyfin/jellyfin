@@ -83,6 +83,13 @@ namespace MediaBrowser.Api
                     {
                         info.ContentTypeOptions = GetContentTypeOptions(true);
                         info.ContentType = configuredContentType;
+
+                        if (string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                        {
+                            info.ContentTypeOptions = info.ContentTypeOptions
+                                .Where(i => string.IsNullOrWhiteSpace(i.Value) || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+                        }
                     }
                 }
             }

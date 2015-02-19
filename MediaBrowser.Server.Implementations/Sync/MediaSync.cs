@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var jobItems =  _syncManager.GetReadySyncItems(target.Id);
+            var jobItems =  await _syncManager.GetReadySyncItems(target.Id).ConfigureAwait(false);
             
             var numComplete = 0;
             double startingPercent = 0;
