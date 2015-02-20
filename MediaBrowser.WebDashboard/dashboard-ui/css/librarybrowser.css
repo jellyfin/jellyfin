@@ -1035,7 +1035,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 2px;
     bottom: 5px;
     width: 27px;
-    z-index: 1000;
+    z-index: 999;
     text-align: center;
     font-size: 13px;
     display: none;
@@ -1080,7 +1080,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 0;
     height: 55px;
     background-color: rgba(0, 0, 0, .85);
-    z-index: 1000;
+    z-index: 999;
     text-align: center;
     padding: 1em;
 }
@@ -1387,7 +1387,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .listItem a + a {
     background-color: transparent !important;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .ui-page-theme-a .listItem:hover a {

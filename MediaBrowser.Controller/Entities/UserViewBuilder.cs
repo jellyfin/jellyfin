@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -18,7 +17,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {

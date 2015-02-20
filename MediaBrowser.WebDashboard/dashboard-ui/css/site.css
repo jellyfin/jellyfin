@@ -316,7 +316,7 @@ h1 .imageLink {
 }
 
 .content-secondary {
-    z-index: 1000;
+    z-index: 999;
     border: 0;
     display: none;
     text-align: left;
@@ -909,7 +909,7 @@ progress {
     height: 7px;
     width: 100%;
     opacity: .95;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
@@ -958,7 +958,7 @@ progress {
     height: 5px;
     width: 100%;
     opacity: .9;
-    z-index: 1000;
+    z-index: 999;
     position: absolute;
 }
 
