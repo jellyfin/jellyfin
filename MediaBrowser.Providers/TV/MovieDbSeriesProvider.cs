@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.TV
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
 
-        public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, IHttpClient httpClient)
+        public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, IHttpClient httpClient, ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
@@ -45,6 +45,7 @@ namespace MediaBrowser.Providers.TV
             _logger = logger;
             _localization = localization;
             _httpClient = httpClient;
+            _libraryManager = libraryManager;
             Current = this;
         }
 
