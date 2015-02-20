@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -15,7 +16,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 {
     public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>, ICustomMetadataProvider<Playlist>
     {
-        public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager) : base(fileSystem, providerManager)
+        public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {
         }
 

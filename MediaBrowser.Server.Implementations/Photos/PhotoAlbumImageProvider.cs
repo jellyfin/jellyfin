@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
@@ -9,8 +10,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 {
     public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>, ICustomMetadataProvider<PhotoAlbum>
     {
-        public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager)
-            : base(fileSystem, providerManager)
+        public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {
         }
 

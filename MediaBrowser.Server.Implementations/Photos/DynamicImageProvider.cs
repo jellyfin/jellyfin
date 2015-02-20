@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -17,11 +18,8 @@ namespace MediaBrowser.Server.Implementations.Photos
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public MusicDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IUserManager userManager, ILibraryManager libraryManager)
-            : base(fileSystem, providerManager)
+        public MusicDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {
-            _userManager = userManager;
-            _libraryManager = libraryManager;
         }
 
         protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
