@@ -1,10 +1,9 @@
-﻿using Imazen.WebP;
+﻿using ImageMagickSharp;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -13,9 +12,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -54,14 +50,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly IMediaEncoder _mediaEncoder;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder)
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
 
             _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
@@ -92,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
 
-            LogWebPVersion();
+            LogImageMagickVersionVersion();
         }
 
         private string ResizedImageCachePath
@@ -134,13 +128,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
         }
 
-        public Model.Drawing.ImageFormat[] GetSupportedImageOutputFormats()
+        public ImageFormat[] GetSupportedImageOutputFormats()
         {
-            if (_webpAvailable)
-            {
-                return new[] { Model.Drawing.ImageFormat.Webp, Model.Drawing.ImageFormat.Gif, Model.Drawing.ImageFormat.Jpg, Model.Drawing.ImageFormat.Png };
-            }
-            return new[] { Model.Drawing.ImageFormat.Gif, Model.Drawing.ImageFormat.Jpg, Model.Drawing.ImageFormat.Png };
+            return new[] { ImageFormat.Webp, ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
         }
 
         public async Task<string> ProcessImage(ImageProcessingOptions options)
@@ -212,77 +202,42 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
+                var newWidth = Convert.ToInt32(newSize.Width);
+                var newHeight = Convert.ToInt32(newSize.Height);
 
-                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+
+                if (string.IsNullOrWhiteSpace(options.BackgroundColor))
                 {
-                    // Copy to memory stream to avoid Image locking file
-                    using (var memoryStream = new MemoryStream())
+                    using (var originalImage = new MagickWand(originalImagePath))
                     {
-                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                        originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
 
-                        using (var originalImage = Image.FromStream(memoryStream, true, false))
+                        DrawIndicator(originalImage, newWidth, newHeight, options);
+
+                        originalImage.CurrentImage.CompressionQuality = quality;
+
+                        originalImage.SaveImage(cacheFilePath);
+
+                        return cacheFilePath;
+                    }
+                }
+                else
+                {
+                    using (var wand = new MagickWand(newWidth, newHeight, options.BackgroundColor))
+                    {
+                        using (var originalImage = new MagickWand(originalImagePath))
                         {
-                            var newWidth = Convert.ToInt32(newSize.Width);
-                            var newHeight = Convert.ToInt32(newSize.Height);
+                            originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
 
-                            var selectedOutputFormat = options.OutputFormat;
+                            wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
+                            DrawIndicator(wand, newWidth, newHeight, options);
 
-                            _logger.Debug("Processing image to {0}", selectedOutputFormat);
+                            wand.CurrentImage.CompressionQuality = quality;
 
-                            // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
-                            // Also, Webp only supports Format32bppArgb and Format32bppRgb
-                            var pixelFormat = selectedOutputFormat == Model.Drawing.ImageFormat.Webp
-                                ? PixelFormat.Format32bppArgb
-                                : PixelFormat.Format32bppPArgb;
+                            wand.SaveImage(cacheFilePath);
 
-                            using (var thumbnail = new Bitmap(newWidth, newHeight, pixelFormat))
-                            {
-                                // Mono throw an exeception if assign 0 to SetResolution
-                                if (originalImage.HorizontalResolution > 0 && originalImage.VerticalResolution > 0)
-                                {
-                                    // Preserve the original resolution
-                                    thumbnail.SetResolution(originalImage.HorizontalResolution, originalImage.VerticalResolution);
-                                }
-
-                                using (var thumbnailGraph = Graphics.FromImage(thumbnail))
-                                {
-                                    thumbnailGraph.CompositingQuality = CompositingQuality.HighQuality;
-                                    thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
-                                    thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                                    thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    thumbnailGraph.CompositingMode = !hasPostProcessing ?
-                                        CompositingMode.SourceCopy :
-                                        CompositingMode.SourceOver;
-
-                                    SetBackgroundColor(thumbnailGraph, options);
-
-                                    thumbnailGraph.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-
-                                    DrawIndicator(thumbnailGraph, newWidth, newHeight, options);
-
-                                    var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
-
-                                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-
-                                    // Save to the cache location
-                                    using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
-                                    {
-                                        if (selectedOutputFormat == Model.Drawing.ImageFormat.Webp)
-                                        {
-                                            SaveToWebP(thumbnail, cacheFileStream, quality);
-                                        }
-                                        else
-                                        {
-                                            // Save to the memory stream
-                                            thumbnail.Save(outputFormat, cacheFileStream, quality);
-                                        }
-                                    }
-
-                                    return cacheFilePath;
-                                }
-                            }
-
+                            return cacheFilePath;
                         }
                     }
                 }
@@ -293,59 +248,26 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
         }
 
-        private void SaveToWebP(Bitmap thumbnail, Stream toStream, int quality)
-        {
-            new SimpleEncoder().Encode(thumbnail, toStream, quality);
-        }
-
-        private bool _webpAvailable = true;
-        private void LogWebPVersion()
+        private void LogImageMagickVersionVersion()
         {
             try
             {
-                _logger.Info("libwebp version: " + SimpleEncoder.GetEncoderVersion());
+                _logger.Info("ImageMagick version: " + Wand.VersionString);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error loading libwebp: ", ex);
-                _webpAvailable = false;
-            }
-        }
-
-        /// <summary>
-        /// Sets the color of the background.
-        /// </summary>
-        /// <param name="graphics">The graphics.</param>
-        /// <param name="options">The options.</param>
-        private void SetBackgroundColor(Graphics graphics, ImageProcessingOptions options)
-        {
-            var color = options.BackgroundColor;
-
-            if (!string.IsNullOrEmpty(color))
-            {
-                Color drawingColor;
-
-                try
-                {
-                    drawingColor = ColorTranslator.FromHtml(color);
-                }
-                catch
-                {
-                    drawingColor = ColorTranslator.FromHtml("#" + color);
-                }
-
-                graphics.Clear(drawingColor);
+                _logger.ErrorException("Error loading ImageMagick: ", ex);
             }
         }
 
         /// <summary>
         /// Draws the indicator.
         /// </summary>
-        /// <param name="graphics">The graphics.</param>
+        /// <param name="wand">The wand.</param>
         /// <param name="imageWidth">Width of the image.</param>
         /// <param name="imageHeight">Height of the image.</param>
         /// <param name="options">The options.</param>
-        private void DrawIndicator(Graphics graphics, int imageWidth, int imageHeight, ImageProcessingOptions options)
+        private void DrawIndicator(MagickWand wand, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
             if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && options.PercentPlayed.Equals(0))
             {
@@ -356,50 +278,25 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 if (options.AddPlayedIndicator)
                 {
-                    var currentImageSize = new Size(imageWidth, imageHeight);
+                    var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new PlayedIndicatorDrawer().DrawPlayedIndicator(graphics, currentImageSize);
+                    new PlayedIndicatorDrawer().DrawPlayedIndicator(wand, currentImageSize);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {
-                    var currentImageSize = new Size(imageWidth, imageHeight);
+                    var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new UnplayedCountIndicator().DrawUnplayedCountIndicator(graphics, currentImageSize, options.UnplayedCount.Value);
+                    new UnplayedCountIndicator().DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
                 }
 
                 if (options.PercentPlayed > 0)
                 {
-                    var currentImageSize = new Size(imageWidth, imageHeight);
-
-                    new PercentPlayedDrawer().Process(graphics, currentImageSize, options.PercentPlayed);
+                    new PercentPlayedDrawer().Process(wand, options.PercentPlayed);
                 }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error drawing indicator overlay", ex);
-            }
-        }
-
-        /// <summary>
-        /// Gets the output format.
-        /// </summary>
-        /// <param name="image">The image.</param>
-        /// <param name="outputFormat">The output format.</param>
-        /// <returns>ImageFormat.</returns>
-        private System.Drawing.Imaging.ImageFormat GetOutputFormat(Image image, Model.Drawing.ImageFormat outputFormat)
-        {
-            switch (outputFormat)
-            {
-                case Model.Drawing.ImageFormat.Bmp:
-                    return System.Drawing.Imaging.ImageFormat.Bmp;
-                case Model.Drawing.ImageFormat.Gif:
-                    return System.Drawing.Imaging.ImageFormat.Gif;
-                case Model.Drawing.ImageFormat.Jpg:
-                    return System.Drawing.Imaging.ImageFormat.Jpeg;
-                case Model.Drawing.ImageFormat.Png:
-                    return System.Drawing.Imaging.ImageFormat.Png;
-                default:
-                    return image.RawFormat;
             }
         }
 
@@ -429,28 +326,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
+                
+                using (var wand = new MagickWand(originalImagePath))
                 {
-                    // Copy to memory stream to avoid Image locking file
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                        using (var originalImage = (Bitmap)Image.FromStream(memoryStream, true, false))
-                        {
-                            var outputFormat = originalImage.RawFormat;
-
-                            using (var croppedImage = originalImage.CropWhitespace())
-                            {
-                                Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
-
-                                using (var outputStream = _fileSystem.GetFileStream(croppedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
-                                {
-                                    croppedImage.Save(outputFormat, outputStream, 100);
-                                }
-                            }
-                        }
-                    }
+                    wand.CurrentImage.TrimImage(10);
+                    wand.SaveImage(croppedImagePath);
                 }
             }
             catch (Exception ex)
@@ -476,7 +357,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, Model.Drawing.ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -727,7 +608,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         }
 
         /// <summary>
-        /// Runs an image through the image enhancers, caches the result, and returns the cached path
+        /// Gets the enhanced image internal.
         /// </summary>
         /// <param name="originalImagePath">The original image path.</param>
         /// <param name="item">The item.</param>
@@ -735,8 +616,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="supportedEnhancers">The supported enhancers.</param>
         /// <param name="cacheGuid">The cache unique identifier.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="System.ArgumentNullException">originalImagePath</exception>
+        /// <returns>Task&lt;System.String&gt;.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// originalImagePath
+        /// or
+        /// item
+        /// </exception>
         private async Task<string> GetEnhancedImageInternal(string originalImagePath,
             IHasImages item,
             ImageType imageType,
@@ -770,51 +655,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
-                using (var fileStream = _fileSystem.GetFileStream(originalImagePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
-                {
-                    // Copy to memory stream to avoid Image locking file
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                        memoryStream.Position = 0;
-
-                        var imageStream = new ImageStream
-                        {
-                            Stream = memoryStream,
-                            Format = GetFormat(originalImagePath)
-                        };
-
-                        //Pass the image through registered enhancers
-                        using (var newImageStream = await ExecuteImageEnhancers(supportedEnhancers, imageStream, item, imageType, imageIndex).ConfigureAwait(false))
-                        {
-                            var parentDirectory = Path.GetDirectoryName(enhancedImagePath);
-
-                            Directory.CreateDirectory(parentDirectory);
-
-                            // Save as png
-                            if (newImageStream.Format == Model.Drawing.ImageFormat.Png)
-                            {
-                                //And then save it in the cache
-                                using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
-                                {
-                                    await newImageStream.Stream.CopyToAsync(outputStream).ConfigureAwait(false);
-                                }
-                            }
-                            else
-                            {
-                                using (var newImage = Image.FromStream(newImageStream.Stream, true, false))
-                                {
-                                    //And then save it in the cache
-                                    using (var outputStream = _fileSystem.GetFileStream(enhancedImagePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
-                                    {
-                                        newImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                Directory.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+                await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
             }
             finally
             {
@@ -824,43 +666,42 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return enhancedImagePath;
         }
 
-        private Model.Drawing.ImageFormat GetFormat(string path)
+        private ImageFormat GetFormat(string path)
         {
             var extension = Path.GetExtension(path);
 
             if (string.Equals(extension, ".png", StringComparison.OrdinalIgnoreCase))
             {
-                return Model.Drawing.ImageFormat.Png;
+                return ImageFormat.Png;
             }
             if (string.Equals(extension, ".gif", StringComparison.OrdinalIgnoreCase))
             {
-                return Model.Drawing.ImageFormat.Gif;
+                return ImageFormat.Gif;
             }
             if (string.Equals(extension, ".webp", StringComparison.OrdinalIgnoreCase))
             {
-                return Model.Drawing.ImageFormat.Webp;
+                return ImageFormat.Webp;
             }
             if (string.Equals(extension, ".bmp", StringComparison.OrdinalIgnoreCase))
             {
-                return Model.Drawing.ImageFormat.Bmp;
+                return ImageFormat.Bmp;
             }
 
-            return Model.Drawing.ImageFormat.Jpg;
+            return ImageFormat.Jpg;
         }
 
         /// <summary>
         /// Executes the image enhancers.
         /// </summary>
         /// <param name="imageEnhancers">The image enhancers.</param>
-        /// <param name="originalImage">The original image.</param>
+        /// <param name="inputPath">The input path.</param>
+        /// <param name="outputPath">The output path.</param>
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task{EnhancedImage}.</returns>
-        private async Task<ImageStream> ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, ImageStream originalImage, IHasImages item, ImageType imageType, int imageIndex)
+        private async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, IHasImages item, ImageType imageType, int imageIndex)
         {
-            var result = originalImage;
-
             // Run the enhancers sequentially in order of priority
             foreach (var enhancer in imageEnhancers)
             {
@@ -868,7 +709,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                 try
                 {
-                    result = await enhancer.EnhanceImageAsync(item, result, imageType, imageIndex).ConfigureAwait(false);
+                    await enhancer.EnhanceImageAsync(item, inputPath, outputPath, imageType, imageIndex).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -876,9 +717,10 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                     throw;
                 }
-            }
 
-            return result;
+                // Feed the output into the next enhancer as input
+                inputPath = outputPath;
+            }
         }
 
         /// <summary>

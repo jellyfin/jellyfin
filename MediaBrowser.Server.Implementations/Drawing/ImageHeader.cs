@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using ImageMagickSharp;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
@@ -61,27 +62,15 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
             }
 
-            // Buffer to memory stream to avoid image locking file
-            using (var fs = fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var wand = new MagickWand(path))
             {
-                using (var memoryStream = new MemoryStream())
+                var img = wand.CurrentImage;
+
+                return new ImageSize
                 {
-                    fs.CopyTo(memoryStream);
-
-                    memoryStream.Position = 0;
-
-                    // Co it the old fashioned way
-                    using (var b = System.Drawing.Image.FromStream(memoryStream, true, false))
-                    {
-                        var size = b.Size;
-
-                        return new ImageSize
-                        {
-                            Width = size.Width,
-                            Height = size.Height
-                        };
-                    }
-                }
+                    Width = img.Width,
+                    Height = img.Height
+                };
             }
         }
 
