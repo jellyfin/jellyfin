@@ -78,7 +78,6 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Net" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />

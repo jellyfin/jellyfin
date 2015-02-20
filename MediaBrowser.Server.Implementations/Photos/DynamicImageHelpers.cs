@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.IO;
+﻿using ImageMagickSharp;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,7 +13,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         public static async Task<Stream> GetThumbCollage(List<string> files,
             IFileSystem fileSystem,
             int width,
-            int height)
+            int height, IApplicationPaths appPaths)
         {
             if (files.Count < 3)
             {
@@ -27,16 +27,8 @@ namespace MediaBrowser.Server.Implementations.Photos
             int cellHeight = height;
             var index = 0;
 
-            var img = new Bitmap(width, height, PixelFormat.Format32bppPArgb);
-
-            using (var graphics = Graphics.FromImage(img))
+            using (var wand = new MagickWand(width, height, "transparent"))
             {
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-
                 for (var row = 0; row < rows; row++)
                 {
                     for (var col = 0; col < cols; col++)
@@ -46,33 +38,24 @@ namespace MediaBrowser.Server.Implementations.Photos
 
                         if (files.Count > index)
                         {
-                            using (var fileStream = fileSystem.GetFileStream(files[index], FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                            using (var innerWand = new MagickWand(files[index]))
                             {
-                                using (var memoryStream = new MemoryStream())
-                                {
-                                    await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                                    memoryStream.Position = 0;
-
-                                    using (var imgtemp = Image.FromStream(memoryStream, true, false))
-                                    {
-                                        graphics.DrawImage(imgtemp, x, y, cellWidth, cellHeight);
-                                    }
-                                }
+                                innerWand.CurrentImage.ResizeImage(cellWidth, cellHeight);
+                                wand.CurrentImage.CompositeImage(innerWand, CompositeOperator.OverCompositeOp, x, y);
                             }
                         }
 
                         index++;
                     }
                 }
-            }
 
-            return GetStream(img);
+                return GetStream(wand, appPaths);
+            }
         }
 
         public static async Task<Stream> GetSquareCollage(List<string> files,
             IFileSystem fileSystem,
-            int size)
+            int size, IApplicationPaths appPaths)
         {
             if (files.Count < 4)
             {
@@ -85,16 +68,8 @@ namespace MediaBrowser.Server.Implementations.Photos
             int singleSize = size / 2;
             var index = 0;
 
-            var img = new Bitmap(size, size, PixelFormat.Format32bppPArgb);
-
-            using (var graphics = Graphics.FromImage(img))
+            using (var wand = new MagickWand(size, size, "transparent"))
             {
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-
                 for (var row = 0; row < rows; row++)
                 {
                     for (var col = 0; col < cols; col++)
@@ -102,27 +77,18 @@ namespace MediaBrowser.Server.Implementations.Photos
                         var x = col * singleSize;
                         var y = row * singleSize;
 
-                        using (var fileStream = fileSystem.GetFileStream(files[index], FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                        using (var innerWand = new MagickWand(files[index]))
                         {
-                            using (var memoryStream = new MemoryStream())
-                            {
-                                await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                                memoryStream.Position = 0;
-
-                                using (var imgtemp = Image.FromStream(memoryStream, true, false))
-                                {
-                                    graphics.DrawImage(imgtemp, x, y, singleSize, singleSize);
-                                }
-                            }
+                            innerWand.CurrentImage.ResizeImage(singleSize, singleSize);
+                            wand.CurrentImage.CompositeImage(innerWand, CompositeOperator.OverCompositeOp, x, y);
                         }
 
                         index++;
                     }
                 }
-            }
 
-            return GetStream(img);
+                return GetStream(wand, appPaths);
+            }
         }
 
         private static Task<Stream> GetSingleImage(List<string> files, IFileSystem fileSystem)
@@ -130,29 +96,16 @@ namespace MediaBrowser.Server.Implementations.Photos
             return Task.FromResult<Stream>(fileSystem.GetFileStream(files[0], FileMode.Open, FileAccess.Read, FileShare.Read));
         }
 
-        private static Stream GetStream(Image image)
+        private static Stream GetStream(MagickWand image, IApplicationPaths appPaths)
         {
-            var ms = new MemoryStream();
+            var tempFile = Path.Combine(appPaths.TempDirectory, Guid.NewGuid().ToString("N") + ".png");
 
-            image.Save(ms, ImageFormat.Png);
+            Directory.CreateDirectory(Path.GetDirectoryName(tempFile));
 
-            ms.Position = 0;
+            image.CurrentImage.CompressionQuality = 100;
+            image.SaveImage(tempFile);
 
-            return ms;
-        }
-
-        private static async Task<Image> GetImage(string file, IFileSystem fileSystem)
-        {
-            using (var fileStream = fileSystem.GetFileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, true))
-            {
-                var memoryStream = new MemoryStream();
-
-                await fileStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                memoryStream.Position = 0;
-
-                return Image.FromStream(memoryStream, true, false);
-            }
+            return File.OpenRead(tempFile);
         }
     }
 }
