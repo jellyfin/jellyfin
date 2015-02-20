@@ -71,7 +71,6 @@
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Security">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -767,6 +766,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon114.png">
       <Link>Resources\dashboard-ui\css\images\touchicon114.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon144.png">
+      <Link>Resources\dashboard-ui\css\images\touchicon144.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon72.png">
       <Link>Resources\dashboard-ui\css\images\touchicon72.png</Link>
     </BundleResource>
@@ -1061,6 +1063,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\subtitles.png">
       <Link>Resources\dashboard-ui\css\images\tour\dashboard\subtitles.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\sync.png">
+      <Link>Resources\dashboard-ui\css\images\tour\dashboard\sync.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\users.png">
       <Link>Resources\dashboard-ui\css\images\tour\dashboard\users.png</Link>
     </BundleResource>
@@ -1084,6 +1089,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\web\tourmovies.jpg">
       <Link>Resources\dashboard-ui\css\images\tour\web\tourmovies.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\web\tourmysync.png">
+      <Link>Resources\dashboard-ui\css\images\tour\web\tourmysync.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\web\tourplaylist.png">
       <Link>Resources\dashboard-ui\css\images\tour\web\tourplaylist.png</Link>
@@ -1562,6 +1570,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquery.unveil-custom.js">
       <Link>Resources\dashboard-ui\thirdparty\jquery.unveil-custom.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\ajax.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\ajax.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\connectionmanager.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\connectionmanager.js</Link>
     </BundleResource>
@@ -1571,8 +1582,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\credentials.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\credentials.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\deferred.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\deferred.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\deferredAlt.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\deferredAlt.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\device.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\device.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\events.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\events.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\logger.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\logger.js</Link>
@@ -1585,6 +1605,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\network.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\network.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\serverdiscovery.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\serverdiscovery.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\sha1.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\sha1.js</Link>
