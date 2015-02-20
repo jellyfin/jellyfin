@@ -64,6 +64,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
+        }
+
         public List<string> PhysicalLocationsList { get; set; }
 
         protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
