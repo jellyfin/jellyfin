@@ -231,6 +231,57 @@
     <Content Include="CORE_RL_zlib_.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_bmp_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_clipboard_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_dib_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_gif_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_gradient_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_histogram_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_html_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_jp2_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_jpeg_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_matte_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_miff_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_pattern_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_pdf_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_png_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_rgb_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_screenshot_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ImageMagickCoders\x86\IM_MOD_RL_thumbnail_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Images\Icon.ico" />
     <Content Include="Resources\Images\mb3logo800.png" />
   </ItemGroup>

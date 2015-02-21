@@ -911,7 +911,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Prevent implicitly captured closure
             var currentItem = item;
-            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
+            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type))
+                .ToList())
             {
                 if (options.GetImageLimit(image.Type) > 0)
                 {
