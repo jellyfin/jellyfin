@@ -410,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return "/mediabrowser/mediabrowser" + path;
             }
 
-            return "mediabrowser//mediabrowser" + path;
+            return "mediabrowser/mediabrowser/" + path;
         }
 
         /// <summary>
