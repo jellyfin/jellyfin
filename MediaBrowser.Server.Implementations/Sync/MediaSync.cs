@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
 using System;
@@ -30,10 +31,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             var serverId = _appHost.SystemId;
 
             await SyncData(provider, serverId, target, cancellationToken).ConfigureAwait(false);
-            progress.Report(2);
-
-            // Do the data sync twice so the server knows what was removed from the device
-            await SyncData(provider, serverId, target, cancellationToken).ConfigureAwait(false);
             progress.Report(3);
 
             var innerProgress = new ActionableProgress<double>();
@@ -44,6 +41,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 progress.Report(totalProgress);
             });
             await GetNewMedia(provider, target, serverId, innerProgress, cancellationToken);
+
+            // Do the data sync twice so the server knows what was removed from the device
+            await SyncData(provider, serverId, target, cancellationToken).ConfigureAwait(false);
+
             progress.Report(100);
         }
 
@@ -135,8 +136,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
-                //await provider.TransferItemFile(serverId, libraryItem.Id, internalSyncJobItem.OutputPath, target, cancellationToken)
-                //        .ConfigureAwait(false);
+                string[] pathParts = GetPathParts(serverId, libraryItem);
+
+                await provider.TransferItemFile(serverId, libraryItem.Id, internalSyncJobItem.OutputPath, pathParts, target, cancellationToken)
+                        .ConfigureAwait(false);
 
                 progress.Report(92);
 
@@ -169,6 +172,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             CancellationToken cancellationToken)
         {
             return provider.DeleteItem(serverId, itemId, target, cancellationToken);
+        }
+
+        private string[] GetPathParts(string serverId, BaseItemDto item)
+        {
+            return null;
         }
     }
 }

@@ -34,6 +34,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             get { return "Cloud Sync"; }
         }
 
+        private ICloudSyncProvider GetProvider(SyncTarget target)
+        {
+            return null;
+        }
+
         public Task<List<string>> GetServerItemIds(string serverId, SyncTarget target, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -44,9 +49,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             throw new NotImplementedException();
         }
 
-        public Task TransferItemFile(string serverId, string itemId, string[] pathParts, string name, ItemFileType fileType, SyncTarget target, CancellationToken cancellationToken)
+        public Task TransferItemFile(string serverId, string itemId, string inputFile, string[] pathParts, SyncTarget target, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var provider = GetProvider(target);
+
+            return provider.TransferItemFile(serverId, itemId, inputFile, pathParts, target, cancellationToken);
         }
     }
 }
