@@ -69,7 +69,7 @@
     "ButtonAddToCollection": "Add to collection",
     "HeaderSelectCertificatePath": "Select Certificate Path",
     "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task. It can also be run manually here. To configure the scheduled task, see:",
-    "HeaderSupporterBenefit": "A supporter membership provides additional benefits such as access to premium plugins, internet channel content, and more. {0}Learn more{1}.",
+    "HeaderSupporterBenefit": "A supporter membership provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support sync.",
     "HeaderWelcomeToMediaBrowserServerDashboard": "Welcome to the Media Browser Dashboard",
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
