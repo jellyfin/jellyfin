@@ -822,6 +822,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         public void Dispose()
         {
+            Wand.CloseEnvironment();
             _saveImageSizeTimer.Dispose();
         }
     }

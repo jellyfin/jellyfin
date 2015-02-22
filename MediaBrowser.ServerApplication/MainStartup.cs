@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Implementations.Logging;
+﻿using ImageMagickSharp;
+using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
@@ -40,7 +41,7 @@ namespace MediaBrowser.ServerApplication
 
             var applicationPath = currentProcess.MainModule.FileName;
 
-            ImageMagickSharp.Wand.SetMagickCoderModulePath(Path.Combine(Path.GetDirectoryName(applicationPath), "ImageMagickCoders", "x86"));
+            Wand.SetMagickCoderModulePath(Path.Combine(Path.GetDirectoryName(applicationPath), "ImageMagickCoders", "x86"));
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
