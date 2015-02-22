@@ -23,9 +23,24 @@
   <script src='lib/swagger-oauth.js' type='text/javascript'></script>
 
   <script type="text/javascript">
-    $(function () {
+      function getWindowUrl(win) {
+          return (win || window).location.href;
+      }
+
+      function getResourcePath() {
+
+          var path = "../../resources";
+
+          if (getWindowUrl().toLowerCase().indexOf('/mediabrowser') != -1) {
+              path = "../" + path;
+          }
+
+          return path;
+      }
+
+      $(function () {
       window.swaggerUi = new SwaggerUi({
-      url: "../../resources",
+      url: getResourcePath(),
       dom_id: "swagger-ui-container",
       supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
       onComplete: function(swaggerApi, swaggerUi){
