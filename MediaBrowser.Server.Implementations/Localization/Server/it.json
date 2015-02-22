@@ -43,7 +43,7 @@
     "HeaderDeveloperOptions": "Opzioni Sviluppatore",
     "OptionEnableWebClientResponseCache": "Abilita la cache del client web",
     "OptionDisableForDevelopmentHelp": "Configura questi parametri per sviluppatori  del client web",
-    "OptionEnableWebClientResourceMinification": "Enable web client resource minification",
+    "OptionEnableWebClientResourceMinification": "Abilita la minimizzazione delle risorse del client web",
     "LabelDashboardSourcePath": "Percorso sorgente client web",
     "LabelDashboardSourcePathHelp": "se si sta eseguendo il server da una sorgente, specifica il percorso dell'interfaccia. Tutti i file per i client saranno presi da questo percorso",
     "ButtonConvertMedia": "Converti media",

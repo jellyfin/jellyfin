@@ -822,7 +822,7 @@
     "LabelOpenSubtitlesUsername": "Nom d'utilisateur Open Subtitles:",
     "LabelOpenSubtitlesPassword": "Mot de passe Open Subtitles:",
     "HeaderChapterDownloadingHelp": "Lorsque Media Browser scanne vos fichiers vid\u00e9o, il peut facilement t\u00e9l\u00e9charger les noms de chapitre depuis Internet en utilisant le plugin de chapitre tel que ChapterDb.",
-    "LabelPlayDefaultAudioTrack": "Utiliser la flux audio par d\u00e9faut peu importe la langue",
+    "LabelPlayDefaultAudioTrack": "Utiliser le flux audio par d\u00e9faut quelque soit la langue",
     "LabelSubtitlePlaybackMode": "Mode de sous-titres:",
     "LabelDownloadLanguages": "T\u00e9l\u00e9chargement de langues:",
     "ButtonRegister": "S'enregistrer",
