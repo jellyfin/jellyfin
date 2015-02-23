@@ -192,10 +192,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public bool IsValidUsername(string username)
         {
             // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            return username.All(IsValidCharacter);
+            return username.All(IsValidUsernameCharacter);
         }
 
-        private bool IsValidCharacter(char i)
+        private bool IsValidUsernameCharacter(char i)
         {
             return char.IsLetterOrDigit(i) || char.Equals(i, '-') || char.Equals(i, '_') || char.Equals(i, '\'') ||
                    char.Equals(i, '.');
@@ -213,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var c in username)
             {
-                if (IsValidCharacter(c))
+                if (IsValidUsernameCharacter(c))
                 {
                     builder.Append(c);
                 }

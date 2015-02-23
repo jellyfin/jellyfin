@@ -454,7 +454,8 @@
 
         self.isLoggedIntoConnect = function () {
 
-            return self.connectToken() && self.connectUserId();
+            // Make sure it returns true or false
+            return (self.connectToken() && self.connectUserId()) == true;
         };
 
         self.logout = function () {
@@ -466,7 +467,7 @@
                 var apiClient = apiClients[i];
 
                 if (apiClient.accessToken()) {
-                    promises.push(apiClient.logout());
+                    promises.push(logoutOfServer(apiClient));
                 }
             }
 
@@ -505,6 +506,20 @@
                 }
             });
         };
+
+        function logoutOfServer(apiClient) {
+
+            var serverInfo = apiClient.serverInfo();
+
+            var logoutInfo = {
+                serverId: serverInfo.Id
+            };
+
+            return apiClient.logout().always(function () {
+
+                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+            });
+        }
 
         function getConnectServers(credentials) {
 
