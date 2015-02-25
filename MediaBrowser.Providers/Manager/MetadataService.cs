@@ -397,7 +397,10 @@ namespace MediaBrowser.Providers.Manager
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
-                        hasLocalMetadata = true;
+                        if (IsFullLocalMetadata(localItem.Item))
+                        {
+                            hasLocalMetadata = true;
+                        }
                         successfulProviderCount++;
                         break;
                     }
@@ -471,6 +474,11 @@ namespace MediaBrowser.Providers.Manager
             await ImportUserData(item, userDataList, cancellationToken).ConfigureAwait(false);
 
             return refreshResult;
+        }
+
+        protected virtual bool IsFullLocalMetadata(TItemType item)
+        {
+            return true;
         }
 
         private async Task ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
