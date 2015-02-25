@@ -298,7 +298,7 @@
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferBackdrop: true,
+                    preferThumb: true,
                     shape: 'backdrop',
                     overlayText: screenWidth >= 600,
                     showTitle: true,

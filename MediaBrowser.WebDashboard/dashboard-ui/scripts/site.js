@@ -582,7 +582,7 @@ var Dashboard = {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "width=" + 28;
+                    url += "&width=" + 28;
                 }
 
                 html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + url + '" />';

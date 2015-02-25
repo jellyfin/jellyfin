@@ -1225,6 +1225,7 @@
 
                 var defaultActionAttribute = options.defaultAction ? (' data-action="' + options.defaultAction + '"') : '';
 
+                // card
                 html += '<div' + dataAttributes + ' class="' + cssClass + '">';
 
                 var style = "";
@@ -1322,6 +1323,7 @@
                 // cardBox
                 html += '</div>';
 
+                // card
                 html += "</div>";
 
             }
