@@ -24,10 +24,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private long RangeLength { get; set; }
         private long TotalContentLength { get; set; }
 
-        public bool Throttle { get; set; }
-        public long ThrottleLimit { get; set; }
-        public long MinThrottlePosition;
-        public Func<long, long, long> ThrottleCallback { get; set; }
         public Action OnComplete { get; set; }
 
         /// <summary>
@@ -165,14 +161,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            if (Throttle)
-            {
-                responseStream = new ThrottledStream(responseStream, ThrottleLimit)
-                {
-                    MinThrottlePosition = MinThrottlePosition,
-                    ThrottleCallback = ThrottleCallback
-                };
-            }
             WriteToInternal(responseStream);
         }
 

@@ -18,11 +18,6 @@ namespace MediaBrowser.Controller.Net
 
         public IDictionary<string, string> ResponseHeaders { get; set; }
 
-        public bool Throttle { get; set; }
-        public long ThrottleLimit { get; set; }
-        public long MinThrottlePosition { get; set; }
-        public Func<long, long, long> ThrottleCallback { get; set; }
-
         public Action OnComplete { get; set; }
 
         public StaticResultOptions()

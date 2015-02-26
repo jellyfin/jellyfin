@@ -153,49 +153,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    var job = string.IsNullOrEmpty(request.TranscodingJobId) ?
-                        null :
-                        ApiEntryPoint.Instance.GetTranscodingJob(request.TranscodingJobId);
-
-                    var limits = new List<long>();
-                    if (state.InputBitrate.HasValue)
-                    {
-                        // Bytes per second
-                        limits.Add((state.InputBitrate.Value / 8));
-                    }
-                    if (state.InputFileSize.HasValue && state.RunTimeTicks.HasValue)
-                    {
-                        var totalSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds;
-
-                        if (totalSeconds > 1)
-                        {
-                            var timeBasedLimit = state.InputFileSize.Value / totalSeconds;
-                            limits.Add(Convert.ToInt64(timeBasedLimit));
-                        }
-                    }
-
-                    // Take the greater of the above to methods, just to be safe
-                    var throttleLimit = limits.Count > 0 ? limits.First() : 0;
-
-                    // Pad to play it safe
-                    var bytesPerSecond = Convert.ToInt64(1.05 * throttleLimit);
-
-                    // Don't even start evaluating this until at least two minutes have content have been consumed
-                    var targetGap = throttleLimit * 120;
-
                     return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
                         ResponseHeaders = responseHeaders,
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
-                        Path = state.MediaPath,
-                        Throttle = request.Throttle,
-
-                        ThrottleLimit = bytesPerSecond,
-
-                        MinThrottlePosition = targetGap,
-
-                        ThrottleCallback = (l1, l2) => ThrottleCallack(l1, l2, bytesPerSecond, job)
+                        Path = state.MediaPath
                     });
                 }
             }
@@ -238,6 +201,36 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private long ThrottleCallack(long currentBytesPerSecond, long bytesWritten, long originalBytesPerSecond, TranscodingJob job)
         {
+            //var job = string.IsNullOrEmpty(request.TranscodingJobId) ?
+            //null :
+            //ApiEntryPoint.Instance.GetTranscodingJob(request.TranscodingJobId);
+
+            //var limits = new List<long>();
+            //if (state.InputBitrate.HasValue)
+            //{
+            //    // Bytes per second
+            //    limits.Add((state.InputBitrate.Value / 8));
+            //}
+            //if (state.InputFileSize.HasValue && state.RunTimeTicks.HasValue)
+            //{
+            //    var totalSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds;
+
+            //    if (totalSeconds > 1)
+            //    {
+            //        var timeBasedLimit = state.InputFileSize.Value / totalSeconds;
+            //        limits.Add(Convert.ToInt64(timeBasedLimit));
+            //    }
+            //}
+
+            //// Take the greater of the above to methods, just to be safe
+            //var throttleLimit = limits.Count > 0 ? limits.First() : 0;
+
+            //// Pad to play it safe
+            //var bytesPerSecond = Convert.ToInt64(1.05 * throttleLimit);
+
+            //// Don't even start evaluating this until at least two minutes have content have been consumed
+            //var targetGap = throttleLimit * 120;
+
             var bytesDownloaded = job.BytesDownloaded ?? 0;
             var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
             var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
