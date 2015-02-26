@@ -877,14 +877,6 @@ namespace MediaBrowser.Api.Playback
             return "copy";
         }
 
-        private bool SupportsThrottleWithStream
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         /// <summary>
         /// Gets the input argument.
         /// </summary>
@@ -908,23 +900,15 @@ namespace MediaBrowser.Api.Playback
 
         private string GetInputPathArgument(string transcodingJobId, StreamState state)
         {
-            if (state.InputProtocol == MediaProtocol.File &&
-               state.RunTimeTicks.HasValue &&
-               state.VideoType == VideoType.VideoFile &&
-               !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
-                {
-                    if (SupportsThrottleWithStream)
-                    {
-                        var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + state.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + state.Request.MediaSourceId;
-
-                        url += "&transcodingJobId=" + transcodingJobId;
-
-                        return string.Format("\"{0}\"", url);
-                    }
-                }
-            }
+            //if (state.InputProtocol == MediaProtocol.File &&
+            //   state.RunTimeTicks.HasValue &&
+            //   state.VideoType == VideoType.VideoFile &&
+            //   !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
+            //    {
+            //    }
+            //}
 
             var protocol = state.InputProtocol;
 

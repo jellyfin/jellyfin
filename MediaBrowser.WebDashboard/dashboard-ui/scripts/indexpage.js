@@ -300,7 +300,7 @@
                     items: result.Items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    overlayText: screenWidth >= 600,
+                    overlayText: true,
                     showTitle: true,
                     showParentTitle: true,
                     context: 'home',

@@ -461,10 +461,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest)
                     {
-                        Throttle = options.Throttle,
-                        ThrottleLimit = options.ThrottleLimit,
-                        MinThrottlePosition = options.MinThrottlePosition,
-                        ThrottleCallback = options.ThrottleCallback,
                         OnComplete = options.OnComplete
                     };
                 }
@@ -480,10 +476,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 return new StreamWriter(stream, contentType, _logger)
                 {
-                    Throttle = options.Throttle,
-                    ThrottleLimit = options.ThrottleLimit,
-                    MinThrottlePosition = options.MinThrottlePosition,
-                    ThrottleCallback = options.ThrottleCallback,
                     OnComplete = options.OnComplete
                 };
             }
