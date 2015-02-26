@@ -1,5 +1,7 @@
 ﻿using MediaBrowser.Model.Sync;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,13 +25,22 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Transfers the item file.
         /// </summary>
-        /// <param name="serverId">The server identifier.</param>
-        /// <param name="itemId">The item identifier.</param>
         /// <param name="inputFile">The input file.</param>
         /// <param name="pathParts">The path parts.</param>
         /// <param name="target">The target.</param>
+        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task TransferItemFile(string serverId, string itemId, string inputFile, string[] pathParts, SyncTarget target, CancellationToken cancellationToken);
+        Task SendFile(string inputFile, string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the file.
+        /// </summary>
+        /// <param name="pathParts">The path parts.</param>
+        /// <param name="target">The target.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;Stream&gt;.</returns>
+        Task<Stream> GetFile(string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
     }
 }

@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _appHost = appHost;
         }
 
-        public async Task Sync(IServerSyncProvider provider, 
+        public async Task Sync(IServerSyncProvider provider,
             SyncTarget target,
             IProgress<double> progress,
             CancellationToken cancellationToken)
@@ -53,28 +53,28 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var localIds = await provider.GetServerItemIds(serverId, target, cancellationToken).ConfigureAwait(false);
+            //var localIds = await provider.GetServerItemIds(serverId, target, cancellationToken).ConfigureAwait(false);
 
-            var result = await _syncManager.SyncData(new SyncDataRequest
-            {
-                TargetId = target.Id,
-                LocalItemIds = localIds
+            //var result = await _syncManager.SyncData(new SyncDataRequest
+            //{
+            //    TargetId = target.Id,
+            //    LocalItemIds = localIds
 
-            }).ConfigureAwait(false);
+            //}).ConfigureAwait(false);
 
-            cancellationToken.ThrowIfCancellationRequested();
+            //cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var itemIdToRemove in result.ItemIdsToRemove)
-            {
-                try
-                {
-                    await RemoveItem(provider, serverId, itemIdToRemove, target, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error deleting item from sync target. Id: {0}", ex, itemIdToRemove);
-                }
-            }
+            //foreach (var itemIdToRemove in result.ItemIdsToRemove)
+            //{
+            //    try
+            //    {
+            //        await RemoveItem(provider, serverId, itemIdToRemove, target, cancellationToken).ConfigureAwait(false);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.ErrorException("Error deleting item from sync target. Id: {0}", ex, itemIdToRemove);
+            //    }
+            //}
         }
 
         private async Task GetNewMedia(IServerSyncProvider provider,
@@ -83,8 +83,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var jobItems =  await _syncManager.GetReadySyncItems(target.Id).ConfigureAwait(false);
-            
+            var jobItems = await _syncManager.GetReadySyncItems(target.Id).ConfigureAwait(false);
+
             var numComplete = 0;
             double startingPercent = 0;
             double percentPerItem = 1;
@@ -138,8 +138,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 string[] pathParts = GetPathParts(serverId, libraryItem);
 
-                await provider.TransferItemFile(serverId, libraryItem.Id, internalSyncJobItem.OutputPath, pathParts, target, cancellationToken)
-                        .ConfigureAwait(false);
+                await SendFile(provider, internalSyncJobItem.OutputPath, pathParts, target, cancellationToken).ConfigureAwait(false);
 
                 progress.Report(92);
 
@@ -171,12 +170,19 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            return provider.DeleteItem(serverId, itemId, target, cancellationToken);
+            return Task.FromResult(true);
+            //return provider.DeleteItem(serverId, itemId, target, cancellationToken);
         }
 
         private string[] GetPathParts(string serverId, BaseItemDto item)
         {
             return null;
+        }
+
+        private async Task SendFile(IServerSyncProvider provider, string inputPath, string[] path, SyncTarget target, CancellationToken cancellationToken)
+        {
+            await provider.SendFile(inputPath, path, target, new Progress<double>(), cancellationToken)
+                    .ConfigureAwait(false);
         }
     }
 }

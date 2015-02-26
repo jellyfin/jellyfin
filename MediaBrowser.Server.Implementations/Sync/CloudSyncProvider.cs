@@ -4,6 +4,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,21 +40,18 @@ namespace MediaBrowser.Server.Implementations.Sync
             return null;
         }
 
-        public Task<List<string>> GetServerItemIds(string serverId, SyncTarget target, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteItem(string serverId, string itemId, SyncTarget target, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task TransferItemFile(string serverId, string itemId, string inputFile, string[] pathParts, SyncTarget target, CancellationToken cancellationToken)
+        public Task SendFile(string inputFile, string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var provider = GetProvider(target);
 
-            return provider.TransferItemFile(serverId, itemId, inputFile, pathParts, target, cancellationToken);
+            return provider.SendFile(inputFile, pathParts, target, progress, cancellationToken);
+        }
+
+        public Task<Stream> GetFile(string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var provider = GetProvider(target);
+
+            return provider.GetFile(pathParts, target, progress, cancellationToken);
         }
     }
 }
