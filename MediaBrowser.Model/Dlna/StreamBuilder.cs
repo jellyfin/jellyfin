@@ -267,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -292,7 +292,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -527,7 +527,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -538,14 +538,20 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile, EncodingContext context)
         {
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                if (subtitleStream.SupportsExternalStream)
+                if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    if (subtitleStream.SupportsExternalStream)
+                    {
+                        return profile;
+                    }
+                    
+                    // For sync we can handle the longer extraction times
+                    if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
                     {
                         return profile;
                     }

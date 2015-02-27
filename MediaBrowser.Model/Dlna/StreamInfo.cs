@@ -262,7 +262,7 @@ namespace MediaBrowser.Model.Dlna
 
         private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream)
         {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile);
+            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile, Context);
 
             if (subtitleProfile.Method != SubtitleDeliveryMethod.External)
             {
