@@ -23,14 +23,6 @@
     z-index: 998;
     display: none;
 }
-/* Stops safari context menus (supposedly). Can't get this to work. */
-body, .card {
-    -webkit-touch-callout: none !important;
-}
-
-body, .card {
-    -webkit-user-select: none !important;
-}
 
 .cardOverlayInner {
     padding: 11px 12px 10px;
