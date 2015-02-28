@@ -68,11 +68,5 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <returns>ISyncDataProvider.</returns>
         ISyncDataProvider GetDataProvider();
-
-        /// <summary>
-        /// Gets all synchronize targets.
-        /// </summary>
-        /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
-        IEnumerable<SyncTarget> GetAllSyncTargets();
     }
 }
