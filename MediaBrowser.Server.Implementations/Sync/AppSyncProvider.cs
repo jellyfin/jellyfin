@@ -42,5 +42,18 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             get { return "App Sync"; }
         }
+
+        public IEnumerable<SyncTarget> GetAllSyncTargets()
+        {
+            return _deviceManager.GetDevices(new DeviceQuery
+            {
+                SupportsSync = true
+
+            }).Items.Select(i => new SyncTarget
+            {
+                Id = i.Id,
+                Name = i.Name
+            });
+        }
     }
 }

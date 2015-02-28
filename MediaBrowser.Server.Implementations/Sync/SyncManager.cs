@@ -407,6 +407,15 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .OrderBy(i => i.Name);
         }
 
+        private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider)
+        {
+            return provider.GetAllSyncTargets().Select(i => new SyncTarget
+            {
+                Name = i.Name,
+                Id = GetSyncTargetId(provider, i)
+            });
+        }
+
         private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider, string userId)
         {
             return provider.GetSyncTargets(userId).Select(i => new SyncTarget
@@ -536,7 +545,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             foreach (var provider in _providers)
             {
-                foreach (var target in GetSyncTargets(provider, null))
+                foreach (var target in GetSyncTargets(provider))
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
