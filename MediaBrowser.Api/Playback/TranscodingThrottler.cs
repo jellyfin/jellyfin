@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Controller.Diagnostics;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -9,11 +10,16 @@ namespace MediaBrowser.Api.Playback
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
+        private readonly IProcessManager _processManager;
         private Timer _timer;
+        private bool _isPaused;
 
         public void Start()
         {
-            _timer = new Timer(TimerCallback, null, 5000, 5000);
+            if (_processManager.SupportsSuspension)
+            {
+                _timer = new Timer(TimerCallback, null, 5000, 5000);
+            }
         }
 
         private void TimerCallback(object state)
@@ -36,22 +42,49 @@ namespace MediaBrowser.Api.Playback
 
         private void PauseTranscoding()
         {
-            _logger.Debug("Sending pause command to ffmpeg");
-            _job.Process.StandardInput.WriteLine("p");
+            if (!_isPaused)
+            {
+                _logger.Debug("Sending pause command to ffmpeg");
+            }
+
+            try
+            {
+                //_job.Process.StandardInput.WriteLine("p");
+                _processManager.SuspendProcess(_job.Process);
+                _isPaused = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error pausing transcoding", ex);
+            }
         }
 
         private void UnpauseTranscoding()
         {
-            _logger.Debug("Sending unpause command to ffmpeg");
-            _job.Process.StandardInput.WriteLine("u");
+            if (_isPaused)
+            {
+                _logger.Debug("Sending unpause command to ffmpeg");
+            }
+
+            try
+            {
+                //_job.Process.StandardInput.WriteLine("u");
+                _processManager.ResumeProcess(_job.Process);
+                _isPaused = false;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error unpausing transcoding", ex);
+            }
         }
 
         private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(2).Ticks;
 
-        public TranscodingThrottler(TranscodingJob job, ILogger logger)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IProcessManager processManager)
         {
             _job = job;
             _logger = logger;
+            _processManager = processManager;
         }
 
         private bool IsThrottleAllowed(TranscodingJob job)
@@ -106,13 +139,11 @@ namespace MediaBrowser.Api.Playback
                 catch
                 {
                     //_logger.Error("Error getting output size");
+                    return false;
                 }
             }
-            else
-            {
-                //_logger.Debug("No throttle data for " + path);
-            }
 
+            //_logger.Debug("No throttle data for " + path);
             return false;
         }
 

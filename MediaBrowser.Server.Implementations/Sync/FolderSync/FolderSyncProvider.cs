@@ -113,6 +113,7 @@ namespace MediaBrowser.Server.Implementations.Sync.FolderSync
 
         private IEnumerable<SyncAccount> GetSyncAccounts()
         {
+            return new List<SyncAccount>();
             // Dummy this up
             return _userManager
                 .Users

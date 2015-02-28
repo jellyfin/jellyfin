@@ -380,6 +380,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(ServerConfigurationManager);
 
+            RegisterSingleInstance(NativeApp.GetProcessManager());
+
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(LocalizationManager);
 
