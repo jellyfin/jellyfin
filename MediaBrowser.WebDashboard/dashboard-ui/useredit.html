@@ -18,8 +18,20 @@
                 <p class="lnkEditUserPreferencesContainer">
                     <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
                 </p>
-
+                <br/>
                 <form id="editUserProfileForm">
+
+                    <div class="disabledUserBanner" style="display:none;">
+                        <div class="btn btnDarkAccent btnStatic">
+                            <div>
+                                ${HeaderThisUserIsCurrentlyDisabled}
+                            </div>
+                            <div style="font-weight:normal;font-size:90%;margin-top:5px;">
+                                ${MessageReenableUser}
+                            </div>
+                        </div>
+
+                    </div>
                     <ul data-role="listview" class="ulForm">
                         <li id="fldUserName">
                             <label for="txtUserName">${LabelName}</label>
@@ -66,13 +78,15 @@
                         <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
                         <br />
                     </div>
+                    <div id="fldIsEnabled" style="margin: 1em 0 2em;">
+                        <div data-role="controlgroup">
+                            <input type="checkbox" id="chkDisabled" name="chkDisabled" />
+                            <label for="chkDisabled">${OptionDisableUser}</label>
+                        </div>
+                        <div class="fieldDescription">${OptionDisableUserHelp}</div>
+                    </div>
                     <div id="accessControlDiv" data-role="collapsible">
                         <h2>${HeaderAdvancedControl}</h2>
-                        <div id="fldIsEnabled" style="margin: 1em 0 2em;">
-                            <input type="checkbox" id="chkDisabled" name="chkDisabled" data-mini="true" />
-                            <label for="chkDisabled">${OptionDisableUser}</label>
-                            <div class="fieldDescription">${OptionDisableUserHelp}</div>
-                        </div>
                         <div style="margin: 1em 0;">
                             <input type="checkbox" id="chkDisableUserPreferences" data-mini="true" />
                             <label for="chkDisableUserPreferences">${OptionDisableUserPreferences}</label>

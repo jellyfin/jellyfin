@@ -6,6 +6,12 @@
 
         currentUser = user;
 
+        if (user.Policy.IsDisabled) {
+            $('.disabledUserBanner', page).show();
+        } else {
+            $('.disabledUserBanner', page).hide();
+        }
+
         if (user.ConnectLinkType == 'Guest') {
             $('#fldConnectInfo', page).hide();
             $('#txtUserName', page).prop("disabled", "disabled");
