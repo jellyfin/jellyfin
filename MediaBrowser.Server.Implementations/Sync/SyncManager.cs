@@ -429,13 +429,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             return (providerId + "-" + target.Id).GetMD5().ToString("N");
         }
 
-        private ISyncProvider GetSyncProvider(SyncTarget target)
-        {
-            var providerId = target.Id.Split(new[] { '-' }, 2).First();
-
-            return _providers.First(i => string.Equals(providerId, GetSyncProviderId(i)));
-        }
-
         private string GetSyncProviderId(ISyncProvider provider)
         {
             return (provider.GetType().Name).GetMD5().ToString("N");
@@ -547,12 +540,24 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return provider.GetDeviceProfile(target);
+                        return GetDeviceProfile(provider, target);
                     }
                 }
             }
 
             return null;
+        }
+
+        public DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target)
+        {
+            var hasProfile = provider as IHasSyncProfile;
+
+            if (hasProfile != null)
+            {
+                return hasProfile.GetDeviceProfile(target);
+            }
+
+            return new CloudSyncProfile(true, false);
         }
 
         public async Task ReportSyncJobItemTransferred(string id)

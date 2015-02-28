@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -30,10 +29,9 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="imageDateModified">The image date modified.</param>
+        /// <param name="info">The information.</param>
         /// <returns>ImageSize.</returns>
-        ImageSize GetImageSize(string path, DateTime imageDateModified);
+        ImageSize GetImageSize(ItemImageInfo info);
 
         /// <summary>
         /// Adds the parts.

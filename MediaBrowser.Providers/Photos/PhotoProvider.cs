@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Photos
             
             try
             {
-                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
+                var size = _imageProcessor.GetImageSize(imageInfo);
 
                 item.Width = Convert.ToInt32(size.Width);
                 item.Height = Convert.ToInt32(size.Height);

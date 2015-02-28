@@ -1114,7 +1114,7 @@
     "MessageApplicationUpdated": "Media Browser Server has been updated",
     "AuthenticationSucceededWithUserName": "{0} successfully authenticated",
     "FailedLoginAttemptWithUserName": "Failed login attempt from {0}",
-    "UserDownloadingItemWithValues":  "{0} is downloading {1}",
+    "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "AppDeviceValues": "App: {0}, Device: {1}",
@@ -1369,5 +1369,7 @@
     "TabJobs": "Jobs",
     "TabSyncJobs": "Sync Jobs",
     "LabelTagFilterMode": "Mode:",
-    "LabelTagFilterAllowModeHelp": "If allowed tags are used as part of a deeply nested folder structure, content that is tagged will require parent folders to be tagged as well."
+    "LabelTagFilterAllowModeHelp": "If allowed tags are used as part of a deeply nested folder structure, content that is tagged will require parent folders to be tagged as well.",
+    "HeaderThisUserIsCurrentlyDisabled": "This user is currently disabled",
+    "MessageReenableUser": "See below to reenable"
 }
