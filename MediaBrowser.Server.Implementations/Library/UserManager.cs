@@ -277,7 +277,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 user.Policy.InvalidLoginAttemptCount = newValue;
 
-                if (newValue >= 3)
+                var maxCount = user.Policy.IsAdministrator ? 
+                    3 : 
+                    5;
+
+                if (newValue >= maxCount)
                 {
                     _logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
                     user.Policy.IsDisabled = true;

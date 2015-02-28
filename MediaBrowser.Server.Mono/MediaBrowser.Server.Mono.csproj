@@ -74,6 +74,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Diagnostics\LinuxProcessManager.cs" />
+    <Compile Include="Diagnostics\ProcessManager.cs" />
     <Compile Include="Native\BaseMonoApp.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
@@ -70,12 +71,14 @@ namespace MediaBrowser.Api.Playback
         protected IDeviceManager DeviceManager { get; private set; }
         protected IChannelManager ChannelManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
+        protected IProcessManager ProcessManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager)
         {
+            ProcessManager = processManager;
             DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
             ChannelManager = channelManager;
@@ -1093,7 +1096,24 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            StartThrottler(state, transcodingJob);
+
             return transcodingJob;
+        }
+
+        private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
+        {
+            if (state.InputProtocol == MediaProtocol.File &&
+                           state.RunTimeTicks.HasValue &&
+                           state.VideoType == VideoType.VideoFile &&
+                           !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
+                {
+                    state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ProcessManager);
+                    state.TranscodingThrottler.Start();
+                }
+            }
         }
 
         private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)

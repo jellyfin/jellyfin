@@ -112,11 +112,11 @@
                     return '.webm';
                 }
                 if ($.browser.chrome) {
-                    return '.webm';
+                    //return '.webm';
                 }
 
                 // Firefox suddenly having trouble with our webm
-                return '.webm';
+                //return '.webm';
             }
 
             return '.mp4';
