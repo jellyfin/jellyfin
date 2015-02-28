@@ -1073,3 +1073,12 @@ h1 + .accentButton {
         margin: 0;
     }
 }
+
+.disabledUser {
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.disabledUserBanner {
+    margin: 0 0 2em;
+}

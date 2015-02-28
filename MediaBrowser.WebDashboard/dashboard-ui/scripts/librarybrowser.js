@@ -1950,12 +1950,12 @@
             if (item.CriticRating != null) {
 
                 if (item.CriticRating >= 60) {
-                    html += '<div class="fresh rottentomatoesicon"></div>';
+                    html += '<div class="fresh rottentomatoesicon" title="Rotten Tomatoes"></div>';
                 } else {
-                    html += '<div class="rotten rottentomatoesicon"></div>';
+                    html += '<div class="rotten rottentomatoesicon" title="Rotten Tomatoes"></div>';
                 }
 
-                html += '<div class="criticRating">' + item.CriticRating + '%</div>';
+                html += '<div class="criticRating" title="Rotten Tomatoes">' + item.CriticRating + '%</div>';
             }
 
             if (item.Metascore && metascore !== false) {

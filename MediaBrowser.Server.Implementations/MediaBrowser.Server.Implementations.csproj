@@ -303,8 +303,12 @@
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
-    <Compile Include="Sync\CloudSyncProvider.cs" />
+    <Compile Include="Sync\FolderSync\FolderSyncDataProvider.cs" />
+    <Compile Include="Sync\FolderSync\FolderSyncProvider.cs" />
+    <Compile Include="Sync\CloudSyncProfile.cs" />
+    <Compile Include="Sync\IHasSyncProfile.cs" />
     <Compile Include="Sync\MediaSync.cs" />
+    <Compile Include="Sync\MultiProviderSync.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
     <Compile Include="Sync\SyncConfig.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />

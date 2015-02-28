@@ -414,6 +414,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return GetImageSize(path, File.GetLastWriteTimeUtc(path));
         }
 
+        public ImageSize GetImageSize(ItemImageInfo info)
+        {
+            return GetImageSize(info.Path, info.DateModified);
+        }
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
@@ -421,7 +426,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageDateModified">The image date modified.</param>
         /// <returns>ImageSize.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public ImageSize GetImageSize(string path, DateTime imageDateModified)
+        private ImageSize GetImageSize(string path, DateTime imageDateModified)
         {
             if (string.IsNullOrEmpty(path))
             {

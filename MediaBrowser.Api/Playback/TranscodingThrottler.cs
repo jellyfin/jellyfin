@@ -13,11 +13,17 @@ namespace MediaBrowser.Api.Playback
 
         public void Start()
         {
-            _timer = new Timer(TimerCallback, null, 1000, 1000);
+            _timer = new Timer(TimerCallback, null, 5000, 5000);
         }
 
         private void TimerCallback(object state)
         {
+            if (_job.HasExited)
+            {
+                DisposeTimer();
+                return;
+            }
+
             if (IsThrottleAllowed(_job))
             {
                 PauseTranscoding();
@@ -50,36 +56,6 @@ namespace MediaBrowser.Api.Playback
 
         private bool IsThrottleAllowed(TranscodingJob job)
         {
-            //var job = string.IsNullOrEmpty(request.TranscodingJobId) ?
-            //null :
-            //ApiEntryPoint.Instance.GetTranscodingJob(request.TranscodingJobId);
-
-            //var limits = new List<long>();
-            //if (state.InputBitrate.HasValue)
-            //{
-            //    // Bytes per second
-            //    limits.Add((state.InputBitrate.Value / 8));
-            //}
-            //if (state.InputFileSize.HasValue && state.RunTimeTicks.HasValue)
-            //{
-            //    var totalSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds;
-
-            //    if (totalSeconds > 1)
-            //    {
-            //        var timeBasedLimit = state.InputFileSize.Value / totalSeconds;
-            //        limits.Add(Convert.ToInt64(timeBasedLimit));
-            //    }
-            //}
-
-            //// Take the greater of the above to methods, just to be safe
-            //var throttleLimit = limits.Count > 0 ? limits.First() : 0;
-
-            //// Pad to play it safe
-            //var bytesPerSecond = Convert.ToInt64(1.05 * throttleLimit);
-
-            //// Don't even start evaluating this until at least two minutes have content have been consumed
-            //var targetGap = throttleLimit * 120;
-
             var bytesDownloaded = job.BytesDownloaded ?? 0;
             var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
             var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
@@ -95,11 +71,11 @@ namespace MediaBrowser.Api.Playback
 
                 if (gap < targetGap)
                 {
-                    //Logger.Debug("Not throttling transcoder gap {0} target gap {1}", gap, targetGap);
+                    //_logger.Debug("Not throttling transcoder gap {0} target gap {1}", gap, targetGap);
                     return false;
                 }
 
-                //Logger.Debug("Throttling transcoder gap {0} target gap {1}", gap, targetGap);
+                //_logger.Debug("Throttling transcoder gap {0} target gap {1}", gap, targetGap);
                 return true;
             }
 
@@ -120,21 +96,21 @@ namespace MediaBrowser.Api.Playback
 
                     if (gap < targetGap)
                     {
-                        //Logger.Debug("Not throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
+                        //_logger.Debug("Not throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
                         return false;
                     }
 
-                    //Logger.Debug("Throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
+                    //_logger.Debug("Throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
                     return true;
                 }
                 catch
                 {
-                    //Logger.Error("Error getting output size");
+                    //_logger.Error("Error getting output size");
                 }
             }
             else
             {
-                //Logger.Debug("No throttle data for " + path);
+                //_logger.Debug("No throttle data for " + path);
             }
 
             return false;
