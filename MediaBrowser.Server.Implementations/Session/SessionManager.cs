@@ -399,7 +399,7 @@ namespace MediaBrowser.Server.Implementations.Session
                         Client = clientType,
                         DeviceId = deviceId,
                         ApplicationVersion = appVersion,
-                        Id = Guid.NewGuid().ToString("N")
+                        Id = key.GetMD5().ToString("N")
                     };
 
                     sessionInfo.DeviceName = deviceName;
@@ -798,6 +798,19 @@ namespace MediaBrowser.Server.Implementations.Session
             return session;
         }
 
+        private SessionInfo GetSessionToRemoteControl(string sessionId)
+        {
+            // Accept either device id or session id
+            var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId));
+
+            if (session == null)
+            {
+                throw new ResourceNotFoundException(string.Format("Session {0} not found.", sessionId));
+            }
+
+            return session;
+        }
+
         public Task SendMessageCommand(string controllingSessionId, string sessionId, MessageCommand command, CancellationToken cancellationToken)
         {
             var generalCommand = new GeneralCommand
@@ -818,7 +831,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendGeneralCommand(string controllingSessionId, string sessionId, GeneralCommand command, CancellationToken cancellationToken)
         {
-            var session = GetSession(sessionId);
+            var session = GetSessionToRemoteControl(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
@@ -828,7 +841,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSession(sessionId);
+            var session = GetSessionToRemoteControl(sessionId);
 
             var user = session.UserId.HasValue ? _userManager.GetUserById(session.UserId.Value) : null;
 
@@ -955,7 +968,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendPlaystateCommand(string controllingSessionId, string sessionId, PlaystateRequest command, CancellationToken cancellationToken)
         {
-            var session = GetSession(sessionId);
+            var session = GetSessionToRemoteControl(sessionId);
 
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);

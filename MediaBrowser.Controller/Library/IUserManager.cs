@@ -34,6 +34,7 @@ namespace MediaBrowser.Controller.Library
         event EventHandler<GenericEventArgs<User>> UserCreated;
         event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
         event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
+        event EventHandler<GenericEventArgs<User>> UserLockedOut;
 
         /// <summary>
         /// Gets a User by Id

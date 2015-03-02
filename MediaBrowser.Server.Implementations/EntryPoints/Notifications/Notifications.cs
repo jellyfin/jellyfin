@@ -78,6 +78,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
             _deviceManager.CameraImageUploaded +=_deviceManager_CameraImageUploaded;
+
+            _userManager.UserLockedOut += _userManager_UserLockedOut;    
+        }
+
+        async void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
+        {
+            var type = NotificationType.UserLockedOut.ToString();
+
+            var notification = new NotificationRequest
+            {
+                NotificationType = type
+            };
+
+            notification.Variables["UserName"] = e.Argument.Name;
+
+            await SendNotification(notification).ConfigureAwait(false);
         }
 
         async void _deviceManager_CameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
@@ -234,7 +250,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 // Don't report theme song or local trailer playback
                 return;
             }
-
 
             var notification = new NotificationRequest
             {
@@ -471,6 +486,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.ApplicationUpdated -= _appHost_ApplicationUpdated;
 
             _deviceManager.CameraImageUploaded -= _deviceManager_CameraImageUploaded;
+            _userManager.UserLockedOut -= _userManager_UserLockedOut;
         }
 
         private void DisposeLibraryUpdateTimer()
