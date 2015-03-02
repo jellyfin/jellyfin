@@ -31,7 +31,13 @@ namespace MediaBrowser.Model.Dlna
 
             List<StreamInfo> streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
-                streams.Add(BuildAudioItem(i, options));
+            {
+                StreamInfo streamInfo = BuildAudioItem(i, options);
+                if (streamInfo != null)
+                {
+                    streams.Add(streamInfo);
+                }
+            }
 
             foreach (StreamInfo stream in streams)
             {
@@ -63,7 +69,13 @@ namespace MediaBrowser.Model.Dlna
 
             List<StreamInfo> streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
-                streams.Add(BuildVideoItem(i, options));
+            {
+                StreamInfo streamInfo = BuildVideoItem(i, options);
+                if (streamInfo != null)
+                {
+                streams.Add(streamInfo);
+                }
+            }
 
             foreach (StreamInfo stream in streams)
             {
@@ -97,7 +109,10 @@ namespace MediaBrowser.Model.Dlna
             {
                 return stream;
             }
-            return null;
+
+            PlaybackException error = new PlaybackException();
+            error.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
+            throw error;
         }
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
@@ -186,6 +201,11 @@ namespace MediaBrowser.Model.Dlna
 
             if (transcodingProfile != null)
             {
+                if (!item.SupportsTranscoding)
+                {
+                    return null;
+                }
+
                 playlistItem.PlayMethod = PlayMethod.Transcode;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
@@ -290,6 +310,11 @@ namespace MediaBrowser.Model.Dlna
 
             if (transcodingProfile != null)
             {
+                if (!item.SupportsTranscoding)
+                {
+                    return null;
+                }
+
                 if (subtitleStream != null)
                 {
                     SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
