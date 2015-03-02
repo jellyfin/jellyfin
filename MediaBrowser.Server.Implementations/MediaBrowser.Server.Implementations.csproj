@@ -47,7 +47,7 @@
   <ItemGroup>
     <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.5\lib\net45\ImageMagickSharp.dll</HintPath>
+      <HintPath>..\packages\ImageMagickSharp.1.0.0.6\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.5509.27636, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

@@ -125,6 +125,8 @@
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />
     <Compile Include="Dlna\EncodingContext.cs" />
+    <Compile Include="Dlna\PlaybackErrorCode.cs" />
+    <Compile Include="Dlna\PlaybackException.cs" />
     <Compile Include="Dlna\Profiles\DefaultProfile.cs" />
     <Compile Include="Dlna\ResolutionConfiguration.cs" />
     <Compile Include="Dlna\ResolutionNormalizer.cs" />

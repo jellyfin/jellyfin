@@ -56,6 +56,7 @@
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="Browser\BrowserLauncher.cs" />
+    <Compile Include="Diagnostics\ProcessManager.cs" />
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="FFMpeg\FFMpegDownloader.cs" />

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Diagnostics;
-using System;
 using System.Diagnostics;
 
 namespace MediaBrowser.Server.Mono.Diagnostics
@@ -8,17 +7,17 @@ namespace MediaBrowser.Server.Mono.Diagnostics
     {
         public void SuspendProcess(Process process)
         {
-            throw new NotImplementedException();
+            process.PriorityClass = ProcessPriorityClass.Idle;
         }
 
         public void ResumeProcess(Process process)
         {
-            throw new NotImplementedException();
+            process.PriorityClass = ProcessPriorityClass.Normal;
         }
 
         public bool SupportsSuspension
         {
-            get { return false; }
+            get { return true; }
         }
     }
 }
