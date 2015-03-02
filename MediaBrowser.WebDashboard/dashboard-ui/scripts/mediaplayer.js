@@ -116,7 +116,7 @@
                 }
 
                 // Firefox suddenly having trouble with our webm
-                //return '.webm';
+                return '.webm';
             }
 
             return '.mp4';

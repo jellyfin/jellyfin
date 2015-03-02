@@ -114,7 +114,7 @@ namespace MediaBrowser.ServerApplication.Native
 
         public IProcessManager GetProcessManager()
         {
-            return new ProcessManager();
+            return new WindowsProcessManager();
         }
     }
 }
