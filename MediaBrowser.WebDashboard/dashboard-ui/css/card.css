@@ -524,3 +524,37 @@
         width: 12.5%;
     }
 }
+
+
+
+/** horizontalBackdropCard */
+.horizontalBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+
+.horizontalBackdropCard {
+    width: 75%;
+}
+
+@media all and (min-width: 500px) {
+
+    .horizontalBackdropCard {
+        width: 50%;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .horizontalBackdropCard {
+        width: 31%;
+    }
+}
+
+.horizontalBackdropCard .cardImage {
+    border-radius: 4px;
+}
+
+.horizontalBackdropCard .cardBox {
+    margin: 2px !important;
+}

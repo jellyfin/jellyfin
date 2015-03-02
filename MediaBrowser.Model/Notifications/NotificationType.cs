@@ -19,6 +19,7 @@ namespace MediaBrowser.Model.Notifications
         NewLibraryContentMultiple,
         ServerRestartRequired,
         TaskFailed,
-        CameraImageUploaded
+        CameraImageUploaded,
+        UserLockedOut
     }
 }

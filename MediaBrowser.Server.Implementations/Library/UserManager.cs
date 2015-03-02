@@ -97,6 +97,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         public event EventHandler<GenericEventArgs<User>> UserUpdated;
         public event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+        public event EventHandler<GenericEventArgs<User>> UserLockedOut;
 
         /// <summary>
         /// Called when [user updated].
@@ -281,13 +282,25 @@ namespace MediaBrowser.Server.Implementations.Library
                     3 : 
                     5;
 
+                var fireLockout = false;
+
                 if (newValue >= maxCount)
                 {
                     _logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
                     user.Policy.IsDisabled = true;
+
+                    fireLockout = true;
                 }
 
                 await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
+
+                if (fireLockout)
+                {
+                    if (UserLockedOut != null)
+                    {
+                        EventHelper.FireEventIfNotNull(UserLockedOut, this, new GenericEventArgs<User>(user), _logger);
+                    }
+                }
             }
         }
 

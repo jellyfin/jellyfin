@@ -44,10 +44,11 @@
                 preferThumb: true,
                 context: 'movies',
                 showItemCounts: true,
-                centerText: true
+                centerText: true,
+                lazy: true
             });
 
-            var elem = $('#items', page).html(html).trigger('create');
+            var elem = $('#items', page).html(html).lazyChildren().trigger('create');
 
             $(pagingHtml).appendTo(elem).trigger('create');
 

@@ -649,7 +649,7 @@ var Dashboard = {
 
     ensureHeader: function (page) {
 
-        if (page.hasClass('standalonePage')) {
+        if (page.hasClass('standalonePage') && !page.hasClass('noHeaderPage')) {
 
             Dashboard.renderHeader(page);
         }
