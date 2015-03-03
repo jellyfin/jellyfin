@@ -33,7 +33,7 @@ namespace MediaBrowser.ServerApplication.Native
         static extern int ResumeThread(IntPtr hThread);
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseHandle(IntPtr hObject);
+        public static extern bool CloseHandle(IntPtr hThread);
 
         public static void Suspend(this Process process)
         {
