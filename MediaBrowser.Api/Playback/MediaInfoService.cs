@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Api.Playback
 {
     [Route("/Items/{Id}/MediaInfo", "GET", Summary = "Gets live playback media info for an item")]
+    [Route("/Items/{Id}/PlaybackInfo", "GET", Summary = "Gets live playback media info for an item")]
     public class GetLiveMediaInfo : IReturn<LiveMediaInfoResult>
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]

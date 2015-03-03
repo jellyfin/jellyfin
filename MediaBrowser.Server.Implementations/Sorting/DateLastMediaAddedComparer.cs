@@ -3,13 +3,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 using System;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
-    /// <summary>
-    /// Class DatePlayedComparer
-    /// </summary>
-    public class DatePlayedComparer : IUserBaseItemComparer
+    public class DateLastMediaAddedComparer : IUserBaseItemComparer
     {
         /// <summary>
         /// Gets or sets the user.
@@ -28,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user data repository.</value>
         public IUserDataManager UserDataRepository { get; set; }
-        
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -47,14 +45,17 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private DateTime GetDate(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User.Id, x.GetUserDataKey());
+            var folder = x as Folder;
 
-            if (userdata != null && userdata.LastPlayedDate.HasValue)
+            if (folder != null)
             {
-                return userdata.LastPlayedDate.Value;
+                return folder.GetRecursiveChildren(User, i => !i.IsFolder)
+                    .Select(i => i.DateCreated)
+                    .OrderByDescending(i => i)
+                    .FirstOrDefault();
             }
 
-            return DateTime.MinValue;
+            return x.DateCreated;
         }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <value>The name.</value>
         public string Name
         {
-            get { return ItemSortBy.DatePlayed; }
+            get { return ItemSortBy.DateLastContentAdded; }
         }
     }
 }

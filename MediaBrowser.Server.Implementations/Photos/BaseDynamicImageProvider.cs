@@ -108,7 +108,12 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<Stream> GetThumbCollage(List<BaseItem> items)
         {
-            return DynamicImageHelpers.GetThumbCollage(items.Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb)).ToList(),
+            var files = items
+                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToList();
+
+            return DynamicImageHelpers.GetThumbCollage(files,
                 FileSystem,
                 1600,
                 900,
@@ -117,7 +122,12 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<Stream> GetSquareCollage(List<BaseItem> items)
         {
-            return DynamicImageHelpers.GetSquareCollage(items.Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb)).ToList(),
+            var files = items
+                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToList();
+
+            return DynamicImageHelpers.GetSquareCollage(files,
                 FileSystem,
                 800, ApplicationPaths);
         }
