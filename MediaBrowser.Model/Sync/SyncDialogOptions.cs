@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Sync
 {
@@ -18,18 +19,34 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the quality options.
         /// </summary>
         /// <value>The quality options.</value>
-        public List<SyncQuality> QualityOptions { get; set; }
+        public List<NameValuePair> QualityOptions { get; set; }
         
         public SyncDialogOptions()
         {
             Targets = new List<SyncTarget>();
             Options = new List<SyncJobOption>();
-            QualityOptions = new List<SyncQuality>
+            QualityOptions = new List<NameValuePair>
             {
-                SyncQuality.Original,
-                SyncQuality.High,
-                SyncQuality.Medium,
-                SyncQuality.Low
+                new NameValuePair
+                {
+                    Name = SyncQuality.Original.ToString(),
+                    Value = SyncQuality.Original.ToString()
+                },
+                new NameValuePair
+                {
+                    Name = SyncQuality.High.ToString(),
+                    Value = SyncQuality.High.ToString()
+                },
+                new NameValuePair
+                {
+                    Name = SyncQuality.Medium.ToString(),
+                    Value = SyncQuality.Medium.ToString()
+                },
+                new NameValuePair
+                {
+                    Name = SyncQuality.Low.ToString(),
+                    Value = SyncQuality.Low.ToString()
+                }
             };
         }
     }

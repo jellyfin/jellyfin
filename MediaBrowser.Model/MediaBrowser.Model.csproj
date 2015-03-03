@@ -376,6 +376,8 @@
     <Compile Include="Sync\ItemFIleInfo.cs" />
     <Compile Include="Sync\ItemFileType.cs" />
     <Compile Include="Sync\LocalItem.cs" />
+    <Compile Include="Sync\LocalItemInfo.cs" />
+    <Compile Include="Sync\LocalItemQuery.cs" />
     <Compile Include="Sync\SyncCategory.cs" />
     <Compile Include="Sync\SyncDataRequest.cs" />
     <Compile Include="Sync\SyncDataResponse.cs" />
