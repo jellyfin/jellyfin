@@ -505,20 +505,23 @@
             var firstItem = items[0];
 
             if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
-                self.playInternal(firstItem, options.startPositionTicks, user);
 
-                self.playlist = items;
-                currentPlaylistIndex = 0;
+                self.playInternal(firstItem, options.startPositionTicks, function () {
+                    self.playlist = items;
+                    currentPlaylistIndex = 0;
+                });
+
                 return;
             }
 
             ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
 
                 items = intros.Items.concat(items);
-                self.playInternal(items[0], options.startPositionTicks, user);
+                self.playInternal(items[0], options.startPositionTicks, function () {
+                    self.playlist = items;
+                    currentPlaylistIndex = 0;
+                });
 
-                self.playlist = items;
-                currentPlaylistIndex = 0;
             });
         };
 
@@ -547,10 +550,12 @@
                 })[0];
             }
 
-            return optimalVersion || versions[0];
+            return optimalVersion || versions.filter(function (s) {
+                return s.SupportsTranscoding;
+            })[0];
         }
 
-        self.playInternal = function (item, startPosition, user) {
+        self.playInternal = function (item, startPosition, callback) {
 
             if (item == null) {
                 throw new Error("item cannot be null");
@@ -560,36 +565,69 @@
                 self.stop();
             }
 
+            var mediaSource;
+
             if (item.MediaType === "Video") {
 
-                ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
+                ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
                     userId: Dashboard.getCurrentUserId()
 
                 })).done(function (result) {
 
-                    self.currentItem = item;
-                    self.currentMediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
+                    if (validatePlaybackInfoResult(result)) {
+                        mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);;
 
-                    self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
-                    self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                        if (mediaSource) {
+                            self.currentMediaSource = mediaSource;
+                            self.currentItem = item;
 
-                    self.updateNowPlayingInfo(item);
+                            self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
+                            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+                            self.updateNowPlayingInfo(item);
+
+                            if (callback) {
+                                callback();
+                            }
+                        } else {
+                            showNoCompatibleStreamError();
+                        }
+                    }
                 });
 
 
             } else if (item.MediaType === "Audio") {
 
-                self.currentItem = item;
-                self.currentMediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
+                mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);;
 
-                self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
+                if (mediaSource) {
+                    self.currentItem = item;
+                    self.currentMediaSource = mediaSource;
 
-                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                    self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
+
+                    self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+                    if (callback) {
+                        callback();
+                    }
+                } else {
+                    showNoCompatibleStreamError();
+                }
 
             } else {
                 throw new Error("Unrecognized media type");
             }
         };
+
+        function validatePlaybackInfoResult(result) {
+
+            return true;
+        }
+
+        function showNoCompatibleStreamError() {
+
+        }
 
         self.getNowPlayingNameHtml = function (playerState) {
 
@@ -670,9 +708,7 @@
 
             var newItem = self.playlist[i];
 
-            Dashboard.getCurrentUser().done(function (user) {
-
-                self.playInternal(newItem, 0, user);
+            self.playInternal(newItem, 0, function () {
                 currentPlaylistIndex = i;
             });
         };
@@ -686,9 +722,7 @@
 
                 console.log('playing next track');
 
-                Dashboard.getCurrentUser().done(function (user) {
-
-                    self.playInternal(newItem, 0, user);
+                self.playInternal(newItem, 0, function () {
                     currentPlaylistIndex = newIndex;
                 });
             }
@@ -700,9 +734,7 @@
                 var newItem = self.playlist[newIndex];
 
                 if (newItem) {
-                    Dashboard.getCurrentUser().done(function (user) {
-
-                        self.playInternal(newItem, 0, user);
+                    self.playInternal(newItem, 0, function () {
                         currentPlaylistIndex = newIndex;
                     });
                 }

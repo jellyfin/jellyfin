@@ -1579,11 +1579,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(mediaSourceId))
             {
-                info.MediaStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
-                {
-                    ItemId = new Guid(mediaSourceId)
-
-                }).ToList();
+                info.MediaStreams = _mediaSourceManager.GetMediaStreams(mediaSourceId).ToList();
             }
 
             return info;

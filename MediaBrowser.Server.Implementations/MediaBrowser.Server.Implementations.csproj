@@ -278,6 +278,7 @@
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
     <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
+    <Compile Include="Sorting\DateLastMediaAddedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\GameSystemComparer.cs" />
     <Compile Include="Sorting\IsFavoriteOrLikeComparer.cs" />
