@@ -64,6 +64,12 @@ namespace MediaBrowser.Model.Notifications
                     Type = NotificationType.PluginError.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
+                },
+                new NotificationOption
+                {
+                    Type = NotificationType.UserLockedOut.ToString(),
+                    Enabled = true,
+                    SendToUserMode = SendToUserType.Admins
                 }
             };
         }
