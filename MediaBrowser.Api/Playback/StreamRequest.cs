@@ -72,7 +72,6 @@ namespace MediaBrowser.Api.Playback
         public string Params { get; set; }
         public string ClientTime { get; set; }
 
-        public bool Throttle { get; set; }
         public string TranscodingJobId { get; set; }
     }
 

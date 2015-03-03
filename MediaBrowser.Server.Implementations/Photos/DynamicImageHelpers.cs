@@ -4,6 +4,7 @@ using MediaBrowser.Common.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
@@ -15,6 +16,11 @@ namespace MediaBrowser.Server.Implementations.Photos
             int width,
             int height, IApplicationPaths appPaths)
         {
+            if (files.Any(string.IsNullOrWhiteSpace))
+            {
+                throw new ArgumentException("Empty file found in files list");
+            }
+
             if (files.Count < 3)
             {
                 return await GetSingleImage(files, fileSystem).ConfigureAwait(false);
@@ -27,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             int cellHeight = height;
             var index = 0;
 
-            using (var wand = new MagickWand(width, height, "transparent"))
+            using (var wand = new MagickWand(width, height, new PixelWand(ColorName.None, 1)))
             {
                 for (var row = 0; row < rows; row++)
                 {
@@ -57,6 +63,11 @@ namespace MediaBrowser.Server.Implementations.Photos
             IFileSystem fileSystem,
             int size, IApplicationPaths appPaths)
         {
+            if (files.Any(string.IsNullOrWhiteSpace))
+            {
+                throw new ArgumentException("Empty file found in files list");
+            }
+
             if (files.Count < 4)
             {
                 return await GetSingleImage(files, fileSystem).ConfigureAwait(false);
@@ -68,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             int singleSize = size / 2;
             var index = 0;
 
-            using (var wand = new MagickWand(size, size, "transparent"))
+            using (var wand = new MagickWand(size, size, new PixelWand(ColorName.None, 1)))
             {
                 for (var row = 0; row < rows; row++)
                 {

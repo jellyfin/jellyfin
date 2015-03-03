@@ -1598,14 +1598,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var path = imageInfo.Path;
 
-            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var dateModified = imageInfo.DateModified;
-
             ImageSize size;
 
             try
             {
-                size = _imageProcessor.GetImageSize(path, dateModified);
+                size = _imageProcessor.GetImageSize(imageInfo);
             }
             catch (FileNotFoundException)
             {

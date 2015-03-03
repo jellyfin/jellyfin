@@ -46,7 +46,7 @@
             var url = user.imageUrl;
 
             if (user.supportsImageParams) {
-                url += "height=" + userButtonHeight;
+                url += "&height=" + userButtonHeight;
             }
 
             html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';

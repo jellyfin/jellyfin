@@ -104,6 +104,7 @@
     <Compile Include="Devices\CameraImageUploadInfo.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Devices\IDeviceRepository.cs" />
+    <Compile Include="Diagnostics\IProcessManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />
@@ -341,8 +342,8 @@
     <Compile Include="Subtitles\SubtitleDownloadEventArgs.cs" />
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
-    <Compile Include="Sync\ICloudSyncProvider.cs" />
     <Compile Include="Sync\IServerSyncProvider.cs" />
+    <Compile Include="Sync\ISyncDataProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />
     <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Sync\ISyncRepository.cs" />

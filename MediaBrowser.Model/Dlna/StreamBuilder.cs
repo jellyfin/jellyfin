@@ -31,7 +31,13 @@ namespace MediaBrowser.Model.Dlna
 
             List<StreamInfo> streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
-                streams.Add(BuildAudioItem(i, options));
+            {
+                StreamInfo streamInfo = BuildAudioItem(i, options);
+                if (streamInfo != null)
+                {
+                    streams.Add(streamInfo);
+                }
+            }
 
             foreach (StreamInfo stream in streams)
             {
@@ -63,7 +69,13 @@ namespace MediaBrowser.Model.Dlna
 
             List<StreamInfo> streams = new List<StreamInfo>();
             foreach (MediaSourceInfo i in mediaSources)
-                streams.Add(BuildVideoItem(i, options));
+            {
+                StreamInfo streamInfo = BuildVideoItem(i, options);
+                if (streamInfo != null)
+                {
+                streams.Add(streamInfo);
+                }
+            }
 
             foreach (StreamInfo stream in streams)
             {
@@ -97,7 +109,10 @@ namespace MediaBrowser.Model.Dlna
             {
                 return stream;
             }
-            return null;
+
+            PlaybackException error = new PlaybackException();
+            error.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
+            throw error;
         }
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
@@ -186,6 +201,11 @@ namespace MediaBrowser.Model.Dlna
 
             if (transcodingProfile != null)
             {
+                if (!item.SupportsTranscoding)
+                {
+                    return null;
+                }
+
                 playlistItem.PlayMethod = PlayMethod.Transcode;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
@@ -267,7 +287,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -290,9 +310,14 @@ namespace MediaBrowser.Model.Dlna
 
             if (transcodingProfile != null)
             {
+                if (!item.SupportsTranscoding)
+                {
+                    return null;
+                }
+
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -527,7 +552,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -538,14 +563,20 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile, EncodingContext context)
         {
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
             {
-                if (subtitleStream.SupportsExternalStream)
+                if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    if (subtitleStream.SupportsExternalStream)
+                    {
+                        return profile;
+                    }
+                    
+                    // For sync we can handle the longer extraction times
+                    if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
                     {
                         return profile;
                     }

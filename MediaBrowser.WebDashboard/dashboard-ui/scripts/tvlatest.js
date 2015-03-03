@@ -14,7 +14,6 @@
             Limit: 30,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
-            IsPlayed: false,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };

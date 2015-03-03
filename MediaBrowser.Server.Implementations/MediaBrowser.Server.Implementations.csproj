@@ -47,7 +47,7 @@
   <ItemGroup>
     <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.2\lib\net45\ImageMagickSharp.dll</HintPath>
+      <HintPath>..\packages\ImageMagickSharp.1.0.0.6\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.5509.27636, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -278,6 +278,7 @@
     <Compile Include="Sorting\CommunityRatingComparer.cs" />
     <Compile Include="Sorting\CriticRatingComparer.cs" />
     <Compile Include="Sorting\DateCreatedComparer.cs" />
+    <Compile Include="Sorting\DateLastMediaAddedComparer.cs" />
     <Compile Include="Sorting\DatePlayedComparer.cs" />
     <Compile Include="Sorting\GameSystemComparer.cs" />
     <Compile Include="Sorting\IsFavoriteOrLikeComparer.cs" />
@@ -303,8 +304,12 @@
     <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Sorting\VideoBitRateComparer.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
-    <Compile Include="Sync\CloudSyncProvider.cs" />
+    <Compile Include="Sync\FolderSync\FolderSyncDataProvider.cs" />
+    <Compile Include="Sync\FolderSync\FolderSyncProvider.cs" />
+    <Compile Include="Sync\CloudSyncProfile.cs" />
+    <Compile Include="Sync\IHasSyncProfile.cs" />
     <Compile Include="Sync\MediaSync.cs" />
+    <Compile Include="Sync\MultiProviderSync.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
     <Compile Include="Sync\SyncConfig.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />

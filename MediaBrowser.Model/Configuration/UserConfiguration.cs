@@ -33,19 +33,11 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayMissingEpisodes { get; set; }
         public bool DisplayUnairedEpisodes { get; set; }
 
-        public bool EnableLiveTvManagement { get; set; }
-        public bool EnableLiveTvAccess { get; set; }
-
-        public bool EnableMediaPlayback { get; set; }
-        public bool EnableContentDeletion { get; set; }
-
         public bool GroupMoviesIntoBoxSets { get; set; }
 
         public string[] DisplayChannelsWithinViews { get; set; }
 
         public string[] ExcludeFoldersFromGrouping { get; set; }
-
-        public UnratedItem[] BlockUnratedItems { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
         public bool DisplayCollectionsView { get; set; }
@@ -69,14 +61,10 @@ namespace MediaBrowser.Model.Configuration
         public UserConfiguration()
         {
             PlayDefaultAudioTrack = true;
-            EnableLiveTvManagement = true;
-            EnableMediaPlayback = true;
-            EnableLiveTvAccess = true;
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
-            BlockUnratedItems = new UnratedItem[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
             DisplayCollectionsView = true;

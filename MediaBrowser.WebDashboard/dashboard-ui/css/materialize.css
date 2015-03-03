@@ -54,8 +54,11 @@
     -o-transition: 0.2s ease-out;
     -ms-transition: 0.2s ease-out;
     transition: 0.2s ease-out;
-    cursor: pointer;
     position: relative;
+}
+
+.btn:not(.btnStatic), .btn-large:not(.btnStatic) {
+    cursor: pointer;
 }
 
 .btn-floating {
@@ -150,6 +153,14 @@
 
 .btnActionAccent {
     background-color: #52B54B;
+}
+
+.btnWarningAccent {
+    background-color: #FF6A00;
+}
+
+.btnDarkAccent {
+    background-color: #666;
 }
 
 .btn, .btn-large {

@@ -350,9 +350,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
         }
 
         /// <summary>
-        /// Increment this when indicator drawings change
+        /// Increment this when there's a change requiring caches to be invalidated
         /// </summary>
-        private const string IndicatorVersion = "2";
+        private const string Version = "3";
 
         /// <summary>
         /// Gets the cache file path based on a set of parameters
@@ -371,35 +371,27 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             filename += "f=" + format;
 
-            var hasIndicator = false;
-
             if (addPlayedIndicator)
             {
                 filename += "pl=true";
-                hasIndicator = true;
             }
 
             if (percentPlayed > 0)
             {
                 filename += "p=" + percentPlayed;
-                hasIndicator = true;
             }
 
             if (unwatchedCount.HasValue)
             {
                 filename += "p=" + unwatchedCount.Value;
-                hasIndicator = true;
-            }
-
-            if (hasIndicator)
-            {
-                filename += "iv=" + IndicatorVersion;
             }
 
             if (!string.IsNullOrEmpty(backgroundColor))
             {
                 filename += "b=" + backgroundColor;
             }
+
+            filename += "v=" + Version;
 
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
         }
@@ -414,6 +406,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return GetImageSize(path, File.GetLastWriteTimeUtc(path));
         }
 
+        public ImageSize GetImageSize(ItemImageInfo info)
+        {
+            return GetImageSize(info.Path, info.DateModified);
+        }
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
@@ -421,7 +418,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <param name="imageDateModified">The image date modified.</param>
         /// <returns>ImageSize.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public ImageSize GetImageSize(string path, DateTime imageDateModified)
+        private ImageSize GetImageSize(string path, DateTime imageDateModified)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -664,30 +661,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             return enhancedImagePath;
-        }
-
-        private ImageFormat GetFormat(string path)
-        {
-            var extension = Path.GetExtension(path);
-
-            if (string.Equals(extension, ".png", StringComparison.OrdinalIgnoreCase))
-            {
-                return ImageFormat.Png;
-            }
-            if (string.Equals(extension, ".gif", StringComparison.OrdinalIgnoreCase))
-            {
-                return ImageFormat.Gif;
-            }
-            if (string.Equals(extension, ".webp", StringComparison.OrdinalIgnoreCase))
-            {
-                return ImageFormat.Webp;
-            }
-            if (string.Equals(extension, ".bmp", StringComparison.OrdinalIgnoreCase))
-            {
-                return ImageFormat.Bmp;
-            }
-
-            return ImageFormat.Jpg;
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Mono.Diagnostics;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
@@ -108,6 +110,11 @@ namespace MediaBrowser.ServerApplication.Native
         public void PreventSystemStandby()
         {
             Standby.PreventSystemStandby();
+        }
+
+        public IProcessManager GetProcessManager()
+        {
+            return new WindowsProcessManager();
         }
     }
 }

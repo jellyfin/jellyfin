@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -14,6 +15,11 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public override bool IsVisible(User user)
         {
+            if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            
             return GetChildren(user, true).Any() &&
                 base.IsVisible(user);
         }

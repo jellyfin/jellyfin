@@ -1,17 +1,16 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -23,6 +22,7 @@ namespace MediaBrowser.Api.Playback
         public string RequestedUrl { get; set; }
 
         public StreamRequest Request { get; set; }
+        public TranscodingThrottler TranscodingThrottler { get; set; }
 
         public VideoStreamRequest VideoRequest
         {
@@ -125,6 +125,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Dispose()
         {
+            DisposeTranscodingThrottler();
             DisposeLiveStream();
             DisposeLogStream();
             DisposeIsoMount();
@@ -144,6 +145,23 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 LogFileStream = null;
+            }
+        }
+
+        private void DisposeTranscodingThrottler()
+        {
+            if (TranscodingThrottler != null)
+            {
+                try
+                {
+                    TranscodingThrottler.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing TranscodingThrottler", ex);
+                }
+
+                TranscodingThrottler = null;
             }
         }
 
