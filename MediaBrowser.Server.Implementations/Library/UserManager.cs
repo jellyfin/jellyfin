@@ -97,6 +97,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         public event EventHandler<GenericEventArgs<User>> UserUpdated;
         public event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
+        public event EventHandler<GenericEventArgs<User>> UserLockedOut;
 
         /// <summary>
         /// Called when [user updated].
@@ -259,11 +260,48 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
                 await UpdateUser(user).ConfigureAwait(false);
+                await UpdateInvalidLoginAttemptCount(user, 0).ConfigureAwait(false);
+            }
+            else
+            {
+                await UpdateInvalidLoginAttemptCount(user, user.Policy.InvalidLoginAttemptCount + 1).ConfigureAwait(false);
             }
 
             _logger.Info("Authentication request for {0} {1}.", user.Name, (success ? "has succeeded" : "has been denied"));
 
             return success;
+        }
+
+        private async Task UpdateInvalidLoginAttemptCount(User user, int newValue)
+        {
+            if (user.Policy.InvalidLoginAttemptCount != newValue || newValue > 0)
+            {
+                user.Policy.InvalidLoginAttemptCount = newValue;
+
+                var maxCount = user.Policy.IsAdministrator ? 
+                    3 : 
+                    5;
+
+                var fireLockout = false;
+
+                if (newValue >= maxCount)
+                {
+                    _logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
+                    user.Policy.IsDisabled = true;
+
+                    fireLockout = true;
+                }
+
+                await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
+
+                if (fireLockout)
+                {
+                    if (UserLockedOut != null)
+                    {
+                        EventHelper.FireEventIfNotNull(UserLockedOut, this, new GenericEventArgs<User>(user), _logger);
+                    }
+                }
+            }
         }
 
         private string GetPasswordHash(User user)
@@ -332,11 +370,6 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (!user.Configuration.HasMigratedToPolicy)
             {
-                user.Policy.BlockUnratedItems = user.Configuration.BlockUnratedItems;
-                user.Policy.EnableContentDeletion = user.Configuration.EnableContentDeletion;
-                user.Policy.EnableLiveTvAccess = user.Configuration.EnableLiveTvAccess;
-                user.Policy.EnableLiveTvManagement = user.Configuration.EnableLiveTvManagement;
-                user.Policy.EnableMediaPlayback = user.Configuration.EnableMediaPlayback;
                 user.Policy.IsAdministrator = user.Configuration.IsAdministrator;
 
                 await UpdateUserPolicy(user, user.Policy, false);
@@ -915,10 +948,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             user.Configuration.IsAdministrator = user.Policy.IsAdministrator;
-            user.Configuration.EnableLiveTvManagement = user.Policy.EnableLiveTvManagement;
-            user.Configuration.EnableLiveTvAccess = user.Policy.EnableLiveTvAccess;
-            user.Configuration.EnableMediaPlayback = user.Policy.EnableMediaPlayback;
-            user.Configuration.EnableContentDeletion = user.Policy.EnableContentDeletion;
 
             await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
         }

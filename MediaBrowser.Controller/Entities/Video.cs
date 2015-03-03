@@ -420,12 +420,17 @@ namespace MediaBrowser.Controller.Entities
             return base.GetDeletePaths();
         }
 
-        public virtual IEnumerable<MediaStream> GetMediaStreams()
+        public IEnumerable<MediaStream> GetMediaStreams()
         {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            var mediaSource = GetMediaSources(false)
+                .FirstOrDefault();
+
+            if (mediaSource == null)
             {
-                ItemId = Id
-            });
+                return new List<MediaStream>();
+            }
+
+            return mediaSource.MediaStreams;
         }
 
         public virtual MediaStream GetDefaultVideoStream()
@@ -474,7 +479,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, Video i, MediaSourceType type)
         {
-            var mediaStreams = MediaSourceManager.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id })
+            var mediaStreams = MediaSourceManager.GetMediaStreams(i.Id)
                 .ToList();
 
             var locationType = i.LocationType;

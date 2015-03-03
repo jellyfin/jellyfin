@@ -930,7 +930,7 @@ namespace MediaBrowser.Dlna.Didl
 
             try
             {
-                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
+                var size = _imageProcessor.GetImageSize(imageInfo);
 
                 width = Convert.ToInt32(size.Width);
                 height = Convert.ToInt32(size.Height);

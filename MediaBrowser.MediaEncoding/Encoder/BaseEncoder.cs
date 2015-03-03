@@ -452,24 +452,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetInputPathArgument(EncodingJob job)
         {
-            //if (job.InputProtocol == MediaProtocol.File &&
-            //   job.RunTimeTicks.HasValue &&
-            //   job.VideoType == VideoType.VideoFile &&
-            //   !string.Equals(job.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    if (job.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && job.IsInputVideo)
-            //    {
-            //        if (SupportsThrottleWithStream)
-            //        {
-            //            var url = "http://localhost:" + ServerConfigurationManager.Configuration.HttpServerPortNumber.ToString(UsCulture) + "/videos/" + job.Request.Id + "/stream?static=true&Throttle=true&mediaSourceId=" + job.Request.MediaSourceId;
-
-            //            url += "&transcodingJobId=" + transcodingJobId;
-
-            //            return string.Format("\"{0}\"", url);
-            //        }
-            //    }
-            //}
-
             var protocol = job.InputProtocol;
 
             var inputPath = new[] { job.MediaPath };

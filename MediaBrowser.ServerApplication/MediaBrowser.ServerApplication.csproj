@@ -62,7 +62,7 @@
   <ItemGroup>
     <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.2\lib\net45\ImageMagickSharp.dll</HintPath>
+      <HintPath>..\packages\ImageMagickSharp.1.0.0.6\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.IsoMounter">
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
@@ -113,6 +113,7 @@
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
     <Compile Include="Native\WindowsApp.cs" />
+    <Compile Include="Native\WindowsProcessManager.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Networking\NativeMethods.cs" />
     <Compile Include="Networking\NetworkManager.cs" />

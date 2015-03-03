@@ -407,6 +407,15 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .OrderBy(i => i.Name);
         }
 
+        private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider)
+        {
+            return provider.GetAllSyncTargets().Select(i => new SyncTarget
+            {
+                Name = i.Name,
+                Id = GetSyncTargetId(provider, i)
+            });
+        }
+
         private IEnumerable<SyncTarget> GetSyncTargets(ISyncProvider provider, string userId)
         {
             return provider.GetSyncTargets(userId).Select(i => new SyncTarget
@@ -427,13 +436,6 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var providerId = GetSyncProviderId(provider);
             return (providerId + "-" + target.Id).GetMD5().ToString("N");
-        }
-
-        private ISyncProvider GetSyncProvider(SyncTarget target)
-        {
-            var providerId = target.Id.Split(new[] { '-' }, 2).First();
-
-            return _providers.First(i => string.Equals(providerId, GetSyncProviderId(i)));
         }
 
         private string GetSyncProviderId(ISyncProvider provider)
@@ -543,16 +545,28 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             foreach (var provider in _providers)
             {
-                foreach (var target in GetSyncTargets(provider, null))
+                foreach (var target in GetSyncTargets(provider))
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return provider.GetDeviceProfile(target);
+                        return GetDeviceProfile(provider, target);
                     }
                 }
             }
 
             return null;
+        }
+
+        public DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target)
+        {
+            var hasProfile = provider as IHasSyncProfile;
+
+            if (hasProfile != null)
+            {
+                return hasProfile.GetDeviceProfile(target);
+            }
+
+            return new CloudSyncProfile(true, false);
         }
 
         public async Task ReportSyncJobItemTransferred(string id)

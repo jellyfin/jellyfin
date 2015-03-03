@@ -62,8 +62,9 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
             }
 
-            using (var wand = new MagickWand(path))
+            using (var wand = new MagickWand())
             {
+                wand.PingImage(path);
                 var img = wand.CurrentImage;
 
                 return new ImageSize

@@ -86,6 +86,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _userManager.UserPasswordChanged += _userManager_UserPasswordChanged;
             _userManager.UserDeleted += _userManager_UserDeleted;
             _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
+            _userManager.UserLockedOut += _userManager_UserLockedOut;
 
             //_config.ConfigurationUpdated += _config_ConfigurationUpdated;
             //_config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
@@ -93,6 +94,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             //_logManager.LoggerLoaded += _logManager_LoggerLoaded;
 
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
+        }
+
+        void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
+        {
+            CreateLogEntry(new ActivityLogEntry
+            {
+                Name = string.Format(_localization.GetLocalizedString("UserLockedOutWithName"), e.Argument.Name),
+                Type = "UserLockedOut",
+                UserId = e.Argument.Id.ToString("N")
+            });
         }
 
         void _subManager_SubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
@@ -482,6 +493,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _userManager.UserPasswordChanged -= _userManager_UserPasswordChanged;
             _userManager.UserDeleted -= _userManager_UserDeleted;
             _userManager.UserConfigurationUpdated -= _userManager_UserConfigurationUpdated;
+            _userManager.UserLockedOut -= _userManager_UserLockedOut;
 
             _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
             _config.NamedConfigurationUpdated -= _config_NamedConfigurationUpdated;

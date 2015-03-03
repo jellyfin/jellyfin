@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.Images
 
                 try
                 {
-                    var size = _imageProcessor.GetImageSize(info.Path, info.DateModified);
+                    var size = _imageProcessor.GetImageSize(info);
 
                     width = Convert.ToInt32(size.Width);
                     height = Convert.ToInt32(size.Height);

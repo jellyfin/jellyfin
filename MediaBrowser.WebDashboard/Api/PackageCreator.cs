@@ -421,6 +421,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "itembynamedetailpage.js",
                                 "itemdetailpage.js",
                                 "itemlistpage.js",
+                                "kids.js",
                                 "librarypathmapping.js",
                                 "reports.js",
                                 "librarysettings.js",
