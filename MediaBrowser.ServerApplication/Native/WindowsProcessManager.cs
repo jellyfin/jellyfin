@@ -31,6 +31,9 @@ namespace MediaBrowser.ServerApplication.Native
         static extern uint SuspendThread(IntPtr hThread);
         [DllImport("kernel32.dll")]
         static extern int ResumeThread(IntPtr hThread);
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hThread);
 
         public static void Suspend(this Process process)
         {
@@ -42,6 +45,7 @@ namespace MediaBrowser.ServerApplication.Native
                     break;
                 }
                 SuspendThread(pOpenThread);
+                CloseHandle(pOpenThread);
             }
         }
         public static void Resume(this Process process)
@@ -54,6 +58,7 @@ namespace MediaBrowser.ServerApplication.Native
                     break;
                 }
                 ResumeThread(pOpenThread);
+                CloseHandle(pOpenThread);
             }
         }
         public static void Print(this Process process)
