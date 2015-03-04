@@ -265,12 +265,7 @@ namespace MediaBrowser.Model.Net
                 return "application/ttml+xml";
             }
 
-            if (ext.Equals(".bif", StringComparison.OrdinalIgnoreCase))
-            {
-                return "application/octet-stream";
-            }
-
-            throw new ArgumentException("Argument not supported: " + path);
+            return "application/octet-stream";
         }
 
         public static string ToExtension(string mimeType)
