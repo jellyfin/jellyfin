@@ -130,10 +130,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
                 ItemCount = items.Count,
-                Quality = request.Quality,
                 Category = request.Category,
                 ParentId = request.ParentId
             };
+
+            if (!string.IsNullOrWhiteSpace(request.Quality))
+            {
+                job.Quality = (SyncQuality)Enum.Parse(typeof(SyncQuality), request.Quality, true);
+            }
 
             if (!request.Category.HasValue && request.ItemIds != null)
             {
