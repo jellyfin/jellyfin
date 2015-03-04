@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -10,7 +11,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Fires when the trigger condition is satisfied and the task should run
         /// </summary>
-        event EventHandler<EventArgs> Triggered;
+        event EventHandler<GenericEventArgs<TaskExecutionOptions>> Triggered;
 
         /// <summary>
         /// Stars waiting for the trigger action
@@ -22,5 +23,13 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Stops waiting for the trigger action
         /// </summary>
         void Stop();
+
+        /// <summary>
+        /// Gets or sets the execution properties of this task.
+        /// </summary>
+        /// <value>
+        /// The execution properties of this task.
+        /// </value>
+        TaskExecutionOptions TaskOptions { get; set; }
     }
 }
