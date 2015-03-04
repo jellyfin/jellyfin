@@ -132,8 +132,6 @@
                     childText += Globalize.translate('ValueMinutes', 0);
                 }
 
-                //childText += item.ChildCount == 1 ? "1 item" : item.ChildCount + " items";
-
                 counts.push(childText);
 
             }
@@ -866,7 +864,10 @@
             atts.push('data-context="' + (options.context || '') + '"');
             atts.push('data-itemtype="' + item.Type + '"');
             atts.push('data-mediatype="' + (item.MediaType || '') + '"');
-            atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+
+            if (item.UserData.PlaybackPositionTicks) {
+                atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+            }
 
             atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');

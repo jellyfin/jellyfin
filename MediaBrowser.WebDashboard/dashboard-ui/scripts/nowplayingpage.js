@@ -246,7 +246,7 @@
         $('.chapterMenu', page).on('click', '.chapterPosterItem', function () {
 
             if (currentPlayer) {
-                var ticks = this.getAttribute('data-positionticks');
+                var ticks = this.getAttribute('data-positionticks') || '0';
 
                 currentPlayer.seek(parseInt(ticks));
             }

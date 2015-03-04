@@ -394,7 +394,7 @@
 
             $('.videoChaptersPopup').on('click', '.mediaPopupOption', function () {
 
-                var ticks = parseInt(this.getAttribute('data-positionticks'));
+                var ticks = parseInt(this.getAttribute('data-positionticks') || '0');
 
                 self.changeStream(ticks);
 

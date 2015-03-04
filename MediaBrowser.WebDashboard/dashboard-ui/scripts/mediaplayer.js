@@ -598,7 +598,7 @@
 
             } else if (item.MediaType === "Audio") {
 
-                mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);;
+                mediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
 
                 if (mediaSource) {
                     self.currentItem = item;
