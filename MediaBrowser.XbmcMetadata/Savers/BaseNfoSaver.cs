@@ -836,19 +836,26 @@ namespace MediaBrowser.XbmcMetadata.Savers
         private static void AddCollectionItems(Folder item, XmlWriter writer)
         {
             var items = item.LinkedChildren
-                .Where(i => i.Type == LinkedChildType.Manual && !string.IsNullOrWhiteSpace(i.ItemName))
+                .Where(i => i.Type == LinkedChildType.Manual)
                 .ToList();
 
             foreach (var link in items)
             {
                 writer.WriteStartElement("collectionitem");
 
-                writer.WriteElementString("name", link.ItemName);
-                writer.WriteElementString("type", link.ItemType);
-
-                if (link.ItemYear.HasValue)
+                if (!string.IsNullOrWhiteSpace(link.ItemName))
                 {
-                    writer.WriteElementString("year", link.ItemYear.Value.ToString(UsCulture));
+                    writer.WriteElementString("name", link.ItemName);
+                }
+
+                if (!string.IsNullOrWhiteSpace(link.ItemType))
+                {
+                    writer.WriteElementString("type", link.ItemType);
+                }
+
+                if (!string.IsNullOrWhiteSpace(link.Path))
+                {
+                    writer.WriteElementString("path", link.Path);
                 }
 
                 writer.WriteEndElement();

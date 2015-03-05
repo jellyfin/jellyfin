@@ -1407,23 +1407,6 @@ namespace MediaBrowser.Controller.Providers
                                 break;
                             }
 
-                        case "Year":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    int rval;
-
-                                    if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-                                    {
-                                        linkedItem.ItemYear = rval;
-                                    }
-                                }
-
-                                break;
-                            }
-
                         default:
                             reader.Skip();
                             break;
