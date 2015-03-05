@@ -11,7 +11,6 @@ namespace MediaBrowser.Controller.Entities
 
         public string ItemName { get; set; }
         public string ItemType { get; set; }
-        public int? ItemYear { get; set; }
 
         [IgnoreDataMember]
         public string Id { get; set; }

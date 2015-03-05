@@ -751,11 +751,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                     builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
                 }
 
-                if (link.ItemYear.HasValue)
-                {
-                    builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
-                }
-
                 if (!string.IsNullOrWhiteSpace(link.Path))
                 {
                     builder.Append("<Path>" + SecurityElement.Escape((link.Path)) + "</Path>");

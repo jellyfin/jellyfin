@@ -1245,13 +1245,6 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (info.ItemYear.HasValue)
-                            {
-                                if (info.ItemYear.Value != (i.ProductionYear ?? -1))
-                                {
-                                    return false;
-                                }
-                            }
                             return true;
                         }
                     }
