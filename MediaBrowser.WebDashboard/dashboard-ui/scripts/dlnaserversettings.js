@@ -6,6 +6,8 @@
         $('#chkBlastAliveMessages', page).checked(config.BlastAliveMessages).checkboxradio("refresh");
         $('#txtBlastInterval', page).val(config.BlastAliveMessageIntervalSeconds);
 
+        $('#chkEnableEnhancedMovies', page).checked(config.EnableEnhancedMovies).checkboxradio("refresh");
+
         var usersHtml = users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
@@ -44,6 +46,8 @@
             config.BlastAliveMessages = $('#chkBlastAliveMessages', form).checked();
             config.BlastAliveMessageIntervalSeconds = $('#txtBlastInterval', form).val();
             config.DefaultUserId = $('#selectUser', form).val();
+
+            config.EnableEnhancedMovies = $('#chkEnableEnhancedMovies', form).checked();
 
             ApiClient.updateNamedConfiguration("dlna", config).done(Dashboard.processServerConfigurationUpdateResult);
         });

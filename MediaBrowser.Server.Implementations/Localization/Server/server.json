@@ -78,6 +78,8 @@
     "OptionDetectArchiveFilesAsMediaHelp": "If enabled, files with .rar and .zip extensions will be detected as media files.",
     "LabelEnterConnectUserName": "User name or email:",
     "LabelEnterConnectUserNameHelp": "This is your Media Browser online account user name or password.",
+    "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
+    "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "Sync Job",
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "Movies",
