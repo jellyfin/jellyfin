@@ -40,7 +40,24 @@
             html += '<li>';
 
             html += '<a href="#">';
+
+            html += '<h3>';
             html += ScheduledTaskPage.getTriggerFriendlyName(trigger);
+            html += '</h3>';
+
+            if (trigger.MaxRuntimeMs) {
+                html += '<p>';
+
+                var hours = trigger.MaxRuntimeMs / 3600000;
+
+                if (hours == 1) {
+                    html += Globalize.translate('ValueTimeLimitSingleHour');
+                } else {
+                    html += Globalize.translate('ValueTimeLimitMultiHour', hours);
+                }
+                html += '</p>';
+            }
+
             html += '</a>';
 
             html += '<a href="#" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');">';
@@ -277,6 +294,11 @@
         else if (trigger.Type == 'IntervalTrigger') {
             trigger.IntervalTicks = $('#selectInterval', page).val();
         }
+
+        var timeLimit = $('#txtTimeLimit', page).val() || '0';
+        timeLimit = parseFloat(timeLimit) * 3600000;
+
+        trigger.MaxRuntimeMs = timeLimit || null;
 
         return trigger;
     },

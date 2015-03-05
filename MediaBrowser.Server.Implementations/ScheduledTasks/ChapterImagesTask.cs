@@ -4,9 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,10 +27,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
-
-        private readonly List<Video> _newlyAddedItems = new List<Video>();
-
-        private const int NewItemDelay = 30000;
 
         /// <summary>
         /// The current new item timer
@@ -59,70 +53,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             _itemRepo = itemRepo;
             _appPaths = appPaths;
             _encodingManager = encodingManager;
-
-            libraryManager.ItemAdded += libraryManager_ItemAdded;
-            libraryManager.ItemUpdated += libraryManager_ItemAdded;
-        }
-
-        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            var video = e.Item as Video;
-
-            if (video != null)
-            {
-                lock (_newlyAddedItems)
-                {
-                    _newlyAddedItems.Add(video);
-
-                    if (NewItemTimer == null)
-                    {
-                        NewItemTimer = new Timer(NewItemTimerCallback, null, NewItemDelay, Timeout.Infinite);
-                    }
-                    else
-                    {
-                        NewItemTimer.Change(NewItemDelay, Timeout.Infinite);
-                    }
-                }
-            }
-        }
-
-        private async void NewItemTimerCallback(object state)
-        {
-            List<Video> newItems;
-
-            // Lock the list and release all resources
-            lock (_newlyAddedItems)
-            {
-                newItems = _newlyAddedItems.DistinctBy(i => i.Id).ToList();
-                _newlyAddedItems.Clear();
-
-                NewItemTimer.Dispose();
-                NewItemTimer = null;
-            }
-
-            // Limit to video files to reduce changes of ffmpeg crash dialog
-            foreach (var item in newItems
-                .Where(i => i.LocationType == LocationType.FileSystem && i.VideoType == VideoType.VideoFile && string.IsNullOrEmpty(i.PrimaryImagePath) && i.DefaultVideoStreamIndex.HasValue)
-                .Take(1))
-            {
-                try
-                {
-                    var chapters = _itemRepo.GetChapters(item.Id).ToList();
-
-                    await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
-                    {
-                        SaveChapters = true,
-                        ExtractImages = true,
-                        Video = item,
-                        Chapters = chapters
-
-                    }, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error creating image for {0}", ex, item.Name);
-                }
-            }
         }
 
         /// <summary>
@@ -133,7 +63,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(4) }
+                    new DailyTrigger
+                    {
+                        TimeOfDay = TimeSpan.FromHours(3),
+                        TaskOptions = new TaskExecutionOptions
+                        {
+                            MaxRuntimeMs = Convert.ToInt32(TimeSpan.FromHours(5).TotalMilliseconds)
+                        }
+                    }
                 };
         }
 

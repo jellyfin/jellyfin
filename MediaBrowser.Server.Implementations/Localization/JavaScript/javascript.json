@@ -36,6 +36,8 @@
     "MessageKeyUpdated": "Thank you. Your supporter key has been updated.",
     "MessageKeyRemoved": "Thank you. Your supporter key has been removed.",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
+    "ValueTimeLimitSingleHour":  "Time limit: 1 hour",
+    "ValueTimeLimitMultiHour":  "Time limit: {0} hours",
     "HeaderSearch": "Search",
     "ValueDateCreated": "Date created: {0}",
     "LabelArtist": "Artist",

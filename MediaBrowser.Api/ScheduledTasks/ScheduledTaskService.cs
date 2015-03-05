@@ -3,7 +3,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Tasks;
 using ServiceStack;
-using ServiceStack.Text.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;

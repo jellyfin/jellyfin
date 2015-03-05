@@ -62,7 +62,7 @@
                         </li>
                         <li id="fldSelectInterval">
                             <label for="selectInterval">${LabelEveryXMinutes}</label>
-                            <select id="selectInterval" name="selectInterval">
+                            <select id="selectInterval">
                                 <option value="9000000000">15 minutes</option>
                                 <option value="18000000000">30 minutes</option>
                                 <option value="27000000000">45 minutes</option>
@@ -74,6 +74,10 @@
                                 <option value="288000000000">8 hours</option>
                                 <option value="432000000000">12 hours</option>
                             </select>
+                        </li>
+                        <li>
+                            <label for="txtTimeLimit">${LabelTimeLimitHours}</label>
+                            <input id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" />
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

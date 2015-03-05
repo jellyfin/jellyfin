@@ -99,6 +99,11 @@ namespace MediaBrowser.Common.ScheduledTasks
                 info.SystemEvent = systemEventTrigger.SystemEvent;
             }
 
+            if (trigger.TaskOptions != null)
+            {
+                info.MaxRuntimeMs = trigger.TaskOptions.MaxRuntimeMs;
+            }
+
             return info;
         }
 
@@ -111,6 +116,11 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
         public static ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
+            var options = new TaskExecutionOptions
+            {
+                MaxRuntimeMs = info.MaxRuntimeMs
+            };
+
             if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
             {
                 if (!info.TimeOfDayTicks.HasValue)
@@ -120,7 +130,8 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 return new DailyTrigger
                 {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value)
+                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
+                    TaskOptions = options
                 };
             }
 
@@ -139,7 +150,8 @@ namespace MediaBrowser.Common.ScheduledTasks
                 return new WeeklyTrigger
                 {
                     TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    DayOfWeek = info.DayOfWeek.Value
+                    DayOfWeek = info.DayOfWeek.Value,
+                    TaskOptions = options
                 };
             }
 
@@ -152,7 +164,8 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 return new IntervalTrigger
                 {
-                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value)
+                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
+                    TaskOptions = options
                 };
             }
 
@@ -165,7 +178,8 @@ namespace MediaBrowser.Common.ScheduledTasks
 
                 return new SystemEventTrigger
                 {
-                    SystemEvent = info.SystemEvent.Value
+                    SystemEvent = info.SystemEvent.Value,
+                    TaskOptions = options
                 };
             }
 
