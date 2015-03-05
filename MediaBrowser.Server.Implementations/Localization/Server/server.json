@@ -100,6 +100,7 @@
     "ReferToMediaLibraryWiki": "Refer to the media library wiki.",
     "LabelCountry": "Country:",
     "LabelLanguage": "Language:",
+    "LabelTimeLimitHours": "Time limit (hours):",
     "ButtonJoinTheDevelopmentTeam": "Join the Development Team",
     "HeaderPreferredMetadataLanguage": "Preferred metadata language:",
     "LabelSaveLocalMetadata": "Save artwork and metadata into media folders",
