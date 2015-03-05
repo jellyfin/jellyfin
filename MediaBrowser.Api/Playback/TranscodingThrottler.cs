@@ -14,11 +14,20 @@ namespace MediaBrowser.Api.Playback
         private Timer _timer;
         private bool _isPaused;
 
+        private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(2).Ticks;
+
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IProcessManager processManager)
+        {
+            _job = job;
+            _logger = logger;
+            _processManager = processManager;
+        }
+
         public void Start()
         {
             if (_processManager.SupportsSuspension)
             {
-                _timer = new Timer(TimerCallback, null, 5000, 5000);
+                //_timer = new Timer(TimerCallback, null, 5000, 5000);
             }
         }
 
@@ -76,15 +85,6 @@ namespace MediaBrowser.Api.Playback
             {
                 _logger.ErrorException("Error unpausing transcoding", ex);
             }
-        }
-
-        private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(2).Ticks;
-
-        public TranscodingThrottler(TranscodingJob job, ILogger logger, IProcessManager processManager)
-        {
-            _job = job;
-            _logger = logger;
-            _processManager = processManager;
         }
 
         private bool IsThrottleAllowed(TranscodingJob job)
