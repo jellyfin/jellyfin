@@ -1,5 +1,4 @@
-﻿using ImageMagickSharp;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
@@ -47,31 +46,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
         public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
-            try
+            using (var fs = File.OpenRead(path))
             {
-                using (var fs = File.OpenRead(path))
+                using (var binaryReader = new BinaryReader(fs))
                 {
-                    using (var binaryReader = new BinaryReader(fs))
-                    {
-                        return GetDimensions(binaryReader);
-                    }
+                    return GetDimensions(binaryReader);
                 }
-            }
-            catch
-            {
-                logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
-            }
-
-            using (var wand = new MagickWand())
-            {
-                wand.PingImage(path);
-                var img = wand.CurrentImage;
-
-                return new ImageSize
-                {
-                    Width = img.Width,
-                    Height = img.Height
-                };
             }
         }
 
