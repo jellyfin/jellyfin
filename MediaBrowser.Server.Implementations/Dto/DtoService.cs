@@ -395,6 +395,18 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
             }
+
+            var userView = item as UserView;
+            if (userView != null)
+            {
+                dto.HasDynamicCategories = userView.ContainsDynamicCategories(user);
+            }
+
+            var collectionFolder = item as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                dto.HasDynamicCategories = false;
+            }
         }
 
         private int GetChildCount(Folder folder, User user)

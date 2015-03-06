@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var fileTransferProgress = new ActionableProgress<double>();
             fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
 
-            var localItem = CreateLocalItem(provider, target, libraryItem, serverId, jobItem.OriginalFileName);
+            var localItem = CreateLocalItem(provider, jobItem.SyncJobId, target, libraryItem, serverId, jobItem.OriginalFileName);
 
             await _syncManager.ReportSyncJobItemTransferBeginning(internalSyncJobItem.Id);
 
@@ -226,9 +226,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
+        public LocalItem CreateLocalItem(IServerSyncProvider provider, string syncJobId, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
         {
-            var path = GetDirectoryPath(provider, libraryItem, serverId);
+            var path = GetDirectoryPath(provider, syncJobId, libraryItem, serverId);
             path.Add(GetLocalFileName(provider, libraryItem, originalFileName));
 
             var localPath = provider.GetFullPath(path, target);
@@ -249,21 +249,20 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        private List<string> GetDirectoryPath(IServerSyncProvider provider, BaseItemDto item, string serverId)
+        private List<string> GetDirectoryPath(IServerSyncProvider provider, string syncJobId, BaseItemDto item, string serverId)
         {
             var parts = new List<string>
             {
-                serverId
+                serverId,
+                syncJobId
             };
 
             if (item.IsType("episode"))
             {
                 parts.Add("TV");
-                parts.Add(item.SeriesName);
-
-                if (!string.IsNullOrWhiteSpace(item.SeasonName))
+                if (!string.IsNullOrWhiteSpace(item.SeriesName))
                 {
-                    parts.Add(item.SeasonName);
+                    parts.Add(item.SeriesName);
                 }
             }
             else if (item.IsVideo)
@@ -302,7 +301,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var filename = originalFileName;
 
-            if (string.IsNullOrEmpty(filename))
+            if (string.IsNullOrWhiteSpace(filename))
             {
                 filename = item.Name;
             }
