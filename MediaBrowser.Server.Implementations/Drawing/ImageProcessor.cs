@@ -203,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             try
             {
                 CheckDisposed();
-                
+
                 var newWidth = Convert.ToInt32(newSize.Width);
                 var newHeight = Convert.ToInt32(newSize.Height);
 
@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
-                
+
                 using (var wand = new MagickWand(originalImagePath))
                 {
                     wand.CurrentImage.TrimImage(10);
@@ -450,12 +450,34 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path)
         {
-            CheckDisposed();
-            var size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+            ImageSize size;
+
+            try
+            {
+                size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+            }
+            catch
+            {
+                _logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
+
+                CheckDisposed();
+
+                using (var wand = new MagickWand())
+                {
+                    wand.PingImage(path);
+                    var img = wand.CurrentImage;
+
+                    size = new ImageSize
+                    {
+                        Width = img.Width,
+                        Height = img.Height
+                    };
+                }
+            }
 
             StartSaveImageSizeTimer();
 
-            return new ImageSize { Width = size.Width, Height = size.Height };
+            return size;
         }
 
         private readonly Timer _saveImageSizeTimer;
