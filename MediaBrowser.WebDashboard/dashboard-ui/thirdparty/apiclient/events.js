@@ -2,16 +2,16 @@
 
     globalScope.Events = {
 
-        on: function (obj, eventName, fn) {
+        on: function (obj, eventName, selector, fn) {
 
             Logger.log('event.on ' + eventName);
-            jQuery(obj).on(eventName, fn);
+            jQuery(obj).on(eventName, selector, fn);
         },
 
-        off: function (obj, eventName, fn) {
+        off: function (obj, eventName, selector, fn) {
 
             Logger.log('event.off ' + eventName);
-            jQuery(obj).off(eventName, fn);
+            jQuery(obj).off(eventName, selector, fn);
         },
 
         trigger: function (obj, eventName, params) {
