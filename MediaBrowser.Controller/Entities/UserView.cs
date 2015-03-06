@@ -16,6 +16,11 @@ namespace MediaBrowser.Controller.Entities
 
         public static ITVSeriesManager TVSeriesManager;
 
+        public bool ContainsDynamicCategories(User user)
+        {
+            return true;
+        }
+        
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             var parent = this as Folder;
