@@ -202,6 +202,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             try
             {
+                CheckDisposed();
+                
                 var newWidth = Convert.ToInt32(newSize.Width);
                 var newHeight = Convert.ToInt32(newSize.Height);
 
@@ -448,6 +450,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path)
         {
+            CheckDisposed();
             var size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
 
             StartSaveImageSizeTimer();
@@ -793,10 +796,20 @@ namespace MediaBrowser.Server.Implementations.Drawing
             });
         }
 
+        private bool _disposed;
         public void Dispose()
         {
+            _disposed = true;
             Wand.CloseEnvironment();
             _saveImageSizeTimer.Dispose();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }
