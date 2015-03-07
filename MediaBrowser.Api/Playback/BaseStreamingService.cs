@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Diagnostics;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -15,6 +14,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using System;
@@ -69,19 +69,19 @@ namespace MediaBrowser.Api.Playback
         protected ILiveTvManager LiveTvManager { get; private set; }
         protected IDlnaManager DlnaManager { get; private set; }
         protected IDeviceManager DeviceManager { get; private set; }
-        protected IChannelManager ChannelManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IProcessManager ProcessManager { get; private set; }
+        protected IMediaSourceManager MediaSourceManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager)
         {
+            MediaSourceManager = mediaSourceManager;
             ProcessManager = processManager;
             DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
-            ChannelManager = channelManager;
             DlnaManager = dlnaManager;
             LiveTvManager = liveTvManager;
             FileSystem = fileSystem;
@@ -1657,8 +1657,8 @@ namespace MediaBrowser.Api.Playback
 
                 var source = string.IsNullOrEmpty(request.MediaSourceId)
                     ? recording.GetMediaSources(false).First()
-                    : recording.GetMediaSources(false).First(i => string.Equals(i.Id, request.MediaSourceId));
-
+                    : MediaSourceManager.GetStaticMediaSource(recording, request.MediaSourceId, false);
+                
                 mediaStreams = source.MediaStreams;
 
                 // Just to prevent this from being null and causing other methods to fail
@@ -1696,25 +1696,13 @@ namespace MediaBrowser.Api.Playback
                 // Just to prevent this from being null and causing other methods to fail
                 state.MediaPath = string.Empty;
             }
-            else if (item is IChannelMediaItem)
-            {
-                var mediaSource = await GetChannelMediaInfo(request.Id, request.MediaSourceId, cancellationToken).ConfigureAwait(false);
-                state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.InputProtocol = mediaSource.Protocol;
-                state.MediaPath = mediaSource.Path;
-                state.RunTimeTicks = item.RunTimeTicks;
-                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-                state.InputBitrate = mediaSource.Bitrate;
-                state.InputFileSize = mediaSource.Size;
-                state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
-                mediaStreams = mediaSource.MediaStreams;
-            }
             else
             {
-                var hasMediaSources = (IHasMediaSources)item;
+                var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, cancellationToken).ConfigureAwait(false);
+
                 var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                    ? hasMediaSources.GetMediaSources(false).First()
-                    : hasMediaSources.GetMediaSources(false).First(i => string.Equals(i.Id, request.MediaSourceId));
+                    ? mediaSources.First()
+                    : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
 
                 mediaStreams = mediaSource.MediaStreams;
 
@@ -1724,6 +1712,8 @@ namespace MediaBrowser.Api.Playback
                 state.InputFileSize = mediaSource.Size;
                 state.InputBitrate = mediaSource.Bitrate;
                 state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+                state.RunTimeTicks = mediaSource.RunTimeTicks;
+                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
 
                 var video = item as Video;
 
@@ -1746,7 +1736,6 @@ namespace MediaBrowser.Api.Playback
                     }
                 }
 
-                state.RunTimeTicks = mediaSource.RunTimeTicks;
             }
 
             var videoRequest = request as VideoStreamRequest;
@@ -1867,29 +1856,6 @@ namespace MediaBrowser.Api.Playback
             }
 
             state.AllMediaStreams = mediaStreams;
-        }
-
-        private async Task<MediaSourceInfo> GetChannelMediaInfo(string id,
-            string mediaSourceId,
-            CancellationToken cancellationToken)
-        {
-            var channelMediaSources = await ChannelManager.GetChannelItemMediaSources(id, true, cancellationToken)
-                .ConfigureAwait(false);
-
-            var list = channelMediaSources.ToList();
-
-            if (!string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                var source = list
-                    .FirstOrDefault(i => string.Equals(mediaSourceId, i.Id));
-
-                if (source != null)
-                {
-                    return source;
-                }
-            }
-
-            return list.First();
         }
 
         private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)

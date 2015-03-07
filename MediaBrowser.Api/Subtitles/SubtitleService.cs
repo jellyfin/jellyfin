@@ -124,20 +124,21 @@ namespace MediaBrowser.Api.Subtitles
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public object Get(GetSubtitlePlaylist request)
         {
             var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));
 
-            var mediaSource = item.GetMediaSources(false)
-                .First(i => string.Equals(i.Id, request.MediaSourceId ?? request.Id));
+            var mediaSource = _mediaSourceManager.GetStaticMediaSource(item, request.MediaSourceId, false);
 
             var builder = new StringBuilder();
 

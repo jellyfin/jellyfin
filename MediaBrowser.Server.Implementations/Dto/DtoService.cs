@@ -45,8 +45,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly ISyncManager _syncManager;
         private readonly IApplicationHost _appHost;
         private readonly Func<IDeviceManager> _deviceManager;
+        private readonly Func<IMediaSourceManager> _mediaSourceManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -60,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _syncManager = syncManager;
             _appHost = appHost;
             _deviceManager = deviceManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         /// <summary>
@@ -257,7 +259,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                     else
                     {
-                        dto.MediaSources = hasMediaSources.GetMediaSources(true, user).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user).ToList();
                     }
                 }
             }

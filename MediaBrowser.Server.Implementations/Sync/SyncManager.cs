@@ -47,7 +47,8 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly Func<ISubtitleEncoder> _subtitleEncoder;
         private readonly IConfigurationManager _config;
-        private IUserDataManager _userDataManager;
+        private readonly IUserDataManager _userDataManager;
+        private readonly Func<IMediaSourceManager> _mediaSourceManager;
 
         private ISyncProvider[] _providers = { };
 
@@ -57,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager, Func<IMediaSourceManager> mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -72,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _subtitleEncoder = subtitleEncoder;
             _config = config;
             _userDataManager = userDataManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -610,7 +612,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private SyncJobProcessor GetSyncJobProcessor()
         {
-            return new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder(), _subtitleEncoder(), _config, _fileSystem);
+            return new SyncJobProcessor(_libraryManager, _repo, this, _logger, _userManager, _tvSeriesManager, _mediaEncoder(), _subtitleEncoder(), _config, _fileSystem, _mediaSourceManager());
         }
 
         public SyncJobItem GetJobItem(string id)
@@ -677,7 +679,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
 
             syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
-
+            
             var mediaSource = syncedItem.Item.MediaSources
                .FirstOrDefault(i => string.Equals(i.Id, jobItem.MediaSourceId));
 

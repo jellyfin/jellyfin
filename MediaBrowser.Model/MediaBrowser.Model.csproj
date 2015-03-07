@@ -395,6 +395,7 @@
     <Compile Include="Sync\SyncOptions.cs" />
     <Compile Include="Sync\SyncParameter.cs" />
     <Compile Include="Sync\SyncQuality.cs" />
+    <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
