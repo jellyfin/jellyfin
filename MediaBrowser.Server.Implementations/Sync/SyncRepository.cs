@@ -539,6 +539,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     whereClauses.Add("JobId=@JobId");
                     cmd.Parameters.Add(cmd, "@JobId", DbType.String).Value = query.JobId;
                 }
+                if (!string.IsNullOrWhiteSpace(query.ItemId))
+                {
+                    whereClauses.Add("ItemId=@ItemId");
+                    cmd.Parameters.Add(cmd, "@ItemId", DbType.String).Value = query.ItemId;
+                }
                 if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
                     whereClauses.Add("TargetId=@TargetId");

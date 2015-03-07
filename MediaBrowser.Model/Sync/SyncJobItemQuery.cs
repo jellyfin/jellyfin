@@ -20,6 +20,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The job identifier.</value>
         public string JobId { get; set; }
         /// <summary>
+        /// Gets or sets the item identifier.
+        /// </summary>
+        /// <value>The item identifier.</value>
+        public string ItemId { get; set; }
+        /// <summary>
         /// Gets or sets the target identifier.
         /// </summary>
         /// <value>The target identifier.</value>
