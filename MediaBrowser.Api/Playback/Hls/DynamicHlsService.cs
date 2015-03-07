@@ -683,7 +683,9 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d.ts";
+
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
@@ -692,8 +694,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetAudioArguments(state),
                 state.SegmentLength.ToString(UsCulture),
                 startNumberParam,
-                state.HlsListSize.ToString(UsCulture),
-                outputPath
+                outputPath,
+                outputTsArg
                 ).Trim();
 
             return args;
