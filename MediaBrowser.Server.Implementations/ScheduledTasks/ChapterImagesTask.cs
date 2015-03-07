@@ -65,10 +65,10 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                 {
                     new DailyTrigger
                     {
-                        TimeOfDay = TimeSpan.FromHours(3),
+                        TimeOfDay = TimeSpan.FromHours(1),
                         TaskOptions = new TaskExecutionOptions
                         {
-                            MaxRuntimeMs = Convert.ToInt32(TimeSpan.FromHours(5).TotalMilliseconds)
+                            MaxRuntimeMs = Convert.ToInt32(TimeSpan.FromHours(4).TotalMilliseconds)
                         }
                     }
                 };

@@ -682,7 +682,7 @@
     "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "NotificationOptionCameraImageUploaded": "Camera image uploaded",
     "NotificationOptionUserLockedOut": "User locked out",
-    "SendNotificationHelp": "By default, notifications are delivered to the dashboard inbox. Browse the plugin catalog to install additional notification options.",
+    "HeaderSendNotificationHelp": "By default, notifications are delivered to your dashboard inbox. Browse the plugin catalog to install additional notification options.",
     "NotificationOptionServerRestartRequired": "Server restart required",
     "LabelNotificationEnabled": "Enable this notification",
     "LabelMonitorUsers": "Monitor activity from:",
