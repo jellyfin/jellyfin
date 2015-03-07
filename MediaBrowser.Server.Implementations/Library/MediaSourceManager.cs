@@ -5,6 +5,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,13 +22,15 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IChannelManager _channelManager;
 
         private IMediaSourceProvider[] _providers;
+        private readonly ILogger _logger;
 
-        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, IChannelManager channelManager)
+        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, IChannelManager channelManager, ILogger logger)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _channelManager = channelManager;
+            _logger = logger;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -127,6 +130,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var item = _libraryManager.GetItemById(id);
             IEnumerable<MediaSourceInfo> mediaSources;
 
+            var hasMediaSources = (IHasMediaSources)item;
             var channelItem = item as IChannelMediaItem;
 
             if (channelItem != null)
@@ -136,8 +140,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
-                var hasMediaSources = (IHasMediaSources)item;
-
                 if (string.IsNullOrWhiteSpace(userId))
                 {
                     mediaSources = hasMediaSources.GetMediaSources(true);
@@ -149,7 +151,35 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return mediaSources;
+            var dynamicMediaSources = await GetDynamicMediaSources(hasMediaSources, cancellationToken).ConfigureAwait(false);
+
+            var list = new List<MediaSourceInfo>();
+
+            list.AddRange(mediaSources);
+            list.AddRange(dynamicMediaSources);
+
+            return SortMediaSources(list);
+        }
+
+        private async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
+        {
+            var tasks = _providers.Select(i => GetDynamicMediaSources(item, i, cancellationToken));
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return results.SelectMany(i => i.ToList());
+        }
+
+        private async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IHasMediaSources item, IMediaSourceProvider provider, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await provider.GetMediaSources(item, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting media sources", ex);
+                return new List<MediaSourceInfo>();
+            }
         }
 
         public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, CancellationToken cancellationToken)
