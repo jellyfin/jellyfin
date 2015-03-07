@@ -59,6 +59,11 @@ namespace MediaBrowser.Common.Implementations.Serialization
             }
         }
 
+        private Stream OpenFile(string path)
+        {
+            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
         /// <summary>
         /// Deserializes from file.
         /// </summary>
@@ -78,7 +83,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-            using (Stream stream = File.OpenRead(file))
+            using (Stream stream = OpenFile(file))
             {
                 return DeserializeFromStream(stream, type);
             }
@@ -99,7 +104,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-            using (Stream stream = File.OpenRead(file))
+            using (Stream stream = OpenFile(file))
             {
                 return DeserializeFromStream<T>(stream);
             }
