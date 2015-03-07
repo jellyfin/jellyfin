@@ -30,10 +30,10 @@
             }
 
             var dataSrc = ' data-src="' + imgUrl + '"';
-
+            // TODO: This markup needs to be converted to the newer card layout pattern
             html += '<div class="posterItemImage lazy"' + dataSrc + '>';
 
-            html += '<div class="posterItemTextOverlay">';
+            html += '<div class="posterItemTextOverlay" style="position:absolute;bottom:0;left:0;right:0;">';
 
             if (chapter.Name) {
                 html += "<div class='posterItemText'>";
@@ -43,7 +43,7 @@
 
             html += "<div class='posterItemProgress posterItemText'>";
             var pct = 100 * (chapter.StartPositionTicks / runtimeTicks);
-            html += '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '" style="opacity:.8;"></progress>';
+            html += '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '" style="opacity:.8;width:100%;"></progress>';
             html += "</div>";
 
             html += "</div>";
@@ -53,7 +53,7 @@
             html += "</div>";
         }
 
-        elem.html(html).trigger('create');
+        elem.html(html).trigger('create').lazyChildren();
     }
 
     function selectCurrentChapter(elem, positionTicks) {

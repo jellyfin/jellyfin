@@ -13,13 +13,15 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public class MusicDynamicImageProvider : BaseDynamicImageProvider<UserView>, ICustomMetadataProvider<UserView>
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>, ICustomMetadataProvider<UserView>
     {
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public MusicDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths)
         {
+            _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)

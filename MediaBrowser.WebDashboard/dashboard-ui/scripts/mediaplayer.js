@@ -590,7 +590,7 @@
                                 callback();
                             }
                         } else {
-                            showNoCompatibleStreamError();
+                            showPlaybackInfoErrorMessage('NoCompatibleStream');
                         }
                     }
                 });
@@ -612,7 +612,7 @@
                         callback();
                     }
                 } else {
-                    showNoCompatibleStreamError();
+                    showPlaybackInfoErrorMessage('NoCompatibleStream');
                 }
 
             } else {
@@ -622,10 +622,26 @@
 
         function validatePlaybackInfoResult(result) {
 
+            if (result.ErrorCode) {
+
+                showPlaybackInfoErrorMessage(result.ErrorCode);
+                return false;
+            }
+
             return true;
         }
 
-        function showNoCompatibleStreamError() {
+        function showPlaybackInfoErrorMessage(errorCode) {
+
+            // This timeout is messy, but if jqm is in the act of hiding a popup, it will not show a new one
+            // If we're coming from the popup play menu, this will be a problem
+
+            setTimeout(function () {
+                Dashboard.alert({
+                    message: Globalize.translate('MessagePlaybackError' + errorCode),
+                    title: Globalize.translate('HeaderPlaybackError')
+                });
+            }, 300);
 
         }
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.MediaInfo
@@ -16,6 +17,12 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The live stream identifier.</value>
         public string LiveStreamId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error code.
+        /// </summary>
+        /// <value>The error code.</value>
+        public PlaybackErrorCode? ErrorCode { get; set; }
 
         public LiveMediaInfoResult()
         {
