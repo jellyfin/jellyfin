@@ -79,6 +79,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             _providers = providers.ToArray();
         }
 
+        public IEnumerable<IServerSyncProvider> ServerSyncProviders
+        {
+            get { return _providers.OfType<IServerSyncProvider>(); }
+        }
+
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
         {
             var processor = GetSyncJobProcessor();
@@ -438,8 +443,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return target.Id;
             }
 
-            var providerId = GetSyncProviderId(provider);
-            return (providerId + "-" + target.Id).GetMD5().ToString("N");
+            return target.Id;
+            //var providerId = GetSyncProviderId(provider);
+            //return (providerId + "-" + target.Id).GetMD5().ToString("N");
         }
 
         private string GetSyncProviderId(ISyncProvider provider)

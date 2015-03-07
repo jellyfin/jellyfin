@@ -79,6 +79,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             QueueScheduledTask<T>(options);
         }
 
+        public void CancelIfRunningAndQueue<T>()
+               where T : IScheduledTask
+        {
+            CancelIfRunningAndQueue<T>(new TaskExecutionOptions());
+        }
+
         /// <summary>
         /// Cancels if running
         /// </summary>
@@ -103,6 +109,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             QueueScheduledTask(scheduledTask, options);
         }
 
+        public void QueueScheduledTask<T>()
+            where T : IScheduledTask
+        {
+            QueueScheduledTask<T>(new TaskExecutionOptions());
+        }
+        
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>

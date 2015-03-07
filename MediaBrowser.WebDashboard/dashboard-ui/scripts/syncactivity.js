@@ -161,7 +161,7 @@
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
-            var targetName = job.TargetName;
+            var targetName = job.TargetName || 'Unknown';
 
             if (targetName != lastTargetName) {
 

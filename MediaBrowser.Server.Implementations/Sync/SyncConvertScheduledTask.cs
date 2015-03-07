@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
+    public class SyncConvertScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ISyncRepository _syncRepo;
@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public SyncScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem)
+        public SyncConvertScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;

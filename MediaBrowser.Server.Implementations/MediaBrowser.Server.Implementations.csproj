@@ -308,12 +308,13 @@
     <Compile Include="Sync\IHasSyncProfile.cs" />
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiProviderSync.cs" />
+    <Compile Include="Sync\ServerSyncScheduledTask.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
     <Compile Include="Sync\SyncConfig.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
-    <Compile Include="Sync\SyncScheduledTask.cs" />
+    <Compile Include="Sync\SyncConvertScheduledTask.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />

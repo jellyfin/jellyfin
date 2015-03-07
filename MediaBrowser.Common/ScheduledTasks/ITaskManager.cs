@@ -18,7 +18,14 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="options">Task options.</param>
-        void CancelIfRunningAndQueue<T>(TaskExecutionOptions options = null)
+        void CancelIfRunningAndQueue<T>(TaskExecutionOptions options)
+            where T : IScheduledTask;
+
+        /// <summary>
+        /// Cancels if running and queue.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        void CancelIfRunningAndQueue<T>()
             where T : IScheduledTask;
 
         /// <summary>
@@ -33,7 +40,14 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="options">Task options.</param>
-        void QueueScheduledTask<T>(TaskExecutionOptions options = null)
+        void QueueScheduledTask<T>(TaskExecutionOptions options)
+            where T : IScheduledTask;
+
+        /// <summary>
+        /// Queues the scheduled task.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        void QueueScheduledTask<T>()
             where T : IScheduledTask;
 
         /// <summary>
