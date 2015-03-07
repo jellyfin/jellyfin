@@ -171,6 +171,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "MinStartDate", Description = "Optional. The minimum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string MinStartDate { get; set; }
 
+        [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? HasAired { get; set; }
+
         [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string MaxStartDate { get; set; }
 
@@ -369,7 +372,8 @@ namespace MediaBrowser.Api.LiveTv
             var query = new ProgramQuery
             {
                 ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
-                UserId = request.UserId
+                UserId = request.UserId,
+                HasAired = request.HasAired
             };
 
             if (!string.IsNullOrEmpty(request.MinStartDate))

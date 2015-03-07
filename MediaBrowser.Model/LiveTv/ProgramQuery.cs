@@ -26,7 +26,9 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime? MinEndDate { get; set; }
 
         public DateTime? MaxEndDate { get; set; }
-        
+
+        public bool? HasAired { get; set; }
+
         public ProgramQuery()
         {
             ChannelIdList = new string[] { };

@@ -659,6 +659,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 programs = programs.Where(i => i.StartDate <= val);
             }
 
+            if (query.HasAired.HasValue)
+            {
+                var val = query.HasAired.Value;
+                programs = programs.Where(i => i.HasAired == val);
+            }
+
             if (query.ChannelIdList.Length > 0)
             {
                 var guids = query.ChannelIdList.Select(i => new Guid(i)).ToList();
