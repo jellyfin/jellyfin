@@ -173,7 +173,7 @@
 
                 lastTargetName = targetName;
 
-                html += '<div class="detailSectionHeader" style="padding: .85em 0 .85em 1em;">';
+                html += '<div class="detailSectionHeader">';
 
                 html += '<div style="display:inline-block;vertical-align:middle;">' + targetName + '</div>';
 

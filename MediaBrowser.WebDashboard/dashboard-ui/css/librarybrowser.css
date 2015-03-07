@@ -669,13 +669,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .ui-page-theme-a .detailSectionHeader {
-    background-color: #ddd;
+    background-color: transparent;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    padding: 0 0 .25em .25em;
+    margin-bottom: .5em;
 }
 
     .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
-        font-weight: 500;
+        font-size: 22px;
     }
 
 .ui-page-theme-b .detailSectionHeader {

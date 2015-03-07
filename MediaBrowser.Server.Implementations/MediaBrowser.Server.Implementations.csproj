@@ -309,6 +309,7 @@
     <Compile Include="Sync\MediaSync.cs" />
     <Compile Include="Sync\MultiProviderSync.cs" />
     <Compile Include="Sync\ServerSyncScheduledTask.cs" />
+    <Compile Include="Sync\SyncedMediaSourceProvider.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
     <Compile Include="Sync\SyncConfig.cs" />
     <Compile Include="Sync\SyncJobProcessor.cs" />

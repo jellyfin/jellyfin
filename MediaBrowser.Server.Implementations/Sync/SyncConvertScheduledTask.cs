@@ -25,8 +25,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public SyncConvertScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem)
+        public SyncConvertScheduledTask(ILibraryManager libraryManager, ISyncRepository syncRepo, ISyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -38,6 +39,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _subtitleEncoder = subtitleEncoder;
             _config = config;
             _fileSystem = fileSystem;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public string Name
@@ -60,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new SyncJobProcessor(_libraryManager, _syncRepo, (SyncManager)_syncManager, _logger, _userManager, _tvSeriesManager, _mediaEncoder, _subtitleEncoder, _config, _fileSystem)
+            return new SyncJobProcessor(_libraryManager, _syncRepo, (SyncManager)_syncManager, _logger, _userManager, _tvSeriesManager, _mediaEncoder, _subtitleEncoder, _config, _fileSystem, _mediaSourceManager)
                 .Sync(progress, cancellationToken);
         }
 

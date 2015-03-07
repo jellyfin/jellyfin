@@ -38,8 +38,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, SyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, SyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _subtitleEncoder = subtitleEncoder;
             _config = config;
             _fileSystem = fileSystem;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -491,7 +493,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             options.Context = EncodingContext.Static;
             options.Profile = profile;
             options.ItemId = item.Id.ToString("N");
-            options.MediaSources = item.GetMediaSources(false, user).ToList();
+            options.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
             var streamInfo = new StreamBuilder().BuildVideoItem(options);
             var mediaSource = streamInfo.MediaSource;
@@ -682,7 +684,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             options.Context = EncodingContext.Static;
             options.Profile = profile;
             options.ItemId = item.Id.ToString("N");
-            options.MediaSources = item.GetMediaSources(false, user).ToList();
+            options.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
             var streamInfo = new StreamBuilder().BuildAudioItem(options);
             var mediaSource = streamInfo.MediaSource;

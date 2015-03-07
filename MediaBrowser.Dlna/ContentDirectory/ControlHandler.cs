@@ -32,7 +32,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly ILibraryManager _libraryManager;
         private readonly IChannelManager _channelManager;
         private readonly IUserDataManager _userDataManager;
-        private IServerConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly User _user;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
@@ -46,6 +46,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly DidlBuilder _didlBuilder;
 
         private readonly DeviceProfile _profile;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager)
             : base(config, logger)
@@ -58,7 +59,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, _mediaSourceManager);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)

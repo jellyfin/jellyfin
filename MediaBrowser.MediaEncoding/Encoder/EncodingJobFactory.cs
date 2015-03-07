@@ -23,6 +23,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILiveTvManager _liveTvManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IChannelManager _channelManager;
+        private IMediaSourceManager _mediaSourceManager;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
@@ -71,10 +72,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 var path = recording.RecordingInfo.Path;
                 var mediaUrl = recording.RecordingInfo.Url;
-
+                
                 var source = string.IsNullOrEmpty(request.MediaSourceId)
                     ? recording.GetMediaSources(false).First()
-                    : recording.GetMediaSources(false).First(i => string.Equals(i.Id, request.MediaSourceId));
+                    : _mediaSourceManager.GetStaticMediaSource(recording, request.MediaSourceId, false);
 
                 mediaStreams = source.MediaStreams;
 
@@ -113,25 +114,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // Just to prevent this from being null and causing other methods to fail
                 state.MediaPath = string.Empty;
             }
-            else if (item is IChannelMediaItem)
-            {
-                var mediaSource = await GetChannelMediaInfo(request.ItemId, request.MediaSourceId, cancellationToken).ConfigureAwait(false);
-                state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                state.InputProtocol = mediaSource.Protocol;
-                state.MediaPath = mediaSource.Path;
-                state.RunTimeTicks = item.RunTimeTicks;
-                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-                state.InputBitrate = mediaSource.Bitrate;
-                state.InputFileSize = mediaSource.Size;
-                state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
-                mediaStreams = mediaSource.MediaStreams;
-            }
             else
             {
-                var hasMediaSources = (IHasMediaSources)item;
+                var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, cancellationToken).ConfigureAwait(false);
+
                 var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                    ? hasMediaSources.GetMediaSources(false).First()
-                    : hasMediaSources.GetMediaSources(false).First(i => string.Equals(i.Id, request.MediaSourceId));
+                    ? mediaSources.First()
+                    : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
 
                 mediaStreams = mediaSource.MediaStreams;
 
@@ -141,6 +130,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.InputFileSize = mediaSource.Size;
                 state.InputBitrate = mediaSource.Bitrate;
                 state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+                state.RunTimeTicks = mediaSource.RunTimeTicks;
+                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
 
                 var video = item as Video;
 
@@ -422,29 +413,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return bitrate;
-        }
-
-        private async Task<MediaSourceInfo> GetChannelMediaInfo(string id,
-            string mediaSourceId,
-            CancellationToken cancellationToken)
-        {
-            var channelMediaSources = await _channelManager.GetChannelItemMediaSources(id, true, cancellationToken)
-                .ConfigureAwait(false);
-
-            var list = channelMediaSources.ToList();
-
-            if (!string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                var source = list
-                    .FirstOrDefault(i => string.Equals(mediaSourceId, i.Id));
-
-                if (source != null)
-                {
-                    return source;
-                }
-            }
-
-            return list.First();
         }
 
         protected string GetVideoBitrateParam(EncodingJob state, string videoCodec, bool isHls)

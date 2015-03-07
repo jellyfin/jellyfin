@@ -447,10 +447,10 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager);
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager);
+            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();
@@ -461,9 +461,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger, FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
-
-            MediaSourceManager = new MediaSourceManager(ItemRepository);
-            RegisterSingleInstance(MediaSourceManager);
 
             SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             RegisterSingleInstance(SessionManager);
@@ -478,6 +475,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
             RegisterSingleInstance(ChannelManager);
+
+            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, ChannelManager);
+            RegisterSingleInstance(MediaSourceManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
@@ -754,6 +754,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
+            MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
+            
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             SyncManager.AddParts(GetExports<ISyncProvider>());
         }

@@ -460,7 +460,7 @@ namespace MediaBrowser.Controller.Entities
 
             return result.OrderBy(i =>
             {
-                if (item.VideoType == VideoType.VideoFile)
+                if (i.VideoType == VideoType.VideoFile)
                 {
                     return 0;
                 }
@@ -555,7 +555,6 @@ namespace MediaBrowser.Controller.Entities
 
             return info;
         }
-
 
         private static string GetMediaSourceName(Video video, List<MediaStream> mediaStreams)
         {
