@@ -462,9 +462,6 @@ namespace MediaBrowser.Server.Startup.Common
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
 
-            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
-            RegisterSingleInstance(SessionManager);
-
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
@@ -478,6 +475,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, ChannelManager, LogManager.GetLogger("MediaSourceManager"));
             RegisterSingleInstance(MediaSourceManager);
+
+            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            RegisterSingleInstance(SessionManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
