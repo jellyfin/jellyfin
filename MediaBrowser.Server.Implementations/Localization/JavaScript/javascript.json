@@ -87,6 +87,8 @@
     "HeaderWelcomeToMediaBrowserWebClient": "Welcome to the Media Browser Web Client",
     "ButtonTakeTheTour": "Take the tour",
     "HeaderWelcomeBack": "Welcome back!",
+    "TitleSync": "Sync",
+    "TitlePlugins": "Plugins",
     "ButtonTakeTheTourToSeeWhatsNew": "Take the tour to see what's new",
     "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
     "HeaderLibraryAccess": "Library Access",

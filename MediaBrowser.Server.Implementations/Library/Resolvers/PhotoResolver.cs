@@ -31,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         }
 
         // Some common file name extensions for RAW picture files include: .cr2, .crw, .dng, .nef, .orf, .rw2, .pef, .arw, .sr2, .srf, and .tif.
-        protected static string[] ImageExtensions = { ".tiff", ".jpeg", ".jpg", ".png", ".aiff", ".cr2", ".crw", "dng", ".nef", ".orf", ".pef", ".arw" };
+        protected static string[] ImageExtensions = { ".tiff", ".jpeg", ".jpg", ".png", ".aiff", ".cr2", ".crw", ".dng", ".nef", ".orf", ".pef", ".arw", ".webp" };
 
         private static readonly string[] IgnoreFiles =
         {
