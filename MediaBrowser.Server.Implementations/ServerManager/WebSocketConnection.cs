@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -122,22 +123,21 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             }
             try
             {
-                WebSocketMessageInfo info;
-
+                //_logger.Debug(Encoding.UTF8.GetString(bytes));
                 using (var memoryStream = new MemoryStream(bytes))
                 {
-                    var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessage<object>));
+                    var info = (WebSocketMessageInfo)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessageInfo));
 
-                    info = new WebSocketMessageInfo
-                    {
-                        MessageType = stub.MessageType,
-                        Data = stub.Data == null ? null : stub.Data.ToString()
-                    };
+                    //info = new WebSocketMessageInfo
+                    //{
+                    //    MessageType = stub.MessageType,
+                    //    Data = stub.Data == null ? null : stub.Data.ToString()
+                    //};
+                    info.Connection = this;
+
+                    OnReceive(info);
                 }
 
-                info.Connection = this;
-
-                OnReceive(info);
             }
             catch (Exception ex)
             {
