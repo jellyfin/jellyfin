@@ -40,7 +40,8 @@
             installedPlugins: installedPlugins,
             categories: ['Sync'],
             showCategory: false,
-            context: 'sync'
+            context: 'sync',
+            targetSystem: 'Server'
         });
 
     }

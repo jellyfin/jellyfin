@@ -42,6 +42,12 @@
                 }
             }
 
+            if (options.targetSystem) {
+                if (p.targetSystem != options.targetSystem) {
+                    return false;
+                }
+            }
+
             return p.type == "UserInstalled";
 
         }).sort(function (a, b) {
