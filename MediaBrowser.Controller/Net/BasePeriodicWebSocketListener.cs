@@ -70,6 +70,11 @@ namespace MediaBrowser.Controller.Net
         /// <returns>Task.</returns>
         public Task ProcessMessage(WebSocketMessageInfo message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
             if (message.MessageType.Equals(Name + "Start", StringComparison.OrdinalIgnoreCase))
             {
                 Start(message);
