@@ -279,6 +279,13 @@ namespace MediaBrowser.Controller.Session
         SessionInfo GetSession(string deviceId, string client, string version);
 
         /// <summary>
+        /// Gets the session by authentication token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns>SessionInfo.</returns>
+        SessionInfo GetSessionByAuthenticationToken(string token);
+
+        /// <summary>
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>

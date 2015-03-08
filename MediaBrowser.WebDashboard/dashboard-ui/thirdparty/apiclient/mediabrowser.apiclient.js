@@ -337,7 +337,12 @@
 
         self.openWebSocket = function () {
 
+            if (!accessToken) {
+                throw new Error("Cannot open web socket without access token.");
+            }
+
             var url = serverAddress.replace('http', 'ws');
+            url += "?api_key=" + accessToken;
 
             webSocket = new WebSocket(url);
 
@@ -351,12 +356,8 @@
 
                 logger.log('web socket connection opened');
                 setTimeout(function () {
-
-                    self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
-
                     Events.trigger(self, 'websocketopen');
-
-                }, 500);
+                }, 0);
             };
             webSocket.onerror = function () {
                 setTimeout(function () {

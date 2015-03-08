@@ -1,10 +1,10 @@
-﻿using System.Text;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +66,17 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <value>The id.</value>
         public Guid Id { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        public string Url { get; set; }
+        /// <summary>
+        /// Gets or sets the query string.
+        /// </summary>
+        /// <value>The query string.</value>
+        public NameValueCollection QueryString { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>

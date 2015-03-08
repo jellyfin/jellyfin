@@ -1640,6 +1640,26 @@ namespace MediaBrowser.Server.Implementations.Session
                 string.Equals(i.Client, client));
         }
 
+        public SessionInfo GetSessionByAuthenticationToken(string token)
+        {
+            var result = _authRepo.Get(new AuthenticationInfoQuery
+            {
+                AccessToken = token
+            });
+
+            if (result.Items.Length == 0)
+            {
+                return null;
+            }
+
+            var info = result.Items[0];
+
+            // TODO: Make Token part of SessionInfo and get result that way
+            // This can't be done until all apps are updated to new authentication.
+            return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, info.DeviceId) &&
+                string.Equals(i.Client, info.AppName));
+        }
+
         public Task SendMessageToUserSessions<T>(string userId, string name, T data,
             CancellationToken cancellationToken)
         {
