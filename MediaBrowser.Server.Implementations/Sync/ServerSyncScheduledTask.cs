@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new MultiProviderSync(_syncManager, _appHost, _logger, _fileSystem)
+            return new MultiProviderSync((SyncManager)_syncManager, _appHost, _logger, _fileSystem)
                 .Sync(ServerSyncProviders, progress, cancellationToken);
         }
 

@@ -678,7 +678,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
     .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
-        font-size: 22px;
+        font-size: 20px;
     }
 
 .ui-page-theme-b .detailSectionHeader {

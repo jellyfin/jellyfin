@@ -12,13 +12,13 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Transfers the file.
         /// </summary>
-        /// <param name="inputFile">The input file.</param>
-        /// <param name="path">The path.</param>
+        /// <param name="stream">The stream.</param>
+        /// <param name="remotePath">The remote path.</param>
         /// <param name="target">The target.</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendFile(string inputFile, string path, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
+        Task SendFile(Stream stream, string remotePath, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the file.
@@ -62,11 +62,5 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="target">The target.</param>
         /// <returns>Task&lt;List&lt;DeviceFileInfo&gt;&gt;.</returns>
         Task<List<DeviceFileInfo>> GetFileSystemEntries(string path, SyncTarget target);
-
-        /// <summary>
-        /// Gets the data provider.
-        /// </summary>
-        /// <returns>ISyncDataProvider.</returns>
-        ISyncDataProvider GetDataProvider();
     }
 }
