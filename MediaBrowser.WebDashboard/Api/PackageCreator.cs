@@ -366,6 +366,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "backdrops.js",
                                 "sync.js",
                                 "syncjob.js",
+                                "syncservices.js",
                                 "playlistmanager.js",
 
                                 "mediaplayer.js",
