@@ -132,7 +132,7 @@
             }
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
-                return ip.Name == plugin.name;
+                return ip.Id == plugin.guid;
             })[0];
 
             html += "<div class='cardText'>";

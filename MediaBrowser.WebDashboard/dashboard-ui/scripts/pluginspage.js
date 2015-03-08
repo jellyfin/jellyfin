@@ -108,6 +108,15 @@
         return html;
     }
 
+    function renderPlugins(page, plugins) {
+
+        ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
+
+            populateList(page, plugins, configPages);
+
+        });
+    }
+
     function populateList(page, plugins, pluginConfigurationPages) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
@@ -198,14 +207,9 @@
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getInstalledPlugins();
+        ApiClient.getInstalledPlugins().done(function (plugins) {
 
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration");
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            populateList(page, response1[0], response2[0]);
-
+            renderPlugins(page, plugins);
         });
     }
 
@@ -213,5 +217,9 @@
 
         reloadList(this);
     });
+
+    window.PluginsPage = {
+        renderPlugins: renderPlugins
+    };
 
 })(jQuery, window);

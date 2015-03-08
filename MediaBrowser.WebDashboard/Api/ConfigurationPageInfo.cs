@@ -26,7 +26,9 @@ namespace MediaBrowser.WebDashboard.Api
         {
             Name = page.Name;
             ConfigurationPageType = page.ConfigurationPageType;
-            PluginId = page.Plugin.Id.ToString("N");
+
+            // Don't use "N" because it needs to match Plugin.Id
+            PluginId = page.Plugin.Id.ToString();
         }
     }
 }
