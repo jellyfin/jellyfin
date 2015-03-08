@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Sync;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,11 +14,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class SyncedMediaSourceProvider : IMediaSourceProvider
     {
-        private readonly ISyncManager _syncManager;
+        private readonly SyncManager _syncManager;
+        private readonly IServerApplicationHost _appHost;
 
-        public SyncedMediaSourceProvider(ISyncManager syncManager)
+        public SyncedMediaSourceProvider(ISyncManager syncManager, IServerApplicationHost appHost)
         {
-            _syncManager = syncManager;
+            _appHost = appHost;
+            _syncManager = (SyncManager)syncManager;
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
@@ -28,11 +32,36 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = item.Id.ToString("N")
             });
 
-            var jobItems = jobItemResult
-                .Items
-                .Where(i => true);
+            var list = new List<MediaSourceInfo>();
 
-            return new List<MediaSourceInfo>();
+            if (jobItemResult.Items.Length > 0)
+            {
+                var targets = _syncManager.ServerSyncProviders
+                    .SelectMany(i => i.GetAllSyncTargets().Select(t => new Tuple<IServerSyncProvider, SyncTarget>(i, t)))
+                    .ToList();
+
+                foreach (var jobItem in jobItemResult.Items)
+                {
+                    var targetTuple = targets.FirstOrDefault(i => string.Equals(i.Item2.Id, jobItem.TargetId, StringComparison.OrdinalIgnoreCase));
+
+                    if (targetTuple != null)
+                    {
+                        var syncTarget = targetTuple.Item2;
+
+                        var dataProvider = _syncManager.GetDataProvider(targetTuple.Item1, syncTarget);
+                        var localItemId = MediaSync.GetLocalId(_appHost.SystemId, item.Id.ToString("N"));
+
+                        var localItem = await dataProvider.GetCachedItem(syncTarget, localItemId).ConfigureAwait(false);
+
+                        if (localItem != null)
+                        {
+                            list.AddRange(localItem.Item.MediaSources);
+                        }
+                    }
+                }
+            }
+
+            return list;
         }
     }
 }

@@ -691,9 +691,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
 
             syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
-            
-            var mediaSource = syncedItem.Item.MediaSources
-               .FirstOrDefault(i => string.Equals(i.Id, jobItem.MediaSourceId));
+
+            var mediaSource = jobItem.MediaSource;
 
             syncedItem.Item.MediaSources = new List<MediaSourceInfo>();
 

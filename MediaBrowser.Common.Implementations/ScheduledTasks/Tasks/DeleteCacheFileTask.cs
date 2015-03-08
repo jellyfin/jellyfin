@@ -118,7 +118,21 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
                 index++;
             }
 
+            DeleteEmptyFolders(directory);
+
             progress.Report(100);
+        }
+
+        private static void DeleteEmptyFolders(string parent)
+        {
+            foreach (var directory in Directory.GetDirectories(parent))
+            {
+                DeleteEmptyFolders(directory);
+                if (!Directory.EnumerateFileSystemEntries(directory).Any())
+                {
+                    Directory.Delete(directory, false);
+                }
+            }
         }
 
         private void DeleteFile(string path)

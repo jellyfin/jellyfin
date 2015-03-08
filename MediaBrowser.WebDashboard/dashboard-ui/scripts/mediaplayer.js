@@ -528,10 +528,9 @@
         function getOptimalMediaSource(mediaType, versions) {
 
             var optimalVersion;
+            var bitrateSetting = AppSettings.maxStreamingBitrate();
 
             if (mediaType == 'Video') {
-
-                var bitrateSetting = AppSettings.maxStreamingBitrate();
 
                 var maxAllowedWidth = self.getMaxPlayableWidth();
 
@@ -546,6 +545,13 @@
                     })[0];
 
                     return self.canPlayVideoDirect(v, videoStream, audioStream, null, maxAllowedWidth, bitrateSetting);
+
+                })[0];
+            } else {
+
+                optimalVersion = versions.filter(function (v) {
+
+                    return canPlayAudioMediaSourceDirect(v);
 
                 })[0];
             }
@@ -565,59 +571,49 @@
                 self.stop();
             }
 
+            if (item.MediaType !== 'Audio' && item.MediaType !== 'Video') {
+                throw new Error("Unrecognized media type");
+            }
+
             var mediaSource;
 
-            if (item.MediaType === "Video") {
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
+                userId: Dashboard.getCurrentUserId()
 
-                ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
-                    userId: Dashboard.getCurrentUserId()
+            })).done(function (result) {
 
-                })).done(function (result) {
+                if (validatePlaybackInfoResult(result)) {
 
-                    if (validatePlaybackInfoResult(result)) {
-                        mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);;
+                    mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
 
-                        if (mediaSource) {
-                            self.currentMediaSource = mediaSource;
-                            self.currentItem = item;
+                    if (mediaSource) {
+
+                        self.currentMediaSource = mediaSource;
+                        self.currentItem = item;
+
+                        if (item.MediaType === "Video") {
 
                             self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
                             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
                             self.updateNowPlayingInfo(item);
 
-                            if (callback) {
-                                callback();
-                            }
-                        } else {
-                            showPlaybackInfoErrorMessage('NoCompatibleStream');
+                        } else if (item.MediaType === "Audio") {
+
+                            self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
+                            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
                         }
+
+                        if (callback) {
+                            callback();
+                        }
+
+                    } else {
+                        showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
-                });
-
-
-            } else if (item.MediaType === "Audio") {
-
-                mediaSource = getOptimalMediaSource(item.MediaType, item.MediaSources);
-
-                if (mediaSource) {
-                    self.currentItem = item;
-                    self.currentMediaSource = mediaSource;
-
-                    self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
-
-                    self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
-
-                    if (callback) {
-                        callback();
-                    }
-                } else {
-                    showPlaybackInfoErrorMessage('NoCompatibleStream');
                 }
 
-            } else {
-                throw new Error("Unrecognized media type");
-            }
+            });
         };
 
         function validatePlaybackInfoResult(result) {
@@ -1349,6 +1345,31 @@
             return $('.mediaPlayerAudio');
         }
 
+        function canPlayAudioMediaSourceDirect(mediaSource) {
+
+            var sourceContainer = (mediaSource.Container || '').toLowerCase();
+
+            if (sourceContainer == 'mp3' ||
+                (sourceContainer == 'aac' && supportsAac)) {
+
+                for (var i = 0, length = mediaSource.MediaStreams.length; i < length; i++) {
+
+                    var stream = mediaSource.MediaStreams[i];
+
+                    if (stream.Type == "Audio") {
+
+                        // Stream statically when possible
+                        if (stream.BitRate <= 320000) {
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         var supportsAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
 
         function playAudio(item, mediaSource, startPositionTicks) {
@@ -1365,25 +1386,7 @@
             };
 
             var sourceContainer = (mediaSource.Container || '').toLowerCase();
-            var isStatic = false;
-
-            if (sourceContainer == 'mp3' ||
-                (sourceContainer == 'aac' && supportsAac)) {
-
-                for (var i = 0, length = mediaSource.MediaStreams.length; i < length; i++) {
-
-                    var stream = mediaSource.MediaStreams[i];
-
-                    if (stream.Type == "Audio") {
-
-                        // Stream statically when possible
-                        if (stream.BitRate <= 320000) {
-                            isStatic = true;
-                        }
-                        break;
-                    }
-                }
-            }
+            var isStatic = canPlayAudioMediaSourceDirect(mediaSource);
 
             var outputContainer = isStatic ? sourceContainer : 'mp3';
             var audioUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, $.extend({}, baseParams, {

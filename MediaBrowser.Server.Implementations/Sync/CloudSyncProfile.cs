@@ -40,6 +40,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     VideoCodec = "h264,mpeg4",
                     AudioCodec = mp4Audio,
                     Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp3",
+                    Type = DlnaProfileType.Audio
                 }
             };
 

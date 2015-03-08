@@ -214,14 +214,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private string GetLocalId(string serverId, string itemId)
+        internal static string GetLocalId(string serverId, string itemId)
         {
             var bytes = Encoding.UTF8.GetBytes(serverId + itemId);
-            bytes = CreateMD5(bytes);
+            bytes = CreateMd5(bytes);
             return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
         }
 
-        private byte[] CreateMD5(byte[] value)
+        private static byte[] CreateMd5(byte[] value)
         {
             using (var provider = MD5.Create())
             {
@@ -341,23 +341,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     itemFile.Type = ItemFileType.Subtitles;
                 }
-                else if (!IsImageFile(file.Name))
-                {
-                    itemFile.Type = ItemFileType.Media;
-                }
 
                 itemFiles.Add(itemFile);
             }
 
             return itemFiles;
-        }
-
-        private static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
-        private bool IsImageFile(string path)
-        {
-            var ext = Path.GetExtension(path) ?? string.Empty;
-
-            return SupportedImageExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
         }
 
         private static readonly string[] SupportedSubtitleExtensions = { ".srt", ".vtt" };
