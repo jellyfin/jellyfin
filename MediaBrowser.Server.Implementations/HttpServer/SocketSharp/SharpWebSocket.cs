@@ -65,10 +65,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)
         {
+            //if (!string.IsNullOrWhiteSpace(e.Data))
+            //{
+            //    if (OnReceive != null)
+            //    {
+            //        OnReceive(e.Data);
+            //    }
+            //    return;
+            //}
             if (OnReceiveBytes != null)
             {
                 OnReceiveBytes(e.RawData);
-                //OnReceive(e.Data);
             }
         }
 
