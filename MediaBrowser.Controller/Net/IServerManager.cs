@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Model.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -58,5 +58,10 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value>The web socket connections.</value>
         IEnumerable<IWebSocketConnection> WebSocketConnections { get; }
+
+        /// <summary>
+        /// Occurs when [web socket connected].
+        /// </summary>
+        event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
     }
 }

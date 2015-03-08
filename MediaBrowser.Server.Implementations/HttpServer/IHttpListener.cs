@@ -24,8 +24,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets or sets the web socket handler.
         /// </summary>
         /// <value>The web socket handler.</value>
-        Action<WebSocketConnectEventArgs> WebSocketHandler { get; set; }
+        Action<WebSocketConnectEventArgs> WebSocketConnected { get; set; }
 
+        /// <summary>
+        /// Gets or sets the web socket connecting.
+        /// </summary>
+        /// <value>The web socket connecting.</value>
+        Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
+        
         /// <summary>
         /// Starts this instance.
         /// </summary>

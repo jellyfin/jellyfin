@@ -23,6 +23,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
+            if (!string.IsNullOrWhiteSpace(authorization.Token))
+            {
+                return _sessionManager.GetSessionByAuthenticationToken(authorization.Token);
+            }
             return _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);
         }
 
