@@ -156,7 +156,12 @@ namespace MediaBrowser.Server.Implementations.Library
             var list = new List<MediaSourceInfo>();
 
             list.AddRange(mediaSources);
-            list.AddRange(dynamicMediaSources);
+
+            foreach (var source in dynamicMediaSources)
+            {
+                source.SupportsTranscoding = false;
+                list.Add(source);
+            }
 
             return SortMediaSources(list);
         }
@@ -272,7 +277,6 @@ namespace MediaBrowser.Server.Implementations.Library
             })
             .ToList();
         }
-
 
         public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
         {
