@@ -3223,18 +3223,6 @@
                 throw new Error("null options");
             }
 
-            if (self.isWebSocketOpen()) {
-
-                var deferred = DeferredBuilder.Deferred();
-
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackStart", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
-            }
-
             var url = self.getUrl("Sessions/Playing");
 
             return self.ajax({
@@ -3287,18 +3275,6 @@
 
             if (!options) {
                 throw new Error("null options");
-            }
-
-            if (self.isWebSocketOpen()) {
-
-                var deferred = DeferredBuilder.Deferred();
-
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackStopped", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
             }
 
             var url = self.getUrl("Sessions/Playing/Stopped");
