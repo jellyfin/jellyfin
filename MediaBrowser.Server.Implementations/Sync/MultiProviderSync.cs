@@ -14,12 +14,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 {
     public class MultiProviderSync
     {
-        private readonly ISyncManager _syncManager;
+        private readonly SyncManager _syncManager;
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public MultiProviderSync(ISyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem)
+        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem)
         {
             _syncManager = syncManager;
             _appHost = appHost;
@@ -54,8 +54,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                     progress.Report(totalProgress);
                 });
 
+                var dataProvider = _syncManager.GetDataProvider(target.Item1, target.Item2);
+
                 await new MediaSync(_logger, _syncManager, _appHost, _fileSystem)
-                    .Sync(target.Item1, target.Item1.GetDataProvider(), target.Item2, innerProgress, cancellationToken)
+                    .Sync(target.Item1, dataProvider, target.Item2, innerProgress, cancellationToken)
                     .ConfigureAwait(false);
 
                 numComplete++;

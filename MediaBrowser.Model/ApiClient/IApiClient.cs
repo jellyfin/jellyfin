@@ -1519,11 +1519,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the synchronize options.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="itemIds">The item ids.</param>
-        /// <param name="parentId">The parent identifier.</param>
-        /// <param name="category">The category.</param>
+        /// <param name="jobInfo">The job information.</param>
         /// <returns>Task&lt;SyncOptions&gt;.</returns>
-        Task<SyncDialogOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null);
+        Task<SyncDialogOptions> GetSyncOptions(SyncJobRequest jobInfo);
     }
 }

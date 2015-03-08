@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -23,16 +22,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILiveTvManager _liveTvManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IChannelManager _channelManager;
-        private IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
-        public EncodingJobFactory(ILogger logger, ILiveTvManager liveTvManager, ILibraryManager libraryManager, IChannelManager channelManager)
+        public EncodingJobFactory(ILogger logger, ILiveTvManager liveTvManager, ILibraryManager libraryManager, IChannelManager channelManager, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
             _liveTvManager = liveTvManager;
             _libraryManager = libraryManager;
             _channelManager = channelManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public async Task<EncodingJob> CreateJob(EncodingJobOptions options, bool isVideoRequest, IProgress<double> progress, CancellationToken cancellationToken)

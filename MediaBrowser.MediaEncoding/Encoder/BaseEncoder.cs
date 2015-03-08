@@ -36,6 +36,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly IChannelManager ChannelManager;
         protected readonly ISessionManager SessionManager;
         protected readonly ISubtitleEncoder SubtitleEncoder;
+        protected readonly IMediaSourceManager MediaSourceManager;
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -47,7 +48,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IIsoManager isoManager,
             ILibraryManager libraryManager,
             IChannelManager channelManager,
-            ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder)
+            ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager)
         {
             MediaEncoder = mediaEncoder;
             Logger = logger;
@@ -59,13 +60,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ChannelManager = channelManager;
             SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
+            MediaSourceManager = mediaSourceManager;
         }
 
         public async Task<EncodingJob> Start(EncodingJobOptions options,
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LiveTvManager, LibraryManager, ChannelManager)
+            var encodingJob = await new EncodingJobFactory(Logger, LiveTvManager, LibraryManager, ChannelManager, MediaSourceManager)
                 .CreateJob(options, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);

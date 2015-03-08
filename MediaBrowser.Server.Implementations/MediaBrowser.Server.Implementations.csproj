@@ -316,6 +316,7 @@
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Sync\SyncConvertScheduledTask.cs" />
+    <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />

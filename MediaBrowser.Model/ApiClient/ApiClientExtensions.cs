@@ -35,7 +35,14 @@ namespace MediaBrowser.Model.ApiClient
 
         public static Task<SyncDialogOptions> GetSyncOptions(this IApiClient apiClient, SyncJob job)
         {
-            return apiClient.GetSyncOptions(job.RequestedItemIds, job.UserId, job.ParentId, job.Category);
+            return apiClient.GetSyncOptions(new SyncJobRequest
+            {
+                Category = job.Category,
+                ItemIds = job.RequestedItemIds,
+                ParentId = job.ParentId,
+                TargetId = job.TargetId,
+                UserId = job.UserId
+            });
         }
     }
 }

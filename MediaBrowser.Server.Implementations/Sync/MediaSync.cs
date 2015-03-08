@@ -206,9 +206,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             await dataProvider.Delete(target, localId).ConfigureAwait(false);
         }
 
-        private Task SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
+        private async Task SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
         {
-            return provider.SendFile(inputPath, item.LocalPath, target, new Progress<double>(), cancellationToken);
+            using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            {
+                await provider.SendFile(stream, item.LocalPath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            }
         }
 
         private string GetLocalId(string serverId, string itemId)

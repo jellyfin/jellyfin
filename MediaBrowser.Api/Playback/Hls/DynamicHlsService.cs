@@ -154,7 +154,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 2, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
