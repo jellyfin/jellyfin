@@ -23,7 +23,8 @@
             availablePlugins: availablePlugins,
             installedPlugins: installedPlugins,
             categories: ['Sync'],
-            showCategory: false
+            showCategory: false,
+            context: 'sync'
         });
 
     }

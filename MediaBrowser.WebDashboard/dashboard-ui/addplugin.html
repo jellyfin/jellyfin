@@ -1,17 +1,22 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>${PluginsTitle}</title>
+    <title>${TitlePlugins}</title>
 </head>
 <body>
     <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins">
 
         <div data-role="content">
             <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav pluginTabs" data-mini="true" style="display:none;">
                     <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
                     <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
                     <a href="channelsettings.html" data-role="button">${TabChannels}</a>
+                </div>
+                <div data-role="controlgroup" data-type="horizontal" class="localnav syncTabs" data-mini="true" style="display:none;">
+                    <a href="syncactivity.html" data-role="button">${TabActivity}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabServices}</a>
+                    <a href="syncsettings.html" data-role="button">${TabSettings}</a>
                 </div>
 
                 <div class="readOnlyContent">

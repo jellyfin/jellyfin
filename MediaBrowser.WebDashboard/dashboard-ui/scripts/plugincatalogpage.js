@@ -78,6 +78,10 @@
             }
 
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
+
+            if (options.context) {
+                href += "&context=" + options.context;
+            }
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
             html += "<div class='card backdropCard alternateHover bottomPaddedCard'>";
