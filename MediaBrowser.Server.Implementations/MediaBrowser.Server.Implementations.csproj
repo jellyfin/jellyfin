@@ -98,6 +98,9 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="UniversalDetector">
+      <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">

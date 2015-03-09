@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -8,6 +9,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UniversalDetector;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
 {
@@ -132,28 +134,43 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 return;
             }
+            var charset = DetectCharset(bytes);
+
+            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
+            {
+                OnReceiveInternal(Encoding.UTF8.GetString(bytes));
+            }
+            else
+            {
+                OnReceiveInternal(Encoding.ASCII.GetString(bytes));
+            }
+        }
+        private string DetectCharset(byte[] bytes)
+        {
             try
             {
-                //_logger.Debug(Encoding.UTF8.GetString(bytes));
-                using (var memoryStream = new MemoryStream(bytes))
+                using (var ms = new MemoryStream(bytes))
                 {
-                    var info = (WebSocketMessageInfo)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessageInfo));
+                    var detector = new CharsetDetector();
+                    detector.Feed(ms);
+                    detector.DataEnd();
 
-                    //info = new WebSocketMessageInfo
-                    //{
-                    //    MessageType = stub.MessageType,
-                    //    Data = stub.Data == null ? null : stub.Data.ToString()
-                    //};
-                    info.Connection = this;
+                    var charset = detector.Charset;
 
-                    OnReceive(info);
+                    if (!string.IsNullOrWhiteSpace(charset))
+                    {
+                        //_logger.Debug("UniversalDetector detected charset {0}", charset);
+                    }
+
+                    return charset;
                 }
-
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                _logger.ErrorException("Error processing web socket message", ex);
+                _logger.ErrorException("Error attempting to determine web socket message charset", ex);
             }
+
+            return null;
         }
 
         private void OnReceiveInternal(string message)
