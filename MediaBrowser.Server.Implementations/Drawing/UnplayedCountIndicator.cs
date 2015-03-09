@@ -1,12 +1,20 @@
-﻿using System.Globalization;
-using ImageMagickSharp;
+﻿using ImageMagickSharp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Drawing;
+using System.Globalization;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class UnplayedCountIndicator
     {
         private const int OffsetFromTopRightCorner = 38;
+
+        private readonly IApplicationPaths _appPaths;
+
+        public UnplayedCountIndicator(IApplicationPaths appPaths)
+        {
+            _appPaths = appPaths;
+        }
 
         public void DrawUnplayedCountIndicator(MagickWand wand, ImageSize imageSize, int count)
         {
@@ -25,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     pixel.Opacity = 0;
                     pixel.Color = "white";
                     draw.FillColor = pixel;
-                    draw.Font = "Sans-Serif";
+                    draw.Font = PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths);
                     draw.FontStyle = FontStyleType.NormalStyle;
                     draw.TextAlignment = TextAlignType.CenterAlign;
                     draw.FontWeight = FontWeightType.RegularStyle;
@@ -36,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                     if (text.Length == 1)
                     {
-                        x += 2;
+                        x += 1;
                     }
                     else if (text.Length == 2)
                     {

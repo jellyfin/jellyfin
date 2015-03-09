@@ -426,6 +426,8 @@
     <EmbeddedResource Include="Localization\JavaScript\uk.json" />
     <EmbeddedResource Include="Localization\Server\bg_BG.json" />
     <EmbeddedResource Include="Localization\Server\uk.json" />
+    <EmbeddedResource Include="Drawing\fonts\webdings.ttf" />
+    <EmbeddedResource Include="Drawing\fonts\robotoregular.ttf" />
     <None Include="Localization\JavaScript\sl_SI.json" />
     <EmbeddedResource Include="Localization\Server\sl_SI.json" />
     <None Include="packages.config" />
