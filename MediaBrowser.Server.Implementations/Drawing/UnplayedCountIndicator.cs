@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     }
                     else if (text.Length >= 3)
                     {
-                        x += 1;
+                        //x += 1;
                         y -= 2;
                         fontSize = 24;
                     }
