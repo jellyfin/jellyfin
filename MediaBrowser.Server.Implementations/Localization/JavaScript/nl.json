@@ -713,7 +713,7 @@
     "ButtonSync": "Synchronisatie",
     "SyncMedia": "Synchroniseer media",
     "HeaderCancelSyncJob": "Annuleer synchronisatie",
-    "CancelSyncJobConfirmation": "Weet u zeker dat u deze synchronistatie taak wilt annuleren? ",
+    "CancelSyncJobConfirmation": "Cancelling the sync job will remove synced media from the device during the next sync process. Are you sure you wish to proceed?",
     "TabSync": "Synchronisatie",
     "MessagePleaseSelectDeviceToSyncTo": "Selecteer een apparaat om mee te synchroniseren.",
     "MessageSyncJobCreated": "Synchronisatie taak gemaakt.",
