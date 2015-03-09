@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
@@ -61,9 +60,9 @@ namespace MediaBrowser.Server.Implementations.Session
             serverManager.WebSocketConnected += _serverManager_WebSocketConnected;
         }
 
-        void _serverManager_WebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
+        async void _serverManager_WebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
         {
-            var session = GetSession(e.Argument.QueryString);
+            var session = await GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint).ConfigureAwait(false);
 
             if (session != null)
             {
@@ -84,11 +83,11 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        void _httpServer_WebSocketConnecting(object sender, WebSocketConnectingEventArgs e)
+        async void _httpServer_WebSocketConnecting(object sender, WebSocketConnectingEventArgs e)
         {
             if (e.QueryString.AllKeys.Contains("api_key", StringComparer.OrdinalIgnoreCase))
             {
-                var session = GetSession(e.QueryString);
+                var session = await GetSession(e.QueryString, e.Endpoint).ConfigureAwait(false);
 
                 if (session == null)
                 {
@@ -97,10 +96,10 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private SessionInfo GetSession(NameValueCollection queryString)
+        private Task<SessionInfo> GetSession(NameValueCollection queryString, string remoteEndpoint)
         {
             var token = queryString["api_key"];
-            return _sessionManager.GetSessionByAuthenticationToken(token);
+            return _sessionManager.GetSessionByAuthenticationToken(token, remoteEndpoint);
         }
 
         public void Dispose()

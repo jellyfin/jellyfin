@@ -237,10 +237,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var activityDate = DateTime.UtcNow;
 
-            var userId = user == null ? (Guid?)null : user.Id;
-            var username = user == null ? null : user.Name;
-
-            var session = await GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, userId, username).ConfigureAwait(false);
+            var session = await GetSessionInfo(clientType, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
 
             session.LastActivityDate = activityDate;
 
@@ -281,7 +278,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (session != null)
                 {
-                    var key = GetSessionKey(session.Client, session.ApplicationVersion, session.DeviceId);
+                    var key = GetSessionKey(session.Client, session.DeviceId);
 
                     SessionInfo removed;
 
@@ -365,7 +362,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private string GetSessionKey(string clientType, string appVersion, string deviceId)
+        private string GetSessionKey(string clientType, string deviceId)
         {
             return clientType + deviceId;
         }
@@ -378,29 +375,31 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="username">The username.</param>
+        /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private async Task<SessionInfo> GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Guid? userId, string username)
+        private async Task<SessionInfo> GetSessionInfo(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
         {
-            var key = GetSessionKey(clientType, appVersion, deviceId);
+            var key = GetSessionKey(clientType, deviceId);
 
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
 
+            var userId = user == null ? (Guid?)null : user.Id;
+            var username = user == null ? null : user.Name;
+
             try
             {
-                SessionInfo connection;
+                SessionInfo sessionInfo;
                 DeviceInfo device = null;
 
-                if (!_activeConnections.TryGetValue(key, out connection))
+                if (!_activeConnections.TryGetValue(key, out sessionInfo))
                 {
-                    var sessionInfo = new SessionInfo
-                    {
-                        Client = clientType,
-                        DeviceId = deviceId,
-                        ApplicationVersion = appVersion,
-                        Id = key.GetMD5().ToString("N")
-                    };
+                    sessionInfo = new SessionInfo
+                   {
+                       Client = clientType,
+                       DeviceId = deviceId,
+                       ApplicationVersion = appVersion,
+                       Id = key.GetMD5().ToString("N")
+                   };
 
                     sessionInfo.DeviceName = deviceName;
                     sessionInfo.UserId = userId;
@@ -410,7 +409,6 @@ namespace MediaBrowser.Server.Implementations.Session
                     OnSessionStarted(sessionInfo);
 
                     _activeConnections.TryAdd(key, sessionInfo);
-                    connection = sessionInfo;
 
                     if (!string.IsNullOrEmpty(deviceId))
                     {
@@ -426,24 +424,25 @@ namespace MediaBrowser.Server.Implementations.Session
                     deviceName = device.CustomName;
                 }
 
-                connection.DeviceName = deviceName;
-                connection.UserId = userId;
-                connection.UserName = username;
-                connection.RemoteEndPoint = remoteEndPoint;
+                sessionInfo.DeviceName = deviceName;
+                sessionInfo.UserId = userId;
+                sessionInfo.UserName = username;
+                sessionInfo.RemoteEndPoint = remoteEndPoint;
+                sessionInfo.ApplicationVersion = appVersion;
 
                 if (!userId.HasValue)
                 {
-                    connection.AdditionalUsers.Clear();
+                    sessionInfo.AdditionalUsers.Clear();
                 }
 
-                if (connection.SessionController == null)
+                if (sessionInfo.SessionController == null)
                 {
-                    connection.SessionController = _sessionFactories
-                        .Select(i => i.GetSessionController(connection))
+                    sessionInfo.SessionController = _sessionFactories
+                        .Select(i => i.GetSessionController(sessionInfo))
                         .FirstOrDefault(i => i != null);
                 }
 
-                return connection;
+                return sessionInfo;
             }
             finally
             {
@@ -920,7 +919,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 return FilterToSingleMediaType(items)
                     .OrderBy(i => i.SortName);
             }
-            
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
@@ -1640,7 +1639,25 @@ namespace MediaBrowser.Server.Implementations.Session
                 string.Equals(i.Client, client));
         }
 
-        public SessionInfo GetSessionByAuthenticationToken(string token)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string remoteEndpoint, string appVersion)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+
+            var user = string.IsNullOrWhiteSpace(info.UserId)
+                ? null
+                : _userManager.GetUserById(info.UserId);
+
+            appVersion = string.IsNullOrWhiteSpace(appVersion)
+                ? "1"
+                : appVersion;
+
+            return GetSessionInfo(info.AppName, appVersion, info.DeviceId, info.DeviceName, remoteEndpoint, user);
+        }
+
+        public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string remoteEndpoint)
         {
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1654,10 +1671,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
             var info = result.Items[0];
 
-            // TODO: Make Token part of SessionInfo and get result that way
-            // This can't be done until all apps are updated to new authentication.
-            return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, info.DeviceId) &&
-                string.Equals(i.Client, info.AppName));
+            if (info == null)
+            {
+                return null;
+            }
+
+            return GetSessionByAuthenticationToken(info, remoteEndpoint, null);
         }
 
         public Task SendMessageToUserSessions<T>(string userId, string name, T data,

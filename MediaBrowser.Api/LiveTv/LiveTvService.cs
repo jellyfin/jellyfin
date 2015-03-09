@@ -315,7 +315,7 @@ namespace MediaBrowser.Api.LiveTv
 
         private void AssertUserCanManageLiveTv()
         {
-            var user = SessionContext.GetUser(Request);
+            var user = SessionContext.GetUser(Request).Result;
 
             if (user == null)
             {
