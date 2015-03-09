@@ -154,6 +154,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 else
                 {
                     _logger.Warn("Web socket connection not allowed");
+                    ctx.Response.StatusCode = 401;
                     ctx.Response.Close();
                 }
             }
