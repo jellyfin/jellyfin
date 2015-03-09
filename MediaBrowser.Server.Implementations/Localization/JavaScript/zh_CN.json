@@ -713,7 +713,7 @@
     "ButtonSync": "\u540c\u6b65",
     "SyncMedia": "Sync Media",
     "HeaderCancelSyncJob": "Cancel Sync",
-    "CancelSyncJobConfirmation": "Are you sure you wish to cancel this sync job?",
+    "CancelSyncJobConfirmation": "Cancelling the sync job will remove synced media from the device during the next sync process. Are you sure you wish to proceed?",
     "TabSync": "\u540c\u6b65",
     "MessagePleaseSelectDeviceToSyncTo": "Please select a device to sync to.",
     "MessageSyncJobCreated": "Sync job created.",

@@ -713,7 +713,7 @@
     "ButtonSync": "Synk",
     "SyncMedia": "Synkroniser media",
     "HeaderCancelSyncJob": "Avbryt synkronisering",
-    "CancelSyncJobConfirmation": "Er du sikker p\u00e5 at du vil avbryte denne synkroniseringen?",
+    "CancelSyncJobConfirmation": "Cancelling the sync job will remove synced media from the device during the next sync process. Are you sure you wish to proceed?",
     "TabSync": "Synk",
     "MessagePleaseSelectDeviceToSyncTo": "Velg enhet \u00e5 synkronisere til.",
     "MessageSyncJobCreated": "Synkroniseringsjobb p\u00e5begynt.",
