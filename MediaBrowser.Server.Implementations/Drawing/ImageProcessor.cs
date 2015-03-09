@@ -282,13 +282,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new PlayedIndicatorDrawer().DrawPlayedIndicator(wand, currentImageSize);
+                    new PlayedIndicatorDrawer(_appPaths).DrawPlayedIndicator(wand, currentImageSize);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new UnplayedCountIndicator().DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
+                    new UnplayedCountIndicator(_appPaths).DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
                 }
 
                 if (options.PercentPlayed > 0)

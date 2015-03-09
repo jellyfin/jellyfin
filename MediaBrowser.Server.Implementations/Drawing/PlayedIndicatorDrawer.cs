@@ -1,5 +1,8 @@
 ﻿using ImageMagickSharp;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Drawing;
+using System;
+using System.IO;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
@@ -7,6 +10,13 @@ namespace MediaBrowser.Server.Implementations.Drawing
     {
         private const int FontSize = 52;
         private const int OffsetFromTopRightCorner = 38;
+
+        private readonly IApplicationPaths _appPaths;
+
+        public PlayedIndicatorDrawer(IApplicationPaths appPaths)
+        {
+            _appPaths = appPaths;
+        }
 
         public void DrawPlayedIndicator(MagickWand wand, ImageSize imageSize)
         {
@@ -24,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     pixel.Opacity = 0;
                     pixel.Color = "white";
                     draw.FillColor = pixel;
-                    draw.Font = "Webdings";
+                    draw.Font = ExtractFont("webdings.ttf", _appPaths);
                     draw.FontSize = FontSize;
                     draw.FontStyle = FontStyleType.NormalStyle;
                     draw.TextAlignment = TextAlignType.CenterAlign;
@@ -35,8 +45,42 @@ namespace MediaBrowser.Server.Implementations.Drawing
                     draw.FillColor = pixel;
                     wand.CurrentImage.DrawImage(draw);
                 }
-
             }
+        }
+
+        internal static string ExtractFont(string name, IApplicationPaths paths)
+        {
+            var filePath = Path.Combine(paths.ProgramDataPath, "fonts", name);
+
+            if (File.Exists(filePath))
+            {
+                return filePath;
+            }
+
+            var namespacePath = typeof(PlayedIndicatorDrawer).Namespace + ".fonts." + name;
+            var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".ttf");
+            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+
+            using (var stream = typeof(PlayedIndicatorDrawer).Assembly.GetManifestResourceStream(namespacePath))
+            {
+                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    stream.CopyTo(fileStream);
+                }
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+            try
+            {
+                File.Copy(tempPath, filePath, false);
+            }
+            catch (IOException)
+            {
+                
+            }
+
+            return tempPath;
         }
     }
 }
