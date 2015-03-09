@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -88,9 +89,9 @@ namespace MediaBrowser.Api
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        protected SessionInfo GetSession()
+        protected async Task<SessionInfo> GetSession()
         {
-            var session = SessionContext.GetSession(Request);
+            var session = await SessionContext.GetSession(Request).ConfigureAwait(false);
 
             if (session == null)
             {

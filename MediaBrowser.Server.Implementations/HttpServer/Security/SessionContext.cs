@@ -1,8 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using ServiceStack.Web;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
@@ -19,31 +21,41 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public SessionInfo GetSession(IServiceRequest requestContext)
+        public Task<SessionInfo> GetSession(IServiceRequest requestContext)
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
             if (!string.IsNullOrWhiteSpace(authorization.Token))
             {
-                return _sessionManager.GetSessionByAuthenticationToken(authorization.Token);
+                var auth = GetTokenInfo(requestContext);
+                return _sessionManager.GetSessionByAuthenticationToken(auth, requestContext.RemoteIp, authorization.Version);
             }
-            return _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);
+
+            var session = _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);
+            return Task.FromResult(session);
         }
 
-        public User GetUser(IServiceRequest requestContext)
+        private AuthenticationInfo GetTokenInfo(IServiceRequest request)
         {
-            var session = GetSession(requestContext);
-
-            return session == null || !session.UserId.HasValue ? null : _userManager.GetUserById(session.UserId.Value);
+            object info;
+            request.Items.TryGetValue("OriginalAuthenticationInfo", out info);
+            return info as AuthenticationInfo;
         }
 
-        public SessionInfo GetSession(object requestContext)
+        public Task<SessionInfo> GetSession(object requestContext)
         {
             var req = new ServiceStackServiceRequest((IRequest)requestContext);
             return GetSession(req);
         }
 
-        public User GetUser(object requestContext)
+        public async Task<User> GetUser(IServiceRequest requestContext)
+        {
+            var session = await GetSession(requestContext).ConfigureAwait(false);
+
+            return session == null || !session.UserId.HasValue ? null : _userManager.GetUserById(session.UserId.Value);
+        }
+
+        public Task<User> GetUser(object requestContext)
         {
             var req = new ServiceStackServiceRequest((IRequest)requestContext);
             return GetUser(req);
