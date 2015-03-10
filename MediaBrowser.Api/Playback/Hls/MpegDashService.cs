@@ -38,8 +38,7 @@ namespace MediaBrowser.Api.Playback.Hls
         }
     }
 
-    [Route("/Videos/{Id}/dash/audio/{SegmentId}.m4s", "GET")]
-    [Route("/Videos/{Id}/dash/video/{SegmentId}.m4s", "GET")]
+    [Route("/Videos/{Id}/dash/{SegmentType}/{SegmentId}.m4s", "GET")]
     public class GetDashSegment : VideoStreamRequest
     {
         /// <summary>
@@ -47,11 +46,18 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <value>The segment id.</value>
         public string SegmentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the segment.
+        /// </summary>
+        /// <value>The type of the segment.</value>
+        public string SegmentType { get; set; }
     }
 
     public class MpegDashService : BaseHlsService
     {
-        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager)
+        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, INetworkManager networkManager)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager)
         {
             NetworkManager = networkManager;
         }
@@ -70,6 +76,14 @@ namespace MediaBrowser.Api.Playback.Hls
             var result = GetAsync(request, "HEAD").Result;
 
             return result;
+        }
+
+        protected override bool EnableOutputInSubFolder
+        {
+            get
+            {
+                return true;
+            }
         }
 
         private async Task<object> GetAsync(GetMasterManifest request, string method)
@@ -156,7 +170,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             builder.Append("</Representation>");
             builder.Append("</AdaptationSet>");
-    
+
             return builder.ToString();
         }
 
@@ -275,7 +289,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public object Get(GetDashSegment request)
         {
-            return GetDynamicSegment(request, request.SegmentId).Result;
+            return GetDynamicSegment(request, request.SegmentId, request.SegmentType).Result;
         }
 
         private void AppendSegmentList(StreamState state, StringBuilder builder, string type)
@@ -314,7 +328,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.Append("</SegmentList>");
         }
 
-        private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId)
+        private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId, string segmentType)
         {
             if ((request.StartTimeTicks ?? 0) > 0)
             {
@@ -332,7 +346,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentExtension = GetSegmentFileExtension(state);
 
-            var segmentPath = GetSegmentPath(playlistPath, segmentExtension, index);
+            var segmentPath = GetSegmentPath(playlistPath, segmentType, segmentExtension, index);
             var segmentLength = state.SegmentLength;
 
             TranscodingJob job = null;
@@ -491,7 +505,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             return job != null && !job.HasExited;
         }
-        
+
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
             var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
@@ -573,15 +587,29 @@ namespace MediaBrowser.Api.Playback.Hls
             return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
         }
 
-        private string GetSegmentPath(string playlist, string segmentExtension, int index)
+        private string GetSegmentPath(string playlist, string segmentType, string segmentExtension, int index)
         {
             var folder = Path.GetDirectoryName(playlist);
 
-            var filename = Path.GetFileNameWithoutExtension(playlist);
+            var id = string.Equals(segmentType, "video", StringComparison.OrdinalIgnoreCase)
+                ? "0"
+                : "1";
 
-            return Path.Combine(folder, filename + index.ToString("000", UsCulture) + segmentExtension);
+            string filename;
+
+            if (index == 0)
+            {
+                filename = "init-stream" + id + segmentExtension;
+            }
+            else
+            {
+                var number = index.ToString("00000", CultureInfo.InvariantCulture);
+                filename = "chunk-stream" + id + "-" + number + segmentExtension;
+            }
+
+            return Path.Combine(folder, filename);
         }
-        
+
         protected override string GetAudioArguments(StreamState state)
         {
             var codec = state.OutputAudioCodec;
@@ -636,7 +664,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            args+= " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
+            args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
             args += " -r 24 -g 24";
 
