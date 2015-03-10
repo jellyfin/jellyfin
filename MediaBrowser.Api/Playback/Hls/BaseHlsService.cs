@@ -182,7 +182,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return builder.ToString();
         }
 
-        protected async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
+        protected virtual async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
             Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
 

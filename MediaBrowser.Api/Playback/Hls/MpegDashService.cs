@@ -392,7 +392,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 2, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -410,6 +410,53 @@ namespace MediaBrowser.Api.Playback.Hls
             Logger.Info("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
             return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+        }
+
+        protected override async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
+        {
+            var tmpPath = playlist + ".tmp";
+            Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
+            // Double since audio and video are split
+            segmentCount = segmentCount * 2;
+            // Account for the initial segments
+            segmentCount += 2;
+
+            while (true)
+            {
+                FileStream fileStream;
+                try
+                {
+                    fileStream = FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+                }
+                catch (IOException)
+                {
+                    fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+                }
+                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                using (fileStream)
+                {
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        var count = 0;
+
+                        while (!reader.EndOfStream)
+                        {
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.IndexOf(".m4s", StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                count++;
+                                if (count >= segmentCount)
+                                {
+                                    Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                    return;
+                                }
+                            }
+                        }
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
         }
 
         private async Task<object> GetSegmentResult(string playlistPath,
