@@ -193,6 +193,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "originaltitle":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        var hasOriginalTitle = item as IHasOriginalTitle;
+                        if (hasOriginalTitle != null)
+                        {
+                            if (!string.IsNullOrEmpty(hasOriginalTitle.OriginalTitle))
+                            {
+                                hasOriginalTitle.OriginalTitle = val;
+                            }
+                        }
+                        break;
+                    }
+
                 case "title":
                 case "localtitle":
                     item.Name = reader.ReadElementContentAsString();

@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var remoteResult = new RemoteSearchResult
                 {
-                    Name = obj.title ?? obj.original_title ?? obj.name,
+                    Name = obj.GetTitle(),
                     SearchProviderName = Name,
                     ImageUrl = string.IsNullOrWhiteSpace(obj.poster_path) ? null : tmdbImageUrl + obj.poster_path
                 };
@@ -560,6 +560,7 @@ namespace MediaBrowser.Providers.Movies
             public int id { get; set; }
             public string imdb_id { get; set; }
             public string original_title { get; set; }
+            public string original_name { get; set; }
             public string overview { get; set; }
             public double popularity { get; set; }
             public string poster_path { get; set; }
@@ -580,6 +581,16 @@ namespace MediaBrowser.Providers.Movies
             public Images images { get; set; }
             public Keywords keywords { get; set; }
             public Trailers trailers { get; set; }
+
+            public string GetOriginalTitle()
+            {
+                return original_name ?? original_title;
+            }
+
+            public string GetTitle()
+            {
+                return name ?? title ?? GetOriginalTitle();
+            }
         }
 
         public int Order
