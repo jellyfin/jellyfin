@@ -713,8 +713,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
 
-            args += " -r 24 -g 24";
-
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
@@ -739,7 +737,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var inputModifier = GetInputModifier(state);
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -use_template 0 -min_seg_duration {6} \"{7}\"",
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -use_template 0 -min_seg_duration {6} -y \"{7}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
