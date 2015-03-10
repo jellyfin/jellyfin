@@ -99,6 +99,10 @@ namespace MediaBrowser.Server.Implementations.Session
         private Task<SessionInfo> GetSession(NameValueCollection queryString, string remoteEndpoint)
         {
             var token = queryString["api_key"];
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Task.FromResult<SessionInfo>(null);
+            }
             return _sessionManager.GetSessionByAuthenticationToken(token, remoteEndpoint);
         }
 
