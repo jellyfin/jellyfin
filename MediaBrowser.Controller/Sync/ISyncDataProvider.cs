@@ -42,8 +42,9 @@ namespace MediaBrowser.Controller.Sync
         /// Gets the cached item.
         /// </summary>
         /// <param name="target">The target.</param>
-        /// <param name="id">The identifier.</param>
+        /// <param name="serverId">The server identifier.</param>
+        /// <param name="itemId">The item identifier.</param>
         /// <returns>Task&lt;LocalItem&gt;.</returns>
-        Task<LocalItem> GetCachedItem(SyncTarget target, string id);
+        Task<List<LocalItem>> GetCachedItems(SyncTarget target, string serverId, string itemId);
     }
 }

@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var fileTransferProgress = new ActionableProgress<double>();
             fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
 
-            var localItem = CreateLocalItem(provider, jobItem.SyncJobId, target, libraryItem, serverId, jobItem.OriginalFileName);
+            var localItem = CreateLocalItem(provider, jobItem.SyncJobId, jobItem.SyncJobItemId, target, libraryItem, serverId, jobItem.OriginalFileName);
 
             await _syncManager.ReportSyncJobItemTransferBeginning(internalSyncJobItem.Id);
 
@@ -188,22 +188,19 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var localId = GetLocalId(serverId, itemId);
-            var localItem = await dataProvider.Get(target, localId);
+            var localItems = await dataProvider.GetCachedItems(target, serverId, itemId);
 
-            if (localItem == null)
+            foreach (var localItem in localItems)
             {
-                return;
+                var files = await GetFiles(provider, localItem, target);
+
+                foreach (var file in files)
+                {
+                    await provider.DeleteFile(file.Path, target, cancellationToken).ConfigureAwait(false);
+                }
+
+                await dataProvider.Delete(target, localItem.Id).ConfigureAwait(false);
             }
-
-            var files = await GetFiles(provider, localItem, target);
-
-            foreach (var file in files)
-            {
-                await provider.DeleteFile(file.Path, target, cancellationToken).ConfigureAwait(false);
-            }
-
-            await dataProvider.Delete(target, localId).ConfigureAwait(false);
         }
 
         private async Task SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
@@ -214,9 +211,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        internal static string GetLocalId(string serverId, string itemId)
+        private static string GetLocalId(string jobItemId, string itemId)
         {
-            var bytes = Encoding.UTF8.GetBytes(serverId + itemId);
+            var bytes = Encoding.UTF8.GetBytes(jobItemId + itemId);
             bytes = CreateMd5(bytes);
             return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
         }
@@ -229,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public LocalItem CreateLocalItem(IServerSyncProvider provider, string syncJobId, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
+        public LocalItem CreateLocalItem(IServerSyncProvider provider, string syncJobId, string syncJobItemId, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
         {
             var path = GetDirectoryPath(provider, syncJobId, libraryItem, serverId);
             path.Add(GetLocalFileName(provider, libraryItem, originalFileName));
@@ -248,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = libraryItem.Id,
                 ServerId = serverId,
                 LocalPath = localPath,
-                Id = GetLocalId(serverId, libraryItem.Id)
+                Id = GetLocalId(syncJobItemId, libraryItem.Id)
             };
         }
 
