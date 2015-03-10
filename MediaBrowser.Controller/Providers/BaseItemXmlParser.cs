@@ -126,6 +126,21 @@ namespace MediaBrowser.Controller.Providers
                         break;
                     }
 
+                case "OriginalTitle":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        var hasOriginalTitle = item as IHasOriginalTitle;
+                        if (hasOriginalTitle != null)
+                        {
+                            if (!string.IsNullOrEmpty(hasOriginalTitle.OriginalTitle))
+                            {
+                                hasOriginalTitle.OriginalTitle = val;
+                            }
+                        }
+                        break;
+                    }
+
                 case "LocalTitle":
                     item.Name = reader.ReadElementContentAsString();
                     break;

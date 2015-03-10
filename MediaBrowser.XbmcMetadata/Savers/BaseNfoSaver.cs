@@ -459,6 +459,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteElementString("title", item.Name ?? string.Empty);
             writer.WriteElementString("originaltitle", item.Name ?? string.Empty);
 
+            var hasOriginalTitle = item as IHasOriginalTitle;
+            if (hasOriginalTitle != null)
+            {
+                if (!string.IsNullOrEmpty(hasOriginalTitle.OriginalTitle))
+                {
+                    writer.WriteElementString("originaltitle", hasOriginalTitle.OriginalTitle ?? string.Empty);
+                }
+            } 
+            
             var directors = item.People
                 .Where(i => IsPersonType(i, PersonType.Director))
                 .Select(i => i.Name)

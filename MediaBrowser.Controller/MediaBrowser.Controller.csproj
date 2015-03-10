@@ -139,6 +139,7 @@
     <Compile Include="Entities\IHasKeywords.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
+    <Compile Include="Entities\IHasOriginalTitle.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />

@@ -147,7 +147,7 @@ namespace MediaBrowser.Providers.Movies
                         var remoteResult = new RemoteSearchResult
                         {
                             SearchProviderName = MovieDbProvider.Current.Name,
-                            Name = i.title ?? i.original_title ?? i.name,
+                            Name = i.title ?? i.name ?? i.original_title,
                             ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
                         };
                         
@@ -214,6 +214,11 @@ namespace MediaBrowser.Providers.Movies
             /// </summary>
             /// <value>The original_title.</value>
             public string original_title { get; set; }
+            /// <summary>
+            /// Gets or sets the original_name.
+            /// </summary>
+            /// <value>The original_name.</value>
+            public string original_name { get; set; }
             /// <summary>
             /// Gets or sets the release_date.
             /// </summary>
