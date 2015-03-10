@@ -232,11 +232,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                     .ToList();
         }
 
-        public async Task<LocalItem> GetCachedItem(SyncTarget target, string id)
+        public async Task<List<LocalItem>> GetCachedItems(SyncTarget target, string serverId, string itemId)
         {
             var items = await GetCachedData().ConfigureAwait(false);
 
-            return items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            return items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
         }
     }
 }

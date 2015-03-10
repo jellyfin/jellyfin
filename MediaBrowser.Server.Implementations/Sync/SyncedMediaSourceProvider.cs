@@ -40,6 +40,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     .SelectMany(i => i.GetAllSyncTargets().Select(t => new Tuple<IServerSyncProvider, SyncTarget>(i, t)))
                     .ToList();
 
+                var serverId = _appHost.SystemId;
+
                 foreach (var jobItem in jobItemResult.Items)
                 {
                     var targetTuple = targets.FirstOrDefault(i => string.Equals(i.Item2.Id, jobItem.TargetId, StringComparison.OrdinalIgnoreCase));
@@ -49,14 +51,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                         var syncTarget = targetTuple.Item2;
 
                         var dataProvider = _syncManager.GetDataProvider(targetTuple.Item1, syncTarget);
-                        var localItemId = MediaSync.GetLocalId(_appHost.SystemId, item.Id.ToString("N"));
 
-                        var localItem = await dataProvider.GetCachedItem(syncTarget, localItemId).ConfigureAwait(false);
+                        var localItems = await dataProvider.GetCachedItems(syncTarget, serverId, item.Id.ToString("N")).ConfigureAwait(false);
 
-                        if (localItem != null)
-                        {
-                            list.AddRange(localItem.Item.MediaSources);
-                        }
+                        list.AddRange(localItems.SelectMany(i => i.Item.MediaSources));
                     }
                 }
             }
