@@ -288,7 +288,8 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
             var index = 0;
-            builder.Append("<SegmentList timescale=\"1000000\" duration=\"5000000\" startNumber=\"1\">");
+            var duration = 1000000 * state.SegmentLength;
+            builder.AppendFormat("<SegmentList timescale=\"1000000\" duration=\"{0}\" startNumber=\"1\">", duration.ToString(CultureInfo.InvariantCulture));
 
             while (seconds > 0)
             {
