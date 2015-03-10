@@ -664,13 +664,14 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var inputModifier = GetInputModifier(state);
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -use_template 0 -min_seg_duration 2000 \"{6}\"",
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -use_template 0 -min_seg_duration {6} \"{7}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state),
                 GetAudioArguments(state),
+                (state.SegmentLength * 1000000).ToString(CultureInfo.InvariantCulture),
                 outputPath
                 ).Trim();
 
