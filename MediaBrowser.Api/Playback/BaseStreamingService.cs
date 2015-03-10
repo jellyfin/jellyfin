@@ -134,7 +134,19 @@ namespace MediaBrowser.Api.Playback
             data += "-" + (state.Request.DeviceId ?? string.Empty);
             data += "-" + (state.Request.ClientTime ?? string.Empty);
 
-            return Path.Combine(folder, data.GetMD5().ToString("N") + (outputFileExtension ?? string.Empty).ToLower());
+            var dataHash = data.GetMD5().ToString("N");
+
+            if (EnableOutputInSubFolder)
+            {
+                return Path.Combine(folder, dataHash, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+            }
+
+            return Path.Combine(folder, dataHash + (outputFileExtension ?? string.Empty).ToLower());
+        }
+
+        protected virtual bool EnableOutputInSubFolder
+        {
+            get { return false; }
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
