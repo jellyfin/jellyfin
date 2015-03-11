@@ -20,9 +20,9 @@ namespace MediaBrowser.Model.Registration
         /// <value><c>true</c> if this instance is trial; otherwise, <c>false</c>.</value>
         public bool IsTrial { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is valid.
+        /// Gets or sets a value indicating whether this instance is registered.
         /// </summary>
-        /// <value><c>true</c> if this instance is valid; otherwise, <c>false</c>.</value>
-        public bool IsValid { get; set; }
+        /// <value><c>true</c> if this instance is registered; otherwise, <c>false</c>.</value>
+        public bool IsRegistered { get; set; }
     }
 }
