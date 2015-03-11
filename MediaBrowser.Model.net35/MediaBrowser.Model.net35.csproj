@@ -909,6 +909,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\LatestItemsQuery.cs">
       <Link>Querying\LatestItemsQuery.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Querying\MovieRecommendationQuery.cs">
+      <Link>Querying\MovieRecommendationQuery.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\NextUpQuery.cs">
       <Link>Querying\NextUpQuery.cs</Link>
     </Compile>
