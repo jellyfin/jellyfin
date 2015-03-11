@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool IsParentalAllowed(User user);
 
-        Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         PlayAccess GetPlayAccess(User user);
 

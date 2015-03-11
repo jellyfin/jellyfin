@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Providers
         public bool ReplaceAllMetadata { get; set; }
 
         public bool IsPostRecursiveRefresh { get; set; }
-        
+
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
         public bool ForceSave { get; set; }
@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Providers
             MetadataRefreshMode = MetadataRefreshMode.Default;
         }
 
-        public MetadataRefreshOptions( MetadataRefreshOptions copy)
+        public MetadataRefreshOptions(MetadataRefreshOptions copy)
             : base(copy.DirectoryService)
         {
             MetadataRefreshMode = copy.MetadataRefreshMode;
