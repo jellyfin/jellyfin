@@ -717,7 +717,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>true if a provider reports we changed</returns>
-        public async Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var locationType = LocationType;
 
@@ -744,15 +744,16 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var dateLastSaved = DateLastSaved;
+            var refreshOptions = requiresSave
+                ? new MetadataRefreshOptions(options)
+                {
+                    ForceSave = true
+                }
+                : options;
 
-            await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
+            var result = await ProviderManager.RefreshMetadata(this, refreshOptions, cancellationToken).ConfigureAwait(false);
 
-            // If it wasn't saved by the provider process, save now
-            if (requiresSave && dateLastSaved == DateLastSaved)
-            {
-                await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-            }
+            return result;
         }
 
         [IgnoreDataMember]

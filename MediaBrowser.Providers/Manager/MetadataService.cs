@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Manager
             return ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
         }
 
-        public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
             var config = ProviderManager.GetMetadataOptions(item);
@@ -184,6 +184,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            return updateType;
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);

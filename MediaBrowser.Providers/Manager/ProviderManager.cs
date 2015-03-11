@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
         }
 
-        public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
 
@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _logger.Error("Unable to find a metadata service for item of type " + item.GetType().Name);
-            return Task.FromResult(true);
+            return Task.FromResult(ItemUpdateType.None);
         }
 
         public async Task SaveImage(IHasImages item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken)
