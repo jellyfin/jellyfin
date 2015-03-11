@@ -945,6 +945,9 @@
     <Compile Include="..\MediaBrowser.Model\Querying\UserQuery.cs">
       <Link>Querying\UserQuery.cs</Link>
     </Compile>
+    <Compile Include="..\mediabrowser.model\registration\RegistrationInfo.cs">
+      <Link>Registration\RegistrationInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Search\SearchHint.cs">
       <Link>Search\SearchHint.cs</Link>
     </Compile>
