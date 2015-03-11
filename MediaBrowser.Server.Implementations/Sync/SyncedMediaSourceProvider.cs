@@ -3,9 +3,11 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,12 +56,34 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                         var localItems = await dataProvider.GetCachedItems(syncTarget, serverId, item.Id.ToString("N")).ConfigureAwait(false);
 
-                        list.AddRange(localItems.SelectMany(i => i.Item.MediaSources));
+                        foreach (var localItem in localItems)
+                        {
+                            list.AddRange(GetPlayableMediaSources(localItem));
+                        }
                     }
                 }
             }
 
             return list;
+        }
+
+        private IEnumerable<MediaSourceInfo> GetPlayableMediaSources(LocalItem item)
+        {
+            return item.Item.MediaSources
+                .Where(IsMediaSourcePlayable);
+        }
+
+        private bool IsMediaSourcePlayable(MediaSourceInfo mediaSource)
+        {
+            if (mediaSource.Protocol == MediaProtocol.File)
+            {
+                if (!File.Exists(mediaSource.Path))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
