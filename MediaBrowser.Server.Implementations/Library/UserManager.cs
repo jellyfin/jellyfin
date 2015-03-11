@@ -286,10 +286,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (newValue >= maxCount)
                 {
-                    _logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
-                    user.Policy.IsDisabled = true;
+                    //_logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
+                    //user.Policy.IsDisabled = true;
 
-                    fireLockout = true;
+                    //fireLockout = true;
                 }
 
                 await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
