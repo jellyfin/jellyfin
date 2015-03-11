@@ -322,6 +322,7 @@
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Querying\UpcomingEpisodesQuery.cs" />
     <Compile Include="Querying\UserQuery.cs" />
+    <Compile Include="Registration\RegistrationInfo.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
     <Compile Include="Session\ClientCapabilities.cs" />
