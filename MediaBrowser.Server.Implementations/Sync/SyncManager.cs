@@ -974,7 +974,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public AudioOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)
         {
-            var profile = GetDeviceProfile(jobItem.TargetId, job.Quality);
+            var profile = GetDeviceProfile(jobItem.TargetId, null);
 
             return new AudioOptions
             {
@@ -985,24 +985,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         public VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
         {
             var profile = GetDeviceProfile(jobItem.TargetId, job.Quality);
-            var maxBitrate = profile.MaxStaticBitrate;
-
-            if (maxBitrate.HasValue)
-            {
-                if (string.Equals(job.Quality, "medium", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
-                }
-                else if (string.Equals(job.Quality, "low", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
-                }
-            }
 
             return new VideoOptions
             {
-                Profile = profile,
-                MaxBitrate = maxBitrate
+                Profile = profile
             };
         }
 
@@ -1028,7 +1014,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (hasProfile != null)
             {
-                return hasProfile.GetDeviceProfile(target);
+                return hasProfile.GetDeviceProfile(target, quality);
             }
 
             return new CloudSyncProfile(true, false);
