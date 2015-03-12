@@ -1710,7 +1710,7 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false);
 
                 var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                     ? mediaSources.First()
