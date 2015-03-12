@@ -210,7 +210,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(3))
             {
-                info.Quality = (SyncQuality)Enum.Parse(typeof(SyncQuality), reader.GetString(3), true);
+                info.Quality = reader.GetString(3);
             }
 
             if (!reader.IsDBNull(4))

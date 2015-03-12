@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the quality.
         /// </summary>
         /// <value>The quality.</value>
-        public SyncQuality Quality { get; set; }
+        public string Quality { get; set; }
         /// <summary>
         /// Gets or sets the category.
         /// </summary>
@@ -98,7 +98,6 @@ namespace MediaBrowser.Model.Sync
         public SyncJob()
         {
             RequestedItemIds = new List<string>();
-            Quality = SyncQuality.High;
         }
     }
 }

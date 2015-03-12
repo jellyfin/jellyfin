@@ -485,6 +485,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
+        private bool IsOriginalQuality(SyncJob job)
+        {
+            return string.IsNullOrWhiteSpace(job.Quality) ||
+                   string.Equals(job.Quality, "original", StringComparison.OrdinalIgnoreCase);
+        }
+
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = _syncManager.GetVideoOptions(jobItem, job);
@@ -504,7 +510,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 streamInfo.GetExternalSubtitles(false);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
-            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original;
+            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && IsOriginalQuality(job);
             var requiresConversion = requiresVideoTranscoding || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
 
             if (requiresConversion && !enableConversion)
@@ -692,7 +698,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
             jobItem.TemporaryPath = GetTemporaryPath(jobItem);
 
-            if (streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original)
+            if (streamInfo.PlayMethod == PlayMethod.Transcode && !IsOriginalQuality(job))
             {
                 if (!enableConversion)
                 {
