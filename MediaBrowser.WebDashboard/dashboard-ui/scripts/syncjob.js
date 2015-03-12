@@ -25,10 +25,13 @@
             html += '<div>';
             html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
             html += '<select id="selectQuality" data-mini="true">';
-            html += '<option value="Original">' + Globalize.translate('OptionOriginal') + '</option>';
-            html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
-            html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
-            html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
+
+            html += editOptions.QualityOptions.map(function (o) {
+
+                return '<option value="' + o.Id + '">' + o.Name + '</option>';
+
+            }).join('');
+
             html += '</select>';
             html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncQualityHelp') + '</div>';
             html += '</div>';
@@ -316,7 +319,8 @@
                 ItemIds: (job.RequestedItemIds && job.RequestedItemIds.length ? job.RequestedItemIds.join('') : null),
 
                 ParentId: job.ParentId,
-                Category: job.Category
+                Category: job.Category,
+                TargetId: job.TargetId
 
             })).done(function (options) {
 
