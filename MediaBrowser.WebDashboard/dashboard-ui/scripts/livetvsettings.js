@@ -18,8 +18,6 @@
             return '<option value="' + s.Name + '">' + s.Name + '</option>';
         });
 
-        $('#selectActiveService', page).html(serviceOptions).val(config.ActiveService || '').selectmenu('refresh');
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -53,7 +51,6 @@
 
 
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
-                config.ActiveService = $('#selectActiveService', form).val() || null;
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

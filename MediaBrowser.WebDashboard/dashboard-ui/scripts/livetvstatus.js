@@ -97,6 +97,47 @@
         });
     }
 
+    function getServiceHtml(service) {
+
+        var html = '';
+        html += '<div>';
+
+        var serviceUrl = service.HomePageUrl || '#';
+
+        html += '<p><a href="' + serviceUrl + '" target="_blank">' + service.Name + '</a></p>';
+
+        var versionHtml = service.Version || 'Unknown';
+
+        if (service.HasUpdateAvailable) {
+            versionHtml += ' <a style="margin-left: .25em;" href="' + serviceUrl + '" target="_blank">' + Globalize.translate('LiveTvUpdateAvailable') + '</a>';
+        }
+        else {
+            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> ' + Globalize.translate('LabelVersionUpToDate');
+        }
+
+        html += '<p>' + versionHtml + '</p>';
+
+        var status = service.Status;
+
+        if (service.Status == 'Ok') {
+
+            status = '<span style="color:green;">' + status + '</span>';
+        } else {
+
+            if (service.StatusMessage) {
+                status += ' (' + service.StatusMessage + ')';
+            }
+
+            status = '<span style="color:red;">' + status + '</span>';
+        }
+
+        html += '<p>' + Globalize.translate('ValueStatus', status) + '</p>';
+
+        html += '</div>';
+
+        return html;
+    }
+
     function loadPage(page, liveTvInfo) {
 
         if (liveTvInfo.IsEnabled) {
@@ -109,43 +150,17 @@
             $('.noLiveTvServices', page).show();
         }
 
-        var service = liveTvInfo.Services.filter(function (s) {
-            return s.Name == liveTvInfo.ActiveServiceName;
+        $('.servicesList', page).html(liveTvInfo.Services.map(getServiceHtml).join('')).trigger('create');
 
-        })[0] || {};
+        var tuners = [];
+        for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
 
-        var serviceUrl = service.HomePageUrl || '#';
-
-        $('#activeServiceName', page).html('<a href="' + serviceUrl + '" target="_blank">' + liveTvInfo.ActiveServiceName + '</a>').trigger('create');
-
-        var versionHtml = service.Version || 'Unknown';
-
-        if (service.HasUpdateAvailable) {
-            versionHtml += ' <a style="margin-left: .25em;" href="' + serviceUrl + '" target="_blank">' + Globalize.translate('LiveTvUpdateAvailable') + '</a>';
-        }
-        else {
-            versionHtml += '<img src="css/images/checkmarkgreen.png" style="height: 17px; margin-left: 10px; margin-right: 0; position: relative; top: 5px; border-radius:3px;" /> ' + Globalize.translate('LabelVersionUpToDate');
-        }
-
-        $('#activeServiceVersion', page).html(versionHtml).trigger('create');
-
-        var status = liveTvInfo.Status;
-
-        if (liveTvInfo.Status == 'Ok') {
-
-            status = '<span style="color:green;">' + status + '</span>';
-        } else {
-
-            if (liveTvInfo.StatusMessage) {
-                status += ' (' + liveTvInfo.StatusMessage + ')';
+            for (var j = 0, numTuners = liveTvInfo.Services[i].Tuners.length; j < numTuners; j++) {
+                tuners.push(liveTvInfo.Services[i].Tuners[j]);
             }
-
-            status = '<span style="color:red;">' + status + '</span>';
         }
 
-        $('#activeServiceStatus', page).html(status);
-
-        renderTuners(page, service.Tuners || []);
+        renderTuners(page, tuners);
 
         Dashboard.hideLoadingMsg();
     }
