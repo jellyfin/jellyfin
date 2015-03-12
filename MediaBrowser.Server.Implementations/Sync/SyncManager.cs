@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private readonly ConcurrentDictionary<string, ISyncDataProvider> _dataProviders =
             new ConcurrentDictionary<string, ISyncDataProvider>(StringComparer.OrdinalIgnoreCase);
- 
+
         public ISyncDataProvider GetDataProvider(IServerSyncProvider provider, SyncTarget target)
         {
             return _dataProviders.GetOrAdd(target.Id, key => new TargetDataProvider(provider, target, _appHost.SystemId, _logger, _json, _fileSystem, _config.CommonApplicationPaths));
@@ -972,9 +972,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _repo.GetLibraryItemIds(query);
         }
 
-        public AudioOptions GetAudioOptions(SyncJobItem jobItem)
+        public AudioOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)
         {
-            var profile = GetDeviceProfile(jobItem.TargetId);
+            var profile = GetDeviceProfile(jobItem.TargetId, job.Quality);
 
             return new AudioOptions
             {
@@ -984,16 +984,16 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
         {
-            var profile = GetDeviceProfile(jobItem.TargetId);
+            var profile = GetDeviceProfile(jobItem.TargetId, job.Quality);
             var maxBitrate = profile.MaxStaticBitrate;
 
             if (maxBitrate.HasValue)
             {
-                if (string.Equals(job.Quality, "high", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(job.Quality, "medium", StringComparison.OrdinalIgnoreCase))
                 {
                     maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
                 }
-                else if (string.Equals(job.Quality, "medium", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(job.Quality, "low", StringComparison.OrdinalIgnoreCase))
                 {
                     maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
                 }
@@ -1006,7 +1006,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        public DeviceProfile GetDeviceProfile(string targetId)
+        public DeviceProfile GetDeviceProfile(string targetId, string quality)
         {
             foreach (var provider in _providers)
             {
@@ -1014,7 +1014,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetDeviceProfile(provider, target);
+                        return GetDeviceProfile(provider, target, quality);
                     }
                 }
             }
@@ -1022,9 +1022,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             return null;
         }
 
-        public DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target)
+        private DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target, string quality)
         {
-            var hasProfile = provider as IHasSyncProfile;
+            var hasProfile = provider as IHasSyncQuality;
 
             if (hasProfile != null)
             {
@@ -1032,6 +1032,57 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return new CloudSyncProfile(true, false);
+        }
+
+        public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId)
+        {
+            foreach (var provider in _providers)
+            {
+                foreach (var target in GetSyncTargets(provider))
+                {
+                    if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return GetQualityOptions(provider, target);
+                    }
+                }
+            }
+
+            return new List<SyncQualityOption>();
+        }
+
+        private IEnumerable<SyncQualityOption> GetQualityOptions(ISyncProvider provider, SyncTarget target)
+        {
+            var hasQuality = provider as IHasSyncQuality;
+            if (hasQuality != null)
+            {
+                return hasQuality.GetQualityOptions(target);
+            }
+
+            // Default options for providers that don't override
+            return new List<SyncQualityOption>
+            {
+                new SyncQualityOption
+                {
+                    Name = SyncQuality.Original.ToString(),
+                    Id = SyncQuality.Original.ToString()
+                },
+                new SyncQualityOption
+                {
+                    Name = SyncQuality.High.ToString(),
+                    Id = SyncQuality.High.ToString(),
+                    IsDefault = true
+                },
+                new SyncQualityOption
+                {
+                    Name = SyncQuality.Medium.ToString(),
+                    Id = SyncQuality.Medium.ToString()
+                },
+                new SyncQualityOption
+                {
+                    Name = SyncQuality.Low.ToString(),
+                    Id = SyncQuality.Low.ToString()
+                }
+            };
         }
     }
 }
