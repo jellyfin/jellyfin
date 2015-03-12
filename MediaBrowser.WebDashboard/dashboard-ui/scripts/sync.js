@@ -64,17 +64,17 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
-
+        var dialogOptionsQuery = {
             UserId: userId,
-            ItemIds: (options.items || []).map(function (i) {
+            ItemIds: (options.items || []).map(function(i) {
                 return i.Id || i;
             }).join(','),
 
             ParentId: options.ParentId,
             Category: options.Category
+        };
 
-        })).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).done(function (result) {
 
             var targets = result.Targets;
 
@@ -178,7 +178,7 @@
 
             $('#selectSyncTarget', elem).on('change', function () {
 
-                loadQualityOptions(elem, this.value);
+                loadQualityOptions(elem, this.value, dialogOptionsQuery);
 
             }).trigger('change');
 
@@ -190,15 +190,13 @@
         });
     }
 
-    function loadQualityOptions(panel, targetId) {
+    function loadQualityOptions(panel, targetId, dialogOptionsQuery) {
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/QualityOptions', {
+        dialogOptionsQuery.TargetId = targetId;
 
-            targetId: targetId
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).done(function (options) {
 
-        })).done(function (options) {
-
-            $('#selectQuality', panel).html(options.map(function (o) {
+            $('#selectQuality', panel).html(options.QualityOptions.map(function (o) {
 
                 var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
                 return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
