@@ -1846,6 +1846,10 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var options = new ExtendedNamingOptions();
 
+            // These cause apps to have problems
+            options.AudioFileExtensions.Remove(".m3u");
+            options.AudioFileExtensions.Remove(".wpl");
+        
             if (!ConfigurationManager.Configuration.EnableAudioArchiveFiles)
             {
                 options.AudioFileExtensions.Remove(".rar");
