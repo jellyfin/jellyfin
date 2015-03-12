@@ -1017,7 +1017,29 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return hasProfile.GetDeviceProfile(target, quality);
             }
 
-            return new CloudSyncProfile(true, false);
+            return GetDefaultProfile(quality);
+        }
+
+        private DeviceProfile GetDefaultProfile(string quality)
+        {
+            var profile = new CloudSyncProfile(true, false);
+            var maxBitrate = profile.MaxStaticBitrate;
+
+            if (maxBitrate.HasValue)
+            {
+                if (string.Equals(quality, "medium", StringComparison.OrdinalIgnoreCase))
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
+                }
+                else if (string.Equals(quality, "low", StringComparison.OrdinalIgnoreCase))
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
+                }
+
+                profile.MaxStaticBitrate = maxBitrate;
+            }
+
+            return profile;
         }
 
         public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId)
