@@ -121,11 +121,7 @@
             if (result.Options.indexOf('Quality') != -1) {
                 html += '<div>';
                 html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
-                html += '<select id="selectQuality" data-mini="true">';
-                html += '<option value="Original">' + Globalize.translate('OptionOriginal') + '</option>';
-                html += '<option value="High">' + Globalize.translate('OptionHigh') + '</option>';
-                html += '<option value="Medium">' + Globalize.translate('OptionMedium') + '</option>';
-                html += '<option value="Low">' + Globalize.translate('OptionLow') + '</option>';
+                html += '<select id="selectQuality" data-mini="true" required="required">';
                 html += '</select>';
                 html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncQualityHelp') + '</div>';
                 html += '</div>';
@@ -180,7 +176,11 @@
                 $(this).off("panelclose").remove();
             });
 
-            $('#selectQuality', elem).val('High').selectmenu('refresh');
+            $('#selectSyncTarget', elem).on('change', function () {
+
+                loadQualityOptions(elem, this.value);
+
+            }).trigger('change');
 
             $('form', elem).on('submit', function () {
 
@@ -188,6 +188,25 @@
                 return false;
             });
         });
+    }
+
+    function loadQualityOptions(panel, targetId) {
+
+        ApiClient.getJSON(ApiClient.getUrl('Sync/QualityOptions', {
+
+            targetId: targetId
+
+        })).done(function (options) {
+
+            $('#selectQuality', panel).html(options.map(function (o) {
+
+                var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
+                return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
+
+            }).join('')).selectmenu('refresh');
+
+        });
+
     }
 
     function isAvailable(item, user) {
