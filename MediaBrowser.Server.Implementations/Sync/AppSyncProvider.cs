@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,11 +32,28 @@ namespace MediaBrowser.Server.Implementations.Sync
             });
         }
 
-        public DeviceProfile GetDeviceProfile(SyncTarget target)
+        public DeviceProfile GetDeviceProfile(SyncTarget target, string quality)
         {
             var caps = _deviceManager.GetCapabilities(target.Id);
 
-            return caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
+            var profile = caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
+            var maxBitrate = profile.MaxStaticBitrate;
+
+            if (maxBitrate.HasValue)
+            {
+                if (string.Equals(quality, "medium", StringComparison.OrdinalIgnoreCase))
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
+                }
+                else if (string.Equals(quality, "low", StringComparison.OrdinalIgnoreCase))
+                {
+                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
+                }
+
+                profile.MaxStaticBitrate = maxBitrate;
+            }
+
+            return profile;
         }
 
         public string Name
