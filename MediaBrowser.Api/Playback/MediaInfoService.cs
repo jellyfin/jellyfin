@@ -40,7 +40,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Get(GetPlaybackInfo request)
         {
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.Id, request.UserId, CancellationToken.None).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.Id, request.UserId, true, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(new LiveMediaInfoResult
             {
@@ -50,7 +50,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Get(GetLiveMediaInfo request)
         {
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.Id, request.UserId, CancellationToken.None).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.Id, request.UserId, true, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(new LiveMediaInfoResult
             {

@@ -116,7 +116,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, cancellationToken).ConfigureAwait(false);
+                var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, false, cancellationToken).ConfigureAwait(false);
 
                 var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                     ? mediaSources.First()

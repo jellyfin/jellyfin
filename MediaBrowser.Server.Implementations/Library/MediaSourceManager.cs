@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return list;
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(id);
             IEnumerable<MediaSourceInfo> mediaSources;
@@ -142,12 +142,12 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 if (string.IsNullOrWhiteSpace(userId))
                 {
-                    mediaSources = hasMediaSources.GetMediaSources(true);
+                    mediaSources = hasMediaSources.GetMediaSources(enablePathSubstitution);
                 }
                 else
                 {
                     var user = _userManager.GetUserById(userId);
-                    mediaSources = GetStaticMediaSources(hasMediaSources, true, user);
+                    mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
                 }
             }
 
@@ -187,9 +187,9 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, CancellationToken cancellationToken)
+        public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
-            return GetPlayackMediaSources(id, null, cancellationToken);
+            return GetPlayackMediaSources(id, null, enablePathSubstitution, cancellationToken);
         }
 
         public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution)

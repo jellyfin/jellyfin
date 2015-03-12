@@ -41,17 +41,19 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="userId">The user identifier.</param>
+        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the playack media sources.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;IEnumerable&lt;MediaSourceInfo&gt;&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
