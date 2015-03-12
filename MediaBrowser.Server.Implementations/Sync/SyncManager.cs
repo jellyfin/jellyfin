@@ -150,13 +150,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 SyncNewContent = request.SyncNewContent,
                 ItemCount = items.Count,
                 Category = request.Category,
-                ParentId = request.ParentId
+                ParentId = request.ParentId,
+                Quality = request.Quality
             };
-
-            if (!string.IsNullOrWhiteSpace(request.Quality))
-            {
-                job.Quality = (SyncQuality)Enum.Parse(typeof(SyncQuality), request.Quality, true);
-            }
 
             if (!request.Category.HasValue && request.ItemIds != null)
             {
@@ -563,34 +559,6 @@ namespace MediaBrowser.Server.Implementations.Sync
         private string GetDefaultName(BaseItem item)
         {
             return item.Name;
-        }
-
-        public DeviceProfile GetDeviceProfile(string targetId)
-        {
-            foreach (var provider in _providers)
-            {
-                foreach (var target in GetSyncTargets(provider))
-                {
-                    if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return GetDeviceProfile(provider, target);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target)
-        {
-            var hasProfile = provider as IHasSyncProfile;
-
-            if (hasProfile != null)
-            {
-                return hasProfile.GetDeviceProfile(target);
-            }
-
-            return new CloudSyncProfile(true, false);
         }
 
         public async Task ReportSyncJobItemTransferred(string id)
@@ -1021,11 +989,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (maxBitrate.HasValue)
             {
-                if (job.Quality == SyncQuality.Medium)
+                if (string.Equals(job.Quality, "high", StringComparison.OrdinalIgnoreCase))
                 {
                     maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
                 }
-                else if (job.Quality == SyncQuality.Low)
+                else if (string.Equals(job.Quality, "medium", StringComparison.OrdinalIgnoreCase))
                 {
                     maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
                 }
@@ -1036,6 +1004,34 @@ namespace MediaBrowser.Server.Implementations.Sync
                 Profile = profile,
                 MaxBitrate = maxBitrate
             };
+        }
+
+        public DeviceProfile GetDeviceProfile(string targetId)
+        {
+            foreach (var provider in _providers)
+            {
+                foreach (var target in GetSyncTargets(provider))
+                {
+                    if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return GetDeviceProfile(provider, target);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target)
+        {
+            var hasProfile = provider as IHasSyncProfile;
+
+            if (hasProfile != null)
+            {
+                return hasProfile.GetDeviceProfile(target);
+            }
+
+            return new CloudSyncProfile(true, false);
         }
     }
 }
