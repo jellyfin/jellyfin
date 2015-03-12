@@ -10,6 +10,17 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StreamBuilder
     {
+        private readonly ILocalPlayer _localPlayer;
+
+        public StreamBuilder(ILocalPlayer localPlayer)
+        {
+            _localPlayer = localPlayer;
+        }
+        public StreamBuilder()
+            : this(new NullLocalPlayer())
+        {
+        }
+
         public StreamInfo BuildAudioItem(AudioOptions options)
         {
             ValidateAudioInput(options);
@@ -73,7 +84,7 @@ namespace MediaBrowser.Model.Dlna
                 StreamInfo streamInfo = BuildVideoItem(i, options);
                 if (streamInfo != null)
                 {
-                streams.Add(streamInfo);
+                    streams.Add(streamInfo);
                 }
             }
 
@@ -180,7 +191,15 @@ namespace MediaBrowser.Model.Dlna
 
                         if (all)
                         {
-                            playlistItem.PlayMethod = PlayMethod.DirectStream;
+                            if (item.Protocol == MediaProtocol.File && _localPlayer.CanAccessFile(item.Path))
+                            {
+                                playlistItem.PlayMethod = PlayMethod.DirectPlay;
+                            }
+                            else
+                            {
+                                playlistItem.PlayMethod = PlayMethod.DirectStream;
+                            }
+
                             playlistItem.Container = item.Container;
 
                             return playlistItem;
@@ -530,18 +549,17 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaSource.Protocol == MediaProtocol.Http)
             {
-                if (!options.SupportsDirectRemoteContent)
+                if (_localPlayer.CanAccessUrl(mediaSource.Path, mediaSource.RequiredHttpHeaders.Count > 0))
                 {
-                    return null;
+                    return PlayMethod.DirectPlay;
                 }
-
-                if (mediaSource.RequiredHttpHeaders.Count > 0 && !options.SupportsCustomHttpHeaders)
-                {
-                    return null;
-                }
-                return PlayMethod.DirectPlay;
             }
 
+            else if (mediaSource.Protocol == MediaProtocol.File && _localPlayer.CanAccessFile(mediaSource.Path))
+            {
+                return PlayMethod.DirectPlay;
+            }
+            
             return PlayMethod.DirectStream;
         }
 
@@ -574,7 +592,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return profile;
                     }
-                    
+
                     // For sync we can handle the longer extraction times
                     if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
                     {
