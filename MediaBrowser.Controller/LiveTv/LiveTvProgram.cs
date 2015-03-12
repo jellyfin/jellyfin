@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvProgram : BaseItem
+    public class LiveTvProgram : BaseItem, ILiveTvItem
     {
         /// <summary>
         /// Gets the user data key.
