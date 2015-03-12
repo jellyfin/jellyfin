@@ -1,9 +1,10 @@
 ﻿using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public interface IHasSyncProfile
+    public interface IHasSyncQuality
     {
         /// <summary>
         /// Gets the device profile.
@@ -11,5 +12,12 @@ namespace MediaBrowser.Server.Implementations.Sync
         /// <param name="target">The target.</param>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetDeviceProfile(SyncTarget target);
+
+        /// <summary>
+        /// Gets the quality options.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
+        IEnumerable<SyncQualityOption> GetQualityOptions(SyncTarget target);
     }
 }

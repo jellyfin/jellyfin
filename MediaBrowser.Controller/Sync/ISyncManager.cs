@@ -91,13 +91,6 @@ namespace MediaBrowser.Controller.Sync
         bool SupportsSync(BaseItem item);
 
         /// <summary>
-        /// Gets the device profile.
-        /// </summary>
-        /// <param name="targetId">The target identifier.</param>
-        /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetDeviceProfile(string targetId);
-
-        /// <summary>
         /// Reports the synchronize job item transferred.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -154,21 +147,6 @@ namespace MediaBrowser.Controller.Sync
         QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query);
 
         /// <summary>
-        /// Gets the audio options.
-        /// </summary>
-        /// <param name="jobItem">The job item.</param>
-        /// <returns>AudioOptions.</returns>
-        AudioOptions GetAudioOptions(SyncJobItem jobItem);
-
-        /// <summary>
-        /// Gets the video options.
-        /// </summary>
-        /// <param name="jobItem">The job item.</param>
-        /// <param name="job">The job.</param>
-        /// <returns>VideoOptions.</returns>
-        VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job);
-
-        /// <summary>
         /// Reports the synchronize job item transfer beginning.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -181,5 +159,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task ReportSyncJobItemTransferFailed(string id);
+
+        /// <summary>
+        /// Gets the quality options.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
+        IEnumerable<SyncQualityOption> GetQualityOptions(string targetId);
     }
 }

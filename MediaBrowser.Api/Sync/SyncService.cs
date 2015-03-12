@@ -27,6 +27,13 @@ namespace MediaBrowser.Api.Sync
         public string Id { get; set; }
     }
 
+    [Route("/Sync/QualityOptions", "GET", Summary = "Gets quality options for a sync target.")]
+    public class GetQualityOptions : IReturn<List<SyncQualityOption>>
+    {
+        [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string TargetId { get; set; }
+    }
+
     [Route("/Sync/Jobs/{Id}", "POST", Summary = "Updates a sync job.")]
     public class UpdateSyncJob : SyncJob, IReturnVoid
     {
@@ -222,6 +229,13 @@ namespace MediaBrowser.Api.Sync
             return ToStaticFileResult(jobItem.OutputPath);
         }
 
+        public object Get(GetQualityOptions request)
+        {
+            return ToOptimizedResult(_syncManager
+                    .GetQualityOptions(request.TargetId)
+                    .ToList());
+        }
+
         public object Get(GetSyncDialogOptions request)
         {
             var result = new SyncDialogOptions();
@@ -233,6 +247,10 @@ namespace MediaBrowser.Api.Sync
             {
                 result.Targets = result.Targets
                     .Where(i => string.Equals(i.Id, request.TargetId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                result.QualityOptions = _syncManager
+                    .GetQualityOptions(request.TargetId)
                     .ToList();
             }
 
@@ -263,30 +281,6 @@ namespace MediaBrowser.Api.Sync
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);
             }
-
-            result.QualityOptions = new List<SyncQualityOption>
-            {
-                new SyncQualityOption
-                {
-                    Name = SyncQuality.Original.ToString(),
-                    Id = SyncQuality.Original.ToString()
-                },
-                new SyncQualityOption
-                {
-                    Name = SyncQuality.High.ToString(),
-                    Id = SyncQuality.High.ToString()
-                },
-                new SyncQualityOption
-                {
-                    Name = SyncQuality.Medium.ToString(),
-                    Id = SyncQuality.Medium.ToString()
-                },
-                new SyncQualityOption
-                {
-                    Name = SyncQuality.Low.ToString(),
-                    Id = SyncQuality.Low.ToString()
-                }
-            };
 
             return ToOptimizedResult(result);
         }
