@@ -1843,15 +1843,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Policy.EnableLiveTvAccess && ActiveService != null;
+            return user.Policy.EnableLiveTvAccess && Services.Count > 0;
         }
 
         public IEnumerable<User> GetEnabledUsers()
         {
-            var service = ActiveService;
-
             return _userManager.Users
-                .Where(i => i.Policy.EnableLiveTvAccess && service != null);
+                .Where(IsLiveTvEnabled);
         }
 
         /// <summary>

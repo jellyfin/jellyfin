@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool IsHidden
         {
-            get { return _liveTvManager.ActiveService == null; }
+            get { return _liveTvManager.Services.Count == 0; }
         }
 
         public bool IsEnabled
