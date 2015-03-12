@@ -617,5 +617,30 @@ namespace MediaBrowser.Model.Dlna
                 return MaxHeight;
             }
         }
+
+        public List<MediaStream> GetSelectableAudioStreams()
+        {
+            return GetSelectableStreams(MediaStreamType.Audio);
+        }
+
+        public List<MediaStream> GetSelectableSubtitleStreams()
+        {
+            return GetSelectableStreams(MediaStreamType.Subtitle);
+        }
+
+        public List<MediaStream> GetSelectableStreams(MediaStreamType type)
+        {
+            List<MediaStream> list = new List<MediaStream>();
+
+            foreach (MediaStream stream in MediaSource.MediaStreams)
+            {
+                if (type == stream.Type)
+                {
+                    list.Add(stream);
+                }
+            }
+
+            return list;
+        }
     }
 }
