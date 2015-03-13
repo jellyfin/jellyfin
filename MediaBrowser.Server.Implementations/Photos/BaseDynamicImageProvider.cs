@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return "Dynamic Image Provider"; }
         }
 
-        public async Task<Stream> CreateImageAsync(IHasImages item,
+        protected virtual async Task<Stream> CreateImageAsync(IHasImages item,
             List<BaseItem> itemsWithImages,
             ImageType imageType,
             int imageIndex)
@@ -160,11 +160,17 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected List<BaseItem> GetFinalItems(List<BaseItem> items)
         {
             // Rotate the images no more than once per week
+            return GetFinalItems(items, 4);
+        }
+
+        protected List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
+        {
+            // Rotate the images no more than once per week
             var random = new Random(GetWeekOfYear()).Next();
 
             return items
                 .OrderBy(i => random - items.IndexOf(i))
-                .Take(4)
+                .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
         }
