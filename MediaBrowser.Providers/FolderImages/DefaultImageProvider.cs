@@ -36,36 +36,42 @@ namespace MediaBrowser.Providers.FolderImages
 
             if (view != null)
             {
-                return GetImages(view.ViewType, cancellationToken);
+                return GetImages(view.ViewType, view.UserId.HasValue, cancellationToken);
             }
 
             var folder = (ICollectionFolder)item;
-            return GetImages(folder.CollectionType, cancellationToken);
+            return GetImages(folder.CollectionType, false, cancellationToken);
         }
 
-        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, CancellationToken cancellationToken)
+        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, bool isUserSpecificView, CancellationToken cancellationToken)
         {
-            var url = GetImageUrl(viewType);
+            var url = GetImageUrl(viewType, isUserSpecificView);
+            var list = new List<RemoteImageInfo>();
 
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(new List<RemoteImageInfo>
+            if (!string.IsNullOrWhiteSpace(url))
             {
-                 new RemoteImageInfo
-                 {
-                      ProviderName = Name,
-                      Url = url,
-                      Type = ImageType.Primary
-                 },
+                list.AddRange(new List<RemoteImageInfo>
+                {
+                    new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = url,
+                        Type = ImageType.Primary
+                    },
 
-                 new RemoteImageInfo
-                 {
-                      ProviderName = Name,
-                      Url = url,
-                      Type = ImageType.Thumb
-                 }
-            });
+                    new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = url,
+                        Type = ImageType.Thumb
+                    }
+                });
+            }
+
+            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
         }
 
-        private string GetImageUrl(string viewType)
+        private string GetImageUrl(string viewType, bool isUserSpecificView)
         {
             const string urlPrefix = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Resources/master/images/folders/";
 
@@ -102,6 +108,11 @@ namespace MediaBrowser.Providers.FolderImages
                 return urlPrefix + "movies.png";
             }
 
+            if (isUserSpecificView)
+            {
+                return null;
+            }
+
             return urlPrefix + "generic.png";
         }
 
@@ -112,13 +123,6 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            var view = item as UserView;
-
-            if (view != null)
-            {
-                return !view.UserId.HasValue;
-            }
-            
             return item is ICollectionFolder;
         }
 

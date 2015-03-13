@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {
-    public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>, ICustomMetadataProvider<Playlist>
+    public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>
     {
         public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
-    public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>, ICustomMetadataProvider<BoxSet>
+    public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>
     {
         public CollectionImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {
