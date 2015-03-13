@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,10 +19,12 @@ namespace MediaBrowser.Server.Implementations.Photos
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager, string[] collectionStripViewTypes)
+            : base(fileSystem, providerManager, applicationPaths)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _collectionStripViewTypes = collectionStripViewTypes;
         }
 
         protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
@@ -108,12 +111,32 @@ namespace MediaBrowser.Server.Implementations.Photos
                     return season;
                 }
 
+                var audio = i as Audio;
+                if (audio != null)
+                {
+                    if (!audio.HasImage(ImageType.Primary))
+                    {
+                        var album = audio.FindParent<MusicAlbum>();
+                        if (album != null)
+                        {
+                            return album;
+                        }
+                    }
+                }
+
                 return i;
 
             }).DistinctBy(i => i.Id);
 
+            if (IsUsingCollectionStrip(view))
+            {
+                return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+            }
+
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
         }
+
+        private readonly string[] _collectionStripViewTypes = { CollectionType.Movies };
 
         public override bool Supports(IHasImages item)
         {
@@ -160,11 +183,16 @@ namespace MediaBrowser.Server.Implementations.Photos
                     SpecialFolder.MusicFavoriteSongs
                 };
 
-                return supported.Contains(view.ViewType, StringComparer.OrdinalIgnoreCase) &&
+                return (IsUsingCollectionStrip(view) || supported.Contains(view.ViewType, StringComparer.OrdinalIgnoreCase)) &&
                     _userManager.GetUserById(view.UserId.Value) != null;
             }
 
             return false;
+        }
+
+        private bool IsUsingCollectionStrip(UserView view)
+        {
+            return _collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
     }
 }
