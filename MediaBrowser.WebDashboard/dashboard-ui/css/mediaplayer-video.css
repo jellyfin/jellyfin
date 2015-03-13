@@ -61,6 +61,12 @@
     vertical-align: top;
 }
 
+.videoAdvancedControls .currentPlaylistState {
+    display: inline-block;
+    line-height: 44px;
+    margin-right: 10px;
+}
+
 .videoControls .currentTime {
     margin-top: 25px;
 }

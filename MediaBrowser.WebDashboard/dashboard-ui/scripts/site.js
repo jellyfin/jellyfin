@@ -1399,6 +1399,10 @@ $(function () {
     videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
     videoPlayerHtml += '<div class="videoAdvancedControls">';
 
+    videoPlayerHtml += '<button class="imageButton mediaButton videoTrackControl videoPreviousButton" title="Previous video" type="button" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousVideo') + '</button>';
+    videoPlayerHtml += '<div class="videoTrackControl currentPlaylistState"><span class="currentPlaylistIndex"></span>&nbsp;/&nbsp;<span class="currentPlaylistLength"></span></div>'
+    videoPlayerHtml += '<button class="imageButton mediaButton videoTrackControl videoNextButton" title="Next video" type="button" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextVideo') + '</button>';
+
     videoPlayerHtml += '<button class="imageButton mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
     videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
