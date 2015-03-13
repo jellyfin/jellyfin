@@ -935,11 +935,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.AllGenres.Length > 0)
-            {
-                return false;
-            }
-
             if (request.Genres.Length > 0)
             {
                 return false;
@@ -1565,12 +1560,6 @@ namespace MediaBrowser.Controller.Entities
 
             // Apply genre filter
             if (query.Genres.Length > 0 && !(query.Genres.Any(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
-            {
-                return false;
-            }
-
-            // Apply genre filter
-            if (query.AllGenres.Length > 0 && !query.AllGenres.All(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }

@@ -30,7 +30,6 @@ namespace MediaBrowser.Controller.Entities
         public string[] IncludeItemTypes { get; set; }
         public string[] ExcludeItemTypes { get; set; }
         public string[] Genres { get; set; }
-        public string[] AllGenres { get; set; }
 
         public bool? IsMissing { get; set; }
         public bool? IsUnaired { get; set; }
@@ -80,7 +79,6 @@ namespace MediaBrowser.Controller.Entities
             MediaTypes = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
-            AllGenres = new string[] { };
             Genres = new string[] { };
             Studios = new string[] { };
             ImageTypes = new ImageType[] { };

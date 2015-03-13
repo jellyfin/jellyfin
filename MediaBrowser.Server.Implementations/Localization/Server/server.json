@@ -1172,6 +1172,7 @@
     "LabelIfYouWishToContinueWithDeletion": "If you wish to continue, please confirm by entering the value of:",
     "ButtonIdentify": "Identify",
     "LabelAlbumArtist": "Album artist:",
+    "LabelAlbumArtists": "Album artists:",
     "LabelAlbum": "Album:",
     "LabelCommunityRating": "Community rating:",
     "LabelVoteCount": "Vote count:",
