@@ -93,10 +93,10 @@ namespace MediaBrowser.Model.Querying
         public string[] Genres { get; set; }
 
         /// <summary>
-        /// Limit results to items containing specific studios
+        /// Gets or sets the studio ids.
         /// </summary>
-        /// <value>The studios.</value>
-        public string[] Studios { get; set; }
+        /// <value>The studio ids.</value>
+        public string[] StudioIds { get; set; }
 
         /// <summary>
         /// Gets or sets the exclude item types.
@@ -300,7 +300,7 @@ namespace MediaBrowser.Model.Querying
             VideoTypes = new VideoType[] { };
 
             Genres = new string[] { };
-            Studios = new string[] { };
+            StudioIds = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Years = new int[] { };

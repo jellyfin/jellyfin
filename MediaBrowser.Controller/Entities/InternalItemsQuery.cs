@@ -65,6 +65,7 @@ namespace MediaBrowser.Controller.Entities
         public bool? HasParentalRating { get; set; }
 
         public string[] Studios { get; set; }
+        public string[] StudioIds { get; set; }
         public ImageType[] ImageTypes { get; set; }
         public VideoType[] VideoTypes { get; set; }
         public int[] Years { get; set; }
@@ -81,6 +82,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeItemTypes = new string[] { };
             Genres = new string[] { };
             Studios = new string[] { };
+            StudioIds = new string[] { };
             ImageTypes = new ImageType[] { };
             VideoTypes = new VideoType[] { };
             Years = new int[] { };

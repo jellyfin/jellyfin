@@ -53,6 +53,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Studios { get; set; }
 
+        [ApiMember(Name = "StudioIds", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string StudioIds { get; set; }
+        
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -229,6 +232,11 @@ namespace MediaBrowser.Api.UserLibrary
         public string[] GetStudios()
         {
             return (Studios ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetStudioIds()
+        {
+            return (StudioIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetPersonTypes()
@@ -467,6 +475,7 @@ namespace MediaBrowser.Api.UserLibrary
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
                 Studios = request.GetStudios(),
+                StudioIds = request.GetStudioIds(),
                 Person = request.Person,
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
@@ -945,6 +954,17 @@ namespace MediaBrowser.Api.UserLibrary
                     return false;
                 }
 
+                // Apply studio filter
+                var studioIds = request.GetStudioIds();
+                if (studioIds.Length > 0 && !studioIds.Any(id =>
+                {
+                    var studioItem = libraryManager.GetItemById(id);
+                    return studioItem != null && i.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
+                }))
+                {
+                    return false;
+                }
+
                 // Apply year filter
                 var years = request.GetYears();
                 if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
@@ -1019,14 +1039,8 @@ namespace MediaBrowser.Api.UserLibrary
 
                 if (!(audio != null && artistIds.Any(id =>
                 {
-                    try
-                    {
-                        return audio.HasAnyArtist(libraryManager.GetItemById(id).Name);
-                    }
-                    catch (Exception ex)
-                    {
-                        return false;
-                    }
+                    var artistItem = libraryManager.GetItemById(id);
+                    return artistItem != null && audio.HasAnyArtist(artistItem.Name);
                 })))
                 {
                     return false;
