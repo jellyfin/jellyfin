@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return i =>
             {
                 var hasArtist = i as IHasArtist;
-                return hasArtist != null && hasArtist.HasArtist(Name);
+                return hasArtist != null && hasArtist.HasAnyArtist(Name);
             };
         }
     }

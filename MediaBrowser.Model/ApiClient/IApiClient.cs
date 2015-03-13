@@ -344,14 +344,14 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsByNameQuery query);
+        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsQuery query);
 
         /// <summary>
         /// Gets the instant mix from music genre async.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsByNameQuery query);
+        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsQuery query);
 
         /// <summary>
         /// Gets the similar movies async.
