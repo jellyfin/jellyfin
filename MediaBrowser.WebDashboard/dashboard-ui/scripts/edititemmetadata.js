@@ -502,13 +502,19 @@
 
         $('#txtAlbum', page).val(item.Album || "");
 
-        var albumArtists = item.AlbumArtists || [];
-        $('#txtAlbumArtist', page).val(albumArtists.join(';'));
+        $('#txtAlbumArtist', page).val((item.AlbumArtists || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
 
-        var artists = item.Artists || [];
-        $('#txtArtist', page).val(artists.join(';'));
+        $('#txtArtist', page).val((item.ArtistItems || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         var date;
 
@@ -814,6 +820,16 @@
         });
     }
 
+    function getArtists(form) {
+
+        return $('#txtArtist', form).val().split(';').map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
     function editItemMetadataPage() {
 
         var self = this;
@@ -847,7 +863,7 @@
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
                 AlbumArtist: getAlbumArtists(form),
-                Artists: $('#txtArtist', form).val().split(';'),
+                ArtistItems: getArtists(form),
                 Metascore: $('#txtMetascore', form).val(),
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),

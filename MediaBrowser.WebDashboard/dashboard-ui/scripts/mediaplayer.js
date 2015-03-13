@@ -423,7 +423,7 @@
             else if (firstItem.Type == "MusicArtist") {
 
                 promise = self.getItemsForPlayback({
-                    Artists: firstItem.Name,
+                    ArtistIds: firstItem.Id,
                     Filters: "IsNotFolder",
                     Recursive: true,
                     SortBy: "SortName",
@@ -938,7 +938,7 @@
                 if (item.Type == "MusicArtist") {
 
                     query.MediaTypes = "Audio";
-                    query.Artists = item.Name;
+                    query.ArtistIds = item.Id;
 
                 }
                 else if (item.Type == "MusicGenre") {

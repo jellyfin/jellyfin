@@ -406,8 +406,8 @@
             $('#players', page).hide();
         }
 
-        if (item.Artists && item.Artists.length && item.Type != "MusicAlbum") {
-            $('#artist', page).show().html(getArtistLinksHtml(item.Artists, context)).trigger('create');
+        if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
+            $('#artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context)).trigger('create');
         } else {
             $('#artist', page).hide();
         }
@@ -512,7 +512,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itembynamedetails.html?context=' + context + '&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+            html.push('<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + artist.Id + '">' + artist.Name + '</a>');
 
         }
 

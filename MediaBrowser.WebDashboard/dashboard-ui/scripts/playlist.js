@@ -37,12 +37,12 @@
             html += '</td>';
 
             html += '<td>';
-            html += LibraryBrowser.getArtistLinksHtml(item.Artists || []);
+            html += LibraryBrowser.getArtistLinksHtml(item.ArtistItems || []);
             html += '</td>';
 
             html += '<td>';
             if (item.AlbumArtist) {
-                html += LibraryBrowser.getAlbumArtistLinksHtml(item.AlbumArtists || []);
+                html += LibraryBrowser.getArtistLinksHtml(item.AlbumArtists || []);
             }
             html += '</td>';
 

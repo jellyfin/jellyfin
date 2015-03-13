@@ -53,7 +53,7 @@ namespace MediaBrowser.Api
             var albums = _libraryManager.RootFolder
                                         .GetRecursiveChildren()
                                         .OfType<MusicAlbum>()
-                                        .Where(i => i.HasArtist(item.Name))
+                                        .Where(i => i.HasAnyArtist(item.Name))
                                         .ToList();
 
             var musicArtists = albums

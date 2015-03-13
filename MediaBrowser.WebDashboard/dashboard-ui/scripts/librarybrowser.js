@@ -214,24 +214,7 @@
             return counts.join(' • ');
         },
 
-        getArtistLinksHtml: function (artists) {
-
-            var html = [];
-
-            for (var i = 0, length = artists.length; i < length; i++) {
-
-                var artist = artists[i];
-
-                html.push('<a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
-
-            }
-
-            html = html.join(' / ');
-
-            return html;
-        },
-
-        getAlbumArtistLinksHtml: function (artists, cssClass) {
+        getArtistLinksHtml: function (artists, cssClass) {
 
             var html = [];
 
@@ -815,7 +798,10 @@
                 textlines.push(displayName);
 
                 if (item.Type == 'Audio') {
-                    textlines.push(item.Artists.join(', ') || '&nbsp;');
+                    textlines.push(item.ArtistItems.map(function (a) {
+                        return a.Name;
+
+                    }).join(', ') || '&nbsp;');
                 }
 
                 if (item.Type == 'Game') {
@@ -1763,9 +1749,9 @@
             var contextParam = context ? ('&context=' + context) : '';
 
             if (item.AlbumArtists) {
-                html.push(LibraryBrowser.getAlbumArtistLinksHtml(item.AlbumArtists, "detailPageParentLink"));
-            } else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + contextParam + '">' + item.Artists[0] + '</a>');
+                html.push(LibraryBrowser.getArtistLinksHtml(item.AlbumArtists, "detailPageParentLink"));
+            } else if (item.ArtistItems && item.ArtistItems.length && item.Type == "MusicVideo") {
+                html.push(LibraryBrowser.getArtistLinksHtml(item.ArtistItems, "detailPageParentLink"));
             } else if (item.SeriesName && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + contextParam + '">' + item.SeriesName + '</a>');

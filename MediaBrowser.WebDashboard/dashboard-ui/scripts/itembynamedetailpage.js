@@ -229,7 +229,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "MusicVideo",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
 
         });
@@ -241,7 +241,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "Movie",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
 
         });
@@ -253,7 +253,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "Series",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
 
@@ -264,7 +264,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "Trailer",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
 
@@ -275,7 +275,7 @@
                 IncludeItemTypes: "",
                 MediaTypes: "Game",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
 
@@ -286,7 +286,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "Episode",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
 
@@ -297,7 +297,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "MusicAlbum",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
 
@@ -307,7 +307,7 @@
                 MediaTypes: "",
                 IncludeItemTypes: "Audio",
                 PersonTypes: "",
-                Artists: ""
+                ArtistIds: ""
             });
         });
     }
@@ -381,7 +381,7 @@
             query.Studios = currentItem.Name;
         }
         else if (currentItem.Type == "MusicArtist") {
-            query.Artists = currentItem.Name;
+            query.ArtistIds = currentItem.Id;
         }
     }
 

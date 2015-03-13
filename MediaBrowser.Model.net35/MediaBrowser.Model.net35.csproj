@@ -942,9 +942,6 @@
     <Compile Include="..\MediaBrowser.Model\Querying\SessionQuery.cs">
       <Link>Querying\SessionQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Querying\SimilarItemsByNameQuery.cs">
-      <Link>Querying\SimilarItemsByNameQuery.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Querying\SimilarItemsQuery.cs">
       <Link>Querying\SimilarItemsQuery.cs</Link>
     </Compile>

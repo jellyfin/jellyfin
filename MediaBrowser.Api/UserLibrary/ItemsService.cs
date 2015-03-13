@@ -60,6 +60,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Artists { get; set; }
 
+        [ApiMember(Name = "ArtistIds", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ArtistIds { get; set; }
+        
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
 
@@ -600,6 +603,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
         {
+            var video = i as Video;
+            
             if (!isPreFiltered)
             {
                 var mediaTypes = request.GetMediaTypes();
@@ -647,7 +652,6 @@ namespace MediaBrowser.Api.UserLibrary
                 if (request.Is3D.HasValue)
                 {
                     var val = request.Is3D.Value;
-                    var video = i as Video;
 
                     if (video == null || val != video.Video3DFormat.HasValue)
                     {
@@ -658,7 +662,6 @@ namespace MediaBrowser.Api.UserLibrary
                 if (request.IsHD.HasValue)
                 {
                     var val = request.IsHD.Value;
-                    var video = i as Video;
 
                     if (video == null || val != video.IsHD)
                     {
@@ -800,8 +803,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     var val = request.HasSubtitles.Value;
 
-                    var video = i as Video;
-
                     if (video == null || val != video.HasSubtitles)
                     {
                         return false;
@@ -922,15 +923,10 @@ namespace MediaBrowser.Api.UserLibrary
                 }
 
                 // Filter by VideoType
-                if (!string.IsNullOrEmpty(request.VideoTypes))
+                var videoTypes = request.GetVideoTypes();
+                if (video == null || !videoTypes.Contains(video.VideoType))
                 {
-                    var types = request.VideoTypes.Split(',');
-
-                    var video = i as Video;
-                    if (video == null || !types.Contains(video.VideoType.ToString(), StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
 
                 var imageTypes = request.GetImageTypes().ToList();
@@ -1015,13 +1011,36 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Artists
+            if (!string.IsNullOrEmpty(request.ArtistIds))
+            {
+                var artistIds = request.ArtistIds.Split('|');
+
+                var audio = i as IHasArtist;
+
+                if (!(audio != null && artistIds.Any(id =>
+                {
+                    try
+                    {
+                        return audio.HasAnyArtist(libraryManager.GetItemById(id).Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
+                })))
+                {
+                    return false;
+                }
+            }
+
+            // Artists
             if (!string.IsNullOrEmpty(request.Artists))
             {
                 var artists = request.Artists.Split('|');
 
                 var audio = i as IHasArtist;
 
-                if (!(audio != null && artists.Any(audio.HasArtist)))
+                if (!(audio != null && artists.Any(audio.HasAnyArtist)))
                 {
                     return false;
                 }

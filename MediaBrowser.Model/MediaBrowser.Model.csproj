@@ -322,7 +322,6 @@
     <Compile Include="Querying\QueryResult.cs" />
     <Compile Include="Querying\SeasonQuery.cs" />
     <Compile Include="Querying\SessionQuery.cs" />
-    <Compile Include="Querying\SimilarItemsByNameQuery.cs" />
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Querying\UpcomingEpisodesQuery.cs" />
     <Compile Include="Querying\UserQuery.cs" />
