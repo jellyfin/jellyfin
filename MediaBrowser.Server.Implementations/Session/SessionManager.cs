@@ -1639,7 +1639,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 string.Equals(i.Client, client));
         }
 
-        public Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string remoteEndpoint, string appVersion)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
         {
             if (info == null)
             {
@@ -1654,10 +1654,26 @@ namespace MediaBrowser.Server.Implementations.Session
                 ? "1"
                 : appVersion;
 
-            return GetSessionInfo(info.AppName, appVersion, info.DeviceId, info.DeviceName, remoteEndpoint, user);
+            var deviceName = info.DeviceName;
+
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                // Replace the info from the token with more recent info
+                var device = _deviceManager.GetDevice(deviceId);
+                if (device != null)
+                {
+                    deviceName = device.Name;
+                }
+            }
+            else
+            {
+                deviceId = info.DeviceId;
+            }
+
+            return GetSessionInfo(info.AppName, appVersion, deviceId, deviceName, remoteEndpoint, user);
         }
 
-        public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string remoteEndpoint)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
         {
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1676,7 +1692,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 return null;
             }
 
-            return GetSessionByAuthenticationToken(info, remoteEndpoint, null);
+            return GetSessionByAuthenticationToken(info, deviceId, remoteEndpoint, null);
         }
 
         public Task SendMessageToUserSessions<T>(string userId, string name, T data,

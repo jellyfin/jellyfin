@@ -28,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             if (!string.IsNullOrWhiteSpace(authorization.Token))
             {
                 var auth = GetTokenInfo(requestContext);
-                return _sessionManager.GetSessionByAuthenticationToken(auth, requestContext.RemoteIp, authorization.Version);
+                return _sessionManager.GetSessionByAuthenticationToken(auth, authorization.DeviceId, requestContext.RemoteIp, authorization.Version);
             }
 
             var session = _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);

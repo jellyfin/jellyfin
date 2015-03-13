@@ -283,18 +283,20 @@ namespace MediaBrowser.Controller.Session
         /// Gets the session by authentication token.
         /// </summary>
         /// <param name="token">The token.</param>
+        /// <param name="deviceId">The device identifier.</param>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <returns>SessionInfo.</returns>
-        Task<SessionInfo> GetSessionByAuthenticationToken(string token, string remoteEndpoint);
+        Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint);
 
         /// <summary>
         /// Gets the session by authentication token.
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="deviceId">The device identifier.</param>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <param name="appVersion">The application version.</param>
         /// <returns>Task&lt;SessionInfo&gt;.</returns>
-        Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string remoteEndpoint, string appVersion);
+        Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
         /// Logouts the specified access token.
