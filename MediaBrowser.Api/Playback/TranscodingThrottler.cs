@@ -25,10 +25,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Start()
         {
-            if (_processManager.SupportsSuspension)
-            {
-                //_timer = new Timer(TimerCallback, null, 5000, 5000);
-            }
+            _timer = new Timer(TimerCallback, null, 5000, 5000);
         }
 
         private void TimerCallback(object state)
@@ -58,8 +55,7 @@ namespace MediaBrowser.Api.Playback
 
             try
             {
-                //_job.Process.StandardInput.WriteLine("p");
-                _processManager.SuspendProcess(_job.Process);
+                _job.Process.StandardInput.WriteLine("p");
                 _isPaused = true;
             }
             catch (Exception ex)
@@ -77,8 +73,7 @@ namespace MediaBrowser.Api.Playback
 
             try
             {
-                //_job.Process.StandardInput.WriteLine("u");
-                _processManager.ResumeProcess(_job.Process);
+                _job.Process.StandardInput.WriteLine("u");
                 _isPaused = false;
             }
             catch (Exception ex)
