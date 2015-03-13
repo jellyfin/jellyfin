@@ -138,72 +138,60 @@ namespace MediaBrowser.Model.Dlna
                 DeviceProfile = options.Profile
             };
 
-            int? maxBitrateSetting = options.GetMaxBitrate();
+            List<PlayMethod> directPlayMethods = GetAudioDirectPlayMethods(item, options);
 
-            MediaStream audioStream = item.DefaultAudioStream;
-
-            // Honor the max bitrate setting
-            if (IsAudioEligibleForDirectPlay(item, maxBitrateSetting))
+            if (directPlayMethods.Count > 0)
             {
-                DirectPlayProfile directPlay = null;
-                foreach (DirectPlayProfile i in options.Profile.DirectPlayProfiles)
+                MediaStream audioStream = item.DefaultAudioStream;
+
+                string audioCodec = audioStream == null ? null : audioStream.Codec;
+
+                // Make sure audio codec profiles are satisfied
+                if (!string.IsNullOrEmpty(audioCodec))
                 {
-                    if (i.Type == playlistItem.MediaType && IsAudioDirectPlaySupported(i, item, audioStream))
+                    ConditionProcessor conditionProcessor = new ConditionProcessor();
+
+                    List<ProfileCondition> conditions = new List<ProfileCondition>();
+                    foreach (CodecProfile i in options.Profile.CodecProfiles)
                     {
-                        directPlay = i;
-                        break;
+                        if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
+                        {
+                            foreach (ProfileCondition c in i.Conditions)
+                            {
+                                conditions.Add(c);
+                            }
+                        }
                     }
-                }
 
-                if (directPlay != null)
-                {
-                    string audioCodec = audioStream == null ? null : audioStream.Codec;
+                    int? audioChannels = audioStream.Channels;
+                    int? audioBitrate = audioStream.BitRate;
 
-                    // Make sure audio codec profiles are satisfied
-                    if (!string.IsNullOrEmpty(audioCodec))
+                    bool all = true;
+                    foreach (ProfileCondition c in conditions)
                     {
-                        ConditionProcessor conditionProcessor = new ConditionProcessor();
-
-                        List<ProfileCondition> conditions = new List<ProfileCondition>();
-                        foreach (CodecProfile i in options.Profile.CodecProfiles)
+                        if (!conditionProcessor.IsAudioConditionSatisfied(c, audioChannels, audioBitrate))
                         {
-                            if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
-                            {
-                                foreach (ProfileCondition c in i.Conditions)
-                                {
-                                    conditions.Add(c);
-                                }
-                            }
+                            all = false;
+                            break;
+                        }
+                    }
+
+                    if (all)
+                    {
+                        if (item.Protocol == MediaProtocol.File &&
+                            directPlayMethods.Contains(PlayMethod.DirectPlay) && 
+                            _localPlayer.CanAccessFile(item.Path))
+                        {
+                            playlistItem.PlayMethod = PlayMethod.DirectPlay;
+                        }
+                        else if (directPlayMethods.Contains(PlayMethod.DirectStream))
+                        {
+                            playlistItem.PlayMethod = PlayMethod.DirectStream;
                         }
 
-                        int? audioChannels = audioStream.Channels;
-                        int? audioBitrate = audioStream.BitRate;
+                        playlistItem.Container = item.Container;
 
-                        bool all = true;
-                        foreach (ProfileCondition c in conditions)
-                        {
-                            if (!conditionProcessor.IsAudioConditionSatisfied(c, audioChannels, audioBitrate))
-                            {
-                                all = false;
-                                break;
-                            }
-                        }
-
-                        if (all)
-                        {
-                            if (item.Protocol == MediaProtocol.File && _localPlayer.CanAccessFile(item.Path))
-                            {
-                                playlistItem.PlayMethod = PlayMethod.DirectPlay;
-                            }
-                            else
-                            {
-                                playlistItem.PlayMethod = PlayMethod.DirectStream;
-                            }
-
-                            playlistItem.Container = item.Container;
-
-                            return playlistItem;
-                        }
+                        return playlistItem;
                     }
                 }
             }
@@ -270,6 +258,41 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return playlistItem;
+        }
+
+        private List<PlayMethod> GetAudioDirectPlayMethods(MediaSourceInfo item, AudioOptions options)
+        {
+            MediaStream audioStream = item.DefaultAudioStream;
+            
+            DirectPlayProfile directPlayProfile = null;
+            foreach (DirectPlayProfile i in options.Profile.DirectPlayProfiles)
+            {
+                if (i.Type == DlnaProfileType.Audio && IsAudioDirectPlaySupported(i, item, audioStream))
+                {
+                    directPlayProfile = i;
+                    break;
+                }
+            }
+
+            List<PlayMethod> playMethods = new List<PlayMethod>();
+
+            if (directPlayProfile != null)
+            {
+                // While options takes the network and other factors into account. Only applies to direct stream
+                if (IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate()))
+                {
+                    playMethods.Add(PlayMethod.DirectStream);
+                }
+                
+                // The profile describes what the device supports
+                // If device requirements are satisfied then allow both direct stream and direct play
+                if (IsAudioEligibleForDirectPlay(item, options.Profile.MaxStaticBitrate))
+                {
+                    playMethods.Add(PlayMethod.DirectPlay);
+                }
+            }
+
+            return playMethods;
         }
 
         private StreamInfo BuildVideoItem(MediaSourceInfo item, VideoOptions options)

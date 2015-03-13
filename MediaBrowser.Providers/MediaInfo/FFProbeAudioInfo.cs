@@ -210,7 +210,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            var albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "albumartist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album artist") ?? FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
+            var albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "albumartist");
+            if (string.IsNullOrWhiteSpace(albumArtist))
+            {
+                albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album artist");
+            }
+            if (string.IsNullOrWhiteSpace(albumArtist))
+            {
+                albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
+            }
 
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
@@ -277,8 +285,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(i => i.Trim())
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .FirstOrDefault();
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };

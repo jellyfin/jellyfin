@@ -103,7 +103,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 return Task.FromResult<SessionInfo>(null);
             }
-            return _sessionManager.GetSessionByAuthenticationToken(token, remoteEndpoint);
+            var deviceId = queryString["deviceId"];
+            return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
         }
 
         public void Dispose()

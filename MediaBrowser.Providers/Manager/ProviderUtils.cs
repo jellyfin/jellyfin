@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (sourceHasAlbumArtist != null && targetHasAlbumArtist != null)
             {
-                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count > 0)
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
                 {
                     targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
                 }
