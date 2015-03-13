@@ -378,7 +378,7 @@
             query.Genres = currentItem.Name;
         }
         else if (currentItem.Type == "Studio") {
-            query.Studios = currentItem.Name;
+            query.StudioIds = currentItem.Id;
         }
         else if (currentItem.Type == "MusicArtist") {
             query.ArtistIds = currentItem.Id;
