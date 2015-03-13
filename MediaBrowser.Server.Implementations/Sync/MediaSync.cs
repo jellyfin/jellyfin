@@ -152,7 +152,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
-                await SendFile(provider, internalSyncJobItem.OutputPath, localItem, target, cancellationToken).ConfigureAwait(false);
+                var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem, target, cancellationToken).ConfigureAwait(false);
+
+                if (localItem.Item.MediaSources != null)
+                {
+                    var mediaSource = localItem.Item.MediaSources.FirstOrDefault();
+                    if (mediaSource != null)
+                    {
+                        mediaSource.Path = sendFileResult.Path;
+                        mediaSource.Protocol = sendFileResult.Protocol;
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
 
                 // Create db record
                 await dataProvider.AddOrUpdate(target, localItem).ConfigureAwait(false);
@@ -203,11 +214,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
+        private async Task<SendFileResult> SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
         {
             using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
-                await provider.SendFile(stream, item.LocalPath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                return await provider.SendFile(stream, item.LocalPath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
             }
         }
 

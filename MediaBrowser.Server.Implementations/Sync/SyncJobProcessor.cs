@@ -581,6 +581,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.MediaSource = mediaSource;
             }
 
+            jobItem.MediaSource.SupportsTranscoding = false;
+
             if (externalSubs.Count > 0)
             {
                 // Save the job item now since conversion could take a while
@@ -756,6 +758,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 jobItem.MediaSource = mediaSource;
             }
+
+            jobItem.MediaSource.SupportsTranscoding = false;
 
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
