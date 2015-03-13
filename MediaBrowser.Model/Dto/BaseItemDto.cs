@@ -508,6 +508,12 @@ namespace MediaBrowser.Model.Dto
         public string AlbumArtist { get; set; }
 
         /// <summary>
+        /// Gets or sets the album artists.
+        /// </summary>
+        /// <value>The album artists.</value>
+        public List<NameIdPair> AlbumArtists { get; set; }
+        
+        /// <summary>
         /// Gets or sets the name of the season.
         /// </summary>
         /// <value>The name of the season.</value>

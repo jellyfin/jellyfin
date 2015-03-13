@@ -231,6 +231,24 @@
             return html;
         },
 
+        getAlbumArtistLinksHtml: function (artists, cssClass) {
+
+            var html = [];
+
+            for (var i = 0, length = artists.length; i < length; i++) {
+
+                var artist = artists[i];
+
+                var css = cssClass ? (' class="' + cssClass + '"') : '';
+                html.push('<a' + css + ' href="itembynamedetails.html?context=music&id=' + artist.Id + '">' + artist.Name + '</a>');
+
+            }
+
+            html = html.join(' / ');
+
+            return html;
+        },
+
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
             var externalPlayers = ExternalPlayer.getExternalPlayers();
@@ -1744,10 +1762,8 @@
 
             var contextParam = context ? ('&context=' + context) : '';
 
-            if (item.AlbumArtist && item.Type == "Audio") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + contextParam + '">' + item.AlbumArtist + '</a>');
-            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + contextParam + '">' + item.AlbumArtist + '</a>');
+            if (item.AlbumArtists) {
+                html.push(LibraryBrowser.getAlbumArtistLinksHtml(item.AlbumArtists, "detailPageParentLink"));
             } else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
                 html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + contextParam + '">' + item.Artists[0] + '</a>');
             } else if (item.SeriesName && item.Type == "Episode") {
@@ -1769,11 +1785,8 @@
             } else if (item.Album && item.Type == "MusicVideo" && item.AlbumId) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.AlbumId + contextParam + '">' + item.Album + '</a>');
 
-            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-
             } else if (item.Album) {
                 html.push(item.Album);
-
             }
 
             if (html.length) {

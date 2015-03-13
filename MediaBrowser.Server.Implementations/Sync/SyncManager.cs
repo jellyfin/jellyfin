@@ -136,6 +136,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var jobId = Guid.NewGuid().ToString("N");
 
+            if (string.IsNullOrWhiteSpace(request.Quality))
+            {
+                request.Quality = GetQualityOptions(request.TargetId)
+                    .Where(i => i.IsDefault)
+                    .Select(i => i.Id)
+                    .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+            }
+
             var job = new SyncJob
             {
                 Id = jobId,

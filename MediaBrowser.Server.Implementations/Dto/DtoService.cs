@@ -1175,6 +1175,28 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (hasAlbumArtist != null)
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
+
+                dto.AlbumArtists = hasAlbumArtist
+                    .AlbumArtists
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            var artist = _libraryManager.GetArtist(i);
+                            return new NameIdPair
+                            {
+                                Name = artist.Name,
+                                Id = artist.Id.ToString("N")
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error getting album artist", ex);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .ToList();
             }
 
             // Add video info

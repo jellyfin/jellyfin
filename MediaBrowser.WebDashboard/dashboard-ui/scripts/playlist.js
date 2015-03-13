@@ -42,7 +42,7 @@
 
             html += '<td>';
             if (item.AlbumArtist) {
-                html += LibraryBrowser.getArtistLinksHtml([item.AlbumArtist]);
+                html += LibraryBrowser.getAlbumArtistLinksHtml(item.AlbumArtists || []);
             }
             html += '</td>';
 

@@ -394,7 +394,10 @@ namespace MediaBrowser.Api
             if (song != null)
             {
                 song.Album = request.Album;
-                song.AlbumArtists = string.IsNullOrWhiteSpace(request.AlbumArtist) ? new List<string>() : new List<string> { request.AlbumArtist };
+                song.AlbumArtists = request
+                    .AlbumArtists
+                    .Select(i => i.Name)
+                    .ToList();
                 song.Artists = request.Artists.ToList();
             }
 

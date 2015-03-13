@@ -46,9 +46,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "PersonTypes", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string PersonTypes { get; set; }
 
-        [ApiMember(Name = "AllGenres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string AllGenres { get; set; }
-
         /// <summary>
         /// Limit results to items containing specific studios
         /// </summary>
@@ -225,11 +222,6 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? CollapseBoxSetItems { get; set; }
-
-        public string[] GetAllGenres()
-        {
-            return (AllGenres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        }
 
         public string[] GetStudios()
         {
@@ -471,7 +463,6 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
-                AllGenres = request.GetAllGenres(),
                 Studios = request.GetStudios(),
                 Person = request.Person,
                 PersonTypes = request.GetPersonTypes(),
@@ -926,13 +917,6 @@ namespace MediaBrowser.Api.UserLibrary
                 // Apply genre filter
                 var genres = request.GetGenres();
                 if (genres.Length > 0 && !(genres.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
-                {
-                    return false;
-                }
-
-                // Apply genre filter
-                var allGenres = request.GetAllGenres();
-                if (allGenres.Length > 0 && !allGenres.All(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }

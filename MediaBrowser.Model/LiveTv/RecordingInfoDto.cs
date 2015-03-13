@@ -273,6 +273,10 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The type.</value>
         public string Type { get; set; }
 
+        /// <summary>
+        /// Gets or sets the media sources.
+        /// </summary>
+        /// <value>The media sources.</value>
         public List<MediaSourceInfo> MediaSources { get; set; }
         
         public RecordingInfoDto()
