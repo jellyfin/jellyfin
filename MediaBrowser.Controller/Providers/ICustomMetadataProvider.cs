@@ -21,9 +21,4 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task{ItemUpdateType}.</returns>
         Task<ItemUpdateType> FetchAsync(TItemType item, MetadataRefreshOptions options, CancellationToken cancellationToken);
     }
-
-    public interface IPreRefreshProvider : ICustomMetadataProvider
-    {
-        
-    }
 }

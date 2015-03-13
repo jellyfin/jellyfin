@@ -7,17 +7,6 @@ using MediaBrowser.Common;
 
 namespace MediaBrowser.Controller.Providers
 {
-    public interface ISeriesOrderProvider
-    {
-        string OrderType { get; }
-        Task<int?> FindSeriesIndex(string seriesName);
-    }
-
-    public static class SeriesOrderTypes
-    {
-        public const string Anime = "Anime";
-    }
-
     public interface ISeriesOrderManager
     {
         Task<int?> FindSeriesIndex(string orderType, string seriesName);

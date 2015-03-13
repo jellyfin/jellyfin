@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.FolderImages
 {
-    public class DefaultImageProvider : IRemoteImageProvider, IHasItemChangeMonitor
+    public class DefaultImageProvider : IRemoteImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly IHttpClient _httpClient;
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            return item is ICollectionFolder;
+            return item is ICollectionFolder || item is UserView;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -139,6 +139,15 @@ namespace MediaBrowser.Providers.FolderImages
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             return GetSupportedImages(item).Any(i => !item.HasImage(i));
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Run after the dynamic image provider
+                return 1;
+            }
         }
     }
 }
