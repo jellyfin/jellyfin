@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>, ICustomMetadataProvider<PhotoAlbum>
+    public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>
     {
         public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {

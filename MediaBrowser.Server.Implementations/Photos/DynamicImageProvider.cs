@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>, ICustomMetadataProvider<UserView>
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
