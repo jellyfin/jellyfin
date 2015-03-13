@@ -9,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -193,6 +194,25 @@ namespace MediaBrowser.Server.Implementations.Photos
         private bool IsUsingCollectionStrip(UserView view)
         {
             return _collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
+        }
+
+        protected override Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
+        {
+            var view = (UserView)item;
+            if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
+            {
+                var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages), item.Name, 960, 540);
+                return Task.FromResult(stream);
+            }
+
+            return base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
+        }
+
+        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items)
+        {
+            return items
+                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
+                .Where(i => !string.IsNullOrWhiteSpace(i));
         }
     }
 }
