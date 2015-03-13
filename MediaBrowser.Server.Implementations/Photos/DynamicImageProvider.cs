@@ -115,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
         }
 
-        protected override bool Supports(IHasImages item)
+        public override bool Supports(IHasImages item)
         {
             var view = item as UserView;
 
