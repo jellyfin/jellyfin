@@ -418,15 +418,6 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetAlbumArtistsAsync(ArtistsQuery query);
 
         /// <summary>
-        /// Gets a studio
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetStudioAsync(string name, string userId);
-
-        /// <summary>
         /// Gets the next up async.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -493,15 +484,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         Task<BaseItemDto> GetGameGenreAsync(string name, string userId);
-
-        /// <summary>
-        /// Gets the artist async.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        Task<BaseItemDto> GetArtistAsync(string name, string userId);
 
         /// <summary>
         /// Restarts the server.
@@ -1014,14 +996,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
-        /// <param name="year">The year.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        string GetYearImageUrl(int year, ImageOptions options);
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
@@ -1043,24 +1017,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetGameGenreImageUrl(string name, ImageOptions options);
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        string GetStudioImageUrl(string name, ImageOptions options);
-
-        /// <summary>
-        /// Gets the artist image URL.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        string GetArtistImageUrl(string name, ImageOptions options);
 
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
