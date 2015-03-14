@@ -95,7 +95,13 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The official rating.</value>
         public string OfficialRating { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the production year.
+        /// </summary>
+        /// <value>The production year.</value>
+        public int? ProductionYear { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the service.
         /// </summary>
