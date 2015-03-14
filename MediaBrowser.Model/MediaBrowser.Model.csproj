@@ -139,6 +139,7 @@
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\MetadataEditorInfo.cs" />
+    <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
     <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
@@ -321,7 +322,6 @@
     <Compile Include="Querying\QueryResult.cs" />
     <Compile Include="Querying\SeasonQuery.cs" />
     <Compile Include="Querying\SessionQuery.cs" />
-    <Compile Include="Querying\SimilarItemsByNameQuery.cs" />
     <Compile Include="Querying\SimilarItemsQuery.cs" />
     <Compile Include="Querying\UpcomingEpisodesQuery.cs" />
     <Compile Include="Querying\UserQuery.cs" />

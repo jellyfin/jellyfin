@@ -2,8 +2,8 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider
-        where T : IHasImages
+    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider, IDynamicImageProvider, IHasOrder
+        where T : IHasMetadata
     {
         protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
@@ -29,81 +29,51 @@ namespace MediaBrowser.Server.Implementations.Photos
             FileSystem = fileSystem;
         }
 
-        public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public virtual bool Supports(IHasImages item)
         {
-            if (!Supports(item))
-            {
-                return ItemUpdateType.None;
-            }
-
-            var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
-            var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
-
-            return primaryResult | thumbResult;
+            return item is T;
         }
 
-        protected virtual bool Supports(IHasImages item)
+        public virtual IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            return true;
+            return new List<ImageType>
+            {
+                ImageType.Primary,
+                ImageType.Thumb
+            };
+        }
+
+        public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        {
+            var items = await GetItemsWithImages(item).ConfigureAwait(false);
+            var cacheKey = GetConfigurationCacheKey(items);
+
+            var result = await FetchAsyncInternal(item, items, type, cacheKey, cancellationToken).ConfigureAwait(false);
+
+            return new DynamicImageResponse
+            {
+                HasImage = result != null,
+                Stream = result,
+                InternalCacheKey = cacheKey,
+                Format = ImageFormat.Png
+            };
         }
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
         private const string Version = "3";
-        protected  string GetConfigurationCacheKey(List<BaseItem> items)
+        protected string GetConfigurationCacheKey(List<BaseItem> items)
         {
             return (Version + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
         }
 
-        protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
-        {
-            var items = await GetItemsWithImages(item).ConfigureAwait(false);
-            var cacheKey = GetConfigurationCacheKey(items);
-
-            if (!HasChanged(item, imageType, cacheKey))
-            {
-                return ItemUpdateType.None;
-            }
-
-            return await FetchAsyncInternal(item, items, imageType, cacheKey, options, cancellationToken).ConfigureAwait(false);
-        }
-
-        protected async Task<ItemUpdateType> FetchAsyncInternal(IHasImages item, 
+        protected Task<Stream> FetchAsyncInternal(IHasImages item,
             List<BaseItem> itemsWithImages,
-            ImageType imageType, 
-            string cacheKey, 
-            MetadataRefreshOptions options, 
+            ImageType imageType,
+            string cacheKey,
             CancellationToken cancellationToken)
         {
-            var stream = await CreateImageAsync(item, itemsWithImages, imageType, 0).ConfigureAwait(false);
-
-            if (stream == null)
-            {
-                return ItemUpdateType.None;
-            }
-
-            if (stream is MemoryStream)
-            {
-                using (stream)
-                {
-                    stream.Position = 0;
-
-                    await ProviderManager.SaveImage(item, stream, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                using (var ms = new MemoryStream())
-                {
-                    await stream.CopyToAsync(ms).ConfigureAwait(false);
-
-                    ms.Position = 0;
-
-                    await ProviderManager.SaveImage(item, ms, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
-                }
-            }
-
-            return ItemUpdateType.ImageUpdate;
+            return CreateImageAsync(item, itemsWithImages, imageType, 0);
         }
 
         protected Task<Stream> GetThumbCollage(List<BaseItem> items)
@@ -137,9 +107,9 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return "Dynamic Image Provider"; }
         }
 
-        public async Task<Stream> CreateImageAsync(IHasImages item, 
+        protected virtual async Task<Stream> CreateImageAsync(IHasImages item,
             List<BaseItem> itemsWithImages,
-            ImageType imageType, 
+            ImageType imageType,
             int imageIndex)
         {
             if (itemsWithImages.Count == 0)
@@ -190,11 +160,17 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected List<BaseItem> GetFinalItems(List<BaseItem> items)
         {
             // Rotate the images no more than once per week
+            return GetFinalItems(items, 4);
+        }
+
+        protected List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
+        {
+            // Rotate the images no more than once per week
             var random = new Random(GetWeekOfYear()).Next();
 
             return items
                 .OrderBy(i => random - items.IndexOf(i))
-                .Take(4)
+                .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
         }
@@ -208,6 +184,15 @@ namespace MediaBrowser.Server.Implementations.Photos
                             usCulture.DateTimeFormat.FirstDayOfWeek);
 
             return weekNo;
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Run before the default image provider which will download placeholders
+                return 0;
+            }
         }
     }
 }

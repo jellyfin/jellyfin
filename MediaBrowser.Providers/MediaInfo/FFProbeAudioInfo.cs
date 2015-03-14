@@ -387,7 +387,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrEmpty(val))
             {
                 // Sometimes the artist name is listed here, account for that
-                var studios = Split(val, true).Where(i => !audio.HasArtist(i));
+                var studios = Split(val, true).Where(i => !audio.HasAnyArtist(i));
 
                 foreach (var studio in studios)
                 {

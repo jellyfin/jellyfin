@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -16,6 +17,13 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public interface IProviderManager
     {
+        /// <summary>
+        /// Queues the refresh.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="options">The options.</param>
+        void QueueRefresh(Guid itemId, MetadataRefreshOptions options);
+
         /// <summary>
         /// Refreshes the metadata.
         /// </summary>

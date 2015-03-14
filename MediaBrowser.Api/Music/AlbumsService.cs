@@ -77,15 +77,13 @@ namespace MediaBrowser.Api.Music
             var album1 = (MusicAlbum)item1;
             var album2 = (MusicAlbum)item2;
 
-            var artists1 = album1.GetRecursiveChildren(i => i is IHasArtist)
-                .Cast<IHasArtist>()
-                .SelectMany(i => i.AllArtists)
+            var artists1 = album1
+                .AllArtists
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var artists2 = album2.GetRecursiveChildren(i => i is IHasArtist)
-                .Cast<IHasArtist>()
-                .SelectMany(i => i.AllArtists)
+            var artists2 = album2
+                .AllArtists
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
