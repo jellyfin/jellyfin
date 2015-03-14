@@ -20,12 +20,29 @@ namespace MediaBrowser.Server.Implementations.Photos
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager, string[] collectionStripViewTypes)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager)
             : base(fileSystem, providerManager, applicationPaths)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _collectionStripViewTypes = collectionStripViewTypes;
+        }
+
+        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            var view = (UserView)item;
+            if (IsUsingCollectionStrip(view))
+            {
+                return new List<ImageType>
+                {
+                    ImageType.Primary
+                };
+            }
+
+            return new List<ImageType>
+            {
+                ImageType.Primary,
+                ImageType.Thumb
+            };
         }
 
         protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
@@ -75,9 +92,15 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return list;
             }
 
+            var isUsingCollectionStrip = IsUsingCollectionStrip(view);
+            var recursive = isUsingCollectionStrip && !new[] {CollectionType.Playlists, CollectionType.Channels}.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+
             var result = await view.GetItems(new InternalItemsQuery
             {
-                User = _userManager.GetUserById(view.UserId.Value)
+                User = _userManager.GetUserById(view.UserId.Value),
+                CollapseBoxSetItems = false,
+                Recursive = recursive,
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder"}
 
             }).ConfigureAwait(false);
 
@@ -115,13 +138,10 @@ namespace MediaBrowser.Server.Implementations.Photos
                 var audio = i as Audio;
                 if (audio != null)
                 {
-                    if (!audio.HasImage(ImageType.Primary))
+                    var album = audio.FindParent<MusicAlbum>();
+                    if (album != null && album.HasImage(ImageType.Primary))
                     {
-                        var album = audio.FindParent<MusicAlbum>();
-                        if (album != null)
-                        {
-                            return album;
-                        }
+                        return album;
                     }
                 }
 
@@ -129,15 +149,13 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             }).DistinctBy(i => i.Id);
 
-            if (IsUsingCollectionStrip(view))
+            if (isUsingCollectionStrip)
             {
                 return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
             }
 
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary)).ToList());
         }
-
-        private readonly string[] _collectionStripViewTypes = { CollectionType.Movies };
 
         public override bool Supports(IHasImages item)
         {
@@ -193,7 +211,18 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         private bool IsUsingCollectionStrip(UserView view)
         {
-            return _collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
+            string[] collectionStripViewTypes =
+            {
+                CollectionType.Movies,
+                CollectionType.TvShows,
+                CollectionType.Games,
+                CollectionType.Music,
+                CollectionType.BoxSets,
+                CollectionType.Playlists,
+                CollectionType.Channels
+            };
+
+            return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
         protected override Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)

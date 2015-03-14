@@ -1455,7 +1455,8 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-            return RefreshMetadata(CancellationToken.None);
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions());
+            return Task.FromResult(true);
         }
 
         /// <summary>

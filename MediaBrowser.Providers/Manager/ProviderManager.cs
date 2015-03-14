@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Manager
     /// <summary>
     /// Class ProviderManager
     /// </summary>
-    public class ProviderManager : IProviderManager
+    public class ProviderManager : IProviderManager, IDisposable
     {
         /// <summary>
         /// The _logger
@@ -63,6 +63,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IExternalId[] _externalIds;
 
+        private readonly Func<ILibraryManager> _libraryManagerFactory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -71,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
@@ -79,6 +81,7 @@ namespace MediaBrowser.Providers.Manager
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
+            _libraryManagerFactory = libraryManagerFactory;
         }
 
         /// <summary>
@@ -840,6 +843,81 @@ namespace MediaBrowser.Providers.Manager
                     UrlFormatString = i.UrlFormatString
 
                 });
+        }
+
+        private readonly ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
+            new ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>>();
+
+        private readonly object _refreshTimerLock = new object();
+        private Timer _refreshTimer;
+
+        public void QueueRefresh(Guid id, MetadataRefreshOptions options)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options));
+            StartRefreshTimer();
+        }
+
+        private void StartRefreshTimer()
+        {
+            lock (_refreshTimerLock)
+            {
+                if (_refreshTimer == null)
+                {
+                    _refreshTimer = new Timer(RefreshTimerCallback, null, 100, Timeout.Infinite);
+                }
+            }
+        }
+
+        private void StopRefreshTimer()
+        {
+            lock (_refreshTimerLock)
+            {
+                if (_refreshTimer != null)
+                {
+                    _refreshTimer.Dispose();
+                    _refreshTimer = null;
+                }
+            }
+        }
+
+        private async void RefreshTimerCallback(object state)
+        {
+            Tuple<Guid, MetadataRefreshOptions> refreshItem;
+            var libraryManager = _libraryManagerFactory();
+
+            while (_refreshQueue.TryDequeue(out refreshItem))
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var item = libraryManager.GetItemById(refreshItem.Item1);
+                    if (item != null)
+                    {
+                        await item.RefreshMetadata(refreshItem.Item2, CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing item", ex);
+                }
+            }
+
+            StopRefreshTimer();
+        }
+
+        private bool _disposed;
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

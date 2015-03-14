@@ -125,13 +125,15 @@ namespace MediaBrowser.Api.Subtitles
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IProviderManager _providerManager;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
             _mediaSourceManager = mediaSourceManager;
+            _providerManager = providerManager;
         }
 
         public object Get(GetSubtitlePlaylist request)
@@ -256,7 +258,7 @@ namespace MediaBrowser.Api.Subtitles
                     await _subtitleManager.DownloadSubtitles(video, request.SubtitleId, CancellationToken.None)
                         .ConfigureAwait(false);
 
-                    await video.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), CancellationToken.None).ConfigureAwait(false);
+                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions());
                 }
                 catch (Exception ex)
                 {

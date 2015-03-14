@@ -462,7 +462,7 @@
         switch (index) {
 
             case 0:
-                return 'smalllibrarytiles-automobile';
+                return 'librarytiles-automobile';
             case 1:
                 return 'resume';
             case 2:
@@ -492,6 +492,9 @@
         }
         else if (section == 'smalllibrarytiles-automobile') {
             Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, true);
+        }
+        else if (section == 'librarytiles-automobile') {
+            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, true);
         }
         else if (section == 'librarybuttons') {
             Sections.loadlibraryButtons(elem, userId, index);
