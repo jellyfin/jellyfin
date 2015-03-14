@@ -507,8 +507,7 @@
             if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
-                    self.playlist = items;
-                    currentPlaylistIndex = 0;
+                    self.setPlaylistState(0, items);
                 });
 
                 return;
@@ -518,8 +517,7 @@
 
                 items = intros.Items.concat(items);
                 self.playInternal(items[0], options.startPositionTicks, function () {
-                    self.playlist = items;
-                    currentPlaylistIndex = 0;
+                    self.setPlaylistState(0, items);
                 });
 
             });
@@ -721,8 +719,21 @@
             var newItem = self.playlist[i];
 
             self.playInternal(newItem, 0, function () {
-                currentPlaylistIndex = i;
+                self.setPlaylistState(i);
             });
+        };
+
+        // Set currentPlaylistIndex and playlist. Using a method allows for overloading in derived player implementations
+        self.setPlaylistState = function (i, items) {
+            if (!isNaN(i)) {
+                currentPlaylistIndex = i;
+            }
+            if (items) {
+                self.playlist = items;
+            }
+            if (self.updatePlaylistUi) {
+                self.updatePlaylistUi();
+            }
         };
 
         self.nextTrack = function () {
@@ -735,7 +746,7 @@
                 console.log('playing next track');
 
                 self.playInternal(newItem, 0, function () {
-                    currentPlaylistIndex = newIndex;
+                    self.setPlaylistState(newIndex);
                 });
             }
         };
@@ -747,7 +758,7 @@
 
                 if (newItem) {
                     self.playInternal(newItem, 0, function () {
-                        currentPlaylistIndex = newIndex;
+                        self.setPlaylistState(newIndex);
                     });
                 }
             }
