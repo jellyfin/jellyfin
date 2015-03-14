@@ -1318,7 +1318,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the content upload history.
@@ -1336,7 +1336,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task.</returns>
         Task UploadFile(Stream stream,
             LocalFileInfo file,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the devices options options.
@@ -1392,7 +1392,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
-        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken);
+        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the synchronize job item additional file.
