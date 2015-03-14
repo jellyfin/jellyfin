@@ -1391,5 +1391,8 @@
     "HeaderThisUserIsCurrentlyDisabled": "This user is currently disabled",
     "MessageReenableUser": "See below to reenable",
     "LabelEnableInternetMetadataForTvPrograms": "Download internet metadata for:",
-    "OptionTVMovies": "TV Movies"
+    "OptionTVMovies": "TV Movies",
+    "HeaderUpcomingMovies": "Upcoming Movies",
+    "HeaderUpcomingPrograms":  "Upcoming Programs",
+    "ButtonMoreItems": "More..."
 }

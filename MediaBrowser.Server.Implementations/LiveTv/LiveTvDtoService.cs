@@ -387,7 +387,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsPremiere = item.IsPremiere,
                 Type = "Program",
                 MediaType = item.MediaType,
-                ServerId = _appHost.SystemId
+                ServerId = _appHost.SystemId,
+                ProductionYear = item.ProductionYear
             };
 
             if (item.EndDate.HasValue)

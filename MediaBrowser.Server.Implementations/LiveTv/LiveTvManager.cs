@@ -685,19 +685,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             programs = _libraryManager.Sort(programs, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending)
                 .Cast<LiveTvProgram>();
 
+            var programList = programs.ToList();
+            IEnumerable<LiveTvProgram> returnPrograms = programList;
+
             if (query.StartIndex.HasValue)
             {
-                programs = programs.Skip(query.StartIndex.Value);
+                returnPrograms = returnPrograms.Skip(query.StartIndex.Value);
             }
 
             if (query.Limit.HasValue)
             {
-                programs = programs.Take(query.Limit.Value);
+                returnPrograms = returnPrograms.Take(query.Limit.Value);
             }
 
-            var programList = programs.ToList();
-
-            var returnArray = programList
+            var returnArray = returnPrograms
                 .Select(i =>
                 {
                     var channel = GetChannel(i);
@@ -713,7 +714,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var result = new QueryResult<ProgramInfoDto>
             {
                 Items = returnArray,
-                TotalRecordCount = returnArray.Length
+                TotalRecordCount = programList.Count
             };
 
             return result;

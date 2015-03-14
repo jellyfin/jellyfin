@@ -1030,7 +1030,7 @@ progress {
     opacity: .5;
 }
 
-.accentButton .fa:not(.notext) {
+.accentButton:not(.accentButtonRight) .fa:not(.notext) {
     margin-right: 7px;
 }
 
@@ -1040,6 +1040,10 @@ h1 + .accentButton {
 
 .detailSectionHeader .accentButton {
     font-size: 13px;
+}
+
+.accentButtonRight .fa:not(.notext) {
+    margin-left: 7px;
 }
 
 .dashboardFooter {
