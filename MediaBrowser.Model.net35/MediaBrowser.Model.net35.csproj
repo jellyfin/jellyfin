@@ -288,9 +288,6 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\ContentFeatureBuilder.cs">
       <Link>Dlna\ContentFeatureBuilder.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\DefaultLocalPlayer.cs">
-      <Link>Dlna\DefaultLocalPlayer.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\DeviceIdentification.cs">
       <Link>Dlna\DeviceIdentification.cs</Link>
     </Compile>

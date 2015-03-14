@@ -25,13 +25,22 @@ namespace MediaBrowser.Controller.Providers
         void QueueRefresh(Guid itemId, MetadataRefreshOptions options);
 
         /// <summary>
+        /// Refreshes the full item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task RefreshFullItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Refreshes the metadata.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.

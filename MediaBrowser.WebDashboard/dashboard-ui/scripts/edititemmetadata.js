@@ -46,12 +46,6 @@
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
 
-            $('.btnRefresh', page).buttonEnabled(true);
-            $('#btnDelete', page).buttonEnabled(true);
-            $('.btnSave', page).buttonEnabled(true);
-
-            $('#refreshLoading', page).hide();
-
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
             updateTabs(page, item);
@@ -1337,15 +1331,10 @@
     }
 
     function refreshWithOptions(page, options) {
-        $('#refreshLoading', page).show();
-
-        $('#btnDelete', page).buttonEnabled(false);
-        $('.btnRefresh', page).buttonEnabled(false);
-        $('.btnSave', page).buttonEnabled(false);
 
         ApiClient.refreshItem(currentItem.Id, options).done(function () {
 
-            reload(page);
+            Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
         });
     }
 

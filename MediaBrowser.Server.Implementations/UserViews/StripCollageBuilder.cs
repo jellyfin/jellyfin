@@ -1,12 +1,13 @@
 ﻿using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Server.Implementations.Drawing;
+using MediaBrowser.Server.Implementations.Photos;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.Photos
+namespace MediaBrowser.Server.Implementations.UserViews
 {
     public class StripCollageBuilder
     {

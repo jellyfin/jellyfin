@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Globalization;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Server.Implementations.Photos;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Photos
+namespace MediaBrowser.Server.Implementations.UserViews
 {
     public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
@@ -50,6 +52,11 @@ namespace MediaBrowser.Server.Implementations.Photos
             var view = (UserView)item;
 
             if (!view.UserId.HasValue)
+            {
+                return new List<BaseItem>();
+            }
+
+            if (string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
                 return new List<BaseItem>();
             }
@@ -93,14 +100,14 @@ namespace MediaBrowser.Server.Implementations.Photos
             }
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
-            var recursive = isUsingCollectionStrip && !new[] {CollectionType.Playlists, CollectionType.Channels}.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var recursive = isUsingCollectionStrip && !new[] { CollectionType.Playlists, CollectionType.Channels }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
             var result = await view.GetItems(new InternalItemsQuery
             {
                 User = _userManager.GetUserById(view.UserId.Value),
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder"}
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder" }
 
             }).ConfigureAwait(false);
 
@@ -219,7 +226,8 @@ namespace MediaBrowser.Server.Implementations.Photos
                 CollectionType.Music,
                 CollectionType.BoxSets,
                 CollectionType.Playlists,
-                CollectionType.Channels
+                CollectionType.Channels,
+                CollectionType.LiveTv
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
@@ -230,18 +238,45 @@ namespace MediaBrowser.Server.Implementations.Photos
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {
-                var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages), item.Name, 960, 540);
+                var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
                 return Task.FromResult(stream);
             }
 
             return base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
         }
 
-        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items)
+        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items, string viewType)
         {
+            if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = new List<string>();
+                for (int i = 1; i <= 8; i++)
+                {
+                    list.Add(ExtractLiveTvResource(i.ToString(CultureInfo.InvariantCulture), ApplicationPaths));
+                }
+                return list;
+            }
+
             return items
                 .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
                 .Where(i => !string.IsNullOrWhiteSpace(i));
+        }
+
+        private string ExtractLiveTvResource(string name, IApplicationPaths paths)
+        {
+            var namespacePath = GetType().Namespace + ".livetv." + name + ".jpg";
+            var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".jpg");
+            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+
+            using (var stream = GetType().Assembly.GetManifestResourceStream(namespacePath))
+            {
+                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    stream.CopyTo(fileStream);
+                }
+            }
+
+            return tempPath;
         }
     }
 }

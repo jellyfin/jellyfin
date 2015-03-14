@@ -231,7 +231,7 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
-    <Compile Include="Photos\DynamicImageProvider.cs" />
+    <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
@@ -248,7 +248,7 @@
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Photos\BaseDynamicImageProvider.cs" />
     <Compile Include="Photos\DynamicImageHelpers.cs" />
-    <Compile Include="Photos\StripCollageBuilder.cs" />
+    <Compile Include="UserViews\StripCollageBuilder.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
@@ -514,6 +514,14 @@
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="UserViews\livetv\1.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\2.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\3.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\4.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\5.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\6.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\7.jpg" />
+    <EmbeddedResource Include="UserViews\livetv\8.jpg" />
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>
