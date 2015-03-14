@@ -214,7 +214,7 @@
             return counts.join(' • ');
         },
 
-        getArtistLinksHtml: function (artists) {
+        getArtistLinksHtml: function (artists, cssClass) {
 
             var html = [];
 
@@ -222,7 +222,8 @@
 
                 var artist = artists[i];
 
-                html.push('<a href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(artist) + '">' + artist + '</a>');
+                var css = cssClass ? (' class="' + cssClass + '"') : '';
+                html.push('<a' + css + ' href="itembynamedetails.html?context=music&id=' + artist.Id + '">' + artist.Name + '</a>');
 
             }
 
@@ -797,7 +798,10 @@
                 textlines.push(displayName);
 
                 if (item.Type == 'Audio') {
-                    textlines.push(item.Artists.join(', ') || '&nbsp;');
+                    textlines.push(item.ArtistItems.map(function (a) {
+                        return a.Name;
+
+                    }).join(', ') || '&nbsp;');
                 }
 
                 if (item.Type == 'Game') {
@@ -1744,12 +1748,10 @@
 
             var contextParam = context ? ('&context=' + context) : '';
 
-            if (item.AlbumArtist && item.Type == "Audio") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + contextParam + '">' + item.AlbumArtist + '</a>');
-            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.AlbumArtist) + contextParam + '">' + item.AlbumArtist + '</a>');
-            } else if (item.Artists && item.Artists.length && item.Type == "MusicVideo") {
-                html.push('<a class="detailPageParentLink" href="itembynamedetails.html?context=music&musicartist=' + ApiClient.encodeName(item.Artists[0]) + contextParam + '">' + item.Artists[0] + '</a>');
+            if (item.AlbumArtists) {
+                html.push(LibraryBrowser.getArtistLinksHtml(item.AlbumArtists, "detailPageParentLink"));
+            } else if (item.ArtistItems && item.ArtistItems.length && item.Type == "MusicVideo") {
+                html.push(LibraryBrowser.getArtistLinksHtml(item.ArtistItems, "detailPageParentLink"));
             } else if (item.SeriesName && item.Type == "Episode") {
 
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.SeriesId + contextParam + '">' + item.SeriesName + '</a>');
@@ -1769,11 +1771,8 @@
             } else if (item.Album && item.Type == "MusicVideo" && item.AlbumId) {
                 html.push('<a class="detailPageParentLink" href="itemdetails.html?id=' + item.AlbumId + contextParam + '">' + item.Album + '</a>');
 
-            } else if (item.AlbumArtist && item.Type == "MusicAlbum") {
-
             } else if (item.Album) {
                 html.push(item.Album);
-
             }
 
             if (html.length) {

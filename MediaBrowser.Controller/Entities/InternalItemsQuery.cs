@@ -30,7 +30,6 @@ namespace MediaBrowser.Controller.Entities
         public string[] IncludeItemTypes { get; set; }
         public string[] ExcludeItemTypes { get; set; }
         public string[] Genres { get; set; }
-        public string[] AllGenres { get; set; }
 
         public bool? IsMissing { get; set; }
         public bool? IsUnaired { get; set; }
@@ -66,6 +65,7 @@ namespace MediaBrowser.Controller.Entities
         public bool? HasParentalRating { get; set; }
 
         public string[] Studios { get; set; }
+        public string[] StudioIds { get; set; }
         public ImageType[] ImageTypes { get; set; }
         public VideoType[] VideoTypes { get; set; }
         public int[] Years { get; set; }
@@ -80,9 +80,9 @@ namespace MediaBrowser.Controller.Entities
             MediaTypes = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
-            AllGenres = new string[] { };
             Genres = new string[] { };
             Studios = new string[] { };
+            StudioIds = new string[] { };
             ImageTypes = new ImageType[] { };
             VideoTypes = new VideoType[] { };
             Years = new int[] { };

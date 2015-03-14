@@ -197,6 +197,7 @@ namespace MediaBrowser.Server.Startup.Common
         private ITVSeriesManager TVSeriesManager { get; set; }
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }
+        private IPlaylistManager PlaylistManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
@@ -423,7 +424,7 @@ namespace MediaBrowser.Server.Startup.Common
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager);
             RegisterSingleInstance(ProviderManager);
 
             SeriesOrderManager = new SeriesOrderManager();
@@ -491,13 +492,13 @@ namespace MediaBrowser.Server.Startup.Common
             CollectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
             RegisterSingleInstance(CollectionManager);
 
-            var playlistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
-            RegisterSingleInstance<IPlaylistManager>(playlistManager);
+            PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
+            RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, playlistManager, CollectionManager, ServerConfigurationManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, PlaylistManager, CollectionManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
             var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager);
@@ -702,6 +703,7 @@ namespace MediaBrowser.Server.Startup.Common
             BaseItem.LiveTvManager = LiveTvManager;
             Folder.UserViewManager = UserViewManager;
             UserView.TVSeriesManager = TVSeriesManager;
+            UserView.PlaylistManager = PlaylistManager;
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
         }

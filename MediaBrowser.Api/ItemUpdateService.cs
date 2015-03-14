@@ -389,20 +389,33 @@ namespace MediaBrowser.Api
                 game.PlayersSupported = request.Players;
             }
 
-            var song = item as Audio;
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null)
+            {
+                hasAlbumArtists.AlbumArtists = request
+                    .AlbumArtists
+                    .Select(i => i.Name)
+                    .ToList();
+            }
 
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null)
+            {
+                hasArtists.Artists = request
+                    .ArtistItems
+                    .Select(i => i.Name)
+                    .ToList();
+            }
+            
+            var song = item as Audio;
             if (song != null)
             {
                 song.Album = request.Album;
-                song.AlbumArtists = string.IsNullOrWhiteSpace(request.AlbumArtist) ? new List<string>() : new List<string> { request.AlbumArtist };
-                song.Artists = request.Artists.ToList();
             }
 
             var musicVideo = item as MusicVideo;
-
             if (musicVideo != null)
             {
-                musicVideo.Artists = request.Artists.ToList();
                 musicVideo.Album = request.Album;
             }
 

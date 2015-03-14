@@ -39,11 +39,11 @@ namespace MediaBrowser.Model.Querying
         public string[] SortBy { get; set; }
 
         /// <summary>
-        /// Filter by artists
+        /// Gets or sets the artist ids.
         /// </summary>
-        /// <value>The artists.</value>
-        public string[] Artists { get; set; }
-
+        /// <value>The artist ids.</value>
+        public string[] ArtistIds { get; set; }
+        
         /// <summary>
         /// The sort order to return results with
         /// </summary>
@@ -93,16 +93,10 @@ namespace MediaBrowser.Model.Querying
         public string[] Genres { get; set; }
 
         /// <summary>
-        /// Limit results to items containing specific genres
+        /// Gets or sets the studio ids.
         /// </summary>
-        /// <value>The genres.</value>
-        public string[] AllGenres { get; set; }
-
-        /// <summary>
-        /// Limit results to items containing specific studios
-        /// </summary>
-        /// <value>The studios.</value>
-        public string[] Studios { get; set; }
+        /// <value>The studio ids.</value>
+        public string[] StudioIds { get; set; }
 
         /// <summary>
         /// Gets or sets the exclude item types.
@@ -306,13 +300,13 @@ namespace MediaBrowser.Model.Querying
             VideoTypes = new VideoType[] { };
 
             Genres = new string[] { };
-            Studios = new string[] { };
+            StudioIds = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Years = new int[] { };
             PersonTypes = new string[] { };
             Ids = new string[] { };
-            Artists = new string[] { };
+            ArtistIds = new string[] { };
 
             ImageTypes = new ImageType[] { };
             AirDays = new DayOfWeek[] { };

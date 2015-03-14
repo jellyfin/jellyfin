@@ -135,17 +135,17 @@ namespace MediaBrowser.Providers.Manager
                         {
                             if (!string.IsNullOrEmpty(response.Path))
                             {
-                                var mimeType = "image/" + Path.GetExtension(response.Path).TrimStart('.').ToLower();
+                                var mimeType = MimeTypes.GetMimeType(response.Path);
 
                                 var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
 
-                                await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                await _providerManager.SaveImage(item, stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
                             }
                             else
                             {
                                 var mimeType = "image/" + response.Format.ToString().ToLower();
 
-                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
                             }
 
                             downloadedImages.Add(imageType);

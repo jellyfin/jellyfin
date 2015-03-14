@@ -19,15 +19,4 @@ namespace MediaBrowser.Controller.Providers
            where TItemType : IHasMetadata
     {
     }
-
-    public interface IHasOrder
-    {
-        int Order { get; }
-    }
-
-    public class MetadataResult<T>
-    {
-        public bool HasMetadata { get; set; }
-        public T Item { get; set; }
-    }
 }

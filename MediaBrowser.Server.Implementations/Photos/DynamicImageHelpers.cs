@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             return Task.FromResult<Stream>(fileSystem.GetFileStream(files[0], FileMode.Open, FileAccess.Read, FileShare.Read));
         }
 
-        private static Stream GetStream(MagickWand image, IApplicationPaths appPaths)
+        internal static Stream GetStream(MagickWand image, IApplicationPaths appPaths)
         {
             var tempFile = Path.Combine(appPaths.TempDirectory, Guid.NewGuid().ToString("N") + ".png");
 

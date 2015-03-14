@@ -501,12 +501,20 @@
         $('#txtAirsBeforeEpisode', page).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
 
         $('#txtAlbum', page).val(item.Album || "");
-        $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
+
+        $('#txtAlbumArtist', page).val((item.AlbumArtists || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
 
-        var artists = item.Artists || [];
-        $('#txtArtist', page).val(artists.join(';'));
+        $('#txtArtist', page).val((item.ArtistItems || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         var date;
 
@@ -802,6 +810,26 @@
             .jstree("delete_node", '#' + id);
     }
 
+    function getAlbumArtists(form) {
+
+        return $('#txtAlbumArtist', form).val().split(';').map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
+    function getArtists(form) {
+
+        return $('#txtArtist', form).val().split(';').map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
     function editItemMetadataPage() {
 
         var self = this;
@@ -834,8 +862,8 @@
                 DisplayOrder: $('#selectDisplayOrder', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
-                AlbumArtist: $('#txtAlbumArtist', form).val(),
-                Artists: $('#txtArtist', form).val().split(';'),
+                AlbumArtist: getAlbumArtists(form),
+                ArtistItems: getArtists(form),
                 Metascore: $('#txtMetascore', form).val(),
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),

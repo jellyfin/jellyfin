@@ -120,16 +120,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             get { return Parent as MusicArtist ?? UnknwonArtist; }
         }
 
-        /// <summary>
-        /// Determines whether the specified artist has artist.
-        /// </summary>
-        /// <param name="artist">The artist.</param>
-        /// <returns><c>true</c> if the specified artist has artist; otherwise, <c>false</c>.</returns>
-        public bool HasArtist(string artist)
-        {
-            return AllArtists.Contains(artist, StringComparer.OrdinalIgnoreCase);
-        }
-
         public List<string> Artists { get; set; }
 
         /// <summary>

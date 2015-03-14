@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.FolderImages
 {
-    public class DefaultImageProvider : IRemoteImageProvider, IHasItemChangeMonitor
+    public class DefaultImageProvider : IRemoteImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly IHttpClient _httpClient;
 
@@ -36,36 +36,42 @@ namespace MediaBrowser.Providers.FolderImages
 
             if (view != null)
             {
-                return GetImages(view.ViewType, cancellationToken);
+                return GetImages(view.ViewType, view.ParentId != Guid.Empty, cancellationToken);
             }
 
             var folder = (ICollectionFolder)item;
-            return GetImages(folder.CollectionType, cancellationToken);
+            return GetImages(folder.CollectionType, false, cancellationToken);
         }
 
-        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, CancellationToken cancellationToken)
+        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, bool isSubView, CancellationToken cancellationToken)
         {
-            var url = GetImageUrl(viewType);
+            var url = GetImageUrl(viewType, isSubView);
+            var list = new List<RemoteImageInfo>();
 
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(new List<RemoteImageInfo>
+            if (!string.IsNullOrWhiteSpace(url))
             {
-                 new RemoteImageInfo
-                 {
-                      ProviderName = Name,
-                      Url = url,
-                      Type = ImageType.Primary
-                 },
+                list.AddRange(new List<RemoteImageInfo>
+                {
+                    new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = url,
+                        Type = ImageType.Primary
+                    },
 
-                 new RemoteImageInfo
-                 {
-                      ProviderName = Name,
-                      Url = url,
-                      Type = ImageType.Thumb
-                 }
-            });
+                    new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = url,
+                        Type = ImageType.Thumb
+                    }
+                });
+            }
+
+            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
         }
 
-        private string GetImageUrl(string viewType)
+        private string GetImageUrl(string viewType, bool isSubView)
         {
             const string urlPrefix = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Resources/master/images/folders/";
 
@@ -102,6 +108,11 @@ namespace MediaBrowser.Providers.FolderImages
                 return urlPrefix + "movies.png";
             }
 
+            if (isSubView)
+            {
+                return null;
+            }
+
             return urlPrefix + "generic.png";
         }
 
@@ -112,14 +123,7 @@ namespace MediaBrowser.Providers.FolderImages
 
         public bool Supports(IHasImages item)
         {
-            var view = item as UserView;
-
-            if (view != null)
-            {
-                return !view.UserId.HasValue;
-            }
-            
-            return item is ICollectionFolder;
+            return item is ICollectionFolder || item is UserView;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -135,6 +139,15 @@ namespace MediaBrowser.Providers.FolderImages
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
         {
             return GetSupportedImages(item).Any(i => !item.HasImage(i));
+        }
+
+        public int Order
+        {
+            get
+            {
+                // Run after the dynamic image provider
+                return 1;
+            }
         }
     }
 }
