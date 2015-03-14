@@ -61,12 +61,6 @@
     vertical-align: top;
 }
 
-.videoAdvancedControls .currentPlaylistState {
-    display: inline-block;
-    line-height: 44px;
-    margin-right: 10px;
-}
-
 .videoControls .currentTime {
     margin-top: 25px;
 }
@@ -168,6 +162,10 @@
     .videoControls .nowPlayingText {
         max-width: 160px;
     }
+
+    #mediaPlayer .nowPlayingImage {
+        display: none;
+    }
 }
 
 @media all and (max-width: 960px), all and (max-height: 550px) {
@@ -190,8 +188,8 @@
     }
 }
 
-@media all and (max-width: 500px) {
-    #mediaPlayer .previousTrackButton, #mediaPlayer .nextTrackButton {
+@media all and (max-width: 555px) {
+    #mediaPlayer .videoControls .previousTrackButton, #mediaPlayer .videoControls .nextTrackButton {
         display: none!important;
     }
     .videoTopControlsLogo {
@@ -205,7 +203,7 @@
     }
 }
 
-@media all and (min-width: 1200px) {
+@media all and (min-width: 1300px) {
     #videoPlayer .nowPlayingInfo img {
         height: auto !important;
         max-width: 150px;

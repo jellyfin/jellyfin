@@ -472,14 +472,6 @@
                 tooltip.remove();
             });
 
-            $('.videoPreviousButton').on('click', function () {
-                self.previousTrack();
-            });
-
-            $('.videoNextButton').on('click', function () {
-                self.nextTrack();
-            });
-
             $('.videoSubtitleButton').on('click', function () {
 
                 self.showSubtitleMenu();
@@ -1174,8 +1166,7 @@
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('#video-previousTrackButton', videoControls).hide();
-            $('#video-nextTrackButton', videoControls).hide();
+            $('.videoTrackControl').hide();
 
             var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
 
@@ -1340,31 +1331,28 @@
 
         self.updatePlaylistUi = function () {
             var index = self.currentPlaylistIndex(null),
-                length = self.playlist.length;
+                length = self.playlist.length,
+                requiresNativeControls = !self.canAutoPlayVideo(),
+                controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
             
             if (length < 2) {
                 $('.videoTrackControl').hide();
                 return;
             }
 
-            console.log('Index: ' + index);
-
-            $('.currentPlaylistIndex').text(index + 1);
-            $('.currentPlaylistLength').text(length);
-
             if (index === 0) {
-                $('.videoPreviousButton').attr('disabled', 'disabled');
+                $('.previousTrackButton', controls).attr('disabled', 'disabled');
             } else {
-                $('.videoPreviousButton').removeAttr('disabled');
+                $('.previousTrackButton', controls).removeAttr('disabled');
             }
 
             if ((index + 1) >= length) {
-                $('.videoNextButton').attr('disabled', 'disabled');
+                $('.nextTrackButton', controls).attr('disabled', 'disabled');
             } else {
-                $('.videoNextButton').removeAttr('disabled');
+                $('.nextTrackButton', controls).removeAttr('disabled');
             }
 
-            $('.videoTrackControl').show();
+            $('.videoTrackControl', controls).show();
         };
     }
 
