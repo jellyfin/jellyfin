@@ -184,6 +184,12 @@ namespace MediaBrowser.Model.Dlna
                         {
                             playlistItem.PlayMethod = PlayMethod.DirectPlay;
                         }
+                        else if (item.Protocol == MediaProtocol.Http &&
+                            directPlayMethods.Contains(PlayMethod.DirectPlay) &&
+                            _localPlayer.CanAccessUrl(item.Path, item.RequiredHttpHeaders.Count > 0))
+                        {
+                            playlistItem.PlayMethod = PlayMethod.DirectPlay;
+                        }
                         else if (directPlayMethods.Contains(PlayMethod.DirectStream))
                         {
                             playlistItem.PlayMethod = PlayMethod.DirectStream;
@@ -578,9 +584,12 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            else if (mediaSource.Protocol == MediaProtocol.File && _localPlayer.CanAccessFile(mediaSource.Path))
+            else if (mediaSource.Protocol == MediaProtocol.File)
             {
-                return PlayMethod.DirectPlay;
+                if (_localPlayer.CanAccessFile(mediaSource.Path))
+                {
+                    return PlayMethod.DirectPlay;
+                }
             }
             
             return PlayMethod.DirectStream;
