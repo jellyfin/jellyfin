@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 progress.Report(percent * 100);
             }
 
-            await ProviderManager.RefreshMetadata(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }

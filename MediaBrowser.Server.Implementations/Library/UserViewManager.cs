@@ -130,7 +130,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
+                    //list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
+                    list.Add(await GetUserView(CollectionType.LiveTv, string.Empty, user, cancellationToken).ConfigureAwait(false));
                 }
             }
 

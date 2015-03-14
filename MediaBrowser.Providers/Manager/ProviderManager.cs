@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
         }
 
-        public Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
 
@@ -897,21 +897,98 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                try
+                var item = libraryManager.GetItemById(refreshItem.Item1);
+                if (item != null)
                 {
-                    var item = libraryManager.GetItemById(refreshItem.Item1);
-                    if (item != null)
+                    try
                     {
-                        await item.RefreshMetadata(refreshItem.Item2, CancellationToken.None).ConfigureAwait(false);
+                        var artist = item as MusicArtist;
+                        var task = artist == null
+                            ? RefreshItem(item, refreshItem.Item2, CancellationToken.None)
+                            : RefreshArtist(artist, refreshItem.Item2);
+
+                        await task.ConfigureAwait(false);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error refreshing item", ex);
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error refreshing item", ex);
+                    }
                 }
             }
 
             StopRefreshTimer();
+        }
+
+        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+
+            if (item.IsFolder)
+            {
+                // Collection folders don't validate their children so we'll have to simulate that here
+                var collectionFolder = item as CollectionFolder;
+
+                if (collectionFolder != null)
+                {
+                    await RefreshCollectionFolderChildren(options, collectionFolder).ConfigureAwait(false);
+                }
+                else
+                {
+                    var folder = (Folder)item;
+
+                    await folder.ValidateChildren(new Progress<double>(), cancellationToken, options).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder)
+        {
+            foreach (var child in collectionFolder.Children.ToList())
+            {
+                await child.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+
+                if (child.IsFolder)
+                {
+                    var folder = (Folder)child;
+
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task RefreshArtist(MusicArtist item, MetadataRefreshOptions options)
+        {
+            var cancellationToken = CancellationToken.None;
+
+            var albums = _libraryManagerFactory().RootFolder
+                                        .GetRecursiveChildren()
+                                        .OfType<MusicAlbum>()
+                                        .Where(i => i.HasAnyArtist(item.Name))
+                                        .ToList();
+
+            var musicArtists = albums
+                .Select(i => i.Parent)
+                .OfType<MusicArtist>()
+                .ToList();
+
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, options, true));
+
+            await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
+
+            try
+            {
+                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error refreshing library", ex);
+            }
+        }
+
+        public Task RefreshFullItem(IHasMetadata item, MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
+        {
+            return RefreshItem((BaseItem)item, options, cancellationToken);
         }
 
         private bool _disposed;
