@@ -1166,8 +1166,7 @@
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('#video-previousTrackButton', videoControls).hide();
-            $('#video-nextTrackButton', videoControls).hide();
+            $('.videoTrackControl').hide();
 
             var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
 
@@ -1328,6 +1327,32 @@
             $('body').addClass('bodyWithPopupOpen');
 
             return video[0];
+        };
+
+        self.updatePlaylistUi = function () {
+            var index = self.currentPlaylistIndex(null),
+                length = self.playlist.length,
+                requiresNativeControls = !self.canAutoPlayVideo(),
+                controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
+            
+            if (length < 2) {
+                $('.videoTrackControl').hide();
+                return;
+            }
+
+            if (index === 0) {
+                $('.previousTrackButton', controls).attr('disabled', 'disabled');
+            } else {
+                $('.previousTrackButton', controls).removeAttr('disabled');
+            }
+
+            if ((index + 1) >= length) {
+                $('.nextTrackButton', controls).attr('disabled', 'disabled');
+            } else {
+                $('.nextTrackButton', controls).removeAttr('disabled');
+            }
+
+            $('.videoTrackControl', controls).show();
         };
     }
 
