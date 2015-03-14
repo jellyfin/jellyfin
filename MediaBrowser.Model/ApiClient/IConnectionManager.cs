@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -46,6 +47,12 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <value><c>true</c> if [save local credentials]; otherwise, <c>false</c>.</value>
         bool SaveLocalCredentials { get; set; }
+
+        /// <summary>
+        /// Gets the client capabilities.
+        /// </summary>
+        /// <value>The client capabilities.</value>
+        ClientCapabilities ClientCapabilities { get; }
 
         /// <summary>
         /// Gets the API client.
