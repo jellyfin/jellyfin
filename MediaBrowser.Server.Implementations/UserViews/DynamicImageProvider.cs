@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -11,13 +10,14 @@ using MediaBrowser.Server.Implementations.Photos;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.UserViews
 {
-    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>, IPreRefreshProvider
     {
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
