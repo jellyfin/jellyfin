@@ -1389,5 +1389,7 @@
     "LabelTagFilterMode": "Mode:",
     "LabelTagFilterAllowModeHelp": "If allowed tags are used as part of a deeply nested folder structure, content that is tagged will require parent folders to be tagged as well.",
     "HeaderThisUserIsCurrentlyDisabled": "This user is currently disabled",
-    "MessageReenableUser": "See below to reenable"
+    "MessageReenableUser": "See below to reenable",
+    "LabelEnableInternetMetadataForTvPrograms": "Download internet metadata for:",
+    "OptionTVMovies": "TV Movies"
 }

@@ -145,6 +145,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         public bool IsPremiere { get; set;  }
 
+        /// <summary>
+        /// Gets or sets the production year.
+        /// </summary>
+        /// <value>The production year.</value>
+        public int? ProductionYear { get; set; }
+        
         public ProgramInfo()
         {
             Genres = new List<string>();

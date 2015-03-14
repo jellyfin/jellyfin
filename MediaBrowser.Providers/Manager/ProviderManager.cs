@@ -312,7 +312,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    if (!item.IsInternetMetadataEnabled())
                     {
                         return false;
                     }
@@ -360,7 +360,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (provider is IRemoteImageProvider)
                     {
-                        if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                        if (!item.IsInternetMetadataEnabled())
                         {
                             return false;
                         }
@@ -515,7 +515,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
-            if (ConfigurationManager.Configuration.EnableInternetProviders)
+            if (item.IsInternetMetadataEnabled())
             {
                 // Fetchers
                 list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
@@ -547,7 +547,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
-            var enableInternet = ConfigurationManager.Configuration.EnableInternetProviders;
+            var enableInternet = item.IsInternetMetadataEnabled();
 
             // Fetchers
             list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (enableInternet && i is IRemoteImageProvider)).Select(i => new MetadataPlugin

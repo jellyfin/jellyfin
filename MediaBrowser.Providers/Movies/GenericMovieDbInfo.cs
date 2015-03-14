@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Movies
 {
     public class GenericMovieDbInfo<T>
-        where T : Video, new()
+        where T : BaseItem, new()
     {
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
