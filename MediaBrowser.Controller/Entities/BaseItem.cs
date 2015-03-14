@@ -239,6 +239,11 @@ namespace MediaBrowser.Controller.Entities
             get { return this.GetImagePath(ImageType.Primary); }
         }
 
+        public virtual bool IsInternetMetadataEnabled()
+        {
+            return ConfigurationManager.Configuration.EnableInternetProviders;
+        }
+
         public virtual bool CanDelete()
         {
             var locationType = LocationType;

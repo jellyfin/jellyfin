@@ -14,9 +14,7 @@
 
         $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
-        var serviceOptions = liveTvInfo.Services.map(function (s) {
-            return '<option value="' + s.Name + '">' + s.Name + '</option>';
-        });
+        $('#chkMovies', page).checked(config.EnableMovieProviders).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -49,8 +47,8 @@
 
             ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
-
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
+                config.EnableMovieProviders = $('#chkMovies', form).checked();
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

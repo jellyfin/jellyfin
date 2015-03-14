@@ -182,6 +182,24 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "MaxEndDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string MaxEndDate { get; set; }
+
+        [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsMovie { get; set; }
+
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+
+        [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Name, StartDate", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string SortBy { get; set; }
+
+        [ApiMember(Name = "SortOrder", Description = "Sort Order - Ascending,Descending", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public SortOrder? SortOrder { get; set; }
+
+        [ApiMember(Name = "Genres", Description = "The genres to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
+        public string Genres { get; set; }
     }
 
     [Route("/LiveTv/Programs/Recommended", "GET", Summary = "Gets available live tv epgs..")]
@@ -199,6 +217,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
+        [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsMovie { get; set; }
     }
 
     [Route("/LiveTv/Programs/{Id}", "GET", Summary = "Gets a live tv program")]
@@ -371,7 +392,7 @@ namespace MediaBrowser.Api.LiveTv
         {
             var query = new ProgramQuery
             {
-                ChannelIdList = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
+                ChannelIds = (request.ChannelIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray(),
                 UserId = request.UserId,
                 HasAired = request.HasAired
             };
@@ -396,6 +417,13 @@ namespace MediaBrowser.Api.LiveTv
                 query.MaxEndDate = DateTime.Parse(request.MaxEndDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
+            query.StartIndex = request.StartIndex;
+            query.Limit = request.Limit;
+            query.SortBy = (request.SortBy ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            query.SortOrder = request.SortOrder;
+            query.IsMovie = request.IsMovie;
+            query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
             var result = await _liveTvManager.GetPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -408,7 +436,8 @@ namespace MediaBrowser.Api.LiveTv
                 UserId = request.UserId,
                 IsAiring = request.IsAiring,
                 Limit = request.Limit,
-                HasAired = request.HasAired
+                HasAired = request.HasAired,
+                IsMovie = request.IsMovie
             };
 
             var result = await _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).ConfigureAwait(false);
