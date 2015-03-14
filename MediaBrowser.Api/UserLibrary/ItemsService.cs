@@ -244,7 +244,7 @@ namespace MediaBrowser.Api.UserLibrary
             return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public IEnumerable<VideoType> GetVideoTypes()
+        public VideoType[] GetVideoTypes()
         {
             var val = VideoTypes;
 
@@ -253,7 +253,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return new VideoType[] { };
             }
 
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true));
+            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
     }
 
@@ -933,7 +933,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 // Filter by VideoType
                 var videoTypes = request.GetVideoTypes();
-                if (video == null || !videoTypes.Contains(video.VideoType))
+                if (videoTypes.Length > 0 && (video == null || !videoTypes.Contains(video.VideoType)))
                 {
                     return false;
                 }

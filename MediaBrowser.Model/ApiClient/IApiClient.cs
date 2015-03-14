@@ -251,12 +251,12 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
 
         /// <summary>
-        /// Gets the live media information.
+        /// Gets the playback information.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;LiveMediaInfoResult&gt;.</returns>
-        Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId);
+        Task<LiveMediaInfoResult> GetPlaybackInfo(string itemId, string userId);
 
         /// <summary>
         /// Gets the users async.

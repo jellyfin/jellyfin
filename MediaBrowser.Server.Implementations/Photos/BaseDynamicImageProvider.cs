@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             return item is T;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public virtual IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
             return new List<ImageType>
             {

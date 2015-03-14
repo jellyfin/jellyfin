@@ -302,7 +302,7 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items);
 
         /// <summary>
-        /// Gets the special folder.
+        /// Gets the named view.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="name">The name.</param>
@@ -311,7 +311,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetSpecialFolder(User user,
+        Task<UserView> GetNamedView(User user,
             string name,
             string parentId,
             string viewType, 
@@ -321,12 +321,14 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the named view.
         /// </summary>
+        /// <param name="user">The user.</param>
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
-        Task<UserView> GetNamedView(string name, 
+        Task<UserView> GetNamedView(User user,
+            string name, 
             string viewType, 
             string sortName, 
             CancellationToken cancellationToken);

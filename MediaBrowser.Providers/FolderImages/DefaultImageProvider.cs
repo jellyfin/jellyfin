@@ -36,16 +36,16 @@ namespace MediaBrowser.Providers.FolderImages
 
             if (view != null)
             {
-                return GetImages(view.ViewType, view.UserId.HasValue, cancellationToken);
+                return GetImages(view.ViewType, view.ParentId != Guid.Empty, cancellationToken);
             }
 
             var folder = (ICollectionFolder)item;
             return GetImages(folder.CollectionType, false, cancellationToken);
         }
 
-        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, bool isUserSpecificView, CancellationToken cancellationToken)
+        private Task<IEnumerable<RemoteImageInfo>> GetImages(string viewType, bool isSubView, CancellationToken cancellationToken)
         {
-            var url = GetImageUrl(viewType, isUserSpecificView);
+            var url = GetImageUrl(viewType, isSubView);
             var list = new List<RemoteImageInfo>();
 
             if (!string.IsNullOrWhiteSpace(url))
@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.FolderImages
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
         }
 
-        private string GetImageUrl(string viewType, bool isUserSpecificView)
+        private string GetImageUrl(string viewType, bool isSubView)
         {
             const string urlPrefix = "https://raw.githubusercontent.com/MediaBrowser/MediaBrowser.Resources/master/images/folders/";
 
@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.FolderImages
                 return urlPrefix + "movies.png";
             }
 
-            if (isUserSpecificView)
+            if (isSubView)
             {
                 return null;
             }
