@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider, IDynamicImageProvider, IHasOrder
+    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : IHasMetadata
     {
         protected IFileSystem FileSystem { get; private set; }
@@ -31,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         public virtual bool Supports(IHasImages item)
         {
-            return item is T;
+            return true;
         }
 
         public virtual IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -43,12 +44,75 @@ namespace MediaBrowser.Server.Implementations.Photos
             };
         }
 
+        public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            if (!Supports(item))
+            {
+                return ItemUpdateType.None;
+            }
+
+            var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
+            var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
+
+            return primaryResult | thumbResult;
+        }
+
+        protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            var items = await GetItemsWithImages(item).ConfigureAwait(false);
+            var cacheKey = GetConfigurationCacheKey(items);
+
+            if (!HasChanged(item, imageType, cacheKey))
+            {
+                return ItemUpdateType.None;
+            }
+
+            return await FetchToFileInternal(item, items, imageType, cacheKey, cancellationToken).ConfigureAwait(false);
+        }
+
+        protected async Task<ItemUpdateType> FetchToFileInternal(IHasImages item,
+            List<BaseItem> itemsWithImages,
+            ImageType imageType,
+            string cacheKey,
+            CancellationToken cancellationToken)
+        {
+            var stream = await CreateImageAsync(item, itemsWithImages, imageType, 0).ConfigureAwait(false);
+
+            if (stream == null)
+            {
+                return ItemUpdateType.None;
+            }
+
+            if (stream is MemoryStream)
+            {
+                using (stream)
+                {
+                    stream.Position = 0;
+
+                    await ProviderManager.SaveImage(item, stream, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await stream.CopyToAsync(ms).ConfigureAwait(false);
+
+                    ms.Position = 0;
+
+                    await ProviderManager.SaveImage(item, ms, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return ItemUpdateType.ImageUpdate;
+        }
+
         public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
             var cacheKey = GetConfigurationCacheKey(items);
 
-            var result = await FetchAsyncInternal(item, items, type, cacheKey, cancellationToken).ConfigureAwait(false);
+            var result = await CreateImageAsync(item, items, type, 0).ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
@@ -65,15 +129,6 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected string GetConfigurationCacheKey(List<BaseItem> items)
         {
             return (Version + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
-        }
-
-        protected Task<Stream> FetchAsyncInternal(IHasImages item,
-            List<BaseItem> itemsWithImages,
-            ImageType imageType,
-            string cacheKey,
-            CancellationToken cancellationToken)
-        {
-            return CreateImageAsync(item, itemsWithImages, imageType, 0);
         }
 
         protected Task<Stream> GetThumbCollage(List<BaseItem> items)
@@ -163,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             return GetFinalItems(items, 4);
         }
 
-        protected List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
+        protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
             // Rotate the images no more than once per week
             var random = new Random(GetWeekOfYear()).Next();

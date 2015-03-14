@@ -1673,13 +1673,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("viewType");
             }
 
-            var id = GetNewItemId("27_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
+            var id = GetNewItemId("30_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
 
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
 
             var item = GetItemById(id) as UserView;
 
-            var refresh = false;
+            var isNew = false;
 
             if (item == null)
             {
@@ -1703,17 +1703,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-                refresh = true;
+                isNew = true;
             }
 
-            if (!refresh)
-            {
-                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
-            }
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
 
             if (refresh)
             {
-                await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
                 _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
             }
 
