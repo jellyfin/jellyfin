@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Connect(CancellationToken cancellationToken);
+        Task<ConnectionResult> Connect(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Connects the specified API client.
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="apiClient">The API client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken);
+        Task<ConnectionResult> Connect(IApiClient apiClient, CancellationToken cancellationToken = default(CancellationToken));
         
         /// <summary>
         /// Connects the specified server.
@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="server">The server.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken);
+        Task<ConnectionResult> Connect(ServerInfo server, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Connects the specified server.
@@ -91,7 +91,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken);
+        Task<ConnectionResult> Connect(ServerInfo server, ConnectionOptions options, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Connects the specified server.
@@ -99,7 +99,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="address">The address.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;ConnectionResult&gt;.</returns>
-        Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken);
+        Task<ConnectionResult> Connect(string address, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Logouts this instance.
@@ -142,7 +142,7 @@ namespace MediaBrowser.Model.ApiClient
         /// Gets the available servers.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken);
+        Task<List<ServerInfo>> GetAvailableServers(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Authenticates an offline user with their password
