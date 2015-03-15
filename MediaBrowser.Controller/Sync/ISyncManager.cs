@@ -166,5 +166,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="targetId">The target identifier.</param>
         /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
         IEnumerable<SyncQualityOption> GetQualityOptions(string targetId);
+
+        /// <summary>
+        /// Gets the profile options.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
+        IEnumerable<SyncQualityOption> GetProfileOptions(string targetId);
     }
 }

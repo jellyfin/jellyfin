@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using System.Text;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
@@ -50,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             string[] queries = {
 
-                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
+                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT)",
@@ -64,6 +65,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _connection.RunQueries(queries, _logger);
 
+            _connection.AddColumn(_logger, "SyncJobs", "Profile", "TEXT");
+            
             PrepareStatements();
         }
 
@@ -81,11 +84,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // _insertJobCommand
             _insertJobCommand = _connection.CreateCommand();
-            _insertJobCommand.CommandText = "insert into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
+            _insertJobCommand.CommandText = "insert into SyncJobs (Id, TargetId, Name, Profile, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Profile, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Id");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@TargetId");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Name");
+            _insertJobCommand.Parameters.Add(_insertJobCommand, "@Profile");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Quality");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Status");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Progress");
@@ -102,11 +106,12 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // _updateJobCommand
             _updateJobCommand = _connection.CreateCommand();
-            _updateJobCommand.CommandText = "update SyncJobs set TargetId=@TargetId,Name=@Name,Quality=@Quality,Status=@Status,Progress=@Progress,UserId=@UserId,ItemIds=@ItemIds,Category=@Category,ParentId=@ParentId,UnwatchedOnly=@UnwatchedOnly,ItemLimit=@ItemLimit,SyncNewContent=@SyncNewContent,DateCreated=@DateCreated,DateLastModified=@DateLastModified,ItemCount=@ItemCount where Id=@ID";
+            _updateJobCommand.CommandText = "update SyncJobs set TargetId=@TargetId,Name=@Name,Profile=@Profile,Quality=@Quality,Status=@Status,Progress=@Progress,UserId=@UserId,ItemIds=@ItemIds,Category=@Category,ParentId=@ParentId,UnwatchedOnly=@UnwatchedOnly,ItemLimit=@ItemLimit,SyncNewContent=@SyncNewContent,DateCreated=@DateCreated,DateLastModified=@DateLastModified,ItemCount=@ItemCount where Id=@ID";
 
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Id");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@TargetId");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Name");
+            _updateJobCommand.Parameters.Add(_updateJobCommand, "@Profile");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Quality");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Status");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Progress");
@@ -162,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@JobItemIndex");
         }
 
-        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
+        private const string BaseJobSelectText = "select Id, TargetId, Name, Profile, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
         private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex from SyncJobItems";
 
         public SyncJob GetJob(string id)
@@ -210,54 +215,59 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(3))
             {
-                info.Quality = reader.GetString(3);
+                info.Profile = reader.GetString(3);
             }
 
             if (!reader.IsDBNull(4))
             {
-                info.Status = (SyncJobStatus)Enum.Parse(typeof(SyncJobStatus), reader.GetString(4), true);
+                info.Quality = reader.GetString(4);
             }
 
             if (!reader.IsDBNull(5))
             {
-                info.Progress = reader.GetDouble(5);
+                info.Status = (SyncJobStatus)Enum.Parse(typeof(SyncJobStatus), reader.GetString(5), true);
             }
 
             if (!reader.IsDBNull(6))
             {
-                info.UserId = reader.GetString(6);
+                info.Progress = reader.GetDouble(6);
             }
 
             if (!reader.IsDBNull(7))
             {
-                info.RequestedItemIds = reader.GetString(7).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                info.UserId = reader.GetString(7);
             }
 
             if (!reader.IsDBNull(8))
             {
-                info.Category = (SyncCategory)Enum.Parse(typeof(SyncCategory), reader.GetString(8), true);
+                info.RequestedItemIds = reader.GetString(8).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
             if (!reader.IsDBNull(9))
             {
-                info.ParentId = reader.GetString(9);
+                info.Category = (SyncCategory)Enum.Parse(typeof(SyncCategory), reader.GetString(9), true);
             }
 
             if (!reader.IsDBNull(10))
             {
-                info.UnwatchedOnly = reader.GetBoolean(10);
+                info.ParentId = reader.GetString(10);
             }
 
             if (!reader.IsDBNull(11))
             {
-                info.ItemLimit = reader.GetInt32(11);
+                info.UnwatchedOnly = reader.GetBoolean(11);
             }
 
-            info.SyncNewContent = reader.GetBoolean(12);
+            if (!reader.IsDBNull(12))
+            {
+                info.ItemLimit = reader.GetInt32(12);
+            }
 
-            info.DateCreated = reader.GetDateTime(13).ToUniversalTime();
-            info.DateLastModified = reader.GetDateTime(14).ToUniversalTime();
-            info.ItemCount = reader.GetInt32(15);
+            info.SyncNewContent = reader.GetBoolean(13);
+
+            info.DateCreated = reader.GetDateTime(14).ToUniversalTime();
+            info.DateLastModified = reader.GetDateTime(15).ToUniversalTime();
+            info.ItemCount = reader.GetInt32(16);
 
             return info;
         }
@@ -294,6 +304,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 cmd.GetParameter(index++).Value = new Guid(job.Id);
                 cmd.GetParameter(index++).Value = job.TargetId;
                 cmd.GetParameter(index++).Value = job.Name;
+                cmd.GetParameter(index++).Value = job.Profile;
                 cmd.GetParameter(index++).Value = job.Quality;
                 cmd.GetParameter(index++).Value = job.Status.ToString();
                 cmd.GetParameter(index++).Value = job.Progress;

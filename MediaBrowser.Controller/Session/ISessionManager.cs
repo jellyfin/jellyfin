@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Logs the user activity.
         /// </summary>
-        /// <param name="clientType">Type of the client.</param>
+        /// <param name="appName">Type of the client.</param>
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceId">The device id.</param>
         /// <param name="deviceName">Name of the device.</param>
@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">user</exception>
-        Task<SessionInfo> LogSessionActivity(string clientType, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
+        Task<SessionInfo> LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
 
         /// <summary>
         /// Used to report that playback has started for an item

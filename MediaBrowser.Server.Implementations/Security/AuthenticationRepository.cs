@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Security
 
             string[] queries = {
 
-                                "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
+                                "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
                                 "create index if not exists idx_AccessTokens on AccessTokens(Id)",
 
                                 //pragmas
@@ -48,18 +48,21 @@ namespace MediaBrowser.Server.Implementations.Security
 
             _connection.RunQueries(queries, _logger);
 
+            _connection.AddColumn(_logger, "AccessTokens", "AppVersion", "TEXT");
+
             PrepareStatements();
         }
 
         private void PrepareStatements()
         {
             _saveInfoCommand = _connection.CreateCommand();
-            _saveInfoCommand.CommandText = "replace into AccessTokens (Id, AccessToken, DeviceId, AppName, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)";
+            _saveInfoCommand.CommandText = "replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)";
 
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@Id");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AccessToken");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DeviceId");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AppName");
+            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AppVersion");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DeviceName");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@UserId");
             _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@IsActive");
@@ -97,6 +100,7 @@ namespace MediaBrowser.Server.Implementations.Security
                 _saveInfoCommand.GetParameter(index++).Value = info.AccessToken;
                 _saveInfoCommand.GetParameter(index++).Value = info.DeviceId;
                 _saveInfoCommand.GetParameter(index++).Value = info.AppName;
+                _saveInfoCommand.GetParameter(index++).Value = info.AppVersion;
                 _saveInfoCommand.GetParameter(index++).Value = info.DeviceName;
                 _saveInfoCommand.GetParameter(index++).Value = info.UserId;
                 _saveInfoCommand.GetParameter(index++).Value = info.IsActive;
@@ -140,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Security
             }
         }
 
-        private const string BaseSelectText = "select Id, AccessToken, DeviceId, AppName, DeviceName, UserId, IsActive, DateCreated, DateRevoked from AccessTokens";
+        private const string BaseSelectText = "select Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked from AccessTokens";
 
         public QueryResult<AuthenticationInfo> Get(AuthenticationInfoQuery query)
         {
@@ -264,8 +268,6 @@ namespace MediaBrowser.Server.Implementations.Security
 
         private AuthenticationInfo Get(IDataReader reader)
         {
-            var s = "select Id, AccessToken, DeviceId, AppName, DeviceName, UserId, IsActive, DateCreated, DateRevoked from AccessTokens";
-
             var info = new AuthenticationInfo
             {
                 Id = reader.GetGuid(0).ToString("N"),
@@ -284,20 +286,25 @@ namespace MediaBrowser.Server.Implementations.Security
 
             if (!reader.IsDBNull(4))
             {
-                info.DeviceName = reader.GetString(4);
+                info.AppVersion = reader.GetString(4);
             }
-            
+
             if (!reader.IsDBNull(5))
             {
-                info.UserId = reader.GetString(5);
+                info.DeviceName = reader.GetString(5);
+            }
+            
+            if (!reader.IsDBNull(6))
+            {
+                info.UserId = reader.GetString(6);
             }
 
-            info.IsActive = reader.GetBoolean(6);
-            info.DateCreated = reader.GetDateTime(7).ToUniversalTime();
+            info.IsActive = reader.GetBoolean(7);
+            info.DateCreated = reader.GetDateTime(8).ToUniversalTime();
 
-            if (!reader.IsDBNull(8))
+            if (!reader.IsDBNull(9))
             {
-                info.DateRevoked = reader.GetDateTime(8).ToUniversalTime();
+                info.DateRevoked = reader.GetDateTime(9).ToUniversalTime();
             }
          
             return info;

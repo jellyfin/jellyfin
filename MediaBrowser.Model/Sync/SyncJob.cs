@@ -26,6 +26,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The quality.</value>
         public string Quality { get; set; }
         /// <summary>
+        /// Gets or sets the profile.
+        /// </summary>
+        /// <value>The profile.</value>
+        public string Profile { get; set; }
+        /// <summary>
         /// Gets or sets the category.
         /// </summary>
         /// <value>The category.</value>
