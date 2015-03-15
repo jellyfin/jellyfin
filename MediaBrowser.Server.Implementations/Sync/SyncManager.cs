@@ -221,6 +221,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             instance.Name = job.Name;
             instance.Quality = job.Quality;
+            instance.Profile = job.Profile;
             instance.UnwatchedOnly = job.UnwatchedOnly;
             instance.SyncNewContent = job.SyncNewContent;
             instance.ItemLimit = job.ItemLimit;

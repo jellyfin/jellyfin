@@ -19,7 +19,8 @@
             elem: $('.formFields', page),
             dialogOptions: dialogOptions,
             dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
-            showName: true
+            showName: true,
+            readOnlySyncTarget: true
         });
         fillJobValues(page, job, dialogOptions);
     }
@@ -265,7 +266,7 @@
         })[0];
         var targetName = target ? target.Name : '';
 
-        $('#txtTargetName', page).val(targetName);
+        $('#selectSyncTarget', page).val(targetName);
     }
 
     var _jobOptions;
@@ -319,10 +320,10 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
 
-            var quality = $('#selectQuality', form).val();
+            var quality = $('#selectQuality', page).val();
 
             if (quality == 'custom') {
-                quality = $('#txtBitrate', form).val();
+                quality = $('#txtBitrate', page).val();
             }
 
             job.Name = $('#txtSyncJobName', page).val();

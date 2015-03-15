@@ -88,17 +88,21 @@
 
         html += '<div>';
         html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
-        html += '<select id="selectSyncTarget" required="required" data-mini="true">';
+        if (options.readOnlySyncTarget) {
+            html += '<input type="text" id="selectSyncTarget" readonly="readonly" />';
+        } else {
+            html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
-        html += targets.map(function (t) {
+            html += targets.map(function (t) {
 
-            return '<option value="' + t.Id + '">' + t.Name + '</option>';
+                return '<option value="' + t.Id + '">' + t.Name + '</option>';
 
-        }).join('');
-        html += '</select>';
-        if (!targets.length) {
-            html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncNoTargetsHelp') + '</div>';
-            html += '<div class="fieldDescription"><a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></div>';
+            }).join('');
+            html += '</select>';
+            if (!targets.length) {
+                html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncNoTargetsHelp') + '</div>';
+                html += '<div class="fieldDescription"><a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></div>';
+            }
         }
         html += '</div>';
 
