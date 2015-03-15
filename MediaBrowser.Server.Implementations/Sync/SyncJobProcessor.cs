@@ -479,7 +479,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var jobOptions = _syncManager.GetVideoOptions(jobItem, job);
-            var conversionOptions = jobOptions.ConversionOptions;
+            var conversionOptions = new VideoOptions
+            {
+                Profile = jobOptions.DeviceProfile
+            };
 
             conversionOptions.DeviceId = jobItem.TargetId;
             conversionOptions.Context = EncodingContext.Static;
@@ -672,7 +675,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var jobOptions = _syncManager.GetAudioOptions(jobItem, job);
-            var conversionOptions = jobOptions.ConversionOptions;
+            var conversionOptions = new AudioOptions
+            {
+                Profile = jobOptions.DeviceProfile
+            };
 
             conversionOptions.DeviceId = jobItem.TargetId;
             conversionOptions.Context = EncodingContext.Static;

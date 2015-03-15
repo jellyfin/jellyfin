@@ -26,6 +26,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The quality.</value>
         public string Quality { get; set; }
         /// <summary>
+        /// Gets or sets the bitrate.
+        /// </summary>
+        /// <value>The bitrate.</value>
+        public int? Bitrate { get; set; }
+        /// <summary>
         /// Gets or sets the profile.
         /// </summary>
         /// <value>The profile.</value>

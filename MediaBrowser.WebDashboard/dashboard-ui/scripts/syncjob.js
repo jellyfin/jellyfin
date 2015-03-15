@@ -261,6 +261,12 @@
         $('#chkSyncNewContent', page).checked(job.SyncNewContent).checkboxradio('refresh');
         $('#txtItemLimit', page).val(job.ItemLimit);
 
+        if (job.Bitrate) {
+            $('#txtBitrate', page).val(job.Bitrate / 1000000);
+        } else {
+            $('#txtBitrate', page).val('');
+        }
+
         var target = editOptions.Targets.filter(function (t) {
             return t.Id == job.TargetId;
         })[0];
@@ -320,18 +326,7 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
 
-            var quality = $('#selectQuality', page).val();
-
-            if (quality == 'custom') {
-                quality = parseFloat($('#txtBitrate', page).val()) * 1000000;
-            }
-
-            job.Name = $('#txtSyncJobName', page).val();
-            job.Quality = quality || null;
-            job.Profile = $('#selectProfile', page).val() || null;
-            job.ItemLimit = $('#txtItemLimit', page).val() || job.ItemLimit;
-            job.SyncNewContent = $('#chkSyncNewContent', page).checked();
-            job.UnwatchedOnly = $('#chkUnwatchedOnly', page).checked();
+            SyncManager.setJobValues(job, page);
 
             ApiClient.ajax({
 

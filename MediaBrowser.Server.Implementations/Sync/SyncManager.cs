@@ -160,7 +160,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 Category = request.Category,
                 ParentId = request.ParentId,
                 Quality = request.Quality,
-                Profile = request.Profile
+                Profile = request.Profile,
+                Bitrate = request.Bitrate
             };
 
             if (!request.Category.HasValue && request.ItemIds != null)
@@ -982,38 +983,31 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _repo.GetLibraryItemIds(query);
         }
 
-        private bool IsOriginalQuality(SyncJob job)
+        public SyncJobOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)
         {
-            return string.IsNullOrWhiteSpace(job.Quality) ||
-                   string.Equals(job.Quality, "original", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(job.Profile, "original", StringComparison.OrdinalIgnoreCase);
-        }
-        
-        public SyncJobOptions<AudioOptions> GetAudioOptions(SyncJobItem jobItem, SyncJob job)
-        {
-            return new SyncJobOptions<AudioOptions>
+            var options = GetSyncJobOptions(jobItem.TargetId, null, null);
+
+            if (job.Bitrate.HasValue)
             {
-                ConversionOptions = new AudioOptions
-                {
-                    Profile = GetDeviceProfile(jobItem.TargetId, null, null)
-                },
-                IsConverting = !IsOriginalQuality(job)
-            };
+                options.DeviceProfile.MaxStaticBitrate = job.Bitrate.Value;
+            }
+
+            return options;
         }
 
-        public SyncJobOptions<VideoOptions> GetVideoOptions(SyncJobItem jobItem, SyncJob job)
+        public SyncJobOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
         {
-            return new SyncJobOptions<VideoOptions>
+            var options = GetSyncJobOptions(jobItem.TargetId, job.Profile, job.Quality);
+
+            if (job.Bitrate.HasValue)
             {
-                ConversionOptions = new VideoOptions
-                {
-                    Profile = GetDeviceProfile(jobItem.TargetId, job.Profile, job.Quality)
-                },
-                IsConverting = !IsOriginalQuality(job)
-            };
+                options.DeviceProfile.MaxStaticBitrate = job.Bitrate.Value;
+            }
+
+            return options;
         }
 
-        private DeviceProfile GetDeviceProfile(string targetId, string profile, string quality)
+        private SyncJobOptions GetSyncJobOptions(string targetId, string profile, string quality)
         {
             foreach (var provider in _providers)
             {
@@ -1021,32 +1015,41 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetDeviceProfile(provider, target, profile, quality);
+                        return GetSyncJobOptions(provider, target, profile, quality);
                     }
                 }
             }
 
-            return null;
+            return GetDefaultSyncJobOptions(profile, quality);
         }
 
-        private DeviceProfile GetDeviceProfile(ISyncProvider provider, SyncTarget target, string profile, string quality)
+        private SyncJobOptions GetSyncJobOptions(ISyncProvider provider, SyncTarget target, string profile, string quality)
         {
             var hasProfile = provider as IHasSyncQuality;
 
             if (hasProfile != null)
             {
-                return hasProfile.GetDeviceProfile(target, profile, quality);
+                return hasProfile.GetSyncJobOptions(target, profile, quality);
             }
 
-            return GetDeviceProfile(profile, quality);
+            return GetDefaultSyncJobOptions(profile, quality);
         }
 
-        private DeviceProfile GetDeviceProfile(string profile, string quality)
+        private SyncJobOptions GetDefaultSyncJobOptions(string profile, string quality)
         {
             var deviceProfile = new CloudSyncProfile(true, false);
             deviceProfile.MaxStaticBitrate = SyncHelper.AdjustBitrate(deviceProfile.MaxStaticBitrate, quality);
 
-            return deviceProfile;
+            return new SyncJobOptions
+            {
+                DeviceProfile = deviceProfile,
+                IsConverting = IsConverting(profile, quality)
+            };
+        }
+
+        private bool IsConverting(string profile, string quality)
+        {
+            return !string.Equals(profile, "original", StringComparison.OrdinalIgnoreCase);
         }
 
         public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId)

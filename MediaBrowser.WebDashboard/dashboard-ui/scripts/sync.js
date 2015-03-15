@@ -24,29 +24,16 @@
             return;
         }
 
-        var quality = $('#selectQuality', form).val();
-
-        if (quality == 'custom') {
-            quality = parseFloat($('#txtBitrate', form).val()) * 1000000;
-        }
-
         var options = {
 
             userId: userId,
             TargetId: target,
 
-            Profile: $('#selectProfile', form).val() || null,
-            Quality: quality || null,
-
-            Name: $('#txtSyncJobName', form).val(),
-
-            SyncNewContent: $('#chkSyncNewContent', form).checked(),
-            UnwatchedOnly: $('#chkUnwatchedOnly', form).checked(),
-            ItemLimit: $('#txtItemLimit').val() || null,
-
             ParentId: syncOptions.ParentId,
             Category: syncOptions.Category
         };
+
+        setJobValues(options, form);
 
         if (syncOptions.items && syncOptions.items.length) {
             options.ItemIds = (syncOptions.items || []).map(function (i) {
@@ -67,6 +54,23 @@
             $(window.SyncManager).trigger('jobsubmit');
             Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
+    }
+
+    function setJobValues(job, form) {
+
+        var bitrate = $('#txtBitrate', form).val() || null;
+
+        if (bitrate) {
+            bitrate = parseFloat(bitrate) * 1000000;
+        }
+
+        job.Name = $('#txtSyncJobName', form).val();
+        job.Quality = $('#selectQuality', form).val() || null;
+        job.Profile = $('#selectProfile', form).val() || null;
+        job.Bitrate = bitrate;
+        job.ItemLimit = $('#txtItemLimit', form).val() || null;
+        job.SyncNewContent = $('#chkSyncNewContent', form).checked();
+        job.UnwatchedOnly = $('#chkUnwatchedOnly', form).checked();
     }
 
     function renderForm(options) {
@@ -288,7 +292,7 @@
             $('#txtBitrate', form).attr('required', 'required');
         } else {
             $('.fldBitrate', form).hide();
-            $('#txtBitrate', form).removeAttr('required');
+            $('#txtBitrate', form).removeAttr('required').val('');
         }
     }
 
@@ -349,8 +353,8 @@
 
         showMenu: showSyncMenu,
         isAvailable: isAvailable,
-        renderForm: renderForm
-
+        renderForm: renderForm,
+        setJobValues: setJobValues
     };
 
     function showSyncButtonsPerUser(page) {

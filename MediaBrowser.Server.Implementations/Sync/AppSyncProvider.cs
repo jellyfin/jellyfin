@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Sync;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -91,6 +92,17 @@ namespace MediaBrowser.Server.Implementations.Sync
         public IEnumerable<SyncProfileOption> GetProfileOptions(SyncTarget target)
         {
             return new List<SyncProfileOption>();
+        }
+
+        public SyncJobOptions GetSyncJobOptions(SyncTarget target, string profile, string quality)
+        {
+            var isConverting = !string.Equals(quality, "original", StringComparison.OrdinalIgnoreCase);
+
+            return new SyncJobOptions
+            {
+                DeviceProfile = GetDeviceProfile(target, profile, quality),
+                IsConverting = isConverting
+            };
         }
     }
 }

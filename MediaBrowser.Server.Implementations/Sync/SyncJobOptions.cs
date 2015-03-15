@@ -1,15 +1,14 @@
 ﻿using MediaBrowser.Model.Dlna;
 
-namespace MediaBrowser.Controller.Sync
+namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncJobOptions<T>
-        where T : AudioOptions, new ()
+    public class SyncJobOptions
     {
         /// <summary>
         /// Gets or sets the conversion options.
         /// </summary>
         /// <value>The conversion options.</value>
-        public T ConversionOptions { get; set; }
+        public DeviceProfile DeviceProfile { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is converting.
         /// </summary>
