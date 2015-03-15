@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             _logger = logger;
         }
 
-        public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string usedByUserId)
+        public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId)
         {
             var device = GetDevice(reportedId) ?? new DeviceInfo
             {
@@ -53,6 +53,7 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             device.ReportedName = name;
             device.AppName = appName;
+            device.AppVersion = appVersion;
 
             if (!string.IsNullOrWhiteSpace(usedByUserId))
             {

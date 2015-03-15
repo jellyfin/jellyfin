@@ -32,12 +32,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             });
         }
 
-        public DeviceProfile GetDeviceProfile(SyncTarget target, string quality)
+        public DeviceProfile GetDeviceProfile(SyncTarget target, string profile, string quality)
         {
             var caps = _deviceManager.GetCapabilities(target.Id);
 
-            var profile = caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
-            var maxBitrate = profile.MaxStaticBitrate;
+            var deviceProfile = caps == null || caps.DeviceProfile == null ? new DeviceProfile() : caps.DeviceProfile;
+            var maxBitrate = deviceProfile.MaxStaticBitrate;
 
             if (maxBitrate.HasValue)
             {
@@ -50,10 +50,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                     maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
                 }
 
-                profile.MaxStaticBitrate = maxBitrate;
+                deviceProfile.MaxStaticBitrate = maxBitrate;
             }
 
-            return profile;
+            return deviceProfile;
         }
 
         public string Name
@@ -100,6 +100,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     Id = SyncQuality.Low.ToString()
                 }
             };
+        }
+
+        public IEnumerable<SyncQualityOption> GetProfileOptions(SyncTarget target)
+        {
+            return new List<SyncQualityOption>();
         }
     }
 }

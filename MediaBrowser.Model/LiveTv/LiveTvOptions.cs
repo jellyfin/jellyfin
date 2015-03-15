@@ -4,5 +4,10 @@
     {
         public int? GuideDays { get; set; }
         public bool EnableMovieProviders { get; set; }
+
+        public LiveTvOptions()
+        {
+            EnableMovieProviders = true;
+        }
     }
 }

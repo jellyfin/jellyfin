@@ -29,6 +29,12 @@ namespace MediaBrowser.Controller.Security
         public string AppName { get; set; }
 
         /// <summary>
+        /// Gets or sets the application version.
+        /// </summary>
+        /// <value>The application version.</value>
+        public string AppVersion { get; set; }
+        
+        /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>

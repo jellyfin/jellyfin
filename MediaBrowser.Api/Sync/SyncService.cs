@@ -238,6 +238,10 @@ namespace MediaBrowser.Api.Sync
                 result.QualityOptions = _syncManager
                     .GetQualityOptions(request.TargetId)
                     .ToList();
+
+                result.ProfileOptions = _syncManager
+                    .GetProfileOptions(request.TargetId)
+                    .ToList();
             }
 
             if (request.Category.HasValue)
