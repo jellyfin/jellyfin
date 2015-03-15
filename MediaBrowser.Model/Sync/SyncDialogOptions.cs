@@ -23,14 +23,14 @@ namespace MediaBrowser.Model.Sync
         /// Gets or sets the profile options.
         /// </summary>
         /// <value>The profile options.</value>
-        public List<SyncQualityOption> ProfileOptions { get; set; }
+        public List<SyncProfileOption> ProfileOptions { get; set; }
      
         public SyncDialogOptions()
         {
             Targets = new List<SyncTarget>();
             Options = new List<SyncJobOption>();
             QualityOptions = new List<SyncQualityOption>();
-            ProfileOptions = new List<SyncQualityOption>();
+            ProfileOptions = new List<SyncProfileOption>();
         }
     }
 }

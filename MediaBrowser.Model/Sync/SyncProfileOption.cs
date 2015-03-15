@@ -1,7 +1,7 @@
 ﻿
 namespace MediaBrowser.Model.Sync
 {
-    public class SyncQualityOption
+    public class SyncProfileOption
     {
         /// <summary>
         /// Gets or sets the name.
@@ -23,5 +23,15 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value><c>true</c> if this instance is default; otherwise, <c>false</c>.</value>
         public bool IsDefault { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable quality options].
+        /// </summary>
+        /// <value><c>true</c> if [enable quality options]; otherwise, <c>false</c>.</value>
+        public bool EnableQualityOptions { get; set; }
+
+        public SyncProfileOption()
+        {
+            EnableQualityOptions = true;
+        }
     }
 }

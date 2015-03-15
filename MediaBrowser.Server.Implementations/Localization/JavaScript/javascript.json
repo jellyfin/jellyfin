@@ -117,7 +117,6 @@
     "HeaderSelectSubtitles": "Select Subtitles",
     "ButtonMarkForRemoval": "Remove from device",
     "ButtonUnmarkForRemoval": "Cancel removal from device",
-    "LabelSyncQualityHelp": "Select the desired quality. Original quality will sync the original file, regardless of whether the device is capable of playing it or not.",
     "LabelDefaultStream": "(Default)",
     "LabelForcedStream": "(Forced)",
     "LabelDefaultForcedStream": "(Default/Forced)",
@@ -731,10 +730,6 @@
     "LabelSyncTo": "Sync to:",
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Quality:",
-    "OptionOriginal": "Original",
-    "OptionHigh": "High",
-    "OptionMedium": "Medium",
-    "OptionLow": "Low",
     "HeaderSettings": "Settings",
     "OptionAutomaticallySyncNewContent": "Automatically sync new content",
     "OptionAutomaticallySyncNewContentHelp": "New content added to this category will be automatically synced to the device.",
@@ -751,5 +746,7 @@
     "SyncJobItemStatusSynced": "Synced",
     "SyncJobItemStatusFailed": "Failed",
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
-    "SyncJobItemStatusCancelled": "Cancelled"
+    "SyncJobItemStatusCancelled": "Cancelled",
+    "LabelProfile": "Profile:",
+    "LabelBitrateMbps": "Bitrate (Mbps):"
 }
