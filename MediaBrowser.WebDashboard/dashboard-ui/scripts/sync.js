@@ -78,7 +78,7 @@
 
         var html = '';
 
-        if (dialogOptions.Options.indexOf('Name') != -1) {
+        if (options.showName || dialogOptions.Options.indexOf('Name') != -1) {
 
             html += '<p>';
             html += '<label for="txtSyncJobName">' + Globalize.translate('LabelSyncJobName') + '</label>';
@@ -259,10 +259,10 @@
 
         if (option) {
             $('.profileDescription', form).html(option.Description || '');
-            setQualityFieldVisible(form, options.QualityOptions.length > 0 && option.EnableQualityOptions);
+            setQualityFieldVisible(form, options.QualityOptions.length > 0 && option.EnableQualityOptions && options.Options.indexOf('Quality') != -1);
         } else {
             $('.profileDescription', form).html('');
-            setQualityFieldVisible(form, options.QualityOptions.length > 0);
+            setQualityFieldVisible(form, options.QualityOptions.length > 0 && options.Options.indexOf('Quality') != -1);
         }
     }
 

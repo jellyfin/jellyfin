@@ -18,7 +18,8 @@
         SyncManager.renderForm({
             elem: $('.formFields', page),
             dialogOptions: dialogOptions,
-            dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions)
+            dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
+            showName: true
         });
         fillJobValues(page, job, dialogOptions);
     }
@@ -123,7 +124,6 @@
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);
         });
-
     }
 
     function showJobItemMenu(elem) {
@@ -253,7 +253,7 @@
 
     function fillJobValues(page, job, editOptions) {
 
-        $('#txtJobName', page).val(job.Name);
+        $('#txtSyncJobName', page).val(job.Name);
         $('#selectProfile', page).val(job.Profile || '').trigger('change').selectmenu('refresh');
         $('#selectQuality', page).val(job.Quality || '').trigger('change').selectmenu('refresh');
         $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly).checkboxradio('refresh');
@@ -325,7 +325,7 @@
                 quality = $('#txtBitrate', form).val();
             }
 
-            job.Name = $('#txtJobName', page).val();
+            job.Name = $('#txtSyncJobName', page).val();
             job.Quality = quality || null;
             job.Profile = $('#selectProfile', page).val() || null;
             job.ItemLimit = $('#txtItemLimit', page).val() || job.ItemLimit;
