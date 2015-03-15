@@ -1706,7 +1706,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 6;
 
             if (refresh)
             {
