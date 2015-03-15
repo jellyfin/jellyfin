@@ -192,7 +192,7 @@
         });
     }
 
-    function loadLibraryTiles(elem, userId, shape, index, autoHideOnMobile) {
+    function loadLibraryTiles(elem, userId, shape, index, autoHideOnMobile, showTitles) {
 
         if (autoHideOnMobile) {
             $(elem).addClass('hiddenSectionOnMobile');
@@ -217,7 +217,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     shape: shape,
-                    showTitle: true,
+                    showTitle: showTitles,
                     centerText: true,
                     lazy: true,
                     autoThumb: true,
@@ -479,22 +479,24 @@
 
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
+        var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';
+
         var elem = $('.section' + index, page);
 
         if (section == 'latestmedia') {
             Sections.loadRecentlyAdded(elem, userId);
         }
         else if (section == 'librarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'backdrop', index);
+            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index);
+            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, true);
+            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, true);
+            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarybuttons') {
             Sections.loadlibraryButtons(elem, userId, index);

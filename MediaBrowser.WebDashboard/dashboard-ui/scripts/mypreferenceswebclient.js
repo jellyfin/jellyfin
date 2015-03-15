@@ -25,6 +25,8 @@
         $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '').selectmenu("refresh");
         $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '').selectmenu("refresh");
 
+        $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -37,6 +39,7 @@
         displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
         displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
         displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
+        displayPreferences.CustomPrefs.enableLibraryTileNames = $('#chkEnableLibraryTileNames', page).checked() ? '1' : '0';
 
         ApiClient.updateDisplayPreferences('home', displayPreferences, userId, 'webclient').done(function () {
 
