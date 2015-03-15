@@ -27,6 +27,6 @@ namespace MediaBrowser.Server.Implementations.Sync
         /// </summary>
         /// <param name="target">The target.</param>
         /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
-        IEnumerable<SyncQualityOption> GetProfileOptions(SyncTarget target);
+        IEnumerable<SyncProfileOption> GetProfileOptions(SyncTarget target);
     }
 }

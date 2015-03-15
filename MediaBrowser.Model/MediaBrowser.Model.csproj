@@ -398,7 +398,7 @@
     <Compile Include="Sync\SyncJobStatus.cs" />
     <Compile Include="Sync\SyncOptions.cs" />
     <Compile Include="Sync\SyncParameter.cs" />
-    <Compile Include="Sync\SyncQuality.cs" />
+    <Compile Include="Sync\SyncProfileOption.cs" />
     <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\LogFile.cs" />

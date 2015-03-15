@@ -1,75 +1,37 @@
 ﻿(function () {
 
-    function renderJob(page, job, editOptions) {
+    function renderJob(page, job, dialogOptions) {
 
         var html = '';
 
         html += '<div>';
         html += Globalize.translate('ValueDateCreated', parseISO8601Date(job.DateCreated, { toLocal: true }).toLocaleString());
         html += '</div>';
-
         html += '<br/>';
-        html += '<div>';
-        html += '<label for="txtJobName">' + Globalize.translate('LabelName') + '</label>';
-        html += '<input id="txtJobName" type="text" required="required" />';
-        html += '</div>';
-
-        html += '<br/>';
-        html += '<div>';
-        html += '<label for="txtTargetName">' + Globalize.translate('LabelSyncTo') + '</label>';
-        html += '<input id="txtTargetName" type="text" readonly="readonly" />';
-        html += '</div>';
-
-        if (editOptions.Options.indexOf('Quality') != -1) {
-            html += '<br/>';
-            html += '<div>';
-            html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
-            html += '<select id="selectQuality" data-mini="true">';
-
-            html += editOptions.QualityOptions.map(function (o) {
-
-                return '<option value="' + o.Id + '">' + o.Name + '</option>';
-
-            }).join('');
-
-            html += '</select>';
-            html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncQualityHelp') + '</div>';
-            html += '</div>';
-        }
-
-        if (editOptions.Options.indexOf('UnwatchedOnly') != -1) {
-            html += '<br/>';
-            html += '<div>';
-            html += '<label for="chkUnwatchedOnly">' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</label>';
-            html += '<input type="checkbox" id="chkUnwatchedOnly" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('OptionSyncUnwatchedVideosOnlyHelp') + '</div>';
-            html += '</div>';
-        }
-
-        if (editOptions.Options.indexOf('SyncNewContent') != -1) {
-            html += '<br/>';
-            html += '<div>';
-            html += '<label for="chkSyncNewContent">' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</label>';
-            html += '<input type="checkbox" id="chkSyncNewContent" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
-            html += '</div>';
-        }
-
-        if (editOptions.Options.indexOf('ItemLimit') != -1) {
-            html += '<br/>';
-            html += '<div>';
-            html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
-            html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
-            html += '</div>';
-        }
+        html += '<div class="formFields"></div>';
 
         html += '<br/>';
         html += '<br/>';
         html += '<button type="submit" data-icon="check">' + Globalize.translate('ButtonSave') + '</button>';
 
         $('.syncJobForm', page).html(html).trigger('create');
-        fillJobValues(page, job, editOptions);
+        SyncManager.renderForm({
+            elem: $('.formFields', page),
+            dialogOptions: dialogOptions,
+            dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions)
+        });
+        fillJobValues(page, job, dialogOptions);
+    }
+
+    function getTargetDialogOptionsFn(dialogOptions) {
+
+        return function (targetId) {
+
+            var deferred = $.Deferred();
+
+            deferred.resolveWith(null, [dialogOptions]);
+            return deferred.promise();
+        };
     }
 
     function getJobItemHtml(jobItem, index) {
@@ -292,7 +254,8 @@
     function fillJobValues(page, job, editOptions) {
 
         $('#txtJobName', page).val(job.Name);
-        $('#selectQuality', page).val(job.Quality).selectmenu('refresh');
+        $('#selectProfile', page).val(job.Profile || '').trigger('change').selectmenu('refresh');
+        $('#selectQuality', page).val(job.Quality || '').trigger('change').selectmenu('refresh');
         $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly).checkboxradio('refresh');
         $('#chkSyncNewContent', page).checked(job.SyncNewContent).checkboxradio('refresh');
         $('#txtItemLimit', page).val(job.ItemLimit);
@@ -356,8 +319,15 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
 
+            var quality = $('#selectQuality', form).val();
+
+            if (quality == 'custom') {
+                quality = $('#txtBitrate', form).val();
+            }
+
             job.Name = $('#txtJobName', page).val();
-            job.Quality = $('#selectQuality', page).val() || job.Quality;
+            job.Quality = quality || null;
+            job.Profile = $('#selectProfile', page).val() || null;
             job.ItemLimit = $('#txtItemLimit', page).val() || job.ItemLimit;
             job.SyncNewContent = $('#chkSyncNewContent', page).checked();
             job.UnwatchedOnly = $('#chkUnwatchedOnly', page).checked();

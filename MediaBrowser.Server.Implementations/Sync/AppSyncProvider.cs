@@ -80,31 +80,32 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Original.ToString(),
-                    Id = SyncQuality.Original.ToString()
+                    Name = "Original",
+                    Id = "original",
+                    Description = "Syncs original files as-is, regardless of whether the device is capable of playing them or not."
                 },
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.High.ToString(),
-                    Id = SyncQuality.High.ToString(),
+                    Name = "High",
+                    Id = "high",
                     IsDefault = true
                 },
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Medium.ToString(),
-                    Id = SyncQuality.Medium.ToString()
+                    Name = "Medium",
+                    Id = "medium"
                 },
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Low.ToString(),
-                    Id = SyncQuality.Low.ToString()
+                    Name = "Low",
+                    Id = "low"
                 }
             };
         }
 
-        public IEnumerable<SyncQualityOption> GetProfileOptions(SyncTarget target)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(SyncTarget target)
         {
-            return new List<SyncQualityOption>();
+            return new List<SyncProfileOption>();
         }
     }
 }

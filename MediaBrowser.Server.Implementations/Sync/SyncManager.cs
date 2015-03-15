@@ -159,7 +159,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemCount = items.Count,
                 Category = request.Category,
                 ParentId = request.ParentId,
-                Quality = request.Quality
+                Quality = request.Quality,
+                Profile = request.Profile
             };
 
             if (!request.Category.HasValue && request.ItemIds != null)
@@ -1079,29 +1080,29 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Original.ToString(),
-                    Id = SyncQuality.Original.ToString()
-                },
-                new SyncQualityOption
-                {
-                    Name = SyncQuality.High.ToString(),
-                    Id = SyncQuality.High.ToString(),
+                    Name = "High",
+                    Id = "high",
                     IsDefault = true
                 },
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Medium.ToString(),
-                    Id = SyncQuality.Medium.ToString()
+                    Name = "Medium",
+                    Id = "medium"
                 },
                 new SyncQualityOption
                 {
-                    Name = SyncQuality.Low.ToString(),
-                    Id = SyncQuality.Low.ToString()
+                    Name = "Low",
+                    Id = "low"
+                },
+                new SyncQualityOption
+                {
+                    Name = "Custom",
+                    Id = "custom"
                 }
             };
         }
 
-        public IEnumerable<SyncQualityOption> GetProfileOptions(string targetId)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId)
         {
             foreach (var provider in _providers)
             {
@@ -1114,10 +1115,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
             }
 
-            return new List<SyncQualityOption>();
+            return new List<SyncProfileOption>();
         }
 
-        private IEnumerable<SyncQualityOption> GetProfileOptions(ISyncProvider provider, SyncTarget target)
+        private IEnumerable<SyncProfileOption> GetProfileOptions(ISyncProvider provider, SyncTarget target)
         {
             var hasQuality = provider as IHasSyncQuality;
             if (hasQuality != null)
@@ -1125,12 +1126,29 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return hasQuality.GetProfileOptions(target);
             }
 
-            var list = new List<SyncQualityOption>();
+            var list = new List<SyncProfileOption>();
 
-            list.Add(new SyncQualityOption
+            list.Add(new SyncProfileOption
             {
-                Name = SyncQuality.Low.ToString(),
-                Id = SyncQuality.Low.ToString()
+                Name = "Original",
+                Id = "Original",
+                Description = "Syncs original files as-is.",
+                EnableQualityOptions = false
+            });
+
+            list.Add(new SyncProfileOption
+            {
+                Name = "Web - H264/AAC, MP3",
+                Id = "mobile",
+                Description = "Designed for compatibility with all devices, including web browsers."
+            });
+
+            list.Add(new SyncProfileOption
+            {
+                Name = "General - H264/AAC/AC3, MP3",
+                Id = "general",
+                Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices.",
+                IsDefault = true
             });
 
             return list;

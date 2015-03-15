@@ -1,5 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
@@ -849,6 +848,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 foreach (var user in users)
                 {
                     await ResetPassword(user).ConfigureAwait(false);
+
+                    if (user.Policy.IsDisabled)
+                    {
+                        user.Policy.IsDisabled = false;
+                        await UpdateUserPolicy(user, user.Policy, true).ConfigureAwait(false);
+                    }
                     usersReset.Add(user.Name);
                 }
             }
